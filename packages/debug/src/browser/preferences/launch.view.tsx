@@ -1,8 +1,9 @@
 import { withTheme } from '@rjsf/core';
-import { RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { GenericObjectType, IconButtonProps, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
+import lodashSet from 'lodash/set';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
@@ -24,6 +25,7 @@ import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu
 import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
+import { ILaunchService } from '../../common/debug-service';
 
 import { CheckboxWidget } from './components/checkbox-widget';
 import { AnyOfField } from './components/fields/any-of-field';
@@ -32,6 +34,7 @@ import { TitleField } from './components/fields/title-field';
 import { SelectWidget } from './components/select-widget';
 import { TextWidget } from './components/text-widget';
 import styles from './launch.module.less';
+import { LaunchService } from './launch.service';
 import { WrapIfAdditionalTemplate } from './templates/additional-template';
 import { ArrayFieldItemTemplate } from './templates/array-field-item-template';
 import { ArrayFieldTemplate } from './templates/array-field-template';
@@ -40,7 +43,7 @@ import {
   MoveUpButton,
   MoveDownButton,
   RemoveButton,
-  SubmitButton,
+  AddItemButton,
   AddButton,
   CopyButton,
 } from './templates/button-template';
@@ -220,6 +223,7 @@ const LaunchBody = ({
     return <div>{localize('debug.action.no.configuration')}</div>;
   }
 
+  const launchService = useInjectable<LaunchService>(ILaunchService);
   const [schemaProperties, setSchemaProperties] = useState<IJSONSchema>();
 
   useEffect(() => {
@@ -235,6 +239,7 @@ const LaunchBody = ({
     });
 
     if (findOneOf) {
+      launchService.setCurrentSchemaProperties(findOneOf);
       setSchemaProperties(findOneOf);
     }
   }, [snippetItem, schemaContributions]);
@@ -286,6 +291,28 @@ const LaunchBody = ({
     } as StrictRJSFSchema;
   }, [snippetItem, schemaProperties]);
 
+  const hanldeAddItem = useCallback(
+    (item: LabelMenuItemNode) => {
+      if (!(schemaProperties && schemaProperties.properties)) {
+        return;
+      }
+
+      if (!(schema && schema.properties)) {
+        return;
+      }
+
+      const { label } = item;
+      const { properties } = schemaProperties;
+      const newFormData = { ...snippetItem.body };
+
+      lodashSet(newFormData as GenericObjectType, label, properties[label]['default'] || '');
+      lodashSet(schema.properties, label, properties[label]);
+
+      launchService.nextNewFormData(newFormData);
+    },
+    [snippetItem, schemaProperties, schema],
+  );
+
   return (
     <div className={styles.launch_schema_body_container}>
       {schema && schemaProperties && (
@@ -307,7 +334,9 @@ const LaunchBody = ({
               MoveUpButton,
               MoveDownButton,
               RemoveButton,
-              SubmitButton,
+              SubmitButton: (
+                props: React.PropsWithChildren<SubmitButtonProps<unknown, RJSFSchema, GenericObjectType>>,
+              ) => <AddItemButton {...props} onAddClick={hanldeAddItem}></AddItemButton>,
               AddButton,
               CopyButton,
             },
