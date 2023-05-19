@@ -9,8 +9,20 @@ import {
   canExpand,
   titleId,
   ADDITIONAL_PROPERTY_FLAG,
+  ObjectFieldTemplatePropertyType,
+  GenericObjectType,
 } from '@rjsf/utils';
-import React from 'react';
+import cls from 'classnames';
+import lodashGet from 'lodash/get';
+import loadshOmit from 'lodash/omit';
+import lodashSet from 'lodash/set';
+import React, { useCallback, useMemo } from 'react';
+
+import { getIcon } from '@opensumi/ide-components';
+import { useInjectable } from '@opensumi/ide-core-browser';
+
+import { ILaunchService } from '../../../common/debug-service';
+import { LaunchService } from '../launch.service';
 
 import styles from './json-templates.module.less';
 
@@ -55,6 +67,7 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
     properties,
     onAddClick,
   } = props;
+  const launchService = useInjectable<LaunchService>(ILaunchService);
   const uiOptions = getUiOptions<T, S, F>(uiSchema);
   const TitleFieldTemplate = getTemplate<'TitleFieldTemplate', T, S, F>('TitleFieldTemplate', registry, uiOptions);
   const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
@@ -66,10 +79,47 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
     ButtonTemplates: { AddButton },
   } = registry.templates;
 
+  const fieldContainerClass = useMemo(
+    () =>
+      idSchema.$id === 'root'
+        ? cls(styles.object_field_container, styles.root_object_field_container)
+        : styles.object_field_container,
+    [idSchema],
+  );
+
+  const handleDelProperties = useCallback((node: ObjectFieldTemplatePropertyType) => {
+    const { name } = node;
+    launchService.delItem(name);
+  }, []);
+
+  const renderProperties = useCallback(
+    (node: ObjectFieldTemplatePropertyType) => {
+      const { rawSchemaProperties: schemaProperties } = launchService;
+      if (!schemaProperties) {
+        return null;
+      }
+
+      const required = schemaProperties.required || [];
+
+      return (
+        <div key={node.name} className={styles.property_wrapper}>
+          {node.content}
+          {/* 非 root 节点不允许删除 */}
+          {required.includes(node.name) || idSchema.$id !== 'root' ? null : (
+            <div className={styles.wrapper_delete} onClick={() => handleDelProperties(node)}>
+              <span className={cls(getIcon('close-circle'), styles.close_icon)}></span>
+            </div>
+          )}
+        </div>
+      );
+    },
+    [properties, launchService.rawSchemaProperties, idSchema],
+  );
+
   return (
     <div className={styles.object_field_template}>
       <fieldset>
-        <div className={styles.object_field_container}>
+        <div className={fieldContainerClass}>
           {title && (
             <div className={styles.object_title}>
               <TitleFieldTemplate
@@ -93,21 +143,10 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
               />
             </div>
           )}
-          {properties
-            .filter((e) => !e.hidden)
-            .map((element) => (
-              <div key={element.name} className={styles.property_wrapper}>
-                {element.content}
-              </div>
-            ))}
+          {properties.filter((e) => !e.hidden).map((element) => renderProperties(element))}
         </div>
         {extendCanExpand<T, S, F>(props) && (
-          <AddButton
-            className='object-property-expand'
-            onClick={onAddClick(schema)}
-            disabled={disabled || readonly}
-            registry={registry}
-          />
+          <AddButton onClick={onAddClick(schema)} disabled={disabled || readonly} registry={registry} />
         )}
       </fieldset>
     </div>

@@ -238,8 +238,10 @@ const LaunchBody = ({
       return ajv!.validate(oneOf, body);
     });
 
+    launchService.nextNewFormData(snippetItem.body);
+
     if (findOneOf) {
-      launchService.setCurrentSchemaProperties(findOneOf);
+      launchService.setRawSchemaProperties(findOneOf);
       setSchemaProperties(findOneOf);
     }
   }, [snippetItem, schemaContributions]);
@@ -250,7 +252,7 @@ const LaunchBody = ({
     }
 
     const { label, body, description } = snippetItem;
-    const { properties } = schemaProperties;
+    const { properties, required } = schemaProperties;
 
     const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
       const curProp = properties![cur];
@@ -283,12 +285,17 @@ const LaunchBody = ({
       return pre;
     }, {});
 
-    return {
+    const schema = {
       title: label,
       type: 'object',
+      required,
       description,
       properties: snippetProperties,
     } as StrictRJSFSchema;
+
+    launchService.nextNewSchema(schema);
+
+    return schema;
   }, [snippetItem, schemaProperties]);
 
   const hanldeAddItem = useCallback(
@@ -302,13 +309,7 @@ const LaunchBody = ({
       }
 
       const { label } = item;
-      const { properties } = schemaProperties;
-      const newFormData = { ...snippetItem.body };
-
-      lodashSet(newFormData as GenericObjectType, label, properties[label]['default'] || '');
-      lodashSet(schema.properties, label, properties[label]);
-
-      launchService.nextNewFormData(newFormData);
+      launchService.addNewItem(label);
     },
     [snippetItem, schemaProperties, schema],
   );
