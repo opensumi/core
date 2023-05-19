@@ -23,7 +23,7 @@ export const ObjectField = <T = any, S extends StrictRJSFSchema = RJSFSchema, F 
 
     // 仅处理 root 节点
     if ($id === 'root') {
-      disabled.addDispose(launchService.onAddNewProperties((newFormData) => onChange(newFormData as T)));
+      disabled.addDispose(launchService.onChangeFormData((newFormData) => onChange(newFormData as T)));
     }
 
     return () => disabled.dispose();

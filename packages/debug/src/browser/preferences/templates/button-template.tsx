@@ -52,7 +52,7 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
   const launchService = useInjectable<LaunchService>(ILaunchService);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
   const [snippetMenu, setSnippetMenu] = React.useState<MenuNode[]>([]);
-  const { currentSchemaProperties } = launchService;
+  const { rawSchemaProperties: schemaProperties } = launchService;
 
   const handleVisibleChange = useCallback((visible: boolean) => setMenuOpen(visible), []);
 
@@ -62,7 +62,7 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
   }, []);
 
   useEffect(() => {
-    if (!currentSchemaProperties || !currentSchemaProperties.properties) {
+    if (!schemaProperties || !schemaProperties.properties) {
       return;
     }
 
@@ -71,7 +71,7 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
     }
 
     const disabled = new Disposable();
-    const { properties } = currentSchemaProperties;
+    const { properties } = schemaProperties;
     const { properties: existedProperties } = rootSchema;
 
     const updateMenu = () => {
@@ -83,18 +83,18 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
       );
     };
 
-    disabled.addDispose(launchService.onAddNewProperties(() => updateMenu()));
+    disabled.addDispose(launchService.onChangeSchema(() => updateMenu()));
     updateMenu();
 
     return () => disabled.dispose();
-  }, [currentSchemaProperties, rootSchema]);
+  }, [schemaProperties, rootSchema]);
 
   return (
     <Button
       type='secondary'
       icon={defaultIconfont.plus}
       className={styles.add_new_field}
-      menu={<MenuActionList afterClick={handleMenuItemClick} data={snippetMenu} />}
+      menu={<MenuActionList afterClick={handleMenuItemClick} data={snippetMenu} style={{ maxHeight: 600 }} />}
       moreVisible={menuOpen}
       onVisibleChange={handleVisibleChange}
     >
