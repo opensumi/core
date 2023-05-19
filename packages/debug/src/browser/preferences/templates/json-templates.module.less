@@ -39,7 +39,41 @@
     }
 
     .property_wrapper {
+      margin-bottom: 0;
+    }
+
+    &.root_object_field_container {
       margin-bottom: 16px;
+
+      .object_title,
+      .object_description {
+        padding-left: 16px;
+      }
+
+      .property_wrapper {
+        padding: 16px;
+        position: relative;
+
+        .wrapper_delete {
+          display: none;
+          position: absolute;
+          cursor: pointer;
+          right: 16px;
+          top: 16px;
+
+          .close_icon {
+            font-size: 21px;
+            color: var(--kt-dangerButton-background);
+          }
+        }
+
+        &:hover {
+          background-color: var(--kt-tree-hoverBackground);
+          .wrapper_delete {
+            display: block;
+          }
+        }
+      }
     }
   }
 }
@@ -58,6 +92,7 @@
   max-width: 500px;
   width: 100%;
   border-style: dashed;
+  margin-left: 16px;
 }
 
 .additional_field_template {
