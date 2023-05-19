@@ -168,7 +168,7 @@ export interface IDebugServiceContributionPoint {
 export const ILaunchService = Symbol('ILaunchService');
 
 export interface ILaunchService {
-  currentSchemaProperties: IJSONSchema | null;
+  rawSchemaProperties: IJSONSchema | null;
 }
 /**
  * launch view service end
