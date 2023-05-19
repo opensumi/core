@@ -72,10 +72,6 @@ export class LaunchService implements ILaunchService {
     const { properties } = this.schema;
     const newFormData = { ...this.formData };
 
-    if (!properties![name] || !newFormData[name]) {
-      return;
-    }
-
     delete newFormData[name];
     delete properties![name];
 
