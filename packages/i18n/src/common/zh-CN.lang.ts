@@ -251,6 +251,7 @@ export const localizationBundle = {
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
     'debug.action.add.configuration': '添加配置...',
+    'debug.action.open.launch.editor': '在 launch 编辑器中打开',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.debug.console': '调试控制台',
     'debug.action.step-into': '单步跳入',

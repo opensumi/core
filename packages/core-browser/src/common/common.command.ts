@@ -282,6 +282,7 @@ export namespace COMMON_COMMANDS {
 
   export const OPEN_LAUNCH_CONFIGURATION: Command = {
     id: 'core.launchConfiguration.open',
+    label: '%debug.action.open.configuration%',
   };
 
   export const ENVIRONMENT_VARIABLE: Command = {
