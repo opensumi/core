@@ -20,12 +20,15 @@
   .detail_name {
     color: var(--foreground);
     margin-right: 6px;
-    display: inline;
     white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .detail_description {
-    display: inline;
+    display: inline-flex;
+    flex-shrink: 0;
     margin-left: 5px;
     color: var(--descriptionForeground);
     .typeContainer {
@@ -116,12 +119,12 @@
 
   .overflow_wrap {
     flex: 1;
+    display: flex;
     flex-shrink: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     text-align: left;
     color: var(--foreground);
+    flex-direction: row;
+    width: 0;
   }
 
   .flex_wrap {

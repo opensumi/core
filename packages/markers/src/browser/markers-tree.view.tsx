@@ -61,7 +61,6 @@ const MarkerList: FC<{ viewState: ViewState }> = ({ viewState }) => {
         height={viewState.height}
         itemHeight={MARKER_TREE_NODE_HEIGHT}
         supportDynamicHeights={true}
-        overflow={'auto'}
         onReady={handleTreeReady}
         model={model}
         placeholder={() => <Empty />}
