@@ -5,8 +5,8 @@ import React, { useEffect } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
-import { ILaunchService } from '@opensumi/ide-debug';
 
+import { ILaunchService } from '../../../../common';
 import { LaunchService } from '../../launch.service';
 
 const DefaultObjectField: any = getDefaultRegistry().fields.ObjectField;
