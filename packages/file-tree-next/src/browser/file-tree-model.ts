@@ -20,15 +20,10 @@ export class FileTreeModel extends TreeModel {
   public readonly decorationService: FileTreeDecorationService;
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(FileTreeModel.DEFAULT_FLUSH_DELAY);
-  private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: Directory) {
     super();
     this.init(root);
-  }
-
-  get onWillUpdate(): Event<void> {
-    return this.onWillUpdateEmitter.event;
   }
 
   init(root: Directory) {
@@ -46,7 +41,6 @@ export class FileTreeModel extends TreeModel {
       this.flushDispatchChangeDelayer.cancel();
     }
     this.flushDispatchChangeDelayer.trigger(async () => {
-      await this.onWillUpdateEmitter.fireAndAwait();
       this.dispatchChange();
     });
   }

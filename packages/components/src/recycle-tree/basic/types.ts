@@ -60,6 +60,11 @@ export interface IBasicTreeData {
    */
   label: string;
   /**
+   * 自定义渲染 label
+   * 传入该参数会覆盖 label
+   */
+  renderLabel?: React.ReactNode;
+  /**
    * 图标
    */
   icon?: string;

@@ -456,6 +456,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
   private _enabled: boolean;
   private _busy: boolean;
   private _ignoreFocusOut: boolean;
+  private _hideOnDidAccept: boolean;
 
   private disposableCollection: DisposableCollection;
 
@@ -485,6 +486,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
     this._password = false;
     this._ignoreFocusOut = false;
     this._busy = false;
+    this._hideOnDidAccept = true;
 
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
@@ -616,6 +618,15 @@ abstract class ExtQuickInput implements vscode.InputBox {
     }
   }
 
+  get hideOnDidAccept(): boolean {
+    return this._hideOnDidAccept;
+  }
+
+  set hideOnDidAccept(hideOnDidAccept: boolean) {
+    this._hideOnDidAccept = hideOnDidAccept;
+    this.update({ hideOnDidAccept });
+  }
+
   getOptions(): QuickInputOptions {
     return {
       value: this.value,
@@ -631,6 +642,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
       buttons: this.buttons as unknown as QuickTitleButton[],
       busy: this.busy,
       enabled: this.enabled,
+      hideOnDidAccept: this.hideOnDidAccept,
     };
   }
 

@@ -59,7 +59,7 @@ jobs:
         run: |
           yarn install --immutable
           yarn run init
-          yarn run build:cli-engine
+          yarn run build:cli-engine || echo "Skip build:cli-engine"
 
       - name: Setup .yarnrc.yml
         run: |

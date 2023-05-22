@@ -1,6 +1,6 @@
 export const browserViews = {
-  // kaitianContributes
-  'sumiContributes.opensumiContributes': '由此包表示的 Opensumi 扩展的所有贡献',
+  // sumiContributes
+  'sumiContributes.contributes': '声明 OpenSumi 扩展的所有贡献点信息',
 
   // 公用 properties，如 command
   'sumiContributes.common.command': '要执行的命令。该命令必须在 "contributes.command" 中声明（内置命令除外）',

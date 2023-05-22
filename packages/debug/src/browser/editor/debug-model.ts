@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
 
 import { Injector, Injectable, Autowired } from '@opensumi/di';
-import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
+import { DomListener, IContextKeyService, IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   ICtxMenuRenderer,
   generateMergedCtxMenu,
@@ -26,6 +26,7 @@ import { BreakpointManager } from '../breakpoint';
 import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
 import { DebugSessionManager } from '../debug-session-manager';
+import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { DebugHoverWidget } from './debug-hover-widget';
@@ -47,6 +48,9 @@ export class DebugModel implements IDebugModel {
   @Autowired(IDebugSessionManager)
   private debugSessionManager: DebugSessionManager;
 
+  @Autowired(DebugBreakpointsService)
+  private debugBreakpointsService: DebugBreakpointsService;
+
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
 
@@ -61,6 +65,9 @@ export class DebugModel implements IDebugModel {
 
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   protected frameDecorations: string[] = [];
   protected topFrameRange: monaco.Range | undefined;
@@ -115,13 +122,38 @@ export class DebugModel implements IDebugModel {
 
   async init() {
     const model = this.editor.getModel()!;
+    let timer: number | undefined;
     this._uri = new URI(model.uri.toString());
     this.decorator = new DebugDecorator();
+
     this.toDispose.pushAll([
       this.breakpointWidget,
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.editor.onDidChangeModelContent(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
+      this.debugBreakpointsService.onDidFocusedBreakpoints(({ range }) => {
+        const enableHint = this.preferenceService.getValid('debug.breakpoint.editorHint', true);
+
+        if (!enableHint) {
+          return;
+        }
+
+        this.renderFrames([
+          {
+            options: options.FOCUS_BREAKPOINTS_STACK_FRAME_DECORATION,
+            range,
+          },
+        ]);
+
+        if (timer) {
+          clearTimeout(timer);
+        }
+
+        timer = window.setTimeout(() => {
+          this.renderFrames();
+          clearTimeout(timer);
+        }, 300);
+      }),
       this.editor.getModel()!.onDidChangeContent(() => this.updateBreakpoints()),
       this.editor.onDidChangeModel(() => {
         this.closeBreakpointView();
@@ -156,14 +188,14 @@ export class DebugModel implements IDebugModel {
    * @type {*}
    * @memberof DebugModel
    */
-  protected readonly renderFrames: any = debounce(() => {
+  protected readonly renderFrames: any = debounce((inflowDecorations: monaco.editor.IModelDeltaDecoration[] = []) => {
     if (this.toDispose.disposed) {
       return;
     }
     if (this.editor.getModel()?.uri.toString() !== this._uri.toString()) {
       return;
     }
-    const decorations = this.createFrameDecorations();
+    const decorations = this.createFrameDecorations().concat(inflowDecorations);
     this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }, 100);
 

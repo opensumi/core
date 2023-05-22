@@ -772,6 +772,7 @@ export const defaultSettingSections: {
         { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },
         { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
         { id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title' },
+        { id: 'debug.breakpoint.editorHint', localized: 'preference.debug.breakpoint.editorHint.title' },
       ],
     },
   ],

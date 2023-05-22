@@ -219,29 +219,6 @@ export class OpenedEditorModelService {
       }),
     );
 
-    this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
-        // 更新树前更新下选中节点
-        if (this.contextMenuFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
-          if (node) {
-            this.activeFileDecoration(node as EditorFile, false);
-          }
-        } else if (this.focusedFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
-          if (node) {
-            this.activeFileDecoration(node as EditorFile, false);
-          }
-        } else if (this.selectedFiles.length !== 0) {
-          // 仅处理一下单选情况
-          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-          if (node) {
-            this.selectFileDecoration(node as EditorFile, false);
-          }
-        }
-      }),
-    );
-
     this.onTreeModelChangeEmitter.fire(this._treeModel);
   }
 

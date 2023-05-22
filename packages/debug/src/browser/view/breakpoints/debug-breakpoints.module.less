@@ -19,7 +19,7 @@
 }
 
 .debug_breakpoints_disabled {
-  opacity: 0.7;
+  opacity: 0.4;
 }
 
 .debug_breakpoints_item {
@@ -28,16 +28,19 @@
   align-items: center;
   cursor: pointer;
   flex-direction: row;
-  .debug_remove_breakpoints_icon {
-    color: #c5c5c5;
+
+  .debug_breakpoints_item_control {
     display: none;
-    pointer-events: none;
   }
+
+  .debug_remove_breakpoints_icon,
+  .debug_edit_breakpoints_icon {
+    margin-right: 6px;
+  }
+
   &:hover {
-    .debug_remove_breakpoints_icon {
-      display: inline-block;
-      pointer-events: all;
-      margin-right: 6px;
+    .debug_breakpoints_item_control {
+      display: flex;
     }
     .debug_breakpoints_badge {
       display: none;
@@ -89,4 +92,57 @@
   margin-right: 4px;
   margin-left: 4px;
   flex: 1;
+}
+
+.debug_breakpoints_item_tree_node {
+  padding-left: 27px !important;
+}
+
+.debug_activate_breakpoints_icon {
+  color: var(--debugIcon-activateBreakpointsForeground);
+  &:hover {
+    color: var(--debugIcon-activateBreakpointsForeground);
+  }
+}
+
+.debug_breakpoints_file_item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .file_item_control {
+    display: flex;
+    align-items: center;
+    min-width: 18px;
+  }
+
+  .file_item_control_right {
+    .close_icon {
+      display: none;
+    }
+  }
+
+  .file_item_checkbox {
+    display: none;
+  }
+
+  .file_item_icon {
+    display: block;
+    margin-left: -2px;
+    margin-right: 4px;
+  }
+
+  &:hover {
+    .file_item_checkbox {
+      display: inherit;
+    }
+    .file_item_icon {
+      display: none;
+    }
+    .close_icon {
+      display: inherit;
+      pointer-events: all;
+      margin-right: 6px;
+    }
+  }
 }

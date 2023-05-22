@@ -52,7 +52,8 @@ export const MenuActionList: React.FC<{
   data: MenuNode[];
   afterClick?: (item: MenuNode) => void;
   context?: any[];
-}> = ({ data = [], context = [], afterClick }) => {
+  style?: React.CSSProperties;
+}> = ({ data = [], context = [], afterClick, style }) => {
   if (!data.length) {
     return null;
   }
@@ -129,6 +130,7 @@ export const MenuActionList: React.FC<{
       motion={{ motionLeave: false, motionEnter: false }}
       {...({ builtinPlacements: placements } as any)}
       onClick={handleClick}
+      style={style}
     >
       {recursiveRender(data)}
     </Menu>

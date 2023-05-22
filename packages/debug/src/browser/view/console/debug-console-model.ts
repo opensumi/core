@@ -9,16 +9,11 @@ export class DebugConsoleTreeModel extends TreeModel {
   static DEFAULT_FLUSH_DELAY = 100;
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugConsoleTreeModel.DEFAULT_FLUSH_DELAY);
-  private onWillUpdateEmitter: Emitter<void> = new Emitter();
   private _tempScrollOffset = 0;
 
   constructor(@Optional() root: ExpressionContainer) {
     super();
     this.init(root);
-  }
-
-  get onWillUpdate(): Event<void> {
-    return this.onWillUpdateEmitter.event;
   }
 
   /**
@@ -40,7 +35,6 @@ export class DebugConsoleTreeModel extends TreeModel {
         this.flushDispatchChangeDelayer.cancel();
       }
       this.flushDispatchChangeDelayer.trigger(async () => {
-        await this.onWillUpdateEmitter.fireAndAwait();
         this.dispatchChange();
       });
     });

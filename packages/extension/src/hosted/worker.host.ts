@@ -209,12 +209,12 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
   private getExtendModuleProxy(extension: IExtensionProps) {
     /**
      * @example
-     * "kaitianContributes": {
+     * "sumiContributes": {
      *  "viewsProxies": ["ViewComponentID"],
      * }
      */
-    if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.viewsProxies) {
-      return this.getExtensionViewModuleProxy(extension, extension.packageJSON.kaitianContributes.viewsProxies);
+    if (extension.packageJSON.sumiContributes && extension.packageJSON.sumiContributes.viewsProxies) {
+      return this.getExtensionViewModuleProxy(extension, extension.packageJSON.sumiContributes.viewsProxies);
     } else if (extension.extendConfig && extension.extendConfig.browser && extension.extendConfig.browser.componentId) {
       return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
     } else {

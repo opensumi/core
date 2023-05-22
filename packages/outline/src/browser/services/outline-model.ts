@@ -9,15 +9,10 @@ export class OutlineTreeModel extends TreeModel {
   static DEFAULT_FLUSH_DELAY = 100;
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(OutlineTreeModel.DEFAULT_FLUSH_DELAY);
-  private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
   constructor(@Optional() root: OutlineCompositeTreeNode) {
     super();
     this.init(root);
-  }
-
-  get onWillUpdate(): Event<void> {
-    return this.onWillUpdateEmitter.event;
   }
 
   init(root: CompositeTreeNode) {
@@ -30,7 +25,6 @@ export class OutlineTreeModel extends TreeModel {
         this.flushDispatchChangeDelayer.cancel();
       }
       this.flushDispatchChangeDelayer.trigger(async () => {
-        await this.onWillUpdateEmitter.fireAndAwait();
         this.dispatchChange();
       });
     });

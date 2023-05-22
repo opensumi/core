@@ -127,7 +127,7 @@ describe('Debug Model', () => {
 
   it('debugModel should be init success', () => {
     expect(mockEditor.onKeyDown).toBeCalledTimes(1);
-    expect(mockEditor.getModel).toBeCalledTimes(4);
+    expect(mockEditor.getModel).toBeCalledTimes(1);
     expect(mockBreakpointManager.onDidChange).toBeCalledTimes(1);
   });
 

@@ -60,6 +60,7 @@ import {
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_BREAKPOINT_INPUT_FOCUSED,
   CONTEXT_EXCEPTION_WIDGET_VISIBLE,
+  CONTEXT_ACTIVE_BREAKPOINTS,
 } from './../common/constants';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { FloatingClickWidget } from './components/floating-click-widget';
@@ -72,6 +73,7 @@ import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
 import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
+import breakpointViewStyles from './view/breakpoints/debug-breakpoints.module.less';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
@@ -409,10 +411,42 @@ export class DebugContribution
         this.debugBreakpointsService.toggleBreakpoints();
       },
     });
+    commands.registerCommand(DEBUG_COMMANDS.ACTIVE_BREAKPOINTS, {
+      execute: () => {
+        const { enable } = this.debugBreakpointsService;
+        if (!enable) {
+          this.debugBreakpointsService.toggleBreakpoints();
+        }
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS, {
+      execute: () => {
+        const { enable } = this.debugBreakpointsService;
+        if (enable) {
+          this.debugBreakpointsService.toggleBreakpoints();
+        }
+      },
+    });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
         this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'edit');
+        const model = this.debugEditorController.model;
+        if (!model) {
+          return;
+        }
+
+        const { uri } = model;
+        const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+        // 更新当前选中的断点
+        if (breakpoint) {
+          this.breakpointManager.selectedBreakpoint = {
+            breakpoint,
+            model,
+          };
+        }
+
         const { selectedBreakpoint } = this;
+
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;
           let defaultContext: TSourceBrekpointProperties = 'condition';
@@ -434,7 +468,6 @@ export class DebugContribution
         }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
-      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
@@ -598,11 +631,21 @@ export class DebugContribution
     });
 
     registry.registerItem({
-      id: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
-      command: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      id: DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS.id,
       iconClass: getIcon('deactivate-breakpoints'),
       viewId: DEBUG_BREAKPOINTS_ID,
-      tooltip: localize('debug.breakpoint.toggle'),
+      tooltip: localize('debug.breakpoint.deactive'),
+      when: CONTEXT_ACTIVE_BREAKPOINTS.equalsTo(true),
+    });
+
+    registry.registerItem({
+      id: DEBUG_COMMANDS.ACTIVE_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.ACTIVE_BREAKPOINTS.id,
+      iconClass: `${getIcon('activate-breakpoints')} ${breakpointViewStyles.debug_activate_breakpoints_icon}`,
+      viewId: DEBUG_BREAKPOINTS_ID,
+      tooltip: localize('debug.breakpoint.active'),
+      when: CONTEXT_ACTIVE_BREAKPOINTS.equalsTo(false),
     });
     /**
      * end

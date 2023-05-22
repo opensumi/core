@@ -17,6 +17,7 @@ import {
   IDisposable,
   toDisposable,
   createElectronClientConnection,
+  IApplicationService,
 } from '@opensumi/ide-core-browser';
 
 import {
@@ -46,6 +47,9 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
   @Autowired(ExtensionNodeServiceServerPath)
   private readonly extensionNodeClient: IExtensionNodeClientService;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   private _apiFactoryDisposables: IDisposable[] = [];
 
@@ -136,17 +140,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   private get clientId() {
-    let clientId: string;
-
-    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
-      this.logger.verbose('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
-      clientId = electronEnv.metadata.windowClientId;
-    } else {
-      const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      clientId = WSChannelHandler.clientId;
-    }
-
-    return clientId;
+    return this.applicationService.clientId;
   }
 
   private async createExtProcess() {

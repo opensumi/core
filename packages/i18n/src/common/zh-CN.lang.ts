@@ -402,6 +402,9 @@ export const localizationBundle = {
     'preference.explorer.fileTree.indent.title': '资源管理器：文件树子节点缩进',
     'preference.explorer.fileTree.baseIndent.title': '资源管理器：文件树基础缩进',
     'preference.debug.toolbar.float.title': '运行与调试：浮层模式',
+    'preference.debug.breakpoint.editorHint.title': '控制是否开启编辑器断点闪烁提示',
+    'preference.debug.breakpoint.editorHint': '启用后，点击断点列表跳转到编辑器时，会有背景色闪烁提示',
+
     'preference.debug.console.filter.mode': '调试控制台筛选器模式',
     'preference.debug.console.filter.mode.filter': '过滤模式',
     'preference.debug.console.filter.mode.matcher': '匹配模式',

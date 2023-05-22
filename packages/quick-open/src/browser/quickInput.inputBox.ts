@@ -136,8 +136,10 @@ export class InputBoxImpl {
               }
               if (!error && mode === Mode.OPEN) {
                 this.onDidAcceptEmitter.fire(lookFor);
-                this.quickTitleBar.hide();
-                return true;
+                if (this.options.hideOnDidAccept) {
+                  this.quickTitleBar.hide();
+                  return true;
+                }
               }
               return false;
             },

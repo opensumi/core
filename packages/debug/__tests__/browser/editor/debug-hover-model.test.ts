@@ -18,7 +18,6 @@ describe('Debug Hover Model', () => {
 
   it('should have enough API', () => {
     expect(typeof debugHoverModel.init).toBe('function');
-    expect(typeof debugHoverModel.onWillUpdate).toBe('function');
     expect(mockRoot.watcher.on).toBeCalledTimes(3);
   });
 

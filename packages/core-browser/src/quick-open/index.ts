@@ -542,6 +542,11 @@ export interface QuickInputOptions {
    * otherwise the defined range will be selected.
    */
   valueSelection?: [number, number];
+  /**
+   * Set to `false` to keep the input box open when onDidAccept trigger
+   * default is true
+   */
+  hideOnDidAccept?: boolean;
 
   /**
    * An optional function that will be called to validate input and to give a hint

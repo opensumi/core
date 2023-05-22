@@ -28,6 +28,13 @@ export const TOP_STACK_FRAME_DECORATION: monaco.editor.IModelDecorationOptions =
   stickiness: STICKINESS,
 };
 
+export const FOCUS_BREAKPOINTS_STACK_FRAME_DECORATION: monaco.editor.IModelDecorationOptions = {
+  description: 'focus-breakpoints-stack-frame-line',
+  isWholeLine: true,
+  className: 'sumi-focus-breakpoints-stack-frame-line',
+  stickiness: STICKINESS,
+};
+
 export const TOP_STACK_FRAME_EXCEPTION_DECORATION: monaco.editor.IModelDecorationOptions = {
   description: 'debug-top-stack-frame-exception-line',
   isWholeLine: true,
