@@ -5,6 +5,9 @@ import { DebugState } from './debug-session';
 
 export { DEBUG_CONSOLE_CONTAINER_ID, DEBUG_CONTAINER_ID };
 
+export const LAUNCH_VIEW_SCHEME = 'launch_view_scheme';
+export const LAUNCH_VIEW_COMPONENT_ID = 'launch-view';
+
 export const DEBUG_MEMORY_SCHEME = 'vscode-debug-memory';
 
 export const DEBUG_WATCH_ID = 'debug-watch';

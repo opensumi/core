@@ -32,7 +32,7 @@ import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } fro
 import { DebugSessionOptions } from '../common';
 import { DebugConfiguration } from '../common';
 
-import { CONTEXT_DEBUGGERS_AVAILABLE } from './../common/constants';
+import { CONTEXT_DEBUGGERS_AVAILABLE, LAUNCH_VIEW_SCHEME } from './../common/constants';
 import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugPreferences } from './debug-preferences';
 
@@ -266,6 +266,21 @@ export class DebugConfigurationManager {
     }
   }
 
+  async openLaunchEditor(): Promise<void> {
+    if (!this.model) {
+      return;
+    }
+
+    const uri = this.model.uri;
+    if (!uri) {
+      return;
+    }
+
+    await this.workbenchEditorService.open(uri.withScheme(LAUNCH_VIEW_SCHEME), {
+      disableNavigate: true,
+    });
+  }
+
   async addConfiguration(uri?: string): Promise<void> {
     let model: DebugConfigurationModel | undefined;
     if (uri) {
@@ -361,7 +376,7 @@ export class DebugConfigurationManager {
     if (!uri) {
       uri = await this.doCreate(model);
     }
-    return this.workbenchEditorService.open(uri.withScheme('launch_view_scheme'), {
+    return this.workbenchEditorService.open(uri, {
       disableNavigate: true,
     });
   }
