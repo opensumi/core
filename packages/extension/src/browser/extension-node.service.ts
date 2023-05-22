@@ -187,6 +187,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     const mainThreadProtocol = new RPCProtocol({
       onMessage,
       send,
+      timeout: this.appConfig.rpcMessageTimeout,
     });
 
     // 重启/重连时直接覆盖前一个连接

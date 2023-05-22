@@ -68,7 +68,13 @@ export interface IBasicTreeData {
    * 图标
    */
   icon?: string;
+  className?: string;
   iconClassName?: string;
+  twisterClassName?: string;
+  /**
+   * if this node is not a composite node, it will use a empty div placeholder to fill the space
+   */
+  twisterPlaceholderClassName?: string;
   /**
    * 描述
    */
@@ -76,9 +82,10 @@ export interface IBasicTreeData {
   /**
    * 子节点
    *
-   * 传入一个空数组可让本节点视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
+   * 传入一个空数组可让本节点被视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
    */
   children?: IBasicTreeData[] | null;
+  indentOffset?: number;
   /**
    * 是否默认展开
    */
@@ -96,6 +103,8 @@ export interface IBasicTreeData {
    */
   [key: string]: any;
 }
+
+export type TBasicTreeNodeOrCompositeTreeNode = BasicCompositeTreeNode | BasicTreeNode;
 
 export interface IBasicRecycleTreeHandle extends IRecycleTreeHandle {
   selectItem: (item: BasicCompositeTreeNode | BasicTreeNode) => Promise<void>;
@@ -160,6 +169,7 @@ export interface IBasicRecycleTreeProps {
    * 箭头点击事件
    */
   onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
+  onIconClick?: (event: React.MouseEvent, node: TBasicTreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单定义，但传入了 `onContextMenu` 函数时将有限执行 `onContextMenu` 函数
    */
@@ -186,8 +196,6 @@ export interface IBasicRecycleTreeProps {
    * 指定 RecycleTree 的名字
    */
   treeName?: string;
-
-  getItemClassName?: (item?: ITreeNodeOrCompositeTreeNode) => string | undefined;
 }
 
 export interface IBasicNodeProps {
@@ -203,6 +211,10 @@ export interface IBasicNodeProps {
    * 每层的节点缩进长度
    */
   indent?: number;
+  /**
+   * 基础缩进。即第一层距离左边的距离，默认为 8
+   */
+  baseIndent?: number;
   /**
    * 节点装饰
    */
@@ -223,6 +235,7 @@ export interface IBasicNodeProps {
    * 箭头点击事件
    */
   onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
+  onIconClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单定义，但传入了 `onContextMenu` 函数时将优先执行 `onContextMenu` 函数
    */

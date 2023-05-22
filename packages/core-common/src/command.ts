@@ -321,7 +321,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     const err = new Error(
       `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`,
     );
-    err.name = HANDLER_NOT_FOUND;
+    err.name = `${HANDLER_NOT_FOUND}:${commandId}`;
     throw err;
   }
 
