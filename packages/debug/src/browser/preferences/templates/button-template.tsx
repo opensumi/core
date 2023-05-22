@@ -8,8 +8,8 @@ import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/action
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { Disposable, localize } from '@opensumi/ide-core-common';
-import { ILaunchService } from '@opensumi/ide-debug';
 
+import { ILaunchService } from '../../../common';
 import { LaunchService } from '../launch.service';
 
 import styles from './json-templates.module.less';
