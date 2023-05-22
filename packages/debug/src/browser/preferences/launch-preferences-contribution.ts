@@ -8,7 +8,10 @@ import {
   MaybePromise,
   localize,
   getIcon,
+  COMMON_COMMANDS,
 } from '@opensumi/ide-core-browser';
+import { IMenuRegistry, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next/base';
+import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next/menu-id';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
@@ -18,11 +21,10 @@ import {
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
 
+import { LAUNCH_VIEW_COMPONENT_ID, LAUNCH_VIEW_SCHEME } from '../../common/constants';
+
 import { launchPreferencesSchema } from './launch-preferences';
 import { LaunchViewContainer } from './launch.view';
-
-const LAUNCH_VIEW_SCHEME = 'launch_view_scheme';
-const LAUNCH_VIEW_COMPONENT_ID = 'launch-view';
 
 @Injectable()
 export class LaunchResourceProvider implements IResourceProvider {
@@ -46,9 +48,9 @@ export class LaunchResourceProvider implements IResourceProvider {
   }
 }
 
-@Domain(PreferenceContribution, PreferenceConfiguration, BrowserEditorContribution)
+@Domain(PreferenceContribution, PreferenceConfiguration, BrowserEditorContribution, MenuContribution)
 export class LaunchPreferencesContribution
-  implements PreferenceContribution, PreferenceConfiguration, BrowserEditorContribution
+  implements PreferenceContribution, PreferenceConfiguration, BrowserEditorContribution, MenuContribution
 {
   @Autowired(LaunchResourceProvider)
   private readonly prefResourceProvider: LaunchResourceProvider;
@@ -74,6 +76,15 @@ export class LaunchPreferencesContribution
           componentId: LAUNCH_VIEW_COMPONENT_ID,
         },
       ]);
+    });
+  }
+
+  registerMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id,
+      iconClass: getIcon('open'),
+      group: 'navigation',
+      when: `resourceScheme == ${LAUNCH_VIEW_SCHEME}`,
     });
   }
 }
