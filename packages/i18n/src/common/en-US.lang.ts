@@ -278,6 +278,7 @@ export const localizationBundle = {
     'scm.dirtyDiff.changes': '{0} of {1} changes',
 
     'debug.action.add.configuration': 'Add Configuration...',
+    'debug.action.open.launch.editor': 'Open in launch editor',
     'debug.action.no.configuration': 'No Configurations',
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',

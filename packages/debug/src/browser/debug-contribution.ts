@@ -86,6 +86,10 @@ import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
+enum LAUNCH_OPEN {
+  json,
+  editor,
+}
 
 export namespace DebugBreakpointWidgetCommands {
   export const ACCEPT = {
@@ -357,7 +361,11 @@ export class DebugContribution
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION, {
-      execute: () => {
+      execute: (type: LAUNCH_OPEN = LAUNCH_OPEN.json) => {
+        if (type === LAUNCH_OPEN.editor) {
+          return this.debugConfigurationService.openLaunchEditor();
+        }
+
         this.debugConfigurationService.openConfiguration();
       },
     });

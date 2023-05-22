@@ -129,6 +129,10 @@ export class DebugConfigurationService {
     this.debugConfigurationManager.openConfiguration(uri);
   };
 
+  openLaunchEditor = () => {
+    this.debugConfigurationManager.openLaunchEditor();
+  };
+
   openDebugConsole = () => {
     this.debugConsoleService.activate();
   };
