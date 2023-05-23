@@ -8,6 +8,8 @@ import { OpenerContribution } from '../opener';
 import { ElectronOpenerContributionClient } from '../opener/opener-electron.contribution';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';
 
+import { ClientElectronCommonContribution } from './common-electron.contribution';
+import { ClientWebCommonContribution } from './common-web.contribution';
 import { ClientCommonContribution } from './common.contribution';
 
 @Injectable()
@@ -15,6 +17,8 @@ export class ClientCommonModule extends BrowserModule {
   contributionProvider = [OpenerContribution];
   providers = [
     ClientCommonContribution,
+    ClientElectronCommonContribution,
+    ClientWebCommonContribution,
     DefaultOpenerContribution,
     OpenerContributionClient,
     AuthenticationContribution,
