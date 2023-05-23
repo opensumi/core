@@ -19,6 +19,8 @@ export class BasicModule {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
   providers?: Provider[];
+  electronProviders?: Provider[];
+  webProviders?: Provider[];
   backServices?: BackService[];
   frontServices?: FrontService[];
   contributionProvider: Domain | Domain[];

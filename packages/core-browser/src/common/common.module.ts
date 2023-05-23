@@ -1,4 +1,4 @@
-import { Injectable } from '@opensumi/di';
+import { Injectable, Autowired, Provider } from '@opensumi/di';
 import { CommonServerPath, CryptoServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
 
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
@@ -17,14 +17,15 @@ export class ClientCommonModule extends BrowserModule {
   contributionProvider = [OpenerContribution];
   providers = [
     ClientCommonContribution,
-    ClientElectronCommonContribution,
-    ClientWebCommonContribution,
     DefaultOpenerContribution,
     OpenerContributionClient,
     AuthenticationContribution,
     HashCalculateContribution,
-    ElectronOpenerContributionClient,
-  ];
+  ] as Provider[];
+
+  electronProviders = [ClientElectronCommonContribution, ElectronOpenerContributionClient];
+  webProviders = [ClientWebCommonContribution];
+
   backServices = [
     {
       servicePath: CommonServerPath,

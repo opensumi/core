@@ -302,6 +302,14 @@ export class ClientApp implements IClientApp, IDisposable {
         this.injector.addProviders(...instance.providers);
       }
 
+      if (this.config.isElectronRenderer && instance.electronProviders) {
+        this.injector.addProviders(...instance.electronProviders);
+      }
+
+      if (!this.config.isElectronRenderer && instance.webProviders) {
+        this.injector.addProviders(...instance.webProviders);
+      }
+
       if (instance.preferences) {
         instance.preferences(this.injector);
       }

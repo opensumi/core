@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { CommandService, localize, Domain } from '@opensumi/ide-core-common';
+import { localize, Domain } from '@opensumi/ide-core-common';
 
 import { MenuContribution, IMenuRegistry } from '../menu/next/base';
 import { MenuId } from '../menu/next/menu-id';
@@ -7,81 +7,76 @@ import { AppConfig } from '../react-providers/config-provider';
 
 @Domain(MenuContribution)
 export class ClientElectronCommonContribution implements MenuContribution {
-  @Autowired(CommandService)
-  protected commandService: CommandService;
-
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
   registerMenus(menus: IMenuRegistry): void {
-    if (this.appConfig.isElectronRenderer) {
-      // 注册 Menubar
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, {
-        label: localize('app.name', this.appConfig.appName),
-        order: 0,
-      });
+    // 注册 Menubar
+    menus.registerMenubarItem(MenuId.MenubarAppMenu, {
+      label: localize('app.name', this.appConfig.appName),
+      order: 0,
+    });
 
-      // Edit 菜单
-      menus.registerMenuItems(MenuId.MenubarEditMenu, [
-        {
-          command: {
-            id: 'electron.undo',
-            label: localize('editor.undo'),
-          },
-          nativeRole: 'undo',
-          group: '1_undo',
+    // Edit 菜单
+    menus.registerMenuItems(MenuId.MenubarEditMenu, [
+      {
+        command: {
+          id: 'electron.undo',
+          label: localize('editor.undo'),
         },
-        {
-          command: {
-            id: 'electron.redo',
-            label: localize('editor.redo'),
-          },
-          group: '1_undo',
-          nativeRole: 'redo',
+        nativeRole: 'undo',
+        group: '1_undo',
+      },
+      {
+        command: {
+          id: 'electron.redo',
+          label: localize('editor.redo'),
         },
-        {
-          command: {
-            label: localize('edit.cut'),
-            id: 'electron.cut',
-          },
-          nativeRole: 'cut',
-          group: '2_clipboard',
+        group: '1_undo',
+        nativeRole: 'redo',
+      },
+      {
+        command: {
+          label: localize('edit.cut'),
+          id: 'electron.cut',
         },
-        {
-          command: {
-            label: localize('edit.copy'),
-            id: 'electron.copy',
-          },
-          nativeRole: 'copy',
-          group: '2_clipboard',
+        nativeRole: 'cut',
+        group: '2_clipboard',
+      },
+      {
+        command: {
+          label: localize('edit.copy'),
+          id: 'electron.copy',
         },
-        {
-          command: {
-            label: localize('edit.paste'),
-            id: 'electron.paste',
-          },
-          nativeRole: 'paste',
-          group: '2_clipboard',
+        nativeRole: 'copy',
+        group: '2_clipboard',
+      },
+      {
+        command: {
+          label: localize('edit.paste'),
+          id: 'electron.paste',
         },
-        {
-          command: {
-            label: localize('edit.selectAll'),
-            id: 'electron.selectAll',
-          },
-          nativeRole: 'selectAll',
-          group: '2_clipboard',
+        nativeRole: 'paste',
+        group: '2_clipboard',
+      },
+      {
+        command: {
+          label: localize('edit.selectAll'),
+          id: 'electron.selectAll',
         },
-      ]);
-      menus.registerMenuItems(MenuId.MenubarAppMenu, [
-        {
-          command: {
-            id: 'electron.quit',
-            label: localize('app.quit'),
-          },
-          nativeRole: 'quit',
-          group: '4_quit',
+        nativeRole: 'selectAll',
+        group: '2_clipboard',
+      },
+    ]);
+    menus.registerMenuItems(MenuId.MenubarAppMenu, [
+      {
+        command: {
+          id: 'electron.quit',
+          label: localize('app.quit'),
         },
-      ]);
-    }
+        nativeRole: 'quit',
+        group: '4_quit',
+      },
+    ]);
   }
 }
