@@ -279,7 +279,9 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
-    injectElectronInnerProviders(this.injector);
+    if (this.config.isElectronRenderer) {
+      injectElectronInnerProviders(this.injector);
+    }
   }
 
   private initFields() {

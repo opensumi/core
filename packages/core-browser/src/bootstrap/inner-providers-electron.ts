@@ -19,32 +19,30 @@ export function injectElectronInnerProviders(injector: Injector) {
   const appConfig: AppConfig = injector.get(AppConfig);
 
   // Add special API services for Electron, mainly services that make calls to `Electron Main` process.
-  if (appConfig.isElectronRenderer) {
-    injector.addProviders(
-      {
-        token: IElectronMainMenuService,
-        useValue: createElectronMainApi(IElectronMainMenuService, appConfig.devtools),
-      },
-      {
-        token: IElectronMainUIService,
-        useValue: createElectronMainApi(IElectronMainUIService, appConfig.devtools),
-      },
-      {
-        token: IElectronMainLifeCycleService,
-        useValue: createElectronMainApi(IElectronMainLifeCycleService, appConfig.devtools),
-      },
-      {
-        token: IElectronURLService,
-        useValue: createElectronMainApi(IElectronURLService, appConfig.devtools),
-      },
-      {
-        token: IElectronMenuFactory,
-        useClass: ElectronMenuFactory,
-      },
-      {
-        token: IElectronMenuBarService,
-        useClass: ElectronMenuBarService,
-      },
-    );
-  }
+  injector.addProviders(
+    {
+      token: IElectronMainMenuService,
+      useValue: createElectronMainApi(IElectronMainMenuService, appConfig.devtools),
+    },
+    {
+      token: IElectronMainUIService,
+      useValue: createElectronMainApi(IElectronMainUIService, appConfig.devtools),
+    },
+    {
+      token: IElectronMainLifeCycleService,
+      useValue: createElectronMainApi(IElectronMainLifeCycleService, appConfig.devtools),
+    },
+    {
+      token: IElectronURLService,
+      useValue: createElectronMainApi(IElectronURLService, appConfig.devtools),
+    },
+    {
+      token: IElectronMenuFactory,
+      useClass: ElectronMenuFactory,
+    },
+    {
+      token: IElectronMenuBarService,
+      useClass: ElectronMenuBarService,
+    },
+  );
 }
