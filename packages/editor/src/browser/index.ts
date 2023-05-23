@@ -28,6 +28,7 @@ import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl 
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
+import { EditorElectronContribution } from './editor-electron.contribution';
 import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
 import { EditorFeatureRegistryImpl } from './feature';
@@ -167,6 +168,7 @@ export class EditorModule extends BrowserModule {
     MergeEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
+    EditorElectronContribution,
     CompareEditorContribution,
     EditorAutoSaveEditorContribution,
     SaveParticipantsContribution,
