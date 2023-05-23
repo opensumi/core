@@ -102,7 +102,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   private getWindowId() {
-    return this.applicationService.clientId;
+    return this.applicationService.windowId;
   }
 
   async $asExternalUri(target: vscode.Uri): Promise<UriComponents> {
