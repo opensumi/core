@@ -73,6 +73,7 @@ import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleCo
 import { renderClientApp, IAppRenderer } from './app.view';
 import { createClientConnection2, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
+import { injectElectronInnerProviders } from './inner-providers-electron';
 
 // 添加resize observer polyfill
 if (typeof (window as any).ResizeObserver === 'undefined') {
@@ -278,6 +279,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
+    injectElectronInnerProviders(this.injector);
   }
 
   private initFields() {

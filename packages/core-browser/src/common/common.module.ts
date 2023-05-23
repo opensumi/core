@@ -5,6 +5,7 @@ import { AuthenticationContribution } from '../authentication/authentication.con
 import { BrowserModule } from '../browser-module';
 import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 import { OpenerContribution } from '../opener';
+import { ElectronOpenerContributionClient } from '../opener/opener-electron.contribution';
 import { DefaultOpenerContribution, OpenerContributionClient } from '../opener/opener.contribution';
 
 import { ClientCommonContribution } from './common.contribution';
@@ -18,6 +19,7 @@ export class ClientCommonModule extends BrowserModule {
     OpenerContributionClient,
     AuthenticationContribution,
     HashCalculateContribution,
+    ElectronOpenerContributionClient,
   ];
   backServices = [
     {
