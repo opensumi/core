@@ -103,13 +103,6 @@ export class ClientCommonContribution
   }
 
   registerMenus(menus: IMenuRegistry): void {
-    // 注册 Menubar
-    if (this.appConfig.isElectronRenderer) {
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, {
-        label: localize('app.name', this.appConfig.appName),
-        order: 0,
-      });
-    }
     menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
     menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
     menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
@@ -232,30 +225,6 @@ export class ClientCommonContribution
         group: '1_terminal',
       },
     ]);
-
-    // Edit 菜单
-    if (this.appConfig.isElectronRenderer) {
-    } else {
-      menus.registerMenuItems(MenuId.MenubarEditMenu, [
-        {
-          command: EDITOR_COMMANDS.REDO.id,
-          group: '1_undo',
-        },
-        {
-          command: EDITOR_COMMANDS.UNDO.id,
-          group: '1_undo',
-        },
-      ]);
-      // 帮助菜单
-      menus.registerMenuItem(MenuId.MenubarHelpMenu, {
-        command: {
-          id: COMMON_COMMANDS.ABOUT_COMMAND.id,
-          label: COMMON_COMMANDS.ABOUT_COMMAND.label!,
-        },
-        nativeRole: 'about',
-        group: '0_about',
-      });
-    }
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

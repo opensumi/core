@@ -44,14 +44,5 @@ export class OpenerContributionClient implements ClientAppContribution {
     for (const contribution of contributions) {
       contribution.registerOpener(this.openerService);
     }
-
-    if (this.appConfig.isElectronRenderer) {
-      const electronRendererURLService: IElectronRendererURLService = this.injector.get(IElectronURLService);
-      electronRendererURLService.on('open-url', (payload) => {
-        if (electronEnv.currentWindowId === payload.windowId) {
-          this.openerService.open(payload.url);
-        }
-      });
-    }
   }
 }
