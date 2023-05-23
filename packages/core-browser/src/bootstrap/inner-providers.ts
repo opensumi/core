@@ -8,7 +8,6 @@ import {
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
-  IElectronMainMenuService,
   ReporterMetadata,
   IReporter,
   IReporterService,
@@ -26,11 +25,6 @@ import {
   AppLifeCycleServiceToken,
   IExtensionsSchemaService,
 } from '@opensumi/ide-core-common';
-import {
-  IElectronMainUIService,
-  IElectronMainLifeCycleService,
-  IElectronURLService,
-} from '@opensumi/ide-core-common/lib/electron';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
@@ -63,13 +57,7 @@ import {
 } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
-import {
-  ElectronCtxMenuRenderer,
-  ElectronMenuBarService,
-  IElectronMenuFactory,
-  IElectronMenuBarService,
-  ElectronMenuFactory,
-} from '../menu/next/renderer/ctxmenu/electron';
+import { ElectronCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/electron';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
 import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
@@ -84,7 +72,6 @@ import { IExternalUriService, ExternalUriService } from '../services/external-ur
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
-import { createElectronMainApi } from '../utils/electron';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
@@ -264,34 +251,4 @@ export function injectInnerProviders(injector: Injector) {
     },
   ];
   injector.addProviders(...providers);
-
-  // Add special API services for Electron, mainly services that make calls to `Electron Main` process.
-  if (appConfig.isElectronRenderer) {
-    injector.addProviders(
-      {
-        token: IElectronMainMenuService,
-        useValue: createElectronMainApi(IElectronMainMenuService, appConfig.devtools),
-      },
-      {
-        token: IElectronMainUIService,
-        useValue: createElectronMainApi(IElectronMainUIService, appConfig.devtools),
-      },
-      {
-        token: IElectronMainLifeCycleService,
-        useValue: createElectronMainApi(IElectronMainLifeCycleService, appConfig.devtools),
-      },
-      {
-        token: IElectronURLService,
-        useValue: createElectronMainApi(IElectronURLService, appConfig.devtools),
-      },
-      {
-        token: IElectronMenuFactory,
-        useClass: ElectronMenuFactory,
-      },
-      {
-        token: IElectronMenuBarService,
-        useClass: ElectronMenuBarService,
-      },
-    );
-  }
 }
