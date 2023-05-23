@@ -6,7 +6,6 @@ import {
   KeybindingRegistry,
   EDITOR_COMMANDS,
   Domain,
-  AppConfig,
   electronEnv,
 } from '@opensumi/ide-core-browser';
 import { isOSX, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
@@ -23,9 +22,6 @@ export class EditorElectronContribution extends WithEventBus implements ClientAp
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
-
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -40,23 +36,15 @@ export class EditorElectronContribution extends WithEventBus implements ClientAp
 
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent() {
-    if (this.appConfig.isElectronRenderer) {
-      const hasDirty = this.workbenchEditorService.hasDirty();
-      // setup macos native dirty indicator
-      this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
-    }
+    const hasDirty = this.workbenchEditorService.hasDirty();
+    // setup macos native dirty indicator
+    this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
   }
-
-  onWillStop(app: IClientApp) {
-    if (this.appConfig.isElectronRenderer) {
-      return this.onWillStopElectron();
-    }
-  }
-
   /**
    * Return true in order to prevent exit.
    */
-  async onWillStopElectron() {
+
+  async onWillStop(app: IClientApp) {
     if (await this.workbenchEditorService.closeAllOnlyConfirmOnce()) {
       return true;
     }
@@ -68,30 +56,24 @@ export class EditorElectronContribution extends WithEventBus implements ClientAp
     return false;
   }
 
-  private isElectronRenderer(): boolean {
-    return this.appConfig.isElectronRenderer;
-  }
-
   registerKeybindings(keybindings: KeybindingRegistry): void {
-    if (this.isElectronRenderer()) {
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NEXT.id,
+      keybinding: 'ctrl+tab',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.PREVIOUS.id,
+      keybinding: 'ctrl+shift+tab',
+    });
+    if (isOSX) {
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.NEXT.id,
-        keybinding: 'ctrl+tab',
+        keybinding: 'ctrlcmd+shift+]',
       });
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.PREVIOUS.id,
-        keybinding: 'ctrl+shift+tab',
+        keybinding: 'ctrlcmd+shift+[',
       });
-      if (isOSX) {
-        keybindings.registerKeybinding({
-          command: EDITOR_COMMANDS.NEXT.id,
-          keybinding: 'ctrlcmd+shift+]',
-        });
-        keybindings.registerKeybinding({
-          command: EDITOR_COMMANDS.PREVIOUS.id,
-          keybinding: 'ctrlcmd+shift+[',
-        });
-      }
     }
   }
 }

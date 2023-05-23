@@ -10,10 +10,10 @@ import { AbstractMenubarStore, MenubarStore } from './menu-bar.store';
 export class MenuBarModule extends BrowserModule {
   providers: Provider[] = [
     MenuBarContribution,
-    MenuBarWebContribution,
     {
       token: AbstractMenubarStore,
       useClass: MenubarStore,
     },
   ];
+  webProviders = [MenuBarWebContribution];
 }

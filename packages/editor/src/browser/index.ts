@@ -168,7 +168,6 @@ export class EditorModule extends BrowserModule {
     MergeEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
-    EditorElectronContribution,
     CompareEditorContribution,
     EditorAutoSaveEditorContribution,
     SaveParticipantsContribution,
@@ -178,6 +177,7 @@ export class EditorModule extends BrowserModule {
     LanguageStatusContribution,
     OpenTypeMenuContribution,
   ];
+  electronProviders = [EditorElectronContribution];
   contributionProvider = BrowserEditorContribution;
 }
 
