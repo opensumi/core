@@ -245,6 +245,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
       token: IApplicationService,
       useValue: {
         getBackendOS: () => Promise.resolve(OS.type()),
+        clientId: 'CODE_WINDOW_CLIENT_ID:1',
       },
     },
   );

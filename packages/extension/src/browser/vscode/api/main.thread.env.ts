@@ -1,17 +1,10 @@
 import type vscode from 'vscode';
 
-import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import {
-  IOpenerService,
-  IClipboardService,
-  electronEnv,
-  IExternalUriService,
-  AppConfig,
-} from '@opensumi/ide-core-browser';
+import { IOpenerService, IClipboardService, IExternalUriService, AppConfig } from '@opensumi/ide-core-browser';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
-import { getCodeLanguage, URI, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
+import { getCodeLanguage, URI, firstSessionDateStorageKey, IApplicationService } from '@opensumi/ide-core-common';
 import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -36,11 +29,11 @@ export class MainThreadEnv implements IMainThreadEnv {
   @Autowired(IExternalUriService)
   private readonly externalUriService: IExternalUriService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
+
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   // 检测下支持的协议，以防打开内部协议
   // 支持 http/https/mailto/projectScheme 协议
@@ -109,13 +102,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   private getWindowId() {
-    if (this.appConfig.isElectronRenderer) {
-      return electronEnv.currentWindowId;
-    } else {
-      // web 场景先用 clientId
-      const channelHandler = this.injector.get(WSChannelHandler);
-      return channelHandler.clientId;
-    }
+    return this.applicationService.clientId;
   }
 
   async $asExternalUri(target: vscode.Uri): Promise<UriComponents> {
