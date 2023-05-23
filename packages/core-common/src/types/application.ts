@@ -16,12 +16,7 @@ export interface IApplicationService {
    */
   windowId: string | number;
 
-  /** 前端 OS */
   frontendOS: OperatingSystem;
-  /** 后端 OS */
   backendOS: OperatingSystem;
-  /**
-   * 获取后端 OS
-   */
   getBackendOS(): Promise<OperatingSystem>;
 }
