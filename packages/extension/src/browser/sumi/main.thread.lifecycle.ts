@@ -2,6 +2,7 @@ import { Autowired, Injectable, Injector } from '@opensumi/di';
 import { AppConfig, electronEnv } from '@opensumi/ide-core-browser';
 import { ExtensionCandidate } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+import { throwNonElectronError } from '@opensumi/ide-core-common/lib/error';
 
 import { IMainThreadLifeCycle } from '../../common/sumi/lifecycle';
 
@@ -17,7 +18,7 @@ export class MainThreadLifeCycle implements IMainThreadLifeCycle {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.setExtensionCandidate(candidate, electronEnv.currentWindowId);
     } else {
-      throw new Error('Not implemented');
+      throwNonElectronError('MainThreadLifeCycle.$setExtensionCandidate');
     }
   }
 
@@ -26,7 +27,7 @@ export class MainThreadLifeCycle implements IMainThreadLifeCycle {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       electronMainLifecycle.setExtensionDir(dir, electronEnv.currentWindowId);
     } else {
-      throw new Error('Not implemented');
+      throwNonElectronError('MainThreadLifeCycle.$setExtensionDir');
     }
   }
 }
