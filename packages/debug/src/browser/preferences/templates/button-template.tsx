@@ -61,30 +61,33 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
     onAddClick(item);
   }, []);
 
-  useEffect(() => {
-    if (!schemaProperties || !schemaProperties.properties) {
-      return;
-    }
-
-    if (!rootSchema || !rootSchema.properties) {
-      return;
-    }
-
-    const disabled = new Disposable();
+  const handleSnippetMenu = useCallback(() => {
     const { properties } = schemaProperties;
     const { properties: existedProperties } = rootSchema;
 
-    const updateMenu = () => {
-      setSnippetMenu(
-        Object.keys(properties)
-          // 过滤已存在于视图中的 properties
-          .filter((key) => !Object.hasOwn(existedProperties, key))
-          .map((item) => new LabelMenuItemNode(item)),
-      );
-    };
+    if (!properties || !existedProperties) {
+      return;
+    }
+    // schema
+    const menuItemNode = Object.keys(properties)
+      // 过滤已存在于视图中的 properties
+      .filter((key) => !Object.hasOwn(existedProperties, key))
+      .map((item) => new LabelMenuItemNode(item));
 
-    disabled.addDispose(launchService.onChangeSchema(() => updateMenu()));
-    updateMenu();
+    setSnippetMenu(menuItemNode);
+  }, [rootSchema, schemaProperties]);
+
+  useEffect(() => {
+    const disabled = new Disposable();
+
+    disabled.addDispose(
+      launchService.onChangeSchema(() => {
+        requestAnimationFrame(() => {
+          handleSnippetMenu();
+        });
+      }),
+    );
+    handleSnippetMenu();
 
     return () => disabled.dispose();
   }, [schemaProperties, rootSchema]);
