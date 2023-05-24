@@ -18,16 +18,22 @@ import {
   IJSONSchemaMap,
   isUndefined,
   Disposable,
+  Schemes,
+  CommandService,
+  isObject,
 } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { EDirection, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';
 import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/index';
 
+import { DebugConfiguration } from '../../common/debug-configuration';
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 import { ILaunchService } from '../../common/debug-service';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
+import { parseSnippet } from '../debugUtils';
 
 import { CheckboxWidget } from './components/checkbox-widget';
 import { AnyOfField } from './components/fields/any-of-field';
@@ -55,9 +61,11 @@ import { FieldTemplate } from './templates/field-template';
 import { ObjectFieldTemplate } from './templates/object-field-template';
 
 export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => {
+  const { uri } = resource;
   const schemaRegistry = useInjectable<IJSONSchemaRegistry>(IJSONSchemaRegistry);
   const debugConfigurationManager = useInjectable<DebugConfigurationManager>(DebugConfigurationManager);
   const launchService = useInjectable<LaunchService>(ILaunchService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [schemaContributions, setSchemaContributions] = useState<IJSONSchema>();
   const [currentSnippetItem, setCurrentSnippetItem] = useState<IJSONSchemaSnippet>();
   const [inputConfigurationItems, setInputConfigurationItems] = useState<ConfigurationItemsModel[]>([]);
@@ -84,6 +92,8 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
 
     return () => disposed.dispose();
   }, []);
+
+  const fileUri = useMemo(() => uri.withScheme(Schemes.file), [uri]);
 
   const handleSchemaSnippets = useCallback(
     (contributions: ISchemaContributions) => {
@@ -120,15 +130,11 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
       'items',
       'defaultSnippets',
     ] as (keyof IJSONSchema)[]);
-    return snippets.filter((s) => s.label);
+    return snippets || [];
   }, [schemaContributions]);
 
   const onSelectedConfiguration = useCallback((current: ConfigurationItemsModel) => {
-    const { configuration } = current;
-    // const findItems = snippetItems.find(({ label }) => label === current);
-    // if (!findItems) {
-    //   return;
-    // }
+    const { configuration, description, label } = current;
     if (!configuration) {
       return;
     }
@@ -137,9 +143,19 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
 
     setCurrentSnippetItem({
       body: configuration,
-      label: current.label,
+      description,
+      label,
     });
   }, []);
+
+  const onAddConfigurationItems = useCallback(
+    async (newItems: ConfigurationItemsModel) => {
+      const { configuration } = newItems;
+      await debugConfigurationManager.insertConfiguration(fileUri, configuration);
+      commandService.executeCommand(EDITOR_COMMANDS.SAVE_URI.id, fileUri);
+    },
+    [snippetItems],
+  );
 
   return (
     <ComponentContextProvider value={{ getIcon, localize }}>
@@ -156,6 +172,7 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
             inputConfigurationItems={inputConfigurationItems}
             snippetItems={snippetItems}
             onSelectedConfiguration={onSelectedConfiguration}
+            onAddConfigurationItems={onAddConfigurationItems}
           />
           <LaunchBody data-sp-flex={1} snippetItem={currentSnippetItem} schemaContributions={schemaContributions} />
         </SplitPanel>
@@ -167,25 +184,20 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
 const LaunchIndexs = ({
   snippetItems,
   onSelectedConfiguration,
+  onAddConfigurationItems,
   inputConfigurationItems,
 }: {
   snippetItems: IJSONSchemaSnippet[];
   onSelectedConfiguration: (data: ConfigurationItemsModel) => void;
+  onAddConfigurationItems: (data: ConfigurationItemsModel) => void;
   inputConfigurationItems: ConfigurationItemsModel[];
 }) => {
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
   const [configurationItems, setConfigurationItems] = useState<ConfigurationItemsModel[]>(inputConfigurationItems);
-  const [currentCheckItem, setCurrentCheckItem] = useState<string>();
 
   useEffect(() => {
     setConfigurationItems([...inputConfigurationItems]);
   }, [inputConfigurationItems]);
-
-  useEffect(() => {
-    if (currentCheckItem) {
-      // onSelectedConfiguration(currentCheckItem);
-    }
-  }, [currentCheckItem]);
 
   const handleConfigurationItemsClick = useCallback((data: ConfigurationItemsModel) => {
     onSelectedConfiguration(data);
@@ -202,9 +214,42 @@ const LaunchIndexs = ({
   const handleMenuItemClick = useCallback(
     (item: LabelMenuItemNode) => {
       setMenuOpen(false);
-      // setConfigurationItems([...configurationItems, item.label]);
+
+      const { label } = item;
+      const findItem = snippetItems.find((snippet) => snippet.label === label);
+      if (!findItem) {
+        return;
+      }
+
+      const { body } = findItem;
+      if (!isObject(body)) {
+        return;
+      }
+
+      // 将 body 里一些形如 ${1:xxxx} 这样的符号给过滤掉
+      const parseBody: DebugConfiguration = Object.keys(body).reduce((pre: DebugConfiguration, cur: string) => {
+        const curValue = body[cur];
+
+        if (typeof curValue === 'string') {
+          pre[cur] = parseSnippet(curValue);
+        } else if (Array.isArray(curValue)) {
+          pre[cur] = curValue.map((value: any) => {
+            if (typeof value == 'string') {
+              return parseSnippet(value);
+            }
+            return value;
+          });
+        }
+
+        return pre;
+      }, body);
+
+      const itemModel = new ConfigurationItemsModel(findItem.label!, parseBody);
+      itemModel.setDescription(findItem.description || '');
+
+      onAddConfigurationItems(itemModel);
     },
-    [configurationItems],
+    [configurationItems, snippetItems],
   );
 
   const handleVisibleChange = (visible: boolean) => {

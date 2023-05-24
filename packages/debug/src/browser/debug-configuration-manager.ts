@@ -20,12 +20,15 @@ import {
   CommonLanguageId,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService, IOpenResourceResult } from '@opensumi/ide-editor';
+import { EditorCollectionService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileSystemError } from '@opensumi/ide-file-service';
+import { EOL } from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { QuickPickService } from '@opensumi/ide-quick-open';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
+import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
@@ -86,6 +89,12 @@ export class DebugConfigurationManager {
 
   @Autowired(DebugPreferences)
   protected readonly debugPreferences: DebugPreferences;
+
+  @Autowired(IEditorDocumentModelService)
+  protected readonly documentService: IEditorDocumentModelService;
+
+  @Autowired(EditorCollectionService)
+  protected readonly editorCollectionService: EditorCollectionService;
 
   private contextDebuggersAvailable: IContextKey<boolean>;
 
@@ -281,6 +290,61 @@ export class DebugConfigurationManager {
     });
   }
 
+  private visitConfigurationsEditor(model: ITextModel): monaco.Position | undefined {
+    let position: monaco.Position | undefined;
+    let depthInArray = 0;
+    let lastProperty = '';
+    visit(model.getValue(), {
+      onObjectProperty: (property) => {
+        lastProperty = property;
+      },
+      onArrayBegin: (offset) => {
+        if (lastProperty === 'configurations' && depthInArray === 0) {
+          position = model.getPositionAt(offset + 1);
+        }
+        depthInArray++;
+      },
+      onArrayEnd: () => {
+        depthInArray--;
+      },
+    });
+
+    return position;
+  }
+
+  async insertConfiguration(uri: URI, configuration: DebugConfiguration): Promise<void> {
+    let ref = this.documentService.getModelReference(uri);
+    if (!ref) {
+      ref = await this.documentService.createModelReference(uri);
+    }
+
+    const model = ref.instance.getMonacoModel();
+    const eol = model.getEOL();
+    const position: monaco.Position | undefined = this.visitConfigurationsEditor(model);
+    if (!position) {
+      return;
+    }
+
+    const { indentSize, insertSpaces } = model.getOptions();
+    // 获取 configurations 字符串前面的空格个数
+    const spacesMatch = model.getLineContent(position.lineNumber).match(/^\s*/);
+    const leadingSpaces = spacesMatch ? spacesMatch[0].length : 0;
+    const indent = insertSpaces ? ' '.repeat(indentSize + leadingSpaces) : '\t';
+
+    const decompose = JSON.stringify(configuration, null, indentSize).split(EOL.LF);
+    const length = decompose.length;
+    const indentContent = decompose.reduce(
+      (pre, cur, index) => pre + indent + cur + (index === length - 1 ? '' : EOL.LF),
+      '',
+    );
+
+    model.pushEditOperations(
+      null,
+      [EditOperation.insert(position, eol), EditOperation.insert(position, indentContent + ',')],
+      () => null,
+    );
+  }
+
   async addConfiguration(uri?: string): Promise<void> {
     let model: DebugConfigurationModel | undefined;
     if (uri) {
@@ -301,26 +365,11 @@ export class DebugConfigurationManager {
       return;
     }
 
-    let position: monaco.Position | undefined;
-    let depthInArray = 0;
-    let lastProperty = '';
-    visit(editor.getValue(), {
-      onObjectProperty: (property) => {
-        lastProperty = property;
-      },
-      onArrayBegin: (offset) => {
-        if (lastProperty === 'configurations' && depthInArray === 0) {
-          position = editor.getModel()!.getPositionAt(offset + 1);
-        }
-        depthInArray++;
-      },
-      onArrayEnd: () => {
-        depthInArray--;
-      },
-    });
+    const position: monaco.Position | undefined = this.visitConfigurationsEditor(editor.getModel()!);
     if (!position) {
       return;
     }
+
     // 判断在"configurations": [后是否有字符，如果有则新建一行
     if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber) > position.column) {
       editor.setPosition(position);
