@@ -20,6 +20,7 @@ import React, { useCallback, useMemo } from 'react';
 
 import { getIcon } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { Key } from '@opensumi/ide-core-browser';
 
 import { ILaunchService } from '../../../common/debug-service';
 import { LaunchService } from '../launch.service';
@@ -102,7 +103,16 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
       const required = schemaProperties.required || [];
 
       return (
-        <div key={node.name} className={styles.property_wrapper}>
+        <div
+          key={node.name}
+          className={styles.property_wrapper}
+          onKeyDown={(event) => {
+            if (event.key === Key.ENTER.code) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
+        >
           {node.content}
           {/* 非 root 节点不允许删除 */}
           {required.includes(node.name) || idSchema.$id !== 'root' ? null : (

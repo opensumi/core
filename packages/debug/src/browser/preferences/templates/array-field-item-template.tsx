@@ -6,7 +6,7 @@ import {
   StrictRJSFSchema,
 } from '@rjsf/utils';
 import cls from 'classnames';
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo } from 'react';
 
 import styles from './json-templates.module.less';
 
@@ -43,6 +43,11 @@ export const ArrayFieldItemTemplate = <
   } = props;
   const { CopyButton, MoveDownButton, MoveUpButton, RemoveButton } = registry.templates.ButtonTemplates;
 
+  const onCopyClick = useMemo(() => onCopyIndexClick(index), [index, onCopyIndexClick]);
+  const onRemoveClick = useMemo(() => onDropIndexClick(index), [index, onDropIndexClick]);
+  const onArrowUpClick = useMemo(() => onReorderClick(index, index - 1), [index, onReorderClick]);
+  const onArrowDownClick = useMemo(() => onReorderClick(index, index + 1), [index, onReorderClick]);
+
   return (
     <div key={`array-item-${index}`} className={cls(className, styles.array_field_item_template)}>
       <div className={styles.control_field}>{React.cloneElement(children, { name: '' })}</div>
@@ -53,7 +58,7 @@ export const ArrayFieldItemTemplate = <
             {(hasMoveUp || hasMoveDown) && (
               <MoveUpButton
                 disabled={disabled || readonly || !hasMoveUp}
-                onClick={onReorderClick(index, index - 1)}
+                onClick={onArrowUpClick}
                 style={BTN_STYLE}
                 registry={registry}
               />
@@ -61,23 +66,18 @@ export const ArrayFieldItemTemplate = <
             {(hasMoveUp || hasMoveDown) && (
               <MoveDownButton
                 disabled={disabled || readonly || !hasMoveDown}
-                onClick={onReorderClick(index, index + 1)}
+                onClick={onArrowDownClick}
                 style={BTN_STYLE}
                 registry={registry}
               />
             )}
             {hasCopy && (
-              <CopyButton
-                disabled={disabled || readonly}
-                onClick={onCopyIndexClick(index)}
-                style={BTN_STYLE}
-                registry={registry}
-              />
+              <CopyButton disabled={disabled || readonly} onClick={onCopyClick} style={BTN_STYLE} registry={registry} />
             )}
             {hasRemove && (
               <RemoveButton
                 disabled={disabled || readonly}
-                onClick={onDropIndexClick(index)}
+                onClick={onRemoveClick}
                 style={BTN_STYLE}
                 registry={registry}
               />
