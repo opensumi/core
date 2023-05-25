@@ -78,9 +78,9 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
   }, [rootSchema, schemaProperties]);
 
   useEffect(() => {
-    const disabled = new Disposable();
+    const disposable = new Disposable();
 
-    disabled.addDispose(
+    disposable.addDispose(
       launchService.onChangeSchema(() => {
         requestAnimationFrame(() => {
           handleSnippetMenu();
@@ -89,7 +89,7 @@ export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: La
     );
     handleSnippetMenu();
 
-    return () => disabled.dispose();
+    return () => disposable.dispose();
   }, [schemaProperties, rootSchema]);
 
   return (
