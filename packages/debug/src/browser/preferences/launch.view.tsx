@@ -1,9 +1,8 @@
 import { withTheme } from '@rjsf/core';
-import { GenericObjectType, IconButtonProps, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
+import { GenericObjectType, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
-import lodashSet from 'lodash/set';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
@@ -18,14 +17,23 @@ import {
   IJSONSchemaSnippet,
   IJSONSchemaMap,
   isUndefined,
+  Disposable,
+  Schemes,
+  CommandService,
+  isObject,
 } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { EDirection, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';
 import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
+import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/index';
 
+import { DebugConfiguration } from '../../common/debug-configuration';
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 import { ILaunchService } from '../../common/debug-service';
+import { DebugConfigurationManager } from '../debug-configuration-manager';
+import { parseSnippet } from '../debugUtils';
 
 import { CheckboxWidget } from './components/checkbox-widget';
 import { AnyOfField } from './components/fields/any-of-field';
@@ -35,6 +43,7 @@ import { SelectWidget } from './components/select-widget';
 import { TextWidget } from './components/text-widget';
 import styles from './launch.module.less';
 import { LaunchService } from './launch.service';
+import { ConfigurationItemsModel } from './model/configuration-items';
 import { WrapIfAdditionalTemplate } from './templates/additional-template';
 import { ArrayFieldItemTemplate } from './templates/array-field-item-template';
 import { ArrayFieldTemplate } from './templates/array-field-template';
@@ -51,22 +60,40 @@ import { DescriptionFieldTemplate } from './templates/description-field-template
 import { FieldTemplate } from './templates/field-template';
 import { ObjectFieldTemplate } from './templates/object-field-template';
 
-export const LaunchViewContainer = () => {
+export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => {
+  const { uri } = resource;
   const schemaRegistry = useInjectable<IJSONSchemaRegistry>(IJSONSchemaRegistry);
+  const debugConfigurationManager = useInjectable<DebugConfigurationManager>(DebugConfigurationManager);
+  const launchService = useInjectable<LaunchService>(ILaunchService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [schemaContributions, setSchemaContributions] = useState<IJSONSchema>();
   const [currentSnippetItem, setCurrentSnippetItem] = useState<IJSONSchemaSnippet>();
+  const [inputConfigurationItems, setInputConfigurationItems] = useState<ConfigurationItemsModel[]>([]);
 
   useEffect(() => {
-    const disposed = schemaRegistry.onDidChangeSchema((uri: string) => {
-      if (uri === launchExtensionSchemaUri) {
-        handleSchemaSnippets(schemaRegistry.getSchemaContributions());
-      }
-    });
+    const disposed = new Disposable();
+
+    disposed.addDispose(
+      schemaRegistry.onDidChangeSchema((uri: string) => {
+        if (uri === launchExtensionSchemaUri) {
+          handleSchemaSnippets(schemaRegistry.getSchemaContributions());
+        }
+      }),
+    );
+
+    disposed.addDispose(
+      debugConfigurationManager.onDidChange(async () => {
+        handleInputConfigurationItems();
+      }),
+    );
 
     handleSchemaSnippets(schemaRegistry.getSchemaContributions());
+    handleInputConfigurationItems();
 
     return () => disposed.dispose();
   }, []);
+
+  const fileUri = useMemo(() => uri.withScheme(Schemes.file), [uri]);
 
   const handleSchemaSnippets = useCallback(
     (contributions: ISchemaContributions) => {
@@ -81,6 +108,17 @@ export const LaunchViewContainer = () => {
     [schemaContributions],
   );
 
+  const handleInputConfigurationItems = useCallback(() => {
+    const all = debugConfigurationManager.all;
+    if (!Array.isArray(all)) {
+      return;
+    }
+
+    setInputConfigurationItems(
+      all.map((config) => new ConfigurationItemsModel(config.configuration.name, config.configuration)),
+    );
+  }, []);
+
   const snippetItems = useMemo(() => {
     if (!schemaContributions) {
       return [];
@@ -92,17 +130,32 @@ export const LaunchViewContainer = () => {
       'items',
       'defaultSnippets',
     ] as (keyof IJSONSchema)[]);
-    return snippets.filter((s) => s.label);
+    return snippets || [];
   }, [schemaContributions]);
 
-  const onSelectedConfiguration = (current: string) => {
-    const findItems = snippetItems.find(({ label }) => label === current);
-    if (!findItems) {
+  const onSelectedConfiguration = useCallback((current: ConfigurationItemsModel) => {
+    const { configuration, description, label } = current;
+    if (!configuration) {
       return;
     }
 
-    setCurrentSnippetItem(findItems);
-  };
+    launchService.nextNewFormData(configuration);
+
+    setCurrentSnippetItem({
+      body: configuration,
+      description,
+      label,
+    });
+  }, []);
+
+  const onAddConfigurationItems = useCallback(
+    async (newItems: ConfigurationItemsModel) => {
+      const { configuration } = newItems;
+      await debugConfigurationManager.insertConfiguration(fileUri, configuration);
+      commandService.executeCommand(EDITOR_COMMANDS.SAVE_URI.id, fileUri);
+    },
+    [snippetItems],
+  );
 
   return (
     <ComponentContextProvider value={{ getIcon, localize }}>
@@ -116,8 +169,10 @@ export const LaunchViewContainer = () => {
           <LaunchIndexs
             data-sp-defaultSize={240}
             data-sp-minSize={150}
+            inputConfigurationItems={inputConfigurationItems}
             snippetItems={snippetItems}
             onSelectedConfiguration={onSelectedConfiguration}
+            onAddConfigurationItems={onAddConfigurationItems}
           />
           <LaunchBody data-sp-flex={1} snippetItem={currentSnippetItem} schemaContributions={schemaContributions} />
         </SplitPanel>
@@ -129,24 +184,29 @@ export const LaunchViewContainer = () => {
 const LaunchIndexs = ({
   snippetItems,
   onSelectedConfiguration,
+  onAddConfigurationItems,
+  inputConfigurationItems,
 }: {
   snippetItems: IJSONSchemaSnippet[];
-  onSelectedConfiguration: (data: string) => void;
+  onSelectedConfiguration: (data: ConfigurationItemsModel) => void;
+  onAddConfigurationItems: (data: ConfigurationItemsModel) => void;
+  inputConfigurationItems: ConfigurationItemsModel[];
 }) => {
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
-  const [configurationItems, setConfigurationItems] = useState<string[]>([]);
-  const [currentCheckItem, setCurrentCheckItem] = useState<string>();
+  const [configurationItems, setConfigurationItems] = useState<ConfigurationItemsModel[]>(inputConfigurationItems);
 
   useEffect(() => {
-    if (currentCheckItem) {
-      onSelectedConfiguration(currentCheckItem);
-    }
-  }, [currentCheckItem]);
+    setConfigurationItems([...inputConfigurationItems]);
+  }, [inputConfigurationItems]);
 
-  const template = ({ data }) => (
-    <div className={cls(styles.configuration_item)} onClick={() => setCurrentCheckItem(data)}>
+  const handleConfigurationItemsClick = useCallback((data: ConfigurationItemsModel) => {
+    onSelectedConfiguration(data);
+  }, []);
+
+  const template = ({ data, index }) => (
+    <div key={index} className={cls(styles.configuration_item)} onClick={() => handleConfigurationItemsClick(data)}>
       <div className={styles.configuration_wrapper}>
-        <span className={styles.configuration_description}>{data}</span>
+        <span className={styles.configuration_description}>{(data as ConfigurationItemsModel).label}</span>
       </div>
     </div>
   );
@@ -154,9 +214,42 @@ const LaunchIndexs = ({
   const handleMenuItemClick = useCallback(
     (item: LabelMenuItemNode) => {
       setMenuOpen(false);
-      setConfigurationItems([...configurationItems, item.label]);
+
+      const { label } = item;
+      const findItem = snippetItems.find((snippet) => snippet.label === label);
+      if (!findItem) {
+        return;
+      }
+
+      const { body } = findItem;
+      if (!isObject(body)) {
+        return;
+      }
+
+      // 将 body 里一些形如 ${1:xxxx} 这样的符号给过滤掉
+      const parseBody: DebugConfiguration = Object.keys(body).reduce((pre: DebugConfiguration, cur: string) => {
+        const curValue = body[cur];
+
+        if (typeof curValue === 'string') {
+          pre[cur] = parseSnippet(curValue);
+        } else if (Array.isArray(curValue)) {
+          pre[cur] = curValue.map((value: any) => {
+            if (typeof value == 'string') {
+              return parseSnippet(value);
+            }
+            return value;
+          });
+        }
+
+        return pre;
+      }, body);
+
+      const itemModel = new ConfigurationItemsModel(findItem.label!, parseBody);
+      itemModel.setDescription(findItem.description || '');
+
+      onAddConfigurationItems(itemModel);
     },
-    [configurationItems],
+    [configurationItems, snippetItems],
   );
 
   const handleVisibleChange = (visible: boolean) => {
@@ -224,9 +317,8 @@ const LaunchBody = ({
   }
 
   const launchService = useInjectable<LaunchService>(ILaunchService);
-  const [schemaProperties, setSchemaProperties] = useState<IJSONSchema>();
 
-  useEffect(() => {
+  const schemaProperties: IJSONSchema | undefined = useMemo(() => {
     const ajv = acquireAjv();
     // 1. 先从 schema 中找出 oneOf 池
     const oneOfPool: IJSONSchema[] =
@@ -238,12 +330,12 @@ const LaunchBody = ({
       return ajv!.validate(oneOf, body);
     });
 
-    launchService.nextNewFormData(snippetItem.body);
-
     if (findOneOf) {
       launchService.setRawSchemaProperties(findOneOf);
-      setSchemaProperties(findOneOf);
+      return findOneOf;
     }
+
+    return;
   }, [snippetItem, schemaContributions]);
 
   const schema: RJSFSchema | undefined = useMemo(() => {
