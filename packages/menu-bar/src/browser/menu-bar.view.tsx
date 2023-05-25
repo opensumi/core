@@ -6,9 +6,9 @@ import { ClickOutside } from '@opensumi/ide-components';
 import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
 import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
 import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-core-browser';
-import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
+import { InlineActionBar, MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenubarItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import styles from './menu-bar.module.less';
 import { MenubarStore } from './menu-bar.store';
@@ -143,3 +143,18 @@ export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (
 MenuBarMixToolbarAction.displayName = 'MenuBarMixToolbarAction';
 
 export const MenuBarActionWrapper = Deprecated(MenuBarMixToolbarAction, 'please use `MenuBarMixToolbarAction`');
+
+/**
+ * 可供集成方导入的组件
+ * 后续如果有一些改动需要考虑是否有 breakchange
+ */
+export const IconMenuBar = () => {
+  const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
+  const menus = menuService.createMenu(MenuId.IconMenubarContext);
+
+  return (
+    <div className={styles.icon_menubar_container}>
+      <InlineActionBar menus={menus} type='icon' className={styles.menubar_action} isFlattenMenu={true} />
+    </div>
+  );
+};

@@ -138,6 +138,21 @@
   display: none;
 }
 
+.titleActions {
+  .verticalDivider {
+    width: 1px;
+    display: list-item;
+    background-color: var(--menu-separatorBackground);
+    pointer-events: none;
+    overflow: hidden;
+
+    &::marker {
+      content: '';
+      unicode-bidi: initial;
+    }
+  }
+}
+
 :global {
   // 菜单项增加滚动条
   .kt-menu {
