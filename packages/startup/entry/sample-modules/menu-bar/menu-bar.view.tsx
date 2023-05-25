@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import { IconMenuBar, MenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
+import { MenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
 
@@ -19,8 +19,5 @@ export const MenuBarView = () => (
   >
     <span className={styles.menu_bar_logo} />
     <MenuBar />
-    {/* <div style={{ marginLeft: '15px' }}>
-      <IconMenuBar />
-    </div> */}
   </div>
 );
