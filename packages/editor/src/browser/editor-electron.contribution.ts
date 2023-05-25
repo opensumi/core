@@ -40,10 +40,10 @@ export class EditorElectronContribution extends WithEventBus implements ClientAp
     // setup macos native dirty indicator
     this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
   }
-  /**
-   * Return true in order to prevent exit.
-   */
 
+  /**
+   * Return true in order to prevent exit
+   */
   async onWillStop(app: IClientApp) {
     if (await this.workbenchEditorService.closeAllOnlyConfirmOnce()) {
       return true;
