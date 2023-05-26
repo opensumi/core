@@ -121,6 +121,7 @@ export const enum CodeTerminalSettingId {
   LocalEchoEnabled = 'terminal.integrated.localEchoEnabled',
   LocalEchoExcludePrograms = 'terminal.integrated.localEchoExcludePrograms',
   LocalEchoStyle = 'terminal.integrated.localEchoStyle',
+  XtermRenderType = 'terminal.integrated.xtermRenderType',
   EnablePersistentSessions = 'terminal.integrated.enablePersistentSessions',
   PersistentSessionReviveProcess = 'terminal.integrated.persistentSessionReviveProcess',
   CustomGlyphs = 'terminal.integrated.customGlyphs',
@@ -325,6 +326,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     [CodeTerminalSettingId.LocalEchoStyle]: {
       type: 'string',
       description: '%preference.terminal.integrated.localEchoStyleDesc%',
+      enum: ['bold', 'dim', 'italic', 'underlined', 'inverted'],
       default: 'dim',
     },
     [CodeTerminalSettingId.CursorStyle]: {
@@ -332,6 +334,12 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       description: '%preference.terminal.integrated.cursorStyleDesc%',
       enum: [TerminalCursorStyle.BLOCK, TerminalCursorStyle.LINE, TerminalCursorStyle.UNDERLINE],
       default: TerminalCursorStyle.BLOCK,
+    },
+    [CodeTerminalSettingId.XtermRenderType]: {
+      type: 'string',
+      description: '%preference.terminal.integrated.xtermRenderTypeDesc%',
+      enum: ['webgl', 'canvas', 'dom'],
+      default: 'webgl',
     },
   },
 };

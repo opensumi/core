@@ -808,6 +808,7 @@ export const defaultSettingSections: {
           localized: 'preference.terminal.integrated.cursorStyle',
         },
         { id: 'terminal.integrated.localEchoStyle', localized: 'preference.terminal.integrated.localEchoStyle' },
+        { id: 'terminal.integrated.xtermRenderType', localized: 'preference.terminal.integrated.xtermRenderType' },
       ],
     },
   ],
