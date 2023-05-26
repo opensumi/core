@@ -667,7 +667,8 @@ class Theme implements ITheme {
   // 将encodedTokensColors转为monaco可用的形式
   private patchTokenColors() {
     // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
-    if (this.themeData.themeSettings.filter((setting) => !setting.scope).length === 0) {
+    // scope 会在后续的流程中被补充为 [''] 所以直接进行初始化，防止判断有误
+    if (this.themeData.themeSettings.filter((setting) => JSON.stringify(setting.scope) === '[""]').length === 0) {
       this.themeData.themeSettings.unshift({
         settings: {
           foreground: this.themeData.colors['editor.foreground']
@@ -677,6 +678,7 @@ class Theme implements ITheme {
             ? this.themeData.colors['editor.background'].substr(0, 7)
             : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
         },
+        scope: [''],
       });
     }
   }
