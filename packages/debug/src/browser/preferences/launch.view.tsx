@@ -3,6 +3,7 @@ import { GenericObjectType, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } fr
 import validator from '@rjsf/validator-ajv8';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
+import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
@@ -66,8 +67,9 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
   const debugConfigurationManager = useInjectable<DebugConfigurationManager>(DebugConfigurationManager);
   const launchService = useInjectable<LaunchService>(ILaunchService);
   const commandService = useInjectable<CommandService>(CommandService);
+
+  const [currentConfigurationIndex, serCurrentConfigurationIndex] = useState<number>();
   const [schemaContributions, setSchemaContributions] = useState<IJSONSchema>();
-  const [currentSnippetItem, setCurrentSnippetItem] = useState<IJSONSchemaSnippet>();
   const [inputConfigurationItems, setInputConfigurationItems] = useState<ConfigurationItemsModel[]>([]);
 
   useEffect(() => {
@@ -133,20 +135,37 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
     return snippets || [];
   }, [schemaContributions]);
 
-  const onSelectedConfiguration = useCallback((current: ConfigurationItemsModel) => {
-    const { configuration, description, label } = current;
+  const onSelectedConfiguration = useCallback((current: ConfigurationItemsModel, index: number) => {
+    const { configuration } = current;
     if (!configuration) {
       return;
     }
 
-    launchService.nextNewFormData(configuration);
+    launchService.nextNewFormData(configuration, false);
 
-    setCurrentSnippetItem({
-      body: configuration,
-      description,
-      label,
-    });
+    serCurrentConfigurationIndex(index);
   }, []);
+
+  const currentSnippetItem = useMemo(() => {
+    if (inputConfigurationItems && !isUndefined(currentConfigurationIndex)) {
+      const current = inputConfigurationItems[currentConfigurationIndex];
+      if (!current) {
+        return undefined;
+      }
+
+      const { configuration, description, label } = current;
+      if (!configuration) {
+        return;
+      }
+
+      return {
+        body: configuration,
+        description,
+        label,
+      };
+    }
+    return undefined;
+  }, [inputConfigurationItems, currentConfigurationIndex]);
 
   const onAddConfigurationItems = useCallback(
     async (newItems: ConfigurationItemsModel) => {
@@ -157,14 +176,23 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
     [snippetItems],
   );
 
-  const onFormChange = useCallback((data: IChangeEvent) => {
-    const { formData } = data;
-    if (!formData) {
-      return;
-    }
+  const scheduleUpdateConfigurationsInResource = throttle(
+    async (data, currentConfigurationIndex) =>
+      await launchService.modifyConfigurationsInResource(fileUri, data, currentConfigurationIndex),
+    100,
+  );
 
-    launchService.nextNewFormData(formData, false);
-  }, []);
+  const onFormChange = useCallback(
+    async (data: IChangeEvent) => {
+      const { formData } = data;
+      if (!formData || isUndefined(currentConfigurationIndex)) {
+        return;
+      }
+
+      scheduleUpdateConfigurationsInResource(data, currentConfigurationIndex);
+    },
+    [currentConfigurationIndex, currentSnippetItem],
+  );
 
   return (
     <ComponentContextProvider value={{ getIcon, localize }}>
@@ -202,7 +230,7 @@ const LaunchIndexs = ({
   inputConfigurationItems,
 }: {
   snippetItems: IJSONSchemaSnippet[];
-  onSelectedConfiguration: (data: ConfigurationItemsModel) => void;
+  onSelectedConfiguration: (data: ConfigurationItemsModel, index: number) => void;
   onAddConfigurationItems: (data: ConfigurationItemsModel) => void;
   inputConfigurationItems: ConfigurationItemsModel[];
 }) => {
@@ -213,12 +241,16 @@ const LaunchIndexs = ({
     setConfigurationItems([...inputConfigurationItems]);
   }, [inputConfigurationItems]);
 
-  const handleConfigurationItemsClick = useCallback((data: ConfigurationItemsModel) => {
-    onSelectedConfiguration(data);
+  const handleConfigurationItemsClick = useCallback((data: ConfigurationItemsModel, index: number) => {
+    onSelectedConfiguration(data, index);
   }, []);
 
   const template = ({ data, index }) => (
-    <div key={index} className={cls(styles.configuration_item)} onClick={() => handleConfigurationItemsClick(data)}>
+    <div
+      key={index}
+      className={cls(styles.configuration_item)}
+      onClick={() => handleConfigurationItemsClick(data, index)}
+    >
       <div className={styles.configuration_wrapper}>
         <span className={styles.configuration_description}>{(data as ConfigurationItemsModel).label}</span>
       </div>

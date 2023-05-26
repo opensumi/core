@@ -55,10 +55,10 @@ export const TextWidget = <T = any, S extends StrictRJSFSchema = RJSFSchema, F e
     return parseSnippet(value);
   }, [value]);
 
-  const handleTextChange = ({ target }: React.ChangeEvent<HTMLInputElement>) =>
+  const handleBlur = ({ target }: React.FocusEvent<HTMLInputElement>) => {
     onChange(target.value === '' ? options.emptyValue : target.value);
-
-  const handleBlur = ({ target }: React.FocusEvent<HTMLInputElement>) => onBlur(id, target.value);
+    onBlur(id, target.value);
+  };
 
   const handleFocus = ({ target }: React.FocusEvent<HTMLInputElement>) => onFocus(id, target.value);
 
@@ -102,7 +102,6 @@ export const TextWidget = <T = any, S extends StrictRJSFSchema = RJSFSchema, F e
         id={id}
         name={id}
         onBlur={!readonly ? handleBlur : undefined}
-        onChange={!readonly ? handleTextChange : undefined}
         onFocus={!readonly ? handleFocus : undefined}
         placeholder={placeholder}
         type={type}
