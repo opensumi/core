@@ -7,13 +7,14 @@ import type { WebglAddon as WebglAddonType } from 'xterm-addon-webgl';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IClipboardService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import { Disposable, isSafari } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry';
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
-import { SupportedOptions } from '../common/preference';
+import { SupportedOptions, CodeTerminalSettingId } from '../common/preference';
 import { IXTerm } from '../common/xterm';
 
 import styles from './component/terminal.module.less';
@@ -48,9 +49,12 @@ export class XTerm extends Disposable implements IXTerm {
   @Autowired(IThemeService)
   protected themeService: WorkbenchThemeService;
 
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
+
   container: HTMLDivElement;
 
-  raw: Terminal;
+  protected raw: Terminal;
 
   xtermOptions: ITerminalOptions & SupportedOptions;
 
@@ -80,7 +84,7 @@ export class XTerm extends Disposable implements IXTerm {
     return !isSafari;
   }
 
-  private async enableCanvasRenderer() {
+  protected async enableCanvasRenderer() {
     try {
       if (!this._canvasAddon) {
         // @ts-ignore
@@ -99,7 +103,7 @@ export class XTerm extends Disposable implements IXTerm {
     }
   }
 
-  private async enableWebglRenderer() {
+  protected async enableWebglRenderer() {
     try {
       if (!this._webglAddon) {
         // @ts-ignore
@@ -189,8 +193,14 @@ export class XTerm extends Disposable implements IXTerm {
 
   open() {
     this.raw.open(this.container);
-    if (this.loadWebGLAddon()) {
+    const renderType = this.preferenceService.get<'canvas' | 'webgl' | 'dom'>(
+      CodeTerminalSettingId.XtermRenderType,
+      'webgl',
+    );
+    if (renderType === 'webgl') {
       this.enableWebglRenderer();
+    } else if (renderType === 'canvas') {
+      this.enableCanvasRenderer();
     }
   }
 

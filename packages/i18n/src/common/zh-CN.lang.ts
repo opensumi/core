@@ -452,6 +452,8 @@ export const localizationBundle = {
       '当在终端标题中找到其中一个程序名称时，将禁用本地回显。',
     'preference.terminal.integrated.localEchoStyle': '本地回显字体样式',
     'preference.terminal.integrated.localEchoStyleDesc': '本地回显文本的终端样式；字体样式或 RGB 颜色。',
+    'preference.terminal.integrated.xtermRenderType': 'Xterm 渲染类型',
+    'preference.terminal.integrated.xtermRenderTypeDesc': '选择 Xterm 渲染类型，WebGL 性能更强，Canvas 兼容性更佳。',
     'preference.terminal.integrated.cursorStyle': '终端输入指针样式',
     'preference.terminal.integrated.cursorStyleDesc': '修改终端输入指针样式',
     'settings.group.general': '常规',
