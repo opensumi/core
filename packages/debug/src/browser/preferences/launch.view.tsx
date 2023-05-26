@@ -1,4 +1,4 @@
-import { withTheme } from '@rjsf/core';
+import { IChangeEvent, withTheme } from '@rjsf/core';
 import { GenericObjectType, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import cls from 'classnames';
@@ -157,6 +157,15 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
     [snippetItems],
   );
 
+  const onFormChange = useCallback((data: IChangeEvent) => {
+    const { formData } = data;
+    if (!formData) {
+      return;
+    }
+
+    launchService.nextNewFormData(formData, false);
+  }, []);
+
   return (
     <ComponentContextProvider value={{ getIcon, localize }}>
       <div className={styles.launch_container}>
@@ -174,7 +183,12 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
             onSelectedConfiguration={onSelectedConfiguration}
             onAddConfigurationItems={onAddConfigurationItems}
           />
-          <LaunchBody data-sp-flex={1} snippetItem={currentSnippetItem} schemaContributions={schemaContributions} />
+          <LaunchBody
+            data-sp-flex={1}
+            snippetItem={currentSnippetItem}
+            schemaContributions={schemaContributions}
+            onChange={onFormChange}
+          />
         </SplitPanel>
       </div>
     </ComponentContextProvider>
@@ -308,9 +322,11 @@ const Form = withTheme({
 const LaunchBody = ({
   snippetItem,
   schemaContributions,
+  onChange,
 }: {
   snippetItem?: IJSONSchemaSnippet;
   schemaContributions?: IJSONSchema;
+  onChange: (data: IChangeEvent, id?: string) => void;
 }) => {
   if (!snippetItem) {
     return <div>{localize('debug.action.no.configuration')}</div>;
@@ -414,6 +430,7 @@ const LaunchBody = ({
           schema={schema}
           validator={validator}
           fields={{ AnyOfField, OneOfField: AnyOfField }}
+          onChange={onChange}
           templates={{
             ArrayFieldTemplate,
             ArrayFieldItemTemplate,

@@ -1,8 +1,7 @@
-import { GenericObjectType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
-import lodashGet from 'lodash/get';
+import { GenericObjectType, StrictRJSFSchema } from '@rjsf/utils';
 import lodashSet from 'lodash/set';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import { Emitter, Event, IJSONSchema } from '@opensumi/ide-core-common';
 
 import { ILaunchService } from '../../common/debug-service';
@@ -44,9 +43,11 @@ export class LaunchService implements ILaunchService {
     this._onChangeSchema.fire(data);
   }
 
-  public nextNewFormData(data: TFormData): void {
+  public nextNewFormData(data: TFormData, isEmit = true): void {
     this._formData = data;
-    this._onChangeFormData.fire(data);
+    if (isEmit) {
+      this._onChangeFormData.fire(data);
+    }
   }
 
   public addNewItem(name: string): void {
@@ -57,8 +58,10 @@ export class LaunchService implements ILaunchService {
     const { properties } = this.rawSchemaProperties;
     const newFormData = { ...this.formData };
 
-    lodashSet(newFormData as GenericObjectType, name, properties![name]['default'] || '');
-    lodashSet(this.schema.properties!, name, properties![name]);
+    const preSchemaValue = properties![name];
+
+    lodashSet(newFormData as GenericObjectType, name, preSchemaValue['default'] || '');
+    lodashSet(this.schema.properties!, name, preSchemaValue);
 
     this.nextNewSchema(this.schema);
     this.nextNewFormData(newFormData);
