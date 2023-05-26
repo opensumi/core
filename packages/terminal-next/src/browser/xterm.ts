@@ -80,10 +80,6 @@ export class XTerm extends Disposable implements IXTerm {
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
   }
 
-  private loadWebGLAddon() {
-    return !isSafari;
-  }
-
   protected async enableCanvasRenderer() {
     try {
       if (!this._canvasAddon) {
