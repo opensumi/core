@@ -67,7 +67,7 @@ export function startDebugAdapter(
 export function connectDebugAdapter(server: vscode.DebugAdapterServer): DebugStreamConnection {
   const socket = net.createConnection({
     port: server.port,
-    host: server.host,
+    host: server.host || '127.0.0.1',
   });
   return {
     input: socket,
