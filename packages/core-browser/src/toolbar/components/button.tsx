@@ -95,6 +95,9 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
     }
     return () => disposer.dispose();
   }, []);
+
+  const btnTitleStyle = styles.btnTitleStyle || preferenceService.get('toolbar.buttonTitleStyle');
+  const isVerticalButton = styles.btnStyle === 'button' && btnTitleStyle === BUTTON_TITLE_STYLE.VERTICAL;
   const iconContent = !props.inDropDown ? (
     <div
       className={styles.iconClass + ' kt-toolbar-action-btn-icon'}
@@ -102,7 +105,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       style={{
         color: styles.iconForeground,
         backgroundColor: styles.iconBackground,
-        marginRight: styles.showTitle ? 5 : 0,
+        marginRight: styles.showTitle && !isVerticalButton ? 5 : 0,
         // 如果指定了按钮宽度，需要将padding清空，防止按钮比预期大 16px
         ...(styles.width ? { width: styles.width } : null),
         ...(styles.height ? { height: styles.height } : null),
@@ -159,7 +162,6 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       </div>
     );
   } else {
-    const btnTitleStyle = styles.btnTitleStyle || preferenceService.get('toolbar.buttonTitleStyle');
     if (styles.btnStyle === 'button' && btnTitleStyle !== BUTTON_TITLE_STYLE.VERTICAL) {
       buttonElement = (
         <Button type='default' size='small' {...bindings} {...backgroundBindings}>

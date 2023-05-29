@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
 import { BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
