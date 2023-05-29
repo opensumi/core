@@ -8,7 +8,7 @@ import type { WebglAddon as WebglAddonType } from 'xterm-addon-webgl';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IClipboardService } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
-import { Disposable, isSafari } from '@opensumi/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry';
@@ -54,7 +54,7 @@ export class XTerm extends Disposable implements IXTerm {
 
   container: HTMLDivElement;
 
-  protected raw: Terminal;
+  raw: Terminal;
 
   xtermOptions: ITerminalOptions & SupportedOptions;
 
