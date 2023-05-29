@@ -38,6 +38,7 @@ import { parseSnippet } from '../debugUtils';
 
 import { CheckboxWidget } from './components/checkbox-widget';
 import { AnyOfField } from './components/fields/any-of-field';
+import { ArrayField } from './components/fields/array-field';
 import { ObjectField } from './components/fields/object-filed';
 import { TitleField } from './components/fields/title-field';
 import { SelectWidget } from './components/select-widget';
@@ -461,7 +462,7 @@ const LaunchBody = ({
           formData={snippetItem.body}
           schema={schema}
           validator={validator}
-          fields={{ AnyOfField, OneOfField: AnyOfField }}
+          fields={{ AnyOfField, OneOfField: AnyOfField, ArrayField }}
           onChange={onChange}
           templates={{
             ArrayFieldTemplate,

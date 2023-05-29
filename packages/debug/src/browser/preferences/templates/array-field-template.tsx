@@ -12,10 +12,6 @@ import React from 'react';
 
 import styles from './json-templates.module.less';
 
-const DESCRIPTION_COL_STYLE = {
-  paddingBottom: '8px',
-};
-
 export const ArrayFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: ArrayFieldTemplateProps<T, S, F>,
 ) => {
