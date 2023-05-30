@@ -91,7 +91,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     persistFocus = true,
     hasClear,
     afterClear,
-    value = '',
+    value,
     onValueChange,
     onPressEnter,
     onKeyDown,
@@ -104,8 +104,8 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
   const [isDirty, setIsDirty] = React.useState(false);
 
   // handle initial value from `value` or `defaultValue`
-  const [inputValue, setInputValue] = React.useState<string>(() => (defaultValue ?? value) || '');
-  const [preValue, setPrevValue] = React.useState<string>(() => (defaultValue ?? value) || '');
+  const [inputValue, setInputValue] = React.useState<string>(() => (value ?? defaultValue) || '');
+  const [preValue, setPrevValue] = React.useState<string>(() => (value ?? defaultValue) || '');
 
   // make `ref` to input works
   React.useImperativeHandle(ref, () => inputRef.current!);
