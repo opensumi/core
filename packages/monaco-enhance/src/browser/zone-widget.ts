@@ -224,14 +224,6 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
     this._arrow.height = arrowHeight;
     this._arrow.show(position);
 
-    const containerHeight = heightInLines * lineHeight - this._decoratingElementsHeight();
-
-    if (this._container) {
-      this._container.style.top = arrowHeight + 'px';
-      this._container.style.height = containerHeight + 'px';
-      this._container.style.overflow = 'hidden';
-    }
-
     this.layout(layoutInfo);
   }
 
