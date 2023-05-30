@@ -3,7 +3,13 @@ import throttle from 'lodash/throttle';
 import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { getIcon, StatusBarAlignment, StatusBarEntryAccessor, TERMINAL_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  getIcon,
+  StatusBarAlignment,
+  StatusBarCommand,
+  StatusBarEntryAccessor,
+  TERMINAL_COMMANDS,
+} from '@opensumi/ide-core-browser';
 import {
   CommandService,
   Emitter,
@@ -153,13 +159,19 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
       mutators.forEach((mutator) => changes.push(mutatorTypeLabel(mutator.type, mutator.value, variable)));
     });
 
-    this.statusBarEntryAccessor = this.statusbarService.addElement(ENVIRONMENT_VARIABLE_CHANGED_STATUS, {
-      iconClass: getIcon('warning-circle'),
-      color: 'orange',
-      alignment: StatusBarAlignment.RIGHT,
-      tooltip: toMarkdownString(localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```'),
-      onClick: () => this.onDidClickStatusBarEntry(diff),
-    });
+    this.commandService
+      .tryExecuteCommand(StatusBarCommand.addElement.id, ENVIRONMENT_VARIABLE_CHANGED_STATUS, {
+        iconClass: getIcon('warning-circle'),
+        color: 'orange',
+        alignment: StatusBarAlignment.RIGHT,
+        tooltip: toMarkdownString(
+          localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```',
+        ),
+        onClick: () => this.onDidClickStatusBarEntry(diff),
+      })
+      .then((res: StatusBarEntryAccessor) => {
+        this.statusBarEntryAccessor = res;
+      });
   }
 
   private notifyCollectionUpdates() {
