@@ -4,7 +4,6 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
 
 import { ScrollbarsVirtualList } from '../scrollbars';
-import './styles.less';
 
 export interface IRecycleListProps {
   /**
