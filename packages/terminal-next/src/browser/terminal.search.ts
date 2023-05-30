@@ -11,7 +11,7 @@ export class TerminalSearchService implements ITerminalSearchService {
   show: boolean;
 
   @observable
-  input: string;
+  input = '';
 
   @Autowired(ITerminalController)
   controller: ITerminalController;
