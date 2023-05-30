@@ -336,6 +336,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this._currentEditorGroup as any;
   }
 
+  public get currentOrPreviousFocusedEditor(): IEditor | null {
+    return this.currentEditorGroup && this.currentEditorGroup.currentOrPreviousFocusedEditor;
+  }
+
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
     let group = this.currentEditorGroup;
