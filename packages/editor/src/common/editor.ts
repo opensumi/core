@@ -347,6 +347,11 @@ export abstract class WorkbenchEditorService {
   currentEditor: IEditor | null;
 
   /**
+   * 和 currentEditor 不同，对于 DiffEditor 来说会取到上一次 focus 的 Editor
+   */
+  currentOrPreviousFocusedEditor: IEditor | null;
+
+  /**
    * 当前焦点的编辑器资源
    */
   currentResource: MaybeNull<IResource>;
