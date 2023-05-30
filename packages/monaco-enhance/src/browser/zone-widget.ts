@@ -251,6 +251,19 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   }
 
   hide() {
+    if (this._viewZone) {
+      this.editor.changeViewZones((accessor) => {
+        if (this._viewZone) {
+          accessor.removeZone(this._viewZone.id);
+          this._viewZone = null;
+        }
+      });
+    }
+    if (this._overlay) {
+      this.editor.removeOverlayWidget(this._overlay);
+      this._overlay = null;
+    }
+    this._container.remove();
     this._arrow?.hide();
   }
 
@@ -382,19 +395,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   }
 
   dispose() {
-    if (this._viewZone) {
-      this.editor.changeViewZones((accessor) => {
-        if (this._viewZone) {
-          accessor.removeZone(this._viewZone.id);
-          this._viewZone = null;
-        }
-      });
-    }
-    if (this._overlay) {
-      this.editor.removeOverlayWidget(this._overlay);
-      this._overlay = null;
-    }
-    this._container.remove();
+    this.hide();
     super.dispose();
   }
 }
