@@ -105,6 +105,9 @@ export class TerminalCommandContribution implements CommandContribution {
       {
         execute: () => {
           const group = this.view.currentGroup;
+          if (!group) {
+            return;
+          }
           const widget = this.view.createWidget(group);
           this.view.selectWidget(widget.id);
         },
