@@ -148,7 +148,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const avatar =
       thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
     const icon = avatar
-      ? this.iconService.fromIcon('', avatar, IconType.Mask)
+      ? this.iconService.fromIcon('', avatar, IconType.Background)
       : this.iconService.fromString('$(comment-unresolved)');
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-thread-decoration',
