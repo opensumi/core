@@ -666,8 +666,8 @@ class Theme implements ITheme {
 
   // 将encodedTokensColors转为monaco可用的形式
   private patchTokenColors() {
-    // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
-    // scope 会在后续的流程中被补充为 [''] 所以直接进行初始化，防止判断有误
+    // 当默认颜色不在settings当中时，需要补充至颜色值中，默认颜色设置 scope 为 ['']
+    // 需要注意的是，后续进行取值时，会依赖数组顺序，初始化后，请不要随意修改
     if (this.themeData.themeSettings.filter((setting) => setting.scope?.length === 1 && setting.scope[0] === '').length === 0) {
       this.themeData.themeSettings.unshift({
         settings: {
