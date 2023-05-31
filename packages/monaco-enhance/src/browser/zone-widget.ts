@@ -113,6 +113,8 @@ class Arrow {
   }
 
   show(where: IRange): void {
+    this._updateStyle();
+
     if (where.startColumn === 1) {
       // the arrow isn't pretty at column 1 and we need to push it out a little
       where = { ...where, startLineNumber: where.startLineNumber, startColumn: 2 };
@@ -242,7 +244,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
     this._showImpl(where, heightInLines);
   }
 
-  hide() {
+  private hideImpl() {
     if (this._viewZone) {
       this.editor.changeViewZones((accessor) => {
         if (this._viewZone) {
@@ -257,6 +259,10 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
     }
     this._container.remove();
     this._arrow?.hide();
+  }
+
+  hide() {
+    this.hideImpl();
   }
 
   create(): void {
@@ -387,7 +393,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   }
 
   dispose() {
-    this.hide();
+    this.hideImpl();
     super.dispose();
   }
 }

@@ -183,7 +183,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   }
 
   public hide() {
-    super.hide();
+    super.dispose();
     this._isShow = false;
     this._onHide.fire();
   }

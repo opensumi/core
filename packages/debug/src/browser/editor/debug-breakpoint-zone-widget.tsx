@@ -81,7 +81,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
       this.input.dispose();
       this.input = undefined;
     }
-    super.hide();
+    super.dispose();
   }
 
   public show(where: monaco.IRange, heightInLines: number): void {
