@@ -169,17 +169,6 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   protected abstract applyStyle(): void;
   protected abstract _fillContainer(container: HTMLElement): void;
 
-  private _decoratingElementsHeight(): number {
-    const lineHeight = this.editor.getOption(EditorOption.lineHeight);
-    let result = 0;
-
-    if (this._arrow) {
-      const arrowHeight = Math.round(lineHeight / 3);
-      result += 2 * arrowHeight;
-    }
-    return result;
-  }
-
   private _showImpl(where: monaco.IRange, heightInLines: number) {
     const position = where;
     const { startLineNumber: lineNumber, startColumn: column } = where;
