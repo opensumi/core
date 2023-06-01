@@ -1,6 +1,9 @@
 import { Event, TerminalSettingsId } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common';
 import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
+
+import { RenderType } from './xterm';
+
 export interface IPreferenceValue {
   name: string;
   value: string | number | boolean | Array<string | number | boolean>;
@@ -338,7 +341,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     [CodeTerminalSettingId.XtermRenderType]: {
       type: 'string',
       description: '%preference.terminal.integrated.xtermRenderTypeDesc%',
-      enum: ['webgl', 'canvas', 'dom'],
+      enum: [RenderType.WebGL, RenderType.Canvas, RenderType.Dom],
       default: 'webgl',
     },
   },

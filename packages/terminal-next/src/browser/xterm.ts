@@ -15,7 +15,7 @@ import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry'
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { SupportedOptions, CodeTerminalSettingId } from '../common/preference';
-import { IXTerm } from '../common/xterm';
+import { IXTerm, RenderType } from '../common/xterm';
 
 import styles from './component/terminal.module.less';
 import {
@@ -33,12 +33,6 @@ export interface XTermOptions {
   // 要传给 xterm 的参数和一些我们自己的参数（如 copyOnSelection）
   // 现在混在一起，也不太影响使用
   xtermOptions: SupportedOptions & ITerminalOptions;
-}
-
-enum RenderType {
-  Canvas = 'canvas',
-  WebGL = 'webgl',
-  Dom = 'dom',
 }
 
 @Injectable({ multiple: true })
@@ -195,10 +189,7 @@ export class XTerm extends Disposable implements IXTerm {
 
   open() {
     this.raw.open(this.container);
-    const renderType = this.preferenceService.get<RenderType>(
-      CodeTerminalSettingId.XtermRenderType,
-      RenderType.WebGL,
-    );
+    const renderType = this.preferenceService.get<RenderType>(CodeTerminalSettingId.XtermRenderType, RenderType.WebGL);
     if (renderType === RenderType.WebGL) {
       this.enableWebglRenderer();
     } else if (renderType === RenderType.Canvas) {
