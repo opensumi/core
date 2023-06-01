@@ -2,6 +2,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
 import { DisposableCollection, Emitter, Event, Disposable } from '@opensumi/ide-core-browser';
+import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/index';
 import { ICommentsService } from '../../common/index';
 
 import { CommentContentNode, CommentFileNode, CommentReplyNode, CommentRoot } from './tree-node.defined';
