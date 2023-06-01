@@ -12,8 +12,9 @@ import {
   NewPromptHandle,
 } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
-import { getIcon, URI, path } from '@opensumi/ide-core-browser';
+import { getIcon, URI, path, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IIconService } from '@opensumi/ide-theme/lib/common/index';
 
 import { Directory, File } from '../common/file-tree-node.define';
 
@@ -28,6 +29,7 @@ export interface IFileTreeNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorationService: FileTreeDecorationService;
+  iconService: IIconService;
   labelService: LabelService;
   decorations?: ClasslistComposite;
   dndService: DragAndDropService;
@@ -76,6 +78,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   hasFileIcons,
   hidesExplorerArrows,
   hasPrompt,
+  iconService,
 }: FileTreeNodeRenderedProps) => {
   const [activeIndex, setActiveIndex] = React.useState<number>(-1);
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
@@ -375,7 +378,11 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     if (!decoration) {
       return null;
     }
-    return <div className={styles.file_tree_node_status}>{decoration.badge.slice()}</div>;
+    return (
+      <div className={styles.file_tree_node_status}>
+        {transformLabelWithCodicon(decoration.badge.slice(), {}, iconService.fromString.bind(iconService))}
+      </div>
+    );
   };
 
   const renderTwice = (item) => {

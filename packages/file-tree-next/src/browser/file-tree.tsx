@@ -30,6 +30,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
+import { IIconService } from '@opensumi/ide-theme/lib/common/index';
 
 import { FILE_EXPLORER_WELCOME_ID, IFileTreeService } from '../common';
 import { Directory, File } from '../common/file-tree-node.define';
@@ -419,6 +420,8 @@ const FileTreeView = memo(
     onTwistierClick,
   }: FileTreeViewProps) => {
     const filetreeService = useInjectable<FileTreeService>(IFileTreeService);
+    const iconService = useInjectable<IIconService>(IIconService);
+
     const { decorationService, labelService, locationToCurrentFile } = filetreeService;
     const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
@@ -433,6 +436,7 @@ const FileTreeView = memo(
           template={(props as any).template}
           decorationService={decorationService}
           labelService={labelService}
+          iconService={iconService}
           dndService={fileTreeModelService.dndService}
           decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={onItemClick}
