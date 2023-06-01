@@ -380,7 +380,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
     return (
       <div className={styles.file_tree_node_status}>
-        {transformLabelWithCodicon(decoration.badge.slice(), {}, iconService.fromString.bind(iconService))}
+        {transformLabelWithCodicon(
+          decoration.badge.slice(),
+          {
+            color: 'inherit',
+          },
+          iconService.fromString.bind(iconService),
+        )}
       </div>
     );
   };
