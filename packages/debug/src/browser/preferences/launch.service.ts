@@ -1,16 +1,22 @@
-import { GenericObjectType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
-import lodashGet from 'lodash/get';
+import { IChangeEvent } from '@rjsf/core';
+import { GenericObjectType, StrictRJSFSchema } from '@rjsf/utils';
+import * as jsoncparser from 'jsonc-parser';
 import lodashSet from 'lodash/set';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, Event, IJSONSchema } from '@opensumi/ide-core-common';
+import { Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { ILaunchService } from '../../common/debug-service';
 
 type TFormData = { [key in string]: any };
+const CONFIGURATIONS_FIELD = 'configurations';
 
 @Injectable()
 export class LaunchService implements ILaunchService {
+  @Autowired(IFileServiceClient)
+  private readonly fileSystem: IFileServiceClient;
+
   private readonly _onRawSchemaProperties = new Emitter<IJSONSchema>();
   public readonly onRawSchemaProperties: Event<IJSONSchema> = this._onRawSchemaProperties.event;
 
@@ -44,9 +50,11 @@ export class LaunchService implements ILaunchService {
     this._onChangeSchema.fire(data);
   }
 
-  public nextNewFormData(data: TFormData): void {
+  public nextNewFormData(data: TFormData, isEmit = true): void {
     this._formData = data;
-    this._onChangeFormData.fire(data);
+    if (isEmit) {
+      this._onChangeFormData.fire(data);
+    }
   }
 
   public addNewItem(name: string): void {
@@ -57,8 +65,10 @@ export class LaunchService implements ILaunchService {
     const { properties } = this.rawSchemaProperties;
     const newFormData = { ...this.formData };
 
-    lodashSet(newFormData as GenericObjectType, name, properties![name]['default'] || '');
-    lodashSet(this.schema.properties!, name, properties![name]);
+    const preSchemaValue = properties![name];
+
+    lodashSet(newFormData as GenericObjectType, name, preSchemaValue['default'] || '');
+    lodashSet(this.schema.properties!, name, preSchemaValue);
 
     this.nextNewSchema(this.schema);
     this.nextNewFormData(newFormData);
@@ -77,5 +87,47 @@ export class LaunchService implements ILaunchService {
 
     this.nextNewSchema(this.schema);
     this.nextNewFormData(newFormData);
+  }
+
+  private async readResourceContent(resource: URI): Promise<string> {
+    try {
+      const { content } = await this.fileSystem.readFile(resource.toString());
+      return content.toString();
+    } catch (error) {
+      return '';
+    }
+  }
+
+  public async modifyConfigurationsInResource(resource: URI, data: IChangeEvent, index: number): Promise<void> {
+    const stat = await this.fileSystem.getFileStat(resource.toString());
+
+    if (stat && stat.type === FileType.File) {
+      const { formData } = data;
+
+      const fileContent = await this.readResourceContent(resource);
+
+      const parseContent = jsoncparser.parse(fileContent);
+      const preConfigurations = parseContent[CONFIGURATIONS_FIELD];
+
+      if (!preConfigurations) {
+        return;
+      }
+
+      if (Array.isArray(preConfigurations) && preConfigurations.length - 1 >= index) {
+        preConfigurations.splice(index, 1, formData);
+      }
+
+      const edits = jsoncparser.modify(fileContent, [CONFIGURATIONS_FIELD], preConfigurations, {
+        isArrayInsertion: false,
+        formattingOptions: {
+          tabSize: 2,
+          insertSpaces: true,
+          eol: '\n',
+        },
+      });
+
+      const newContent = jsoncparser.applyEdits(fileContent, edits);
+      await this.fileSystem.setContent(stat, newContent);
+    }
   }
 }

@@ -23,6 +23,7 @@
 .array_field_template {
   display: flex;
   flex-direction: column;
+
   .array_item_description {
     margin-bottom: 8px;
   }
@@ -30,27 +31,18 @@
 
 .object_field_template {
   .object_field_container {
-    .object_title {
-      margin-bottom: 16px;
-    }
-
-    .object_description {
-      margin-bottom: 8px;
-    }
-
-    .property_wrapper {
+    .root_property_wrapper {
       margin-bottom: 0;
     }
 
     &.root_object_field_container {
       margin-bottom: 16px;
 
-      .object_title,
-      .object_description {
+      > .object_title {
         padding-left: 16px;
       }
 
-      .property_wrapper {
+      .root_property_wrapper {
         padding: 16px;
         position: relative;
 
@@ -69,6 +61,7 @@
 
         &:hover {
           background-color: var(--kt-tree-hoverBackground);
+
           .wrapper_delete {
             display: block;
           }
@@ -100,23 +93,21 @@
   flex-direction: column;
 
   .form_additional_container {
+    display: flex;
     min-width: 300px;
     max-width: 500px;
     width: 100%;
+    margin-bottom: 8px;
 
-    .form_group {
-      display: flex;
-      margin-bottom: 12px;
-
-      .form_control {
-        margin-right: 16px;
+    .form_additional_children {
+      label[class*='field_label'] {
+        display: none;
       }
     }
 
+    .form_additional,
     .form_additional_children {
-      .object_field_container {
-        display: none;
-      }
+      margin-right: 16px;
     }
   }
 

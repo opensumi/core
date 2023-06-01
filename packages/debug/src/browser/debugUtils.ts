@@ -122,11 +122,12 @@ export const parseSnippet = (value: string) => {
    * 使用 monaco 内部的 SnippetParser 来转换形如 ${1:xxxx} 这样的符号
    */
   const snippet = new SnippetParser();
-  const isHasSnippetRegex = new RegExp(/\${(.*)/);
+  const isHasSnippetRegex = new RegExp(/\${\d+:(.*)/);
 
-  if (isHasSnippetRegex.test(value)) {
+  if (isHasSnippetRegex.test(value) || doubleQuotesRegex.test(value)) {
     const snippetParse = snippet.text(value);
     return snippetParse.replace(doubleQuotesRegex, '$1');
   }
+
   return value;
 };

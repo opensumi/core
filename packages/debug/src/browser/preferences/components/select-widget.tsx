@@ -16,7 +16,7 @@ import styles from './json-widget.module.less';
 export const SelectWidget = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: WidgetProps<T, S, F>,
 ) => {
-  const { schema, value, id, registry, uiOptions, name, required } = props;
+  const { schema, value, id, registry, uiOptions, name, required, onChange } = props;
   const description = schema.description;
 
   const TitleFieldTemplate = getTemplate<'TitleFieldTemplate', T, S, F>('TitleFieldTemplate', registry, uiOptions);
@@ -56,7 +56,7 @@ export const SelectWidget = <T = any, S extends StrictRJSFSchema = RJSFSchema, F
           />
         </div>
       )}
-      <Select key={id} value={value} dropdownRenderType='absolute'>
+      <Select key={id} value={value} dropdownRenderType='absolute' onChange={onChange}>
         {enumValue.map((data: string) => (
           <Option value={data} label={data} key={data}>
             {data}

@@ -10,16 +10,13 @@ import {
   titleId,
   ADDITIONAL_PROPERTY_FLAG,
   ObjectFieldTemplatePropertyType,
-  GenericObjectType,
 } from '@rjsf/utils';
 import cls from 'classnames';
-import lodashGet from 'lodash/get';
-import loadshOmit from 'lodash/omit';
-import lodashSet from 'lodash/set';
 import React, { useCallback, useMemo } from 'react';
 
 import { getIcon } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { IJSONSchema, useInjectable } from '@opensumi/ide-core-browser';
+import { Key } from '@opensumi/ide-core-browser';
 
 import { ILaunchService } from '../../../common/debug-service';
 import { LaunchService } from '../launch.service';
@@ -54,19 +51,7 @@ const extendCanExpand = <T, S extends StrictRJSFSchema = RJSFSchema, F extends F
 export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: ObjectFieldTemplateProps<T, S, F>,
 ) => {
-  const {
-    schema,
-    uiSchema,
-    required,
-    registry,
-    idSchema,
-    title,
-    description,
-    disabled,
-    readonly,
-    properties,
-    onAddClick,
-  } = props;
+  const { schema, uiSchema, required, registry, idSchema, title, disabled, readonly, properties, onAddClick } = props;
   const launchService = useInjectable<LaunchService>(ILaunchService);
   const uiOptions = getUiOptions<T, S, F>(uiSchema);
   const TitleFieldTemplate = getTemplate<'TitleFieldTemplate', T, S, F>('TitleFieldTemplate', registry, uiOptions);
@@ -79,11 +64,19 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
     ButtonTemplates: { AddButton },
   } = registry.templates;
 
+  const description = useMemo(() => props.description ?? (schema as IJSONSchema).markdownDescription, [props.description, schema]);
+
   const fieldContainerClass = useMemo(
     () =>
       idSchema.$id === 'root'
         ? cls(styles.object_field_container, styles.root_object_field_container)
         : styles.object_field_container,
+    [idSchema],
+  );
+
+  const propertyWrapperClass = useMemo(
+    () =>
+      idSchema.$id === 'root' ? cls(styles.property_wrapper, styles.root_property_wrapper) : styles.property_wrapper,
     [idSchema],
   );
 
@@ -102,7 +95,16 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
       const required = schemaProperties.required || [];
 
       return (
-        <div key={node.name} className={styles.property_wrapper}>
+        <div
+          key={node.name}
+          className={propertyWrapperClass}
+          onKeyDown={(event) => {
+            if (event.key === Key.ENTER.code) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
+        >
           {node.content}
           {/* 非 root 节点不允许删除 */}
           {required.includes(node.name) || idSchema.$id !== 'root' ? null : (
