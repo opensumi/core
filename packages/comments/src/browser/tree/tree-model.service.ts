@@ -27,6 +27,9 @@ export class CommentModelService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(WorkbenchEditorService)
+  protected readonly editorService: WorkbenchEditorService;
+
   private _treeModel: CommentTreeModel;
 
   private _whenReady: Promise<void>;
@@ -150,6 +153,19 @@ export class CommentModelService extends Disposable {
     if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
       this.toggleDirectory(node as CommentFileNode | CommentContentNode);
     }
+    let uri;
+    let range;
+
+    if (node instanceof CommentReplyNode || node instanceof CommentContentNode) {
+      uri = node.thread.uri;
+      range = node.thread.range;
+    } else {
+      uri = node.resource;
+    }
+
+    this.editorService.open(uri, {
+      range,
+    });
   };
 
   toggleDirectory = (item: CommentFileNode | CommentContentNode) => {
