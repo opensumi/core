@@ -28,6 +28,7 @@ describe('Debug Breakpoint Widget', () => {
         has: () => true,
       };
     },
+    getModel: jest.fn(() => Disposable.create(() => {})),
   };
 
   beforeAll(() => {
