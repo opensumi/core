@@ -2,7 +2,6 @@ import { Injector } from '@opensumi/di';
 import {
   CommentContentNode,
   CommentFileNode,
-  CommentReplyNode,
   CommentRoot,
 } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
