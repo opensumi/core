@@ -35,6 +35,12 @@ export interface XTermOptions {
   xtermOptions: SupportedOptions & ITerminalOptions;
 }
 
+enum RenderType {
+  Canvas = 'canvas',
+  WebGL = 'webgl',
+  Dom = 'dom',
+}
+
 @Injectable({ multiple: true })
 export class XTerm extends Disposable implements IXTerm {
   @Autowired(INJECTOR_TOKEN)
@@ -189,15 +195,16 @@ export class XTerm extends Disposable implements IXTerm {
 
   open() {
     this.raw.open(this.container);
-    const renderType = this.preferenceService.get<'canvas' | 'webgl' | 'dom'>(
+    const renderType = this.preferenceService.get<RenderType>(
       CodeTerminalSettingId.XtermRenderType,
-      'webgl',
+      RenderType.WebGL,
     );
-    if (renderType === 'webgl') {
+    if (renderType === RenderType.WebGL) {
       this.enableWebglRenderer();
-    } else if (renderType === 'canvas') {
+    } else if (renderType === RenderType.Canvas) {
       this.enableCanvasRenderer();
     }
+    // 不设置 enableWebGL/Canvas render 的话，默认就会 fallback 到 DOM Render
   }
 
   fit() {
