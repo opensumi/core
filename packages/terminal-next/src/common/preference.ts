@@ -342,7 +342,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       type: 'string',
       description: '%preference.terminal.integrated.xtermRenderTypeDesc%',
       enum: [RenderType.WebGL, RenderType.Canvas, RenderType.Dom],
-      default: 'webgl',
+      default: RenderType.WebGL,
     },
   },
 };
