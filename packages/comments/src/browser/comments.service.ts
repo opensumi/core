@@ -147,7 +147,9 @@ export class CommentsService extends Disposable implements ICommentsService {
     // 对于新增的空的 thread，默认显示当前用户的头像，否则使用第一个用户的头像
     const avatar =
       thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
-    const icon = avatar ? this.iconService.fromIcon('', avatar, IconType.Background) : getIcon('message');
+    const icon = avatar
+      ? this.iconService.fromIcon('', avatar, IconType.Background)
+      : this.iconService.fromString('$(comment-unresolved)');
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-thread-decoration',
       // 创建评论显示在 glyph margin 处

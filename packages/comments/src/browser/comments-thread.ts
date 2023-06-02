@@ -166,7 +166,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   private addWidgetByEditor(editor: IEditor) {
-    const widget = this.injector.get(CommentsZoneWidget, [editor, this]);
+    const widget = this.injector.get(CommentsZoneWidget, [editor, this, { arrowColor: 'var(--peekView-border)' }]);
     // 如果当前 widget 发生高度变化，通知同一个 同一个 editor 的其他 range 相同的 thread 也重新计算一下高度
     this.addDispose(
       widget.onChangeZoneWidget(() => {
