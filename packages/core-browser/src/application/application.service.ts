@@ -62,4 +62,14 @@ export class ApplicationService implements IApplicationService {
       return wsChannel.clientId;
     }
   }
+
+  get windowId(): string | number {
+    if (this.appConfig.isElectronRenderer) {
+      return electronEnv.currentWindowId;
+    } else {
+      // web 场景先用 clientId
+      const channelHandler = this.injector.get(WSChannelHandler);
+      return channelHandler.clientId;
+    }
+  }
 }
