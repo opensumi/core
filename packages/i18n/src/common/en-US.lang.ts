@@ -471,6 +471,9 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
+    'preference.terminal.integrated.xtermRenderType': 'Xterm Render Type',
+    'preference.terminal.integrated.xtermRenderTypeDesc':
+      'Choose Xterm render type, Webgl for better performance, Canvas better compatibility',
     'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
