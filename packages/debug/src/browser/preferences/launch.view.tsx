@@ -211,6 +211,7 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
             snippetItems={snippetItems}
             onSelectedConfiguration={onSelectedConfiguration}
             onAddConfigurationItems={onAddConfigurationItems}
+            currentConfigurationIndex={currentConfigurationIndex}
           />
           <LaunchBody
             data-sp-flex={1}
@@ -229,11 +230,13 @@ const LaunchIndexs = ({
   onSelectedConfiguration,
   onAddConfigurationItems,
   inputConfigurationItems,
+  currentConfigurationIndex,
 }: {
   snippetItems: IJSONSchemaSnippet[];
   onSelectedConfiguration: (data: ConfigurationItemsModel, index: number) => void;
   onAddConfigurationItems: (data: ConfigurationItemsModel) => void;
   inputConfigurationItems: ConfigurationItemsModel[];
+  currentConfigurationIndex: number | undefined;
 }) => {
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
   const [configurationItems, setConfigurationItems] = useState<ConfigurationItemsModel[]>(inputConfigurationItems);
@@ -249,7 +252,7 @@ const LaunchIndexs = ({
   const template = ({ data, index }) => (
     <div
       key={index}
-      className={cls(styles.configuration_item)}
+      className={cls(styles.configuration_item, currentConfigurationIndex === index ? styles.selected : '')}
       onClick={() => handleConfigurationItemsClick(data, index)}
     >
       <div className={styles.configuration_wrapper}>
@@ -362,7 +365,7 @@ const LaunchBody = ({
   onChange: (data: IChangeEvent, id?: string) => void;
 }) => {
   if (!snippetItem) {
-    return <div>{localize('debug.action.no.configuration')}</div>;
+    return <div className={styles.no_onfiguration}>{localize('debug.action.no.configuration')}</div>;
   }
 
   const launchService = useInjectable<LaunchService>(ILaunchService);

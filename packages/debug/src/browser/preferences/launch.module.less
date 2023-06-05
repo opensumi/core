@@ -9,6 +9,10 @@
   box-sizing: border-box;
   min-width: 500px;
 
+  .no_onfiguration {
+    padding: 0 16px;
+  }
+
   .launch_panel {
     height: 100%;
     margin-top: 8px;
@@ -21,20 +25,21 @@
         font-size: @small-base-font-size;
       }
       .configuration_items_box {
-        height: calc(100% - 40px) !important;
+        height: calc(100% - 50px) !important;
         .configuration_item {
-          height: 22px;
+          height: 26px;
           display: flex;
           align-items: center;
           cursor: pointer;
           flex-direction: row;
-          padding: 4px;
+          padding: 4px 8px;
+
           &:hover {
             background: var(--list-hoverBackground);
             color: var(--list-hoverForeground);
           }
           &.selected {
-            background: var(--list-activeSelectionBackground);
+            background: var(--kt-tree-inactiveSelectionBackground);
             color: var(--list-activeSelectionForeground);
           }
 
@@ -63,7 +68,7 @@
     .launch_schema_body_container {
       overflow: auto;
       height: 100%;
-      padding: 0 16px 12px 0px;
+      padding: 0 16px 22px 0px;
     }
   }
 }
