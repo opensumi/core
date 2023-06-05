@@ -13,7 +13,7 @@ import {
   ILogServiceManager,
   SupportLogNamespace,
   path,
-  FileStatOptions,
+  IFileStatOptions,
 } from '@opensumi/ide-core-node';
 import {
   isLinux,
@@ -148,7 +148,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  async stat(uri: UriComponents, options?: FileStatOptions): Promise<FileStat> {
+  async stat(uri: UriComponents, options?: IFileStatOptions): Promise<FileStat> {
     const _uri = Uri.revive(uri);
     try {
       const stat = await this.doGetStat(_uri, 1, options);
@@ -553,7 +553,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  protected async doGetStat(uri: Uri, depth: number, options?: FileStatOptions): Promise<FileStat | undefined> {
+  protected async doGetStat(uri: Uri, depth: number, options?: IFileStatOptions): Promise<FileStat | undefined> {
     try {
       const filePath = uri.fsPath;
       const lstat = await fse.lstat(filePath);
