@@ -421,6 +421,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.18.0":
+  version: 7.22.3
+  resolution: "@babel/runtime@npm:7.22.3"
+  dependencies:
+    regenerator-runtime: ^0.13.11
+  checksum: 8fc50785ca4cba749fed90bffca7e6fd52d4709755654e95b8d2a945fc034b56fb8c2e8a0183fea7c4abb86bf5fa77678c0ea35163b6920649833d180c34c234
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10, @babel/template@npm:^7.20.7, @babel/template@npm:^7.3.3":
   version: 7.20.7
   resolution: "@babel/template@npm:7.20.7"
@@ -2705,6 +2714,7 @@ __metadata:
     raf: ^3.4.1
     rc-dialog: ~7.6.0
     rc-dropdown: ~2.4.1
+    rc-input-number: ^7.4.2
     rc-menu: ^9.3.2
     rc-notification: ~3.3.1
     rc-util: ^4.16.1
@@ -3762,6 +3772,15 @@ __metadata:
   bin:
     playwright: cli.js
   checksum: c4424ee09f6589a296a3a78402f8c9eac841f3e5f44d96e3a2ba07aaa00d53ee9c10cc96379b304743a9e70f231df0ded0ad2fc197f412ada67b4cf17ee24b0f
+  languageName: node
+  linkType: hard
+
+"@rc-component/mini-decimal@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@rc-component/mini-decimal@npm:1.0.1"
+  dependencies:
+    "@babel/runtime": ^7.18.0
+  checksum: 2fd3f3d9c404f679461fa52372b71b1131ecad6b2a34d6b5be07b04475ed22428ffc7dac599a28734b349f7b1c5b714cf879e9c005a89430016c6d83899ff1e9
   languageName: node
   linkType: hard
 
@@ -18322,6 +18341,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-input-number@npm:^7.4.2":
+  version: 7.4.2
+  resolution: "rc-input-number@npm:7.4.2"
+  dependencies:
+    "@babel/runtime": ^7.10.1
+    "@rc-component/mini-decimal": ^1.0.1
+    classnames: ^2.2.5
+    rc-util: ^5.28.0
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 36a2b03902f96ec56b66588294b61cf48656e9004dad4ee92ae577d3c329400a2b5bf1f9f8830812b3ca860cf2971fdf340dbf587993740db3c97146c6446662
+  languageName: node
+  linkType: hard
+
 "rc-menu@npm:^9.3.2":
   version: 9.8.2
   resolution: "rc-menu@npm:9.8.2"
@@ -18450,6 +18484,19 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 2d19bac2670bf546225f12e9b7f5b578233ec53cfca0071eaca53d4b056c10fe92b36d4148f0592f0cdc65ab3067c81f9cd8456769ff0e00c1b03210d40c8f19
+  languageName: node
+  linkType: hard
+
+"rc-util@npm:^5.28.0":
+  version: 5.33.0
+  resolution: "rc-util@npm:5.33.0"
+  dependencies:
+    "@babel/runtime": ^7.18.3
+    react-is: ^16.12.0
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 1a5b4f2ded3ca8a874e3a0797158fb1be60987711145346ba4b9ae8e84fb91462dd030ff06850644d93a46c9d53eaccb978c703a1f3841e55ac2af0117c35745
   languageName: node
   linkType: hard
 
