@@ -1,6 +1,6 @@
 import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { RPCProxy, NOTREGISTERMETHOD } from './proxy';
+import { RPCProxy, NOTREGISTERMETHOD, ILogger } from './proxy';
 
 export type RPCServiceMethod = (...args: any[]) => any;
 export type ServiceProxy = any;
@@ -11,7 +11,7 @@ export enum ServiceType {
 }
 
 export class RPCServiceStub {
-  constructor(private serviceName: string, private center, private type: ServiceType) {
+  constructor(private serviceName: string, private center: RPCServiceCenter, private type: ServiceType) {
     if (this.type === ServiceType.Service) {
       this.center.registerService(serviceName, this.type);
     }
@@ -59,7 +59,7 @@ export class RPCServiceStub {
   onRequest(name: string, method: RPCServiceMethod) {
     this.center.onRequest(this.getMethodName(name), method);
   }
-  broadcast(name: string, ...args) {
+  broadcast(name: string, ...args): Promise<any> {
     return this.center.broadcast(this.getMethodName(name), ...args);
   }
 
@@ -74,13 +74,7 @@ export class RPCServiceStub {
           if (typeof prop === 'symbol') {
             return Promise.resolve();
           } else {
-            return (...args) =>
-              this.ready().then(() => {
-                const name = this.getMethodName(prop);
-                return Promise.all(this.center.serviceProxy.map((proxy) => proxy[name](...args)))
-                  .then((result) => result.filter((res) => res !== NOTREGISTERMETHOD))
-                  .then((result) => (result.length === 1 ? result[0] : result));
-              });
+            return (...args) => this.ready().then(() => this.broadcast(prop, ...args));
           }
         } else {
           return target[prop];
@@ -133,9 +127,9 @@ export class RPCServiceCenter {
 
   private connectionPromise: Promise<void>;
   private connectionPromiseResolve: () => void;
-  private logger;
+  private logger: ILogger;
 
-  constructor(private bench?: IBench, logger?: any) {
+  constructor(private bench?: IBench, logger?: ILogger) {
     this.uid = 'RPCServiceCenter:' + process.pid;
     this.connectionPromise = new Promise((resolve) => {
       this.connectionPromiseResolve = resolve;
@@ -182,7 +176,7 @@ export class RPCServiceCenter {
 
     return removeIndex !== -1;
   }
-  onRequest(name, method: RPCServiceMethod) {
+  onRequest(name: string, method: RPCServiceMethod) {
     if (!this.connection.length) {
       this.serviceMethodMap[name] = method;
     } else {
@@ -191,9 +185,28 @@ export class RPCServiceCenter {
       });
     }
   }
-  broadcast(name, ...args): Promise<any> {
-    return Promise.all(this.serviceProxy.map((proxy) => proxy[name](...args)) as Promise<any>[])
-      .then((result) => result.filter((res) => res !== NOTREGISTERMETHOD))
-      .then((result) => (result.length === 1 ? result[0] : result));
+  async broadcast(name: string, ...args): Promise<any> {
+    const broadcastResult = this.serviceProxy.map((proxy) => proxy[name](...args));
+    if (!broadcastResult || broadcastResult.length === 0) {
+      throw new Error(`broadcast rpc \`${name}\` error: no remote service can handle this call`);
+    }
+
+    const doubtfulResult = [] as any[];
+    const result = [] as any[];
+    for (const i of broadcastResult) {
+      if (i === NOTREGISTERMETHOD) {
+        doubtfulResult.push(i);
+      } else {
+        result.push(i);
+      }
+    }
+
+    if (doubtfulResult.length > 0) {
+      this.logger.warn(`broadcast rpc \`${name}\` getting doubtful responses: ${doubtfulResult.join(',')}`);
+    }
+    // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.
+    //        but actually we should throw an error to tell user that no remote service can handle this call.
+    //        or just return `undefined`.
+    return result.length === 1 ? result[0] : result;
   }
 }
