@@ -167,6 +167,11 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   public init() {
+    const schemes = this.resourceService.getSupportedSchemes();
+    for (const scheme of schemes) {
+      this.shouldShowCommentsSchemes.add(scheme);
+    }
+
     // 插件注册 ResourceProvider 时重新注册 CommentDecorationProvider
     // 例如 Github Pull Request 插件的 scheme 为 pr
     this.addDispose(
