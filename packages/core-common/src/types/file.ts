@@ -68,6 +68,17 @@ export interface FileStat {
   realUri?: string;
 }
 
+export interface FileStatOptions {
+  /**
+   * Whether to throw an error if the file in following error(in older version, OpenSumi will eat these errors silently):
+   * - doesn't exist
+   * - no access
+   * - busy
+   * - permission deny.
+   */
+  throwError?: boolean;
+}
+
 export namespace FileStat {
   export function is(candidate: object | undefined): candidate is FileStat {
     return (
@@ -152,10 +163,11 @@ export interface FileSystemProvider {
    * `FileType.SymbolicLink | FileType.Directory`.
    *
    * @param uri The uri of the file to retrieve metadata about.
+   * @param options some options to influence the stat result.
    * @return The file metadata about the file.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  stat(uri: Uri): Promise<FileStat | void>;
+  stat(uri: Uri, options?: FileStatOptions): Promise<FileStat | void>;
 
   /**
    * Retrieve all entries of a [directory](#FileType.Directory).

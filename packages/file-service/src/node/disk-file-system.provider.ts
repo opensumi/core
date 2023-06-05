@@ -7,7 +7,14 @@ import writeFileAtomic from 'write-file-atomic';
 
 import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { Deferred, ILogService, ILogServiceManager, SupportLogNamespace, path } from '@opensumi/ide-core-node';
+import {
+  Deferred,
+  ILogService,
+  ILogServiceManager,
+  SupportLogNamespace,
+  path,
+  FileStatOptions,
+} from '@opensumi/ide-core-node';
 import {
   isLinux,
   UriComponents,
@@ -34,6 +41,7 @@ import {
   IDiskFileProvider,
   FileAccess,
   FileSystemProviderCapabilities,
+  handleError,
 } from '../common/';
 
 import { FileSystemWatcherServer } from './file-service-watcher';
@@ -140,11 +148,14 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  async stat(uri: UriComponents) {
+  async stat(uri: UriComponents, options?: FileStatOptions): Promise<FileStat> {
     const _uri = Uri.revive(uri);
     try {
-      const stat = await this.doGetStat(_uri, 1);
-      return stat;
+      const stat = await this.doGetStat(_uri, 1, options);
+      if (stat) {
+        return stat;
+      }
+      throw FileSystemError.Unavailable(uri.path, 'Error occurred while getting the file stat.');
     } catch (e) {
       this.logger.error(e);
       throw e;
@@ -181,7 +192,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (newStat) {
       return newStat;
     }
-    throw FileSystemError.FileNotFound(uri.path, 'Error occurred while creating the directory.');
+    throw FileSystemError.Unavailable(uri.path, 'Error occurred while creating the directory.');
   }
 
   async readFile(uri: UriComponents, encoding = 'utf8'): Promise<Uint8Array> {
@@ -526,16 +537,23 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return newStat;
     } else {
       await fse.move(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite });
-      const stat = await this.doGetStat(_targetUri, 1);
+      const stat = await this.doGetStat(_targetUri, 1, {
+        throwError: true,
+      });
+
       if (stat) {
         return stat;
       } else {
-        throw FileSystemError.FileNotFound(_targetUri.path);
+        // never reached
+        throw FileSystemError.FileNotFound(
+          targetUri.path,
+          `Error occurred when moving resource from '${sourceUri.toString()}' to '${targetUri.toString()}'.`,
+        );
       }
     }
   }
 
-  protected async doGetStat(uri: Uri, depth: number): Promise<FileStat | undefined> {
+  protected async doGetStat(uri: Uri, depth: number, options?: FileStatOptions): Promise<FileStat | undefined> {
     try {
       const filePath = uri.fsPath;
       const lstat = await fse.lstat(filePath);
@@ -574,6 +592,10 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         return fileStat;
       }
     } catch (error) {
+      if (options?.throwError) {
+        handleError(error);
+      }
+
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
           return undefined;
