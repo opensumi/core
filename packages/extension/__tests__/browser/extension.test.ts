@@ -1,7 +1,7 @@
 import paths from 'path';
 
 import { URI, Uri, setLanguageId, getLanguageId } from '@opensumi/ide-core-browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -38,20 +38,18 @@ describe('extension browser test', () => {
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders(
-      {
-        token: ExtensionService,
-        useClass: ExtensionServiceImpl,
-      },
-      {
-        token: StaticResourceService,
-        useValue: {
-          resolveStaticResource(uri: URI) {
-            return uri.withScheme('http').withAuthority('localhost');
-          },
+    injector.addProviders({
+      token: ExtensionService,
+      useClass: ExtensionServiceImpl,
+    });
+    injector.overrideProviders({
+      token: StaticResourceService,
+      useValue: {
+        resolveStaticResource(uri: URI) {
+          return uri.withScheme('http').withAuthority('localhost');
         },
       },
-    );
+    });
   });
 
   afterEach(async () => {

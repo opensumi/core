@@ -2,8 +2,8 @@ import { observable, computed, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickTitleButton, QuickTitleButtonSide } from '@opensumi/ide-core-browser/lib/quick-open';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import './quick-title-bar.less';
 import { IconType, IIconService, IThemeService } from '@opensumi/ide-theme';
 
