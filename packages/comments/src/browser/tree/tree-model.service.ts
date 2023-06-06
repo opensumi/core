@@ -164,9 +164,15 @@ export class CommentModelService extends Disposable {
       uri = node.resource;
     }
 
-    this.editorService.open(uri, {
-      range,
-    });
+    this.editorService
+      .open(uri, {
+        range,
+      })
+      .then(() => {
+        if ((node as CommentReplyNode | CommentContentNode).thread) {
+          (node as CommentReplyNode | CommentContentNode).thread.show();
+        }
+      });
   };
 
   toggleDirectory = (item: CommentFileNode | CommentContentNode) => {
