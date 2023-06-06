@@ -1,0 +1,36 @@
+@max_width: 500px;
+@min_width: 300px;
+
+.select_widget_control,
+.text_widget_control,
+.any_of_widget_control {
+  min-width: @min_width;
+  max-width: @max_width;
+  width: 100%;
+}
+
+.text_widget_control {
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.checkbox_widget_control {
+  display: flex;
+  flex-direction: column;
+
+  .checkbox {
+    font-size: 14px;
+    opacity: 0.75;
+    white-space: pre-wrap;
+    color: var(--descriptionForeground);
+  }
+}
+
+.field_label {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+  display: inline-block;
+}

@@ -10,6 +10,7 @@ import {
   IDebugProgress,
   IDebugService,
   IDebugSessionManager,
+  ILaunchService,
 } from '../common';
 
 import { BreakpointManager } from './breakpoint';
@@ -30,6 +31,7 @@ import { DebugHoverSource } from './editor/debug-hover-source';
 import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from './editor/evaluatable-expression';
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
+import { LaunchService } from './preferences/launch.service';
 import { DebugToolbarOverlayWidget } from './view/configuration/debug-toolbar.view';
 import { DebugConsoleModelService } from './view/console/debug-console-tree.model.service';
 import { DebugConsoleContribution } from './view/console/debug-console.contribution';
@@ -87,6 +89,10 @@ export class DebugModule extends BrowserModule {
     {
       token: IDebugService,
       useClass: DebugService,
+    },
+    {
+      token: ILaunchService,
+      useClass: LaunchService,
     },
     {
       token: IDebugProgress,

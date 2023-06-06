@@ -40,7 +40,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   IDebugSessionManager,
-  launchSchemaUri,
   DEBUG_CONTAINER_ID,
   DEBUG_WATCH_ID,
   DEBUG_VARIABLES_ID,
@@ -53,6 +52,7 @@ import {
   TSourceBrekpointProperties,
   DEBUG_COMMANDS,
   IDebugModelManager,
+  launchDefaultSchemaUri,
 } from '../common';
 
 import {
@@ -68,7 +68,7 @@ import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { DebugProgressService } from './debug-progress.service';
-import { launchSchema } from './debug-schema-updater';
+import { launchSchema } from './debug-schema-manager';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
@@ -86,6 +86,10 @@ import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
+enum LAUNCH_OPEN {
+  json,
+  editor,
+}
 
 export namespace DebugBreakpointWidgetCommands {
   export const ACCEPT = {
@@ -357,7 +361,11 @@ export class DebugContribution
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION, {
-      execute: () => {
+      execute: (type: LAUNCH_OPEN = LAUNCH_OPEN.json) => {
+        if (type === LAUNCH_OPEN.editor) {
+          return this.debugConfigurationService.openLaunchEditor();
+        }
+
         this.debugConfigurationService.openConfiguration();
       },
     });
@@ -653,7 +661,7 @@ export class DebugContribution
   }
 
   registerSchema(registry: IJSONSchemaRegistry) {
-    registry.registerSchema(`${launchSchemaUri}/default`, launchSchema, ['launch.json']);
+    registry.registerSchema(launchDefaultSchemaUri, launchSchema, ['launch.json']);
   }
 
   registerKeybindings(keybindings: KeybindingRegistry) {
