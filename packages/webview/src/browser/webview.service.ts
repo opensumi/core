@@ -22,7 +22,7 @@ import {
   EditorGroupChangeEvent,
   EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
-import { LIGHT, DARK, HIGH_CONTRAST_DARK, HIGH_CONTRAST_LIGHT, ITheme } from '@opensumi/ide-theme';
+import { ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
 
 import { EditorWebviewComponentView } from './editor-webview';
