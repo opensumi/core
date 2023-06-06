@@ -14,6 +14,7 @@ import {
   STORAGE_SCHEMA,
   AppConfig,
 } from '@opensumi/ide-core-browser';
+import { throwNonElectronError } from '@opensumi/ide-core-common/lib/error';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
@@ -284,7 +285,7 @@ export class WebviewServiceImpl implements IWebviewService {
     if (this.appConfig.isElectronRenderer) {
       return this.injector.get(ElectronPlainWebviewWindow, [options, env]);
     }
-    throw new Error('not supported!');
+    throwNonElectronError('WebviewServiceImpl.createWebviewWindow');
   }
 }
 
