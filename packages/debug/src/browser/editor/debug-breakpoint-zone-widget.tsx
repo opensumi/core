@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Select, Option } from '@opensumi/ide-components';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-editor';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { ICSSStyleService } from '@opensumi/ide-theme';
-import * as monacoLanguages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
@@ -28,6 +29,9 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
 
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;
+
+  @Autowired(PreferenceService)
+  protected preferenceService: PreferenceService;
 
   @Autowired(ICSSStyleService)
   protected readonly cssManager: ICSSStyleService;
@@ -219,6 +223,17 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this._wrapper.className = styles.debug_breakpoint_wrapper;
     this._selection.className = styles.debug_breakpoint_selected;
     this._input.className = styles.debug_breakpoint_input;
+
+    const model = this.editor.getModel();
+
+    if (!model) {
+      return;
+    }
+
+    const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+    const fontSize = this.editor.getOption(EditorOption.fontSize);
+    const newTopMargin = lineHeight - fontSize;
+    this._input.style.marginTop = newTopMargin + 'px';
   }
 
   applyStyle() {
