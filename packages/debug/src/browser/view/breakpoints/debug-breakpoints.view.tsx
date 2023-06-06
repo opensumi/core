@@ -86,6 +86,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
             breakpointTreeData.push({
               label: '',
               expandable: false,
+              twisterPlaceholderClassName: styles.tree_item_twister_placeholder_fill,
               children: [],
               description: (
                 <BreakpointItem
@@ -103,6 +104,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
 
           breakpointTreeData.push({
             label,
+            twisterClassName: styles.tree_item_twister,
             renderLabel: (
               <BreakpointFileItem
                 label={label}
@@ -116,6 +118,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               ...item,
               label: '',
               expandable: false,
+              twisterClassName: styles.tree_item_twister,
               twisterPlaceholderClassName: styles.tree_item_twister_placeholder,
               breakpoint: item.breakpoint,
               iconClassName: cls(
@@ -174,7 +177,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
             toggleBreakpointEnable(item.raw.breakpoint);
           }
         }}
-        indent={20}
+        indent={18}
         baseIndent={8}
         treeData={treeData}
         height={viewState.height}
