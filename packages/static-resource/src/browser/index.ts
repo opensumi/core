@@ -1,34 +1,19 @@
-import { Injectable, Provider, Autowired } from '@opensumi/di';
-import { BrowserModule, Domain, ContributionProvider, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { Injectable } from '@opensumi/di';
+import { warning } from '@opensumi/ide-components/lib/utils/warning';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { StaticResourceService, StaticResourceContribution } from './static.definition';
-import { StaticResourceServiceImpl } from './static.service';
-export * from './static.definition';
+export * from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 
+/**
+ * @deprecated The static-resource function has been built into the core-browser module and will be officially deprecated soon. You can safely remove the reference to this module now.
+ */
 @Injectable()
 export class StaticResourceModule extends BrowserModule {
-  providers: Provider[] = [
-    {
-      token: StaticResourceService,
-      useClass: StaticResourceServiceImpl,
-    },
-    StaticResourceClientAppContribution,
-  ];
-
-  contributionProvider = StaticResourceContribution;
-}
-
-@Domain(ClientAppContribution)
-export class StaticResourceClientAppContribution implements ClientAppContribution {
-  @Autowired()
-  private readonly staticResourceService: StaticResourceService;
-
-  @Autowired(StaticResourceContribution)
-  private readonly contributions: ContributionProvider<StaticResourceContribution>;
-
-  initialize() {
-    for (const contribution of this.contributions.getContributions()) {
-      contribution.registerStaticResolver(this.staticResourceService);
-    }
+  constructor() {
+    super();
+    warning(
+      false,
+      'The static-resource function has been built into the core-browser module and will be officially deprecated soon. You can safely remove the reference to this module now.',
+    );
   }
 }

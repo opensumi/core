@@ -1,16 +1,15 @@
 import { URI, createContributionProvider } from '@opensumi/ide-core-browser';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import {
-  StaticResourceModule,
   StaticResourceService,
   StaticResourceContribution,
   StaticResourceClientAppContribution,
-} from '@opensumi/ide-static-resource/lib/browser';
+} from '@opensumi/ide-core-browser/lib/static-resource';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { ExpressFileServerModule } from '../../src/browser';
 
 describe('packages/express-file-server/__tests__/browser/index.test.ts', () => {
-  const injector = createBrowserInjector([ExpressFileServerModule, StaticResourceModule]);
+  const injector = createBrowserInjector([ExpressFileServerModule]);
 
   const staticResourceService = injector.get<StaticResourceService>(StaticResourceService);
   const staticResourceClientAppContribution = injector.get<StaticResourceClientAppContribution>(

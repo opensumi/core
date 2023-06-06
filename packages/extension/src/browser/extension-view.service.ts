@@ -3,6 +3,7 @@ import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { path, URI } from '@opensumi/ide-core-browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import {
   ContributionProvider,
   IExtensionProps,
@@ -12,7 +13,6 @@ import {
   REPORT_NAME,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
   EXTENSION_EXTEND_SERVICE_PREFIX,

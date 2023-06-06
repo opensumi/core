@@ -1,7 +1,7 @@
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { Disposable } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IThemeService, ITheme } from '@opensumi/ide-theme';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

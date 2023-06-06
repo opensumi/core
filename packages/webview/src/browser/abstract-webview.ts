@@ -9,7 +9,7 @@ import {
   MaybeNull,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 

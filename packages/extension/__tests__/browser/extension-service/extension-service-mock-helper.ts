@@ -32,6 +32,7 @@ import {
   Emitter,
 } from '@opensumi/ide-core-browser';
 import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -59,7 +60,6 @@ import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.serv
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IWorkspaceStorageServer, IGlobalStorageServer } from '@opensumi/ide-storage';
 import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
