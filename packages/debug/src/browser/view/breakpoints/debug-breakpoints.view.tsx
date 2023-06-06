@@ -13,7 +13,6 @@ import {
   Disposable,
   ViewState,
   Event,
-  isUndefined,
   IRange,
   localize,
 } from '@opensumi/ide-core-browser';
@@ -29,13 +28,16 @@ import {
   isRuntimeBreakpoint,
   getStatus,
   EXCEPTION_BREAKPOINT_URI,
-  BreakpointManager,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 
 import { BreakpointsTreeNode } from './debug-breakpoints-tree.model';
 import styles from './debug-breakpoints.module.less';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
+
+interface IBreakpointTreeData extends IBasicTreeData {
+  order?: number;
+}
 
 export interface BreakpointItem {
   name: string;
@@ -49,7 +51,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   const debugBreakpointsService: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
   const { enable, toggleBreakpointEnable } = debugBreakpointsService;
   const isDisposed = useRef<boolean>(false);
-  const [treeData, setTreeData] = useState<IBasicTreeData[]>([]);
+  const [treeData, setTreeData] = useState<IBreakpointTreeData[]>([]);
 
   const getBreakpointClsState = (options: {
     data: BreakpointItem;
@@ -78,13 +80,14 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   const updateTreeData = useCallback(
     (nodes: [string, BreakpointsTreeNode[]][]) => {
       const { roots } = debugBreakpointsService;
-      const breakpointTreeData: IBasicTreeData[] = [];
-      nodes.forEach(([uri, items]) => {
+      const breakpointTreeData: IBreakpointTreeData[] = [];
+      nodes.forEach(([uri, items], index) => {
         const isException = EXCEPTION_BREAKPOINT_URI.toString() === uri;
         if (isException) {
-          items.forEach((item) => {
+          items.forEach((item, i) => {
             breakpointTreeData.push({
               label: '',
+              order: index * 100 + i,
               expandable: false,
               twisterPlaceholderClassName: styles.tree_item_twister_placeholder_fill,
               children: [],
@@ -104,6 +107,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
 
           breakpointTreeData.push({
             label,
+            order: index,
             twisterClassName: styles.tree_item_twister,
             renderLabel: (
               <BreakpointFileItem
@@ -176,6 +180,12 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
           if (item.raw.breakpoint) {
             toggleBreakpointEnable(item.raw.breakpoint);
           }
+        }}
+        sortComparator={(a: IBreakpointTreeData, b: IBreakpointTreeData) => {
+          if (typeof a.order !== 'undefined' && typeof b.order !== 'undefined') {
+            return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
+          }
+          return undefined;
         }}
         indent={18}
         baseIndent={8}
