@@ -38,20 +38,18 @@ describe('extension browser test', () => {
 
   beforeEach(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders(
-      {
-        token: ExtensionService,
-        useClass: ExtensionServiceImpl,
-      },
-      {
-        token: StaticResourceService,
-        useValue: {
-          resolveStaticResource(uri: URI) {
-            return uri.withScheme('http').withAuthority('localhost');
-          },
+    injector.addProviders({
+      token: ExtensionService,
+      useClass: ExtensionServiceImpl,
+    });
+    injector.overrideProviders({
+      token: StaticResourceService,
+      useValue: {
+        resolveStaticResource(uri: URI) {
+          return uri.withScheme('http').withAuthority('localhost');
         },
       },
-    );
+    });
   });
 
   afterEach(async () => {
