@@ -1,1 +1,1 @@
-export * from '@opensumi/ide-core-browser/lib/static-resource/static-definition';
+export * from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
