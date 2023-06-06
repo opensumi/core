@@ -220,11 +220,11 @@ export const BreakpointFileItem = ({ label, title, breakpointItems }: Breakpoint
     <div className={styles.debug_breakpoints_file_item}>
       <div className={styles.file_item_control}>
         <CheckBox
-          className={styles.file_item_checkbox}
+          className={cls(styles.debug_breakpoints_icon, styles.file_item_checkbox)}
           onChange={() => handleCheckBoxChange(enabled)}
           checked={enabled}
         ></CheckBox>
-        <i className={cls(getIcon('file-text'), styles.file_item_icon)}></i>
+        <i className={cls(getIcon('file-text'), styles.file_item_icon, styles.debug_breakpoints_icon)}></i>
         <span title={title}>{label}</span>
       </div>
       <div className={styles.file_item_control_right}>
@@ -237,7 +237,6 @@ export const BreakpointFileItem = ({ label, title, breakpointItems }: Breakpoint
 export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle: () => void }) => {
   const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!data.breakpoint.default;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
-  const breakpointManager = useInjectable<BreakpointManager>(BreakpointManager);
   const commandService = useInjectable<CommandService>(CommandService);
   const debugBreakpointsService = useInjectable<DebugBreakpointsService>(DebugBreakpointsService);
   const [enabled, setEnabled] = React.useState<boolean>(defaultValue);

@@ -56,17 +56,12 @@
   width: 20px;
   height: 20px;
   min-width: 20px;
+
   :global {
     .kt-checkbox-lump {
       margin: auto;
     }
   }
-}
-
-.debug_breakpoints_checkbox {
-  width: 16px;
-  min-width: 16px;
-  font-size: 16px;
 }
 
 .debug_breakpoints_badge {
@@ -92,10 +87,6 @@
   margin-right: 4px;
   margin-left: 4px;
   flex: 1;
-}
-
-.debug_breakpoints_item_tree_node {
-  padding-left: 27px !important;
 }
 
 .debug_activate_breakpoints_icon {
@@ -128,13 +119,14 @@
 
   .file_item_icon {
     display: block;
-    margin-left: -2px;
+    height: 16px;
     margin-right: 4px;
   }
 
   &:hover {
     .file_item_checkbox {
-      display: inherit;
+      display: flex;
+      margin-right: 4px;
     }
     .file_item_icon {
       display: none;
