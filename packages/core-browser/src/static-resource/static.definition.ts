@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { URI, IDisposable } from '@opensumi/ide-core-browser';
+import { IDisposable, URI } from '@opensumi/ide-core-common';
 
 /**
  * @class StaticResourceService 静态资源转换服务

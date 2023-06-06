@@ -69,6 +69,9 @@ import { SlotRendererContribution } from '../react-providers/slot';
 import { CredentialsService, ICredentialsService, CryptoService, ICryptoService } from '../services';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
+import { StaticResourceClientAppContribution } from '../static-resource/index';
+import { StaticResourceContribution, StaticResourceService } from '../static-resource/static.definition';
+import { StaticResourceServiceImpl } from '../static-resource/static.service';
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
@@ -91,6 +94,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, VariableContribution);
   createContributionProvider(injector, TabBarToolbarContribution);
   createContributionProvider(injector, ToolBarActionContribution);
+  createContributionProvider(injector, StaticResourceContribution);
 
   const appConfig: AppConfig = injector.get(AppConfig);
 
@@ -249,6 +253,11 @@ export function injectInnerProviders(injector: Injector) {
       token: AppLifeCycleServiceToken,
       useClass: AppLifeCycleService,
     },
+    {
+      token: StaticResourceService,
+      useClass: StaticResourceServiceImpl,
+    },
+    StaticResourceClientAppContribution,
   ];
   injector.addProviders(...providers);
 }

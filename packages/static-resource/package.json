@@ -16,6 +16,9 @@
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
+  "dependencies": {
+    "@opensumi/ide-components": "workspace:*"
+  },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*"

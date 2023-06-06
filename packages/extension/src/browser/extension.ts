@@ -9,8 +9,8 @@ import {
   Deferred,
   URI,
 } from '@opensumi/ide-core-browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
   JSONType,

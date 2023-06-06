@@ -1,7 +1,7 @@
 import paths from 'path';
 
 import { URI, Uri, setLanguageId, getLanguageId } from '@opensumi/ide-core-browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

@@ -1,7 +1,7 @@
 import { URI } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
-import { StaticResourceService } from '../../src/browser/index';
+import { StaticResourceService } from '../../lib/static-resource/static.definition';
 
 describe('static-resource test', () => {
   const injector = createBrowserInjector([]);

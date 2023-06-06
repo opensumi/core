@@ -2,6 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@opensumi/ide-core-common';
 import {
   WorkbenchEditorService,
@@ -34,7 +35,6 @@ import {
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

@@ -2951,7 +2951,6 @@ __metadata:
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-core-node": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
     "@types/koa-mount": ^4.0.1
     koa-mount: ^4.0.0
     superagent: ^5.1.0
@@ -2971,7 +2970,6 @@ __metadata:
     "@opensumi/ide-main-layout": "workspace:*"
     "@opensumi/ide-markdown": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@types/node-fetch": ^2.6.1
     "@types/requestretry": ^1.12.7
@@ -3024,7 +3022,6 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-quick-open": "workspace:*"
     "@opensumi/ide-scm": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
     "@opensumi/ide-task": "workspace:*"
     "@opensumi/ide-terminal-next": "workspace:*"
     "@opensumi/ide-testing": "workspace:*"
@@ -3056,7 +3053,6 @@ __metadata:
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -3323,7 +3319,6 @@ __metadata:
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
@@ -3425,7 +3420,6 @@ __metadata:
     "@opensumi/ide-remote-opener": "workspace:*"
     "@opensumi/ide-scm": "workspace:*"
     "@opensumi/ide-search": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
     "@opensumi/ide-status-bar": "workspace:*"
     "@opensumi/ide-storage": "workspace:*"
     "@opensumi/ide-task": "workspace:*"
@@ -3453,10 +3447,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-static-resource@workspace:*, @opensumi/ide-static-resource@workspace:packages/static-resource":
+"@opensumi/ide-static-resource@workspace:packages/static-resource":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-static-resource@workspace:packages/static-resource"
   dependencies:
+    "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
   languageName: unknown
@@ -3562,7 +3557,6 @@ __metadata:
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-logs": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -3620,7 +3614,6 @@ __metadata:
     "@opensumi/ide-core-node": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-editor": "workspace:*"
-    "@opensumi/ide-static-resource": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
   peerDependencies:
     electron: "*"

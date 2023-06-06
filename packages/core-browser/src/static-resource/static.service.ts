@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { URI } from '@opensumi/ide-core-browser';
+import { URI } from '@opensumi/ide-core-common';
 
 import { StaticResourceService, IStaticResourceProvider } from './static.definition';
 
