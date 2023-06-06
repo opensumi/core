@@ -75,6 +75,11 @@ export abstract class ResourceService {
    * 是否存在 provider 可以处理某个 uri
    */
   abstract handlesUri(uri: URI): boolean;
+
+  /**
+   * 获取支持的 scehme 列表
+   */
+  abstract getSupportedSchemes(): string[];
 }
 
 /**
