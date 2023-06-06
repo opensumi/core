@@ -16,6 +16,7 @@ import {
 import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
+import { StaticResourceServiceImpl } from '@opensumi/ide-core-browser/lib/static-resource/static.service';
 import {
   Uri as vscodeUri,
   Emitter,
@@ -83,7 +84,6 @@ import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/l
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { MonacoService } from '@opensumi/ide-monaco';
 import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
-import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';

@@ -2,10 +2,10 @@ import { VALIDATE_TYPE } from '@opensumi/ide-components';
 import { HideReason, IContextKeyService, URI } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
+import { StaticResourceServiceImpl } from '@opensumi/ide-core-browser/lib/static-resource/static.service';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
-import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common';
 
