@@ -29,11 +29,20 @@ const MenuAction: React.FC<{
   data: MenuNode;
   disabled?: boolean;
   hasSubmenu?: boolean;
-}> = ({ data, hasSubmenu, disabled }) => (
+  iconService?: IMenubarIconService;
+}> = ({ data, hasSubmenu, disabled, iconService }) => (
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
     <div className={styles.icon}>{data.checked ? <Icon icon='check' /> : null}</div>
-    <div className={styles.label}>{data.label ? strings.mnemonicButtonLabel(data.label, true) : ''}</div>
+    <div className={styles.label}>
+      {data.label
+        ? transformLabelWithCodicon(
+            strings.mnemonicButtonLabel(data.label, true),
+            { margin: '0 3px' },
+            iconService?.fromString.bind(iconService),
+          )
+        : ''}
+    </div>
     <div className={styles.tip}>
       {data.keybinding ? <div className={styles.shortcut}>{data.keybinding}</div> : null}
       {hasSubmenu ? (
@@ -53,7 +62,8 @@ export const MenuActionList: React.FC<{
   afterClick?: (item: MenuNode) => void;
   context?: any[];
   style?: React.CSSProperties;
-}> = ({ data = [], context = [], afterClick, style }) => {
+  iconService?: IMenubarIconService;
+}> = ({ data = [], context = [], afterClick, style, iconService }) => {
   if (!data.length) {
     return null;
   }
@@ -103,7 +113,7 @@ export const MenuActionList: React.FC<{
                 key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
                 className={styles.submenuItem}
                 popupClassName='kt-menu'
-                title={<MenuAction hasSubmenu data={menuNode} />}
+                title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
               >
                 {recursiveRender(menuNode.children, menuNode.label)}
               </Menu.SubMenu>
@@ -120,7 +130,7 @@ export const MenuActionList: React.FC<{
               className={styles.menuItem}
               disabled={menuNode.disabled}
             >
-              <MenuAction data={menuNode} disabled={menuNode.disabled} />
+              <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
             </Menu.Item>
             {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
           </>

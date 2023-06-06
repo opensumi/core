@@ -28,6 +28,12 @@
       "path": "./references/tsconfig.file-service.json"
     },
     {
+      "path": "./references/tsconfig.static-resource.json"
+    },
+    {
+      "path": "./references/tsconfig.theme.json"
+    },
+    {
       "path": "./references/tsconfig.overlay.json"
     },
     {
@@ -38,12 +44,6 @@
     },
     {
       "path": "./references/tsconfig.i18n.json"
-    },
-    {
-      "path": "./references/tsconfig.static-resource.json"
-    },
-    {
-      "path": "./references/tsconfig.theme.json"
     },
     {
       "path": "./references/tsconfig.status-bar.json"

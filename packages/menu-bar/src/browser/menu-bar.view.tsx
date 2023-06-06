@@ -9,6 +9,7 @@ import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-co
 import { InlineActionBar, MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { AbstractMenuService, IMenubarItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import styles from './menu-bar.module.less';
 import { MenubarStore } from './menu-bar.store';
@@ -21,6 +22,7 @@ const MenubarItem = observer<
   }
 >(({ id, label, focusMode, afterMenubarClick, afterMenuClick }) => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
+  const iconService = useInjectable<IIconService>(IIconService);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
   const handleMenubarItemClick = React.useCallback(() => {
@@ -60,7 +62,7 @@ const MenubarItem = observer<
       }}
       visible={menuOpen}
       onVisibleChange={triggerMenuVisibleChange}
-      overlay={<MenuActionList data={data} afterClick={handleMenuItemClick} />}
+      overlay={<MenuActionList data={data} afterClick={handleMenuItemClick} iconService={iconService} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}
     >
       <div
