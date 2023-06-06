@@ -88,9 +88,9 @@ export const MenuActionList: React.FC<{
     (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
         if (menuNode.id === SeparatorMenuItemNode.ID) {
-          return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
+          return null;
         }
-
+        const hasSeparator = dataSource[index + 1] && dataSource[index + 1].id === SeparatorMenuItemNode.ID;
         if (menuNode.id === SubmenuItemNode.ID) {
           // 子菜单项为空时不渲染
           if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
@@ -98,26 +98,32 @@ export const MenuActionList: React.FC<{
           }
 
           return (
-            <Menu.SubMenu
-              key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
-              className={styles.submenuItem}
-              popupClassName='kt-menu'
-              title={<MenuAction hasSubmenu data={menuNode} />}
-            >
-              {recursiveRender(menuNode.children, menuNode.label)}
-            </Menu.SubMenu>
+            <>
+              <Menu.SubMenu
+                key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
+                className={styles.submenuItem}
+                popupClassName='kt-menu'
+                title={<MenuAction hasSubmenu data={menuNode} />}
+              >
+                {recursiveRender(menuNode.children, menuNode.label)}
+              </Menu.SubMenu>
+              {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
+            </>
           );
         }
 
         return (
-          <Menu.Item
-            id={`${menuNode.id}-${index}`}
-            key={`${menuNode.id}-${key}-${index}`}
-            className={styles.menuItem}
-            disabled={menuNode.disabled}
-          >
-            <MenuAction data={menuNode} disabled={menuNode.disabled} />
-          </Menu.Item>
+          <>
+            <Menu.Item
+              id={`${menuNode.id}-${index}`}
+              key={`${menuNode.id}-${key}-${index}`}
+              className={styles.menuItem}
+              disabled={menuNode.disabled}
+            >
+              <MenuAction data={menuNode} disabled={menuNode.disabled} />
+            </Menu.Item>
+            {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
+          </>
         );
       }),
     [],
@@ -453,7 +459,10 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
   // 因为这里的 context 塞到 useMenus 之后会自动把参数加入到 MenuItem.execute 里面
   const [navMenu, moreMenu] = useMenus(menus, separator, context, debounce);
 
-  const navMenus = useMemo(() => isFlattenMenu ? [...navMenu, ...moreMenu] : navMenu, [navMenu, moreMenu, isFlattenMenu]);
+  const navMenus = useMemo(
+    () => (isFlattenMenu ? [...navMenu, ...moreMenu] : navMenu),
+    [navMenu, moreMenu, isFlattenMenu],
+  );
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
