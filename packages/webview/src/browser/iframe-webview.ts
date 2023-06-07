@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig } from '@opensumi/ide-core-browser';
+import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, URI } from '@opensumi/ide-core-browser';
 
 import { AbstractWebviewPanel } from './abstract-webview';
 import { IWebview, IWebviewContentOptions } from './types';
-
 
 @Injectable({ multiple: true })
 export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview {
@@ -110,6 +109,14 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
         this.doUpdateContent();
       }
     }
+  }
+
+  protected preprocessHtml(html: string): string {
+    return html.replace(
+      /(["'])vscode-resource:([^\s'"]+?)(["'])/gi,
+      (_, startQuote, path, endQuote) =>
+        `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`,
+    );
   }
 
   remove() {
