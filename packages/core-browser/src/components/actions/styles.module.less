@@ -58,6 +58,9 @@
     font-size: @base-font-size;
     display: flex;
     align-items: center;
+    // stop Flexbox removing trailing whitespace
+    // see https://www.mattstobbs.com/flexbox-removing-trailing-whitespace/
+    white-space: pre-wrap;
   }
 }
 
