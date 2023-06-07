@@ -43,6 +43,7 @@ export const TERMINAL_FOREGROUND_COLOR = registerColor(
   },
   localize('terminal.foreground', 'The foreground color of the terminal.'),
 );
+
 export const TERMINAL_CURSOR_FOREGROUND_COLOR = registerColor(
   'terminalCursor.foreground',
   null,
