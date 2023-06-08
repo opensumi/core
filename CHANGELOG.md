@@ -7,6 +7,80 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## v2.25.0
+
+### What's New Features
+
+- feat: quickInput support hideOnDidAccept by @pipiiiiii in https://github.com/opensumi/core/pull/2631
+- feat: improve the interaction for enabling/disabling breakpoints by @Ricbet in https://github.com/opensumi/core/pull/2615
+- feat: debug breakpoint file items supports enable/disable switch by @Ricbet in https://github.com/opensumi/core/pull/2611
+- feat: update command open terminal setting by @AhkunTa in https://github.com/opensumi/core/pull/2660
+- feat: support flashing prompt for focus breakpoints in the editor by @Ricbet in https://github.com/opensumi/core/pull/2652
+- feat: support delete or edit breakpoints when hovering on the it by @Ricbet in https://github.com/opensumi/core/pull/2655
+- feat: menuActionList component support style css properties by @Ricbet in https://github.com/opensumi/core/pull/2711
+- feat: support icon menubar by @Ricbet in https://github.com/opensumi/core/pull/2728
+- fix: use currentOrPreviousFocusedEditor on search by @pipiiiiii in https://github.com/opensumi/core/pull/2761
+- feat: optimize file tree node decoration, support codicon by @Aaaaash in https://github.com/opensumi/core/pull/2768
+- feat: open resource when click comment item by @Aaaaash in https://github.com/opensumi/core/pull/2769
+- feat: add arrow for zonewidget by @Aaaaash in https://github.com/opensumi/core/pull/2763
+- feat: support xterm render type select by @life2015 in https://github.com/opensumi/core/pull/2754
+- feat: add registered scheme by @Aaaaash in https://github.com/opensumi/core/pull/2774
+- feat: support input number component by @Ricbet in https://github.com/opensumi/core/pull/2630
+- feat: support launch editor UI by @Ricbet in https://github.com/opensumi/core/pull/2574
+- feat: throw error if get file stat error by @bytemain in https://github.com/opensumi/core/pull/2773
+- feat: improve breakpoint style by @bytemain in https://github.com/opensumi/core/pull/2779
+- feat: menu action support codicon by @Aaaaash in https://github.com/opensumi/core/pull/2778
+- feat: auto expand the comment widget when click comment tree item by @Aaaaash in https://github.com/opensumi/core/pull/2777
+
+### Refactor
+
+- refactor: use sumiContributes and compatible with kaitianContributes by @erha19 in https://github.com/opensumi/core/pull/2664
+- refactor: auto update decoration targets by @erha19 in https://github.com/opensumi/core/pull/2690
+- refactor: consolidated clientId retrieval code by @bytemain in https://github.com/opensumi/core/pull/2703
+- style: improve section label and badge style by @erha19 in https://github.com/opensumi/core/pull/2758
+- refactor: extract electron essentials by @bytemain in https://github.com/opensumi/core/pull/2742
+- refactor: migration static-resource to core-browser by @Aaaaash in https://github.com/opensumi/core/pull/2776
+- refactor: extract platform specific code by @bytemain in https://github.com/opensumi/core/pull/2780
+
+### Style Changes
+
+- fix: reference pannel style error by @wangxiaojuan in https://github.com/opensumi/core/pull/2606
+- style: optimize sidebar icon size by @bk1012 in https://github.com/opensumi/core/pull/2672
+- fix: monaco Action Bar style by @wangxiaojuan in https://github.com/opensumi/core/pull/2720
+- fix: treenode styles by @Aaaaash in https://github.com/opensumi/core/pull/2770
+- style: stop flexbox removing trailing whitespace on menu action by @erha19 in https://github.com/opensumi/core/pull/2784
+- style: improve terminal split view border style by @erha19 in https://github.com/opensumi/core/pull/2783
+
+### Other Changes
+
+- chore: ignore scripts of building cli engine by @erha19 in https://github.com/opensumi/core/pull/2608
+- chore: remove gitpod by @opensumi in https://github.com/opensumi/core/pull/2634
+- test: add extension E2E test case by @pipiiiiii in https://github.com/opensumi/core/pull/2638
+- chore: remove useless workflow and issue template by @erha19 in https://github.com/opensumi/core/pull/2678
+- Revert "fix: remove the marked.js warning about sanitize and add sanitizer" by @bytemain in https://github.com/opensumi/core/pull/2731
+- chore: update git extension to v1.68.1 by @erha19 in https://github.com/opensumi/core/pull/2760
+- fix: add default input value for TerminalSearchService by @winjo in https://github.com/opensumi/core/pull/2762
+- fix: check if element of popover exists when delayed hidden by @winjo in https://github.com/opensumi/core/pull/2764
+- fix: check if currentGroup is empty when split terminal by @winjo in https://github.com/opensumi/core/pull/2766
+- fix: input component defaultValue failed by @Ricbet in https://github.com/opensumi/core/pull/2751
+- fix: only add default color once by @pipiiiiii in https://github.com/opensumi/core/pull/2753
+- chore: optimize menuaction list renderer by @Aaaaash in https://github.com/opensumi/core/pull/2775
+- fix: conditional breakpoint centering by @Ricbet in https://github.com/opensumi/core/pull/2666
+- fix: set default language by @limerickgds in https://github.com/opensumi/core/pull/2722
+- fix: on disposeResource delete resourceDecoration by @l1shen in https://github.com/opensumi/core/pull/2785
+
+## New Contributors
+
+- @limerickgds made their first contribution in https://github.com/opensumi/core/pull/2722
+
+<a name="breaking_changes_2.25.0">[Breaking Changes:](#breaking_changes_2.25.0)</a>
+
+#### 1. The package`@opensumi/ide-static-resource` will be removed soon [#2776](https://github.com/opensumi/core/pull/2776)
+
+In this version, you no longer need to introduce the redundant package `@opensumi/ide-static-resource` in your project.
+
+At the same time, this package will be removed after version 2.27.0, please pay attention.
+
 ## v2.24.0
 
 ### What's New Features
