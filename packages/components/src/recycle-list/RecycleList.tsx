@@ -342,7 +342,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   );
 
   // 为 List 添加下边距
-  const InnerElementType = useMemo(
+  const innerElementType = useMemo(
     () =>
       forwardRef((props, ref) => {
         const { style, ...rest } = props as any;
@@ -409,7 +409,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
                 ...style,
               }}
               className={cls(className, 'kt-recycle-list')}
-              innerElementType={InnerElementType}
+              innerElementType={innerElementType}
               outerElementType={outerElementType}
               estimatedItemSize={calcEstimatedSize}
             >
@@ -434,7 +434,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
                 ...style,
               }}
               className={cls(className, 'recycle-list')}
-              innerElementType={InnerElementType}
+              innerElementType={innerElementType}
               outerElementType={outerElementType}
             >
               {renderItem}
