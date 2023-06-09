@@ -336,6 +336,7 @@ export const QuickOpenList: React.FC<{
       template={QuickOpenItemView}
       getSize={getSize}
       maxHeight={widget.items.length ? widget.MAX_HEIGHT : 0}
+      hiddenHorizontalScrollbar
     />
   ) : null;
 });
@@ -350,7 +351,7 @@ export const QuickOpenProgress = observer(() => {
   }, [widget.busy]);
 
   return (
-    <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar} >
+    <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar}>
       <ProgressBar progressModel={indicator!.progressModel} />
     </div>
   );
