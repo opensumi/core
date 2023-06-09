@@ -1,6 +1,6 @@
 import fuzzy from 'fuzzy';
-import React, { useEffect, createRef } from 'react';
-import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
+import React, { useEffect, createRef, useMemo } from 'react';
+import { FixedSizeList, VariableSizeList, ListProps } from 'react-window';
 
 import {
   DisposableCollection,
@@ -900,24 +900,28 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
     }, []);
 
-    const setSize = supportDynamicHeights
-      ? () => {
-          let size = 0;
-          if (wrapRef.current) {
-            const ref = wrapRef.current;
-            size = Array.from(ref.children).reduce(
-              (pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height,
-              0,
-            );
-          }
-          if (size) {
-            this.dynamicSizeMap.set(index, size);
-            this.layoutItem();
-          }
+    const setSize = useMemo(
+      () =>
+        supportDynamicHeights
+          ? () => {
+              let size = 0;
+              if (wrapRef.current) {
+                const ref = wrapRef.current;
+                size = Array.from(ref.children).reduce(
+                  (pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height,
+                  0,
+                );
+              }
+              if (size) {
+                this.dynamicSizeMap.set(index, size);
+                this.layoutItem();
+              }
 
-          return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
-        }
-      : () => {};
+              return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
+            }
+          : () => {},
+      [supportDynamicHeights],
+    );
 
     const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
 
@@ -930,7 +934,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           template={template}
           hasPrompt={!!this.promptHandle && !this.promptHandle.destroyed}
           expanded={CompositeTreeNode.is(item) ? (item as CompositeTreeNode).expanded : void 0}
-          setSize={setSize}
         >
           {children as INodeRenderer}
         </NodeRendererWrap>
@@ -942,7 +945,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (!this.props.supportDynamicHeights) {
       return;
     }
-    // (this.listRef?.current as VariableSizeList<any>).resetAfterIndex(0);
     // eslint-disable-next-line no-unsafe-optional-chaining
     if (this.listRef && this.listRef?.current && '_getRangeToRender' in this.listRef?.current) {
       // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
