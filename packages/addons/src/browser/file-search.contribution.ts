@@ -279,7 +279,7 @@ export class FileSearchQuickCommandHandler {
 
   private async getFindOutItems(alreadyCollected: Set<string>, lookFor: string, token: CancellationToken) {
     let results: QuickOpenItem[];
-    // 有@时进入查找symbol逻辑
+    // 有 @ 时进入查找symbol逻辑
     if (lookFor.indexOf('@') > -1) {
       // save current editor state
       this.trySaveEditorState();
