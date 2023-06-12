@@ -238,6 +238,9 @@ export function createApiFactory(
     },
     // 类型定义
     ...extTypes,
+    // https://github.com/microsoft/vscode/blob/0ba16b83267cbab5811e12e0317fb47fd774324e/src/vs/workbench/api/common/extHost.api.impl.ts#L1288
+    InlineCompletionItem: extTypes.InlineSuggestion,
+    InlineCompletionList: extTypes.InlineSuggestionList,
     ...fileSystemTypes,
     // 参考 VS Code，目前到 1.44 版本为临时兼容，最新版(1.50+)已去除
     Task2: extTypes.Task,

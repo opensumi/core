@@ -3257,3 +3257,28 @@ export class DataTransfer implements vscode.DataTransfer {
     }
   }
 }
+
+@es5ClassCompat
+export class InlineSuggestion implements vscode.InlineCompletionItem {
+  filterText?: string;
+  insertText: string;
+  range?: Range;
+  command?: vscode.Command;
+
+  constructor(insertText: string, range?: Range, command?: vscode.Command) {
+    this.insertText = insertText;
+    this.range = range;
+    this.command = command;
+  }
+}
+
+@es5ClassCompat
+export class InlineSuggestionList implements vscode.InlineCompletionList {
+  items: vscode.InlineCompletionItem[];
+
+  commands: vscode.Command[] | undefined = undefined;
+
+  constructor(items: vscode.InlineCompletionItem[]) {
+    this.items = items;
+  }
+}
