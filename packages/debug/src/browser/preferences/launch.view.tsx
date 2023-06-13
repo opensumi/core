@@ -1,6 +1,6 @@
 import { IChangeEvent, withTheme } from '@rjsf/core';
 import { GenericObjectType, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
-import validator from '@rjsf/validator-ajv8';
+import validator from '@rjsf/validator-ajv6';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
 import throttle from 'lodash/throttle';
