@@ -145,7 +145,7 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
           disposableStore = new DisposableStore();
         }
         return this._commands.toInternal(c, disposableStore);
-      }),
+      }) as Command[],
     };
   }
 
@@ -154,9 +154,12 @@ export class InlineCompletionAdapter extends InlineCompletionAdapterBase {
     data?.dispose();
   }
 
-  // proposed api
-  // 暂不实现
   override handleDidShowCompletionItem(pid: number, idx: number): void {
-    throw new Error('Method not implemented.');
+    const completionItem = this._references.get(pid)?.items[idx];
+    if (completionItem) {
+      if (this._provider.handleDidShowCompletionItem) {
+        this._provider.handleDidShowCompletionItem(completionItem);
+      }
+    }
   }
 }
