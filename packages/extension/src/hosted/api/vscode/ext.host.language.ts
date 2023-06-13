@@ -596,6 +596,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.proxy.$registerInlineCompletionsSupport(callId, this.transformDocumentSelector(selector), true);
     return this.createDisposable(callId);
   }
+
   $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
