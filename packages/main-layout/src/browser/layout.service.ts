@@ -509,6 +509,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   // TODO 这样很耦合，不能做到tab renderer自由拆分
   expandBottom(expand: boolean): void {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    if (!tabbarService.currentContainerId) {
+      tabbarService.currentContainerId =
+        tabbarService.currentContainerId ||
+        tabbarService.previousContainerId ||
+        tabbarService.containersMap.keys().next().value;
+    }
     tabbarService.doExpand(expand);
     this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
   }
