@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-extension-manager",
-  "version": "2.24.2",
+  "version": "2.25.1",
   "files": [
     "lib",
     "src"
@@ -15,7 +15,6 @@
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-extension": "workspace:*",
-    "@opensumi/ide-static-resource": "workspace:*",
     "compressing": "^1.6.2",
     "fs-extra": "^10.1.0",
     "node-fetch": "^2.6.7",

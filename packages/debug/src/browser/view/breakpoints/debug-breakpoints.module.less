@@ -1,8 +1,31 @@
+@tree-item-icon-size: 18px;
+
 .debug_breakpoints {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  :global {
+    span.kt-icon.icon.kaitian-icon {
+      min-width: @tree-item-icon-size;
+      width: @tree-item-icon-size;
+    }
+    .basic_tree .icon:before {
+      font-size: 14px;
+    }
+  }
+
+  .tree_item_twister_placeholder {
+    display: none;
+  }
+
+  .tree_item_twister_placeholder_fill {
+    min-width: @tree-item-icon-size;
+  }
+
+  .tree_item_twister {
+    min-width: @tree-item-icon-size;
+  }
 }
 
 .debug_breakpoints_disabled {
@@ -40,10 +63,15 @@
 }
 
 .debug_breakpoints_icon {
-  width: 19px;
-  height: 19px;
-  min-width: 19px;
-  margin-right: 3px;
+  width: @tree-item-icon-size;
+  height: @tree-item-icon-size;
+  min-width: @tree-item-icon-size;
+
+  :global {
+    .kt-checkbox-lump {
+      margin: auto;
+    }
+  }
 }
 
 .debug_breakpoints_badge {
@@ -66,12 +94,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-right: 5px;
+  margin-right: 4px;
+  margin-left: 4px;
   flex: 1;
-}
-
-.debug_breakpoints_item_tree_node {
-  padding-left: 27px !important;
 }
 
 .debug_activate_breakpoints_icon {
@@ -104,13 +129,14 @@
 
   .file_item_icon {
     display: block;
-    margin-left: -2px;
+    height: 16px;
     margin-right: 4px;
   }
 
   &:hover {
     .file_item_checkbox {
-      display: inherit;
+      display: flex;
+      margin-right: 4px;
     }
     .file_item_icon {
       display: none;

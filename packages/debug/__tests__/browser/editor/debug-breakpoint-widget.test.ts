@@ -1,5 +1,6 @@
 import { Disposable, IFileServiceClient } from '@opensumi/ide-core-browser';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { Emitter } from '@opensumi/ide-core-common';
 import { DebugEditor, IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugBreakpointWidget } from '@opensumi/ide-debug/lib/browser/editor';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -15,6 +16,19 @@ describe('Debug Breakpoint Widget', () => {
     onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
     getLayoutInfo: jest.fn(() => ({ width: 100, height: 100 })),
     changeViewZones: jest.fn(() => Disposable.create(() => {})),
+    getOption: () => 10,
+    createDecorationsCollection(decorations) {
+      return {
+        onDidChange: new Emitter().event,
+        clear: () => {},
+        length: 0,
+        set: () => {},
+        getRange: () => null,
+        getRanges: () => [],
+        has: () => true,
+      };
+    },
+    getModel: jest.fn(() => Disposable.create(() => {})),
   };
 
   beforeAll(() => {

@@ -251,6 +251,7 @@ export const localizationBundle = {
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
     'debug.action.add.configuration': '添加配置...',
+    'debug.action.open.launch.editor': '在 launch 编辑器中打开',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.debug.console': '调试控制台',
     'debug.action.step-into': '单步跳入',
@@ -356,6 +357,10 @@ export const localizationBundle = {
     'debug.launch.configurations.debugLinuxConfiguration': '特定于 Linux 的启动配置属性。',
     'debug.launch.typeNotSupported': '调试类型 "{0}" 不支持',
     'debug.launch.catchError': '启动调试进程时遇到了错误, 请检查调试控制台',
+    'debug.launch.view.template.button.addItem': '添加一项',
+    'debug.launch.view.template.input.placeholder': '请输入 {0}',
+    'debug.launch.view.template.button.submit': '新增配置项',
+
     'debug.widget.exception.thrownWithId': '发生异常: {0}',
     'debug.widget.exception.thrown': '出现异常。',
 
@@ -452,6 +457,8 @@ export const localizationBundle = {
       '当在终端标题中找到其中一个程序名称时，将禁用本地回显。',
     'preference.terminal.integrated.localEchoStyle': '本地回显字体样式',
     'preference.terminal.integrated.localEchoStyleDesc': '本地回显文本的终端样式；字体样式或 RGB 颜色。',
+    'preference.terminal.integrated.xtermRenderType': 'Xterm 渲染类型',
+    'preference.terminal.integrated.xtermRenderTypeDesc': '选择 Xterm 渲染类型，WebGL 性能更强，Canvas 兼容性更佳。',
     'preference.terminal.integrated.cursorStyle': '终端输入指针样式',
     'preference.terminal.integrated.cursorStyleDesc': '修改终端输入指针样式',
     'settings.group.general': '常规',

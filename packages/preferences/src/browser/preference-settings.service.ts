@@ -70,6 +70,9 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
+  private onSettingsGroupsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+  public readonly onSettingsGroupsChange: Event<void> = this.onSettingsGroupsChangeEmitter.event;
+
   @observable
   public currentSearch = '';
 
@@ -250,7 +253,11 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       ...group,
       title: replaceLocalizePlaceholder(group.title) || group.title,
     });
-    return disposable;
+    this.onSettingsGroupsChangeEmitter.fire();
+    return Disposable.create(() => {
+      disposable.dispose();
+      this.onSettingsGroupsChangeEmitter.fire();
+    });
   }
 
   /**
@@ -801,6 +808,7 @@ export const defaultSettingSections: {
           localized: 'preference.terminal.integrated.cursorStyle',
         },
         { id: 'terminal.integrated.localEchoStyle', localized: 'preference.terminal.integrated.localEchoStyle' },
+        { id: 'terminal.integrated.xtermRenderType', localized: 'preference.terminal.integrated.xtermRenderType' },
       ],
     },
   ],

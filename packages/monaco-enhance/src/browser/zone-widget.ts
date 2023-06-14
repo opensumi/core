@@ -1,6 +1,8 @@
 import { DomListener, IRange } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable, Event, Emitter, uuid } from '@opensumi/ide-core-browser';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
+import type { ICodeEditor, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { createCSSRule, removeCSSRulesContainingSelector } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import {
   Sash,
   IHorizontalSashLayoutProvider,
@@ -9,6 +11,7 @@ import {
   ISashEvent,
 } from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/sash/sash';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { TrackedRangeStickiness } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
@@ -68,6 +71,70 @@ export class OverlayWidgetDelegate extends Disposable implements monaco.editor.I
 
 export interface IOptions {
   isResizeable?: boolean;
+  arrowColor?: string;
+}
+
+class Arrow {
+  private static readonly _IdGenerator = new IdGenerator('.arrow-decoration-');
+
+  private readonly _ruleName = Arrow._IdGenerator.nextId();
+  private readonly _decorations = this._editor.createDecorationsCollection();
+  private _color: string | null = 'rgba(0, 122, 204)';
+
+  private _height = -1;
+
+  constructor(private readonly _editor: ICodeEditor) {}
+
+  dispose(): void {
+    this.hide();
+    removeCSSRulesContainingSelector(this._ruleName);
+  }
+
+  set color(value: string) {
+    if (this._color !== value) {
+      this._color = value;
+      this._updateStyle();
+    }
+  }
+
+  set height(value: number) {
+    if (this._height !== value) {
+      this._height = value;
+      this._updateStyle();
+    }
+  }
+
+  private _updateStyle(): void {
+    removeCSSRulesContainingSelector(this._ruleName);
+    createCSSRule(
+      `.monaco-editor ${this._ruleName}`,
+      `border-style: solid; border-color: transparent; border-bottom-color: ${this._color}; border-width: ${this._height}px; bottom: 0px; margin-left: -${this._height}px; width: 0px !important; left: 0px !important;`,
+    );
+  }
+
+  show(where: IRange): void {
+    this._updateStyle();
+
+    if (where.startColumn === 1) {
+      // the arrow isn't pretty at column 1 and we need to push it out a little
+      where = { ...where, startLineNumber: where.startLineNumber, startColumn: 2 };
+    }
+
+    this._decorations.set([
+      {
+        range: where,
+        options: {
+          description: 'zone-widget-arrow',
+          className: this._ruleName,
+          stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      },
+    ]);
+  }
+
+  hide(): void {
+    this._decorations.clear();
+  }
 }
 
 /**
@@ -77,6 +144,8 @@ export interface IOptions {
  * dispose 负责回收。
  */
 export abstract class ZoneWidget extends Disposable implements IHorizontalSashLayoutProvider {
+  private _arrow: Arrow | null = null;
+
   protected _container: HTMLDivElement;
   // 宽度和左定位不需要继承下去，完全交给父容器控制
   private width = 0;
@@ -101,9 +170,12 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   protected abstract _fillContainer(container: HTMLElement): void;
 
   private _showImpl(where: monaco.IRange, heightInLines: number) {
+    const position = where;
     const { startLineNumber: lineNumber, startColumn: column } = where;
     const viewZoneDomNode = document.createElement('div');
     const layoutInfo = this.editor.getLayoutInfo();
+    const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+
     viewZoneDomNode.style.overflow = 'hidden';
 
     this.editor.changeViewZones((accessor) => {
@@ -129,6 +201,20 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
       this.editor.addOverlayWidget(this._overlay);
     });
 
+    if (!this._arrow) {
+      this._arrow = new Arrow(this.editor);
+      this.disposables.push(this._arrow);
+    }
+
+    if (this.options?.arrowColor) {
+      const arrowColor = this.options?.arrowColor?.toString();
+      this._arrow.color = arrowColor;
+    }
+
+    const arrowHeight = Math.round(lineHeight / 3);
+    this._arrow.height = arrowHeight;
+    this._arrow.show(position);
+
     this.layout(layoutInfo);
   }
 
@@ -147,12 +233,33 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
     this._showImpl(where, heightInLines);
   }
 
-  hide() {}
+  private hideImpl() {
+    if (this._viewZone) {
+      this.editor.changeViewZones((accessor) => {
+        if (this._viewZone) {
+          accessor.removeZone(this._viewZone.id);
+          this._viewZone = null;
+        }
+      });
+    }
+    if (this._overlay) {
+      this.editor.removeOverlayWidget(this._overlay);
+      this._overlay = null;
+    }
+    this._container.remove();
+    this._arrow?.hide();
+  }
+
+  hide() {
+    this.hideImpl();
+  }
 
   create(): void {
     this._fillContainer(this._container);
     this._initSash();
     this.applyStyle();
+    this._arrow = new Arrow(this.editor);
+    this.disposables.push(this._arrow);
   }
 
   private _getLeft(info: monaco.editor.EditorLayoutInfo): number {
@@ -275,19 +382,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   }
 
   dispose() {
-    if (this._viewZone) {
-      this.editor.changeViewZones((accessor) => {
-        if (this._viewZone) {
-          accessor.removeZone(this._viewZone.id);
-          this._viewZone = null;
-        }
-      });
-    }
-    if (this._overlay) {
-      this.editor.removeOverlayWidget(this._overlay);
-      this._overlay = null;
-    }
-    this._container.remove();
+    this.hideImpl();
     super.dispose();
   }
 }
@@ -305,8 +400,8 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   public onFirstDisplay = Event.once(this.onDomNodeTop);
   protected _isShow = false;
 
-  constructor(protected readonly editor: IMonacoCodeEditor, private range: monaco.IRange) {
-    super(editor);
+  constructor(protected readonly editor: IMonacoCodeEditor, private range: monaco.IRange, readonly options?: IOptions) {
+    super(editor, options);
     this.lineHeight = this.editor.getOption(monaco.editor.EditorOption.lineHeight);
     this.addDispose(
       this.editor.onDidChangeConfiguration((e) => {

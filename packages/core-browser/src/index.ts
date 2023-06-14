@@ -40,3 +40,5 @@ export * from './services';
 export * from './encoding-registry';
 export * from './markdown';
 export * from './extensions';
+
+export * from './static-resource';

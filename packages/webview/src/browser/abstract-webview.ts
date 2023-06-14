@@ -9,7 +9,7 @@ import {
   MaybeNull,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 
@@ -159,21 +159,6 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
     await this.doUpdateContent();
   }
 
-  protected preprocessHtml(html: string): string {
-    if (this.appConfig.isElectronRenderer) {
-      // 将vscode-resource:/User/xxx 转换为 vscode-resource:///User/xxx
-      return html.replace(
-        /(["'])vscode-resource:(\/\/|)([^\s'"]+?)(["'])/gi,
-        (_, startQuote, slash, path, endQuote) => `${startQuote}vscode-resource://${path}${endQuote}`,
-      );
-    }
-    return html.replace(
-      /(["'])vscode-resource:([^\s'"]+?)(["'])/gi,
-      (_, startQuote, path, endQuote) =>
-        `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`,
-    );
-  }
-
   protected doUpdateContent() {
     return this._sendToWebview('content', {
       contents: this.preprocessHtml(this._html),
@@ -184,8 +169,8 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   public abstract appendTo(container: HTMLElement);
 
+  protected abstract preprocessHtml(html: string): string;
   protected abstract _sendToWebview(channel: string, data: any);
-
   protected abstract _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable;
 
   updateOptions(options: IWebviewContentOptions): void {

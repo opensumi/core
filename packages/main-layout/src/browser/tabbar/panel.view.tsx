@@ -150,16 +150,25 @@ const BottomPanelView: React.FC<{
   side: string;
   titleMenu: IMenu;
 }> = ({ component, titleMenu, side }) => {
-  const contentRef = React.useRef<HTMLDivElement | null>();
-  const titleComponent = component.options && component.options.titleComponent;
+  const ref = React.useRef<HTMLElement | null>();
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const configContext = useInjectable<AppConfig>(AppConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  // 注入自定义视图 or 通过views注入视图
+  const { component: CustomComponent, containerId } = component.options || {};
+  const titleComponent = component.options && component.options.titleComponent;
+
+  if (!containerId) {
+    return null;
+  }
   const progressService: IProgressService = useInjectable(IProgressService);
-  const indicator = progressService.getIndicator(component.options!.containerId)!;
-  const viewState = useViewState(side, contentRef);
+  const indicator = progressService.getIndicator(containerId);
+  if (!indicator) {
+    return null;
+  }
+  const viewState = useViewState(side, containerRef);
 
   return (
-    <div className={styles.panel_container}>
+    <div ref={containerRef} className={styles.panel_container}>
       <div className={styles.panel_title_bar} style={{ height: LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT }}>
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
@@ -172,12 +181,22 @@ const BottomPanelView: React.FC<{
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
-      <div ref={(ele) => (contentRef.current = ele)} className={styles.panel_wrapper}>
+      <div className={styles.container_wrap} ref={(ele) => (ref.current = ele)}>
         <ProgressBar progressModel={indicator.progressModel} />
-        <ComponentRenderer
-          initialProps={{ viewState, ...component.options?.initialProps }}
-          Component={component.options?.component ? component.options.component : component.views[0].component!}
-        />
+        {CustomComponent ? (
+          <ConfigProvider value={configContext}>
+            <ComponentRenderer
+              initialProps={{ viewState, ...component.options?.initialProps }}
+              Component={CustomComponent}
+            />
+          </ConfigProvider>
+        ) : (
+          <AccordionContainer
+            views={component.views}
+            minSize={component.options!.miniSize}
+            containerId={component.options!.containerId}
+          />
+        )}
       </div>
     </div>
   );

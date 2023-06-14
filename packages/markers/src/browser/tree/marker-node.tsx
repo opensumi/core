@@ -108,7 +108,7 @@ const MarkerItemDescription: FC<{ marker: IRenderableMarker }> = memo(({ marker 
         )}
         {marker.code && ')'}
       </div>
-      <div className={styles.position}>{`[${marker.startLineNumber},${marker.startColumn}]`}</div>
+      <div className={styles.position}>{`[Ln ${marker.startLineNumber}, Col ${marker.startColumn}]`}</div>
     </div>
   );
 });

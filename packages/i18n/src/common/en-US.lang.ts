@@ -278,6 +278,7 @@ export const localizationBundle = {
     'scm.dirtyDiff.changes': '{0} of {1} changes',
 
     'debug.action.add.configuration': 'Add Configuration...',
+    'debug.action.open.launch.editor': 'Open in launch editor',
     'debug.action.no.configuration': 'No Configurations',
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',
@@ -379,6 +380,10 @@ export const localizationBundle = {
     'debug.launch.configurations.debugLinuxConfiguration': 'Linux specific launch configuration attributes.',
     'debug.launch.typeNotSupported': 'The debug session type "{0}" is not supported.',
     'debug.launch.catchError': 'There was an error starting the debug session, check the logs for more details.',
+    'debug.launch.view.template.button.addItem': 'Add items',
+    'debug.launch.view.template.input.placeholder': 'Please enter {0}',
+    'debug.launch.view.template.button.submit': 'Add new configuration item',
+
     'debug.widget.exception.thrownWithId': 'Exception has occurred: {0}',
     'debug.widget.exception.thrown': 'Exception has occurred.',
 
@@ -471,6 +476,9 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
+    'preference.terminal.integrated.xtermRenderType': 'Xterm Render Type',
+    'preference.terminal.integrated.xtermRenderTypeDesc':
+      'Choose Xterm render type, Webgl for better performance, Canvas better compatibility',
     'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',

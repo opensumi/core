@@ -48,7 +48,7 @@ export function isElectronEnv(): boolean {
 }
 
 /**
- * @deprecated isElectronRenderer will deprecate, please use appConfig#isElectronRenderer instead.
+ * @deprecated isElectronRenderer will be removed in v2.26, please use appConfig#isElectronRenderer instead.
  */
 export function isElectronRenderer() {
   return (

@@ -108,6 +108,11 @@ interface Config {
    * 配置关闭 keytar 校验能力，默认开启
    */
   disableKeytar?: boolean;
+  /**
+   * control rpcProtocol message timeout
+   * default -1，it means disable
+   */
+  rpcMessageTimeout?: number;
 }
 
 export interface AppConfig extends Partial<Config> {

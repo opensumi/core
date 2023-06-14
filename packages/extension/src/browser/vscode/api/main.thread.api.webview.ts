@@ -20,11 +20,11 @@ import {
 import { IOpenerService } from '@opensumi/ide-core-browser';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { CancellationToken, WithEventBus, OnEvent } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 import { EditorGroupChangeEvent, IEditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 import {
   IWebviewService,

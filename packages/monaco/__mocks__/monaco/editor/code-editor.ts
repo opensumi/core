@@ -1,4 +1,5 @@
 import { Emitter, Event, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
@@ -41,7 +42,15 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   createDecorationsCollection(
     decorations?: monaco.editor.IModelDeltaDecoration[] | undefined,
   ): monaco.editor.IEditorDecorationsCollection {
-    throw new Error('Method not implemented.');
+    return {
+      onDidChange: new Emitter<IModelDecorationsChangedEvent>().event,
+      clear: () => {},
+      length: 0,
+      set: () => {},
+      getRange: () => null,
+      getRanges: () => [],
+      has: () => true,
+    };
   }
   onDidChangeHiddenAreas: monaco.IEvent<void>;
   getDecorationsInRange(range: monaco.Range): monaco.editor.IModelDecoration[] | null {

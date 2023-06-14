@@ -82,12 +82,12 @@ describe('external preference tests', () => {
     getExternalPreferenceProvider('general.language')?.set(unique_languageId, PreferenceScope.Default);
     expect(getPreferenceLanguageId()).toBe(unique_languageId);
 
-    // 传入默认配置的情况下，如果可以通过 `getExternalPreference` 获取配置值，优先采用获取到的配置值
+    // 传入默认配置的情况下，如果可以通过 `getExternalPreference` 获取配置值，优先级为： Folder > Workspace > User > 传入值 > Default,
     expect(
       getPreferenceLanguageId({
         'general.language': LOCALE_TYPES.EN_US,
       } as IPreferences),
-    ).toBe(unique_languageId);
+    ).toBe(LOCALE_TYPES.EN_US);
 
     // 采用 getExternalPreference 中的值兜底
     expect(

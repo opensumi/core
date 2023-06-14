@@ -1,4 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   OS,
   OperatingSystem,
@@ -9,6 +10,7 @@ import {
 } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers/config-provider';
+import { electronEnv } from '../utils/electron';
 
 @Injectable()
 export class ApplicationService implements IApplicationService {
@@ -17,6 +19,9 @@ export class ApplicationService implements IApplicationService {
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
+
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
 
   private _backendOS: OperatingSystem;
 
@@ -47,5 +52,24 @@ export class ApplicationService implements IApplicationService {
   async getBackendOS() {
     await this._initialized.promise;
     return this.backendOS;
+  }
+
+  get clientId(): string {
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
+      return electronEnv.metadata.windowClientId;
+    } else {
+      const wsChannel = this.injector.get(WSChannelHandler);
+      return wsChannel.clientId;
+    }
+  }
+
+  get windowId(): string | number {
+    if (this.appConfig.isElectronRenderer) {
+      return electronEnv.currentWindowId;
+    } else {
+      // web 场景先用 clientId
+      const channelHandler = this.injector.get(WSChannelHandler);
+      return channelHandler.clientId;
+    }
   }
 }

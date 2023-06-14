@@ -1,5 +1,6 @@
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 import {
   Emitter,
   makeRandomHexString,
@@ -21,7 +22,6 @@ import {
   ExtHostWebviewService,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { StaticResourceService } from '@opensumi/ide-static-resource';
 import { IIconService } from '@opensumi/ide-theme';
 import { IWebviewService, IWebview } from '@opensumi/ide-webview';
 

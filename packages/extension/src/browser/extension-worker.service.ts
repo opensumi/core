@@ -193,6 +193,7 @@ export class WorkerExtProcessService
       {
         onMessage,
         send: port.postMessage.bind(port),
+        timeout: this.appConfig.rpcMessageTimeout,
       },
       this.logger,
     );

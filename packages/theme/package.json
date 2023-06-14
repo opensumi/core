@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-theme",
-  "version": "2.24.2",
+  "version": "2.25.1",
   "files": [
     "lib",
     "src"
@@ -23,7 +23,6 @@
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
-    "@opensumi/ide-logs": "workspace:*",
-    "@opensumi/ide-static-resource": "workspace:*"
+    "@opensumi/ide-logs": "workspace:*"
   }
 }

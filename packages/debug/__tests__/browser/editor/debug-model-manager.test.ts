@@ -6,6 +6,7 @@ import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferen
 import { DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { EditorCollectionService, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceStorageService, IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -79,6 +80,11 @@ describe('Debug Model Manager', () => {
 
     mockInjector.overrideProviders({
       token: IContextKeyService,
+      useValue: {},
+    });
+
+    mockInjector.overrideProviders({
+      token: IEditorDocumentModelService,
       useValue: {},
     });
 

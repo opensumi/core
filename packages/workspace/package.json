@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-workspace",
-  "version": "2.24.2",
+  "version": "2.25.1",
   "files": [
     "lib",
     "src"

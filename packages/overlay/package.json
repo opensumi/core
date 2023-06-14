@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-overlay",
-  "version": "2.24.2",
+  "version": "2.25.1",
   "files": [
     "lib",
     "src"
@@ -17,7 +17,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "workspace:*"
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",
