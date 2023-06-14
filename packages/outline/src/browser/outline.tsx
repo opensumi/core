@@ -175,6 +175,8 @@ export const OutlineTreeView = memo(
           itemHeight={OUTLINE_TREE_NODE_HEIGHT}
           onReady={onDidTreeReady}
           model={model}
+          topSpace={5}
+          bottomSpace={5}
           placeholder={() => <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>}
         >
           {renderTreeNode}
