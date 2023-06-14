@@ -369,6 +369,8 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
           {...props}
           thumbSize={10}
           forwardedRef={ref}
+          topSpace={5}
+          bottomSpace={5}
         />
       )),
     [hiddenVerticalScrollbar, hiddenHorizontalScrollbar],

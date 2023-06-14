@@ -159,6 +159,8 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
             placeholder={() => (
               <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>
             )}
+            topSpace={5}
+            bottomSpace={5}
           >
             {renderTreeNode}
           </RecycleTree>

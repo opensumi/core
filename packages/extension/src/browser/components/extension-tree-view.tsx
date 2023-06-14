@@ -328,6 +328,8 @@ const TreeView = memo(
             itemHeight={TREE_VIEW_NODE_HEIGHT}
             onReady={handleTreeReady}
             model={model.treeModel}
+            topSpace={5}
+            bottomSpace={5}
           >
             {renderTreeNode}
           </RecycleTree>

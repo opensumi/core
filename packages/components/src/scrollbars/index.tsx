@@ -30,6 +30,14 @@ export interface ICustomScrollbarProps {
    * 是否隐藏横向滚动条，默认 false
    */
   hiddenHorizontal?: boolean;
+  /**
+   * 上间距
+   */
+  topSpace?: number;
+  /**
+   * 下间距
+   */
+  bottomSpace?: number;
 }
 
 export const Scrollbars = ({
@@ -44,6 +52,8 @@ export const Scrollbars = ({
   thumbSize = 5,
   hiddenVertical,
   hiddenHorizontal,
+  topSpace,
+  bottomSpace,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
@@ -182,7 +192,15 @@ export const Scrollbars = ({
         }}
         className={'scrollbar-decoration-horizontal'}
       />
-      <div className={'scrollbar-container'}>{children}</div>
+      <div
+        className={'scrollbar-container'}
+        style={{
+          ...(topSpace ? { marginBottom: topSpace } : {}),
+          ...(bottomSpace ? { marginTop: bottomSpace } : {}),
+        }}
+      >
+        {children}
+      </div>
     </CustomScrollbars>
   );
 };

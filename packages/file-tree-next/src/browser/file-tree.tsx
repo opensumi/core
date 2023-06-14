@@ -468,6 +468,8 @@ const FileTreeView = memo(
             filterAfterClear={locationToCurrentFile}
             filterAutoFocus={true}
             leaveBottomBlank={true}
+            topSpace={5}
+            bottomSpace={5}
           >
             {renderFileTreeNode}
           </FilterableRecycleTree>

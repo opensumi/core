@@ -1,6 +1,6 @@
 import fuzzy from 'fuzzy';
 import React, { useEffect, createRef } from 'react';
-import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
+import { FixedSizeList, VariableSizeList, ListProps } from 'react-window';
 
 import {
   DisposableCollection,
@@ -12,7 +12,7 @@ import {
   Throttler,
 } from '@opensumi/ide-utils';
 
-import { ScrollbarsVirtualList } from '../scrollbars';
+import { Scrollbars } from '../scrollbars';
 
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
@@ -129,6 +129,14 @@ export interface IRecycleTreeProps<T = TreeModel> {
    *
    */
   supportDynamicHeights?: boolean;
+  /**
+   * 上间距
+   */
+  topSpace?: number;
+  /**
+   * 下间距
+   */
+  bottomSpace?: number;
 }
 
 export interface IRecycleTreeError {
@@ -231,6 +239,15 @@ export interface IRecycleTreeHandle {
    * 自适应每条 item 的布局（暂时只计算高度）
    */
   layoutItem: () => void;
+
+  /**
+   * 上间距
+   */
+  topSpace?: number;
+  /**
+   * 上间距
+   */
+  bottomSpace?: number;
 }
 
 interface IFilterNodeRendererProps {
@@ -263,6 +280,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     extract: (node: TreeNode) => node?.name || '',
   };
   private static DEFAULT_OVER_SCAN_COUNT = 50;
+
+  private outerElementType: React.ReactNode;
 
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
@@ -605,7 +624,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   public componentDidMount() {
-    const { model, onReady } = this.props;
+    const { model, onReady, bottomSpace, topSpace } = this.props;
+    this.outerElementType = React.forwardRef((props, ref) => (
+      <Scrollbars bottomSpace={bottomSpace} topSpace={topSpace} {...props} thumbSize={10} forwardedRef={ref} />
+    ));
     this.listRef?.current?.scrollTo(model.state.scrollOffset);
     this.disposables.push(model.onChange(this.batchUpdate.bind(this)));
     this.disposables.push(
@@ -991,7 +1013,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         ...style,
       },
       className,
-      outerElementType: ScrollbarsVirtualList,
+      outerElementType: this.outerElementType,
     };
     if (leaveBottomBlank) {
       addonProps.innerElementType = InnerElementType;
