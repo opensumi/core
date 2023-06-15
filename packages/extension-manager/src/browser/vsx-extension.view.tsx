@@ -71,11 +71,11 @@ export const VSXExtensionView = observer(() => {
       {activeKey === TabActiveKey.MARKETPLACE && (
         <div className={styles.extensions_view}>
           <Progress loading={loading} />
-          {vsxExtensionService.extensions.map((e) => (
+          {vsxExtensionService.extensions.map((e: VSXExtension, index: number) => (
             <Extension
+              key={`${index}:${e.namespace}-${e.name}`}
               onClick={onClick}
               onInstall={onInstall}
-              key={`${e.namespace}-${e.name}`}
               extension={e}
               type={ExtensionViewType.MARKETPLACE}
               installedExtensions={vsxExtensionService.installedExtensions}
@@ -86,11 +86,11 @@ export const VSXExtensionView = observer(() => {
       )}
       {activeKey === TabActiveKey.INSTALLED && (
         <div className={styles.extensions_view}>
-          {vsxExtensionService.installedExtensions.map((e) => (
+          {vsxExtensionService.installedExtensions.map((e: VSXExtension, index: number) => (
             <Extension
+              key={`${index}:${e.namespace}-${e.name}`}
               onClick={onClick}
               onInstall={onInstall}
-              key={`${e.namespace}-${e.name}`}
               extension={e}
               type={ExtensionViewType.INSTALLED}
               openVSXRegistry={vsxExtensionService.openVSXRegistry}

@@ -269,7 +269,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     };
     useEffect(() => {
       if (rowRoot.current && listRef.current) {
-        observer.current = new MutationObserver((mutations, observer) => {
+        observer.current = new MutationObserver(() => {
           setItemSize();
         });
         const observerOption = {

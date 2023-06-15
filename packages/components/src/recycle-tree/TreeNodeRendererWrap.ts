@@ -39,7 +39,6 @@ export interface INodeRendererWrapProps {
   depth: number;
   expanded?: boolean;
   hasPrompt?: boolean;
-  setSize: () => void;
   children: INodeRenderer;
 }
 
