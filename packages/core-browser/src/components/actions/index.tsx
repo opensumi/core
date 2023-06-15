@@ -98,9 +98,12 @@ export const MenuActionList: React.FC<{
     (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
         if (menuNode.id === SeparatorMenuItemNode.ID) {
-          return null;
+          if (dataSource[index - 1]?.id === SeparatorMenuItemNode.ID) {
+            return null;
+          }
+          return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
         }
-        const hasSeparator = dataSource[index + 1] && dataSource[index + 1].id === SeparatorMenuItemNode.ID;
+
         if (menuNode.id === SubmenuItemNode.ID) {
           // 子菜单项为空时不渲染
           if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
@@ -108,32 +111,26 @@ export const MenuActionList: React.FC<{
           }
 
           return (
-            <>
-              <Menu.SubMenu
-                key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
-                className={styles.submenuItem}
-                popupClassName='kt-menu'
-                title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
-              >
-                {recursiveRender(menuNode.children, menuNode.label)}
-              </Menu.SubMenu>
-              {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
-            </>
+            <Menu.SubMenu
+              className={styles.submenuItem}
+              key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
+              popupClassName='kt-menu'
+              title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
+            >
+              {recursiveRender(menuNode.children, menuNode.label)}
+            </Menu.SubMenu>
           );
         }
 
         return (
-          <>
-            <Menu.Item
-              id={`${menuNode.id}-${index}`}
-              key={`${menuNode.id}-${key}-${index}`}
-              className={styles.menuItem}
-              disabled={menuNode.disabled}
-            >
-              <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
-            </Menu.Item>
-            {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
-          </>
+          <Menu.Item
+            id={`${menuNode.id}-${index}`}
+            key={`${menuNode.id}-${key}-${index}`}
+            className={styles.menuItem}
+            disabled={menuNode.disabled}
+          >
+            <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
+          </Menu.Item>
         );
       }),
     [],
