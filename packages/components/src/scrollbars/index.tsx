@@ -30,6 +30,11 @@ export interface ICustomScrollbarProps {
    * 是否隐藏横向滚动条，默认 false
    */
   hiddenHorizontal?: boolean;
+  /**
+   * 通用渲染， 默认 false
+   * https://github.com/malte-wessel/react-custom-scrollbars/blob/master/docs/usage.md#universal-rendering
+   */
+  universal?: boolean;
 }
 
 export const Scrollbars = ({
@@ -44,6 +49,7 @@ export const Scrollbars = ({
   thumbSize = 5,
   hiddenVertical,
   hiddenHorizontal,
+  universal = false,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
@@ -141,6 +147,7 @@ export const Scrollbars = ({
       className={cls(className, 'kt-scrollbar')}
       onUpdate={handleUpdate}
       onScroll={onScroll}
+      universal={universal}
       renderTrackHorizontal={({ style, ...props }) => {
         const newStyle = { ...style, height: thumbSize, left: 0, right: 0, bottom: 1 };
         if (hiddenHorizontal) {

@@ -137,6 +137,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
     >
       <Scrollbars
         className={styles.navigation_menu_items}
+        universal={true}
         forwardedRef={(el) => {
           scrollerContainer.current = el;
           scrollToCurrent();
