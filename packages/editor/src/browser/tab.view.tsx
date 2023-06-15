@@ -333,7 +333,12 @@ export const Tabs = ({ group }: ITabsProps) => {
             style={
               wrapMode && i === group.resources.length - 1
                 ? { marginRight: lastMarginRight, height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
-                : { height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
+                : {
+                    height:
+                      group.currentResource === resource
+                        ? LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT + 1
+                        : LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+                  }
             }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
