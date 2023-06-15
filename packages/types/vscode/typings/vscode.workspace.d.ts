@@ -346,7 +346,6 @@ declare module 'vscode' {
     /**
      * The name of the workspace. `undefined` when no folder
      * has been opened.
-     * @魁梧
      */
     export const name: string | undefined;
 
@@ -361,7 +360,6 @@ declare module 'vscode' {
      * workspace folder the name of the workspace is prepended. Defaults to `true` when there are
      * multiple workspace folders and `false` otherwise.
      * @return A path relative to the root or the input.
-     * @魁梧
      */
     export function asRelativePath(pathOrUri: string | Uri, includeWorkspaceFolder?: boolean): string;
 
@@ -405,7 +403,6 @@ declare module 'vscode' {
      * Each workspace is identified with a mandatory URI and an optional name.
      * @return true if the operation was successfully started and false otherwise if arguments were used that would result
      * in invalid workspace folder state (e.g. 2 folders with the same URI).
-     * @魁梧
      */
     export function updateWorkspaceFolders(start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
 
