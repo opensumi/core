@@ -383,6 +383,7 @@ export const localizationBundle = {
     'debug.launch.view.template.button.addItem': 'Add items',
     'debug.launch.view.template.input.placeholder': 'Please enter {0}',
     'debug.launch.view.template.button.submit': 'Add new configuration item',
+    'debug.launch.view.edit.inLaunchJson': 'Edit in launch.json',
 
     'debug.widget.exception.thrownWithId': 'Exception has occurred: {0}',
     'debug.widget.exception.thrown': 'Exception has occurred.',

@@ -4,7 +4,8 @@ import * as jsoncparser from 'jsonc-parser';
 import lodashSet from 'lodash/set';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
+import { COMMON_COMMANDS } from '@opensumi/ide-core-browser';
+import { CommandService, Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { ILaunchService } from '../../common/debug-service';
@@ -16,6 +17,9 @@ const CONFIGURATIONS_FIELD = 'configurations';
 export class LaunchService implements ILaunchService {
   @Autowired(IFileServiceClient)
   private readonly fileSystem: IFileServiceClient;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private readonly _onRawSchemaProperties = new Emitter<IJSONSchema>();
   public readonly onRawSchemaProperties: Event<IJSONSchema> = this._onRawSchemaProperties.event;
@@ -38,6 +42,10 @@ export class LaunchService implements ILaunchService {
   }
   public get formData(): TFormData {
     return this._formData;
+  }
+
+  public async openLaunchConfiguration(): Promise<void> {
+    await this.commandService.executeCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id);
   }
 
   public setRawSchemaProperties(sp: IJSONSchema) {
@@ -67,7 +75,9 @@ export class LaunchService implements ILaunchService {
 
     const preSchemaValue = properties![name];
 
-    lodashSet(newFormData as GenericObjectType, name, preSchemaValue['default'] || '');
+    const { default: defaultValue, type } = preSchemaValue;
+
+    lodashSet(newFormData as GenericObjectType, name, defaultValue || this.getDefaultValue(type));
     lodashSet(this.schema.properties!, name, preSchemaValue);
 
     this.nextNewSchema(this.schema);
@@ -87,6 +97,24 @@ export class LaunchService implements ILaunchService {
 
     this.nextNewSchema(this.schema);
     this.nextNewFormData(newFormData);
+  }
+
+  private getDefaultValue(type: IJSONSchema['type']): any {
+    switch (type) {
+      case 'array':
+        return [];
+      case 'boolean':
+        return false;
+      case 'null':
+        return null;
+      case 'number':
+        return 0;
+      case 'object':
+        return {};
+      case 'string':
+      default:
+        return '';
+    }
   }
 
   private async readResourceContent(resource: URI): Promise<string> {

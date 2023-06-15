@@ -30,7 +30,7 @@ import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu
 import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/index';
 
-import { DebugConfiguration } from '../../common/debug-configuration';
+import { DebugConfiguration, MASSIVE_PROPERTY_FLAG } from '../../common/debug-configuration';
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 import { ILaunchService } from '../../common/debug-service';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
@@ -69,7 +69,7 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
   const launchService = useInjectable<LaunchService>(ILaunchService);
   const commandService = useInjectable<CommandService>(CommandService);
 
-  const [currentConfigurationIndex, serCurrentConfigurationIndex] = useState<number>();
+  const [currentConfigurationIndex, serCurrentConfigurationIndex] = useState<number>(0);
   const [schemaContributions, setSchemaContributions] = useState<IJSONSchema>();
   const [inputConfigurationItems, setInputConfigurationItems] = useState<ConfigurationItemsModel[]>([]);
 
@@ -141,8 +141,6 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
     if (!configuration) {
       return;
     }
-
-    launchService.nextNewFormData(configuration, false);
 
     serCurrentConfigurationIndex(index);
   }, []);
@@ -238,8 +236,21 @@ const LaunchIndexs = ({
   inputConfigurationItems: ConfigurationItemsModel[];
   currentConfigurationIndex: number | undefined;
 }) => {
+  const launchService = useInjectable<LaunchService>(ILaunchService);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
   const [configurationItems, setConfigurationItems] = useState<ConfigurationItemsModel[]>(inputConfigurationItems);
+
+  useEffect(() => {
+    if (configurationItems.length === 0 && isUndefined(currentConfigurationIndex)) {
+      return;
+    }
+
+    const findItem = configurationItems[currentConfigurationIndex!];
+
+    if (findItem && findItem.configuration) {
+      launchService.nextNewFormData(findItem.configuration, false);
+    }
+  }, [currentConfigurationIndex, configurationItems]);
 
   useEffect(() => {
     setConfigurationItems([...inputConfigurationItems]);
@@ -418,6 +429,19 @@ const LaunchBody = ({
       // 如果 type 是 object 且存在 additionalProperties 时，固定将其设置为 additionalProperties: { type: 'string' }
       if (curProp?.type === 'object' && !isUndefined(curProp?.additionalProperties)) {
         curProp.additionalProperties = { type: 'string' };
+      }
+
+      /**
+       * 为了避免因 properties 太多导致页面非常非常的长，影响用户体验，这里对 properties 属性超过一定个数（暂定 6 个）的配置项进行引导操作，让其在 launch.json 中进行配置
+       * 通过添加 MASSIVE_PROPERTY_FLAG 来做标识
+       */
+      if (
+        curProp?.type === 'object' &&
+        !isUndefined(curProp?.properties) &&
+        Object.keys(curProp.properties!).length > 6
+      ) {
+        curProp.properties = {};
+        curProp[MASSIVE_PROPERTY_FLAG] = true;
       }
 
       // 将 markdownDescription 赋给 description

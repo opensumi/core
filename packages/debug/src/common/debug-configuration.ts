@@ -66,3 +66,5 @@ export const DEFAULT_ADD_CONFIGURATION_KEY = '__ADD_CONF__';
 export const DEFAULT_NO_CONFIGURATION_KEY = '__NO_CONF__';
 export const DEFAULT_CONFIGURATION_NAME_SEPARATOR = '__CONF__';
 export const DEFAULT_CONFIGURATION_INDEX_SEPARATOR = '__INDEX__';
+
+export const MASSIVE_PROPERTY_FLAG = 'massive_property_flag';
