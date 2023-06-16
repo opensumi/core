@@ -50,6 +50,10 @@ export interface IPreferenceViewDesc {
 
 export interface ISettingSection {
   /**
+   * 插件 ID
+   */
+  extensionId?: string;
+  /**
    * 该 Section 的名字
    */
   title?: string;

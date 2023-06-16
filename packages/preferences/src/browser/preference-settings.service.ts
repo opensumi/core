@@ -54,6 +54,8 @@ class Versionizer<K> {
 @Injectable()
 export class PreferenceSettingsService extends Disposable implements IPreferenceSettingsService {
   private static DEFAULT_CHANGE_DELAY = 500;
+  private static EXTENSION_SETTINGS_PREFIX = '@ext:';
+  private static EXTENSION_SETTINGS_REGX = /^@ext:(\S+)(.+)?/;
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
@@ -300,8 +302,8 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   }
 
   /**
-   * 通过配置项ID获取配置项展示信息
-   * @param preferenceId 配置项ID
+   * 通过配置项 ID 获取配置项展示信息
+   * @param preferenceId 配置项 ID
    */
   getPreferenceViewDesc(preferenceId: string) {
     const groups = this.settingsSections.values();
@@ -332,10 +334,23 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     scope: PreferenceScope = this.currentScope,
     search: string = this.currentSearch,
   ): IResolvedSettingSection[] {
+    if (search.startsWith(PreferenceSettingsService.EXTENSION_SETTINGS_PREFIX)) {
+      if (groupId !== 'extension') {
+        return [];
+      }
+    }
     const groupVersion = this.settingsSectionsVersioned.get(groupId);
     const key = [groupId, scope, search || '', groupVersion].join('-');
     if (this.cachedGroupSection.has(key)) {
       return this.cachedGroupSection.get(key)!;
+    }
+    let extensionId;
+    if (PreferenceSettingsService.EXTENSION_SETTINGS_REGX.test(search)) {
+      const res = PreferenceSettingsService.EXTENSION_SETTINGS_REGX.exec(search);
+      if (res) {
+        extensionId = res[1];
+        search = res[2]?.trim();
+      }
     }
 
     const result: IResolvedSettingSection[] = [];
@@ -374,7 +389,11 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     };
 
     (this.settingsSections.get(groupId) || [])
-      .filter((section) => !this.shouldHiddenInScope(section, scope))
+      .filter(
+        (section) =>
+          !this.shouldHiddenInScope(section, scope) &&
+          (!extensionId || (extensionId && extensionId === section.extensionId)),
+      )
       .forEach((section) => {
         const sec = { ...section } as IResolvedSettingSection;
 
