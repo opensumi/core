@@ -1380,6 +1380,8 @@ export const localizationBundle = {
     'mergeEditor.action.button.apply': 'Apply',
     'mergeEditor.action.button.accept.left': 'Accept Left',
     'mergeEditor.action.button.accept.right': 'Accept Right',
+    'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
+
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
