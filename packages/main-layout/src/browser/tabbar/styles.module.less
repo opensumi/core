@@ -389,20 +389,21 @@
   }
 
   > span {
-    width: 24px;
-    height: 24px;
+    width: 48px;
+    height: 40px;
     font-size: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--activityBar-inactiveForeground);
-    margin: 8px auto;
     background-size: cover;
     &:hover {
       transform: scale(1);
+      background-color: transparent;
+      color: var(--activityBar-foreground);
     }
     &:last-child {
-      margin-bottom: 18px;
+      margin-bottom: 10px;
     }
   }
 }
