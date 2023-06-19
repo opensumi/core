@@ -1,6 +1,6 @@
 import { observable, computed, action } from 'mobx';
 
-import { Injectable } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   QuickOpenItem,
   HideReason,
@@ -11,6 +11,8 @@ import {
   IKeyMods,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 import {
   IAutoFocus,
@@ -52,6 +54,9 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   @observable
   private _keepScrollPosition?: boolean;
+
+  @observable
+  private _busy?: boolean;
 
   @computed
   get isPassword() {
@@ -118,6 +123,16 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     return this._keepScrollPosition;
   }
 
+  @computed
+  get busy() {
+    return this._busy;
+  }
+
+  @Autowired(IProgressService)
+  protected readonly progressService: IProgressService;
+
+  private progressResolve?: (value: void | PromiseLike<void>) => void;
+
   private modifierListeners: DisposableCollection = new DisposableCollection();
 
   public renderTab?: () => React.ReactNode;
@@ -135,6 +150,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._valueSelection = options.valueSelection;
     this._canSelectMany = options.canSelectMany;
     this._keepScrollPosition = options.keepScrollPosition;
+    this._busy = options.busy;
     this.renderTab = options.renderTab;
     this.toggleTab = options.toggleTab;
     // 获取第一次要展示的内容
@@ -182,6 +198,31 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._items = model.items;
     this._actionProvider = model.actionProvider;
     this._autoFocus = autoFocus;
+  }
+
+  @action
+  updateOptions(options: Partial<QuickOpenInputOptions>) {
+    Object.keys(options).forEach((key) => {
+      const privateKey = `_${key}`;
+      if (Object.hasOwn(this, privateKey)) {
+        this[privateKey] = options[key];
+      }
+    });
+  }
+
+  @action
+  updateProgressStatus(visible: boolean) {
+    if (visible === true) {
+      this.progressService.withProgress(
+        { location: VIEW_CONTAINERS.QUICKPICK_PROGRESS },
+        () => new Promise<void>((resolve) => (this.progressResolve = resolve)),
+      );
+    } else {
+      if (this.progressResolve) {
+        this.progressResolve();
+        this.progressResolve = undefined;
+      }
+    }
   }
 
   private registerKeyModsListeners() {

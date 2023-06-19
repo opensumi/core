@@ -335,54 +335,6 @@ export class FileTreeModelService {
         this.initTreeModel();
       }),
     );
-    this.disposableCollection.push(
-      this.treeModel?.onWillUpdate(() => {
-        if (!this.initTreeModelReady) {
-          return;
-        }
-        // 更新树前更新下选中节点
-        if (this.willSelectedNodePath) {
-          const node = this.treeModel.root.getTreeNodeByPath(this.willSelectedNodePath) as File;
-          if (node) {
-            this.selectFileDecoration(node, false);
-            this.willSelectedNodePath = null;
-          }
-        }
-
-        if (this.contextMenuFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
-          if (node) {
-            this.contextMenuDecoration.removeTarget(this.contextMenuFile);
-            this.contextMenuFile = node as File;
-            this.contextMenuDecoration.addTarget(node);
-          }
-        }
-
-        if (this.focusedFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
-          if (node) {
-            this.focusedDecoration.removeTarget(this.focusedFile);
-            this.focusedFile = node as File;
-            this.focusedDecoration.addTarget(node);
-          }
-        }
-
-        if (this.selectedFiles.length !== 0) {
-          const nodes: (File | Directory)[] = [];
-          this.selectedFiles.forEach((file) => {
-            this.selectedDecoration.removeTarget(file);
-          });
-          for (const file of this.selectedFiles) {
-            const node = this.treeModel?.root.getTreeNodeByPath(file.path);
-            if (node) {
-              this.selectedDecoration.addTarget(node);
-              nodes.push(node as File);
-            }
-          }
-          this._selectedFiles = nodes;
-        }
-      }),
-    );
     // 当labelService注册的对应节点图标变化时，通知视图更新
     this.disposableCollection.push(
       this.labelService.onDidChange(async () => {
@@ -1585,7 +1537,7 @@ export class FileTreeModelService {
         formatLocalize(
           'file.confirm.paste',
           `[ ${pasteStore.crossFiles?.map((uri) => uri.displayName).join(',')} ]`,
-          parent.displayName,
+          Directory.isRoot(parent) ? parent.uri.displayName : parent.displayName,
         ),
         [cancel, ok],
       );

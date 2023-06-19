@@ -247,6 +247,7 @@ export interface QuickOpenService {
   showDecoration(type: VALIDATE_TYPE): void;
   hideDecoration(): void;
   refresh(): void;
+  updateOptions(options: QuickOpenOptions): void;
 }
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
@@ -355,6 +356,10 @@ export namespace QuickOpenOptions {
      * 内容更新后保持滚动区域不变
      */
     keepScrollPosition?: boolean;
+    /**
+     * 是否显示 progress
+     */
+    busy?: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,
@@ -537,6 +542,11 @@ export interface QuickInputOptions {
    * otherwise the defined range will be selected.
    */
   valueSelection?: [number, number];
+  /**
+   * Set to `false` to keep the input box open when onDidAccept trigger
+   * default is true
+   */
+  hideOnDidAccept?: boolean;
 
   /**
    * An optional function that will be called to validate input and to give a hint

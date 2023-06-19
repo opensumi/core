@@ -7,6 +7,7 @@ import { Loading } from '../../loading';
 
 import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
 import { IBasicInlineMenuPosition, IBasicNodeRendererProps, DECORATIONS } from './types';
+
 import './styles.less';
 
 export const BasicTreeNodeRenderer: React.FC<
@@ -16,9 +17,11 @@ export const BasicTreeNodeRenderer: React.FC<
   className,
   itemHeight = 22,
   indent = 8,
+  baseIndent = 8,
   onClick,
   onDbClick,
   onTwistierClick,
+  onIconClick,
   onContextMenu,
   decorations,
   inlineMenus = [],
@@ -67,18 +70,38 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  const paddingLeft = `${(item.depth || 0) * (indent || 0)}px`;
+  const handlerIconClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
 
-  const editorNodeStyle = {
+      if (onIconClick) {
+        onIconClick(event, item as any);
+      } else if (onClick) {
+        onClick(event, item as any);
+      }
+    },
+    [onClick, onIconClick],
+  );
+  const depth = item.depth > 0 ? item.depth - 1 : 0;
+  let paddingLeft = depth * indent;
+
+  if (baseIndent) {
+    paddingLeft += baseIndent;
+  }
+
+  if (item.indentOffset) {
+    paddingLeft += item.indentOffset;
+  }
+
+  const treeNodeStyle = {
     height: itemHeight,
     lineHeight: `${itemHeight}px`,
-    paddingLeft,
+    paddingLeft: `${paddingLeft}px`,
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
-      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
+      <Icon onClick={handlerIconClick} icon={node.icon} className={cls('icon', node.iconClassName)} />
     ),
     [],
   );
@@ -93,6 +116,8 @@ export const BasicTreeNodeRenderer: React.FC<
       node.displayName && <div className={cls('segment', 'display_name')}>{getName(node)}</div>,
     [],
   );
+
+  const renderLabel = useCallback((node: BasicCompositeTreeNode | BasicTreeNode) => node.renderLabel, []);
 
   const renderDescription = useCallback((node: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!node.description) {
@@ -153,7 +178,7 @@ export const BasicTreeNodeRenderer: React.FC<
     }
     return (
       <Icon
-        className={cls('segment', 'expansion_toggle', {
+        className={cls('segment', 'expansion_toggle', node.twisterClassName, {
           ['mod_collapsed']: !(node as BasicCompositeTreeNode).expanded,
         })}
         onClick={clickHandler}
@@ -162,9 +187,10 @@ export const BasicTreeNodeRenderer: React.FC<
     );
   };
 
-  const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
+  const renderTwistier = (item: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!(item as BasicCompositeTreeNode).expandable) {
-      return null;
+      // a simple trick to make the tree node's padding-left is the same as the folder node's
+      return <div className={cls('segment', 'expansion_toggle', item.twisterPlaceholderClassName)}></div>;
     }
 
     if (BasicCompositeTreeNode.is(item)) {
@@ -178,15 +204,15 @@ export const BasicTreeNodeRenderer: React.FC<
       onClick={handleClick}
       onDoubleClick={handleDbClick}
       onContextMenu={handleContextMenu}
-      className={cls('tree_node', className, decorations ? decorations.classlist : null)}
-      style={editorNodeStyle}
+      className={cls('tree_node', className, decorations ? decorations.classlist : null, item.className)}
+      style={treeNodeStyle}
       data-id={item.id}
     >
       <div className='content'>
-        {renderTwice(item)}
+        {renderTwistier(item)}
         {renderIcon(item)}
         <div className={'overflow_wrap'}>
-          {renderDisplayName(item)}
+          {renderLabel(item) || renderDisplayName(item)}
           {renderDescription(item)}
         </div>
         {renderNodeTail()}

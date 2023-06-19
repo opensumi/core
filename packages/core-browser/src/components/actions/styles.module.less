@@ -56,6 +56,11 @@
   }
   .label {
     font-size: @base-font-size;
+    display: flex;
+    align-items: center;
+    // stop Flexbox removing trailing whitespace
+    // see https://www.mattstobbs.com/flexbox-removing-trailing-whitespace/
+    white-space: pre-wrap;
   }
 }
 
@@ -136,6 +141,21 @@
 .menuItemDivider:first-child,
 .menuItemDivider:last-child {
   display: none;
+}
+
+.titleActions {
+  .verticalDivider {
+    width: 1px;
+    display: list-item;
+    background-color: var(--menu-separatorBackground);
+    pointer-events: none;
+    overflow: hidden;
+
+    &::marker {
+      content: '';
+      unicode-bidi: initial;
+    }
+  }
 }
 
 :global {

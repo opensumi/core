@@ -46,3 +46,20 @@
     top: 100%;
   }
 }
+
+.icon_menubar_container {
+  display: flex;
+  align-items: center;
+
+  .menubar_action {
+    margin-right: 1px;
+
+    > span[class*='-icon'] {
+      font-size: 1.5em;
+    }
+
+    span + span {
+      margin-left: 12px;
+    }
+  }
+}

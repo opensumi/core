@@ -467,20 +467,25 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
 
     let cssVariables = ':root{';
+    let vscodeCssVariables = '#workbench-editor .monaco-editor{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = colors[colorKey] || theme.getColor(colorKey);
       if (targetColor) {
         const hexRule = `--${colorKey.replace(/\./g, '-')}: ${targetColor.toString()};\n`;
-        cssVariables += hexRule;
+        if (colorKey.startsWith('vscode')) {
+          vscodeCssVariables += hexRule;
+        } else {
+          cssVariables += hexRule;
+        }
       }
     }
     let styleNode = document.getElementById('theme-style');
     if (styleNode) {
-      styleNode.innerHTML = cssVariables + '}';
+      styleNode.innerHTML = vscodeCssVariables + '}' + cssVariables + '}';
     } else {
       styleNode = document.createElement('style');
       styleNode.id = 'theme-style';
-      styleNode.innerHTML = cssVariables + '}';
+      styleNode.innerHTML = vscodeCssVariables + '}' + cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
     if (this.currentTheme) {
@@ -661,8 +666,9 @@ class Theme implements ITheme {
 
   // 将encodedTokensColors转为monaco可用的形式
   private patchTokenColors() {
-    // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
-    if (this.themeData.themeSettings.filter((setting) => !setting.scope).length === 0) {
+    // 当默认颜色不在settings当中时，需要补充至颜色值中，默认颜色设置 scope 为 ['']
+    // 需要注意的是，后续进行取值时，会依赖数组顺序，初始化后，请不要随意修改
+    if (this.themeData.themeSettings.filter((setting) => setting.scope?.length === 1 && setting.scope[0] === '').length === 0) {
       this.themeData.themeSettings.unshift({
         settings: {
           foreground: this.themeData.colors['editor.foreground']
@@ -672,6 +678,7 @@ class Theme implements ITheme {
             ? this.themeData.colors['editor.background'].substr(0, 7)
             : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
         },
+        scope: [''],
       });
     }
   }

@@ -25,6 +25,12 @@ export namespace DEBUG_COMMANDS {
   export const TOGGLE_BREAKPOINTS: Command = {
     id: 'debug.breakpoints.toggle',
   };
+  export const ACTIVE_BREAKPOINTS: Command = {
+    id: 'debug.breakpoints.active',
+  };
+  export const DEACTIVE_BREAKPOINTS: Command = {
+    id: 'debug.breakpoints.deactive',
+  };
   export const START: Command = {
     id: 'debug.start',
   };

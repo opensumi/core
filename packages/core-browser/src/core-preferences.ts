@@ -5,6 +5,7 @@ import {
   SUPPORTED_ENCODINGS,
   GeneralSettingsId,
   PreferenceSchema,
+  MenubarSettingId,
 } from '@opensumi/ide-core-common';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
@@ -153,6 +154,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    'debug.breakpoint.editorHint': {
+      type: 'boolean',
+      default: true,
+      description: '%preference.debug.breakpoint.editorHint%',
+    },
     'debug.toolbar.top': {
       type: 'number',
       default: 0,
@@ -276,6 +282,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [MenubarSettingId.CompactMode]: {
+      type: 'boolean',
+      default: false,
+    },
   },
 };
 
@@ -294,6 +304,7 @@ export interface CoreConfiguration {
   'explorer.confirmMove': boolean;
   'explorer.compactFolders': boolean;
   'debug.toolbar.float': boolean;
+  'debug.breakpoint.editorHint': boolean;
   'debug.toolbar.top': number;
   'debug.toolbar.height': number;
   'files.watcherExclude': { [key: string]: boolean };
@@ -303,6 +314,7 @@ export interface CoreConfiguration {
   'general.language': string;
   'general.theme': string;
   'view.saveLayoutWithWorkspace': boolean;
+  'menubar.compactMode': boolean;
 }
 
 export const CorePreferences = Symbol('CorePreferences');

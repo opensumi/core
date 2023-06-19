@@ -64,7 +64,7 @@ describe('LogService', () => {
     console.log('text', text);
     if (text.trim().length < 1) {
       // eslint-disable-next-line no-console
-      return console.warn('spdlog 写入文件可能失败了、或者 spdlog 初始化失败！');
+      return console.warn('Spdlog may have failed to write to file, or initialization failed');
     }
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Verbose]) < 0).toBe(true);
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Debug]) < 0).toBe(true);

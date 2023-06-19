@@ -1,7 +1,6 @@
 import type vscode from 'vscode';
 
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   EDITOR_COMMANDS,
   UriComponents,
@@ -10,7 +9,6 @@ import {
   CommandRegistry,
   CommandService,
   Domain,
-  electronEnv,
   FILE_COMMANDS,
   formatLocalize,
   getIcon,
@@ -25,10 +23,10 @@ import {
   replaceLocalizePlaceholder,
   URI,
   ILogger,
-  AppConfig,
   CUSTOM_EDITOR_SCHEME,
   runWhenIdle,
   QuickPickService,
+  IApplicationService,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -64,18 +62,8 @@ import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { WalkthroughsService } from './walkthroughs.service';
 
 export const getClientId = (injector: Injector) => {
-  let clientId: string;
-  const appConfig: AppConfig = injector.get(AppConfig);
-
-  // Electron 环境下，未指定 isRemote 时默认使用本地连接
-  // 否则使用 WebSocket 连接
-  if (appConfig.isElectronRenderer && !appConfig.isRemote) {
-    clientId = electronEnv.metadata.windowClientId;
-  } else {
-    const channelHandler = injector.get(WSChannelHandler);
-    clientId = channelHandler.clientId;
-  }
-  return clientId;
+  const service: IApplicationService = injector.get(IApplicationService);
+  return service.clientId;
 };
 
 @Domain(ClientAppContribution)
@@ -422,6 +410,7 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.NEXT_EDITOR_IN_GROUP,
       VSCodeBuiltinCommands.EVEN_EDITOR_WIDTH,
       VSCodeBuiltinCommands.CLOSE_OTHER_GROUPS,
+      VSCodeBuiltinCommands.CLOSE_UNMODIFIED_EDITORS,
       VSCodeBuiltinCommands.LAST_EDITOR_IN_GROUP,
       VSCodeBuiltinCommands.OPEN_EDITOR_AT_INDEX,
       VSCodeBuiltinCommands.CLOSE_OTHER_EDITORS,

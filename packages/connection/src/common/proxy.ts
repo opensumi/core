@@ -1,7 +1,11 @@
-import { uuid } from '@opensumi/ide-core-common';
+import { isDefined, uuid } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 import { MessageType, ResponseStatus, ICapturedMessage, getCapturer } from './utils';
+
+export interface ILogger {
+  warn(...args: any[]): void;
+}
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];
@@ -47,16 +51,16 @@ export class RPCProxy {
   private connectionPromiseResolve: (connection: MessageConnection) => void;
   private connection: MessageConnection;
   private proxyService: any = {};
-  private logger: any;
+  private logger: ILogger;
   // capture messages for opensumi devtools
   private capture(message: ICapturedMessage): void {
     const capturer = getCapturer();
-    if (capturer !== undefined) {
+    if (isDefined(capturer)) {
       capturer(message);
     }
   }
 
-  constructor(public target?: RPCService, logger?: any) {
+  constructor(public target?: RPCService, logger?: ILogger) {
     this.waitForConnection();
     this.logger = logger || console;
   }

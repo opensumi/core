@@ -4,7 +4,7 @@ import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
 import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
-import { RPCServiceCenter, INodeLogger } from '@opensumi/ide-core-node';
+import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 
 import {
   IExtensionHostManager,
@@ -20,6 +20,9 @@ import {
 export class ExtensionHostProxyManager implements IExtensionHostManager {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
+
+  @Autowired(AppConfig)
+  private readonly appconfig: AppConfig;
 
   private callId = 0;
 
@@ -96,6 +99,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     this.extHostProxyProtocol = new RPCProtocol({
       onMessage,
       send,
+      timeout: this.appconfig.rpcMessageTimeout,
     });
 
     this.extHostProxyProtocol.set(EXT_SERVER_IDENTIFIER, {

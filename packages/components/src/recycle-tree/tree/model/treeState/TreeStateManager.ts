@@ -89,7 +89,7 @@ export class TreeStateManager {
       }
       for (const relPath of state.expandedDirectories.atSurface) {
         try {
-          const node = await this.root.loadTreeNodeByPath(relPath);
+          const node = await this.root.loadTreeNodeByPath(relPath, true);
           if (!node) {
             break;
           }
@@ -99,6 +99,7 @@ export class TreeStateManager {
         typeof state.scrollPosition === 'number' && state.scrollPosition > -1
           ? state.scrollPosition
           : this._scrollOffset;
+      this.root.watcher.notifyDidUpdateBranch();
       this.onDidLoadStateEmitter.fire();
     }
   }

@@ -58,6 +58,7 @@ export function createMainContextProxyIdentifier<T>(identifier: string): ProxyId
 export interface IMessagePassingProtocol {
   send(msg): void;
   onMessage: Event<string>;
+  timeout?: number;
 }
 
 const enum MessageType {
@@ -208,6 +209,7 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;
   private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
+  private readonly _timeoutHandles: Map<string, NodeJS.Timeout | number>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
   private logger;
@@ -218,6 +220,7 @@ export class RPCProtocol implements IRPCProtocol {
     this._proxies = new Map();
     this._pendingRPCReplies = new Map();
     this._cancellationTokenSources = new Map();
+    this._timeoutHandles = new Map();
 
     this._lastMessageId = 0;
     this.logger = logger || console;
@@ -276,11 +279,29 @@ export class RPCProtocol implements IRPCProtocol {
     const msg = MessageIO.serializeRequest(callId, rpcId, methodName, args);
 
     this._protocol.send(msg);
+    // 设置超时回调, -1 即不配置超时时间
+    if (this._protocol.timeout && this._protocol.timeout !== -1) {
+      const timeoutHandle = setTimeout(() => {
+        this._handleTimeout(callId);
+      }, this._protocol.timeout);
+      this._timeoutHandles.set(callId, timeoutHandle);
+    }
+
     return result.promise;
   }
 
   private _receiveOneMessage(rawmsg: string): void {
     const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
+
+    if (this._timeoutHandles.has(msg.id)) {
+      // 忽略一些 jest 测试场景 clearTimeout not defined 的问题
+      if (typeof clearTimeout === 'function') {
+        // @ts-ignore
+        clearTimeout(this._timeoutHandles.get(msg.id));
+      }
+      this._timeoutHandles.delete(msg.id);
+    }
+
     switch (msg.type) {
       case MessageType.Request:
         this._receiveRequest(msg);
@@ -379,5 +400,16 @@ export class RPCProtocol implements IRPCProtocol {
     this._pendingRPCReplies.delete(callId);
 
     pendingReply.resolve(msg.res);
+  }
+  private _handleTimeout(callId: string) {
+    if (!this._pendingRPCReplies.has(callId) || !this._timeoutHandles.has(callId)) {
+      return;
+    }
+
+    const pendingReply = this._pendingRPCReplies.get(callId) as Deferred<any>;
+    this._pendingRPCReplies.delete(callId);
+    this._timeoutHandles.delete(callId);
+
+    pendingReply.reject(new Error('RPC Timeout: '+ callId));
   }
 }

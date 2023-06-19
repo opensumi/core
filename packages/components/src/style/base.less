@@ -439,7 +439,9 @@ progress {
 // Correct the cursor style of incement and decement buttons in Chrome.
 [type='number']::-webkit-inner-spin-button,
 [type='number']::-webkit-outer-spin-button {
-  height: auto;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: 'none';
 }
 
 [type='search'] {
@@ -449,6 +451,7 @@ progress {
   // https://github.com/twbs/bootstrap/issues/11586.
   outline-offset: -2px; // 2. Correct the outline style in Safari.
   -webkit-appearance: none;
+  appearance: 'none';
 }
 
 //

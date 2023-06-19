@@ -44,7 +44,7 @@ export class SCMResourceGroup extends CompositeTreeNode {
     public raw: ISCMTreeNodeDescription<ISCMResourceGroup>,
     public readonly resource: ISCMResourceGroup,
   ) {
-    super(tree as ITree, parent, undefined, { name: resource.label });
+    super(tree as ITree, parent);
     // 目录节点默认全部展开
     this.isExpanded = true;
   }

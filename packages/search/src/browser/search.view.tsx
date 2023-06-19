@@ -180,8 +180,9 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
 
   const focusSearchInput = useCallback(
     (value: string) => {
-      searchInputRef.current?.focus();
       setSearch(value);
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
     },
     [searchInputRef.current, search],
   );

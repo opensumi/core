@@ -9,7 +9,7 @@ import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/__mocks__/preference';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

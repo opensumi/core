@@ -74,7 +74,7 @@ export interface IDebugSession extends IDisposable {
     args: DebugRequestTypes[K][0],
     token?: CancellationToken | undefined,
   ): Promise<DebugRequestTypes[K][1]>;
-  restart(): Promise<boolean>;
+  restart(args: DebugProtocol.RestartArguments): Promise<boolean>;
   disconnect(restart?: boolean | undefined): Promise<void>;
   terminate(restart?: boolean | undefined): Promise<void>;
 }

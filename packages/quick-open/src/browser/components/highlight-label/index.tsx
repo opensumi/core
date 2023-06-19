@@ -37,7 +37,7 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
       if (pos < highlight.start) {
         const substring = text.substring(pos, highlight.start);
         children.push(
-          <span className={labelClassName}>
+          <span className={labelClassName} key={`${children.length}-${substring}`}>
             {transformLabelWithCodicon(substring, labelIconClassName, iconService.fromString.bind(iconService))}
           </span>,
         );
@@ -45,7 +45,7 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
       }
       const substring = text.substring(highlight.start, highlight.end);
       children.push(
-        <span className={hightLightClassName}>
+        <span className={hightLightClassName} key={`${children.length}-${substring}`}>
           {transformLabelWithCodicon(substring, labelIconClassName, iconService.fromString.bind(iconService))}
         </span>,
       );
@@ -55,7 +55,7 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
     if (pos < text.length) {
       const substring = text.substring(pos);
       children.push(
-        <span className={labelClassName}>
+        <span className={labelClassName} key={`${children.length}-${substring}`}>
           {transformLabelWithCodicon(substring, labelIconClassName, iconService.fromString.bind(iconService))}
         </span>,
       );

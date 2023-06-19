@@ -19,6 +19,7 @@ import {
   Event,
   path,
   pSeries,
+  formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -27,6 +28,7 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
+import { ExplorerOpenedEditorViewId } from '../../common/index';
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
 import styles from '../opened-editor-node.module.less';
 
@@ -213,29 +215,6 @@ export class OpenedEditorModelService {
         if (shouldUpdate) {
           this.setExplorerTabBarBadge();
           this.refresh();
-        }
-      }),
-    );
-
-    this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
-        // 更新树前更新下选中节点
-        if (this.contextMenuFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
-          if (node) {
-            this.activeFileDecoration(node as EditorFile, false);
-          }
-        } else if (this.focusedFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
-          if (node) {
-            this.activeFileDecoration(node as EditorFile, false);
-          }
-        } else if (this.selectedFiles.length !== 0) {
-          // 仅处理一下单选情况
-          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-          if (node) {
-            this.selectFileDecoration(node as EditorFile, false);
-          }
         }
       }),
     );
@@ -491,8 +470,11 @@ export class OpenedEditorModelService {
   private setExplorerTabBarBadge() {
     const handler = this.layoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
     const dirtyCount = this.editorService.calcDirtyCount();
+    const accordionService = this.layoutService.getAccordionService(EXPLORER_CONTAINER_ID);
     if (handler) {
+      const dirtyMsg = dirtyCount > 0 ? formatLocalize('opened.editors.unsaved', dirtyCount.toString()) : '';
       handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
+      accordionService.updateViewBadge(ExplorerOpenedEditorViewId, dirtyMsg);
     }
   }
 }

@@ -5,6 +5,9 @@ import { DebugState } from './debug-session';
 
 export { DEBUG_CONSOLE_CONTAINER_ID, DEBUG_CONTAINER_ID };
 
+export const LAUNCH_VIEW_SCHEME = 'launch_view_scheme';
+export const LAUNCH_VIEW_COMPONENT_ID = 'launch-view';
+
 export const DEBUG_MEMORY_SCHEME = 'vscode-debug-memory';
 
 export const DEBUG_WATCH_ID = 'debug-watch';
@@ -79,3 +82,5 @@ export const CONTEXT_EXCEPTION_WIDGET_VISIBLE = new RawContextKey<boolean>('exce
 export const CONTEXT_MULTI_SESSION_REPL = new RawContextKey<boolean>('multiSessionRepl', false);
 export const CONTEXT_MULTI_SESSION_DEBUG = new RawContextKey<boolean>('multiSessionDebug', false);
 export const CONTEXT_CAN_VIEW_MEMORY = new RawContextKey<boolean>('canViewMemory', undefined);
+
+export const CONTEXT_ACTIVE_BREAKPOINTS = new RawContextKey<boolean>('activateBreakpoints', true);

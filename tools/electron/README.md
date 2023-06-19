@@ -1,4 +1,4 @@
-# Kaitian IDE Electron 实践层
+# Electron 实践层
 
 ## Electron 版本运行步骤
 

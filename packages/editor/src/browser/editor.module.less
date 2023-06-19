@@ -230,6 +230,7 @@
         transform: scale(0.8);
       }
       &:hover {
+        color: var(--tab-hoverForeground);
         background-color: var(--tab-hoverBackground);
       }
       div:first-child {
@@ -296,6 +297,7 @@
         position: relative;
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
+        z-index: 11;
         &::before {
           position: absolute;
           content: '';

@@ -96,6 +96,9 @@ export const localizationBundle = {
     'menu-bar.go.nextProblemInFiles': '下一个问题',
     'menu-bar.go.prevProblemInFiles': '上一个问题',
 
+    'menu-bar.file.pref': '设置',
+    'menu-bar.mode.compact': '紧凑模式',
+
     editor: '编辑器',
     'editor.undo': '撤销',
     'editor.redo': '重做',
@@ -116,7 +119,7 @@ export const localizationBundle = {
     'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
     'editor.lineHeight': '行高',
     'editor.lineHeight.description':
-      '控制行高。\r\n - 使用 0 根据字号自动计算行高。\r\n - 介于 0 和 8 之间的值将用作字号的乘数。\r\n - 大于 8 的值将用作有效值。',
+      '控制行高。\n\n - 使用 0 根据字号自动计算行高。\n\n - 介于 0 和 8 之间的值将用作字号的乘数。\n\n - 大于 8 的值将用作有效值。',
     'editor.copyPath': '复制路径',
     'editor.copyRelativePath': '复制相对路径',
 
@@ -171,7 +174,7 @@ export const localizationBundle = {
     'search.replace.title': '替换',
     'search.input.checkbox': '显示搜索条件',
     'file-search.command.fileOpen.description': '打开文件',
-    'file-search.command.fileOpen.placeholder': '按名称搜索文件（追加:转到行或追加@转到符号）',
+    'file-search.command.fileOpen.placeholder': '按名称搜索文件（追加:转到行或追加 @ 转到符号）',
     'search.includes': '要包含的文件',
     'search.includes.description': '输入文件名或文件夹名，多个用 ", " 分隔',
     'search.excludes': '要排除的文件',
@@ -229,7 +232,6 @@ export const localizationBundle = {
     'dialog.file.close': '关闭',
     'dialog.file.ok': '确定',
     'dialog.ensure': '确定',
-    'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
@@ -249,6 +251,7 @@ export const localizationBundle = {
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
     'debug.action.add.configuration': '添加配置...',
+    'debug.action.open.launch.editor': '在 launch 编辑器中打开',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.debug.console': '调试控制台',
     'debug.action.step-into': '单步跳入',
@@ -354,6 +357,10 @@ export const localizationBundle = {
     'debug.launch.configurations.debugLinuxConfiguration': '特定于 Linux 的启动配置属性。',
     'debug.launch.typeNotSupported': '调试类型 "{0}" 不支持',
     'debug.launch.catchError': '启动调试进程时遇到了错误, 请检查调试控制台',
+    'debug.launch.view.template.button.addItem': '添加一项',
+    'debug.launch.view.template.input.placeholder': '请输入 {0}',
+    'debug.launch.view.template.button.submit': '新增配置项',
+
     'debug.widget.exception.thrownWithId': '发生异常: {0}',
     'debug.widget.exception.thrown': '出现异常。',
 
@@ -366,6 +373,8 @@ export const localizationBundle = {
 
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
+
+    'preference.menubar.mode.compact': '控制菜单栏是否使用紧凑模式',
 
     'preference.explorer.confirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.confirm.move': '控制是否在移动文件时弹出确认框',
@@ -398,6 +407,9 @@ export const localizationBundle = {
     'preference.explorer.fileTree.indent.title': '资源管理器：文件树子节点缩进',
     'preference.explorer.fileTree.baseIndent.title': '资源管理器：文件树基础缩进',
     'preference.debug.toolbar.float.title': '运行与调试：浮层模式',
+    'preference.debug.breakpoint.editorHint.title': '控制是否开启编辑器断点闪烁提示',
+    'preference.debug.breakpoint.editorHint': '启用后，点击断点列表跳转到编辑器时，会有背景色闪烁提示',
+
     'preference.debug.console.filter.mode': '调试控制台筛选器模式',
     'preference.debug.console.filter.mode.filter': '过滤模式',
     'preference.debug.console.filter.mode.matcher': '匹配模式',
@@ -445,6 +457,8 @@ export const localizationBundle = {
       '当在终端标题中找到其中一个程序名称时，将禁用本地回显。',
     'preference.terminal.integrated.localEchoStyle': '本地回显字体样式',
     'preference.terminal.integrated.localEchoStyleDesc': '本地回显文本的终端样式；字体样式或 RGB 颜色。',
+    'preference.terminal.integrated.xtermRenderType': 'Xterm 渲染类型',
+    'preference.terminal.integrated.xtermRenderTypeDesc': '选择 Xterm 渲染类型，WebGL 性能更强，Canvas 兼容性更佳。',
     'preference.terminal.integrated.cursorStyle': '终端输入指针样式',
     'preference.terminal.integrated.cursorStyleDesc': '修改终端输入指针样式',
     'settings.group.general': '常规',
@@ -498,6 +512,8 @@ export const localizationBundle = {
     'preference.editor.bracketPairColorization.enabled': '括号着色',
     'preference.array.additem': '添加',
     'preference.editor.lineHeight': '行高',
+    'preference.editor.saveCodeActions': '保存时运行的代码操作类型',
+    'preference.editor.saveCodeActionsNotification': '代码操作执行时是否展示通知信息',
 
     'preference.item.notValid': '{0} 不是有效选项',
 
@@ -637,6 +653,7 @@ export const localizationBundle = {
     'opened.editors.compare': '与当前文件比较',
     'opened.editors.copyRelativePath': '复制相对路径',
     'opened.editors.copyPath': '复制路径',
+    'opened.editors.unsaved': '{0} 个未保存',
 
     'terminal.name': '终端',
     'terminal.disconnected': '终端断开连接',
@@ -948,6 +965,17 @@ export const localizationBundle = {
     'editor.configuration.suggestLineHeight':
       '建议小部件的行高。如果设置为 `0`，则使用 `#editor.lineHeight#` 的值。最小值为 8。',
     'editor.configuration.suggestOnTriggerCharacters': '控制在键入触发字符后是否自动显示建议。',
+    'editor.configuration.acceptSuggestionOnEnterSmart': '仅在建议做出文本更改时，才使用 `Enter` 接受建议。',
+    'editor.configuration.acceptSuggestionOnEnter':
+      '控制编辑器是否应该在 `Tab` 键之外，还使用 `Enter` 键来接受建议。这有助于避免在插入新行或接受建议之间的歧义。',
+    'editor.configuration.acceptSuggestionOnCommitCharacter':
+      '控制是否在使用提交字符时接受建议。例如，在 JavaScript 中，分号 (`;`) 是一个提交字符，可以接受一个建议并键入该字符。',
+    'editor.configuration.snippetSuggestions.top': '将代码片段的建议放在其他建议的顶部。',
+    'editor.configuration.snippetSuggestions.bottom': '将代码片段的建议放在其他建议的底部。',
+    'editor.configuration.snippetSuggestions.inline': '将代码片段的建议混合在其他建议的中间。',
+    'editor.configuration.snippetSuggestions.none': '不展示代码片段建议。',
+    'editor.configuration.snippetSuggestions': '控制代码片段是否与其他建议一同显示以及它们的排序方式。',
+    'editor.configuration.wordBasedSuggestions': '控制是否根据文档中的字词计算自动补全列表。',
     'editor.configuration.suggestSelection': '控制在建议列表中如何预先选择建议。',
     'editor.configuration.suggestSelection.first': '始终选择第一个建议。',
     'editor.configuration.suggestSelection.recentlyUsed':
@@ -997,8 +1025,45 @@ export const localizationBundle = {
     'editor.configuration.suggest.maxVisibleSuggestions':
       '控制 IntelliSense 在显示滚动条之前将显示的建议数量（最多 15 个）。',
     'editor.configuration.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
+    'editor.configuration.suggest.filtered':
+      '控制是否应从 IntelliSense 中过滤掉某些建议类型。可以在此处找到一份建议类型列表: https://code.visualstudio.com/docs/editor/intellisense#_types-of-completions.',
+    'editor.configuration.suggest.filtered.method': '启用后，IntelliSense 将会展示 `method` 类型的建议。',
+    'editor.configuration.suggest.filtered.function': '启用后，IntelliSense 将会展示 `function` 类型的建议。',
+    'editor.configuration.suggest.filtered.constructor': '启用后，IntelliSense 将会展示 `constructor` 类型的建议。',
+    'editor.configuration.suggest.filtered.field': '启用后，IntelliSense 将会展示 `field` 类型的建议。',
+    'editor.configuration.suggest.filtered.variable': '启用后，IntelliSense 将会展示 `variable` 类型的建议。',
+    'editor.configuration.suggest.filtered.class': '启用后，IntelliSense 将会展示 `class` 类型的建议。',
+    'editor.configuration.suggest.filtered.struct': '启用后，IntelliSense 将会展示 `struct` 类型的建议。',
+    'editor.configuration.suggest.filtered.interface': '启用后，IntelliSense 将会展示 `interface` 类型的建议。',
+    'editor.configuration.suggest.filtered.module': '启用后，IntelliSense 将会展示 `module` 类型的建议。',
+    'editor.configuration.suggest.filtered.property': '启用后，IntelliSense 将会展示 `property` 类型的建议。',
+    'editor.configuration.suggest.filtered.event': '启用后，IntelliSense 将会展示 `event` 类型的建议。',
+    'editor.configuration.suggest.filtered.operator': '启用后，IntelliSense 将会展示 `operator` 类型的建议。',
+    'editor.configuration.suggest.filtered.unit': '启用后，IntelliSense 将会展示 `unit` 类型的建议。',
+    'editor.configuration.suggest.filtered.value': '启用后，IntelliSense 将会展示 `value` 类型的建议。',
+    'editor.configuration.suggest.filtered.constant': '启用后，IntelliSense 将会展示 `constant` 类型的建议。',
+    'editor.configuration.suggest.filtered.enum': '启用后，IntelliSense 将会展示 `enum` 类型的建议。',
+    'editor.configuration.suggest.filtered.enumMember': '启用后，IntelliSense 将会展示 `enumMember` 类型的建议。',
+    'editor.configuration.suggest.filtered.keyword': '启用后，IntelliSense 将会展示 `keyword` 类型的建议。',
+    'editor.configuration.suggest.filtered.text': '启用后，IntelliSense 将会展示 `text` 类型的建议。',
+    'editor.configuration.suggest.filtered.color': '启用后，IntelliSense 将会展示 `color` 类型的建议。',
+    'editor.configuration.suggest.filtered.file': '启用后，IntelliSense 将会展示 `file` 类型的建议。',
+    'editor.configuration.suggest.filtered.reference': '启用后，IntelliSense 将会展示 `reference` 类型的建议。',
+    'editor.configuration.suggest.filtered.customcolor': '启用后，IntelliSense 将会展示 `customcolor` 类型的建议。',
+    'editor.configuration.suggest.filtered.folder': '启用后，IntelliSense 将会展示 `folder` 类型的建议。',
+    'editor.configuration.suggest.filtered.typeParameter': '启用后，IntelliSense 将会展示 `typeParameter` 类型的建议。',
+    'editor.configuration.suggest.filtered.snippet': '启用后，IntelliSense 将会展示 `snippet` 类型的建议。',
+    'editor.configuration.editor.gotoLocation.multiple': '控制 "转到" 命令（例如转到定义）在存在多个目标位置时的行为。',
+    'editor.configuration.gotoLocation.multiple.peek': '在速览视图(Peek View)中显示结果。(默认)',
+    'editor.configuration.gotoLocation.multiple.gotoAndPeek': '转到主结果并显示速览视图(Peek View)。',
+    'editor.configuration.gotoLocation.multiple.goto': '转到主结果，并对其他结果启用无速览导航',
     'editor.configuration.experimental.stickyScroll.enabled': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标识。',
+    'editor.configuration.codeActionsOnSave.organizeImports': '控制是否应在文件保存时整理导入（Import）语句。',
+    'editor.configuration.codeActionsOnSave.fixAll': '控制是否应在文件保存时运行自动修复操作。',
+    'editor.configuration.codeActionsOnSave': '在保存时运行的代码操作类型',
+    'editor.configuration.codeActionsOnSaveTimeout': '在此超时时间(毫秒)之后代码操作将被取消。',
+    'editor.configuration.codeActionsOnSaveNotification': '代码操作执行时是否展示通知信息',
     'editor.configuration.quickSuggestionsDelay': '控制显示智能提示的延迟时长 (毫秒)。',
     'editor.configuration.tabSize':
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
@@ -1009,8 +1074,14 @@ export const localizationBundle = {
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.formatOnSaveTimeout':
       '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
+    'editor.configuration.inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
     'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.formatOnSave': '在保存时格式化文件',
+    'editor.configuration.formatOnType': '控制编辑器是在键入后自动格式化该行。',
+    'editor.configuration.formatOnPaste':
+      '控制编辑器是否自动格式化粘贴的内容。需要当前文件有一个格式化工具并且该格式化格局必须能够在文档中格式化一个范围。',
+    'editor.configuration.autoIndent':
+      '控制编辑器是否应该在用户键入、粘贴或移动行时自动调整缩进。必须提供带有该语言缩进规则的扩展。',
     'editor.configuration.autoSaveDelay':
       '控制自动保存的延迟时长（毫秒）。仅当 `#editor.autoSave#` 设置为“编辑后自动保存”时生效。',
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行提示手动解决保存冲突。',
@@ -1079,6 +1150,9 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
     'mergeEditor.button.apply': '应用更改',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
+
+    'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
+
     ...browserViews,
   },
 };

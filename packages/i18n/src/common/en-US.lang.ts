@@ -97,6 +97,9 @@ export const localizationBundle = {
     'menu-bar.go.nextProblemInFiles': 'Next Problem',
     'menu-bar.go.prevProblemInFiles': 'Previous Problem',
 
+    'menu-bar.file.pref': 'Preference',
+    'menu-bar.mode.compact': 'Compact Mode',
+
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
@@ -257,7 +260,6 @@ export const localizationBundle = {
     'dialog.file.close': 'Close',
     'dialog.file.ok': 'OK',
     'dialog.ensure': 'OK',
-    'menu-bar.file.pref': 'Preference',
 
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
@@ -276,6 +278,7 @@ export const localizationBundle = {
     'scm.dirtyDiff.changes': '{0} of {1} changes',
 
     'debug.action.add.configuration': 'Add Configuration...',
+    'debug.action.open.launch.editor': 'Open in launch editor',
     'debug.action.no.configuration': 'No Configurations',
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',
@@ -377,6 +380,10 @@ export const localizationBundle = {
     'debug.launch.configurations.debugLinuxConfiguration': 'Linux specific launch configuration attributes.',
     'debug.launch.typeNotSupported': 'The debug session type "{0}" is not supported.',
     'debug.launch.catchError': 'There was an error starting the debug session, check the logs for more details.',
+    'debug.launch.view.template.button.addItem': 'Add items',
+    'debug.launch.view.template.input.placeholder': 'Please enter {0}',
+    'debug.launch.view.template.button.submit': 'Add new configuration item',
+
     'debug.widget.exception.thrownWithId': 'Exception has occurred: {0}',
     'debug.widget.exception.thrown': 'Exception has occurred.',
 
@@ -391,6 +398,8 @@ export const localizationBundle = {
     'output.enableSmartScroll': 'Enable/disable Smart scrolling',
     'output.enableSmartScrollDesc':
       'Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.',
+
+    'preference.menubar.mode.compact': 'Controls whether the menu bar uses compact mode',
 
     'preference.explorer.confirm.delete':
       'Controls whether the explorer should ask for confirmation when deleting a file via trash',
@@ -467,6 +476,9 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
+    'preference.terminal.integrated.xtermRenderType': 'Xterm Render Type',
+    'preference.terminal.integrated.xtermRenderTypeDesc':
+      'Choose Xterm render type, Webgl for better performance, Canvas better compatibility',
     'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
@@ -514,6 +526,8 @@ export const localizationBundle = {
     'preference.debug.console.filter.mode.matcher': 'matcher',
     'preference.debug.console.wordWrap': 'Controls if the lines should wrap in the debug console.',
     'preference.debug.inline.values': 'Show variable values inline in editor while debugging.',
+    'preference.debug.breakpoint.editorHint':
+      'After enabling, there will be a background color blinking prompt when clicking on the breakpoint list to jump to the editor.',
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy':
@@ -540,6 +554,8 @@ export const localizationBundle = {
     'preference.files.trimTrailingWhitespace': 'Trim Trailing Whitespace',
     'preference.files.insertFinalNewline': 'Insert Final Newline',
     'preference.editor.lineHeight': 'Line Height',
+    'preference.editor.saveCodeActions': 'Code Actions On Save',
+    'preference.editor.saveCodeActionsNotification': 'Whether to notify when code operations run at save time',
 
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
@@ -892,6 +908,7 @@ export const localizationBundle = {
     'editor.configuration.codeActionsOnSave': 'Code action kinds to be run on save.',
     'editor.configuration.codeActionsOnSaveTimeout':
       'Timeout in milliseconds after which the code actions that are run on save are cancelled.',
+    'editor.configuration.codeActionsOnSaveNotification': 'Whether to notify when code operations run at save time.',
     'editor.configuration.selectionClipboard': 'Controls whether the Linux primary clipboard should be supported.',
     'editor.configuration.largeFileOptimizations':
       'Special handling for large files to disable certain memory intensive features.',
@@ -962,6 +979,7 @@ export const localizationBundle = {
     'opened.editors.compare': 'Compare With Current File',
     'opened.editors.copyRelativePath': 'Copy Relative Path',
     'opened.editors.copyPath': 'Copy Path',
+    'opened.editors.unsaved': '{0} unsaved',
 
     'terminal.name': 'Terminal',
     'terminal.disconnected': 'Terminal Already Disconnected',
@@ -1361,6 +1379,9 @@ export const localizationBundle = {
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
+
+    'webview.webviewTagUnavailable': 'Webview is unsupported on non-electron env, please use iframe instead',
+
     ...browserViews,
   },
 };

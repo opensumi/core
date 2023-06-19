@@ -1,6 +1,6 @@
 export const browserViews = {
-  // kaitianContributes
-  'sumiContributes.opensumiContributes': '由此包表示的 Opensumi 扩展的所有贡献',
+  // sumiContributes
+  'sumiContributes.contributes': '声明 OpenSumi 扩展的所有贡献点信息',
 
   // 公用 properties，如 command
   'sumiContributes.common.command': '要执行的命令。该命令必须在 "contributes.command" 中声明（内置命令除外）',
@@ -143,6 +143,7 @@ inline 模式 showTitle 会失效, 只显示 icon`,
   'sumiContributes.menu': '提供菜单项',
   'sumiContributes.menu.api.CommandPalette': '命令面板菜单',
   'sumiContributes.menu.api.ActivityBarExtra': '左侧活动栏底部的菜单',
+  'sumiContributes.menu.api.ActivityBarTopExtra': '左侧活动栏顶部的菜单',
   'sumiContributes.menu.api.DebugBreakpointsContext': '调试断点的右键菜单',
   'sumiContributes.menu.api.DebugCallStackContext': '调试调用堆栈的右键菜单',
   'sumiContributes.menu.api.DebugConsoleContext': '底部调试控制台日志面板的右键菜单',

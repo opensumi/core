@@ -255,7 +255,7 @@ export interface IToolbarActionBtnStyle {
   height?: number;
 
   // 是否显示 Title
-  // 20200629改动 - 默认为 true
+  // 默认为 false
   showTitle?: boolean;
 
   // icon 前景色
@@ -280,10 +280,9 @@ export interface IToolbarActionBtnStyle {
   background?: string;
 
   // 样式类型，
-  // inline则不会有外边框
-  // button则为按钮样式
-  // 20200629改动 - 默认为 button
-  // inline 模式showTitle会失效, 只显示icon
+  // inline 不会有外边框
+  // button 为按钮样式
+  // inline 模式 showTitle 会失效, 只显示icon
   btnStyle?: 'inline' | 'button';
 
   // button 的文本位置样式

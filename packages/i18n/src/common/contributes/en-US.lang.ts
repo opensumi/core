@@ -1,6 +1,6 @@
 export const browserViews = {
-  // kaitianContributes
-  'sumiContributes.opensumiContributes': 'All contributions of the Opensumi Extension represented by this package.',
+  // sumiContributes
+  'sumiContributes.contributes': 'Declare all contributions of the OpenSumi Extension.',
 
   // 公用 properties，如 command
   'sumiContributes.common.command':
@@ -158,6 +158,7 @@ Inline mode showTitle will be invalid, only display icon`,
   'sumiContributes.menu': 'Provide menu items',
   'sumiContributes.menu.api.CommandPalette': 'Command Palette Menu',
   'sumiContributes.menu.api.ActivityBarExtra': 'The menu at the bottom of the left activity bar',
+  'sumiContributes.menu.api.ActivityBarTopExtra': 'The menu at the top of the left activity bar',
   'sumiContributes.menu.api.DebugBreakpointsContext': 'The right-click menu for debugging breakpoints',
   'sumiContributes.menu.api.DebugCallStackContext': 'The right-click menu of the debug call stack',
   'sumiContributes.menu.api.DebugConsoleContext': 'The right-click menu of the debug console log panel at the bottom',

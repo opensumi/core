@@ -34,7 +34,6 @@ import {
   AppConfig,
   SUPPORTED_ENCODINGS,
   FILE_COMMANDS,
-  electronEnv,
   CorePreferences,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
@@ -42,7 +41,7 @@ import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-brow
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { isWindows, isOSX, PreferenceScope, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { isWindows, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -77,12 +76,7 @@ import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
-import {
-  EditorGroupsResetSizeEvent,
-  BrowserEditorContribution,
-  IEditorFeatureRegistry,
-  ResourceDecorationChangeEvent,
-} from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
@@ -103,7 +97,6 @@ interface ResourceArgs {
   QuickOpenContribution,
 )
 export class EditorContribution
-  extends WithEventBus
   implements
     CommandContribution,
     ClientAppContribution,
@@ -282,19 +275,8 @@ export class EditorContribution
     }
   }
 
-  @OnEvent(ResourceDecorationChangeEvent)
-  onResourceDecorationChangeEvent() {
-    if (this.appConfig.isElectronRenderer) {
-      const hasDirty = this.workbenchEditorService.hasDirty();
-      // setup macos native dirty indicator
-      this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
-    }
-  }
-
   onWillStop(app: IClientApp) {
-    if (this.appConfig.isElectronRenderer) {
-      return this.onWillStopElectron();
-    } else {
+    if (!this.appConfig.isElectronRenderer) {
       return this.workbenchEditorService.hasDirty() || !this.cacheProvider.isFlushed();
     }
   }
@@ -321,21 +303,6 @@ export class EditorContribution
       group,
       uri,
     };
-  }
-
-  /**
-   * Return true in order to prevent exit.
-   */
-  async onWillStopElectron() {
-    if (await this.workbenchEditorService.closeAllOnlyConfirmOnce()) {
-      return true;
-    }
-
-    if (!this.cacheProvider.isFlushed()) {
-      return true;
-    }
-
-    return false;
   }
 
   private isElectronRenderer(): boolean {
@@ -409,6 +376,10 @@ export class EditorContribution
       keybinding: 'ctrlcmd+k ctrlcmd+w',
     });
     keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CLOSE_SAVED.id,
+      keybinding: 'ctrlcmd+k u',
+    });
+    keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PIN_CURRENT.id,
       keybinding: 'ctrlcmd+k enter',
     });
@@ -432,26 +403,6 @@ export class EditorContribution
       command: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
       keybinding: this.isElectronRenderer() ? 'ctrlcmd+alt+t' : 'ctrlcmd+alt+o',
     });
-    if (this.isElectronRenderer()) {
-      keybindings.registerKeybinding({
-        command: EDITOR_COMMANDS.NEXT.id,
-        keybinding: 'ctrl+tab',
-      });
-      keybindings.registerKeybinding({
-        command: EDITOR_COMMANDS.PREVIOUS.id,
-        keybinding: 'ctrl+shift+tab',
-      });
-      if (isOSX) {
-        keybindings.registerKeybinding({
-          command: EDITOR_COMMANDS.NEXT.id,
-          keybinding: 'ctrlcmd+shift+]',
-        });
-        keybindings.registerKeybinding({
-          command: EDITOR_COMMANDS.PREVIOUS.id,
-          keybinding: 'ctrlcmd+shift+[',
-        });
-      }
-    }
     for (let i = 1; i < 10; i++) {
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.GO_TO_GROUP.id,

@@ -3,6 +3,7 @@ import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
 import { path, URI } from '@opensumi/ide-core-browser';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import {
   ContributionProvider,
   IExtensionProps,
@@ -12,7 +13,6 @@ import {
   REPORT_NAME,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
   EXTENSION_EXTEND_SERVICE_PREFIX,
@@ -179,18 +179,18 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
   public async activeExtension(extension: IExtension, protocol: IRPCProtocol) {
     const { extendConfig, packageJSON, contributes } = extension;
     // 对使用 kaitian.js 的老插件兼容
-    // 因为可能存在即用了 kaitian.js 作为入口，又注册了 kaitianContributes 贡献点的插件
+    // 因为可能存在即用了 kaitian.js 作为入口，又注册了 sumiContributes 贡献点的插件
     if (extendConfig?.browser?.main) {
       warning(
         false,
-        '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#kaitianContributes` instead',
+        '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#sumiContributes` instead',
       );
       await this.activateExtensionByDeprecatedExtendConfig(extension as Extension);
       return;
     }
 
     // 激活 workerMain/browserMain 相关部分
-    if (packageJSON.kaitianContributes && contributes?.browserMain) {
+    if (packageJSON.sumiContributes && contributes?.browserMain) {
       await this.activeExtensionContributes(extension);
     }
   }

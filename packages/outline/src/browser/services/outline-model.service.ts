@@ -82,7 +82,6 @@ export class OutlineModelService {
     100,
     80,
   );
-  private _treeModelDisposeMap = new DisposableMap();
   private _whenInitTreeModelReady: Promise<void>;
 
   private _whenReady: Promise<void>;
@@ -190,25 +189,6 @@ export class OutlineModelService {
         treeModel,
         decoration,
       });
-      this.disposableCollection.push(
-        this._allTreeModels.onKeyDidDelete(uri.toString(), ({ key }) => {
-          this._treeModelDisposeMap.disposeKey(key);
-        }),
-      );
-      this._treeModelDisposeMap.set(
-        uri.toString(),
-        treeModel.onWillUpdate(() => {
-          if (this.focusedNode) {
-            // 更新树前更新下选中节点
-            const node = treeModel!.root.getTreeNodeById(this.focusedNode.id);
-            this.activeNodeDecoration(node as OutlineTreeNode, false);
-          } else if (this.selectedNodes.length !== 0) {
-            // 仅处理一下单选情况
-            const node = treeModel!.root.getTreeNodeById(this.selectedNodes[0].id);
-            this.selectNodeDecoration(node as OutlineTreeNode, false);
-          }
-        }),
-      );
     }
     this.setTreeModel(treeModel);
     return treeModel;
@@ -616,6 +596,5 @@ export class OutlineModelService {
 
   dispose() {
     this.disposableCollection.dispose();
-    this._treeModelDisposeMap.dispose();
   }
 }

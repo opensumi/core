@@ -777,7 +777,7 @@ function StringArrayPreferenceItem({
             onValueChange={handleInputValueChange}
           />
           <Button className={styles.add_button} onClick={addItem}>
-            {localize('preference.array.additem', '添加')}
+            {localize('preference.array.additem', 'Add')}
           </Button>
         </div>
       </div>

@@ -8,6 +8,8 @@ import {
   Event,
   DisposableCollection,
   Deferred,
+  isEmptyObject,
+  URI,
 } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -45,16 +47,19 @@ export class Storage implements IStorage {
     private readonly workspace: IWorkspaceService,
     private readonly appConfig: AppConfig,
     private readonly storageName: string,
+    private readonly isGlobal: boolean = true,
     private readonly browserLocalStorage?: StorageService,
   ) {
     this.toDisposableCollection.push(this._onDidChangeStorage);
-    this.toDisposableCollection.push(
-      this.workspace.onWorkspaceChanged(() => {
-        this.setup(storageName);
-      }),
-    );
+
     this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
-    this.setup(storageName);
+    this.init(storageName).then(() => {
+      this.toDisposableCollection.push(
+        this.workspace.onWorkspaceChanged(() => {
+          this.init(storageName);
+        }),
+      );
+    });
   }
 
   get whenReady() {
@@ -74,13 +79,15 @@ export class Storage implements IStorage {
   }
 
   async init(storageName: string) {
-    const workspace = this.workspace.workspace;
+    // 首次加载情况下，由于 Storage 不依赖 WorkspaceService 初始化逻辑
+    // 在 `workspace` 不存在时，默认采用 `AppConfig` 内的 `workspaceDir` 配置值作为工作区路径
+    const workspace = this.workspace.workspace?.uri || URI.file(this.appConfig.workspaceDir).toString();
     let cache;
     if (this.browserLocalStorage) {
       cache = await this.browserLocalStorage.getData(storageName);
     }
     if (!cache) {
-      await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
+      await this.database.init(this.appConfig.storageDirName, this.isGlobal ? undefined : workspace);
       cache = await this.database.getItems(storageName);
       if (this.browserLocalStorage) {
         this.browserLocalStorage.setData(storageName, cache);
@@ -88,13 +95,11 @@ export class Storage implements IStorage {
       this.whenReadyToWriteDeferred.resolve();
     } else {
       // 初始化服务端缓存
-      this.database.init(this.appConfig.storageDirName, workspace && workspace.uri).then(() => {
+      this.database.init(this.appConfig.storageDirName, this.isGlobal ? undefined : workspace).then(() => {
         this.database.getItems(storageName).then(async (data) => {
           // 后续以服务端数据为准更新前端缓存数据，防止后续数据存取异常
           this.cache = this.jsonToMap(data);
-          if (this.browserLocalStorage) {
-            await this.browserLocalStorage.setData(storageName, JSON.stringify(data));
-          }
+          this.browserLocalStorage?.setData(storageName, data);
           this.whenReadyToWriteDeferred.resolve();
         });
       });
@@ -104,13 +109,9 @@ export class Storage implements IStorage {
     this.readyDeferred.resolve();
   }
 
-  setup(storageName: string) {
-    this.init(storageName);
-  }
-
   async reConnectInit() {
     this.readyDeferred = new Deferred();
-    this.setup(this.storageName);
+    this.init(this.storageName);
   }
 
   dispose() {
@@ -253,7 +254,7 @@ export class Storage implements IStorage {
         ...cache,
         ...updateRequest.insert,
       };
-      await this.browserLocalStorage.setData(this.storageName, cache);
+      this.browserLocalStorage.setData(this.storageName, cache);
     }
 
     // 重置等待队列用于下次存储

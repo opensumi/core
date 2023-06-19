@@ -2,11 +2,10 @@ import { Injector } from '@opensumi/di';
 import {
   CommentContentNode,
   CommentFileNode,
-  CommentReplyNode,
   CommentRoot,
 } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { URI, positionToRange, Disposable } from '@opensumi/ide-core-common';
+import { URI, positionToRange, Disposable, Emitter } from '@opensumi/ide-core-common';
 import { IEditor, EditorCollectionService, ResourceService } from '@opensumi/ide-editor';
 import { IEditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
@@ -35,6 +34,18 @@ describe('comment service test', () => {
         minimapWidth: 10,
         minimapLeft: 10,
       }),
+      getOption: () => 10,
+      createDecorationsCollection(decorations) {
+        return {
+          onDidChange: new Emitter().event,
+          clear: () => {},
+          length: 0,
+          set: () => {},
+          getRange: () => null,
+          getRanges: () => [],
+          has: () => true,
+        };
+      },
     });
     currentEditor = mockService({ monacoEditor });
     injector = createBrowserInjector(
@@ -86,7 +97,7 @@ describe('comment service test', () => {
     const [thread] = createTestThreads(uri);
     expect(thread.uri.isEqual(uri));
     expect(thread.range.startLineNumber).toBe(1);
-    expect(thread.comments[0].body).toBe('评论内容1');
+    expect(thread.comments[0].body).toBe('评论内容');
   });
 
   it('get commentsThreads', () => {
@@ -152,7 +163,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容1',
+          body: '评论内容',
         },
       ],
     });
@@ -171,7 +182,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容1',
+          body: '评论内容',
         },
       ],
     });
@@ -245,7 +256,7 @@ describe('comment service test', () => {
             author: {
               name: 'User',
             },
-            body: '评论内容1',
+            body: '评论内容',
           },
         ],
       }),

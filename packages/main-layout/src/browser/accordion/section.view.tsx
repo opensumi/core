@@ -53,6 +53,7 @@ export const AccordionSection = ({
   header,
   description,
   message,
+  badge,
   headerClass,
   onItemClick,
   noHeader,
@@ -73,19 +74,24 @@ export const AccordionSection = ({
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
   const [headerLabel, setHeaderLabel] = React.useState(header);
-  const [headerDescription, setheaderDescription] = React.useState(description);
+  const [headerDescription, setHeaderDescription] = React.useState(description);
   const [panelMessage, setPanelMessage] = React.useState(message);
+  const [headerBadge, setHeaderBadge] = React.useState(badge);
 
   const { getSize, setSize } = React.useContext(PanelContext);
 
   React.useEffect(() => {
-    const disposable = accordionService.onDidChangeViewTiele(({ id, title, description, message: msg }) => {
+    const disposable = accordionService.onDidChangeViewTitle(({ id, title, description, message: msg, badge }) => {
       if (viewId === id && title && title !== headerLabel) {
         setHeaderLabel(title);
       }
 
+      if (viewId === id && badge !== headerBadge) {
+        setHeaderBadge(badge);
+      }
+
       if (viewId === id && description && description !== headerDescription) {
-        setheaderDescription(description);
+        setHeaderDescription(description);
       }
 
       if (viewId === id && msg && msg !== panelMessage) {
@@ -150,6 +156,7 @@ export const AccordionSection = ({
                 {transformLabelWithCodicon(headerDescription, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
+            {headerBadge && <div className={styles.section_badge}>{headerBadge}</div>}
           </div>
           {expanded && titleMenu && (
             <div className={styles.actions_wrap}>
@@ -169,7 +176,7 @@ export const AccordionSection = ({
       >
         <ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />
         <ErrorBoundary>
-          {panelMessage && <span className={styles.kt_split_panel_message}>{panelMessage}</span>}
+          {panelMessage && <div className={styles.kt_split_panel_message}>{panelMessage}</div>}
           <Component
             {...initialProps}
             viewState={{ height: viewState.height - (panelMessage ? 22 : 0), width: viewState.width }}

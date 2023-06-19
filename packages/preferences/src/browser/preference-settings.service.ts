@@ -29,6 +29,7 @@ import {
   Disposable,
   UserScope,
   WorkspaceScope,
+  MenubarSettingId,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -68,6 +69,9 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
+
+  private onSettingsGroupsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+  public readonly onSettingsGroupsChange: Event<void> = this.onSettingsGroupsChangeEmitter.event;
 
   @observable
   public currentSearch = '';
@@ -249,7 +253,11 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       ...group,
       title: replaceLocalizePlaceholder(group.title) || group.title,
     });
-    return disposable;
+    this.onSettingsGroupsChangeEmitter.fire();
+    return Disposable.create(() => {
+      disposable.dispose();
+      this.onSettingsGroupsChangeEmitter.fire();
+    });
   }
 
   /**
@@ -513,6 +521,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     iconClass: getIcon('setting'),
   },
   {
+    id: PreferenceSettingId.Terminal,
+    title: '%settings.group.terminal%',
+    iconClass: getIcon('terminal'),
+  },
+  {
     id: PreferenceSettingId.Editor,
     title: '%settings.group.editor%',
     iconClass: getIcon('editor'),
@@ -521,11 +534,6 @@ export const defaultSettingGroup: ISettingGroup[] = [
     id: PreferenceSettingId.View,
     title: '%settings.group.view%',
     iconClass: getIcon('detail'),
-  },
-  {
-    id: PreferenceSettingId.Terminal,
-    title: '%settings.group.terminal%',
-    iconClass: getIcon('terminal'),
   },
   {
     id: PreferenceSettingId.Feature,
@@ -577,6 +585,17 @@ export const defaultSettingSections: {
         { id: 'editor.trimAutoWhitespace' },
 
         // 补全
+        { id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay' },
+        { id: 'editor.suggestOnTriggerCharacters' },
+        { id: 'editor.acceptSuggestionOnEnter' },
+        { id: 'editor.acceptSuggestionOnCommitCharacter' },
+        { id: 'editor.snippetSuggestions' },
+        { id: 'editor.wordBasedSuggestions' },
+        { id: 'editor.suggestSelection' },
+        { id: 'editor.suggestFontSize' },
+        { id: 'editor.suggestLineHeight' },
+        { id: 'editor.tabCompletion' },
+        { id: 'editor.suggest.filteredTypes' },
         { id: 'editor.suggest.insertMode' },
         { id: 'editor.suggest.filterGraceful' },
         { id: 'editor.suggest.localityBonus' },
@@ -614,7 +633,12 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.showIssues' },
         { id: 'editor.suggest.preview' },
         { id: 'editor.suggest.details.visible' },
-
+        // 行内补全
+        { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
+        {
+          id: 'editor.experimental.stickyScroll.enabled',
+          localized: 'preference.editor.experimental.stickyScroll.enabled',
+        },
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
         { id: 'editor.guides.indentation', localized: 'preference.editor.guides.indentation' },
@@ -623,12 +647,6 @@ export const defaultSettingSections: {
           localized: 'preference.editor.guides.highlightActiveIndentation',
         },
 
-        // 行内补全
-        { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
-        {
-          id: 'editor.experimental.stickyScroll.enabled',
-          localized: 'preference.editor.experimental.stickyScroll.enabled',
-        },
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },
@@ -644,8 +662,11 @@ export const defaultSettingSections: {
         { id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave' },
         { id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout' },
         { id: 'editor.formatOnPaste', localized: 'preference.editor.formatOnPaste' },
-        // 智能提示
-        { id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay' },
+        // 代码操作
+        { id: 'editor.codeActionsOnSave', localized: 'preference.editor.saveCodeActions' },
+        { id: 'editor.codeActionsOnSaveNotification', localized: 'preference.editor.saveCodeActionsNotification' },
+        // 其他
+        { id: 'editor.gotoLocation.multiple' },
         // 文件
         // `forceReadOnly` 选项暂时不对用户暴露
         // {id: 'editor.forceReadOnly', localized: 'preference.editor.forceReadOnly'},
@@ -685,6 +706,11 @@ export const defaultSettingSections: {
   ],
   // 整体布局相关的，比如 QuickOpen 也放这
   [PreferenceSettingId.View]: [
+    {
+      // 菜单栏
+      title: 'MenuBar',
+      preferences: [{ id: MenubarSettingId.CompactMode, localized: 'preference.menubar.mode.compact' }],
+    },
     {
       // 布局信息
       title: 'Layout',
@@ -746,6 +772,7 @@ export const defaultSettingSections: {
         { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },
         { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
         { id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title' },
+        { id: 'debug.breakpoint.editorHint', localized: 'preference.debug.breakpoint.editorHint.title' },
       ],
     },
   ],
@@ -781,6 +808,7 @@ export const defaultSettingSections: {
           localized: 'preference.terminal.integrated.cursorStyle',
         },
         { id: 'terminal.integrated.localEchoStyle', localized: 'preference.terminal.integrated.localEchoStyle' },
+        { id: 'terminal.integrated.xtermRenderType', localized: 'preference.terminal.integrated.xtermRenderType' },
       ],
     },
   ],

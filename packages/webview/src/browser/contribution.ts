@@ -1,28 +1,19 @@
 /* istanbul ignore file */
 import { Autowired } from '@opensumi/di';
-import { Domain, URI, CommandContribution, CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
-import { localize } from '@opensumi/ide-core-common';
+import { Domain, URI } from '@opensumi/ide-core-browser';
 import { ResourceService, IResource } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 
 import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData, isWebview } from './types';
 import { WebviewServiceImpl } from './webview.service';
 
-const WEBVIEW_DEVTOOLS_COMMAND = {
-  id: 'workbench.action.webview.openDeveloperTools',
-  label: localize('openToolsLabel', 'Open Webview Developer Tools'),
-};
-
-@Domain(BrowserEditorContribution, CommandContribution)
-export class WebviewModuleContribution implements BrowserEditorContribution, CommandContribution {
+@Domain(BrowserEditorContribution)
+export class WebviewModuleContribution implements BrowserEditorContribution {
   @Autowired(IWebviewService)
   webviewService: WebviewServiceImpl;
 
   @Autowired(EditorComponentRegistry)
   editorComponentRegistry: EditorComponentRegistry;
-
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider({
@@ -58,23 +49,6 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
 
         return true;
       },
-    });
-  }
-
-  registerCommands(commandRegistry: CommandRegistry) {
-    commandRegistry.registerCommand(WEBVIEW_DEVTOOLS_COMMAND, {
-      execute: () => {
-        const elements = document.querySelectorAll<Electron.WebviewTag>('webview');
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of
-        for (let i = 0; i < elements.length; i += 1) {
-          try {
-            elements[i].openDevTools();
-          } catch (e) {
-            // noop
-          }
-        }
-      },
-      isEnabled: () => this.appConfig.isElectronRenderer,
     });
   }
 }

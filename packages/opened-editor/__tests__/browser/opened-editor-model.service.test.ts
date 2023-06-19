@@ -10,7 +10,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import styles from '../../src/browser/file-tree-node.modules.less';
-import { EditorFile, EditorFileGroup, EditorFileRoot } from '../../src/browser/opened-editor-node.define';
+import { EditorFile, EditorFileGroup } from '../../src/browser/opened-editor-node.define';
 import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
 import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';

@@ -3,6 +3,7 @@ export enum MenuId {
   AccountsContext = 'accounts/context',
   ActivityBarContext = 'activityBar/context',
   ActivityBarExtra = 'activityBar/extra',
+  ActivityBarTopExtra = 'activityBar/top/extra',
   CommandPalette = 'commandPalette',
   DebugBreakpointsContext = 'debug/breakpoints/context',
   DebugCallStackContext = 'debug/callstack/context',
@@ -17,6 +18,8 @@ export enum MenuId {
   BreadcrumbsTitleContext = 'breadcrumbs/title/context',
   EmptyEditorGroupContext = 'empty/editor/group/context',
   ExplorerContext = 'explorer/context',
+  // top icon menubar
+  IconMenubarContext = 'iconMenubar/context',
   MenubarAppearanceMenu = 'menubar/appearance',
   MenubarAppMenu = 'menubar/app',
   MenubarDebugMenu = 'menubar/debug',
@@ -33,6 +36,7 @@ export enum MenuId {
   MenubarSwitchGroupMenu = 'menubar/switch/group',
   MenubarTerminalMenu = 'menubar/terminal',
   MenubarViewMenu = 'menubar/view',
+  MenubarCompactMenu = 'menubar/compact/mode',
   TerminalInstanceContext = 'terminal/instance/context',
   TerminalNewDropdownContext = 'terminal/newDropdown/context',
   TerminalTabContext = 'terminal/tab/context',
@@ -55,7 +59,7 @@ export enum MenuId {
   ViewTitle = 'view/title',
   GlobalActivity = 'global/activity',
   ExtensionContext = 'extension/context', // 插件市场 item
-  SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
+  SettingsIconMenu = 'settings/icon/menu', // 左下角 setting menu
   // The contributed comment thread context menu, rendered as buttons below the comment editor
   CommentsCommentThreadContext = 'comments/commentThread/context',
   // The contributed comment thread title menu

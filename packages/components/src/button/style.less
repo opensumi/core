@@ -175,19 +175,27 @@
 .secondary-button:disabled,
 .primary-button:disabled,
 .ghost-danger-button:disabled,
+.default-button:disabled,
 .@{prefix}-danger-button-loading,
 .@{prefix}-primary-button-loading,
 .@{prefix}-secondary-button-loading {
   color: var(--kt-button-disableForeground) !important;
-  border-color: var(--kt-button-disableBorder) !important;
   background-color: var(--kt-button-disableBackground) !important;
-  border-style: solid;
-  border-width: 1px;
-  cursor: default;
+  // 这里是用 box-shadow 来实现边框的，因为 border 会破坏盒模型
+  box-shadow: var(--kt-button-disableBorder) 0px 0px 0px 1px inset;
+  cursor: not-allowed;
 
   & > .@{prefix}-button-secondary-more {
     color: var(--kt-button-disableForeground);
   }
+}
+
+.secondary-button:disabled {
+  border: none;
+}
+
+.link-button:disabled {
+  cursor: not-allowed;
 }
 
 .ghost-primary-button {

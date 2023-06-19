@@ -2,6 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@opensumi/ide-core-common';
 import {
   WorkbenchEditorService,
@@ -34,7 +35,6 @@ import {
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -324,37 +324,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           this.editorService.currentEditorGroup &&
           isEditor(this.editorService.currentEditorGroup.currentOpenType)
         ) {
-          let side: string | undefined;
-
-          const isDiffOriginal =
-            this.editorService.currentEditorGroup.currentOpenType?.type === EditorOpenType.diff &&
-            this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
-
-          const isDiffMorified =
-            this.editorService.currentEditorGroup.currentOpenType?.type === EditorOpenType.diff &&
-            this.editorService.currentEditorGroup.diffEditor.modifiedEditor.currentUri?.isEqual(uri);
-
-          if (isDiffOriginal) {
-            side = 'original';
-          }
-
-          if (isDiffMorified) {
-            side = 'modified';
-          }
-
-          if (side) {
-            this.proxy.$acceptChange({
-              actived: getTextEditorId(this.editorService.currentEditorGroup, uri, side),
-            });
-          } else {
-            // 这里 id 还是兼容旧逻辑不做改动
-            this.proxy.$acceptChange({
-              actived: getTextEditorId(
-                this.editorService.currentEditorGroup,
-                this.editorService.currentEditorGroup.currentResource?.uri!,
-              ),
-            });
-          }
+          this.acceptCurrentEditor(uri);
         } else {
           this.proxy.$acceptChange({
             actived: '-1',
@@ -373,6 +343,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           source: e.payload.source,
         },
       });
+
+      this.acceptCurrentEditor(e.payload.editorUri);
     };
 
     const debouncedSelectionChange = debounce((e) => selectionChange(e), 50, {
@@ -433,6 +405,40 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         }
       }),
     );
+  }
+
+  private acceptCurrentEditor(uri: URI) {
+    let side: string | undefined;
+
+    const isDiffOriginal =
+      this.editorService.currentEditorGroup.currentOpenType?.type === EditorOpenType.diff &&
+      this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
+
+    const isDiffMorified =
+      this.editorService.currentEditorGroup.currentOpenType?.type === EditorOpenType.diff &&
+      this.editorService.currentEditorGroup.diffEditor.modifiedEditor.currentUri?.isEqual(uri);
+
+    if (isDiffOriginal) {
+      side = 'original';
+    }
+
+    if (isDiffMorified) {
+      side = 'modified';
+    }
+
+    if (side) {
+      this.proxy.$acceptChange({
+        actived: getTextEditorId(this.editorService.currentEditorGroup, uri, side),
+      });
+    } else {
+      // 这里 id 还是兼容旧逻辑不做改动
+      this.proxy.$acceptChange({
+        actived: getTextEditorId(
+          this.editorService.currentEditorGroup,
+          this.editorService.currentEditorGroup.currentResource?.uri!,
+        ),
+      });
+    }
   }
 
   async $applyEdits(

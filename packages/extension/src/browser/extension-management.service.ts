@@ -1,8 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { CommandService, getLanguageId, ILogger, WithEventBus } from '@opensumi/ide-core-common';
+import { getLanguageId, ILogger, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IIconService, IThemeService } from '@opensumi/ide-theme';
-import { ICON_THEME_TOGGLE_COMMAND, THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 import {
   AbstractExtensionManagementService,
@@ -37,15 +35,6 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
 
   @Autowired(IFileServiceClient)
   private fileService: IFileServiceClient;
-
-  @Autowired(IThemeService)
-  protected readonly themeService: IThemeService;
-
-  @Autowired(IIconService)
-  protected readonly iconService: IIconService;
-
-  @Autowired(CommandService)
-  protected readonly commandService: CommandService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -181,26 +170,10 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
     await extension.initialize();
     this.eventBus.fire(new ExtensionDidEnabledEvent(extension.toJSON()));
 
-    this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
+    this.sumiContributesService.register(extension.id, extension.packageJSON.sumiContributes || {});
     this.contributesService.register(extension.id, extension.contributes);
     this.sumiContributesService.initialize();
     this.contributesService.initialize();
-
-    const colorThemes = this.themeService.getAvailableThemeInfos();
-    if (colorThemes.some((theme) => theme.extensionId === extension.id)) {
-      this.commandService.executeCommand(THEME_TOGGLE_COMMAND.id, {
-        extensionId: extension.id,
-      });
-      return;
-    }
-
-    const iconThemes = this.iconService.getAvailableThemeInfos();
-    if (iconThemes.some((theme) => theme.extensionId === extension.id)) {
-      this.commandService.executeCommand(ICON_THEME_TOGGLE_COMMAND.id, {
-        extensionId: extension.id,
-      });
-      return;
-    }
   }
 
   /**
@@ -208,7 +181,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
    */
   private async removeExtension(extensionPath: string) {
     try {
-      await this.fileService.delete(extensionPath);
+      await this.fileService.delete(URI.file(extensionPath).toString());
       return true;
     } catch (err) {
       this.logger.error(err);

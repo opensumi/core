@@ -27,7 +27,6 @@ const electronApp = new ElectronMainApp({
   extensionDir: getExtensionDir(),
   extensionCandidate: [],
   overrideWebPreferences: {},
-  devtools: false, // 开启 core-electron-main 对 OpenSumi DevTools 的支持，默认为关闭
 });
 
 electronApp.init().then(() => {

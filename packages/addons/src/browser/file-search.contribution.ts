@@ -279,7 +279,7 @@ export class FileSearchQuickCommandHandler {
 
   private async getFindOutItems(alreadyCollected: Set<string>, lookFor: string, token: CancellationToken) {
     let results: QuickOpenItem[];
-    // 有@时进入查找symbol逻辑
+    // 有 @ 时进入查找symbol逻辑
     if (lookFor.indexOf('@') > -1) {
       // save current editor state
       this.trySaveEditorState();
@@ -343,7 +343,7 @@ export class FileSearchQuickCommandHandler {
       results = await this.getQueryFiles(lookFor, alreadyCollected, token);
       // 排序后设置第一个元素的样式
       if (results[0]) {
-        const newItems = await this.getItems([results[0].getUri()!.toString()], {
+        const newItems = await this.getItems([results[0].getUri()!.codeUri.fsPath], {
           groupLabel: localize('search.fileResults'),
           showBorder: true,
         });
@@ -413,8 +413,8 @@ export class FileSearchQuickCommandHandler {
     const items: QuickOpenItem[] = [];
 
     for (const [index, strUri] of uriList.entries()) {
-      const uri = new URI(strUri);
-      const icon = `file-icon ${await this.labelService.getIcon(uri.withoutFragment())}`;
+      const uri = URI.isUriString(strUri) ? new URI(strUri) : URI.file(strUri);
+      const icon = `file-icon ${this.labelService.getIcon(uri.withoutFragment())}`;
       let description = '';
       const relative = await this.workspaceService.asRelativePath(uri.parent);
       if (relative) {
@@ -449,11 +449,11 @@ export class FileSearchQuickCommandHandler {
   }
 
   private openFile(uri: URI) {
-    const filePath = uri.path.toString();
+    const filePath = uri.codeUri.fsPath;
     // 优先从输入上获取 line 和 column
     let range = getRangeByInput(this.currentLookFor);
     if (!range || (!range.startLineNumber && !range.startColumn)) {
-      range = getRangeByInput(uri.fragment ? filePath + '#' + uri.fragment : filePath);
+      range = getRangeByInput(uri.fragment ? '#' + uri.fragment : filePath);
     }
     this.currentLookFor = '';
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri.withoutFragment(), {

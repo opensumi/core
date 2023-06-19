@@ -142,8 +142,12 @@ export const Popover: React.FC<{
       return;
     }
     hideContentTimer = setTimeout(() => {
-      contentEl.current!.style.display = 'none';
-      contentEl.current!.style.visibility = 'hidden';
+      // 存在延时隐藏时组件已销毁的情况
+      if (!contentEl.current) {
+        return;
+      }
+      contentEl.current.style.display = 'none';
+      contentEl.current.style.visibility = 'hidden';
     }, delay);
   }
 

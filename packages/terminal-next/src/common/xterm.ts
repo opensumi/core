@@ -2,6 +2,12 @@ import { ITerminalOptions, ITheme, Terminal } from 'xterm';
 
 import { SupportedOptions } from './preference';
 
+export enum RenderType {
+  Canvas = 'canvas',
+  WebGL = 'webgl',
+  Dom = 'dom',
+}
+
 export interface IXTerm {
   raw: Terminal;
   container: HTMLDivElement;

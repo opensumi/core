@@ -8,12 +8,12 @@ import './styles.less';
 
 export interface ICustomScrollbarProps {
   forwardedRef?: any;
-  onScroll?: any;
-  onUpdate?: any;
+  onScroll?: (values: any) => void;
+  onUpdate?: (values: any) => void;
   style?: React.CSSProperties;
   className?: string;
   children?: React.ReactNode;
-  onReachBottom?: any;
+  onReachBottom?: () => void;
   /**
    * 这种模式下，左右滚动和上下滚动都会被视为左右滚动
    */
@@ -22,6 +22,19 @@ export interface ICustomScrollbarProps {
    * 滚动条滑块大小，默认 5px
    */
   thumbSize?: number;
+  /**
+   * 是否隐藏纵向滚动条，默认 false
+   */
+  hiddenVertical?: boolean;
+  /**
+   * 是否隐藏横向滚动条，默认 false
+   */
+  hiddenHorizontal?: boolean;
+  /**
+   * 通用渲染， 默认 false
+   * https://github.com/malte-wessel/react-custom-scrollbars/blob/master/docs/usage.md#universal-rendering
+   */
+  universal?: boolean;
 }
 
 export const Scrollbars = ({
@@ -34,6 +47,9 @@ export const Scrollbars = ({
   onReachBottom,
   tabBarMode,
   thumbSize = 5,
+  hiddenVertical,
+  hiddenHorizontal,
+  universal = false,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
@@ -131,22 +147,35 @@ export const Scrollbars = ({
       className={cls(className, 'kt-scrollbar')}
       onUpdate={handleUpdate}
       onScroll={onScroll}
-      renderTrackHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, height: thumbSize, left: 0, right: 0, bottom: 1 }} />
-      )}
-      renderTrackVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, width: thumbSize, top: 0, right: 1, bottom: 0 }} />
-      )}
-      renderThumbVertical={({ style, className, ...props }) => (
-        <div {...props} style={{ ...style, width: thumbSize }} className={cls(className, 'scrollbar-thumb-vertical')} />
-      )}
-      renderThumbHorizontal={({ style, className, ...props }) => (
-        <div
-          {...props}
-          style={{ ...style, height: thumbSize }}
-          className={cls(className, 'scrollbar-thumb-horizontal')}
-        />
-      )}
+      universal={universal}
+      renderTrackHorizontal={({ style, ...props }) => {
+        const newStyle = { ...style, height: thumbSize, left: 0, right: 0, bottom: 1 };
+        if (hiddenHorizontal) {
+          newStyle.display = 'none';
+        }
+        return <div {...props} style={newStyle} />;
+      }}
+      renderTrackVertical={({ style, ...props }) => {
+        const newStyle = { ...style, width: thumbSize, top: 0, right: 1, bottom: 0 };
+        if (hiddenVertical) {
+          newStyle.display = 'none';
+        }
+        return <div {...props} style={newStyle} />;
+      }}
+      renderThumbVertical={({ style, className, ...props }) => {
+        const newStyle = { ...style, width: thumbSize };
+        if (hiddenVertical) {
+          newStyle.display = 'none';
+        }
+        return <div {...props} style={newStyle} className={cls(className, 'scrollbar-thumb-vertical')} />;
+      }}
+      renderThumbHorizontal={({ style, className, ...props }) => {
+        const newStyle = { ...style, height: thumbSize, display: 'none' };
+        if (hiddenHorizontal) {
+          newStyle.display = 'none';
+        }
+        return <div {...props} style={newStyle} className={cls(className, 'scrollbar-thumb-horizontal')} />;
+      }}
     >
       <div
         ref={(ref) => {
@@ -164,9 +193,11 @@ export const Scrollbars = ({
     </CustomScrollbars>
   );
 };
+
 Scrollbars.displayName = 'CustomScrollbars';
 
 export const ScrollbarsVirtualList = React.forwardRef((props, ref) => (
   <Scrollbars {...props} thumbSize={10} forwardedRef={ref} />
 ));
+
 ScrollbarsVirtualList.displayName = 'ScrollbarsVirtualList';

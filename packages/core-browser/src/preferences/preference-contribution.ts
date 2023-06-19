@@ -15,7 +15,6 @@ import {
   PreferenceDataSchema,
   PreferenceItem,
   PreferenceDataProperty,
-  PREFERENCE_PROPERTY_TYPE,
 } from '@opensumi/ide-core-common/lib/preferences/preference-schema';
 
 import { AppConfig } from '../react-providers/config-provider';
@@ -195,27 +194,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     if (property.default !== undefined) {
       return property.default;
     }
-    // 当配置的类型数组存在 PREFERENCE_PROPERTY_TYPE.NULL 时，默认采用 PREFERENCE_PROPERTY_TYPE.NULL 类型
-    const type = Array.isArray(property.type)
-      ? property.type.includes(PREFERENCE_PROPERTY_TYPE.NULL)
-        ? PREFERENCE_PROPERTY_TYPE.NULL
-        : property.type[0]
-      : property.type;
-    switch (type) {
-      case PREFERENCE_PROPERTY_TYPE.BOOLEAN:
-        return false;
-      case PREFERENCE_PROPERTY_TYPE.INT:
-      case PREFERENCE_PROPERTY_TYPE.NUMBER:
-        return 0;
-      case PREFERENCE_PROPERTY_TYPE.STRING:
-        return '';
-      case PREFERENCE_PROPERTY_TYPE.STRING_ARRAY:
-      case PREFERENCE_PROPERTY_TYPE.ARRAY:
-        return [];
-      case PREFERENCE_PROPERTY_TYPE.OBJECT:
-        return {};
-    }
-    return null;
+    // 当不存在默认值时，返回 `undefined`，便于使用后续传入的 `defaultValue` 作为默认值
+    return undefined;
   }
 
   protected updateValidate(): void {

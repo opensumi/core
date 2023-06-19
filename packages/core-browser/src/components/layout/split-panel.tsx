@@ -228,6 +228,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
         );
       }
     }
+
     elements.push(
       <PanelContext.Provider
         key={index}
@@ -243,6 +244,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       >
         <div
           data-min-resize={getProp(element, 'minResize')}
+          data-max-resize={getProp(element, 'maxResize')}
           ref={(ele) => {
             if (ele && splitPanelService.panels.indexOf(ele) === -1) {
               splitPanelService.panels.push(ele);
@@ -250,7 +252,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
           }}
           id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
           style={{
-            // 手风琴场景，固定尺寸和flex尺寸混合布局；需要在resize flex模式下禁用
+            // 手风琴场景，固定尺寸和 flex 尺寸混合布局；需要在 Resize Flex 模式下禁用
             ...(getProp(element, 'flex') &&
             !getProp(element, 'savedSize') &&
             !childList.find((item) => getProp(item, 'flexGrow'))
@@ -262,7 +264,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
               : '-1px',
             [Layout.getMaxSizeProperty(direction)]:
               maxLocks[index] && getProp(element, 'maxSize') ? getProp(element, 'maxSize') + 'px' : 'unset',
-            // resize flex模式下应用flexGrow
+            // Resize Flex 模式下应用 flexGrow
             ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: getProp(element, 'flexGrow') } : {}),
             display: hides[index] ? 'none' : 'block',
             backgroundColor: getProp(element, 'backgroundColor'),

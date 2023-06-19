@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-startup",
-  "version": "2.23.2",
+  "version": "2.25.1",
   "files": [
     "lib",
     "src"
@@ -95,7 +95,6 @@
     "@opensumi/ide-remote-opener": "workspace:*",
     "@opensumi/ide-scm": "workspace:*",
     "@opensumi/ide-search": "workspace:*",
-    "@opensumi/ide-static-resource": "workspace:*",
     "@opensumi/ide-status-bar": "workspace:*",
     "@opensumi/ide-storage": "workspace:*",
     "@opensumi/ide-task": "workspace:*",

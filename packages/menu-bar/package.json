@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-menu-bar",
-  "version": "2.23.2",
+  "version": "2.25.1",
   "description": "@opensumi/ide-menu-bar",
   "files": [
     "lib",
@@ -18,7 +18,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "workspace:*"
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-theme": "workspace:*"
   },
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",

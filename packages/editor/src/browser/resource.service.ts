@@ -86,6 +86,12 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     }
   }
 
+  getSupportedSchemes() {
+    return Array.from(this.providers.values())
+      .map((provider) => provider.scheme)
+      .filter(Boolean) as string[];
+  }
+
   async getResource(uri: URI): Promise<IResource<any> | null> {
     if (!this.resources.has(uri.toString())) {
       const r = await this.doGetResource(uri);
@@ -245,6 +251,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   disposeResource(resource: IResource<any>) {
     const provider = this.getProvider(resource.uri);
     this.resources.delete(resource.uri.toString());
+    this.resourceDecoration.delete(resource.uri.toString());
     if (!provider || !provider.onDisposeResource) {
       return;
     } else {

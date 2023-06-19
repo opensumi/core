@@ -462,18 +462,20 @@ export class FileTreeContribution
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
         exitFilterMode();
+        // if there are uris, use them. Otherwise use the selected files
         if (!uris) {
-          if (this.fileTreeModelService.focusedFile) {
-            this.willDeleteUris.push(this.fileTreeModelService.focusedFile.uri);
-          } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+          if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
             this.willDeleteUris = this.willDeleteUris.concat(
               this.fileTreeModelService.selectedFiles.map((file) => file.uri),
             );
-          } else {
-            return;
+          } else if (this.fileTreeModelService.focusedFile) {
+            this.willDeleteUris.push(this.fileTreeModelService.focusedFile.uri);
           }
         } else {
           this.willDeleteUris = this.willDeleteUris.concat(uris);
+        }
+        if (this.willDeleteUris.length === 0) {
+          return;
         }
         return this.deleteThrottler.queue<void>(this.doDelete.bind(this));
       },
@@ -734,7 +736,12 @@ export class FileTreeContribution
           return;
         }
         const copyUri: URI = uri;
-        let pathStr: string = decodeURIComponent(copyUri.path.toString());
+        let uriPath = copyUri.path.toString();
+        if (uri.scheme === 'diff') {
+          const query = uri.getParsedQuery();
+          uriPath = new URI(query.modified).path.toString();
+        }
+        let pathStr: string = decodeURIComponent(uriPath);
         // windows下移除路径前的 /
         if ((await this.appService.backendOS) === OperatingSystem.Windows) {
           pathStr = pathStr.slice(1);
@@ -748,6 +755,11 @@ export class FileTreeContribution
       execute: async (uri) => {
         if (!uri) {
           return;
+        }
+        if (uri.scheme === 'diff') {
+          const query = uri.getParsedQuery();
+          // 需要file scheme才能与工作区计算相对路径
+          uri = new URI(query.modified).withScheme('file');
         }
         let rootUri: URI;
         if (this.fileTreeService.isMultipleWorkspace) {
@@ -1118,7 +1130,7 @@ export class FileTreeContribution
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
-    // 点击聚焦当前编辑器 focus 的文件
+    // 点击聚焦当前编辑器 focused 的文件
     registry.registerItem({
       id: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,
       command: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,

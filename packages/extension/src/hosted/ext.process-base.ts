@@ -70,9 +70,14 @@ export interface ExtProcessConfig {
   builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomChildProcessModule;
   customVSCodeEngineVersion?: string;
+   /**
+   * control rpcProtocol message timeout
+   * default -1，it means disable
+   */
+   rpcMessageTimeout?: number;
 }
 
-async function initRPCProtocol(extInjector): Promise<any> {
+async function initRPCProtocol(extInjector: Injector): Promise<any> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService<{
     onMessage(msg: string): void;
@@ -92,9 +97,12 @@ async function initRPCProtocol(extInjector): Promise<any> {
   const onMessage = onMessageEmitter.event;
   const send = service.onMessage;
 
+  const appConfig = extInjector.get(AppConfig);
+
   const extProtocol = new RPCProtocol({
     onMessage,
     send,
+    timeout: appConfig.rpcMessageTimeout,
   });
 
   logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);
@@ -113,6 +121,26 @@ function patchProcess() {
     const err = new Error('An extension called process.crash() and this was prevented.');
     getWarnLogger()(err.stack);
   };
+}
+
+function _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error') {
+  // eslint-disable-next-line no-console
+  const original = console[method].bind(console);
+
+  Object.defineProperty(console, method, {
+    set: () => {},
+    get: () =>
+      function () {
+        original(arguments);
+      },
+  });
+}
+
+function patchConsole() {
+  _wrapConsoleMethod('info');
+  _wrapConsoleMethod('log');
+  _wrapConsoleMethod('warn');
+  _wrapConsoleMethod('error');
 }
 
 export async function extProcessInit(config: ExtProcessConfig = {}) {
@@ -134,6 +162,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     setLanguageId(locale);
   }
   patchProcess();
+  patchConsole();
   const { extProtocol: protocol, logger } = await initRPCProtocol(extInjector);
   try {
     let Preload = require('./ext.host');

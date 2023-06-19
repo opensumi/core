@@ -5,7 +5,7 @@ export function getElectronEnv(): any {
 }
 
 /**
- * @deprecated useNativeTopMenu will deprecate, please use appConfig#isElectronRenderer instead.
+ * @deprecated useNativeTopMenu will be removed in v2.26, please use appConfig#isElectronRenderer instead.
  */
 export function useNativeTopMenu() {
   if (isElectronRenderer()) {
@@ -19,7 +19,7 @@ export function useNativeTopMenu() {
 }
 
 /**
- * @deprecated useNativeContextMenu will deprecate, please use appConfig#isElectronRenderer instead.
+ * @deprecated useNativeContextMenu will be removed in v2.26, please use appConfig#isElectronRenderer instead.
  */
 export function useNativeContextMenu() {
   if (isElectronRenderer()) {

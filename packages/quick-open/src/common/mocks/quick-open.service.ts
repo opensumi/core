@@ -22,4 +22,7 @@ export class MockQuickOpenService implements QuickOpenService {
   hideDecoration(): void {
     throw new Error('Method not implemented.');
   }
+  updateOptions(options: QuickOpenOptions): void {
+    throw new Error('Method not implemented.');
+  };
 }

@@ -111,8 +111,8 @@ export class MonacoCommandService implements IMonacoCommandService {
       this._onDidExecuteCommand.fire({ commandId, args });
       return res;
     } catch (err) {
-      // 如果不是 handler 未找到直接抛错，否则执行 delegate 逻辑
-      if (err?.name !== HANDLER_NOT_FOUND) {
+      // 如果不是当前命令的 handler 未找到直接抛错，否则执行 delegate 逻辑
+      if (err?.name !== `${HANDLER_NOT_FOUND}:${commandId}`) {
         throw err;
       }
     }

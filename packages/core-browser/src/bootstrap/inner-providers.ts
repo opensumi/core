@@ -8,7 +8,6 @@ import {
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
-  IElectronMainMenuService,
   ReporterMetadata,
   IReporter,
   IReporterService,
@@ -26,11 +25,6 @@ import {
   AppLifeCycleServiceToken,
   IExtensionsSchemaService,
 } from '@opensumi/ide-core-common';
-import {
-  IElectronMainUIService,
-  IElectronMainLifeCycleService,
-  IElectronURLService,
-} from '@opensumi/ide-core-common/lib/electron';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
@@ -63,13 +57,7 @@ import {
 } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
-import {
-  ElectronCtxMenuRenderer,
-  ElectronMenuBarService,
-  IElectronMenuFactory,
-  IElectronMenuBarService,
-  ElectronMenuFactory,
-} from '../menu/next/renderer/ctxmenu/electron';
+import { ElectronCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/electron';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
 import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
@@ -81,10 +69,12 @@ import { SlotRendererContribution } from '../react-providers/slot';
 import { CredentialsService, ICredentialsService, CryptoService, ICryptoService } from '../services';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
+import { StaticResourceClientAppContribution } from '../static-resource/index';
+import { StaticResourceContribution, StaticResourceService } from '../static-resource/static.definition';
+import { StaticResourceServiceImpl } from '../static-resource/static.service';
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
-import { createElectronMainApi } from '../utils/electron';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
@@ -104,6 +94,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, VariableContribution);
   createContributionProvider(injector, TabBarToolbarContribution);
   createContributionProvider(injector, ToolBarActionContribution);
+  createContributionProvider(injector, StaticResourceContribution);
 
   const appConfig: AppConfig = injector.get(AppConfig);
 
@@ -262,36 +253,11 @@ export function injectInnerProviders(injector: Injector) {
       token: AppLifeCycleServiceToken,
       useClass: AppLifeCycleService,
     },
+    {
+      token: StaticResourceService,
+      useClass: StaticResourceServiceImpl,
+    },
+    StaticResourceClientAppContribution,
   ];
   injector.addProviders(...providers);
-
-  // Add special API services for Electron, mainly services that make calls to `Electron Main` process.
-  if (appConfig.isElectronRenderer) {
-    injector.addProviders(
-      {
-        token: IElectronMainMenuService,
-        useValue: createElectronMainApi(IElectronMainMenuService),
-      },
-      {
-        token: IElectronMainUIService,
-        useValue: createElectronMainApi(IElectronMainUIService),
-      },
-      {
-        token: IElectronMainLifeCycleService,
-        useValue: createElectronMainApi(IElectronMainLifeCycleService),
-      },
-      {
-        token: IElectronURLService,
-        useValue: createElectronMainApi(IElectronURLService),
-      },
-      {
-        token: IElectronMenuFactory,
-        useClass: ElectronMenuFactory,
-      },
-      {
-        token: IElectronMenuBarService,
-        useClass: ElectronMenuBarService,
-      },
-    );
-  }
 }

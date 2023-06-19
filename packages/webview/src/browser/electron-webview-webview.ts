@@ -110,6 +110,14 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
     }
   }
 
+  protected preprocessHtml(html: string): string {
+    // 将vscode-resource:/User/xxx 转换为 vscode-resource:///User/xxx
+    return html.replace(
+      /(["'])vscode-resource:(\/\/|)([^\s'"]+?)(["'])/gi,
+      (_, startQuote, slash, path, endQuote) => `${startQuote}vscode-resource://${path}${endQuote}`,
+    );
+  }
+
   remove() {
     if (this.webview) {
       this.webview.remove();

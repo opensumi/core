@@ -10,7 +10,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
-import { DebugSchemaUpdater } from '@opensumi/ide-debug/lib/browser/debug-schema-updater';
+import { DebugSchemaManager } from '@opensumi/ide-debug/lib/browser/debug-schema-manager';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { Extension } from '../../extension';
@@ -190,8 +190,8 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   @Autowired(DebugConfigurationManager)
   private debugConfigurationManager: DebugConfigurationManager;
 
-  @Autowired(DebugSchemaUpdater)
-  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
+  @Autowired(DebugSchemaManager)
+  protected readonly debugSchemaManager: DebugSchemaManager;
 
   @Autowired(AbstractExtInstanceManagementService)
   protected readonly extensionManageService: AbstractExtInstanceManagementService;
@@ -208,7 +208,7 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
         this.resolveDebuggers(contributes, extension) as IJSONSchema[],
       );
     }
-    this.debugSchemaUpdater.update();
+    this.debugSchemaManager.update();
   }
 
   private resolveDebuggers(
@@ -242,6 +242,9 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
           }
           if (config.description) {
             config.description = replaceLocalizePlaceholder(config.description, extension.id);
+          }
+          if (config.markdownDescription) {
+            config.markdownDescription = replaceLocalizePlaceholder(config.markdownDescription, extension.id);
           }
           return config;
         },
@@ -280,6 +283,7 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
           recursionPropertiesDescription(prop[name].properties!);
         }
         prop[name].description = replaceLocalizePlaceholder(prop[name].description, extension.id);
+        prop[name].markdownDescription = replaceLocalizePlaceholder(prop[name].markdownDescription, extension.id);
       });
     };
 

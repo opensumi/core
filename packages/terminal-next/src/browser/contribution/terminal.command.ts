@@ -105,6 +105,9 @@ export class TerminalCommandContribution implements CommandContribution {
       {
         execute: () => {
           const group = this.view.currentGroup;
+          if (!group) {
+            return;
+          }
           const widget = this.view.createWidget(group);
           this.view.selectWidget(widget.id);
         },
@@ -248,7 +251,7 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.MORE_SETTINGS, {
       execute: async () => {
-        this.commands.executeCommand(COMMON_COMMANDS.LOCATE_PREFERENCES.id, 'terminal');
+        this.commands.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, 'terminal');
       },
     });
 

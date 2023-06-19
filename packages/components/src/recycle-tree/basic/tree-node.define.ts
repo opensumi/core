@@ -52,12 +52,32 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
     return this._displayName;
   }
 
+  get renderLabel() {
+    return this.raw.renderLabel;
+  }
+
   get icon() {
     return this.raw.icon;
   }
 
   get iconClassName() {
     return this.raw.iconClassName;
+  }
+
+  get className() {
+    return this.raw.className;
+  }
+
+  get twisterClassName() {
+    return this.raw.twisterClassName;
+  }
+
+  get twisterPlaceholderClassName() {
+    return this.raw.twisterPlaceholderClassName;
+  }
+
+  get indentOffset() {
+    return this.raw.indentOffset;
   }
 
   get description() {
@@ -90,6 +110,10 @@ export class BasicTreeNode extends TreeNode {
     return this._displayName;
   }
 
+  get renderLabel() {
+    return this.raw.renderLabel;
+  }
+
   get description() {
     return this.raw.description;
   }
@@ -100,6 +124,22 @@ export class BasicTreeNode extends TreeNode {
 
   get iconClassName() {
     return this.raw.iconClassName;
+  }
+
+  get className() {
+    return this.raw.className;
+  }
+
+  get twisterClassName() {
+    return this.raw.twisterClassName;
+  }
+
+  get indentOffset() {
+    return this.raw.indentOffset;
+  }
+
+  get twisterPlaceholderClassName() {
+    return this.raw.twisterPlaceholderClassName;
   }
 
   get raw() {

@@ -156,7 +156,7 @@ export class TabBarHandler {
       targetView.name = title;
       this.accordionService.updateViewTitle(viewId, title);
     } else {
-      this.logger.error('没有找到目标视图，无法更新手风琴标题!');
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion title`);
     }
   }
 
@@ -169,7 +169,7 @@ export class TabBarHandler {
       targetView.description = desciption;
       this.accordionService.updateViewDesciption(viewId, desciption);
     } else {
-      this.logger.error('没有找到目标视图，无法更新手风琴描述!');
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion description`);
     }
   }
 
@@ -182,7 +182,7 @@ export class TabBarHandler {
       targetView.message = message;
       this.accordionService.updateViewMessage(viewId, message);
     } else {
-      this.logger.error('没有找到目标视图，无法更新手风琴 message!');
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion message`);
     }
   }
   /**

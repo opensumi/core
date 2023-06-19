@@ -32,3 +32,4 @@
 /// <reference path='./vscode/typings/vscode.proposed.task.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.terminalDimensions.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.timeline.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.inlineCompletionsAdditions.d.ts' />

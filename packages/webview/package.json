@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-webview",
-  "version": "2.23.2",
+  "version": "2.25.1",
   "files": [
     "lib",
     "src"
@@ -25,7 +25,6 @@
     "@opensumi/ide-core-electron-main": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
-    "@opensumi/ide-static-resource": "workspace:*",
     "@opensumi/ide-theme": "workspace:*"
   },
   "peerDependencies": {

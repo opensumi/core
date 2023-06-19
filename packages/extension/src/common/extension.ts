@@ -123,6 +123,7 @@ export interface IExtensionNodeClientService {
   restartExtProcessByClient(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
+  setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
 }
 
@@ -386,8 +387,8 @@ export abstract class ExtensionContributesService extends WithEventBus {
     );
   }
 
-  public initialize() {
-    const runContributes = (phase = this.lifecycleService.phase) => {
+  public async initialize() {
+    const runContributes = async (phase = this.lifecycleService.phase) => {
       if (!phase) {
         return;
       }
@@ -398,16 +399,15 @@ export abstract class ExtensionContributesService extends WithEventBus {
         this.contributedSet.clear();
       }
 
-      this.runContributesByPhase(phase);
+      await this.runContributesByPhase(phase);
     };
-
-    runContributes();
 
     this.addDispose(
       this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
         runContributes(newPhase);
       }),
     );
+    await runContributes();
   }
 }
 

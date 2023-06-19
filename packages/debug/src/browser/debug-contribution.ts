@@ -40,7 +40,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   IDebugSessionManager,
-  launchSchemaUri,
   DEBUG_CONTAINER_ID,
   DEBUG_WATCH_ID,
   DEBUG_VARIABLES_ID,
@@ -53,6 +52,7 @@ import {
   TSourceBrekpointProperties,
   DEBUG_COMMANDS,
   IDebugModelManager,
+  launchDefaultSchemaUri,
 } from '../common';
 
 import {
@@ -60,6 +60,7 @@ import {
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_BREAKPOINT_INPUT_FOCUSED,
   CONTEXT_EXCEPTION_WIDGET_VISIBLE,
+  CONTEXT_ACTIVE_BREAKPOINTS,
 } from './../common/constants';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { FloatingClickWidget } from './components/floating-click-widget';
@@ -67,15 +68,16 @@ import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { DebugProgressService } from './debug-progress.service';
-import { launchSchema } from './debug-schema-updater';
+import { launchSchema } from './debug-schema-manager';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
 import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
+import breakpointViewStyles from './view/breakpoints/debug-breakpoints.module.less';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
-import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
+import { DebugConfigurationContainerView } from './view/configuration/debug-configuration.view';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugViewModel } from './view/debug-view-model';
@@ -84,6 +86,10 @@ import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
+enum LAUNCH_OPEN {
+  json,
+  editor,
+}
 
 export namespace DebugBreakpointWidgetCommands {
   export const ACCEPT = {
@@ -254,7 +260,7 @@ export class DebugContribution
         priority: 7,
         title: localize('debug.container.title'),
         containerId: DEBUG_CONTAINER_ID,
-        titleComponent: DebugConfigurationView,
+        titleComponent: DebugConfigurationContainerView,
         activateKeyBinding: 'ctrlcmd+shift+d',
       },
     );
@@ -349,13 +355,17 @@ export class DebugContribution
   onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
     if (handler) {
-      handler!.setTitleComponent(DebugConfigurationView);
+      handler!.setTitleComponent(DebugConfigurationContainerView);
     }
   }
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION, {
-      execute: () => {
+      execute: (type: LAUNCH_OPEN = LAUNCH_OPEN.json) => {
+        if (type === LAUNCH_OPEN.editor) {
+          return this.debugConfigurationService.openLaunchEditor();
+        }
+
         this.debugConfigurationService.openConfiguration();
       },
     });
@@ -409,10 +419,42 @@ export class DebugContribution
         this.debugBreakpointsService.toggleBreakpoints();
       },
     });
+    commands.registerCommand(DEBUG_COMMANDS.ACTIVE_BREAKPOINTS, {
+      execute: () => {
+        const { enable } = this.debugBreakpointsService;
+        if (!enable) {
+          this.debugBreakpointsService.toggleBreakpoints();
+        }
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS, {
+      execute: () => {
+        const { enable } = this.debugBreakpointsService;
+        if (enable) {
+          this.debugBreakpointsService.toggleBreakpoints();
+        }
+      },
+    });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
         this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'edit');
+        const model = this.debugEditorController.model;
+        if (!model) {
+          return;
+        }
+
+        const { uri } = model;
+        const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+        // 更新当前选中的断点
+        if (breakpoint) {
+          this.breakpointManager.selectedBreakpoint = {
+            breakpoint,
+            model,
+          };
+        }
+
         const { selectedBreakpoint } = this;
+
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;
           let defaultContext: TSourceBrekpointProperties = 'condition';
@@ -434,7 +476,6 @@ export class DebugContribution
         }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
-      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
@@ -598,11 +639,21 @@ export class DebugContribution
     });
 
     registry.registerItem({
-      id: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
-      command: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      id: DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.DEACTIVE_BREAKPOINTS.id,
       iconClass: getIcon('deactivate-breakpoints'),
       viewId: DEBUG_BREAKPOINTS_ID,
-      tooltip: localize('debug.breakpoint.toggle'),
+      tooltip: localize('debug.breakpoint.deactive'),
+      when: CONTEXT_ACTIVE_BREAKPOINTS.equalsTo(true),
+    });
+
+    registry.registerItem({
+      id: DEBUG_COMMANDS.ACTIVE_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.ACTIVE_BREAKPOINTS.id,
+      iconClass: `${getIcon('activate-breakpoints')} ${breakpointViewStyles.debug_activate_breakpoints_icon}`,
+      viewId: DEBUG_BREAKPOINTS_ID,
+      tooltip: localize('debug.breakpoint.active'),
+      when: CONTEXT_ACTIVE_BREAKPOINTS.equalsTo(false),
     });
     /**
      * end
@@ -610,7 +661,7 @@ export class DebugContribution
   }
 
   registerSchema(registry: IJSONSchemaRegistry) {
-    registry.registerSchema(`${launchSchemaUri}/default`, launchSchema, ['launch.json']);
+    registry.registerSchema(launchDefaultSchemaUri, launchSchema, ['launch.json']);
   }
 
   registerKeybindings(keybindings: KeybindingRegistry) {

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 import { Injectable, Provider } from '@opensumi/di';
@@ -31,6 +32,7 @@ import {
   Emitter,
 } from '@opensumi/ide-core-browser';
 import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
+import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -50,7 +52,7 @@ import {
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
 import { WalkthroughsService } from '@opensumi/ide-extension/lib/browser/walkthroughs.service';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
@@ -58,7 +60,6 @@ import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.serv
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IWorkspaceStorageServer, IGlobalStorageServer } from '@opensumi/ide-storage';
 import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
@@ -120,7 +121,7 @@ const mockExtensionProps: IExtensionProps = {
   packageJSON: {
     name: 'sumi-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],
-    kaitianContributes: {
+    sumiContributes: {
       viewsProxies: ['Leftview', 'TitleView'],
       browserViews: {
         left: {
@@ -306,7 +307,7 @@ const mockExtension = {
   uri: Uri.file(mockExtensionProps.path),
   contributes: Object.assign(
     mockExtensionProps.packageJSON.contributes,
-    mockExtensionProps.packageJSON.kaitianContributes,
+    mockExtensionProps.packageJSON.sumiContributes,
   ),
   activate: () => true,
   reset() {},
@@ -463,6 +464,14 @@ export function setupExtensionServiceInjector() {
         },
         init() {
           return Promise.resolve();
+        },
+      },
+    },
+    {
+      token: IExtensionStoragePathServer,
+      useValue: {
+        getLastStoragePath() {
+          return os.tmpdir();
         },
       },
     },

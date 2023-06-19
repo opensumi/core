@@ -39,7 +39,7 @@ export function getSlotLocation(moduleName: string, layoutConfig: LayoutConfig) 
       return location;
     }
   }
-  getDebugLogger().warn(`没有找到${moduleName}所对应的位置！`);
+  logger.warn(`Cannot find the location with ${moduleName}`);
   return '';
 }
 
@@ -97,14 +97,14 @@ export class ErrorBoundary extends React.Component {
 export const allSlot: { slot: string; dom: HTMLElement }[] = [];
 
 export const SlotDecorator: React.FC<{ slot: string; backgroundColor?: string }> = ({ slot, ...props }) => {
-  const ref = React.useRef<HTMLElement>();
+  const ref = React.useRef<HTMLElement | null>();
   React.useEffect(() => {
     if (ref.current) {
       allSlot.push({ slot, dom: ref.current });
     }
   }, [ref]);
   return (
-    <div ref={(ele) => (ref.current = ele!)} className='resize-wrapper'>
+    <div ref={(ele) => (ref.current = ele)} className='resize-wrapper'>
       {props.children}
     </div>
   );
@@ -163,12 +163,13 @@ export class SlotRendererRegistry {
 export const slotRendererRegistry = new SlotRendererRegistry();
 
 export interface SlotProps {
+  // Name of the slot view
   slot: string;
-  /**
-   * slot 默认的背景色
-   */
+  // Background color of the slot view
   backgroundColor?: string;
+  // Is tabbar slot renderer or not
   isTabbar?: boolean;
+  // Optional props
   [key: string]: any;
 }
 
@@ -181,7 +182,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
     slotRendererRegistry.addTabbar(slot);
   }
   if (!componentKeys || !componentKeys.length) {
-    getDebugLogger().warn(`No ${slot} view declared by location.`);
+    logger.warn(`No ${slot} view declared by location.`);
   }
   const [componentInfos, setInfos] = React.useState<ComponentRegistryInfo[]>([]);
   const updateComponentInfos = React.useCallback(() => {
@@ -189,7 +190,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
     componentKeys.forEach((token) => {
       const info = componentRegistry.getComponentRegistryInfo(token);
       if (!info) {
-        getDebugLogger().warn(`${token} view isn't registered, please check.`);
+        logger.warn(`${token} view isn't registered, please check.`);
       } else {
         infos.push(info);
       }

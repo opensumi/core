@@ -132,7 +132,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           workerHostEntry: this.appConfig.extensionWorkerEntry,
           extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
           appPath: app.getAppPath(),
-          devtools: this.appConfig.devtools,
         });
       }
     };
@@ -175,7 +174,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   async start() {
     if (this.isRemote) {
-      getDebugLogger().log('Remote 模式，停止创建 Server 进程');
+      getDebugLogger().log('[Remote mode] stop creating Server process');
     } else {
       this.startNode();
     }

@@ -1,9 +1,9 @@
 import { localize } from '@opensumi/ide-core-common';
 
-export const OpensumiExtensionPackageSchema = {
+export const OpenSumiExtensionPackageSchema = {
   properties: {
-    kaitianContributes: {
-      description: localize('sumiContributes.opensumiContributes'),
+    sumiContributes: {
+      description: localize('sumiContributes.contributes'),
       type: 'object',
       properties: {} as { [key: string]: any },
       default: {},

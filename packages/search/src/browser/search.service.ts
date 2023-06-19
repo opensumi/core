@@ -579,7 +579,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   };
 
   searchEditorSelection = () => {
-    const currentEditor = this.workbenchEditorService.currentEditor;
+    const currentEditor = this.workbenchEditorService.currentOrPreviousFocusedEditor;
     if (currentEditor) {
       const selections = currentEditor.getSelections();
       if (selections && selections.length > 0 && currentEditor.currentDocumentModel) {

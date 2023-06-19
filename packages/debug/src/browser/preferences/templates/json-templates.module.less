@@ -1,0 +1,133 @@
+.array_field_item_template {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .control_field {
+    margin-right: 8px;
+    min-width: 180px;
+  }
+
+  .toolbar {
+    button {
+      border-radius: 0;
+    }
+  }
+}
+
+.field_template {
+  display: flex;
+  flex-direction: column;
+}
+
+.array_field_template {
+  display: flex;
+  flex-direction: column;
+
+  .array_item_description {
+    margin-bottom: 8px;
+  }
+}
+
+.object_field_template {
+  .object_field_container {
+    .root_property_wrapper {
+      margin-bottom: 0;
+    }
+
+    &.root_object_field_container {
+      margin-bottom: 16px;
+
+      > .object_title {
+        padding-left: 16px;
+      }
+
+      .root_property_wrapper {
+        padding: 16px;
+        position: relative;
+
+        .wrapper_delete {
+          display: none;
+          position: absolute;
+          cursor: pointer;
+          right: 16px;
+          top: 16px;
+
+          .close_icon {
+            font-size: 21px;
+            color: var(--kt-dangerButton-background);
+          }
+        }
+
+        &:hover {
+          background-color: var(--kt-tree-hoverBackground);
+
+          .wrapper_delete {
+            display: block;
+          }
+        }
+      }
+    }
+  }
+}
+
+.description_field_template {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  opacity: 0.75;
+  white-space: pre-wrap;
+  color: var(--descriptionForeground);
+}
+
+.add_new_field {
+  min-width: 300px;
+  max-width: 500px;
+  width: 100%;
+  border-style: dashed;
+  margin-left: 16px;
+}
+
+.additional_field_template {
+  display: flex;
+  flex-direction: column;
+
+  .form_additional_container {
+    display: flex;
+    min-width: 300px;
+    max-width: 500px;
+    width: 100%;
+    margin-bottom: 8px;
+
+    .form_additional_children {
+      label[class*='field_label'] {
+        display: none;
+      }
+    }
+
+    .form_additional,
+    .form_additional_children {
+      margin-right: 16px;
+    }
+  }
+
+  .children_field {
+    position: relative;
+
+    .object_title,
+    .object_description {
+      display: none;
+    }
+
+    .dividing {
+      width: 2px;
+      background-color: var(--editorGroup-border);
+      height: 100%;
+      position: absolute;
+    }
+
+    .children_container {
+      margin-left: 16px;
+    }
+  }
+}

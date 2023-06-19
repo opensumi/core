@@ -7,11 +7,13 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import placements from '@opensumi/ide-core-browser/lib/components/actions/placements';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import 'react-ctxmenu-trigger/assets/index.css';
 
 export const CtxMenu = observer(() => {
   const ctxMenuService = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
+  const iconService = useInjectable<IIconService>(IIconService);
 
   const handleClick = React.useCallback(() => {
     ctxMenuService.hide(false);
@@ -42,7 +44,12 @@ export const CtxMenu = observer(() => {
       builtinPlacements={placements}
       popup={
         <ClickOutside mouseEvents={['click', 'contextmenu']} onOutsideClick={onClickOutSide}>
-          <MenuActionList data={ctxMenuService.menuNodes} afterClick={handleClick} context={ctxMenuService.context} />
+          <MenuActionList
+            data={ctxMenuService.menuNodes}
+            afterClick={handleClick}
+            context={ctxMenuService.context}
+            iconService={iconService}
+          />
         </ClickOutside>
       }
       alignPoint

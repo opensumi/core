@@ -1,4 +1,3 @@
-import throttle from 'lodash/throttle';
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 
@@ -30,6 +29,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   onClick,
   onContextMenu,
   onTwistierClick,
+  onIconClick,
   onDbClick,
   resolveChildren,
   sortComparator,
@@ -40,7 +40,6 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   contextMenus,
   contextMenuActuator,
   treeName,
-  getItemClassName,
 }) => {
   const [showMenus, setShowMenus] = useState<{
     show: boolean;
@@ -52,37 +51,30 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   }>({ show: false });
   const [menubarItems, setMenubarItems] = useState<IBasicTreeMenu[]>([]);
   const [model, setModel] = useState<BasicTreeModel | undefined>();
+  const isDisposed = useRef<boolean>(false);
   const treeService = useRef<BasicTreeService>();
   const treeHandle = useRef<IRecycleTreeHandle>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const renderTreeNode = useCallback(
-    (props: INodeRendererWrapProps) => {
-      let _indent: number | undefined;
-      if (baseIndent) {
-        _indent = baseIndent;
-      }
-      if (indent) {
-        _indent = (_indent ?? 0) + indent;
-      }
-
-      return (
-        <BasicTreeNodeRenderer
-          item={props.item as any}
-          itemType={props.itemType}
-          itemHeight={itemHeight}
-          indent={_indent}
-          className={getItemClassName?.(props.item as any) ?? itemClassname}
-          inlineMenus={inlineMenus}
-          inlineMenuActuator={inlineMenuActuator}
-          onClick={handleItemClick}
-          onDbClick={handleItemDbClick}
-          onContextMenu={handleContextMenu}
-          onTwistierClick={handleTwistierClick}
-          decorations={treeService.current?.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
-        />
-      );
-    },
+    (props: INodeRendererWrapProps) => (
+      <BasicTreeNodeRenderer
+        item={props.item as any}
+        itemType={props.itemType}
+        itemHeight={itemHeight}
+        indent={indent}
+        baseIndent={baseIndent}
+        className={itemClassname}
+        inlineMenus={inlineMenus}
+        inlineMenuActuator={inlineMenuActuator}
+        onClick={handleItemClick}
+        onDbClick={handleItemDbClick}
+        onContextMenu={handleContextMenu}
+        onTwistierClick={handleTwistierClick}
+        onIconClick={handleItemIconClick}
+        decorations={treeService.current?.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
+      />
+    ),
     [model],
   );
 
@@ -99,6 +91,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
 
     return () => {
+      isDisposed.current = true;
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);
       disposable.dispose();
       treeService.current?.dispose();
@@ -113,7 +106,9 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     if (model) {
       await model.ensureReady;
     }
-    setModel(model);
+    if (!isDisposed.current) {
+      setModel(model);
+    }
   };
 
   const selectItem = async (item: BasicCompositeTreeNode | BasicTreeNode) => {
@@ -152,6 +147,15 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       }
     },
     [onClick],
+  );
+
+  const handleItemIconClick = useCallback(
+    (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
+      if (onIconClick) {
+        onIconClick(event, item);
+      }
+    },
+    [onIconClick],
   );
 
   const handleItemDbClick = useCallback(

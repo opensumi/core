@@ -100,7 +100,7 @@ export const Dialog: React.FC<IDialogProps> = ({
               buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} />
             ) : (
               <Button size='large' onClick={onClose}>
-                知道了
+                OK
               </Button>
             )}
           </div>

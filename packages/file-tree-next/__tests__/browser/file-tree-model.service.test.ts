@@ -1,4 +1,4 @@
-import { ICompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
+import { TreeNodeType } from '@opensumi/ide-components';
 import {
   URI,
   Disposable,
@@ -7,7 +7,6 @@ import {
   IApplicationService,
   Emitter,
   OS,
-  EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -76,6 +75,7 @@ describe('FileTreeModelService should be work', () => {
     watcher: {
       on: jest.fn(() => Disposable.create(() => {})),
       notifyDidChangeMetadata: jest.fn(),
+      notifyDidUpdateBranch: jest.fn(),
     },
     watchEvents: {
       get: jest.fn(() => mockWatcher),

@@ -107,6 +107,7 @@ export class OpenSumiApp extends Disposable {
     filePath: string,
     preview = true,
   ) {
+    await explorer.open();
     const node = await explorer.getFileStatTreeNodeByPath(filePath);
     if (!node || (await node?.isFolder())) {
       throw Error(`File ${filePath} could not be opened on the editor`);

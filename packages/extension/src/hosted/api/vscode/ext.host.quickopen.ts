@@ -119,6 +119,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
         buttons: (options as QuickPickOptions).buttons,
         step: (options as QuickPickOptions).step,
         totalSteps: (options as QuickPickOptions).totalSteps,
+        value: (options as QuickPickOptions).value,
       },
     );
 
@@ -426,6 +427,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
           ignoreFocusOut: this.ignoreFocusOut,
           _sessionId: this.quickPickIndex,
           keepScrollPosition: this.keepScrollPosition,
+          value: this.value,
         } as QuickPickOptions,
       )
       .then((item) => {
@@ -454,6 +456,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
   private _enabled: boolean;
   private _busy: boolean;
   private _ignoreFocusOut: boolean;
+  private _hideOnDidAccept: boolean;
 
   private disposableCollection: DisposableCollection;
 
@@ -482,6 +485,8 @@ abstract class ExtQuickInput implements vscode.InputBox {
     this._placeholder = '';
     this._password = false;
     this._ignoreFocusOut = false;
+    this._busy = false;
+    this._hideOnDidAccept = true;
 
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
@@ -613,6 +618,15 @@ abstract class ExtQuickInput implements vscode.InputBox {
     }
   }
 
+  get hideOnDidAccept(): boolean {
+    return this._hideOnDidAccept;
+  }
+
+  set hideOnDidAccept(hideOnDidAccept: boolean) {
+    this._hideOnDidAccept = hideOnDidAccept;
+    this.update({ hideOnDidAccept });
+  }
+
   getOptions(): QuickInputOptions {
     return {
       value: this.value,
@@ -628,6 +642,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
       buttons: this.buttons as unknown as QuickTitleButton[],
       busy: this.busy,
       enabled: this.enabled,
+      hideOnDidAccept: this.hideOnDidAccept,
     };
   }
 

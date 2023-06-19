@@ -80,7 +80,7 @@ export class OutputContribution
         component: Output,
       },
       {
-        title: localize('output.tabbar.title', '输出'),
+        title: localize('output.tabbar.title'),
         priority: 9,
         containerId: OUTPUT_CONTAINER_ID,
         activateKeyBinding: 'ctrlcmd+shift+u',

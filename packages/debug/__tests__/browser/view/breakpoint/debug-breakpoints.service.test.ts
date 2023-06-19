@@ -44,6 +44,7 @@ describe('Debug Breakpoints Service', () => {
     updateBreakpoint: jest.fn(),
     updateExceptionBreakpoints: jest.fn(),
     cleanAllMarkers: jest.fn(),
+    whenReady: Promise.resolve(),
   };
 
   const mockContextKeyService = {
@@ -111,7 +112,7 @@ describe('Debug Breakpoints Service', () => {
     expect(typeof debugBreakpointsService.toggleBreakpoints).toBe('function');
   });
 
-  it('should init success', () => {
+  it('should init success', async () => {
     expect(mockBreakpointManager.onDidChangeBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.onDidChangeExceptionsBreakpoints).toBeCalledTimes(1);
     expect(mockContextKeyService.onDidChangeContext).toBeCalledTimes(1);

@@ -1,4 +1,4 @@
-import { IDisposable } from '@opensumi/ide-core-common';
+import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
@@ -12,13 +12,37 @@ export interface IElectronIpcRenderer {
   send(channel: string, ...args: any[]): void;
 }
 
-export function createElectronMainApi(name: string): IElectronMainApi<any> {
+interface IPCMessage {
+  type: 'event' | 'request' | 'response';
+  service: string;
+  method: string;
+  requestId?: number; // for connecting 'requst' and 'response'
+  args: any[];
+}
+
+const getCapturer = () => {
+  if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureIPC) {
+    return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureIPC;
+  }
+  return;
+};
+
+const capture = (message: IPCMessage) => {
+  const capturer = getCapturer();
+  if (isDefined(capturer)) {
+    // if OpenSumi DevTools is opended
+    capturer(message);
+  }
+};
+
+export function createElectronMainApi(name: string, enableCaptured?: boolean): IElectronMainApi<any> {
   let id = 0;
   return new Proxy(
     {
       on: (event: string, listener: (...args) => void): IDisposable => {
         const wrappedListener = (e, eventName, ...args) => {
           if (eventName === event) {
+            enableCaptured && capture({ type: 'event', service: name, method: event, args });
             return listener(...args);
           }
         };
@@ -39,6 +63,7 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
             new Promise((resolve, reject) => {
               const requestId = id++;
               ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
+              enableCaptured && capture({ type: 'request', service: name, method: String(method), requestId, args });
               const listener = (event, id, error, result) => {
                 if (id === requestId) {
                   ElectronIpcRenderer.removeListener('response:' + name, listener);
@@ -49,6 +74,14 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
                   } else {
                     resolve(result);
                   }
+                  enableCaptured &&
+                    capture({
+                      type: 'response',
+                      service: name,
+                      method: String(method),
+                      requestId,
+                      args: [error, result],
+                    });
                 }
               };
               ElectronIpcRenderer.on('response:' + name, listener);

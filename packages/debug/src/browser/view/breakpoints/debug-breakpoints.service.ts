@@ -10,6 +10,7 @@ import {
   Schemes,
   Emitter,
   Event,
+  IRange,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
@@ -66,6 +67,9 @@ export class DebugBreakpointsService extends WithEventBus {
   readonly onDidChangeBreakpointsTreeNode: Event<Map<string, BreakpointsTreeNode[]>> =
     this._onDidChangeBreakpointsTreeNode.event;
 
+  private readonly _onDidFocusedBreakpoints = new Emitter<{ uri: URI; range: IRange }>();
+  readonly onDidFocusedBreakpoints: Event<{ uri: URI; range: IRange }> = this._onDidFocusedBreakpoints.event;
+
   private _inputEditor: ICodeEditor;
 
   public get inputEditor(): ICodeEditor {
@@ -87,9 +91,12 @@ export class DebugBreakpointsService extends WithEventBus {
     this.init();
   }
 
+  public launchFocusedBreakpoints(data: { uri: URI; range: IRange }): void {
+    this._onDidFocusedBreakpoints.fire(data);
+  }
+
   async init() {
     await this.updateRoots();
-    await this.updateBreakpoints();
     this.workspaceService.onWorkspaceChanged(async () => {
       this.updateRoots();
       this.updateBreakpoints();
@@ -98,6 +105,9 @@ export class DebugBreakpointsService extends WithEventBus {
       this.updateBreakpoints();
     });
     this.breakpoints.onDidChangeExceptionsBreakpoints(() => {
+      this.updateBreakpoints();
+    });
+    this.breakpoints.whenReady.then(() => {
       this.updateBreakpoints();
     });
     this.contextKeyService.onDidChangeContext((e) => {
@@ -190,7 +200,6 @@ export class DebugBreakpointsService extends WithEventBus {
         this.treeNodeMap.set(uri.toString(), getTreeNodes);
       }
     });
-
     this._onDidChangeBreakpointsTreeNode.fire(this.treeNodeMap);
   }
 

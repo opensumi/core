@@ -7,14 +7,15 @@ import type { WebglAddon as WebglAddonType } from 'xterm-addon-webgl';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IClipboardService } from '@opensumi/ide-core-browser';
-import { Disposable, isSafari } from '@opensumi/ide-core-common';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
+import { Disposable } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry';
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
-import { SupportedOptions } from '../common/preference';
-import { IXTerm } from '../common/xterm';
+import { SupportedOptions, CodeTerminalSettingId } from '../common/preference';
+import { IXTerm, RenderType } from '../common/xterm';
 
 import styles from './component/terminal.module.less';
 import {
@@ -48,6 +49,9 @@ export class XTerm extends Disposable implements IXTerm {
   @Autowired(IThemeService)
   protected themeService: WorkbenchThemeService;
 
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
+
   container: HTMLDivElement;
 
   raw: Terminal;
@@ -76,11 +80,7 @@ export class XTerm extends Disposable implements IXTerm {
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
   }
 
-  private loadWebGLAddon() {
-    return !isSafari;
-  }
-
-  private async enableCanvasRenderer() {
+  protected async enableCanvasRenderer() {
     try {
       if (!this._canvasAddon) {
         // @ts-ignore
@@ -99,7 +99,7 @@ export class XTerm extends Disposable implements IXTerm {
     }
   }
 
-  private async enableWebglRenderer() {
+  protected async enableWebglRenderer() {
     try {
       if (!this._webglAddon) {
         // @ts-ignore
@@ -189,9 +189,13 @@ export class XTerm extends Disposable implements IXTerm {
 
   open() {
     this.raw.open(this.container);
-    if (this.loadWebGLAddon()) {
+    const renderType = this.preferenceService.get<RenderType>(CodeTerminalSettingId.XtermRenderType, RenderType.WebGL);
+    if (renderType === RenderType.WebGL) {
       this.enableWebglRenderer();
+    } else if (renderType === RenderType.Canvas) {
+      this.enableCanvasRenderer();
     }
+    // 不设置 enableWebGL/Canvas render 的话，默认就会 fallback 到 DOM Render
   }
 
   fit() {

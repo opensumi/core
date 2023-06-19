@@ -132,3 +132,14 @@ export const debugIconStepBackForeground = registerColor(
   },
   'Debug toolbar icon for step back.',
 );
+
+export const debugIconActivateBreakpointsForeground = registerColor(
+  'debugIcon.activateBreakpointsForeground',
+  {
+    dark: '#75BEFF',
+    light: '#007ACC',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
+  },
+  'Debug toolbar icon for active breakpoints.',
+);

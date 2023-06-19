@@ -14,6 +14,7 @@ import {
   STORAGE_SCHEMA,
   AppConfig,
 } from '@opensumi/ide-core-browser';
+import { throwNonElectronError } from '@opensumi/ide-core-common/lib/error';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
@@ -22,7 +23,7 @@ import {
   EditorGroupChangeEvent,
   EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
-import { LIGHT, DARK, HIGH_CONTRAST_DARK, HIGH_CONTRAST_LIGHT, ITheme } from '@opensumi/ide-theme';
+import type { ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
 
 import { EditorWebviewComponentView } from './editor-webview';
@@ -128,7 +129,10 @@ export class WebviewServiceImpl implements IWebviewService {
     } else {
       if (options.preferredImpl && options.preferredImpl === 'webview') {
         getDebugLogger().warn(
-          localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'),
+          localize(
+            'webview.webviewTagUnavailable',
+            'Webview is unsupported on non-electron env, please use iframe instead.',
+          ),
         );
       }
       return new IframePlainWebview();
@@ -281,7 +285,7 @@ export class WebviewServiceImpl implements IWebviewService {
     if (this.appConfig.isElectronRenderer) {
       return this.injector.get(ElectronPlainWebviewWindow, [options, env]);
     }
-    throw new Error('not supported!');
+    throwNonElectronError('WebviewServiceImpl.createWebviewWindow');
   }
 }
 

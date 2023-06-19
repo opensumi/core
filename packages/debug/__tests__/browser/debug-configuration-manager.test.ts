@@ -12,6 +12,7 @@ import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -35,6 +36,11 @@ describe('Debug Configuration Manager', () => {
   const mockMonacoEditorModel = {
     getLineLastNonWhitespaceColumn: jest.fn(),
     getPositionAt: jest.fn(() => 1),
+    getValue: jest.fn(
+      () => `{
+      "version": "0.2.0",
+      "configurations": [`,
+    ),
   };
 
   const mockMonacoEditor = {
@@ -163,6 +169,21 @@ describe('Debug Configuration Manager', () => {
     mockInjector.overrideProviders({
       token: StorageProvider,
       useValue: () => mockDebugStorage,
+    });
+
+    mockInjector.overrideProviders({
+      token: IEditorDocumentModelService,
+      useValue: {
+        createModelReference: (uri) => ({
+          instance: {
+            uri,
+            getMonacoModel: () => ({
+              getValue: jest.fn(() => ''),
+            }),
+          },
+          dispose: jest.fn(),
+        }),
+      },
     });
 
     debugConfigurationManager = mockInjector.get(DebugConfigurationManager);
