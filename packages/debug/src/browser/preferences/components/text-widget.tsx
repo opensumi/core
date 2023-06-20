@@ -12,6 +12,7 @@ import React, { useMemo } from 'react';
 
 import { Input } from '@opensumi/ide-components';
 
+import { JSON_SCHEMA_TYPE } from '../../../common';
 import { parseSnippet } from '../../debugUtils';
 
 import styles from './json-widget.module.less';
@@ -63,8 +64,8 @@ export const TextWidget = <T = any, S extends StrictRJSFSchema = RJSFSchema, F e
   const handleFocus = ({ target }: React.FocusEvent<HTMLInputElement>) => onFocus(id, target.value);
 
   const type = useMemo(() => {
-    if (schema.type !== 'string' && schema.type !== 'number') {
-      return 'string';
+    if (schema.type !== JSON_SCHEMA_TYPE.STRING && schema.type !== JSON_SCHEMA_TYPE.NUMBER) {
+      return JSON_SCHEMA_TYPE.STRING;
     }
 
     return schema.type;

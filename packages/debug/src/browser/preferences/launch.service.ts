@@ -4,9 +4,11 @@ import * as jsoncparser from 'jsonc-parser';
 import lodashSet from 'lodash/set';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
+import { COMMON_COMMANDS } from '@opensumi/ide-core-browser';
+import { CommandService, Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
+import { JSON_SCHEMA_TYPE } from '../../common';
 import { ILaunchService } from '../../common/debug-service';
 
 type TFormData = { [key in string]: any };
@@ -16,6 +18,9 @@ const CONFIGURATIONS_FIELD = 'configurations';
 export class LaunchService implements ILaunchService {
   @Autowired(IFileServiceClient)
   private readonly fileSystem: IFileServiceClient;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private readonly _onRawSchemaProperties = new Emitter<IJSONSchema>();
   public readonly onRawSchemaProperties: Event<IJSONSchema> = this._onRawSchemaProperties.event;
@@ -38,6 +43,10 @@ export class LaunchService implements ILaunchService {
   }
   public get formData(): TFormData {
     return this._formData;
+  }
+
+  public async openLaunchConfiguration(): Promise<void> {
+    await this.commandService.executeCommand(COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id);
   }
 
   public setRawSchemaProperties(sp: IJSONSchema) {
@@ -67,7 +76,9 @@ export class LaunchService implements ILaunchService {
 
     const preSchemaValue = properties![name];
 
-    lodashSet(newFormData as GenericObjectType, name, preSchemaValue['default'] || '');
+    const { default: defaultValue, type } = preSchemaValue;
+
+    lodashSet(newFormData as GenericObjectType, name, defaultValue || this.getDefaultValue(type));
     lodashSet(this.schema.properties!, name, preSchemaValue);
 
     this.nextNewSchema(this.schema);
@@ -87,6 +98,24 @@ export class LaunchService implements ILaunchService {
 
     this.nextNewSchema(this.schema);
     this.nextNewFormData(newFormData);
+  }
+
+  private getDefaultValue(type: IJSONSchema['type']): any {
+    switch (type) {
+      case JSON_SCHEMA_TYPE.ARRAY:
+        return [];
+      case JSON_SCHEMA_TYPE.BOOLEAN:
+        return false;
+      case JSON_SCHEMA_TYPE.NULL:
+        return null;
+      case JSON_SCHEMA_TYPE.NUMBER:
+        return 0;
+      case JSON_SCHEMA_TYPE.OBJECT:
+        return {};
+      case JSON_SCHEMA_TYPE.STRING:
+      default:
+        return '';
+    }
   }
 
   private async readResourceContent(resource: URI): Promise<string> {
