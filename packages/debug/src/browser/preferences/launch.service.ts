@@ -8,6 +8,7 @@ import { COMMON_COMMANDS } from '@opensumi/ide-core-browser';
 import { CommandService, Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
+import { JSON_SCHEMA_TYPE } from '../../common';
 import { ILaunchService } from '../../common/debug-service';
 
 type TFormData = { [key in string]: any };
@@ -101,17 +102,17 @@ export class LaunchService implements ILaunchService {
 
   private getDefaultValue(type: IJSONSchema['type']): any {
     switch (type) {
-      case 'array':
+      case JSON_SCHEMA_TYPE.ARRAY:
         return [];
-      case 'boolean':
+      case JSON_SCHEMA_TYPE.BOOLEAN:
         return false;
-      case 'null':
+      case JSON_SCHEMA_TYPE.NULL:
         return null;
-      case 'number':
+      case JSON_SCHEMA_TYPE.NUMBER:
         return 0;
-      case 'object':
+      case JSON_SCHEMA_TYPE.OBJECT:
         return {};
-      case 'string':
+      case JSON_SCHEMA_TYPE.STRING:
       default:
         return '';
     }

@@ -31,7 +31,7 @@ import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/index';
 
 import { DebugConfiguration, MASSIVE_PROPERTY_FLAG } from '../../common/debug-configuration';
-import { launchExtensionSchemaUri } from '../../common/debug-schema';
+import { JSON_SCHEMA_TYPE, launchExtensionSchemaUri } from '../../common/debug-schema';
 import { ILaunchService } from '../../common/debug-service';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 import { parseSnippet } from '../debugUtils';
@@ -412,13 +412,13 @@ const LaunchBody = ({
     const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
       const curProp = properties![cur];
 
-      if (curProp?.type === 'array' && isUndefined(curProp?.items)) {
-        curProp.items = { type: 'string' };
+      if (curProp?.type === JSON_SCHEMA_TYPE.ARRAY && isUndefined(curProp?.items)) {
+        curProp.items = { type: JSON_SCHEMA_TYPE.STRING };
       }
 
       // 如果 type 是数组，则取第一个
       if (Array.isArray(curProp?.type)) {
-        curProp.type = curProp.type![0] || 'string';
+        curProp.type = curProp.type![0] || JSON_SCHEMA_TYPE.STRING;
       }
 
       // 去掉 anyof 中的空对象
@@ -427,8 +427,8 @@ const LaunchBody = ({
       }
 
       // 如果 type 是 object 且存在 additionalProperties 时，固定将其设置为 additionalProperties: { type: 'string' }
-      if (curProp?.type === 'object' && !isUndefined(curProp?.additionalProperties)) {
-        curProp.additionalProperties = { type: 'string' };
+      if (curProp?.type === JSON_SCHEMA_TYPE.OBJECT && !isUndefined(curProp?.additionalProperties)) {
+        curProp.additionalProperties = { type: JSON_SCHEMA_TYPE.STRING };
       }
 
       /**
@@ -436,7 +436,7 @@ const LaunchBody = ({
        * 通过添加 MASSIVE_PROPERTY_FLAG 来做标识
        */
       if (
-        curProp?.type === 'object' &&
+        curProp?.type === JSON_SCHEMA_TYPE.OBJECT &&
         !isUndefined(curProp?.properties) &&
         Object.keys(curProp.properties!).length > 6
       ) {
@@ -455,7 +455,7 @@ const LaunchBody = ({
 
     const schema = {
       title: label,
-      type: 'object',
+      type: JSON_SCHEMA_TYPE.OBJECT,
       required,
       description,
       properties: snippetProperties,
