@@ -82,6 +82,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
           this.updateConfigurationSchema(configuration);
           sections.push({
             title: configuration.title,
+            extensionId,
             preferences: Object.keys(configuration.properties).map((v) => ({
               id: v,
             })),
