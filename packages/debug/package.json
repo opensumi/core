@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-debug",
-  "version": "2.25.1",
+  "version": "2.25.2",
   "files": [
     "lib",
     "src"
@@ -25,7 +25,7 @@
     "@opensumi/ide-terminal-next": "workspace:*",
     "@rjsf/core": "^5.5.2",
     "@rjsf/utils": "^5.5.2",
-    "@rjsf/validator-ajv8": "^5.5.2",
+    "@rjsf/validator-ajv6": "^5.4.0",
     "anser": "^1.4.9",
     "btoa": "^1.2.1"
   },

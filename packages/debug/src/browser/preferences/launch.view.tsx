@@ -1,6 +1,6 @@
 import { IChangeEvent, withTheme } from '@rjsf/core';
 import { GenericObjectType, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
-import validator from '@rjsf/validator-ajv8';
+import validator from '@rjsf/validator-ajv6';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
 import throttle from 'lodash/throttle';
@@ -30,8 +30,8 @@ import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu
 import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/index';
 
-import { DebugConfiguration } from '../../common/debug-configuration';
-import { launchExtensionSchemaUri } from '../../common/debug-schema';
+import { DebugConfiguration, MASSIVE_PROPERTY_FLAG } from '../../common/debug-configuration';
+import { JSON_SCHEMA_TYPE, launchExtensionSchemaUri } from '../../common/debug-schema';
 import { ILaunchService } from '../../common/debug-service';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 import { parseSnippet } from '../debugUtils';
@@ -69,7 +69,7 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
   const launchService = useInjectable<LaunchService>(ILaunchService);
   const commandService = useInjectable<CommandService>(CommandService);
 
-  const [currentConfigurationIndex, serCurrentConfigurationIndex] = useState<number>();
+  const [currentConfigurationIndex, serCurrentConfigurationIndex] = useState<number>(0);
   const [schemaContributions, setSchemaContributions] = useState<IJSONSchema>();
   const [inputConfigurationItems, setInputConfigurationItems] = useState<ConfigurationItemsModel[]>([]);
 
@@ -141,8 +141,6 @@ export const LaunchViewContainer: ReactEditorComponent<any> = ({ resource }) => 
     if (!configuration) {
       return;
     }
-
-    launchService.nextNewFormData(configuration, false);
 
     serCurrentConfigurationIndex(index);
   }, []);
@@ -238,8 +236,21 @@ const LaunchIndexs = ({
   inputConfigurationItems: ConfigurationItemsModel[];
   currentConfigurationIndex: number | undefined;
 }) => {
+  const launchService = useInjectable<LaunchService>(ILaunchService);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
   const [configurationItems, setConfigurationItems] = useState<ConfigurationItemsModel[]>(inputConfigurationItems);
+
+  useEffect(() => {
+    if (configurationItems.length === 0 && isUndefined(currentConfigurationIndex)) {
+      return;
+    }
+
+    const findItem = configurationItems[currentConfigurationIndex!];
+
+    if (findItem && findItem.configuration) {
+      launchService.nextNewFormData(findItem.configuration, false);
+    }
+  }, [currentConfigurationIndex, configurationItems]);
 
   useEffect(() => {
     setConfigurationItems([...inputConfigurationItems]);
@@ -401,13 +412,13 @@ const LaunchBody = ({
     const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
       const curProp = properties![cur];
 
-      if (curProp?.type === 'array' && isUndefined(curProp?.items)) {
-        curProp.items = { type: 'string' };
+      if (curProp?.type === JSON_SCHEMA_TYPE.ARRAY && isUndefined(curProp?.items)) {
+        curProp.items = { type: JSON_SCHEMA_TYPE.STRING };
       }
 
       // 如果 type 是数组，则取第一个
       if (Array.isArray(curProp?.type)) {
-        curProp.type = curProp.type![0] || 'string';
+        curProp.type = curProp.type![0] || JSON_SCHEMA_TYPE.STRING;
       }
 
       // 去掉 anyof 中的空对象
@@ -416,8 +427,21 @@ const LaunchBody = ({
       }
 
       // 如果 type 是 object 且存在 additionalProperties 时，固定将其设置为 additionalProperties: { type: 'string' }
-      if (curProp?.type === 'object' && !isUndefined(curProp?.additionalProperties)) {
-        curProp.additionalProperties = { type: 'string' };
+      if (curProp?.type === JSON_SCHEMA_TYPE.OBJECT && !isUndefined(curProp?.additionalProperties)) {
+        curProp.additionalProperties = { type: JSON_SCHEMA_TYPE.STRING };
+      }
+
+      /**
+       * 为了避免因 properties 太多导致页面非常非常的长，影响用户体验，这里对 properties 属性超过一定个数（暂定 6 个）的配置项进行引导操作，让其在 launch.json 中进行配置
+       * 通过添加 MASSIVE_PROPERTY_FLAG 来做标识
+       */
+      if (
+        curProp?.type === JSON_SCHEMA_TYPE.OBJECT &&
+        !isUndefined(curProp?.properties) &&
+        Object.keys(curProp.properties!).length > 6
+      ) {
+        curProp.properties = {};
+        curProp[MASSIVE_PROPERTY_FLAG] = true;
       }
 
       // 将 markdownDescription 赋给 description
@@ -431,7 +455,7 @@ const LaunchBody = ({
 
     const schema = {
       title: label,
-      type: 'object',
+      type: JSON_SCHEMA_TYPE.OBJECT,
       required,
       description,
       properties: snippetProperties,

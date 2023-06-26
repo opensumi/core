@@ -4,11 +4,18 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
   WrapIfAdditionalTemplateProps,
+  descriptionId,
+  getTemplate,
+  titleId,
 } from '@rjsf/utils';
-import React, { FocusEvent, useCallback } from 'react';
+import React, { FocusEvent, useCallback, useMemo } from 'react';
 
 import { Input } from '@opensumi/ide-components';
-import { formatLocalize } from '@opensumi/ide-core-common';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { IJSONSchema, formatLocalize, localize } from '@opensumi/ide-core-common';
+
+import { MASSIVE_PROPERTY_FLAG } from '../../../common';
+import { LaunchService } from '../launch.service';
 
 import styles from './json-templates.module.less';
 
@@ -32,11 +39,50 @@ export const WrapIfAdditionalTemplate = <
     registry,
     schema,
   } = props;
+  const launchService = useInjectable<LaunchService>(LaunchService);
   const { readonlyAsDisabled = true } = registry.formContext;
   const { templates } = registry;
   const { RemoveButton } = templates.ButtonTemplates;
   // 如果是用户手动添加 property 则存在该标识
   const isPropertyFlag = ADDITIONAL_PROPERTY_FLAG in schema;
+  const isMassivePropertyFlag = MASSIVE_PROPERTY_FLAG in schema;
+
+  const TitleFieldTemplate = getTemplate<'TitleFieldTemplate', T, S, F>('TitleFieldTemplate', registry);
+  const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
+    'DescriptionFieldTemplate',
+    registry,
+  );
+
+  const description = useMemo(() => schema.description || (schema as IJSONSchema).markdownDescription, [schema]);
+
+  const editLaunchJson = useCallback(async () => {
+    await launchService.openLaunchConfiguration();
+  }, []);
+
+  if (isMassivePropertyFlag) {
+    return (
+      <div className={classNames} style={style}>
+        {label && (
+          <div className={styles.object_title}>
+            <TitleFieldTemplate id={titleId<T>(id)} title={label} schema={schema} registry={registry} />
+          </div>
+        )}
+        {description && (
+          <div className={styles.object_description}>
+            <DescriptionFieldTemplate
+              id={descriptionId<T>(id)}
+              description={description}
+              schema={schema}
+              registry={registry}
+            />
+          </div>
+        )}
+        <div className={styles.control_wrap}>
+          <a onClick={editLaunchJson}>{localize('debug.launch.view.edit.inLaunchJson')}</a>
+        </div>
+      </div>
+    );
+  }
 
   if (!isPropertyFlag) {
     return (
