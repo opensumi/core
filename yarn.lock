@@ -22950,7 +22950,7 @@ __metadata:
 
 "xterm-addon-canvas@npm:0.4.0":
   version: 0.4.0
-  resolution: "xterm-addon-canvas@npm:0.4.0::__archiveUrl=https%3A%2F%2Fregistry.npm.alibaba-inc.com%2Fxterm-addon-canvas%2Fdownload%2Fxterm-addon-canvas-0.4.0.tgz"
+  resolution: "xterm-addon-canvas@npm:0.4.0"
   peerDependencies:
     xterm: ^5.0.0
   checksum: 2052b13e55d01c847dbfb9ce30220aeb8dc1a4507c407c0727781f01e7efa8cfe1c73afd2186881df3fdb95d20e3f0482a7a717676fba045b0a846a34d361f9e
@@ -22959,7 +22959,7 @@ __metadata:
 
 "xterm-addon-fit@npm:0.7.0":
   version: 0.7.0
-  resolution: "xterm-addon-fit@npm:0.7.0::__archiveUrl=https%3A%2F%2Fregistry.npm.alibaba-inc.com%2Fxterm-addon-fit%2Fdownload%2Fxterm-addon-fit-0.7.0.tgz"
+  resolution: "xterm-addon-fit@npm:0.7.0"
   peerDependencies:
     xterm: ^5.0.0
   checksum: 512d41f80d6f9427ba02dab4e6fd642e94775a9cf7ef72ae4b55eab2a36856b5c67069bfc66b4af412fdce29a0842f9c6382af3672f0b514c4352dfd47defe8f
@@ -22968,7 +22968,7 @@ __metadata:
 
 "xterm-addon-search@npm:0.12.0":
   version: 0.12.0
-  resolution: "xterm-addon-search@npm:0.12.0::__archiveUrl=https%3A%2F%2Fregistry.npm.alibaba-inc.com%2Fxterm-addon-search%2Fdownload%2Fxterm-addon-search-0.12.0.tgz"
+  resolution: "xterm-addon-search@npm:0.12.0"
   peerDependencies:
     xterm: ^5.0.0
   checksum: db46f8a84fa0fe359e8ff91904f23a587ad6103e56884398652a2c23eac6dd6d2be16cb61b33f8bca6a9e20ef8110fb4611a5b7008db07c9422cd44d6b9a70c3
@@ -22977,7 +22977,7 @@ __metadata:
 
 "xterm-addon-webgl@npm:0.15.0":
   version: 0.15.0
-  resolution: "xterm-addon-webgl@npm:0.15.0::__archiveUrl=https%3A%2F%2Fregistry.npm.alibaba-inc.com%2Fxterm-addon-webgl%2Fdownload%2Fxterm-addon-webgl-0.15.0.tgz"
+  resolution: "xterm-addon-webgl@npm:0.15.0"
   peerDependencies:
     xterm: ^5.0.0
   checksum: 08976a24814f5b1eb20786c9d4450a54854b087b084170e3e60fd65d63df0da6096ec9f3acfc92fa8c58bdb958b601f8762a3daf3b2127d49fa122d16b3a90e5
@@ -22986,7 +22986,7 @@ __metadata:
 
 "xterm@npm:5.2.0":
   version: 5.2.0
-  resolution: "xterm@npm:5.2.0::__archiveUrl=https%3A%2F%2Fregistry.npm.alibaba-inc.com%2Fxterm%2Fdownload%2Fxterm-5.2.0.tgz"
+  resolution: "xterm@npm:5.2.0"
   checksum: d000875598360de8a18dfa4239cd557a3739825c5f14b499fad6c1ffac5655a959513339134e3c37acf0f64de3c58d107295ae5cb1b39a5091f21611018287ca
   languageName: node
   linkType: hard
