@@ -46,8 +46,8 @@ export const FILE_TREE_FILTER_DELAY = 500;
 const FilterableRecycleTree = RecycleTreeFilterDecorator(RecycleTree);
 
 export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
-  const [isReady, setIsReady] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const isReady = useRef<boolean>(false);
+  const isLoading = useRef<boolean>(true);
   const [outerActive, setOuterActive] = useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = useState<boolean>(false);
   const [model, setModel] = useState<TreeModel>();
@@ -142,13 +142,13 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       // 首次初始化完成时，监听后续变化，适配工作区变化事件
       // 监听工作区变化
       fileTreeModelService.onFileTreeModelChange(async (treeModel) => {
-        setIsLoading(true);
+        isLoading.current = true;
         if (treeModel) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await treeModel.ensureReady;
         }
         setModel(treeModel);
-        setIsLoading(false);
+        isLoading.current = false;
       });
     }
   }, [isReady]);
@@ -279,9 +279,9 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
           fileTreeService.initContextKey(wrapperRef.current);
         }
       }
-      setIsLoading(false);
+      isReady.current = false;
       if (!disposableRef.current?.disposed) {
-        setIsReady(true);
+        isReady.current = true;
       }
     },
     [fileTreeModelService, disposableRef.current],
@@ -365,8 +365,8 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       onDrop={handleOuterDrop}
     >
       <FileTreeView
-        isLoading={isLoading}
-        isReady={isReady}
+        isLoading={isLoading.current}
+        isReady={isReady.current}
         height={height}
         model={model}
         iconTheme={iconTheme}

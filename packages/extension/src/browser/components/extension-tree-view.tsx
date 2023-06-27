@@ -9,7 +9,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useState,
+  useRef,
 } from 'react';
 
 import { Injector } from '@opensumi/di';
@@ -38,8 +38,8 @@ export interface ExtensionTabBarTreeViewProps {
 
 export const ExtensionTabBarTreeView = observer(
   ({ viewState, model, dataProvider, treeViewId }: PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
-    const [isReady, setIsReady] = useState<boolean>(false);
-    const [isEmpty, setIsEmpty] = useState(dataProvider.isTreeEmpty);
+    const isReady = useRef<boolean>(false);
+    const isEmpty = useRef<boolean>(dataProvider.isTreeEmpty);
     const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
     const decorationService = useInjectable<IDecorationsService>(IDecorationsService);
     const accordionService = useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
@@ -54,7 +54,7 @@ export const ExtensionTabBarTreeView = observer(
 
     useEffect(() => {
       const disposable = dataProvider.onDidChangeEmpty(() => {
-        setIsEmpty(dataProvider.isTreeEmpty);
+        isEmpty.current = dataProvider.isTreeEmpty;
       });
       return () => disposable.dispose();
     }, []);
@@ -193,7 +193,7 @@ export const ExtensionTabBarTreeView = observer(
           await model.treeModel.ensureReady;
         }
         if (!unmouted) {
-          setIsReady(true);
+          isReady.current = true;
         }
       })();
       return () => {
@@ -222,8 +222,8 @@ export const ExtensionTabBarTreeView = observer(
         data-tree-view-id={treeViewId}
       >
         <TreeView
-          isReady={isReady}
-          isEmpty={isEmpty}
+          isReady={isReady.current}
+          isEmpty={isEmpty.current}
           height={height}
           handleTreeReady={handleTreeReady}
           handleItemClicked={handleItemClicked}
