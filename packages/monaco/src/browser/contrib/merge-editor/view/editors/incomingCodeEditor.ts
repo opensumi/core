@@ -78,7 +78,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
     const { range, action } = eventData;
-    this._onDidConflictActions.fire({
+    super.launchConflictActionsEvent({
       range,
       action,
       withViewType: EditorViewType.INCOMING,
