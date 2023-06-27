@@ -43,6 +43,7 @@ import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/rende
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { isWindows, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
@@ -166,6 +167,9 @@ export class EditorContribution
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
+
+  @Autowired(MergeEditorService)
+  private readonly mergeEditorService: MergeEditorService;
 
   @Autowired(IEditorDocumentModelContentRegistry)
   contentRegistry: IEditorDocumentModelContentRegistry;
@@ -515,6 +519,24 @@ export class EditorContribution
             }),
           }),
         );
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET, {
+      execute: () => {
+        const nutrition = this.mergeEditorService.getNutrition();
+
+        if (!nutrition) {
+          return;
+        }
+
+        const { output } = nutrition;
+        const { uri } = output;
+
+        // 重置状态
+        this.mergeEditorService.fireRestoreState(uri);
+        // 然后再重新 compare
+        this.mergeEditorService.compare();
       },
     });
 

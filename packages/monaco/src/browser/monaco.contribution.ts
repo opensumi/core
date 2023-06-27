@@ -21,6 +21,8 @@ import {
   IContextKeyService,
   KeyCode,
   KeySequence,
+  FILE_COMMANDS,
+  EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
@@ -434,6 +436,16 @@ export class MonacoClientContribution
         }
       });
     }
+
+    menuRegistry.registerMenuItems(MenuId.MergeEditorResultTitleContext, [
+      {
+        command: {
+          id: EDITOR_COMMANDS.MERGEEDITOR_RESET.id,
+          label: EDITOR_COMMANDS.MERGEEDITOR_RESET.label!,
+        },
+        group: 'navigation',
+      },
+    ]);
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

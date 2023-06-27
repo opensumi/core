@@ -1146,6 +1146,7 @@ export const localizationBundle = {
     'walkthroughs.get.started': '打开 `入门` 演示',
 
     // Merge Editor
+    'mergeEditor.reset': '重置',
     'mergeEditor.workbench.tab.name': '正在合并: {0}',
     'mergeEditor.conflict.action.apply.confirm.title': '当前文件还有未处理的冲突或变更，是否应用并保存更改？',
     'mergeEditor.conflict.action.apply.confirm.continue': '继续合并',

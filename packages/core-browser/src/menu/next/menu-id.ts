@@ -84,6 +84,8 @@ export enum MenuId {
   // setting.json
   SettingJSONGlyphMarginContext = 'settingJson/glyphMargin/context',
   SubSettingJSONGlyphMarginContext = 'sub/settingJson/glyphMargin/context',
+  // merge editor context
+  MergeEditorResultTitleContext = 'mergeEditor/result/title/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {
