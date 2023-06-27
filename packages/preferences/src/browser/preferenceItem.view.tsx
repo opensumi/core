@@ -503,7 +503,7 @@ function SelectPreferenceItem({
   const labels = settingsService.getEnumLabels(preferenceId);
   const renderEnumOptions = useCallback(() => {
     const enums = schema.enum ? [...schema.enum] : [];
-    if (!enums.includes(defaultValue)) {
+    if (defaultValue && !enums.includes(defaultValue)) {
       logger.warn(`default value(${defaultValue}) of ${preferenceId} not found in its enum field`);
       enums.push(defaultValue);
     }
@@ -515,11 +515,11 @@ function SelectPreferenceItem({
       return (
         <Option
           value={item}
-          label={replaceLocalizePlaceholder((labels[item] || item).toString())}
+          label={replaceLocalizePlaceholder((labels[item] || item)?.toString())}
           key={`${idx} - ${item}`}
           className={styles.select_option}
         >
-          {replaceLocalizePlaceholder((labels[item] || item).toString())}
+          {replaceLocalizePlaceholder((labels[item] || item)?.toString())}
           {String(item) === String(defaultValue) && (
             <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
           )}
