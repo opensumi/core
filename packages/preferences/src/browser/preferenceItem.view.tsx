@@ -228,7 +228,7 @@ const renderDescriptionExpression = (description: string) => {
     if (preference) {
       const preferenceTitle = getPreferenceItemLabel(preference);
       const [prev, next] = tmp.split(expression, 2);
-      prev && result.push(<span>{prev}</span>);
+      prev && result.push(<span key={result.length}>{prev}</span>);
       tmp = next;
       const link = (
         <a
@@ -243,7 +243,7 @@ const renderDescriptionExpression = (description: string) => {
       result.push(link);
     }
   }
-  tmp && result.push(<span>{tmp}</span>);
+  tmp && result.push(<span key={result.length}>{tmp}</span>);
   return result;
 };
 
