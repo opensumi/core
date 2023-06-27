@@ -35,17 +35,18 @@ export async function createClientConnection2(
   const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, clientId);
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', async () => {
-    await stateService.reachedState('core_module_initialized');
+    // 状态机处于 'core_module_initialized' ｜ 'started_contributions' ｜ 'ready' 状态时，事件触发
+    await stateService.reachedAnyState('core_module_initialized', 'started_contributions', 'ready');
     eventBus.fire(new BrowserConnectionOpenEvent());
   });
 
   wsChannelHandler.connection.addEventListener('close', async () => {
-    await stateService.reachedState('core_module_initialized');
+    await stateService.reachedAnyState('core_module_initialized', 'started_contributions', 'ready');
     eventBus.fire(new BrowserConnectionCloseEvent());
   });
 
   wsChannelHandler.connection.addEventListener('error', async (e) => {
-    await stateService.reachedState('core_module_initialized');
+    await stateService.reachedAnyState('core_module_initialized', 'started_contributions', 'ready');
     eventBus.fire(new BrowserConnectionErrorEvent(e));
   });
 
