@@ -15,6 +15,7 @@ import {
   TActionsType,
   IActionsDescription,
   APPEND_ACTIONS,
+  IConflictActionsEvent,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -75,6 +76,15 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return EditorViewType.INCOMING;
   }
 
+  public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
+    const { range, action } = eventData;
+    this._onDidConflictActions.fire({
+      range,
+      action,
+      withViewType: EditorViewType.INCOMING,
+    });
+  }
+
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
     this.updateDecorations();
@@ -82,19 +92,18 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       provideActionsItems: this.provideActionsItems,
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
         if (actionType === ACCEPT_CURRENT_ACTIONS) {
-          this._onDidConflictActions.fire({
+          this.launchConflictActionsEvent({
             range,
-            withViewType: EditorViewType.INCOMING,
             action: ACCEPT_CURRENT_ACTIONS,
           });
         }
 
         if (actionType === IGNORE_ACTIONS) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: IGNORE_ACTIONS });
+          this.launchConflictActionsEvent({ range, action: IGNORE_ACTIONS });
         }
 
         if (actionType === APPEND_ACTIONS) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: APPEND_ACTIONS });
+          this.launchConflictActionsEvent({ range, action: APPEND_ACTIONS });
         }
       },
     });

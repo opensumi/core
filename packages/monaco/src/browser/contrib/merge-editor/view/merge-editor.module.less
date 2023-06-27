@@ -3,10 +3,26 @@
   overflow: hidden;
   position: relative;
 
-  .merge_actions {
+  .merge_actions_container {
     position: absolute;
-    right: 50px;
-    bottom: 30px;
+    bottom: 0;
+    width: 100%;
+    padding: 0 50px;
+    padding-bottom: 30px;
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .left_side {
+      * + * {
+        margin-left: 12px;
+      }
+    }
+
+    .right_side {
+    }
   }
 
   .editor_container {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
@@ -60,6 +60,42 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
   );
 };
 
+const MergeActions: React.FC = () => {
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+
+  const handleApply = useCallback(() => {
+    mergeEditorService.accept();
+  }, [mergeEditorService]);
+
+  const handleAcceptLeft = useCallback(() => {
+    mergeEditorService.acceptLeft();
+  }, [mergeEditorService]);
+
+  const handleAcceptRight = useCallback(() => {
+    mergeEditorService.acceptRight();
+  }, [mergeEditorService]);
+
+  return (
+    <div className={styles.merge_actions_container}>
+      <div className={styles.actions}>
+        <div className={styles.left_side}>
+          <Button size='large' type='default' onClick={handleAcceptLeft}>
+            {localize('mergeEditor.action.button.accept.left')}
+          </Button>
+          <Button size='large' type='default' onClick={handleAcceptRight}>
+            {localize('mergeEditor.action.button.accept.right')}
+          </Button>
+        </div>
+        <div className={styles.right_side}>
+          <Button size='large' onClick={handleApply}>
+            {localize('mergeEditor.action.button.apply')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Grid = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
 
@@ -87,10 +123,6 @@ export const Grid = () => {
     mergeEditorService,
   ]);
 
-  const handleApply = () => {
-    mergeEditorService.accept();
-  };
-
   return (
     <div className={styles.merge_editor_container}>
       <SplitPanel overflow='hidden' id='merge_editor_container' flex={2}>
@@ -115,11 +147,7 @@ export const Grid = () => {
           <div className={styles.editor_container} ref={incomingEditorContainer}></div>
         </div>
       </SplitPanel>
-      <div className={styles.merge_actions}>
-        <Button size='large' onClick={handleApply}>
-          {localize('mergeEditor.button.apply')}
-        </Button>
-      </div>
+      <MergeActions />
     </div>
   );
 };
