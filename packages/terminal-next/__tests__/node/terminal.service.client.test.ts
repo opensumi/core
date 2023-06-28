@@ -73,6 +73,7 @@ describe('TerminalServiceClientImpl', () => {
 
     expect(typeof terminalServiceClient.getProcessId(mockId)).toEqual('number');
     expect(typeof terminalServiceClient.getShellName(mockId)).toEqual('string');
+    expect(await terminalServiceClient.getCwd(mockId)).toEqual(process.cwd());
     expect(receiveData.indexOf('message test') > -1).toEqual(true);
   });
 
