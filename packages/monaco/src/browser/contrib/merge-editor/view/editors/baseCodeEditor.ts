@@ -49,6 +49,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     this.mount();
   }
 
+  public launchConflictActionsEvent(eventData: IConflictActionsEvent): void {
+    this._onDidConflictActions.fire(eventData);
+  }
+
   public override dispose(): void {
     super.dispose();
     this.editor.dispose();

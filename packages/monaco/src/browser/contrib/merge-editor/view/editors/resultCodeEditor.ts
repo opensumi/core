@@ -19,6 +19,7 @@ import {
   ITimeMachineMetaData,
   ETurnDirection,
   ACCEPT_COMBINATION_ACTIONS,
+  IConflictActionsEvent,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -373,6 +374,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
     };
   }
 
+  public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
+    const { range, action } = eventData;
+    super.launchConflictActionsEvent({
+      range,
+      action,
+      withViewType: EditorViewType.RESULT,
+    });
+  }
+
   /**
    * 由于 compute diff 的源数据都由 document mapping 来处理，所以 result 视图不用单独计算 compute 计算出的 diff changes
    */
@@ -384,13 +394,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
       provideActionsItems: () => this.provideActionsItems(diffRanges),
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
         if (actionType === REVOKE_ACTIONS) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
+          this.launchConflictActionsEvent({
+            range,
+            action: REVOKE_ACTIONS,
+          });
         }
 
         if (actionType === ACCEPT_COMBINATION_ACTIONS) {
-          this._onDidConflictActions.fire({
+          this.launchConflictActionsEvent({
             range,
-            withViewType: EditorViewType.RESULT,
             action: ACCEPT_COMBINATION_ACTIONS,
           });
         }

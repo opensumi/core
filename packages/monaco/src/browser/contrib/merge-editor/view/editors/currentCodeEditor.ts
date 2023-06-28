@@ -17,6 +17,7 @@ import {
   TActionsType,
   IActionsDescription,
   APPEND_ACTIONS,
+  IConflictActionsEvent,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -79,6 +80,15 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return EditorViewType.CURRENT;
   }
 
+  public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
+    const { range, action } = eventData;
+    super.launchConflictActionsEvent({
+      range,
+      action,
+      withViewType: EditorViewType.CURRENT,
+    });
+  }
+
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
     this.updateDecorations();
@@ -103,19 +113,24 @@ export class CurrentCodeEditor extends BaseCodeEditor {
       },
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
         if (actionType === ACCEPT_CURRENT_ACTIONS) {
-          this._onDidConflictActions.fire({
+          this.launchConflictActionsEvent({
             range,
-            withViewType: EditorViewType.CURRENT,
             action: ACCEPT_CURRENT_ACTIONS,
           });
         }
 
         if (actionType === IGNORE_ACTIONS) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE_ACTIONS });
+          this.launchConflictActionsEvent({
+            range,
+            action: IGNORE_ACTIONS,
+          });
         }
 
         if (actionType === APPEND_ACTIONS) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: APPEND_ACTIONS });
+          this.launchConflictActionsEvent({
+            range,
+            action: APPEND_ACTIONS,
+          });
         }
       },
     });
@@ -126,7 +141,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   /**
-   * current view 视图需要把 margin 区域放在右边
+   *  current view 视图需要把 margin 区域放在右边
    */
   public layout(): void {
     const editor = this.getEditor();

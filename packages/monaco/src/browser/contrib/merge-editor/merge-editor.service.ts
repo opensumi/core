@@ -19,6 +19,7 @@ import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
 import { LineRangeMapping } from './model/line-range-mapping';
+import { ACCEPT_CURRENT_ACTIONS } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -115,6 +116,28 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.dispose();
     this.stickinessConnectManager.dispose();
     this.actionsManager.dispose();
+  }
+
+  public async acceptLeft(): Promise<void> {
+    const mappings = this.mappingManagerService.documentMappingTurnLeft;
+    const lineRanges = mappings.getOriginalRange();
+    lineRanges.forEach((range) => {
+      this.currentView.launchConflictActionsEvent({
+        range,
+        action: ACCEPT_CURRENT_ACTIONS,
+      });
+    });
+  }
+
+  public async acceptRight(): Promise<void> {
+    const mappings = this.mappingManagerService.documentMappingTurnRight;
+    const lineRanges = mappings.getModifiedRange();
+    lineRanges.forEach((range) => {
+      this.incomingView.launchConflictActionsEvent({
+        range,
+        action: ACCEPT_CURRENT_ACTIONS,
+      });
+    });
   }
 
   public async accept(): Promise<void> {

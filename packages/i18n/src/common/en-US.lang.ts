@@ -1377,7 +1377,9 @@ export const localizationBundle = {
       'The file has unresolved conflicts or changes, whether to apply and save the changes?',
     'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
     'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
-    'mergeEditor.button.apply': 'Apply',
+    'mergeEditor.action.button.apply': 'Apply',
+    'mergeEditor.action.button.accept.left': 'Accept Left',
+    'mergeEditor.action.button.accept.right': 'Accept Right',
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
