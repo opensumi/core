@@ -216,7 +216,7 @@ export interface AppConfig {
    * 视图组件内默认的组件样式资源 CDN 来源
    * 默认值为 'alipay'
    */
-  componentCDNType?: 'unpkg' | 'jsdelivr' | 'alipay';
+  componentCDNType?: TComponentCDNType;
   /**
    * 指定前端是否为 Electron 环境 (Electron Renderer)
    * 为兼容老的逻辑，若不兼容则 fallback 到 isElectronRenderer 的判断
@@ -277,3 +277,5 @@ export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig
 
   return React.createElement(extraContextProvider, { children: app });
 }
+
+export type TComponentCDNType = 'unpkg' | 'jsdelivr' | 'alipay' | 'npmmirror';
