@@ -27,16 +27,14 @@ export interface IPtySpawnOptions {
   ptyLineCacheSize?: number;
 }
 
-export interface IPtyProcess extends INodePty {
+export interface IPtyProcessProxy extends INodePty {
   /**
    * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
    */
   bin: string;
   launchConfig: IShellLaunchConfig;
   parsedName: string;
-}
 
-export interface IPtyProcessProxy extends IPtyProcess {
   getProcessDynamically(): MaybePromise<string>;
   getCwd(): Promise<string | undefined>;
 }
@@ -296,7 +294,7 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
+  create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPtyProcessProxy | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   getShellName(id: string): string;

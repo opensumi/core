@@ -18,7 +18,7 @@ import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
-import { IPtyProcess, IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
+import { IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
@@ -231,9 +231,9 @@ export class PtyService extends Disposable {
       }),
     );
 
-    (ptyProcess as IPtyProcess).bin = options.executable as string;
-    (ptyProcess as IPtyProcess).launchConfig = options;
-    (ptyProcess as IPtyProcess).parsedName = path.basename(options.executable as string);
+    ptyProcess.bin = options.executable as string;
+    ptyProcess.launchConfig = options;
+    ptyProcess.parsedName = path.basename(options.executable as string);
 
     this._sendProcessId(ptyProcess.pid);
 

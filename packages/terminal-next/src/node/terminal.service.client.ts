@@ -10,7 +10,7 @@ import {
   ITerminalError,
 } from '../common';
 import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
-import { IPtyProcess } from '../common/pty';
+import { IPtyProcessProxy } from '../common/pty';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 
 import { findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
@@ -31,7 +31,7 @@ interface IRPCTerminalService {
  */
 @Injectable()
 export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> implements ITerminalServiceClient {
-  private terminalMap: Map<string, IPtyProcess> = new Map();
+  private terminalMap: Map<string, IPtyProcessProxy> = new Map();
 
   @Autowired(ITerminalNodeService)
   private terminalService: ITerminalNodeService;
