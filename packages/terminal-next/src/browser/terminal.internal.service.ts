@@ -128,4 +128,7 @@ export class TerminalInternalService implements ITerminalInternalService {
     }
     return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig, xterm);
   }
+  async getCwd(sessionId: string): Promise<string | undefined> {
+    return await this.service.getCwd(sessionId);
+  }
 }

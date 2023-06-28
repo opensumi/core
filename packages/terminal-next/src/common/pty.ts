@@ -38,6 +38,7 @@ export interface IPtyProcess extends INodePty {
 
 export interface IPtyProcessProxy extends IPtyProcess {
   getProcessDynamically(): MaybePromise<string>;
+  getCwd(): Promise<string | undefined>;
 }
 
 export const ITerminalServicePath = 'ITerminalServicePath';
@@ -126,6 +127,11 @@ export interface IPtyProxyRPCService {
    * @param pid pty进程的pid，用于辨识pty进程
    */
   $getProcess(pid: number): string;
+
+  /**
+   * Get the current working directory for the given process ID.
+   */
+  $getCwd(pid: number): Promise<string | undefined>;
 
   /**
    * 检查Session对应的进程是否存活
@@ -290,14 +296,11 @@ export interface TerminalOptions {
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
 export interface ITerminalNodeService {
-  /**
-   * @deprecated this overload signature will be removed in 2.17.0
-   */
-  create2(id: string, launchConfig: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
   create2(id: string, cols: number, rows: number, options: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number): void;
   getShellName(id: string): string;
+  getCwd(id: string): Promise<string | undefined>;
   getProcessId(id: string): number;
   disposeById(id: string): void;
   dispose(): void;
@@ -355,6 +358,7 @@ export interface ITerminalServiceClient {
   getDefaultSystemShell(os: OperatingSystem): Promise<string>;
   getOS(): OperatingSystem;
   getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;
+  getCwd(id: string): Promise<string | undefined>;
 }
 
 export interface ITerminalInfo {

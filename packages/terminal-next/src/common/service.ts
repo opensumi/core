@@ -99,6 +99,7 @@ export interface ITerminalService {
   getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
   getDefaultSystemShell(): Promise<string>;
   getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;
+  getCwd(sessionId: string): Promise<string | undefined>;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');

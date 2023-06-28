@@ -1,6 +1,8 @@
-/* eslint-disable no-console */
+import childProcess from 'child_process';
 import fs from 'fs';
 import net, { ListenOptions, Server } from 'net';
+import os from 'os';
+import { promisify } from 'util';
 
 import * as pty from 'node-pty';
 
@@ -16,6 +18,9 @@ import {
   PTY_SERVICE_PROXY_SERVER_PORT,
   TERMINAL_ID_SEPARATOR,
 } from '../common';
+
+const readLinkAsync = promisify(fs.readlink);
+const execAsync = promisify(childProcess.exec);
 
 const PTY_LINE_DATA_CACHE_DEFAULT_SIZE = 500;
 
@@ -235,6 +240,10 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     const ptyInstance = this.ptyInstanceMap.get(pid);
     return ptyInstance?.process || '';
   }
+
+  $getCwd(pid: number): Promise<string | undefined> {
+    return getPidCwd(pid);
+  }
 }
 
 // 需要单独运行PtyServer的时候集成此Class然后运行initServer
@@ -304,4 +313,18 @@ export class PtyServiceProxyRPCProvider {
   public get $ptyServiceProxy(): PtyServiceProxy {
     return this.ptyServiceProxy;
   }
+}
+
+async function getPidCwd(pid: number): Promise<string | undefined> {
+  switch (os.platform()) {
+    case 'linux':
+      return await readLinkAsync(`/proc/${pid}/cwd`);
+    case 'darwin': {
+      const result = await execAsync(`lsof -a -d cwd -p ${pid} | tail -1 | awk '{print $9}'`);
+      if (result.stdout) {
+        return result.stdout.trim();
+      }
+    }
+  }
+  return undefined;
 }

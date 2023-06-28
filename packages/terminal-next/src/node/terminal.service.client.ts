@@ -187,4 +187,8 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   dispose() {
     this.terminalService.closeClient(this.clientId);
   }
+
+  getCwd(id: string): Promise<string | undefined> {
+    return this.terminalService.getCwd(id);
+  }
 }

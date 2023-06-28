@@ -33,7 +33,8 @@ export interface IPtyServiceManager {
   pause(pid: number): void;
   resume(pid: number): void;
   kill(pid: number, signal?: string): void;
-  getProcess(pid): Promise<string>;
+  getProcess(pid: number): Promise<string>;
+  getCwd(pid: number): Promise<string | undefined>;
   checkSession(sessionId: string): Promise<boolean>;
 }
 
@@ -104,8 +105,12 @@ export class PtyServiceManager implements IPtyServiceManager {
     return new PtyProcessProxy(ptyRemoteProxy, this);
   }
 
-  async getProcess(pid: any): Promise<string> {
+  async getProcess(pid: number): Promise<string> {
     return await this.ptyServiceProxy.$getProcess(pid);
+  }
+
+  async getCwd(pid: number): Promise<string | undefined> {
+    return await this.ptyServiceProxy.$getCwd(pid);
   }
 
   // 实现 IPty 的需要回调的逻辑接口，同时注入
@@ -206,6 +211,10 @@ class PtyProcessProxy implements IPtyProcessProxy {
     const process = await this.ptyServiceManager.getProcess(this.pid);
     this._process = process;
     return process;
+  }
+
+  async getCwd(): Promise<string | undefined> {
+    return await this.ptyServiceManager.getCwd(this.pid);
   }
 
   onData: pty.IEvent<string>;

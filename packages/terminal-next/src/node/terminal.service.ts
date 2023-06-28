@@ -13,10 +13,6 @@ const BATCH_MAX_SIZE = 200 * 1024;
 // 批处理延时
 const BATCH_DURATION_MS = 16;
 
-/**
- * terminal service 的具体实现
- * @lengthmin: 其实这里应该换成每个实例持有一个 pty 实例，待讨论并推进实现
- */
 @Injectable()
 export class TerminalServiceImpl implements ITerminalNodeService {
   static TerminalPtyCloseThreshold = 10 * 1000;
@@ -290,5 +286,14 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   private getTerminal(id: string) {
     return this.terminalProcessMap.get(id);
+  }
+
+  async getCwd(id: string): Promise<string | undefined> {
+    const ptyService = this.getTerminal(id);
+    if (!ptyService) {
+      return undefined;
+    }
+
+    return await ptyService.getCwd();
   }
 }

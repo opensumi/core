@@ -18,7 +18,7 @@ import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
-import { IPtyProcess, IPtySpawnOptions } from '../common/pty';
+import { IPtyProcess, IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
@@ -34,7 +34,7 @@ export class PtyService extends Disposable {
   protected readonly ptyServiceManager: IPtyServiceManager;
 
   protected readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
-  private _ptyProcess: IPtyProcess | undefined;
+  private _ptyProcess: IPtyProcessProxy | undefined;
 
   private readonly _onData = new Emitter<string>();
   readonly onData = this._onData.event;
@@ -237,7 +237,7 @@ export class PtyService extends Disposable {
 
     this._sendProcessId(ptyProcess.pid);
 
-    this._ptyProcess = ptyProcess as IPtyProcess;
+    this._ptyProcess = ptyProcess;
   }
   private _sendProcessId(pid: number) {
     this._onReady.fire({
@@ -260,6 +260,13 @@ export class PtyService extends Disposable {
 
   getPid() {
     return this._ptyProcess?.pid || -1;
+  }
+
+  async getCwd() {
+    if (!this._ptyProcess) {
+      return undefined;
+    }
+    return this._ptyProcess.getCwd();
   }
 
   resize(rows: number, cols: number) {
