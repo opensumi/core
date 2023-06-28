@@ -7,6 +7,8 @@ import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/mer
 import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api/index';
 import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
 import { MonacoOverrideServiceRegistryImpl } from '@opensumi/ide-monaco/lib/browser/override.service.registry';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 
 let injector: MockInjector;
 
@@ -29,6 +31,10 @@ describe('merge editor service test', () => {
       {
         token: MappingManagerService,
         useClass: MappingManagerService,
+      },
+      {
+        token: IWorkspaceService,
+        useClass: WorkspaceService,
       },
     ],
   );
