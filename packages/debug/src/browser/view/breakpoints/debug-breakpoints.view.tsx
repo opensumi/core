@@ -347,6 +347,18 @@ export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle:
     await commandService.executeCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT.id, position);
   };
 
+  const renderDescription = useMemo(() => {
+    if (description) {
+      return <span className={styles.debug_breakpoints_description}>{description}</span>;
+    }
+
+    return (
+      <span className={cls(styles.debug_breakpoints_description, styles.blank)}>{`< ${localize(
+        'debug.breakpoint.blank',
+      )} >`}</span>
+    );
+  }, [description]);
+
   return (
     <div className={cls(styles.debug_breakpoints_item)}>
       <CheckBox
@@ -357,7 +369,7 @@ export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle:
       ></CheckBox>
       <div className={styles.debug_breakpoints_wrapper} onClick={handleBreakpointClick}>
         {data.name && <span className={styles.debug_breakpoints_name}>{data.name}</span>}
-        <span className={styles.debug_breakpoints_description}>{description}</span>
+        {renderDescription}
       </div>
       {isDebugBreakpoint(data.breakpoint) ? (
         <>
