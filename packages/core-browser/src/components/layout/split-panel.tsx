@@ -79,6 +79,18 @@ export interface SplitPanelProps extends SplitChildProps {
 const getProp = (child: React.ReactNode, prop: string) =>
   child && child['props'] && (child['props'][prop] ?? child['props'][`data-sp-${prop}`]);
 
+function getElementSize(element: any, totalFlexNum: number) {
+  if (getProp(element, 'savedSize')) {
+    return getProp(element, 'savedSize') + 'px';
+  } else if (getProp(element, 'defaultSize') !== undefined) {
+    return getProp(element, 'defaultSize') + 'px';
+  } else if (getProp(element, 'flex')) {
+    return (getProp(element, 'flex') / totalFlexNum) * 100 + '%';
+  } else {
+    return (1 / totalFlexNum) * 100 + '%';
+  }
+}
+
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   id,
   className,
@@ -95,12 +107,17 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
 }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   // convert children to list
-  const childList = React.Children.toArray(children);
-  const totalFlexNum = childList.reduce(
-    (accumulator, item) => accumulator + (getProp(item, 'flex') !== undefined ? getProp(item, 'flex') : 1),
-    0,
+  const childList = React.useMemo(() => React.Children.toArray(children), [children]);
+
+  const totalFlexNum = React.useMemo(
+    () =>
+      childList.reduce(
+        (accumulator, item) => accumulator + (getProp(item, 'flex') !== undefined ? getProp(item, 'flex') : 1),
+        0,
+      ),
+    [childList],
   );
-  const elements: React.ReactNodeArray = [];
+
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();
@@ -115,178 +132,197 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   splitPanelService.panels = [];
 
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
-  const setSizeHandle = (index) => (size?: number, isLatter?: boolean) => {
-    const targetIndex = isLatter ? index - 1 : index;
-    const delegate = resizeDelegates.current[targetIndex];
-    if (delegate) {
-      delegate.setAbsoluteSize(
-        size !== undefined ? size : getProp(childList[index], 'defaultSize'),
-        isLatter,
-        resizeKeep,
-      );
-    }
-  };
-
-  const setRelativeSizeHandle = (index) => (prev: number, next: number, isLatter?: boolean) => {
-    const targetIndex = isLatter ? index - 1 : index;
-    const delegate = resizeDelegates.current[targetIndex];
-    if (delegate) {
-      delegate.setRelativeSize(prev, next);
-    }
-  };
-
-  const getSizeHandle = (index) => (isLatter?: boolean) => {
-    const targetIndex = isLatter ? index - 1 : index;
-    const delegate = resizeDelegates.current[targetIndex];
-    if (delegate) {
-      return delegate.getAbsoluteSize(isLatter);
-    }
-    return 0;
-  };
-
-  const getRelativeSizeHandle = (index) => (isLatter?: boolean) => {
-    const targetIndex = isLatter ? index - 1 : index;
-    const delegate = resizeDelegates.current[targetIndex];
-    if (delegate) {
-      return delegate.getRelativeSize();
-    }
-    return [0, 0];
-  };
-
-  const lockResizeHandle = (index) => (lock: boolean | undefined, isLatter?: boolean) => {
-    const targetIndex = isLatter ? index - 1 : index;
-    const newResizeState = resizeLockState.current.map((state, idx) =>
-      idx === targetIndex ? (lock !== undefined ? lock : !state) : state,
-    );
-    resizeLockState.current = newResizeState;
-    setLocks(newResizeState);
-  };
-
-  const setMaxSizeHandle = (index) => (lock: boolean | undefined, isLatter?: boolean) => {
-    const newMaxState = maxLockState.current.map((state, idx) =>
-      idx === index ? (lock !== undefined ? lock : !state) : state,
-    );
-    maxLockState.current = newMaxState;
-    setMaxLocks(newMaxState);
-  };
-
-  const hidePanelHandle = (index: number) => (show?: boolean) => {
-    const newHideState = hideState.current.map((state, idx) =>
-      idx === index ? (show !== undefined ? !show : !state) : state,
-    );
-    hideState.current = newHideState;
-    const location = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
-    if (location) {
-      fireResizeEvent(location);
-    }
-    setHides(newHideState);
-  };
-
-  const fireResizeEvent = (location?: string) => {
-    if (location) {
-      eventBus.fire(new ResizeEvent({ slotLocation: location }));
-    }
-  };
-
-  childList.forEach((element, index) => {
-    if (index !== 0) {
-      const targetElement = index === 1 ? childList[index - 1] : childList[index];
-      let flexMode: ResizeFlexMode | undefined;
-      if (getProp(element, 'flexGrow')) {
-        flexMode = ResizeFlexMode.Prev;
-      } else if (getProp(childList[index - 1], 'flexGrow')) {
-        flexMode = ResizeFlexMode.Next;
-      }
-      const noResize = getProp(targetElement, 'noResize') || locks[index - 1];
-      if (!noResize) {
-        elements.push(
-          <ResizeHandle
-            className={resizeHandleClassName}
-            onResize={(prev, next) => {
-              const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
-              const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
-              fireResizeEvent(prevLocation!);
-              fireResizeEvent(nextLocation!);
-            }}
-            noColor={true}
-            findNextElement={
-              dynamicTarget
-                ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)
-                : undefined
-            }
-            findPrevElement={
-              dynamicTarget
-                ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)
-                : undefined
-            }
-            key={`split-handle-${index}`}
-            delegate={(delegate) => {
-              resizeDelegates.current.push(delegate);
-            }}
-            flexMode={flexMode}
-          />,
+  const setSizeHandle = React.useCallback(
+    (index) => (size?: number, isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      const delegate = resizeDelegates.current[targetIndex];
+      if (delegate) {
+        delegate.setAbsoluteSize(
+          size !== undefined ? size : getProp(childList[index], 'defaultSize'),
+          isLatter,
+          resizeKeep,
         );
       }
-    }
+    },
+    [resizeDelegates.current],
+  );
 
-    elements.push(
-      <PanelContext.Provider
-        key={index}
-        value={{
-          setSize: setSizeHandle(index),
-          getSize: getSizeHandle(index),
-          setRelativeSize: setRelativeSizeHandle(index),
-          getRelativeSize: getRelativeSizeHandle(index),
-          lockSize: lockResizeHandle(index),
-          setMaxSize: setMaxSizeHandle(index),
-          hidePanel: hidePanelHandle(index),
-        }}
-      >
-        <div
-          data-min-resize={getProp(element, 'minResize')}
-          data-max-resize={getProp(element, 'maxResize')}
-          ref={(ele) => {
-            if (ele && splitPanelService.panels.indexOf(ele) === -1) {
-              splitPanelService.panels.push(ele);
-            }
-          }}
-          id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
-          style={{
-            // 手风琴场景，固定尺寸和 flex 尺寸混合布局；需要在 Resize Flex 模式下禁用
-            ...(getProp(element, 'flex') &&
-            !getProp(element, 'savedSize') &&
-            !childList.find((item) => getProp(item, 'flexGrow'))
-              ? { flex: getProp(element, 'flex') }
-              : { [Layout.getSizeProperty(direction)]: getElementSize(element) }),
-            // 相对尺寸带来的问题，必须限制最小最大尺寸
-            [Layout.getMinSizeProperty(direction)]: getProp(element, 'minSize')
-              ? getProp(element, 'minSize') + 'px'
-              : '-1px',
-            [Layout.getMaxSizeProperty(direction)]:
-              maxLocks[index] && getProp(element, 'maxSize') ? getProp(element, 'maxSize') + 'px' : 'unset',
-            // Resize Flex 模式下应用 flexGrow
-            ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: getProp(element, 'flexGrow') } : {}),
-            display: hides[index] ? 'none' : 'block',
-            backgroundColor: getProp(element, 'backgroundColor'),
-          }}
-        >
-          {element}
-        </div>
-      </PanelContext.Provider>,
-    );
-  });
+  const setRelativeSizeHandle = React.useCallback(
+    (index) => (prev: number, next: number, isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      const delegate = resizeDelegates.current[targetIndex];
+      if (delegate) {
+        delegate.setRelativeSize(prev, next);
+      }
+    },
+    [resizeDelegates.current],
+  );
 
-  function getElementSize(element: any) {
-    if (getProp(element, 'savedSize')) {
-      return getProp(element, 'savedSize') + 'px';
-    } else if (getProp(element, 'defaultSize') !== undefined) {
-      return getProp(element, 'defaultSize') + 'px';
-    } else if (getProp(element, 'flex')) {
-      return (getProp(element, 'flex') / totalFlexNum) * 100 + '%';
-    } else {
-      return (1 / totalFlexNum) * 100 + '%';
-    }
-  }
+  const getSizeHandle = React.useCallback(
+    (index) => (isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      const delegate = resizeDelegates.current[targetIndex];
+      if (delegate) {
+        return delegate.getAbsoluteSize(isLatter);
+      }
+      return 0;
+    },
+    [resizeDelegates.current],
+  );
+
+  const getRelativeSizeHandle = React.useCallback(
+    (index) => (isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      const delegate = resizeDelegates.current[targetIndex];
+      if (delegate) {
+        return delegate.getRelativeSize();
+      }
+      return [0, 0];
+    },
+    [resizeDelegates.current],
+  );
+
+  const lockResizeHandle = React.useCallback(
+    (index) => (lock: boolean | undefined, isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      const newResizeState = resizeLockState.current.map((state, idx) =>
+        idx === targetIndex ? (lock !== undefined ? lock : !state) : state,
+      );
+      resizeLockState.current = newResizeState;
+      setLocks(newResizeState);
+    },
+    [resizeDelegates.current],
+  );
+
+  const setMaxSizeHandle = React.useCallback(
+    (index) => (lock: boolean | undefined, isLatter?: boolean) => {
+      const newMaxState = maxLockState.current.map((state, idx) =>
+        idx === index ? (lock !== undefined ? lock : !state) : state,
+      );
+      maxLockState.current = newMaxState;
+      setMaxLocks(newMaxState);
+    },
+    [resizeDelegates.current],
+  );
+
+  const hidePanelHandle = React.useCallback(
+    (index: number) => (show?: boolean) => {
+      const newHideState = hideState.current.map((state, idx) =>
+        idx === index ? (show !== undefined ? !show : !state) : state,
+      );
+      hideState.current = newHideState;
+      const location = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
+      if (location) {
+        fireResizeEvent(location);
+      }
+      setHides(newHideState);
+    },
+    [childList, hideState.current],
+  );
+
+  const fireResizeEvent = React.useCallback(
+    (location?: string) => {
+      if (location) {
+        eventBus.fire(new ResizeEvent({ slotLocation: location }));
+      }
+    },
+    [eventBus],
+  );
+
+  const elements: React.ReactNodeArray = React.useMemo(
+    () =>
+      childList.map((element, index) => {
+        const result: JSX.Element[] = [];
+
+        if (index !== 0) {
+          const targetElement = index === 1 ? childList[index - 1] : childList[index];
+          let flexMode: ResizeFlexMode | undefined;
+          if (getProp(element, 'flexGrow')) {
+            flexMode = ResizeFlexMode.Prev;
+          } else if (getProp(childList[index - 1], 'flexGrow')) {
+            flexMode = ResizeFlexMode.Next;
+          }
+          const noResize = getProp(targetElement, 'noResize') || locks[index - 1];
+          if (!noResize) {
+            result.push(
+              <ResizeHandle
+                className={resizeHandleClassName}
+                onResize={(prev, next) => {
+                  const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
+                  const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
+                  fireResizeEvent(prevLocation!);
+                  fireResizeEvent(nextLocation!);
+                }}
+                noColor={true}
+                findNextElement={
+                  dynamicTarget
+                    ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)
+                    : undefined
+                }
+                findPrevElement={
+                  dynamicTarget
+                    ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)
+                    : undefined
+                }
+                key={`split-handle-${index}`}
+                delegate={(delegate) => {
+                  resizeDelegates.current.push(delegate);
+                }}
+                flexMode={flexMode}
+              />,
+            );
+          }
+        }
+
+        result.push(
+          <PanelContext.Provider
+            key={index}
+            value={{
+              setSize: setSizeHandle(index),
+              getSize: getSizeHandle(index),
+              setRelativeSize: setRelativeSizeHandle(index),
+              getRelativeSize: getRelativeSizeHandle(index),
+              lockSize: lockResizeHandle(index),
+              setMaxSize: setMaxSizeHandle(index),
+              hidePanel: hidePanelHandle(index),
+            }}
+          >
+            <div
+              data-min-resize={getProp(element, 'minResize')}
+              data-max-resize={getProp(element, 'maxResize')}
+              ref={(ele) => {
+                if (ele && splitPanelService.panels.indexOf(ele) === -1) {
+                  splitPanelService.panels.push(ele);
+                }
+              }}
+              id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
+              style={{
+                // 手风琴场景，固定尺寸和 flex 尺寸混合布局；需要在 Resize Flex 模式下禁用
+                ...(getProp(element, 'flex') &&
+                !getProp(element, 'savedSize') &&
+                !childList.find((item) => getProp(item, 'flexGrow'))
+                  ? { flex: getProp(element, 'flex') }
+                  : { [Layout.getSizeProperty(direction)]: getElementSize(element, totalFlexNum) }),
+                // 相对尺寸带来的问题，必须限制最小最大尺寸
+                [Layout.getMinSizeProperty(direction)]: getProp(element, 'minSize')
+                  ? getProp(element, 'minSize') + 'px'
+                  : '-1px',
+                [Layout.getMaxSizeProperty(direction)]:
+                  maxLocks[index] && getProp(element, 'maxSize') ? getProp(element, 'maxSize') + 'px' : 'unset',
+                // Resize Flex 模式下应用 flexGrow
+                ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: getProp(element, 'flexGrow') } : {}),
+                display: hides[index] ? 'none' : 'block',
+                backgroundColor: getProp(element, 'backgroundColor'),
+              }}
+            >
+              {element}
+            </div>
+          </PanelContext.Provider>,
+        );
+        return result;
+      }),
+    [children, childList, resizeHandleClassName, dynamicTarget, resizeDelegates.current, hides],
+  );
 
   React.useEffect(() => {
     if (rootRef.current) {
@@ -311,7 +347,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       className={clsx(styles['split-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
     >
-      {elements}
+      {elements.filter(Boolean)}
     </div>
   );
 };
