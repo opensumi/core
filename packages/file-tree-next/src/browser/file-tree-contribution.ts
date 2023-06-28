@@ -937,7 +937,9 @@ export class FileTreeContribution
     }
 
     commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
-      execute: (uri?: URI) => {
+      execute: (uriOrResource?: URI | { uri?: URI }) => {
+        let uri = uriOrResource instanceof URI ? uriOrResource : uriOrResource?.uri;
+
         const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (handler && !handler.isVisible) {
           handler.activate();

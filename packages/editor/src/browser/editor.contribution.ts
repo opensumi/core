@@ -1173,6 +1173,15 @@ export class EditorContribution
     });
 
     menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: {
+        id: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+        label: localize('file.revealInExplorer'),
+      },
+      group: '6_file',
+      order: 3,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
       command: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
       group: '9_split',
     });
