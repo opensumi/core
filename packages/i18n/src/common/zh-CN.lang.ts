@@ -1154,6 +1154,7 @@ export const localizationBundle = {
     'mergeEditor.action.button.apply': '应用更改',
     'mergeEditor.action.button.accept.left': '接受左边',
     'mergeEditor.action.button.accept.right': '接受右边',
+    'mergeEditor.open.in.editor': '在合并编辑器中解决',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',

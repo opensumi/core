@@ -2,7 +2,7 @@ import { action, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event, Uri, ISplice, ILogger } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, Uri, ISplice, ILogger, CommandService } from '@opensumi/ide-core-common';
 import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@opensumi/ide-core-common';
 
 import { ISCMMenus, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../common';
@@ -196,6 +196,9 @@ export class ViewModelContext extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -261,6 +264,18 @@ export class ViewModelContext extends Disposable {
     const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
     disposables.add(
       repoOnDidSplice(({ index, deleteCount, elements }) => {
+        // https://github.com/microsoft/vscode/blob/5ea57c3b481522195786cf1b669cd6ad8bda3381/extensions/git/src/repository.ts#L808
+        if (elements.some((e: ISCMResourceGroup) => e.id === 'merge')) {
+          const mergeChanges: Uri[] = [];
+          elements.forEach((repository: ISCMResourceGroup) => {
+            if (Array.isArray(repository.elements)) {
+              repository.elements.forEach((state) => {
+                mergeChanges.push(state.sourceUri);
+              });
+            }
+          });
+          this.commandService.executeCommand('setContext', 'git.mergeChanges', mergeChanges);
+        }
         if (repository.provider.rootUri) {
           // 只处理存在工作区路径的 SCMList
           this.spliceSCMList(repository.provider.rootUri, index, deleteCount, ...elements);

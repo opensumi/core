@@ -1007,3 +1007,14 @@ export namespace QUICK_OPEN_COMMANDS {
     id: 'editor.action.quickView',
   };
 }
+
+export namespace SCM_COMMANDS {
+  // git extension 1.71 版本之前存在下划线，这里为了做兼容处理: https://github.com/microsoft/vscode/blob/1.68.1/extensions/git/src/repository.ts#L613
+  export const _GIT_OPEN_MERGE_EDITOR: Command = {
+    id: '_git.openMergeEditor',
+  };
+  // git extension 1.71 版本之后就去掉了前面的下划线: https://github.com/microsoft/vscode/commit/c0ade8bc816386b7194d69fed878d4b9bb796d6c#diff-da56ff967ab1a9606c01af61dc926332afb862f13c8e5c74a575bc2aa1b15e43R411
+  export const GIT_OPEN_MERGE_EDITOR: Command = {
+    id: 'git.openMergeEditor',
+  };
+}
