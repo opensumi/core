@@ -18,6 +18,7 @@ import type {
   ICodeEditor as IMonacoCodeEditor,
   IDiffEditor as IMonacoDiffEditor,
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
@@ -146,7 +147,13 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
     const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
-    const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
+    const mergedOptions: IDiffEditorConstructionOptions = {
+      ...preferenceOptions.editorOptions,
+      ...preferenceOptions.diffOptions,
+      ...options,
+      // merge editor not support wordWrap
+      wordWrap: 'off',
+    };
     const editor = this.monacoService.createMergeEditor(dom, mergedOptions, overrides);
     return editor;
   }
