@@ -1166,6 +1166,7 @@ export const localizationBundle = {
     'doc.saveError.failed': 'File Saving Failed. Reason: ',
     'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
     'doc.saveError.diffAndSave': 'Compare...',
+    'doc.saveError.overwrite': 'Overwrite',
     'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
 
     'workspace.openDirectory': 'Open Directory',

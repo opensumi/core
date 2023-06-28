@@ -794,6 +794,7 @@ export const localizationBundle = {
     'doc.saveError.failed': '文件保存失败， 原因:',
     'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
     'doc.saveError.diffAndSave': '进行比较',
+    'doc.saveError.overwrite': '覆盖',
     'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
 
     'outline.title': '大纲',
