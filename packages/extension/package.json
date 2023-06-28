@@ -37,7 +37,7 @@
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "picomatch": "^2.2.1",
-    "semver": "^6.3.0",
+    "semver": "^7.5.2",
     "tree-kill": "^1.2.2",
     "v8-inspect-profiler": "^0.0.20"
   },

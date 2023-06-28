@@ -2622,7 +2622,7 @@ __metadata:
     offline-iconfont: ^1.2.0
     prettier: ^2.5.1
     rimraf: ^3.0.2
-    semver: ^6.3.0
+    semver: ^7.5.2
     simple-git: ^3.3.0
     temp: ^0.9.4
     ts-jest: ^29.0.3
@@ -3038,7 +3038,7 @@ __metadata:
     glob-to-regexp: 0.4.1
     is-running: ^2.1.0
     picomatch: ^2.2.1
-    semver: ^6.3.0
+    semver: ^7.5.2
     tree-kill: ^1.2.2
     v8-inspect-profiler: ^0.0.20
   languageName: unknown
@@ -19694,6 +19694,17 @@ __metadata:
   bin:
     semver: ./bin/semver.js
   checksum: 1b26ecf6db9e8292dd90df4e781d91875c0dcc1b1909e70f5d12959a23c7eebb8f01ea581c00783bbee72ceeaad9505797c381756326073850dc36ed284b21b9
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.5.2":
+  version: 7.5.3
+  resolution: "semver@npm:7.5.3"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: 9d58db16525e9f749ad0a696a1f27deabaa51f66e91d2fa2b0db3de3e9644e8677de3b7d7a03f4c15bc81521e0c3916d7369e0572dbde250d9bedf5194e2a8a7
   languageName: node
   linkType: hard
 
