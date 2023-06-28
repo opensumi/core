@@ -446,7 +446,7 @@ export class OpenedEditorModelService {
     if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
       groupIndex = (node.parent as EditorFileGroup).group.index;
     }
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, preserveFocus: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, preserveFocus: true, disableNavigateOnOpendEditor: true });
   };
 
   public closeFile = (node: EditorFile) => {
