@@ -26,11 +26,13 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
       const rootUri = new URI(workspaceService.workspace.uri);
       const rootRelative = rootUri.relative(uri);
       if (rootRelative) {
-        return URI.file(rootRelative.toString());
+        return rootRelative.toString();
       }
+
+      return uri.toString();
     }
 
-    return uri;
+    return uri.toString();
   }, []);
 
   React.useEffect(() => {
@@ -46,9 +48,7 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
       } else if (contrastType === EditorViewType.INCOMING) {
         setHead(input2.getRaw());
       } else if (contrastType === EditorViewType.RESULT) {
-        setHead(
-          new MergeEditorInputData(output.uri, 'Result', toRelativePath(output.uri).path.toString(), '').getRaw(),
-        );
+        setHead(new MergeEditorInputData(output.uri, 'Result', toRelativePath(output.uri), '').getRaw());
       }
     });
 
