@@ -1,5 +1,6 @@
 import { BasicEvent, IDisposable, SlotLocation } from '@opensumi/ide-core-browser';
 import { ViewContainerOptions, View, SideStateManager } from '@opensumi/ide-core-browser/lib/layout';
+import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Deferred, Event } from '@opensumi/ide-core-common';
 import { IContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -41,6 +42,12 @@ export interface IMainLayoutService {
    * @param side 注册的位置，支持left、right、bottom
    */
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
+
+  /**
+   * 获指定 containerId 的注册实例
+   * @param containerId container id
+   */
+  getConatiner(containerId: string): ComponentRegistryInfo | undefined;
   /**
    * 向侧边栏container内附加新的子视图
    * @param view 子视图信息

@@ -34,7 +34,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
-import { ViewCollapseChangedEvent } from '../../common';
+import { IMainLayoutService, ViewCollapseChangedEvent } from '../../common';
 
 export interface SectionState {
   collapsed: boolean;
@@ -73,6 +73,9 @@ export class AccordionService extends WithEventBus {
 
   @Autowired()
   private viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  @Autowired(IMainLayoutService)
+  private readonly mainlayoutService: IMainLayoutService;
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
@@ -518,33 +521,37 @@ export class AccordionService extends WithEventBus {
   protected doToggleOpen(viewId: string, collapsed: boolean, index: number, noAnimation?: boolean) {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;
-    let sizeIncrement: number;
-    if (collapsed) {
-      sizeIncrement = this.setSize(index, 0, false, noAnimation);
-    } else {
-      // 仅有一个视图展开时独占
-      sizeIncrement = this.setSize(
-        index,
-        this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize,
-        false,
-        noAnimation,
-      );
-    }
-    // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
-    // 从视图下方最后一个展开的视图起依次减去对应的高度
-    for (let i = this.visibleViews.length - 1; i > index; i--) {
-      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
-        sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+
+    const container = this.mainlayoutService.getConatiner(this.containerId)!;
+    if (container?.options?.alignment === 'vertical') {
+      let sizeIncrement: number;
+      if (collapsed) {
+        sizeIncrement = this.setSize(index, 0, false, noAnimation);
       } else {
-        this.setSize(i, 0, false, noAnimation);
+        // 仅有一个视图展开时独占
+        sizeIncrement = this.setSize(
+          index,
+          this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize,
+          false,
+          noAnimation,
+        );
       }
-    }
-    // 找到视图上方首个展开的视图减去对应的高度
-    for (let i = index - 1; i >= 0; i--) {
-      if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
-        sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
-      } else {
-        this.setSize(i, 0, false, noAnimation);
+      // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
+      // 从视图下方最后一个展开的视图起依次减去对应的高度
+      for (let i = this.visibleViews.length - 1; i > index; i--) {
+        if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
+          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+        } else {
+          this.setSize(i, 0, false, noAnimation);
+        }
+      }
+      // 找到视图上方首个展开的视图减去对应的高度
+      for (let i = index - 1; i >= 0; i--) {
+        if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
+          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+        } else {
+          this.setSize(i, 0, false, noAnimation);
+        }
       }
     }
 

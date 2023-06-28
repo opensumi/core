@@ -2,6 +2,7 @@ import type React from 'react';
 
 import { MaybeNull, BasicEvent } from '@opensumi/ide-core-common';
 
+import { Layout } from '../components/layout/index';
 import type { IMenu, IContextMenu } from '../menu/next';
 import type { SlotLocation } from '../react-providers';
 
@@ -75,6 +76,7 @@ export interface ExtViewContainerOptions {
   fromExtension?: boolean;
   // viewContainer 最小高度，默认 120
   miniSize?: number;
+  alignment?: Layout.alignment;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 

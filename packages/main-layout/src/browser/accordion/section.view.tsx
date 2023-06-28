@@ -68,6 +68,7 @@ export const AccordionSection = ({
   titleMenuContext,
   accordionService,
   onContextMenuHandler,
+  alignment,
 }: CollapsePanelProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
@@ -134,6 +135,17 @@ export const AccordionSection = ({
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(viewId);
   const Component: any = children;
+  const computedHeaderSize = React.useMemo(() => {
+    if (expanded) {
+      return `${headerSize}px`;
+    }
+
+    if (alignment === 'horizontal') {
+      return '100%';
+    }
+    return `${headerSize}px`;
+  }, [expanded, headerSize, alignment]);
+
   return (
     <div className={styles.kt_split_panel} data-view-id={viewId}>
       {!noHeader && (
@@ -144,7 +156,7 @@ export const AccordionSection = ({
           className={cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
-          style={{ height: headerSize + 'px', lineHeight: headerSize + 'px' }}
+          style={{ height: computedHeaderSize, lineHeight: headerSize + 'px' }}
         >
           <div className={styles.label_wrap}>
             <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
