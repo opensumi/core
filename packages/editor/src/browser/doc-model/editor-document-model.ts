@@ -394,11 +394,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       }
       return false;
     } else if (res.state === SaveTaskResponseState.DIFF) {
+      const diffAndSave = localize('doc.saveError.diffAndSave');
+      const overwrite = localize('doc.saveError.overwrite');
       this.messageService
-        .error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')])
+        .error(formatLocalize('doc.saveError.diff', this.uri.toString()), [diffAndSave, overwrite])
         .then((res) => {
-          if (res) {
+          if (res === diffAndSave) {
             this.compareAndSave();
+          } else if (res === overwrite) {
+            this.save(true);
           }
         });
       this.logger.error('The file cannot be saved, the version is inconsistent with the disk');
