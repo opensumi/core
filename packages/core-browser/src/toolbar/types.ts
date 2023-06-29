@@ -168,7 +168,7 @@ export interface IToolbarAction {
   strictPosition?: IToolbarActionPosition;
 
   /**
-   *  是否永远不被收起
+   * 是否永远不被收起
    */
   neverCollapse?: boolean;
   when?: string;
