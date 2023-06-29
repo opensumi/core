@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { URI, ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
+import { TreeModel, IOptionalMetaData, TreeNodeEvent } from '@opensumi/ide-components';
+import { URI, ThrottledDelayer } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import { Directory } from '../common/file-tree-node.define';

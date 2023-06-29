@@ -28,7 +28,6 @@ import { DidChangeActiveDebugSession } from '../../debug-session-manager';
 import { AnsiConsoleNode } from '../../tree';
 import {
   ExpressionContainer,
-  ExpressionNode,
   DebugConsoleNode,
   DebugConsoleRoot,
 } from '../../tree/debug-tree-node.define';

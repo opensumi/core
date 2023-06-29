@@ -1,7 +1,6 @@
 import { observable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';

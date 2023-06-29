@@ -5,7 +5,7 @@ import { Text as YText } from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { EventBusImpl, IEventBus, ILogger, URI, Disposable } from '@opensumi/ide-core-common';
+import { EventBusImpl, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';

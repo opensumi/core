@@ -24,11 +24,9 @@ import {
   CommentsContribution,
   ICommentsFeatureRegistry,
   CollapseId,
-  CommentPanelCollapse,
   CloseThreadId,
   ICommentThreadTitle,
   SwitchCommandReaction,
-  ICommentsThread,
   CommentReactionPayload,
   CommentReactionClick,
 } from '../common';

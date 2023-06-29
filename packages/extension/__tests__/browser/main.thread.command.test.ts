@@ -1,4 +1,3 @@
-import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MonacoCommandService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';

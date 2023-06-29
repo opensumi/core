@@ -1,8 +1,7 @@
-import path from 'path';
 
 import { Injector, Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Disposable, Uri, URI } from '@opensumi/ide-core-common';
+import { Disposable, URI } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';

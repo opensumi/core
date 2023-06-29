@@ -21,7 +21,6 @@ import {
   IContextKeyService,
   KeyCode,
   KeySequence,
-  FILE_COMMANDS,
   EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import {

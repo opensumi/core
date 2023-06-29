@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, URI, Uri } from '@opensumi/ide-core-common';
+import { Emitter, Event, Uri } from '@opensumi/ide-core-common';
 
 import {
   IExtHostEditorTabs,

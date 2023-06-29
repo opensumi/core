@@ -1,12 +1,11 @@
 import {
   ArrayFieldTemplateItemType,
-  FieldTemplateProps,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
 } from '@rjsf/utils';
 import cls from 'classnames';
-import React, { Fragment, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import styles from './json-templates.module.less';
 

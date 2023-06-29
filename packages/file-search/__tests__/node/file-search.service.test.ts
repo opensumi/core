@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { CancellationTokenSource } from '@opensumi/ide-core-common';
-import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
+import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ProcessModule } from '@opensumi/ide-process/lib/node';
 

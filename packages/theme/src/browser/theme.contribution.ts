@@ -14,7 +14,6 @@ import {
   Mode,
   ClientAppContribution,
   GeneralSettingsId,
-  ContributionProvider,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
@@ -27,7 +26,6 @@ import {
   DEFAULT_THEME_ID,
   IconThemeInfo,
   ThemeInfo,
-  ThemeContributionProvider,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 

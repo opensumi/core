@@ -30,7 +30,7 @@ import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/
 
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugWatch } from '../../model';
-import { ExpressionContainer, ExpressionNode, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
+import { ExpressionContainer, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 
 import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';

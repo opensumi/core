@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel, TreeNodeType } from '@opensumi/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
 import {
   DisposableCollection,
   Emitter,
@@ -14,7 +14,7 @@ import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IContentSearchClientService, ISearchTreeService, IUIState } from '../../common/content-search';
+import { IContentSearchClientService, ISearchTreeService } from '../../common/content-search';
 import { SearchPreferences } from '../search-preferences';
 
 import {

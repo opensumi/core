@@ -9,7 +9,6 @@ import {
   IEventBus,
   EventBusImpl,
   asExtensionCandidate,
-  isUndefined,
 } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';

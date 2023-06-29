@@ -5,7 +5,6 @@ import { transparent, registerColor } from '../utils';
 
 import { contrastBorder } from './base';
 import { editorBackground, editorForeground, EDITOR_DRAG_AND_DROP_BACKGROUND } from './editor';
-import { textLinkActiveForeground } from './text';
 
 // < --- Panels --- >
 export const PANEL_BACKGROUND = registerColor(

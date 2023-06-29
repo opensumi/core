@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, URI, Emitter } from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
+import { Disposable, Emitter } from '@opensumi/ide-core-common';
 
 import { ITestingPeekMessageService } from '../../common';
 

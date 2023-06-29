@@ -3,7 +3,6 @@ import {
   AbstractContextMenuService,
   ICtxMenuRenderer,
   MenuId,
-  IContextMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI } from '@opensumi/ide-core-common';
 

@@ -4,7 +4,7 @@ import path from 'path';
 import * as fse from 'fs-extra';
 
 import { isWindows } from '@opensumi/ide-core-common';
-import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
+import { URI, FileUri } from '@opensumi/ide-core-node';
 import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 

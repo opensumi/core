@@ -26,7 +26,7 @@ import {
   Schemes,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeEvent, EXT_LIST_IMAGE, TextDocumentContentChangeEvent } from '../common';
+import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
 import {
   FileSystemError,
   FileStat,

@@ -16,12 +16,9 @@ import {
   IDisposable,
   positionToRange,
   Deferred,
-  path,
   LRUCache,
-  MaybePromise,
   LabelService,
   formatLocalize,
-  getExternalIcon,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
 import {

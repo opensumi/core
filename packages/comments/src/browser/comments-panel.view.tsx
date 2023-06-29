@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import React, { FC, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components';

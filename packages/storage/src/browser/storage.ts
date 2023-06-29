@@ -8,7 +8,6 @@ import {
   Event,
   DisposableCollection,
   Deferred,
-  isEmptyObject,
   URI,
 } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

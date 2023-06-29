@@ -19,7 +19,7 @@ import {
   Disposable,
 } from '@opensumi/ide-core-common';
 
-import { CodeTerminalSettingId, IPreferenceValue } from '../common/preference';
+import { CodeTerminalSettingId } from '../common/preference';
 
 import { Color, RGBA } from './terminal.typeAhead.ext';
 import { XtermAttributes, IXtermCore } from './xterm-private';

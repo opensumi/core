@@ -35,7 +35,6 @@ import {
 } from '@opensumi/ide-terminal-next';
 import {
   createTerminalClientFactory2,
-  TerminalClientFactory,
 } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
