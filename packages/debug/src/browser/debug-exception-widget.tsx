@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
@@ -63,14 +63,13 @@ export class DebugExceptionWidget extends ZoneWidget {
     container.style.lineHeight = `${fontInfo.lineHeight}px`;
     container.tabIndex = 0;
 
-    ReactDOM.render(
+    ReactDOM.createRoot(container).render(
       <ConfigProvider value={this.configContext}>
         <ExceptionInfoContainer
           info={this.exceptionInfo}
           layout={() => this.layout(undefined)}
         ></ExceptionInfoContainer>
       </ConfigProvider>,
-      container,
     );
   }
 
