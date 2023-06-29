@@ -147,6 +147,7 @@ module.exports = {
     'no-prototype-builtins': 'warn',
     'prefer-rest-params': 'warn',
     'no-control-regex': 'warn',
+    '@typescript-eslint/no-non-null-assertion': 'off',
     // 让 import 中的内部包和外部包分组，看起来更美观
     'import/order': [
       'error',

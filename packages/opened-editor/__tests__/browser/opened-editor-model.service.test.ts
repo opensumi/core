@@ -1,4 +1,4 @@
-import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@opensumi/ide-core-browser';
+import { URI, Disposable, IContextKeyService, StorageProvider } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IDecorationsService } from '@opensumi/ide-decoration';
