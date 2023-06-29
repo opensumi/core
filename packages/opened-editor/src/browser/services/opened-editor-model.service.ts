@@ -293,7 +293,7 @@ export class OpenedEditorModelService {
     if (this._selectedFiles.length) {
       this._selectedFiles.forEach((oldFile) => {
         const currentFileNode = this.treeModel?.root.getTreeNodeByPath(oldFile.path);
-        this.selectedDecoration.removeTarget(currentFileNode!);
+        this.selectedDecoration.removeTarget(currentFileNode || oldFile);
       });
     }
   }
@@ -301,7 +301,7 @@ export class OpenedEditorModelService {
   removeFocusedDecoration() {
     if (this._focusedFile) {
       const currentFileNode = this.treeModel?.root.getTreeNodeByPath(this._focusedFile.path);
-      this.focusedDecoration.removeTarget(currentFileNode!);
+      this.focusedDecoration.removeTarget(currentFileNode || this._focusedFile);
       this._focusedFile = undefined;
     }
   }
