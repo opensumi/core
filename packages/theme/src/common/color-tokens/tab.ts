@@ -4,7 +4,7 @@ import { Color } from '../../common/color';
 import { transparent, registerColor } from '../utils';
 
 import { contrastBorder } from './base';
-import { hcActiveBorderColor, hcBorderColor } from './basic-color';
+import { hcActiveBorderColor } from './basic-color';
 import { editorBackground } from './editor';
 import { treeIndentGuidesStroke } from './list-tree';
 

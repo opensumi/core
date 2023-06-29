@@ -5,7 +5,7 @@ module.exports = {
     node: true,
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'eslint-plugin-import'],
+  plugins: ['@typescript-eslint', 'eslint-plugin-import', 'unused-imports'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -148,6 +148,7 @@ module.exports = {
     'prefer-rest-params': 'warn',
     'no-control-regex': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    'unused-imports/no-unused-imports': 'warn',
     // 让 import 中的内部包和外部包分组，看起来更美观
     'import/order': [
       'error',

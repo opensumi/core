@@ -1,9 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { Color } from '../color';
 import { registerColor } from '../utils';
 
-import { contrastBorder, foreground } from './base';
 import { selectBackground, selectBorder, selectForeground } from './dropdown';
 
 export const checkboxBorder = registerColor(

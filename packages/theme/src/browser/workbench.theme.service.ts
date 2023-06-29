@@ -30,7 +30,6 @@ import {
   editorSelectionBackground,
   getColorRegistry,
   ktInputSelectionBackground,
-  menuDisableForeground,
   selectionBackground,
 } from '../common/color-registry';
 import { ThemeChangedEvent } from '../common/event';

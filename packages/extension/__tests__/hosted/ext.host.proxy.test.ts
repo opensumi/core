@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { INodeLogger, Event, getDebugLogger, Disposable } from '@opensumi/ide-core-node';
+import { INodeLogger, Event, getDebugLogger } from '@opensumi/ide-core-node';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';

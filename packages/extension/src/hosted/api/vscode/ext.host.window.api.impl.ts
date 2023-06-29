@@ -2,7 +2,6 @@ import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MessageType, IDisposable, CancellationToken, Emitter, IExtensionInfo } from '@opensumi/ide-core-common';
-import { QuickInputOptions } from '@opensumi/ide-quick-open';
 
 import {
   IExtHostMessage,

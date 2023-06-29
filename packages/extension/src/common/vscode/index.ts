@@ -37,7 +37,7 @@ import { IExtHostSecret, IMainThreadSecret } from './secret';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { IExtHostTasks, IMainThreadTasks } from './tasks';
 import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
-import { IExtHostTests, IMainThreadTesting } from './tests';
+import { IExtHostTests } from './tests';
 import { IExtHostTheming, IMainThreadTheming } from './theming';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadUrls, IExtHostUrls } from './urls';

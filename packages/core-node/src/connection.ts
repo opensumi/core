@@ -1,7 +1,6 @@
 import http from 'http';
 import net from 'net';
 
-import ws from 'ws';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';

@@ -1,9 +1,8 @@
-import { Injector, Injectable } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import {
   Emitter,
-  ILoggerManagerClient,
   LogServiceForClientPath,
   LogLevel,
   getLanguageId,

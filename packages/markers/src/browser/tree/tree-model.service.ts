@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
-import { DisposableCollection, Deferred, Emitter, Event, IOpenerService, URI } from '@opensumi/ide-core-browser';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
+import { DisposableCollection, Deferred, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { IMarkerService } from '../../common/types';

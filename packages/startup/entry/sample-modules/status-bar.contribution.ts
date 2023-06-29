@@ -13,7 +13,7 @@ import {
   OnEvent,
   WithEventBus,
 } from '@opensumi/ide-core-common';
-import { IconType, IIconService } from '@opensumi/ide-theme';
+import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 @Injectable()

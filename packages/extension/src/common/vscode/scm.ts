@@ -1,4 +1,4 @@
-import type { IDisposable, UriComponents, IThemeColor } from '@opensumi/ide-core-common';
+import type { IDisposable, UriComponents } from '@opensumi/ide-core-common';
 import { CancellationToken } from '@opensumi/vscode-jsonrpc/lib/common/cancellation';
 
 import { VSCommand } from './model.api';

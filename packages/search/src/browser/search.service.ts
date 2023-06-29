@@ -1,11 +1,9 @@
 import debounce from 'lodash/debounce';
-import { createRef } from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import { Schemes, CommandService, COMMON_COMMANDS, RecentStorage, PreferenceService } from '@opensumi/ide-core-browser';
 import {
-  isUndefined,
   strings,
   parseGlob,
   ParsedPattern,

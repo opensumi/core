@@ -5,7 +5,7 @@
 
 // Modified from https://github.com/microsoft/vscode/blob/f86ceb6749721ca068f0407914521ad11ca704a8/src/vs/base/common/dataTransfer.ts
 
-import { Mimes, parse, Uri as URI, uuid } from '@opensumi/ide-core-common';
+import { Mimes, Uri as URI, uuid } from '@opensumi/ide-core-common';
 
 export const CodeDataTransfers = {
   EDITORS: 'CodeEditors',

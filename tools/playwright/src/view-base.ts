@@ -1,4 +1,4 @@
-import { ElementHandle, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 import { OpenSumiApp } from './app';
 

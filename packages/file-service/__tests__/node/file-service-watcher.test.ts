@@ -1,11 +1,10 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { URI, isMacintosh } from '@opensumi/ide-core-common';
+import { isMacintosh } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/file-service-watcher';
 

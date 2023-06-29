@@ -15,7 +15,6 @@ import {
   WithEventBus,
   LRUMap,
   path,
-  Schemes,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileStat } from '@opensumi/ide-file-service/lib/common';

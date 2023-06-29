@@ -2,7 +2,6 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   OperatingSystem,
   URI,
-  MaybePromise,
   WithEventBus,
   localize,
   formatLocalize,

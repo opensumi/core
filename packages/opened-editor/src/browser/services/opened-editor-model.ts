@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
-import { ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
+import { ThrottledDelayer } from '@opensumi/ide-core-browser';
 
 import { EditorFileGroup } from '../opened-editor-node.define';
 

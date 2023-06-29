@@ -1,8 +1,6 @@
 import {
   ariaDescribedByIds,
-  descriptionId,
   getTemplate,
-  labelValue,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,

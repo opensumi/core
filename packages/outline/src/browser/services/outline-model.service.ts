@@ -16,7 +16,6 @@ import {
   path,
   pSeries,
   LRUMap,
-  DisposableMap,
   ILogger,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';

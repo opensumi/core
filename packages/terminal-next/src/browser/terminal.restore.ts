@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { ScopedBrowserStorageService, AppConfig, Disposable } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired } from '@opensumi/di';
+import { ScopedBrowserStorageService, Disposable } from '@opensumi/ide-core-browser';
 
 import { ITerminalRestore, ITerminalController, ITerminalInternalService, ITerminalBrowserHistory } from '../common';
 

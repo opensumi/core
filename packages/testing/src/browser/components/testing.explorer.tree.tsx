@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
 
-import { BasicRecycleTree, IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components/lib/recycle-tree';
+import { BasicRecycleTree, IRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
 

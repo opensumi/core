@@ -3,7 +3,6 @@ import {
   Emitter,
   Disposable,
   CancellationTokenSource,
-  CancellationToken,
   uuid,
   BinaryBuffer,
 } from '@opensumi/ide-core-common';

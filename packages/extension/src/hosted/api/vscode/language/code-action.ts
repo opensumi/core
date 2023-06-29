@@ -11,7 +11,6 @@ import { Selection, Range, ChainedCacheId, IWorkspaceEditDto } from '../../../..
 import { CommandsConverter } from '../ext.host.command';
 
 import { Diagnostics } from './diagnostics';
-import { createToken } from './util';
 
 export class CodeActionAdapter {
   private static readonly _maxCodeActionsPerFile: number = 1000;

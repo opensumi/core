@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { Emitter, ILoggerManagerClient, Uri, uuid } from '@opensumi/ide-core-common';
+import { Emitter, Uri, uuid } from '@opensumi/ide-core-common';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { UIKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';

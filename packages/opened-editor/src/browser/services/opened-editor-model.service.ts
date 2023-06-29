@@ -5,7 +5,6 @@ import {
   IRecycleTreeHandle,
   TreeNodeType,
   WatchEvent,
-  TreeNode,
 } from '@opensumi/ide-components';
 import {
   URI,

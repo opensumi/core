@@ -109,6 +109,7 @@
     "eslint-config-prettier": "^8.4.0",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "git-rev-sync": "^3.0.1",
     "got": "^12.1.0",
     "handlebars": "^4.7.3",

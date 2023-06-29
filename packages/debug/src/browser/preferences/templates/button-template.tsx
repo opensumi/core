@@ -1,7 +1,7 @@
 import { IconButtonProps, SubmitButtonProps } from '@rjsf/utils';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
-import { Button, ButtonProps, getIcon } from '@opensumi/ide-components';
+import { Button, getIcon } from '@opensumi/ide-components';
 import { defaultIconfont } from '@opensumi/ide-components/lib/icon/iconfont/iconMap';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';

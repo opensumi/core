@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-import { Event, IDisposable, URI } from '@opensumi/ide-core-common';
+import { Event, IDisposable } from '@opensumi/ide-core-common';
 
 export interface IEditorTabDto {
   group: number;

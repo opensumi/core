@@ -1,5 +1,5 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { Disposable, ILineChange } from '@opensumi/ide-core-browser';
+import { Disposable } from '@opensumi/ide-core-browser';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { themeColorFromId } from '@opensumi/ide-theme';
