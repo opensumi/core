@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
@@ -145,11 +145,10 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   onHide(): void {}
 
   layout(dimension?: IDimension): void {
-    ReactDOM.render(
+    ReactDOM.createRoot(this.rootHtmlElement).render(
       <ConfigProvider value={this.configContext}>
         <Grid></Grid>
       </ConfigProvider>,
-      this.rootHtmlElement,
     );
   }
 
