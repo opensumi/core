@@ -19,6 +19,7 @@ import {
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import {
   IMenuRegistry,
   AbstractContextMenuService,
@@ -299,6 +300,15 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     return handler;
+  }
+
+  getConatiner(containerId: string): ComponentRegistryInfo | undefined {
+    for (const service of this.tabbarServices.values()) {
+      const container = service.getContainer(containerId);
+      if (container) {
+        return container;
+      }
+    }
   }
 
   getExtraTopMenu(): IContextMenu {

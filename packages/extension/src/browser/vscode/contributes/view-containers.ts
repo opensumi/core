@@ -6,9 +6,11 @@ import { IconType, IIconService } from '@opensumi/ide-theme';
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
-export interface ViewContainersContribution {
-  [key: string]: ViewContainerItem;
-}
+type LocationKey = 'panel' | 'activitybar';
+
+export type ViewContainersContribution = {
+  [key in LocationKey]: ViewContainerItem;
+};
 
 export interface ViewContainerItem {
   id: string;
@@ -33,6 +35,13 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
+  private convertLocationToSide(location: 'activitybar' | 'panel'): 'left' | 'bottom' {
+    if (location === 'activitybar') {
+      return 'left';
+    }
+    return 'bottom';
+  }
+
   contribute() {
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
@@ -41,29 +50,29 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         continue;
       }
       for (const location of Object.keys(contributes)) {
-        if (location === 'activitybar') {
-          for (const container of contributes[location]) {
-            const handlerId = this.mainlayoutService.collectTabbarComponent(
-              [],
-              {
-                iconClass: this.toIconClass(container.icon, IconType.Mask, extension.path),
-                title: this.getLocalizeFromNlsJSON(container.title, extensionId),
-                containerId: container.id,
-                // 插件注册的视图默认在最后
-                priority: 0,
-                fromExtension: true,
-                // 插件注册的视图容器无view时默认都隐藏tab
-                hideIfEmpty: true,
-              },
-              'left',
-            );
-            this.disposableCollection.push({
-              dispose: () => {
-                const handler = this.mainlayoutService.getTabbarHandler(handlerId);
-                handler?.dispose();
-              },
-            });
-          }
+        const side = this.convertLocationToSide(location as LocationKey);
+        for (const container of contributes[location]) {
+          const handlerId = this.mainlayoutService.collectTabbarComponent(
+            [],
+            {
+              iconClass: this.toIconClass(container.icon, IconType.Mask, extension.path),
+              title: this.getLocalizeFromNlsJSON(container.title, extensionId),
+              containerId: container.id,
+              // 插件注册的视图默认在最后
+              priority: 0,
+              fromExtension: true,
+              // 插件注册的视图容器无view时默认都隐藏tab
+              hideIfEmpty: true,
+              alignment: side === 'left' ? 'vertical' : 'horizontal',
+            },
+            side,
+          );
+          this.disposableCollection.push({
+            dispose: () => {
+              const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+              handler?.dispose();
+            },
+          });
         }
       }
     }

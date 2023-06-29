@@ -193,6 +193,7 @@ const BottomPanelView: React.FC<{
         ) : (
           <AccordionContainer
             views={component.views}
+            alignment='horizontal'
             minSize={component.options!.miniSize}
             containerId={component.options!.containerId}
           />
