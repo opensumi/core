@@ -1373,6 +1373,7 @@ export const localizationBundle = {
     // #endregion walkthrough
 
     // #region merge editor
+    'mergeEditor.reset': 'Reset',
     'mergeEditor.workbench.tab.name': 'Merging: {0}',
     'mergeEditor.conflict.action.apply.confirm.title':
       'The file has unresolved conflicts or changes, whether to apply and save the changes?',

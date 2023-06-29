@@ -358,6 +358,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const MERGEEDITOR_RESET: Command = {
+    id: 'editor.mergeEditor.reset',
+    category: CATEGORY,
+    label: '%mergeEditor.reset%',
+  };
+
   export const CLOSE: Command = {
     id: 'editor.close',
     category: CATEGORY,

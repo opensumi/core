@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { URI, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IMergeEditorInputData,
   IOpenMergeEditorArgs,
@@ -16,6 +18,8 @@ import styles from './merge-editor.module.less';
 import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
 
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
+  const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
+
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const [head, setHead] = useState<IMergeEditorInputData>();
@@ -57,6 +61,16 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
     };
   }, [mergeEditorService]);
 
+  const renderMoreActions = useCallback(() => {
+    if (contrastType !== EditorViewType.RESULT) {
+      return null;
+    }
+
+    const menus = menuService.createMenu(MenuId.MergeEditorResultTitleContext);
+
+    return <InlineActionBar menus={menus} className={styles.menubar_action} />;
+  }, [contrastType]);
+
   return (
     <div className={styles.title_head_container}>
       {head && (
@@ -72,7 +86,7 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
           </span>
         </div>
       )}
-      {/* more actions */}
+      <div className={styles.actions_container}>{renderMoreActions()}</div>
     </div>
   );
 };
