@@ -309,7 +309,8 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         >
           {EmptyEditorViewConfig && ReactIs.isValidElementType(EmptyEditorViewConfig.component) ? (
             <ErrorBoundary>
-              {React.createElement(EmptyEditorViewConfig.component, EmptyEditorViewConfig.initialProps)}
+              {EmptyEditorViewConfig.component &&
+                React.createElement(EmptyEditorViewConfig.component, EmptyEditorViewConfig.initialProps)}
             </ErrorBoundary>
           ) : null}
         </div>
