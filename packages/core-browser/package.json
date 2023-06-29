@@ -46,9 +46,9 @@
     "vscode-textmate": "7.0.1"
   },
   "devDependencies": {
-    "react": "^16.8.6"
+    "react": "^18.0.0"
   },
   "peerDependencies": {
-    "react": ">=16.8.6"
+    "react": ">=18.0.0"
   }
 }

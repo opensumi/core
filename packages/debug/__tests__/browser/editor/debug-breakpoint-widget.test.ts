@@ -1,7 +1,7 @@
-import { Emitter } from '@opensumi/ide-core-common';
 import { act } from 'react-dom/test-utils';
 
 import { Disposable, IContextKeyService, IFileServiceClient } from '@opensumi/ide-core-browser';
+import { Emitter } from '@opensumi/ide-core-common';
 import { DebugEditor, IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugBreakpointWidget } from '@opensumi/ide-debug/lib/browser/editor';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
