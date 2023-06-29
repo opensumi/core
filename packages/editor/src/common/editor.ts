@@ -482,6 +482,11 @@ export interface IResourceOpenOptions {
   disableNavigate?: boolean;
 
   /**
+   * 不尝试在已打开的编辑器中的 uri 进行定位
+   */
+  disableNavigateOnOpendEditor?: boolean;
+
+  /**
    * 是否使用preview模式
    * 如果是undefined，使用editor.previewMode配置作为默认值
    */

@@ -3,6 +3,7 @@ import { observable } from 'mobx';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   FILE_COMMANDS,
+  OPEN_EDITORS_COMMANDS,
   ResizeEvent,
   getSlotLocation,
   AppConfig,
@@ -1340,11 +1341,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             this.currentEditor?.monacoEditor.revealRangeInCenter(options.range as monaco.IRange, 0);
           }, 0);
         }
-        if ((options && options.disableNavigate) || (options && options.backend)) {
-          // no-op
-        } else {
-          this.locateInFileTree(uri);
-        }
+        // 执行定位逻辑
+        this.locationInTree(options, uri);
         this.notifyTabChanged();
         return {
           group: this,
@@ -1434,11 +1432,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             resource,
           }),
         );
-        if ((options && options.disableNavigate) || (options && options.backend)) {
-          // no-op
-        } else {
-          this.locateInFileTree(uri);
-        }
+        // 执行定位逻辑
+        this.locationInTree(options, uri);
         this.eventBus.fire(
           new EditorGroupChangeEvent({
             group: this,
@@ -1464,9 +1459,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  private locationInTree(options: IResourceOpenOptions, uri: URI) {
+    if (!options?.backend) {
+      if (!options?.disableNavigate) {
+        this.locateInFileTree(uri);
+      }
+      if (!options.disableNavigateOnOpendEditor) {
+        this.locateInOpenedEditor(uri);
+      }
+    }
+  }
+
   private locateInFileTree(uri: URI) {
     if (this.explorerAutoRevealConfig) {
       this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
+    }
+  }
+
+  private locateInOpenedEditor(uri: URI) {
+    if (this.explorerAutoRevealConfig) {
+      this.commands.tryExecuteCommand(OPEN_EDITORS_COMMANDS.LOCATION.id, uri);
     }
   }
 

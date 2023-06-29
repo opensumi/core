@@ -248,6 +248,11 @@ export namespace OPEN_EDITORS_COMMANDS {
     id: 'opened.editors.copyPath',
     category: CATEGORY,
   };
+
+  export const LOCATION: Command = {
+    id: 'opened.editors.location',
+    category: CATEGORY,
+  };
 }
 
 export namespace COMMON_COMMANDS {
