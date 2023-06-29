@@ -392,7 +392,6 @@ export class OpenedEditorModelService {
   }
 
   public flushEventQueue = () => {
-    let promise: Promise<any>;
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
@@ -409,7 +408,7 @@ export class OpenedEditorModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(
+    const promise = pSeries(
       roots.map((path) => async () => {
         const watcher = this.treeModel?.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
