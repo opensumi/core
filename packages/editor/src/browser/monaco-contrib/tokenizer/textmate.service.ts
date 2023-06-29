@@ -20,7 +20,7 @@ import {
   electronEnv,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { URI, Disposable, isObject, dispose } from '@opensumi/ide-core-common';
+import { URI, Disposable, isObject } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
   GrammarsContribution,
