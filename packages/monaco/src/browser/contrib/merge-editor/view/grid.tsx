@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { localize, useInjectable } from '@opensumi/ide-core-browser';
+import { URI, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import {
   IMergeEditorInputData,
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeEditorService } from '../merge-editor.service';
 import { EditorViewType } from '../types';
@@ -16,7 +17,23 @@ import { WithViewStickinessConnectComponent } from './stickiness-connect-manager
 
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+  const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const [head, setHead] = useState<IMergeEditorInputData>();
+
+  const toRelativePath = useCallback((uri: URI) => {
+    // 获取相对路径
+    if (workspaceService.workspace) {
+      const rootUri = new URI(workspaceService.workspace.uri);
+      const rootRelative = rootUri.relative(uri);
+      if (rootRelative) {
+        return rootRelative.toString();
+      }
+
+      return uri.toString();
+    }
+
+    return uri.toString();
+  }, []);
 
   React.useEffect(() => {
     const disposable = mergeEditorService.onDidInputNutrition((nutrition: IOpenMergeEditorArgs) => {
@@ -31,7 +48,7 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
       } else if (contrastType === EditorViewType.INCOMING) {
         setHead(input2.getRaw());
       } else if (contrastType === EditorViewType.RESULT) {
-        setHead(new MergeEditorInputData(output.uri, 'Result', output.uri.toString(), '').getRaw());
+        setHead(new MergeEditorInputData(output.uri, 'Result', toRelativePath(output.uri), '').getRaw());
       }
     });
 
