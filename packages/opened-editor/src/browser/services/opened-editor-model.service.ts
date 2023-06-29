@@ -236,14 +236,8 @@ export class OpenedEditorModelService {
       this._contextMenuFile = undefined;
     }
     if (target) {
-      if (this.selectedFiles.length > 0) {
-        this.selectedFiles.forEach((file) => {
-          this.selectedDecoration.removeTarget(file);
-        });
-      }
-      if (this.focusedFile) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
-      }
+      this.removeSelectDecoration();
+      this.removeFocusedDecoration();
       this.selectedDecoration.addTarget(target);
       this.focusedDecoration.addTarget(target);
       this._focusedFile = target;
@@ -263,14 +257,8 @@ export class OpenedEditorModelService {
       this._contextMenuFile = undefined;
     }
     if (target) {
-      if (this.selectedFiles.length > 0) {
-        this.selectedFiles.forEach((file) => {
-          this.selectedDecoration.removeTarget(file);
-        });
-      }
-      if (this.focusedFile) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
-      }
+      this.removeSelectDecoration();
+      this.removeFocusedDecoration();
       this.selectedDecoration.addTarget(target);
       this._selectedFiles = [target];
 
@@ -286,10 +274,7 @@ export class OpenedEditorModelService {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
-    if (this.focusedFile) {
-      this.focusedDecoration.removeTarget(this.focusedFile);
-      this._focusedFile = undefined;
-    }
+    this.removeFocusedDecoration();
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuFile = target;
     this.treeModel?.dispatchChange();
@@ -297,15 +282,29 @@ export class OpenedEditorModelService {
 
   // 取消选中节点焦点
   enactiveFileDecoration = () => {
-    if (this.focusedFile) {
-      this.focusedDecoration.removeTarget(this.focusedFile);
-      this._focusedFile = undefined;
-    }
+    this.removeFocusedDecoration();
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
     this.treeModel?.dispatchChange();
   };
+  // refresh 更新后，原保存节点已经销毁，需要根据 path 获取新的节点
+  removeSelectDecoration() {
+    if (this._selectedFiles.length) {
+      this._selectedFiles.forEach((oldFile) => {
+        const currentFileNode = this.treeModel?.root.getTreeNodeByPath(oldFile.path);
+        this.selectedDecoration.removeTarget(currentFileNode || oldFile);
+      });
+    }
+  }
+
+  removeFocusedDecoration() {
+    if (this._focusedFile) {
+      const currentFileNode = this.treeModel?.root.getTreeNodeByPath(this._focusedFile.path);
+      this.focusedDecoration.removeTarget(currentFileNode || this._focusedFile);
+      this._focusedFile = undefined;
+    }
+  }
 
   handleContextMenu = (ev: React.MouseEvent, file?: EditorFileGroup | EditorFile) => {
     if (!file) {

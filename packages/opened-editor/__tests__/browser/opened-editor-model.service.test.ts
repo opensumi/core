@@ -48,6 +48,7 @@ describe('OpenedEditorModelService should be work', () => {
     path: 'testRoot',
     uri: rootUri,
     ensureLoaded: jest.fn(),
+    getTreeNodeByPath: jest.fn(),
   } as any;
   const mockCtxMenuRenderer = {
     show: jest.fn(),
