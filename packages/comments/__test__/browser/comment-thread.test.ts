@@ -49,7 +49,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容1',
+          body: '评论内容',
         },
       ],
     });
@@ -66,7 +66,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容1',
+          body: '评论内容',
           data: {
             b: 1,
           },
@@ -89,7 +89,7 @@ describe('comment service test', () => {
         author: {
           name: 'User',
         },
-        body: '评论内容1',
+        body: '评论内容',
       },
       {
         mode: CommentMode.Editor,
@@ -112,7 +112,7 @@ describe('comment service test', () => {
         author: {
           name: 'User',
         },
-        body: '评论内容1',
+        body: '评论内容',
       },
       {
         mode: CommentMode.Editor,
