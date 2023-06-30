@@ -63,6 +63,10 @@ export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastTy
     const blocks: BlockPiece[] = [];
 
     ranges.forEach((range) => {
+      if (range.isComplete) {
+        return;
+      }
+
       blocks.push({
         top: (((range.startLineNumber - 1) * lineHeight) / contentHeight) * 100 + '%',
         height: ((range.length * lineHeight) / contentHeight) * 100 + '%',
@@ -76,8 +80,8 @@ export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastTy
   return (
     <div className={styles.minimap_content}>
       {blocks.map((block) => (
-          <span className={cls(styles.block, block.className)} style={{ top: block.top, height: block.height }}></span>
-        ))}
+        <span className={cls(styles.block, block.className)} style={{ top: block.top, height: block.height }}></span>
+      ))}
     </div>
   );
 };
