@@ -8,6 +8,7 @@ import {
   CommandService,
   FILE_COMMANDS,
   EDITOR_COMMANDS,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
@@ -129,6 +130,12 @@ export class OpenedEditorContribution
     commands.registerCommand(OPEN_EDITORS_COMMANDS.COPY_RELATIVE_PATH, {
       execute: (node: EditorFile) => {
         this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, node.uri, [node.uri]);
+      },
+    });
+
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.LOCATION, {
+      execute: (uri: URI) => {
+        this.openedEditorModelService.location(uri);
       },
     });
   }

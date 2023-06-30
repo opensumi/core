@@ -31,7 +31,6 @@ export class ClientAppStateService {
 
   set state(state: ClientAppState) {
     if (state !== this._state) {
-      this.deferred[this._state] = new Deferred();
       this._state = state;
       if (this.deferred[state] === undefined) {
         this.deferred[state] = new Deferred();

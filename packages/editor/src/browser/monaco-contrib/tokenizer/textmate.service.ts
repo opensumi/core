@@ -918,4 +918,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     }
     ruleStack = lineTokens.ruleStack;
   }
+
+  dispose() {
+    super.dispose();
+    this.monacoLanguageService['_encounteredLanguages'].clear();
+  }
 }
