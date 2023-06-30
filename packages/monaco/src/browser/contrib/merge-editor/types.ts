@@ -6,6 +6,7 @@ import { IModelDecorationOptions } from '../../monaco-api/editor';
 
 import { LineRange } from './model/line-range';
 import { LineRangeMapping } from './model/line-range-mapping';
+import { BaseCodeEditor } from './view/editors/baseCodeEditor';
 import styles from './view/merge-editor.module.less';
 
 export interface IRangeContrast {
@@ -168,4 +169,10 @@ export interface IMergeEditorViewState {
   [EditorViewType.INCOMING]: ICodeEditorViewState | null;
   turnLeft: LineRangeMapping[];
   turnRight: LineRangeMapping[];
+}
+
+export interface IEditorMountParameter {
+  currentView: BaseCodeEditor;
+  resultView: BaseCodeEditor;
+  incomingView: BaseCodeEditor;
 }

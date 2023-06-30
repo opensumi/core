@@ -2,7 +2,6 @@
   height: 100%;
   overflow: hidden;
   position: relative;
-  padding-left: 8px;
 
   .merge_actions_container {
     position: absolute;
@@ -76,6 +75,40 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+
+    .content {
+      height: inherit;
+      display: flex;
+
+      .minimap_container {
+        height: 100%;
+        width: 15px;
+
+        .minimap_content {
+          position: relative;
+          height: inherit;
+
+          .block {
+            position: absolute;
+            width: 100%;
+
+            &.insert {
+              background-color: var(--mergeEditor-insertedInnerCharColor);
+            }
+            &.modify {
+              background-color: var(--mergeEditor-modifyInnerCharColor);
+            }
+            &.remove {
+              background-color: var(--mergeEditor-removedInnerCharColor);
+            }
+          }
+        }
+      }
+
+      .editor_container {
+        width: calc(100% - 15px);
+      }
+    }
 
     .stickiness_connect_container {
       height: 100%;

@@ -15,6 +15,7 @@ import { MergeEditorService } from '../merge-editor.service';
 import { EditorViewType } from '../types';
 
 import styles from './merge-editor.module.less';
+import { MiniMap } from './mini-map';
 import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
 
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
@@ -159,7 +160,12 @@ export const Grid = () => {
       <SplitPanel overflow='hidden' id='merge_editor_container' flex={2}>
         <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.CURRENT}></TitleHead>
-          <div className={styles.editor_container} ref={currentEditorContainer}></div>
+          <div className={styles.content}>
+            <div className={styles.minimap_container}>
+              <MiniMap contrastType={EditorViewType.CURRENT} />
+            </div>
+            <div className={styles.editor_container} ref={currentEditorContainer}></div>
+          </div>
         </div>
         <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.RESULT}></TitleHead>
@@ -175,7 +181,12 @@ export const Grid = () => {
         </div>
         <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.INCOMING}></TitleHead>
-          <div className={styles.editor_container} ref={incomingEditorContainer}></div>
+          <div className={styles.content}>
+            <div className={styles.editor_container} ref={incomingEditorContainer}></div>
+            <div className={styles.minimap_container}>
+              <MiniMap contrastType={EditorViewType.INCOMING} />
+            </div>
+          </div>
         </div>
       </SplitPanel>
       <MergeActions />
