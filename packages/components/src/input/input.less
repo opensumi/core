@@ -21,10 +21,13 @@
     border-color: var(--focusBorder);
   }
 
-  &:disabled {
+  &-disabled {
     color: var(--kt-input-disableForeground);
     background-color: var(--kt-input-disableBackground);
-    cursor: default;
+
+    input {
+      cursor: not-allowed;
+    }
   }
 
   &-box {
