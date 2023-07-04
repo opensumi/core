@@ -86,7 +86,7 @@ export interface IExtHostSCMShape {
     label: string,
     rootUri: Uri | undefined,
   ): vscode.SourceControl;
-  getSourceControl(extensionId: string, id: string): vscode.SourceControl | undefined;
+  getSourceControl(extensionId: string, id: string): vscode.SourceControl[] | undefined;
 }
 
 export interface IMainThreadSCMShape extends IDisposable {

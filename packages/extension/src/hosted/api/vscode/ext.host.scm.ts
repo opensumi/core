@@ -728,10 +728,10 @@ export class ExtHostSCM implements IExtHostSCMShape {
     });
   }
 
-  getSourceControl(extensionId: string, id: string): vscode.SourceControl | undefined {
+  getSourceControl(extensionId: string, id: string): vscode.SourceControl[] | undefined {
     this.logger.log('ExtHostSCM#$getSourceControl', extensionId, id);
     const sourceControls = this._sourceControlsByExtension.get(extensionId) || [];
-    return sourceControls.find((source) => source.id === id);
+    return sourceControls.filter((source) => source.id === id);
   }
 
   createSourceControl(
