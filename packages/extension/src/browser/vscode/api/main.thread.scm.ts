@@ -445,6 +445,16 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     repository.input.placeholder = placeholder;
   }
 
+  $setInputBoxEnablement(sourceControlHandle: number, enabled: boolean): void {
+    const repository = this._repositories.get(sourceControlHandle);
+
+    if (!repository) {
+      return;
+    }
+
+    repository.input.enabled = enabled;
+  }
+
   $setInputBoxVisibility(sourceControlHandle: number, visible: boolean): void {
     const repository = this._repositories.get(sourceControlHandle);
 

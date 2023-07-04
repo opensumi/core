@@ -30,6 +30,7 @@ export const SCMResourceInput: FC<{
 
   const [commitMsg, setCommitMsg] = useState('');
   const [placeholder, setPlaceholder] = useState('');
+  const [enabled, setEnabled] = useState(true);
 
   const handleValueChange = useCallback(
     (msg: string) => {
@@ -53,6 +54,13 @@ export const SCMResourceInput: FC<{
         setPlaceholder(getPlaceholder(repository));
       }),
     );
+
+    disposables.add(
+      repository.input.onDidChangeEnablement((value) => {
+        setEnabled(value);
+      }),
+    );
+
     setPlaceholder(getPlaceholder(repository));
 
     return () => {
@@ -84,6 +92,7 @@ export const SCMResourceInput: FC<{
           className={styles.scmInput}
           placeholder={placeholder}
           value={commitMsg}
+          disabled={!enabled}
           onKeyDown={(e) => onKeyDown(e.keyCode)}
           onKeyUp={onKeyUp}
           onValueChange={handleValueChange}

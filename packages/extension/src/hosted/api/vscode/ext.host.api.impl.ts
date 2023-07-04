@@ -230,6 +230,9 @@ export function createApiFactory(
       createSourceControl(id: string, label: string, rootUri?: extTypes.Uri) {
         return extHostSCM.createSourceControl(extension, id, label, rootUri);
       },
+      getSourceControl(extensionId: string, id: string) {
+        return extHostSCM.getSourceControl(extensionId, id);
+      },
     },
     tests: {
       createTestController(controllerId: string, label: string, refreshHandler?: () => Thenable<void> | void) {

@@ -30,6 +30,9 @@ export interface ISCMInput {
   validateInput: IInputValidator;
   readonly onDidChangeValidateInput: Event<void>;
 
+  enabled: boolean;
+  readonly onDidChangeEnablement: Event<boolean>;
+
   visible: boolean;
   readonly onDidChangeVisibility: Event<boolean>;
 }

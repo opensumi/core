@@ -1,6 +1,9 @@
-import type { IDisposable, UriComponents } from '@opensumi/ide-core-common';
+import type vscode from 'vscode';
+
+import type { IDisposable, Uri, UriComponents } from '@opensumi/ide-core-common';
 import { CancellationToken } from '@opensumi/vscode-jsonrpc/lib/common/cancellation';
 
+import { IExtensionDescription } from './extension';
 import { VSCommand } from './model.api';
 
 export interface ObjectIdentifier {
@@ -77,6 +80,13 @@ export interface IExtHostSCMShape {
     cursorPosition: number,
   ): Promise<[string, number] | undefined>;
   $setSelectedSourceControls(selectedSourceControlHandles: number[]): Promise<void>;
+  createSourceControl(
+    extension: IExtensionDescription,
+    id: string,
+    label: string,
+    rootUri: Uri | undefined,
+  ): vscode.SourceControl;
+  getSourceControl(extensionId: string, id: string): vscode.SourceControl[] | undefined;
 }
 
 export interface IMainThreadSCMShape extends IDisposable {
@@ -93,6 +103,7 @@ export interface IMainThreadSCMShape extends IDisposable {
 
   $setInputBoxValue(sourceControlHandle: number, value: string): void;
   $setInputBoxPlaceholder(sourceControlHandle: number, placeholder: string): void;
+  $setInputBoxEnablement(sourceControlHandle: number, enabled: boolean): void;
   $setInputBoxVisibility(sourceControlHandle: number, visible: boolean): void;
   $setValidationProviderIsEnabled(sourceControlHandle: number, enabled: boolean): void;
 }
