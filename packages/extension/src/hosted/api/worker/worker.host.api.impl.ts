@@ -197,6 +197,9 @@ export function createAPIFactory(
       createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
         return extHostSCM.createSourceControl(extension, id, label, rootUri);
       },
+      cgetSourceControl(extensionId: string, id: string) {
+        return extHostSCM.getSourceControl(extensionId, id);
+      },
     },
     window: createWindowApiFactory(
       extension,

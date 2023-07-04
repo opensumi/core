@@ -50,6 +50,20 @@ class SCMInput implements ISCMInput {
   private _onDidChangeVisibility = new Emitter<boolean>();
   readonly onDidChangeVisibility: Event<boolean> = this._onDidChangeVisibility.event;
 
+  private _enabled = true;
+
+  get enabled(): boolean {
+    return this._enabled;
+  }
+
+  set enabled(enabled: boolean) {
+    this._enabled = enabled;
+    this._onDidChangeEnablement.fire(enabled);
+  }
+
+  private readonly _onDidChangeEnablement = new Emitter<boolean>();
+  readonly onDidChangeEnablement: Event<boolean> = this._onDidChangeEnablement.event;
+
   private _validateInput: IInputValidator = () => Promise.resolve(undefined);
 
   get validateInput(): IInputValidator {

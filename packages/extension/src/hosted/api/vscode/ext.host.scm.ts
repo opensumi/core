@@ -199,6 +199,23 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
     this.updateValue(value);
   }
 
+  private _enabled = true;
+
+  get enabled(): boolean {
+    return this._enabled;
+  }
+
+  set enabled(enabled: boolean) {
+    enabled = !!enabled;
+
+    if (this._enabled === enabled) {
+      return;
+    }
+
+    this._enabled = enabled;
+    this._proxy.$setInputBoxEnablement(this._sourceControlHandle, enabled);
+  }
+
   private _onDidChange = new Emitter<string>();
 
   get onDidChange(): Event<string> {
@@ -709,6 +726,12 @@ export class ExtHostSCM implements IExtHostSCMShape {
         return arg;
       },
     });
+  }
+
+  getSourceControl(extensionId: string, id: string): vscode.SourceControl | undefined {
+    this.logger.log('ExtHostSCM#$getSourceControl', extensionId, id);
+    const sourceControls = this._sourceControlsByExtension.get(extensionId) || [];
+    return sourceControls.find((source) => source.id === id);
   }
 
   createSourceControl(
