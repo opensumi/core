@@ -13,6 +13,7 @@ import {
   REPORT_NAME,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
+import { SCMService } from '@opensumi/ide-scm';
 
 import {
   EXTENSION_EXTEND_SERVICE_PREFIX,
@@ -78,6 +79,9 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
 
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
+
+  @Autowired(SCMService)
+  private readonly scmService: SCMService;
 
   private readonly debugLogger = getDebugLogger();
 
@@ -262,6 +266,55 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
             );
           }
         }
+      }
+    }
+
+    // scm
+    if (contributes.scm && contributes.scm.additional) {
+      const { input } = contributes.scm.additional;
+
+      if (!input) {
+        return;
+      }
+
+      const { addonBefore, addonAfter } = input;
+
+      const appendComponent = (addon: string[], key: string) => {
+        addon.forEach((addonId: string) => {
+          const component = moduleExports[addonId];
+
+          if (!component) {
+            this.logger.error(`Can not find CustomPopover from extension ${extension.id}, id: ${component}`);
+          }
+
+          if (this.appConfig.useExperimentalShadowDom) {
+            const shadowComponent = (props) =>
+              getShadowRoot(
+                component,
+                extension,
+                props,
+                addon,
+                proxiedHead,
+                this.appConfig.componentCDNType,
+                this.appConfig.extensionBrowserStyleSheet,
+              );
+            this.scmService.appendInputProps({
+              [key]: shadowComponent,
+            });
+          } else {
+            this.scmService.appendInputProps({
+              [key]: component,
+            });
+          }
+        });
+      };
+
+      if (addonBefore) {
+        appendComponent(addonBefore, 'addonBefore');
+      }
+
+      if (addonAfter) {
+        appendComponent(addonAfter, 'addonAfter');
       }
     }
   }

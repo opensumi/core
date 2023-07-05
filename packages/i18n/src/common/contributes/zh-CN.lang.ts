@@ -185,4 +185,9 @@ inline 模式 showTitle 会失效, 只显示 icon`,
     '(可选) 用于表示 UI 中的子菜单的图标。文件路径、具有深色和浅色主题的文件路径的对象，或者主题图标引用(如 "$(zap)")',
   'sumiContributes.submenus.icon.light': '使用浅色主题时的图标路径',
   'sumiContributes.submenus.icon.dark': '使用深色主题时的图标路径',
+
+  // scm
+  'sumiContributes.scm': '提供自定义的 scm 控件',
+  'sumiContributes.scm.additional': '需要额外追加的 scm 控件列表',
+  'sumiContributes.scm.additional.input': '对 input 控件追加属性',
 };

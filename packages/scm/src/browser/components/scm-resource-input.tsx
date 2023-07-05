@@ -1,5 +1,6 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 
+import { IInputBaseProps } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { strings, isMacintosh, DisposableStore } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
@@ -31,6 +32,7 @@ export const SCMResourceInput: FC<{
   const [commitMsg, setCommitMsg] = useState('');
   const [placeholder, setPlaceholder] = useState('');
   const [enabled, setEnabled] = useState(true);
+  const [inputProps, setInputProps] = useState<IInputBaseProps>({});
 
   const handleValueChange = useCallback(
     (msg: string) => {
@@ -41,6 +43,29 @@ export const SCMResourceInput: FC<{
 
   useEffect(() => {
     const disposables = new DisposableStore();
+
+    disposables.add(
+      repository.input.onDidChangeProps((props) => {
+        const { addonAfter, addonBefore } = props;
+        const AFC = addonAfter;
+        const ABC = addonBefore;
+
+        setInputProps({
+          ...props,
+          ...(addonAfter
+            ? {
+                addonAfter: typeof AFC === 'function' ? <AFC /> : addonAfter,
+              }
+            : {}),
+          ...(addonBefore
+            ? {
+                addonBefore: typeof ABC === 'function' ? <ABC /> : addonBefore,
+              }
+            : {}),
+        });
+      }),
+    );
+
     // 单向同步 input value
     disposables.add(
       repository.input.onDidChange((value) => {
@@ -96,6 +121,7 @@ export const SCMResourceInput: FC<{
           onKeyDown={(e) => onKeyDown(e.keyCode)}
           onKeyUp={onKeyUp}
           onValueChange={handleValueChange}
+          {...inputProps}
         />
       </div>
       {hasInputMenus && (

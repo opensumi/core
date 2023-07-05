@@ -7,6 +7,7 @@ import { BrowserViewContributionPoint } from './browser-views';
 import { MenuExtendContributionPoint } from './menu-extend';
 import { MenubarsContributionPoint } from './menubar';
 import { NodeMainContributionPoint } from './node-main';
+import { SCMContributionPoint } from './scm';
 import { SubmenusContributionPoint } from './submenu';
 import { ToolbarContributionPoint } from './toolbar';
 import { ViewsProxiesContributionPoint } from './views-proxies';
@@ -26,5 +27,6 @@ export class SumiContributionsService extends ExtensionContributesService {
     SubmenusContributionPoint,
     ToolbarContributionPoint,
     MenuExtendContributionPoint,
-  ] as typeof VSCodeContributePoint[];
+    SCMContributionPoint,
+  ] as (typeof VSCodeContributePoint)[];
 }
