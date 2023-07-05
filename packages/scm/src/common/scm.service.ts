@@ -2,7 +2,7 @@ import { observable, computed, action } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
 import { IInputBaseProps } from '@opensumi/ide-components';
-import { Event, Emitter, arrays, getDebugLogger } from '@opensumi/ide-core-common';
+import { Event, Emitter, arrays, getDebugLogger, Deferred } from '@opensumi/ide-core-common';
 import { IDisposable, toDisposable } from '@opensumi/ide-core-common';
 
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
@@ -158,6 +158,8 @@ export class SCMService {
   public readonly onDidRemoveRepository: Event<ISCMRepository> = this._onDidRemoveProvider.event;
 
   private readonly logger = getDebugLogger();
+
+  public viewReady: Deferred<void> = new Deferred();
 
   public registerSCMProvider(provider: ISCMProvider): ISCMRepository {
     this.logger.log('SCMService#registerSCMProvider');

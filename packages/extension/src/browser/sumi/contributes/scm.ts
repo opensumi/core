@@ -58,7 +58,7 @@ export class SCMContributionPoint extends VSCodeContributePoint<any> {
           return;
         }
 
-        this.scmService.setInputProps(input);
+        this.scmService.appendInputProps(input);
       }
     }
   }

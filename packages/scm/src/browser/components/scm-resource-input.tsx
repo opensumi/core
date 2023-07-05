@@ -41,28 +41,41 @@ export const SCMResourceInput: FC<{
     [repository],
   );
 
+  const handleInputProps = useCallback(
+    (props: IInputBaseProps) => {
+      const { addonAfter, addonBefore } = props;
+      const AFC = addonAfter;
+      const ABC = addonBefore;
+
+      setInputProps({
+        ...props,
+        ...(addonAfter
+          ? {
+              addonAfter: typeof AFC === 'function' ? <AFC /> : addonAfter,
+            }
+          : {}),
+        ...(addonBefore
+          ? {
+              addonBefore: typeof ABC === 'function' ? <ABC /> : addonBefore,
+            }
+          : {}),
+      });
+    },
+    [repository.input.props],
+  );
+
+  useEffect(() => {
+    if (repository.input.props) {
+      handleInputProps(repository.input.props);
+    }
+  }, [repository.input.props]);
+
   useEffect(() => {
     const disposables = new DisposableStore();
 
     disposables.add(
       repository.input.onDidChangeProps((props) => {
-        const { addonAfter, addonBefore } = props;
-        const AFC = addonAfter;
-        const ABC = addonBefore;
-
-        setInputProps({
-          ...props,
-          ...(addonAfter
-            ? {
-                addonAfter: typeof AFC === 'function' ? <AFC /> : addonAfter,
-              }
-            : {}),
-          ...(addonBefore
-            ? {
-                addonBefore: typeof ABC === 'function' ? <ABC /> : addonBefore,
-              }
-            : {}),
-        });
+        handleInputProps(props);
       }),
     );
 
