@@ -286,7 +286,7 @@ export class ViewExtProcessService extends Disposable implements AbstractViewExt
             const component = moduleExports[addonId];
 
             if (!component) {
-              this.logger.error(`Can not find CustomPopover from extension ${extension.id}, id: ${component}`);
+              this.logger.error(`Can not find ${key} from extension ${extension.id}, id: ${component}`);
             }
 
             if (this.appConfig.useExperimentalShadowDom) {
