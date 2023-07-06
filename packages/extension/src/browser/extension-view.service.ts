@@ -12,8 +12,9 @@ import {
   IReporterService,
   REPORT_NAME,
   getDebugLogger,
+  Disposable,
 } from '@opensumi/ide-core-common';
-import { SCMService } from '@opensumi/ide-scm';
+import { ISCMRepository, SCMService } from '@opensumi/ide-scm';
 
 import {
   EXTENSION_EXTEND_SERVICE_PREFIX,
@@ -43,7 +44,7 @@ const { Path, posix } = path;
 const LOAD_FAILED_CODE = 'load';
 
 @Injectable()
-export class ViewExtProcessService implements AbstractViewExtProcessService {
+export class ViewExtProcessService extends Disposable implements AbstractViewExtProcessService {
   /**
    * TODO: 支持底部面板多视图展示
    * should replace view component
@@ -269,54 +270,66 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
       }
     }
 
-    // scm
-    if (contributes.scm && contributes.scm.additional) {
-      const { input } = contributes.scm.additional;
+    const handleScmContributes = (repo: ISCMRepository) => {
+      // scm
+      if (contributes.scm && contributes.scm.additional) {
+        const { input } = contributes.scm.additional;
 
-      if (!input) {
-        return;
+        if (!input) {
+          return;
+        }
+
+        const { addonBefore, addonAfter } = input;
+
+        const appendComponent = (addon: string[], key: string) => {
+          addon.forEach((addonId: string) => {
+            const component = moduleExports[addonId];
+
+            if (!component) {
+              this.logger.error(`Can not find CustomPopover from extension ${extension.id}, id: ${component}`);
+            }
+
+            if (this.appConfig.useExperimentalShadowDom) {
+              const shadowComponent = (props) =>
+                getShadowRoot(
+                  component,
+                  extension,
+                  props,
+                  addon,
+                  proxiedHead,
+                  this.appConfig.componentCDNType,
+                  this.appConfig.extensionBrowserStyleSheet,
+                );
+              repo.input.appendProps({
+                [key]: shadowComponent,
+              });
+            } else {
+              repo.input.appendProps({
+                [key]: component,
+              });
+            }
+          });
+        };
+
+        if (addonBefore) {
+          appendComponent(addonBefore, 'addonBefore');
+        }
+
+        if (addonAfter) {
+          appendComponent(addonAfter, 'addonAfter');
+        }
       }
+    };
 
-      const { addonBefore, addonAfter } = input;
+    this.addDispose(
+      this.scmService.onDidAddRepository((repo) => {
+        handleScmContributes(repo);
+      }),
+    );
 
-      const appendComponent = (addon: string[], key: string) => {
-        addon.forEach((addonId: string) => {
-          const component = moduleExports[addonId];
-
-          if (!component) {
-            this.logger.error(`Can not find CustomPopover from extension ${extension.id}, id: ${component}`);
-          }
-
-          if (this.appConfig.useExperimentalShadowDom) {
-            const shadowComponent = (props) =>
-              getShadowRoot(
-                component,
-                extension,
-                props,
-                addon,
-                proxiedHead,
-                this.appConfig.componentCDNType,
-                this.appConfig.extensionBrowserStyleSheet,
-              );
-            this.scmService.appendInputProps({
-              [key]: shadowComponent,
-            });
-          } else {
-            this.scmService.appendInputProps({
-              [key]: component,
-            });
-          }
-        });
-      };
-
-      if (addonBefore) {
-        appendComponent(addonBefore, 'addonBefore');
-      }
-
-      if (addonAfter) {
-        appendComponent(addonAfter, 'addonAfter');
-      }
-    }
+    this.scmService.repositories.forEach((repo) => {
+      handleScmContributes(repo);
+    });
   }
 
   /*
