@@ -159,8 +159,6 @@ export class SCMService {
 
   private readonly logger = getDebugLogger();
 
-  public viewReady: Deferred<void> = new Deferred();
-
   public registerSCMProvider(provider: ISCMProvider): ISCMRepository {
     this.logger.log('SCMService#registerSCMProvider');
 

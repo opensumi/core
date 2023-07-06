@@ -186,7 +186,6 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     if (!addonNodes) {
       return null;
     }
-
     return (
       <div className={clx('kt-input-addon', klassName)} {...persistFocusProps}>
         {React.Children.map(addonNodes, (child) =>
