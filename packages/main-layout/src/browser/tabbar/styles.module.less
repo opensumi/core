@@ -76,6 +76,7 @@
 
 .tab_panel_hidden {
   border-top: none;
+  display: none;
 }
 
 :global(.left-slot) {
@@ -92,7 +93,7 @@
 
 .left_tab_bar {
   height: 100%;
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: space-between;
   background-color: var(--activityBar-background);
@@ -364,7 +365,8 @@
   white-space: no-wrap;
 }
 .bottom_bar_container {
-  display: flex;
+  // display: flex;
+  display: none;
   flex-direction: row;
   align-items: center;
   z-index: 1;

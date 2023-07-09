@@ -16,7 +16,6 @@ export function DefaultLayout() {
           defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
           minResize={280}
           maxResize={480}
-          minSize={49}
         />
         <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
           <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
@@ -33,12 +32,10 @@ export function DefaultLayout() {
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
-          maxResize={480}
           minResize={280}
-          minSize={0}
         />
       </SplitPanel>
-      <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
+      {/* <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' /> */}
     </BoxPanel>
   );
 }

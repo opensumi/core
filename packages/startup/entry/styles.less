@@ -9,3 +9,31 @@
   overflow: hidden;
   background-color: var(--background);
 }
+
+.rce-mbox-left-notch,
+.rce-mbox-right-notch {
+  display: none;
+}
+
+.rce-mbox {
+  margin-left: 10px;
+  box-shadow: 0px 0px 0px 1px #0001;
+  max-width: 60%;
+
+  ::after {
+    content: '';
+  }
+}
+
+.rce-smsg {
+  box-shadow: 0px 0px 0px 1px #0001;
+}
+
+.rce-mbox-right {
+  margin-right: 10px;
+}
+
+.rce-container-smsg {
+  justify-content: left;
+  margin-left: 10px;
+}

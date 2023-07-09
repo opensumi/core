@@ -107,7 +107,11 @@
     "@opensumi/ide-webview": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
     "@opensumi/ide-workspace-edit": "workspace:*",
-    "@opensumi/textmate-languages": "^2.6.1"
+    "@opensumi/textmate-languages": "^2.6.1",
+    "antd": "^5.6.4",
+    "highlighter": "^0.1.0",
+    "react-chat-elements": "^12.0.10",
+    "react-syntax-highlighter": "^15.5.0"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",

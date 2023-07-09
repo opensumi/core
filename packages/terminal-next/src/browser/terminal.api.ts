@@ -102,6 +102,7 @@ export class TerminalApiService implements ITerminalApiService {
         this.view.removeWidget(client.widget.id);
         this.controller.clients.delete(client.id);
       },
+      client,
     };
 
     await client.attached.promise;

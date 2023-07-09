@@ -2,6 +2,7 @@
   display: flex;
   background-color: var(--kt-menubar-background);
   align-items: center;
+  width: 100%;
 
   .menu_bar_logo {
     display: inline-block;
@@ -12,5 +13,24 @@
     background-position: center;
     background-size: contain;
     margin-left: 10px;
+  }
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    width: inherit;
+    align-items: center;
+    padding: 0 24px;
+
+    .center {
+      display: flex;
+      align-items: center;
+      margin-left: -26px;
+
+      .input {
+        margin-right: 18px;
+        width: 580px;
+      }
+    }
   }
 }

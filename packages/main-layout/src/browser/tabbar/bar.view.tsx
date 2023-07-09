@@ -261,12 +261,12 @@ export const LeftTabbarRenderer: React.FC = () => {
     >
       <InlineMenuBar className={clsx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
       <TabbarViewBase
-        tabSize={48}
+        tabSize={0}
         MoreTabView={IconElipses}
         className={styles.left_tab_content}
         tabClassName={styles.left_tab}
         TabView={IconTabView}
-        barSize={48}
+        barSize={0}
         margin={90}
         panelBorderSize={1}
       />
@@ -286,11 +286,11 @@ export const BottomTabbarRenderer: React.FC = () => {
     >
       <TabbarViewBase
         // TODO: 暂时通过预估值来计算是否超出可视范围，实际上需要通过dom尺寸的计算
-        tabSize={80}
+        tabSize={0}
         MoreTabView={TextElipses}
         tabClassName={styles.bottom_tab}
         TabView={TextTabView}
-        barSize={24}
+        barSize={0}
         panelBorderSize={1}
         canHideTabbar
       />
