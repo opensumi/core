@@ -21,6 +21,7 @@ import { SampleModule } from '../sample-modules';
 import { renderApp } from './render-app';
 
 import '../styles.less';
+import { AiChatContribution } from '../sample-modules/ai-chat/ai-chat.contribution';
 
 renderApp({
   modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule],
@@ -36,6 +37,11 @@ renderApp({
         modules: ['@opensumi/ide-toolbar-action'],
       },
     },
+    ...{
+      [SlotLocation.right]: {
+        modules: [AiChatContribution.AiChatContainer],
+      }
+    }
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,

@@ -5,8 +5,8 @@ import { DATA_SET_COMMAND, IOpenerShape, RenderWrapper } from './render';
 
 interface IMarkdownProps {
   value: string;
-  renderer: marked.Renderer;
-  opener: IOpenerShape;
+  renderer?: marked.Renderer;
+  opener?: IOpenerShape;
 }
 
 export const linkify = (href: string | null, title: string | null, text: string) =>

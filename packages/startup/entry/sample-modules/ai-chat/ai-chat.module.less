@@ -1,0 +1,44 @@
+.ai_chat_view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: 4px;
+
+  .container {
+    flex: 1;
+    height: calc(100% - 180px);
+    overflow: scroll;
+
+    .message_list {
+      .rce-mbox-left-notch,
+      .rce-mbox-right-notch {
+        display: none;
+      }
+    }
+
+    .smsg {
+
+    }
+  }
+
+  .chat_input {
+    padding: 8px 8px;
+    border-top: 1px solid var(--descriptionForeground);
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+
+    .input_wrapper {
+      margin-right: 4px;
+      height: calc(100% - 40px);
+
+      textarea {
+        resize: none;
+      }
+    }
+
+    button {
+      margin-top: 10px;
+    }
+  }
+}

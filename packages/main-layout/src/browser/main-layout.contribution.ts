@@ -347,15 +347,15 @@ export class MainLayoutModuleContribution
     Object.entries({
       [SlotLocation.left]: [
         EXPLORER_CONTAINER_ID,
-        SEARCH_CONTAINER_ID,
-        SCM_CONTAINER_ID,
-        DEBUG_CONTAINER_ID,
-        EXTENSION_CONTAINER_ID,
+        // SEARCH_CONTAINER_ID,
+        // SCM_CONTAINER_ID,
+        // DEBUG_CONTAINER_ID,
+        // EXTENSION_CONTAINER_ID,
       ],
       [SlotLocation.bottom]: [
-        MARKER_CONTAINER_ID,
-        OUTPUT_CONTAINER_ID,
-        DEBUG_CONSOLE_CONTAINER_ID,
+        // MARKER_CONTAINER_ID,
+        // OUTPUT_CONTAINER_ID,
+        // DEBUG_CONSOLE_CONTAINER_ID,
         TERMINAL_CONTAINER_ID,
       ],
     }).forEach(([slotLocation, containerIds], index) => {

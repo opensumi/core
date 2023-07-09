@@ -90,7 +90,8 @@ export const RightTabRenderer = ({
     id={VIEW_CONTAINERS.RIGHT_TABBAR}
     className={clsx(className, 'right-slot')}
     components={components}
-    TabbarView={RightTabbarRenderer}
+    // TabbarView={RightTabbarRenderer}
+    TabbarView={() => <></>}
     TabpanelView={RightTabPanelRenderer}
   />
 );
@@ -109,6 +110,7 @@ export const LeftTabRenderer = ({
     className={clsx(className, 'left-slot')}
     components={components}
     TabbarView={LeftTabbarRenderer}
+    // TabbarView={() => <></>}
     TabpanelView={LeftTabPanelRenderer}
   />
 );
@@ -127,6 +129,7 @@ export const BottomTabRenderer = ({
     className={clsx(className, 'bottom-slot')}
     components={components}
     TabbarView={BottomTabbarRenderer}
+    // TabbarView={() => <></>}
     TabpanelView={BottomTabPanelRenderer}
     noAccordion={true}
   />

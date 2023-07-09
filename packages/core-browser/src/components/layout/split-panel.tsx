@@ -313,6 +313,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
                 ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: getProp(element, 'flexGrow') } : {}),
                 display: hides[index] ? 'none' : 'block',
                 backgroundColor: getProp(element, 'backgroundColor'),
+                height: '100%',
               }}
             >
               {element}

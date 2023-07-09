@@ -54,8 +54,8 @@ export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInpu
 // copied from https://github.com/ant-design/ant-design/blob/master/components/input/Input.tsx#L33
 // simulate a Form.ChangeEvent in react.js
 function resolveOnChange(
-  target: HTMLInputElement,
-  e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLElement, MouseEvent>,
+  target: HTMLInputElement | HTMLTextAreaElement,
+  e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLElement, MouseEvent> | React.MouseEvent<HTMLTextAreaElement, MouseEvent>,
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
 ) {
   if (typeof onChange === 'function') {
@@ -92,6 +92,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     hasClear,
     afterClear,
     value,
+    type,
     onValueChange,
     onPressEnter,
     onKeyDown,
@@ -135,8 +136,9 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     }
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     triggerChange(e.target.value);
+    // @ts-ignore
     resolveOnChange(inputRef.current!, e, onChange);
   };
 
@@ -176,10 +178,10 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
 
   const persistFocusProps = persistFocus
     ? {
-        onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => {
-          e.preventDefault();
-        },
-      }
+      onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+      },
+    }
     : {};
 
   const addonRender = (addonNodes: React.ReactNode | undefined, klassName: string) => {
@@ -204,18 +206,34 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     <div className={inputClx} style={wrapperStyle}>
       {addonRender(addonBefore, 'kt-input-addon-before')}
       <div className='kt-input-box'>
-        <input
-          ref={inputRef}
-          type='text'
-          autoCapitalize='off'
-          autoCorrect='off'
-          autoComplete='off'
-          spellCheck={false}
-          {...restProps}
-          value={inputValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-        />
+        {
+          type === 'textarea'
+          // @ts-ignore
+            ? <textarea
+              id=''
+              autoCapitalize='off'
+              autoCorrect='off'
+              autoComplete='off'
+              spellCheck={false}
+              cols={30}
+              rows={20}
+              {...restProps}
+              value={inputValue}
+              onChange={handleChange}
+            />
+            : <input
+              ref={inputRef}
+              type='text'
+              autoCapitalize='off'
+              autoCorrect='off'
+              autoComplete='off'
+              spellCheck={false}
+              {...restProps}
+              value={inputValue}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+            />
+        }
         {hasClear && inputValue && (
           <Icon
             className='kt-input-clear'

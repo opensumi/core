@@ -207,4 +207,4 @@ export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView
 
 export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
-export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={BottomPanelView} panelSize={280} />;
+export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={BottomPanelView} />;
