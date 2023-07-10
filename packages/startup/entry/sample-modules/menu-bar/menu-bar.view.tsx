@@ -38,7 +38,7 @@ export const MenuBarView = () => {
         <div className={styles.left}><IconMenuBar /></div>
         <div className={styles.center}>
           <div className={styles.input}>
-            <Input width={'100%'} placeholder='搜索并选择指令' onFocus={handleSelectFocus}></Input>
+            <Input width={'100%'} placeholder='/搜索并选择指令' onFocus={handleSelectFocus}></Input>
           </div>
           <div className={styles.run}>
             <Button onClick={handleRun}>Run</Button>
