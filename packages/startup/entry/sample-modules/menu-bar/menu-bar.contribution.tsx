@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, EDITOR_COMMANDS, MessageType, getIcon } from '@opensumi/ide-core-browser';
+import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, EDITOR_COMMANDS, MessageType, getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
 
 import { MenuBarView } from './menu-bar.view';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -41,13 +41,25 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
   }
 
   registerCommands(commands: CommandRegistry): void {
+
+    commands.registerCommand({
+      id: 'ai.chat.explain.code',
+      iconClass: getExternalIcon('comment-discussion'),
+    }, {
+      execute: async () => {
+        await this.aiChatService.launchChatMessage('解释一下当前我选中的这段代码')
+      }
+    })
+
     commands.registerCommand({
       id: 'ai.runAndDebug',
     }, {
       execute: async (text: string, isDebug: boolean) => {
+        let isNodeJs = false;
         if (!text) {
           const currentUri = this.editorService.currentEditor?.currentUri;
-          text = `node ${currentUri?.path.base}`
+          isNodeJs = !!currentUri?.path.base.endsWith('.js');
+          text = `${isNodeJs ? 'node' : 'node_modules/.bin/ts-node'} ${currentUri?.path.base}`
         }
 
         const terminal = await this.terminalApi.createTerminal({

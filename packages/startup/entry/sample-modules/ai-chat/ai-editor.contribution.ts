@@ -23,6 +23,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(AbstractMenuService)
   private readonly abstractMenuService: AbstractMenuService;
 
+  public menuse: any;
+
   contribute(editor: IEditor): IDisposable {
     if (!editor) {
       return this;
@@ -31,8 +33,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     const { monacoEditor, currentUri, currentDocumentModel } = editor;
 
     let aiZoneWidget: AiZoneWidget | undefined;
-
-    const menus = this.abstractMenuService.createMenu('ai/iconMenubar/context')
 
     monacoEditor.onDidChangeModel(() => {
       if (aiZoneWidget) {
@@ -50,6 +50,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       100,
     )((e) => {
 
+      if (!this.menuse) {
+        this.menuse = this.abstractMenuService.createMenu('ai/iconMenubar/context');
+      }
+
       const selection = monacoEditor.getSelection();
 
       if (!selection) {
@@ -66,13 +70,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       const text = monacoEditor.getModel()?.getValueInRange(selection);
       console.log('monacoEditor.onMouseUp: >>> text', text)
 
-      aiZoneWidget = this.injector.get(AiZoneWidget, [monacoEditor!, menus]);
+      aiZoneWidget = this.injector.get(AiZoneWidget, [monacoEditor!, this.menuse]);
       aiZoneWidget.create();
 
       aiZoneWidget.showByLine(startLineNumber - 1);
       console.log('monacoEditor.onMouseUp', e)
-      // 聚焦到第 5 行
-      monacoEditor.revealLine(5);
     })
 
     // languageFeaturesService
