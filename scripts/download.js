@@ -77,7 +77,7 @@ async function downloadExtension(url, namespace, extensionName) {
   await Promise.race([awaitEvent(res.body, 'end'), awaitEvent(res.body, 'error')]);
   tmpStream.close();
 
-  const targetDirName = path.basename(`${namespace}.${extensionName}`);
+  const targetDirName = path.basename(`${namespace}.${extensionName}-${version}`);
 
   return { tmpZipFile, targetDirName };
 }
