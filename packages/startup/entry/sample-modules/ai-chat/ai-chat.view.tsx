@@ -49,7 +49,7 @@ export const AiChatView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const aiChatService = useInjectable<AiChatService>(AiChatService);
-
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [inputValue, setInputValue] = React.useState('');
   const [messageListData, setMessageListData] = React.useState<any[]>([createMessage('left', AI_NAME, `你好～ AI 助手为您服务！`)]);
@@ -365,6 +365,10 @@ setTimeout(() => {
     const preMessagelist = messageListData;
     const preInputValue = value || inputValue;
 
+    if (containerRef && containerRef.current) {
+      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+    }
+
     setLoading(true);
     setInputValue('');
 
@@ -383,10 +387,14 @@ setTimeout(() => {
         preMessagelist.push(msg)
         setMessageListData(preMessagelist);
         updateState({})
+        if (containerRef && containerRef.current) {
+          containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+        }
         return;
       }
     }
-  }, [messageListData, inputValue])
+
+  }, [messageListData, inputValue, containerRef])
 
   React.useEffect(() => {
     document.querySelectorAll("pre code").forEach(block => {
@@ -401,7 +409,7 @@ setTimeout(() => {
       id={VIEW_CONTAINERS.RIGHT_TABBAR}
       className={styles.ai_chat_view}
     >
-      <div className={styles.container}>
+      <div className={styles.container} ref={containerRef}>
         {/* @ts-ignore */}
         <MessageList
           className={styles.message_list}
