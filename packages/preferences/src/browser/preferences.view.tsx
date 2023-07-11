@@ -63,13 +63,11 @@ const usePreferenceGroups = () => {
     const dispose = preferenceService.onSettingsGroupsChange(() => {
       updateGroup.run();
     });
+    updateGroup.run();
+
     return () => {
       dispose.dispose();
     };
-  });
-
-  useEffect(() => {
-    updateGroup.run();
   }, []);
 
   useEffect(() => {
