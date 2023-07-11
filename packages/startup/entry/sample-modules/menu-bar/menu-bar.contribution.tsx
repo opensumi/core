@@ -64,6 +64,9 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
 
         const terminal = await this.terminalApi.createTerminal({
           cwd: this.appConfig.workspaceDir,
+          env: {
+            PROMPT_COMMAND: ''
+          }
         })
 
         const client = terminal.client;
