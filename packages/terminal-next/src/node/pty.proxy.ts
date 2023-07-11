@@ -9,6 +9,7 @@ import * as pty from 'node-pty';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
+import { isMacintosh, isLinux } from '@opensumi/ide-utils/lib/platform';
 
 import {
   IPtyProxyRPCService,
@@ -316,14 +317,13 @@ export class PtyServiceProxyRPCProvider {
 }
 
 async function getPidCwd(pid: number): Promise<string | undefined> {
-  switch (os.platform()) {
-    case 'linux':
-      return await readLinkAsync(`/proc/${pid}/cwd`);
-    case 'darwin': {
-      const result = await execAsync(`lsof -a -d cwd -p ${pid} | tail -1 | awk '{print $9}'`);
-      if (result.stdout) {
-        return result.stdout.trim();
-      }
+  if (isLinux) {
+    return await readLinkAsync(`/proc/${pid}/cwd`);
+  }
+  if (isMacintosh) {
+    const result = await execAsync(`lsof -a -d cwd -p ${pid} | tail -1 | awk '{print $9}'`);
+    if (result.stdout) {
+      return result.stdout.trim();
     }
   }
   return undefined;
