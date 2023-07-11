@@ -24,7 +24,7 @@ export class AiQuickCommandHandler implements QuickOpenHandler {
             label: `$(git-pull-request-create)  创建合并请求`,
             run: (mode: Mode) => {
               if (mode === Mode.OPEN) {
-                this.aiChatService.launchChatMessage('创建合并请求')
+                this.aiChatService.launchChatMessage('创建 合并请求')
                 return true;
               }
               return false;

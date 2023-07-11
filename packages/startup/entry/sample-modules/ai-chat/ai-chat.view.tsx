@@ -179,13 +179,59 @@ setTimeout(() => {
         }
       },
       {
-        with: '合入 main 分支',
+        with: '创建 合并请求',
+        exec: async (value: string) => {
+          return createMessageByAI(<div>
+            <span>代码还未提交，是否需要提交全部代码呢？</span>
+            <br />
+            <a href='javascript:void(0)' onClick={() => {
+              handleSend('提交全部代码')
+            }}>好的</a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href='javascript:void(0)'>我自己来</a>
+          </div>)
+        }
+      },
+      {
+        with: '是的',
         exec: async (value: string) => {
           return createMessageByAI(<div>
             <span>好的，已创建合并请求（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
             <br />
             <br />
             {/* 字体变粗 */}
+            <div>
+              <span style={{ fontWeight: 'bold' }}>目标分支: </span>
+              <span>master</span>
+            </div>
+            <div>
+              <span style={{ fontWeight: 'bold' }}>标题: </span>
+              <span>实现 lazyman 类</span>
+            </div>
+            <br />
+            <div>
+              <span style={{ fontWeight: 'bold' }}>描述: </span>
+              <span>AI 助手实现的 lazyman 类</span>
+            </div>
+            <br />
+            <div>
+              <span style={{ fontWeight: 'bold' }}>评审人: </span>
+              <span>蛋总、古铜、彦熹、倾一</span>
+            </div>
+          </div>)
+        }
+      },
+      {
+        with: '合入 main 分支',
+        exec: async (value: string) => {
+          return createMessageByAI(<div>
+            <span>好的，已更新合并请求（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
+            <br />
+            <br />
+            {/* 字体变粗 */}
+            <div>
+              <span style={{ fontWeight: 'bold' }}>目标分支: </span>
+              <span>main</span>
+            </div>
             <div>
               <span style={{ fontWeight: 'bold' }}>标题: </span>
               <span>实现 lazyman 类</span>
@@ -211,6 +257,10 @@ setTimeout(() => {
             <br />
             <br />
             {/* 字体变粗 */}
+            <div>
+              <span style={{ fontWeight: 'bold' }}>目标分支: </span>
+              <span>main</span>
+            </div>
             <div>
               <span style={{ fontWeight: 'bold' }}>标题: </span>
               <span>实现 lazyman 类</span>
