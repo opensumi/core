@@ -526,7 +526,7 @@ function SelectPreferenceItem({
         </Option>
       );
     });
-  }, [schema.enum]);
+  }, [schema.enum, labels]);
 
   const renderNoneOptions = () => (
     <Option

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-preferences",
-  "version": "2.25.3",
+  "version": "2.25.4",
   "files": [
     "lib",
     "src"
