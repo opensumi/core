@@ -13,7 +13,7 @@ export class SCMContributionPoint extends VSCodeContributePoint<any> {
   private readonly scmService: SCMService;
 
   static schema: IJSONSchema = {
-    description: localize('sumiContributes.scm'),
+    description: localize('sumiContributes.SCM'),
     type: 'object',
     defaultSnippets: [
       {
@@ -27,11 +27,11 @@ export class SCMContributionPoint extends VSCodeContributePoint<any> {
     properties: {
       additional: {
         type: 'object',
-        description: localize('sumiContributes.scm.additional'),
+        description: localize('sumiContributes.SCM.additional'),
         properties: {
           input: {
             type: 'object',
-            description: localize('sumiContributes.scm.additional.input'),
+            description: localize('sumiContributes.SCM.additional.input'),
           },
         },
       },

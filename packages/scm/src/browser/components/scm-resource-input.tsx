@@ -6,7 +6,7 @@ import { strings, isMacintosh, DisposableStore } from '@opensumi/ide-core-browse
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
-import { CommandService } from '@opensumi/ide-core-common';
+import { CommandService, isFunction } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 import { IIconService } from '@opensumi/ide-theme';
 
@@ -51,12 +51,12 @@ export const SCMResourceInput: FC<{
         ...props,
         ...(addonAfter
           ? {
-              addonAfter: typeof AFC === 'function' ? <AFC /> : addonAfter,
+              addonAfter: isFunction(AFC) ? <AFC /> : addonAfter,
             }
           : {}),
         ...(addonBefore
           ? {
-              addonBefore: typeof ABC === 'function' ? <ABC /> : addonBefore,
+              addonBefore: isFunction(ABC) ? <ABC /> : addonBefore,
             }
           : {}),
       });

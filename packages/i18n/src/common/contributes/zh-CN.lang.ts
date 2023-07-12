@@ -187,7 +187,7 @@ inline 模式 showTitle 会失效, 只显示 icon`,
   'sumiContributes.submenus.icon.dark': '使用深色主题时的图标路径',
 
   // scm
-  'sumiContributes.scm': '提供自定义的 scm 控件',
-  'sumiContributes.scm.additional': '需要额外追加的 scm 控件列表',
-  'sumiContributes.scm.additional.input': '对 input 控件追加属性',
+  'sumiContributes.SCM': '提供自定义的 scm 控件',
+  'sumiContributes.SCM.additional': '需要额外追加的 scm 控件列表',
+  'sumiContributes.SCM.additional.input': '对 input 控件追加属性',
 };
