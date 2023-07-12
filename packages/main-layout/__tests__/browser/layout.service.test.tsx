@@ -308,7 +308,7 @@ describe('main layout test', () => {
       handler.setCollapsed('test-view-id5', true);
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
-    expect(mockCb).toBeCalledTimes(2);
+    expect(mockCb).toBeCalledTimes(4);
     act(() => {
       handler.setBadge('20');
       handler.updateTitle('gggggggg');
