@@ -319,7 +319,7 @@ export function Select<T = string>({
       value: value as any,
       notMatch: true,
     };
-  }, [options, value]);
+  }, [options, value, children]);
 
   const selected = getSelectedValue();
 
