@@ -179,7 +179,6 @@ export function createAPIFactory(
       ...createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
     },
     languages: createLanguagesApiFactory(extHostLanguages, extension),
-    commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
     extensions: createExtensionsApiFactory(extensionService),
     workspace: createWorkspaceApiFactory(
       extHostWorkspace,
@@ -224,6 +223,6 @@ export function createAPIFactory(
     authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
     comments: createCommentsApiFactory(extension, extHostComments),
     // Sumi 扩展 API
-    ...sumiAPI,
+    ...sumiAPI(extension),
   });
 }
