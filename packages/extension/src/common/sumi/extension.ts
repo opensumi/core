@@ -1,3 +1,4 @@
+import { IInputBaseProps } from '@opensumi/ide-components';
 import { IMenubarItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
@@ -46,5 +47,10 @@ export interface ISumiExtensionContributions extends IExtensionContributions {
   // 针对 vscode contributes 中的 menus 的一些扩展
   menuExtend?: {
     [menuId: string]: Array<ISumiMenuExtendInfo>;
+  };
+  scm?: {
+    additional?: {
+      input?: Omit<IInputBaseProps, 'addonBefore' | 'addonAfter'> & { addonBefore?: string[]; addonAfter?: string[] };
+    };
   };
 }

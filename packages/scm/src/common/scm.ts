@@ -1,3 +1,4 @@
+import { IInputBaseProps } from '@opensumi/ide-components';
 import { Event, IDisposable, ISequence, Uri } from '@opensumi/ide-core-common';
 
 export interface VSCommand {
@@ -35,6 +36,11 @@ export interface ISCMInput {
 
   visible: boolean;
   readonly onDidChangeVisibility: Event<boolean>;
+
+  props: IInputBaseProps;
+  readonly onDidChangeProps: Event<IInputBaseProps>;
+
+  appendProps(props: IInputBaseProps): void;
 }
 
 export interface ISCMRepository extends IDisposable {

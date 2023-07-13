@@ -1,7 +1,8 @@
 import { observable, computed, action } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
-import { Event, Emitter, arrays, getDebugLogger } from '@opensumi/ide-core-common';
+import { IInputBaseProps } from '@opensumi/ide-components';
+import { Event, Emitter, arrays, getDebugLogger, Deferred } from '@opensumi/ide-core-common';
 import { IDisposable, toDisposable } from '@opensumi/ide-core-common';
 
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
@@ -46,6 +47,25 @@ class SCMInput implements ISCMInput {
     this._visible = visible;
     this._onDidChangeVisibility.fire(visible);
   }
+
+  private _props = {};
+
+  get props(): IInputBaseProps {
+    return this._props;
+  }
+
+  set props(props: IInputBaseProps) {
+    this._props = props;
+    this._onDidChangeProps.fire(this._props);
+  }
+
+  public appendProps(props: IInputBaseProps): void {
+    this._props = { ...this._props, ...props };
+    this._onDidChangeProps.fire(this._props);
+  }
+
+  private _onDidChangeProps = new Emitter<IInputBaseProps>();
+  readonly onDidChangeProps: Event<IInputBaseProps> = this._onDidChangeProps.event;
 
   private _onDidChangeVisibility = new Emitter<boolean>();
   readonly onDidChangeVisibility: Event<boolean> = this._onDidChangeVisibility.event;
@@ -181,6 +201,18 @@ export class SCMService {
     }
 
     return repository;
+  }
+
+  public setInputProps(props: IInputBaseProps): void {
+    this._repositories.forEach((repo) => {
+      repo.input.props = props;
+    });
+  }
+
+  public appendInputProps(props: IInputBaseProps): void {
+    this._repositories.forEach((repo) => {
+      repo.input.appendProps(props);
+    });
   }
 
   private onDidChangeSelection(repository: ISCMRepository): void {
