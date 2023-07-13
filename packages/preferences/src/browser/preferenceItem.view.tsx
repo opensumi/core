@@ -511,15 +511,10 @@ function SelectPreferenceItem({
       if (typeof item === 'boolean') {
         item = String(item);
       }
-
+      const localized = replaceLocalizePlaceholder(String(labels[item] || item));
       return (
-        <Option
-          value={item}
-          label={replaceLocalizePlaceholder((labels[item] || item)?.toString())}
-          key={`${idx} - ${item}`}
-          className={styles.select_option}
-        >
-          {replaceLocalizePlaceholder((labels[item] || item)?.toString())}
+        <Option value={item} label={localized} key={`${idx}-${localized}`} className={styles.select_option}>
+          {localized}
           {String(item) === String(defaultValue) && (
             <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
           )}
