@@ -205,6 +205,7 @@ export enum LanguageStatusSeverity {
 }
 
 export enum InputBoxValidationSeverity {
+  Ignore = 0,
   Info = 1,
   Warning = 2,
   Error = 3,
