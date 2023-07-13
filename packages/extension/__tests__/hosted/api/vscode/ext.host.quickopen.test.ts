@@ -61,6 +61,8 @@ describe('ext host quickopen test', () => {
       token: QuickOpenService,
       useValue: {
         open: () => Promise.resolve(),
+        updateOptions: () => {},
+        refresh: () => {},
       },
     },
     {
@@ -166,6 +168,14 @@ describe('ext host quickopen test', () => {
     expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
       validationMessage: 'test',
       severity: InputBoxValidationSeverity.Warning,
+    });
+
+    quickInput.validationMessage = undefined;
+    await sleep(50);
+
+    expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
+      validationMessage: null,
+      severity: InputBoxValidationSeverity.Ignore,
     });
   });
 });

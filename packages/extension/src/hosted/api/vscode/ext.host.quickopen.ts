@@ -39,7 +39,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     | ((input: string) => MaybePromise<string | vscode.InputBoxValidationMessage | null | undefined>);
 
   private createdQuicks = new Map<number, ExtQuickPick<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
-  private createdInputBoxs = new Map<number, ExtQuickInput>();
+  private createdInputBoxes = new Map<number, ExtQuickInput>();
   private currentQuick = 0;
 
   constructor(rpc: IRPCProtocol, private readonly workspace: IExtHostWorkspace) {
@@ -180,9 +180,9 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   createInputBox(): vscode.InputBox {
     const session = ++this.currentQuick;
     const newInputBox = new ExtInputBox(session, this.proxy, this, () => {
-      this.createdInputBoxs.delete(session);
+      this.createdInputBoxes.delete(session);
     });
-    this.createdInputBoxs.set(session, newInputBox);
+    this.createdInputBoxes.set(session, newInputBox);
     return newInputBox;
   }
 
@@ -194,25 +194,25 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   }
 
   $onCreatedInputBoxDidChangeValue(sessionId: number, value: string): void {
-    const session = this.createdInputBoxs.get(sessionId);
+    const session = this.createdInputBoxes.get(sessionId);
     if (session) {
       session._fireDidChangeValue(value);
     }
   }
   $onCreatedInputBoxDidAccept(sessionId: number): void {
-    const session = this.createdInputBoxs.get(sessionId);
+    const session = this.createdInputBoxes.get(sessionId);
     if (session) {
       session._fireDidAccept();
     }
   }
   $onCreatedInputBoxDidHide(sessionId: number): void {
-    const session = this.createdInputBoxs.get(sessionId);
+    const session = this.createdInputBoxes.get(sessionId);
     if (session) {
       session._fireDidHide();
     }
   }
   $onCreatedInputBoxDidTriggerButton(sessionId: number, btnHandler: number) {
-    const session = this.createdInputBoxs.get(sessionId);
+    const session = this.createdInputBoxes.get(sessionId);
     if (session) {
       session._fireDidTriggerButton(btnHandler);
     }
@@ -647,7 +647,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
     }
 
     for (const k of Object.keys(data)) {
-      this._pendingUpdate[k] = data[k] === undefined ? null : data[k];
+      data[k] = data[k] === undefined ? null : data[k];
     }
 
     this._pendingUpdate = { ...this._pendingUpdate, ...data };
