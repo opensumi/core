@@ -678,12 +678,13 @@ function StringArrayPreferenceItem({
   };
 
   const items = value.map((item, idx) => {
+    const stringified = JSON.stringify(item);
     if (currentEditIndex >= 0 && currentEditIndex === idx) {
-      return <li className={styles.array_items} key={`${idx} - ${JSON.stringify(item)}`}></li>;
+      return <li className={styles.array_items} key={`${idx}-${stringified}`}></li>;
     } else {
       return (
-        <li className={styles.array_items} key={`${idx} - ${JSON.stringify(item)}`}>
-          <div className={styles.array_item}>{typeof item === 'string' ? item : JSON.stringify(item)}</div>
+        <li className={styles.array_items} key={`${idx}-${stringified}`}>
+          <div className={styles.array_item}>{typeof item === 'string' ? item : stringified}</div>
           <div className={styles.operate}>
             <Button
               type='icon'
