@@ -513,7 +513,7 @@ function SelectPreferenceItem({
       }
       const localized = replaceLocalizePlaceholder((labels[item] || item).toString());
       return (
-        <Option value={item} label={localized} key={`${idx}-${item}`} className={styles.select_option}>
+        <Option value={item} label={localized} key={`${idx}-${localized}`} className={styles.select_option}>
           {localized}
           {String(item) === String(defaultValue) && (
             <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
