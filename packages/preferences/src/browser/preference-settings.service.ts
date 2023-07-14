@@ -54,9 +54,10 @@ class Versionizer<K> {
 
 @Injectable()
 export class PreferenceSettingsService extends Disposable implements IPreferenceSettingsService {
-  private static DEFAULT_CHANGE_DELAY = 500;
   private static EXTENSION_SETTINGS_PREFIX = '@ext:';
   private static EXTENSION_SETTINGS_REGX = /^@ext:(\S+)(.+)?/;
+
+  static DEFAULT_CHANGE_DELAY = 200;
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
@@ -462,12 +463,8 @@ export class PreferenceSettingsService extends Disposable implements IPreference
    * @param labels 枚举项
    */
   setEnumLabels(preferenceName: string, labels: { [key: string]: string }) {
-    if (this.enumLabelsChangeDelayer && !this.enumLabelsChangeDelayer.isTriggered()) {
-      this.enumLabelsChangeDelayer.cancel();
-    }
-    this.enumLabelsChangeDelayer.trigger(async () => {
-      this.onDidEnumLabelsChangeEmitter.dispatch(preferenceName);
-    });
+    this.onDidEnumLabelsChangeEmitter.dispatch(preferenceName);
+
     this.enumLabels.set(preferenceName, labels);
   }
 

@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -108,10 +109,12 @@ export const NextPreferenceItem = ({
     );
 
     disposableCollection.push(
-      settingsService.onDidEnumLabelsChange(preferenceId)(() => {
-        setSchema(schemaProvider.getPreferenceProperty(preferenceId));
-        setLabels(settingsService.getEnumLabels(preferenceId));
-      }),
+      settingsService.onDidEnumLabelsChange(preferenceId)(
+        debounce(() => {
+          setSchema(schemaProvider.getPreferenceProperty(preferenceId));
+          setLabels(settingsService.getEnumLabels(preferenceId));
+        }, PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
+      ),
     );
 
     return () => {
