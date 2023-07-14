@@ -41,6 +41,7 @@ interface IPreferenceItemProps {
   currentValue: any;
   defaultValue: any;
   schema: PreferenceItem;
+  labels: Record<string, string>;
   scope: PreferenceScope;
   effectingScope: PreferenceScope;
   hasValueInScope: boolean;
@@ -85,6 +86,7 @@ export const NextPreferenceItem = ({
     preferenceProvider.get<boolean | string | string[]>(preferenceId),
   );
   const [schema, setSchema] = useState<PreferenceItem>();
+  const [labels, setLabels] = useState(() => settingsService.getEnumLabels(preferenceId));
 
   // 当这个设置项被外部变更时，更新局部值
   useEffect(() => {
@@ -106,9 +108,9 @@ export const NextPreferenceItem = ({
     );
 
     disposableCollection.push(
-      settingsService.onDidEnumLabelsChange(() => {
-        const schemas = schemaProvider.getPreferenceProperty(preferenceId);
-        setSchema(schemas);
+      settingsService.onDidEnumLabelsChange(preferenceId)(() => {
+        setSchema(schemaProvider.getPreferenceProperty(preferenceId));
+        setLabels(settingsService.getEnumLabels(preferenceId));
       }),
     );
 
@@ -149,6 +151,7 @@ export const NextPreferenceItem = ({
         scope,
         effectingScope,
         schema: renderSchema,
+        labels,
         currentValue: value === undefined ? inherited : value,
         defaultValue,
         localizedName,
@@ -474,12 +477,12 @@ function SelectPreferenceItem({
   currentValue,
   defaultValue,
   schema,
+  labels,
   effectingScope,
   scope,
   isModified,
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const logger: ILogger = useInjectable(ILogger);
   const value = currentValue ?? defaultValue;
 
@@ -499,8 +502,6 @@ function SelectPreferenceItem({
     [preferenceService],
   );
 
-  // enum 本身为 string[] | number[]
-  const labels = settingsService.getEnumLabels(preferenceId);
   const renderEnumOptions = useCallback(() => {
     const enums = schema.enum ? [...schema.enum] : [];
     if (defaultValue && !enums.includes(defaultValue)) {

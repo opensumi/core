@@ -1022,3 +1022,30 @@ export class ReadyEvent<T = void> implements IDisposable {
     }
   }
 }
+
+export class Dispatcher<T = void> implements IDisposable {
+  private _emitter = new Emitter<{
+    type: string;
+    data: T;
+  }>();
+
+  on(type: string): Event<T> {
+    return Event.map(
+      Event.filter(this._emitter.event, (e) => e.type === type),
+      (v) => v.data,
+    );
+  }
+
+  dispatch(type: string, data: T) {
+    this._emitter.fire({
+      type,
+      data,
+    });
+  }
+
+  dispose(): void {
+    if (this._emitter) {
+      this._emitter.dispose();
+    }
+  }
+}
