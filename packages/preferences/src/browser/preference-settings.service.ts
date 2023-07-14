@@ -10,6 +10,7 @@ import {
   ISettingSection,
   PreferenceProviderProvider,
   Emitter,
+  Dispatcher,
   Event,
   CommandService,
   isString,
@@ -109,7 +110,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   private _listHandler: IVirtualListHandle;
   private _treeHandler: IBasicRecycleTreeHandle;
-  private onDidEnumLabelsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+  private onDidEnumLabelsChangeEmitter: Dispatcher<void> = this.registerDispose(new Dispatcher());
   private enumLabelsChangeDelayer = this.registerDispose(
     new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
   );
@@ -168,8 +169,8 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     this.tabIndex = index;
   }
 
-  get onDidEnumLabelsChange() {
-    return this.onDidEnumLabelsChangeEmitter.event;
+  onDidEnumLabelsChange(id: string) {
+    return this.onDidEnumLabelsChangeEmitter.on(id);
   }
 
   private isContainSearchValue(value: string, search: string) {
@@ -446,7 +447,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       this.enumLabelsChangeDelayer.cancel();
     }
     this.enumLabelsChangeDelayer.trigger(async () => {
-      this.onDidEnumLabelsChangeEmitter.fire();
+      this.onDidEnumLabelsChangeEmitter.dispatch(preferenceName);
     });
     this.enumLabels.set(preferenceName, labels);
   }
