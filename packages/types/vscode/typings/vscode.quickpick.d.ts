@@ -549,6 +549,7 @@ declare module 'vscode' {
    * Impacts the behavior and appearance of the validation message.
    */
   export enum InputBoxValidationSeverity {
+    Ignore = 0,
     Info = 1,
     Warning = 2,
     Error = 3

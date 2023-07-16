@@ -9,10 +9,6 @@ import './validate-input.less';
 
 export enum VALIDATE_TYPE {
   INFO = 1,
-  /**
-   * @deprecated
-   */
-  WRANING = 0,
   ERROR = 2,
   WARNING = 3,
   IGNORE = 4,
@@ -42,15 +38,9 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
       setValidateMessage(validateInfo);
     }, [validateInfo]);
 
-    warning(
-      !validateMessage || validateMessage.type !== VALIDATE_TYPE.WRANING,
-      '`VALIDATE_TYPE.WRANING` was a wrong typo, please use `VALIDATE_TYPE.WARNING` instead',
-    );
-
     const validateClx = classNames({
       'validate-error': validateMessage && validateMessage.type === VALIDATE_TYPE.ERROR,
-      'validate-warning':
-        validateMessage && [VALIDATE_TYPE.WRANING, VALIDATE_TYPE.WARNING].includes(validateMessage.type),
+      'validate-warning': validateMessage && validateMessage.type === VALIDATE_TYPE.WARNING,
       'validate-info': validateMessage && validateMessage.type === VALIDATE_TYPE.INFO,
     });
 
