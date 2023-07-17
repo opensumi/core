@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useRef } from 'react';
 
 import {
   RecycleTree,
@@ -33,29 +33,33 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const { consoleModel } = debugConsoleService;
-  const debugInputRef = React.createRef<HTMLDivElement>();
   const { height, width } = viewState;
   const [model, setModel] = React.useState<IDebugConsoleModel>();
   const [consoleHeight, setConsoleHeight] = React.useState<number>(26);
   const [filterValue, setFilterValue] = React.useState<string>('');
   const [isWordWrap, setIsWordWrap] = React.useState<boolean>(true);
-  const disposer = new Disposable();
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+
+  const debugInputRef = React.useRef<HTMLDivElement | null>(null);
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   React.useEffect(() => {
-    const handler = layoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
-    if (handler?.isActivated()) {
-      debugConsoleService.init(debugInputRef.current);
-    } else {
-      const dispose = handler?.onActivate(() => {
+    if (debugInputRef && debugInputRef.current) {
+      const handler = layoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
+      if (handler?.isActivated()) {
         debugConsoleService.init(debugInputRef.current);
-        dispose?.dispose();
-      });
+      } else {
+        const dispose = handler?.onActivate(() => {
+          debugConsoleService.init(debugInputRef.current);
+          dispose?.dispose();
+        });
+      }
     }
   }, [debugInputRef.current]);
 
   React.useEffect(() => {
+    const disposer = new Disposable();
+
     disposer.addDispose(
       consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
         if (model) {

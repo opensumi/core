@@ -141,6 +141,10 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     this.history = new HistoryNavigator(storage.get(HISTORY_STORAGE_KEY, []), 50);
 
+    if (this.inputEditor?.monacoEditor) {
+      return;
+    }
+
     this._consoleInputElement = e;
     this.inputEditor = this.editorService.createCodeEditor(this._consoleInputElement!, {
       ...consoleInputMonacoOptions,
