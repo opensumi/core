@@ -277,6 +277,17 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         config: defaultProfile,
       };
     }
+    if (!options.cwd) {
+      // resolve cwd from the group first widget
+      const group = widget.group;
+      if (group.widgets.length > 1 && group.widgets[0]) {
+        const cwd = await this.internalService.getCwd(group.widgets[0].id);
+        if (cwd) {
+          options.cwd = cwd;
+        }
+      }
+    }
+
     await this._checkWorkspace();
 
     const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;

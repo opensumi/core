@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { INodeLogger, AppConfig, isDevelopment, isElectronNode } from '@opensumi/ide-core-node';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
-import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
+import { IPtyProcessProxy, IShellLaunchConfig } from '../common/pty';
 
 import { PtyService } from './pty';
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
@@ -13,10 +13,6 @@ const BATCH_MAX_SIZE = 200 * 1024;
 // 批处理延时
 const BATCH_DURATION_MS = 16;
 
-/**
- * terminal service 的具体实现
- * @lengthmin: 其实这里应该换成每个实例持有一个 pty 实例，待讨论并推进实现
- */
 @Injectable()
 export class TerminalServiceImpl implements ITerminalNodeService {
   static TerminalPtyCloseThreshold = 10 * 1000;
@@ -125,32 +121,14 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     serviceClient.clientMessage(sessionId, ptyData);
   }
 
-  public async create2(id: string, cols: IShellLaunchConfig): Promise<IPtyProcess | undefined>;
-  public async create2(
-    id: string,
-    cols: number,
-    rows: number,
-    options: IShellLaunchConfig,
-  ): Promise<IPtyProcess | undefined>;
   public async create2(
     sessionId: string,
-    _cols: unknown,
-    _rows?: unknown,
-    _launchConfig?: unknown,
-  ): Promise<IPtyProcess | undefined> {
+    cols: number,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+  ): Promise<IPtyProcessProxy | undefined> {
     const clientId = sessionId.split(TERMINAL_ID_SEPARATOR)[0];
     let ptyService: PtyService | undefined;
-    let cols = _cols as number;
-    let rows = _rows as number;
-    let launchConfig = _launchConfig as IShellLaunchConfig;
-    if (!(typeof cols === 'number')) {
-      launchConfig = cols as IShellLaunchConfig;
-      cols = (launchConfig as any).cols;
-      rows = (launchConfig as any).rows;
-      if ((launchConfig as any).shellPath) {
-        launchConfig.executable = (launchConfig as any).shellPath;
-      }
-    }
 
     try {
       ptyService = this.injector.get(PtyService, [sessionId, launchConfig, cols, rows]);
@@ -290,5 +268,14 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   private getTerminal(id: string) {
     return this.terminalProcessMap.get(id);
+  }
+
+  async getCwd(id: string): Promise<string | undefined> {
+    const ptyService = this.getTerminal(id);
+    if (!ptyService) {
+      return undefined;
+    }
+
+    return await ptyService.getCwd();
   }
 }

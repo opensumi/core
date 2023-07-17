@@ -96,7 +96,7 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     );
 
-    // 分屏
+    // 拆分终端
     registry.registerCommand(
       {
         ...TERMINAL_COMMANDS.SPLIT,

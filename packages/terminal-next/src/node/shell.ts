@@ -198,7 +198,7 @@ let _TERMINAL_DEFAULT_SHELL_WINDOWS: string | null = null;
 async function getSystemShellWindows(env = process.env): Promise<string> {
   if (!_TERMINAL_DEFAULT_SHELL_WINDOWS) {
     const isAtLeastWindows10 = isWindows && parseFloat(release()) >= 10;
-    const is32ProcessOn64Windows = env.hasOwnProperty('PROCESSOR_ARCHITEW6432');
+    const is32ProcessOn64Windows = Object.prototype.hasOwnProperty.call(env, 'PROCESSOR_ARCHITEW6432');
     const powerShellPath = `${env['windir']}\\${
       is32ProcessOn64Windows ? 'Sysnative' : 'System32'
     }\\WindowsPowerShell\\v1.0\\powershell.exe`;

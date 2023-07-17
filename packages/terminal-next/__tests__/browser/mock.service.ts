@@ -114,6 +114,10 @@ export class MockSocketService implements ITerminalService {
     return OperatingSystem.Linux;
   }
 
+  async getCwd() {
+    return undefined;
+  }
+
   private _handleStdoutMessage(sessionId: string, handler: (json: any) => void) {
     const socket = this._socks.get(sessionId);
     if (!socket) {
