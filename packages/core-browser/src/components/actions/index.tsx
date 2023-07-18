@@ -158,9 +158,19 @@ const EllipsisWidget: React.FC<{
   icon?: string;
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLElement>;
-}> = ({ type, icon, disabled, onClick }) => {
+  title?: string;
+}> = ({ type, icon, disabled, onClick, title }) => {
   if (type === 'icon') {
-    return <Icon icon={icon || 'ellipsis'} className={styles.iconAction} onClick={onClick} />;
+    return (
+      <Button
+        size='small'
+        type={type}
+        className={styles.btnAction}
+        onClick={onClick}
+        title={title}
+        icon={icon || 'ellipsis'}
+      ></Button>
+    );
   }
   const props = {};
   if (isBoolean(disabled)) {
@@ -168,7 +178,7 @@ const EllipsisWidget: React.FC<{
   }
 
   return (
-    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props}>
+    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props} title={title}>
       <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
@@ -330,6 +340,7 @@ export const TitleActionList: React.FC<
     nav: MenuNode[];
     more?: MenuNode[];
     moreIcon?: string;
+    moreTitle?: string;
     className?: string;
     iconService?: IMenubarIconService;
   } & BaseActionListProps
@@ -343,6 +354,7 @@ export const TitleActionList: React.FC<
     nav = [],
     more = [],
     moreIcon,
+    moreTitle,
     context = [],
     extraNavActions = [],
     moreAtFirst = false,
@@ -378,7 +390,13 @@ export const TitleActionList: React.FC<
 
     const moreAction =
       secondary.length > 0 ? (
-        <EllipsisWidget disabled={secondary[0].disabled} icon={moreIcon} type={type} onClick={handleShowMore} />
+        <EllipsisWidget
+          disabled={secondary[0].disabled}
+          icon={moreIcon}
+          type={type}
+          onClick={handleShowMore}
+          title={moreTitle}
+        />
       ) : null;
 
     return (
@@ -491,6 +509,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
   context?: TupleContext<T, U, K, M>;
   menus: IContextMenu;
   moreIcon?: string;
+  moreTitle?: string;
   separator?: IMenuSeparator;
   iconService?: IMenubarIconService;
 }
@@ -500,7 +519,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
 export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineMenuBarProps<T, U, K, M>,
 ): React.ReactElement<InlineMenuBarProps<T, U, K, M>> {
-  const { iconService, menus, context, moreIcon, separator = 'navigation', ...restProps } = props;
+  const { iconService, menus, context, moreIcon, moreTitle, separator = 'navigation', ...restProps } = props;
   const [navMenu, moreMenu] = useContextMenus(menus);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -510,6 +529,7 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
       moreIcon={moreIcon}
+      moreTitle={moreTitle}
       context={context}
       iconService={iconService}
       {...restProps}
