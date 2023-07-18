@@ -147,8 +147,8 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await treeModel.ensureReady;
         }
-        setModel(treeModel);
         isLoading.current = false;
+        setModel(treeModel);
       });
     }
   }, [isReady]);
@@ -264,27 +264,28 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
 
   const ensureIsReady = useCallback(
     async (token: CancellationToken) => {
+      isReady.current = false;
       await fileTreeModelService.whenReady;
       if (token.isCancellationRequested) {
         return;
       }
+      // 文件服务已经初始化完毕，但文件树数据仍需要加载
+      isReady.current = true;
       if (fileTreeModelService.treeModel) {
         // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
         await fileTreeModelService.treeModel.ensureReady;
-        setModel(fileTreeModelService.treeModel);
         if (token.isCancellationRequested) {
           return;
         }
+        setModel(fileTreeModelService.treeModel);
+        // 文件树数据加载完毕
+        isLoading.current = false;
         if (wrapperRef.current) {
           fileTreeService.initContextKey(wrapperRef.current);
         }
       }
-      isReady.current = false;
-      if (!disposableRef.current?.disposed) {
-        isReady.current = true;
-      }
     },
-    [fileTreeModelService, disposableRef.current],
+    [fileTreeModelService],
   );
 
   const handleTreeReady = useCallback(
