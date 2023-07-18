@@ -23,7 +23,6 @@ import {
   getAvailableLanguages,
   PreferenceService,
   replaceLocalizePlaceholder,
-  ThrottledDelayer,
   TerminalSettingsId,
   IResolvedPreferenceViewDesc,
   IResolvedSettingSection,
@@ -113,10 +112,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   private _listHandler: IVirtualListHandle;
   private _treeHandler: IBasicRecycleTreeHandle;
-  private onDidEnumLabelsChangeEmitter: Dispatcher<void> = this.registerDispose(new Dispatcher());
-  private enumLabelsChangeDelayer = this.registerDispose(
-    new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
-  );
+  private onDidEnumLabelsChangeDispatcher: Dispatcher<void> = this.registerDispose(new Dispatcher());
 
   constructor() {
     super();
@@ -173,7 +169,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   }
 
   onDidEnumLabelsChange(id: string) {
-    return this.onDidEnumLabelsChangeEmitter.on(id);
+    return this.onDidEnumLabelsChangeDispatcher.on(id);
   }
 
   private isContainSearchValue(value: string, search: string) {
@@ -463,8 +459,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
    * @param labels 枚举项
    */
   setEnumLabels(preferenceName: string, labels: { [key: string]: string }) {
-    this.onDidEnumLabelsChangeEmitter.dispatch(preferenceName);
-
+    this.onDidEnumLabelsChangeDispatcher.dispatch(preferenceName);
     this.enumLabels.set(preferenceName, labels);
   }
 
