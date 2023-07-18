@@ -530,6 +530,8 @@ export const localizationBundle = {
     'preference.debug.inline.values': 'Show variable values inline in editor while debugging.',
     'preference.debug.breakpoint.editorHint':
       'After enabling, there will be a background color blinking prompt when clicking on the breakpoint list to jump to the editor.',
+    'preference.debug.breakpoint.showBreakpointsInOverviewRuler':
+      'Controls whether breakpoints should be shown in the overview ruler.',
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy':

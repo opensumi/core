@@ -10,6 +10,7 @@ import {
   AbstractMenuService,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
+import { IThemeService, debugIconBreakpointForeground } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
@@ -68,6 +69,9 @@ export class DebugModel implements IDebugModel {
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(IThemeService)
+  public readonly themeService: IThemeService;
 
   protected frameDecorations: string[] = [];
   protected topFrameRange: monaco.Range | undefined;
@@ -541,6 +545,20 @@ export class DebugModel implements IDebugModel {
       !!session,
       this.breakpointManager.breakpointsEnabled,
     );
+    const showBreakpointsInOverviewRuler = this.preferenceService.getValid(
+      'debug.breakpoint.showBreakpointsInOverviewRuler',
+      false,
+    );
+
+    let overviewRulerDecoration: monaco.editor.IModelDecorationOverviewRulerOptions | null = null;
+    if (showBreakpointsInOverviewRuler) {
+      overviewRulerDecoration = {
+        color: this.themeService.getColor({
+          id: debugIconBreakpointForeground,
+        }),
+        position: monaco.editor.OverviewRulerLane.Left,
+      } as monaco.editor.IModelDecorationOverviewRulerOptions;
+    }
 
     return {
       range,
@@ -550,6 +568,7 @@ export class DebugModel implements IDebugModel {
         glyphMarginHoverMessage: message.map((value) => ({ value })),
         stickiness: options.STICKINESS,
         beforeContentClassName: renderInline ? 'debug-breakpoint-placeholder' : undefined,
+        overviewRuler: overviewRulerDecoration,
       },
     };
   }
