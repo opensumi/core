@@ -68,7 +68,6 @@ export interface PerformanceData extends PointData {
   duration: number;
 }
 
-// ide-framework 调用
 export const IReporterService = Symbol('IReporterService');
 
 export interface IReporterTimer {

@@ -228,7 +228,7 @@ describe('connection', () => {
       return bProtocol.getProxy(testMainIdentifier).$errorFunction();
     }
 
-    const testUri = Uri.file('/Users/franklife/work/ide/ac4/ide-framework/README.md');
+    const testUri = Uri.file('/workspace/README.md');
     await bProtocol.getProxy(testMainIdentifier).$test();
     await bProtocol.getProxy(testMainIdentifier).$getUri(testUri);
     expect(mockMainIndetifierMethod.mock.calls.length).toBe(1);

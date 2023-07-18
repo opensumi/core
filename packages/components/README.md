@@ -32,7 +32,7 @@ export const Sample = () => (
 );
 ```
 
-在 ide-framework 中可通过 appConfig 传入新 Icon/覆盖已存在的 Icon
+在 OpenSumi 中可通过 appConfig 传入新 Icon/覆盖已存在的 Icon
 
 ```js
 renderApp({
@@ -52,10 +52,10 @@ renderApp({
 
 ## Attention
 
-- components 包的定位是直接能对外使用，不限定于在 ide-framework 运行环境的组件
+- components 包的定位是直接能对外使用，不限定于在 OpenSumi 运行环境的组件
 - 因此需要注意的是，放到这里的组件应该是纯组件
-  - 不包含对 ide-framework runtime 依赖
-  - 不包含对 ide-framework 其他包的依赖
+  - 不包含对 OpenSumi runtime 依赖
+  - 不包含对 OpenSumi 其他包的依赖
   - 自己的依赖自己管理
 - 脱离 ide-fw 去单独使用 `@opensumi/ide-components` 时，应手动 import 字体文件
 
