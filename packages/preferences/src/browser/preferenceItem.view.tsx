@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -41,6 +42,7 @@ interface IPreferenceItemProps {
   currentValue: any;
   defaultValue: any;
   schema: PreferenceItem;
+  labels: Record<string, string>;
   scope: PreferenceScope;
   effectingScope: PreferenceScope;
   hasValueInScope: boolean;
@@ -85,6 +87,7 @@ export const NextPreferenceItem = ({
     preferenceProvider.get<boolean | string | string[]>(preferenceId),
   );
   const [schema, setSchema] = useState<PreferenceItem>();
+  const [labels, setLabels] = useState(() => settingsService.getEnumLabels(preferenceId));
 
   // 当这个设置项被外部变更时，更新局部值
   useEffect(() => {
@@ -106,10 +109,12 @@ export const NextPreferenceItem = ({
     );
 
     disposableCollection.push(
-      settingsService.onDidEnumLabelsChange(() => {
-        const schemas = schemaProvider.getPreferenceProperty(preferenceId);
-        setSchema(schemas);
-      }),
+      settingsService.onDidEnumLabelsChange(preferenceId)(
+        debounce(() => {
+          setSchema(schemaProvider.getPreferenceProperty(preferenceId));
+          setLabels(settingsService.getEnumLabels(preferenceId));
+        }, PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
+      ),
     );
 
     return () => {
@@ -149,6 +154,7 @@ export const NextPreferenceItem = ({
         scope,
         effectingScope,
         schema: renderSchema,
+        labels,
         currentValue: value === undefined ? inherited : value,
         defaultValue,
         localizedName,
@@ -474,12 +480,12 @@ function SelectPreferenceItem({
   currentValue,
   defaultValue,
   schema,
+  labels,
   effectingScope,
   scope,
   isModified,
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const logger: ILogger = useInjectable(ILogger);
   const value = currentValue ?? defaultValue;
 
@@ -499,8 +505,6 @@ function SelectPreferenceItem({
     [preferenceService],
   );
 
-  // enum 本身为 string[] | number[]
-  const labels = settingsService.getEnumLabels(preferenceId);
   const renderEnumOptions = useCallback(() => {
     const enums = schema.enum ? [...schema.enum] : [];
     if (defaultValue && !enums.includes(defaultValue)) {
@@ -511,15 +515,10 @@ function SelectPreferenceItem({
       if (typeof item === 'boolean') {
         item = String(item);
       }
-
+      const localized = replaceLocalizePlaceholder(String(labels[item] || item));
       return (
-        <Option
-          value={item}
-          label={replaceLocalizePlaceholder((labels[item] || item)?.toString())}
-          key={`${idx} - ${item}`}
-          className={styles.select_option}
-        >
-          {replaceLocalizePlaceholder((labels[item] || item)?.toString())}
+        <Option value={item} label={localized} key={`${idx}-${localized}`} className={styles.select_option}>
+          {localized}
           {String(item) === String(defaultValue) && (
             <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
           )}
@@ -683,12 +682,13 @@ function StringArrayPreferenceItem({
   };
 
   const items = value.map((item, idx) => {
+    const stringified = JSON.stringify(item);
     if (currentEditIndex >= 0 && currentEditIndex === idx) {
-      return <li className={styles.array_items} key={`${idx} - ${JSON.stringify(item)}`}></li>;
+      return <li className={styles.array_items} key={`${idx}-${stringified}`}></li>;
     } else {
       return (
-        <li className={styles.array_items} key={`${idx} - ${JSON.stringify(item)}`}>
-          <div className={styles.array_item}>{typeof item === 'string' ? item : JSON.stringify(item)}</div>
+        <li className={styles.array_items} key={`${idx}-${stringified}`}>
+          <div className={styles.array_item}>{typeof item === 'string' ? item : stringified}</div>
           <div className={styles.operate}>
             <Button
               type='icon'
