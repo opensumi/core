@@ -76,7 +76,7 @@ export default class FileTreeService extends Disposable {
     this.getFiles();
   }
    createFile = async () => {
-    const {content} = await this.fileService.resolveContent('/Users/franklife/work/ide/ac/ide-framework/tsconfig.json');
+    const {content} = await this.fileService.resolveContent('{file_path}');
     const file = await this.fileAPI.createFile({
       name: 'name' + Date.now() + '\n' + content,
       path: 'path' + Date.now(),
@@ -107,7 +107,7 @@ constructor(@Inject(FileServicePath) protected readonly fileService) {
 方法调用会转换成一个远程调用进行响应，返回结果
 
 ```javascript
-const { content } = await this.fileService.resolveContent('/Users/franklife/work/ide/ac/ide-framework/tsconfig.json');
+const { content } = await this.fileService.resolveContent('{file_path}');
 ```
 
 **前端服务(frontService)** 后端服务(backService) 即在 Browser 环境下运行的代码暴露的能力

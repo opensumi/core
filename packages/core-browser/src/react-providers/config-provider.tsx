@@ -160,7 +160,7 @@ export interface AppConfig {
   /**
    * @ClientOption
    * 额外的 ConfigProvider
-   * 可以让 IDE-framework 内部的 ReactDOM.render 调用时
+   * 可以让 OpenSumi 内部的 ReactDOM.render 调用时
    * 都被其包裹一层，以达到额外的 context 传递效果
    */
   extraContextProvider?: React.ComponentType<React.PropsWithChildren<any>>;
