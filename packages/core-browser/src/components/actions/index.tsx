@@ -29,20 +29,11 @@ const MenuAction: React.FC<{
   data: MenuNode;
   disabled?: boolean;
   hasSubmenu?: boolean;
-  iconService?: IMenubarIconService;
-}> = ({ data, hasSubmenu, disabled, iconService }) => (
+}> = ({ data, hasSubmenu, disabled }) => (
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
     <div className={styles.icon}>{data.checked ? <Icon icon='check' /> : null}</div>
-    <div className={styles.label}>
-      {data.label
-        ? transformLabelWithCodicon(
-            strings.mnemonicButtonLabel(data.label, true),
-            { margin: '0 3px' },
-            iconService?.fromString.bind(iconService),
-          )
-        : ''}
-    </div>
+    <div className={styles.label}>{data.label ? strings.mnemonicButtonLabel(data.label, true) : ''}</div>
     <div className={styles.tip}>
       {data.keybinding ? <div className={styles.shortcut}>{data.keybinding}</div> : null}
       {hasSubmenu ? (
@@ -62,8 +53,7 @@ export const MenuActionList: React.FC<{
   afterClick?: (item: MenuNode) => void;
   context?: any[];
   style?: React.CSSProperties;
-  iconService?: IMenubarIconService;
-}> = ({ data = [], context = [], afterClick, style, iconService }) => {
+}> = ({ data = [], context = [], afterClick, style }) => {
   if (!data.length) {
     return null;
   }
@@ -98,9 +88,9 @@ export const MenuActionList: React.FC<{
     (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
         if (menuNode.id === SeparatorMenuItemNode.ID) {
-          return null;
+          return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
         }
-        const hasSeparator = dataSource[index + 1] && dataSource[index + 1].id === SeparatorMenuItemNode.ID;
+
         if (menuNode.id === SubmenuItemNode.ID) {
           // 子菜单项为空时不渲染
           if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
@@ -108,32 +98,26 @@ export const MenuActionList: React.FC<{
           }
 
           return (
-            <React.Fragment key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}>
-              <Menu.SubMenu
-                key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}
-                className={styles.submenuItem}
-                popupClassName='kt-menu'
-                title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
-              >
-                {recursiveRender(menuNode.children, menuNode.label)}
-              </Menu.SubMenu>
-              {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
-            </React.Fragment>
+            <Menu.SubMenu
+              key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
+              className={styles.submenuItem}
+              popupClassName='kt-menu'
+              title={<MenuAction hasSubmenu data={menuNode} />}
+            >
+              {recursiveRender(menuNode.children, menuNode.label)}
+            </Menu.SubMenu>
           );
         }
 
         return (
-          <React.Fragment key={`${menuNode.id}-${index}`}>
-            <Menu.Item
-              id={`${menuNode.id}-${index}`}
-              key={`${menuNode.id}-${index}`}
-              className={styles.menuItem}
-              disabled={menuNode.disabled}
-            >
-              <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
-            </Menu.Item>
-            {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
-          </React.Fragment>
+          <Menu.Item
+            id={`${menuNode.id}-${index}`}
+            key={`${menuNode.id}-${key}-${index}`}
+            className={styles.menuItem}
+            disabled={menuNode.disabled}
+          >
+            <MenuAction data={menuNode} disabled={menuNode.disabled} />
+          </Menu.Item>
         );
       }),
     [],
@@ -158,9 +142,19 @@ const EllipsisWidget: React.FC<{
   icon?: string;
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLElement>;
-}> = ({ type, icon, disabled, onClick }) => {
+  title?: string;
+}> = ({ type, icon, disabled, onClick, title }) => {
   if (type === 'icon') {
-    return <Icon icon={icon || 'ellipsis'} className={styles.iconAction} onClick={onClick} />;
+    return (
+      <Button
+        size='small'
+        type={type}
+        className={styles.btnAction}
+        onClick={onClick}
+        title={title}
+        icon={icon || 'ellipsis'}
+      ></Button>
+    );
   }
   const props = {};
   if (isBoolean(disabled)) {
@@ -168,7 +162,7 @@ const EllipsisWidget: React.FC<{
   }
 
   return (
-    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props}>
+    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props} title={title}>
       <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
@@ -330,6 +324,7 @@ export const TitleActionList: React.FC<
     nav: MenuNode[];
     more?: MenuNode[];
     moreIcon?: string;
+    moreTitle?: string;
     className?: string;
     iconService?: IMenubarIconService;
   } & BaseActionListProps
@@ -343,6 +338,7 @@ export const TitleActionList: React.FC<
     nav = [],
     more = [],
     moreIcon,
+    moreTitle,
     context = [],
     extraNavActions = [],
     moreAtFirst = false,
@@ -378,7 +374,13 @@ export const TitleActionList: React.FC<
 
     const moreAction =
       secondary.length > 0 ? (
-        <EllipsisWidget disabled={secondary[0].disabled} icon={moreIcon} type={type} onClick={handleShowMore} />
+        <EllipsisWidget
+          disabled={secondary[0].disabled}
+          icon={moreIcon}
+          type={type}
+          onClick={handleShowMore}
+          title={moreTitle}
+        />
       ) : null;
 
     return (
@@ -491,6 +493,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
   context?: TupleContext<T, U, K, M>;
   menus: IContextMenu;
   moreIcon?: string;
+  moreTitle?: string;
   separator?: IMenuSeparator;
   iconService?: IMenubarIconService;
 }
@@ -500,7 +503,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
 export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineMenuBarProps<T, U, K, M>,
 ): React.ReactElement<InlineMenuBarProps<T, U, K, M>> {
-  const { iconService, menus, context, moreIcon, separator = 'navigation', ...restProps } = props;
+  const { iconService, menus, context, moreIcon, moreTitle, separator = 'navigation', ...restProps } = props;
   const [navMenu, moreMenu] = useContextMenus(menus);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -510,6 +513,7 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
       moreIcon={moreIcon}
+      moreTitle={moreTitle}
       context={context}
       iconService={iconService}
       {...restProps}

@@ -234,6 +234,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
             <InlineMenuBar
               menus={titleMenu}
               context={selectedRepo && selectedRepo.provider && [selectedRepo.provider]}
+              moreTitle={localize('scm.action.git.more', 'more actions')}
             />
           ) : null
         }
