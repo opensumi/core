@@ -101,3 +101,8 @@ export const debugConsoleInputIconForeground = registerColor(
   { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground },
   'Foreground color for debug console input marker icon.',
 );
+export const debugIconBreakpointForeground = registerColor(
+  'debugIcon.breakpointForeground',
+  { dark: '#E51400', light: '#E51400', hcDark: '#E51400', hcLight: '#E51400' },
+  'Icon color for breakpoints.',
+);

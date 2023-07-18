@@ -785,6 +785,10 @@ export const defaultSettingSections: {
         { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
         { id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title' },
         { id: 'debug.breakpoint.editorHint', localized: 'preference.debug.breakpoint.editorHint.title' },
+        {
+          id: 'debug.breakpoint.showBreakpointsInOverviewRuler',
+          localized: 'preference.debug.breakpoint.showBreakpointsInOverviewRuler',
+        },
       ],
     },
   ],
