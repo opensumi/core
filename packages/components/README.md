@@ -57,7 +57,7 @@ renderApp({
   - 不包含对 OpenSumi runtime 依赖
   - 不包含对 OpenSumi 其他包的依赖
   - 自己的依赖自己管理
-- 脱离 ide-fw 去单独使用 `@opensumi/ide-components` 时，应手动 import 字体文件
+- 脱离 OpenSumi 去单独使用 `@opensumi/ide-components` 时，应手动 import 字体文件
 
   ```less
   @import '@opensumi/ide-components/lib/icon/iconfont/iconfont.css';
