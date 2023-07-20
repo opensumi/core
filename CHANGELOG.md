@@ -7,6 +7,74 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## v2.26.0
+
+### What's New Features
+
+- feat: bottom panel support accordion by @Aaaaash in https://github.com/opensumi/core/pull/2798
+- feat: support InlineCompletionItemProvider.handleDidShowCompletionItem API by @erha19 in https://github.com/opensumi/core/pull/2799
+- feat: support search preference by @ext expression by @erha19 in https://github.com/opensumi/core/pull/2813
+- feat: support overwrite when editor save by @winjo in https://github.com/opensumi/core/pull/2846
+- feat: support use npmmirror cdn url by @bytemain in https://github.com/opensumi/core/pull/2830
+- feat: editor tab support revealInExplorer by @pipiiiiii in https://github.com/opensumi/core/pull/2848
+- feat: support merge editor accept left or right by @Ricbet in https://github.com/opensumi/core/pull/2839
+- feat: improve render blank lines breakpoints by @Ricbet in https://github.com/opensumi/core/pull/2832
+- fix: merge editor not support wordwrap by @Ricbet in https://github.com/opensumi/core/pull/2836
+- feat: support resolve in merge editor by @Ricbet in https://github.com/opensumi/core/pull/2819
+- feat: improve merge editor result title by @Ricbet in https://github.com/opensumi/core/pull/2835
+- feat: support register view container in bottom panel by @Aaaaash in https://github.com/opensumi/core/pull/2847
+- feat: support merge editor reset by @Ricbet in https://github.com/opensumi/core/pull/2841
+- feat: support scm setInputBoxEnablement API & getSourceControl API by @Ricbet in https://github.com/opensumi/core/pull/2863
+- feat: support merge editor minimap by @Ricbet in https://github.com/opensumi/core/pull/2859
+- feat: implement scm contributes by @Ricbet in https://github.com/opensumi/core/pull/2867
+- feat: infer second terminal cwd from the first one by @bytemain in https://github.com/opensumi/core/pull/2852
+- feat: support showBreakpointsInOverviewRuler by @Ricbet in https://github.com/opensumi/core/pull/2902
+
+### Style Changes
+
+- fix: left panel style lower right menu style by @wangxiaojuan in https://github.com/opensumi/core/pull/2818
+- fix: update the style of the currently selected file menu by @wangxiaojuan in https://github.com/opensumi/core/pull/2810
+- fix: navigation menu style rendering problem by @wangxiaojuan in https://github.com/opensumi/core/pull/2807
+- fix: button white-space style by @Aaaaash in https://github.com/opensumi/core/pull/2817
+- style: merge editor left view padding by @Ricbet in https://github.com/opensumi/core/pull/2837
+- style: input disabled style by @Ricbet in https://github.com/opensumi/core/pull/2861
+- style: change resize handler z-index by @erha19 in https://github.com/opensumi/core/pull/2868
+- fix: left panel style lower right menu style by @wangxiaojuan in https://github.com/opensumi/core/pull/2888
+- style: improve secondary button hover style by @erha19 in https://github.com/opensumi/core/pull/2890
+- chore: remove deprecated usage of less expression by @erha19 in https://github.com/opensumi/core/pull/2906
+
+### Other Changes
+
+- chore: add lint rules for ignore warning by @pipiiiiii in https://github.com/opensumi/core/pull/2855
+- chore: remove unused import vars by @pipiiiiii in https://github.com/opensumi/core/pull/2856
+- chore: fix warnings and remove some useless code by @erha19 in https://github.com/opensumi/core/pull/2795
+- fix: add key for MenuActionList by @winjo in https://github.com/opensumi/core/pull/2809
+- fix: worker api not execute by @AhkunTa in https://github.com/opensumi/core/pull/2879
+- fix: add keys for fragment by @Aaaaash in https://github.com/opensumi/core/pull/2812
+- fix: plugin panel height adjustment by @wangxiaojuan in https://github.com/opensumi/core/pull/2823
+- fix: terminal adds top whitespace by @wangxiaojuan in https://github.com/opensumi/core/pull/2821
+- fix: check undefined of preference item default value by @winjo in https://github.com/opensumi/core/pull/2834
+- fix: add key for preference item description list by @winjo in https://github.com/opensumi/core/pull/2840
+- chore: update xterm.js by @Aaaaash in https://github.com/opensumi/core/pull/2825
+- chore: optimize split panel re-render by @Aaaaash in https://github.com/opensumi/core/pull/2851
+- chore(deps): bump semver from 6.3.0 to 7.5.2 by @dependabot in https://github.com/opensumi/core/pull/2826
+- chore: remove sanitize in marked options by @bytemain in https://github.com/opensumi/core/pull/2850
+- fix: unwatchFileChanges api do not work on file service by @miserylee in https://github.com/opensumi/core/pull/2824
+- chore(deps): bump semver from 5.7.1 to 5.7.2 in /tools/electron by @dependabot in https://github.com/opensumi/core/pull/2882
+- fix: add version to download-extension targetDirName by @pipiiiiii in https://github.com/opensumi/core/pull/2877
+- fix: except breakpoint blank description by @Ricbet in https://github.com/opensumi/core/pull/2878
+- fix(ext): extension cannot reset validateMessage to undefined by @bytemain in https://github.com/opensumi/core/pull/2889
+- fix: debug console repl not show by @Ricbet in https://github.com/opensumi/core/pull/2898
+- fix: title-bar add i18n tips (#2903) by @zhuzeyu22 in https://github.com/opensumi/core/pull/2905
+- fix(preference): rerender Select component if localized string changed by @bytemain in https://github.com/opensumi/core/pull/2892
+- chore: optimize treeview re-render by @Aaaaash in https://github.com/opensumi/core/pull/2833
+
+## New Contributors
+
+- @zhuzeyu22 made their first contribution in https://github.com/opensumi/core/pull/2905
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v2.25.4...v2.26.0
+
 ## v2.25.0
 
 ### What's New Features
