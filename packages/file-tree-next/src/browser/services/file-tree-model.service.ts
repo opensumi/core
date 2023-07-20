@@ -382,7 +382,8 @@ export class FileTreeModelService {
         });
       }),
     );
-    await this.fileTreeService.startWatchFileEvent();
+    // 文件变化的监听不应该阻塞渲染
+    this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
 
     this._whenReady.resolve();
