@@ -9,8 +9,8 @@ declare type getContainerFunc = () => HTMLElement;
 
 export interface IOverlayProps {
   visible: boolean;
-  afterClose: ModalProps['afterClose'];
-  onClose: ModalProps['onCancel'];
+  afterClose?: ModalProps['afterClose'];
+  onClose?: ModalProps['onCancel'];
   children?: React.ReactNode;
   className?: string;
   width?: number;
