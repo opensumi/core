@@ -75,6 +75,42 @@
 
 **Full Changelog**: https://github.com/opensumi/core/compare/v2.25.4...v2.26.0
 
+<a name="breaking_changes_2.26.0">[Breaking Changes:](#breaking_changes_2.26.0)</a>
+
+#### 1. Remove `~` prefix in the less file [#2906](https://github.com/opensumi/core/pull/2906)
+
+The `~` expression is deprecated on the latest less-loader, see [less-loader/#webpack-resolver](https://webpack.js.org/loaders/less-loader/#webpack-resolver).
+
+If you have the `Module not found` error, you can update your webpack config like this:
+
+```ts
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.less$/i,
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                paths: [path.resolve(__dirname, 'node_modules')],
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+};
+```
+
 ## v2.25.0
 
 ### What's New Features
