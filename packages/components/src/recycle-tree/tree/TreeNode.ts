@@ -827,22 +827,22 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             }
           }
         } else if (CompositeTreeNode.is(child)) {
+          // 如果节点默认展开，则忽略后续操作
           if (!(child as CompositeTreeNode).expanded) {
-            // 如果节点没有默认展开，则设置一下展开状态
             (child as CompositeTreeNode).isExpanded = true;
-          }
-          const extraExpandedPaths = await (child as CompositeTreeNode).resolveChildrens(token);
-          if (token?.isCancellationRequested) {
-            return;
-          }
-          if (extraExpandedPaths) {
-            toExpandPaths = toExpandPaths.filter((path) => !extraExpandedPaths.find((a) => a.includes(path)));
-          }
-          if (toExpandPaths.length > 0 && !token?.isCancellationRequested) {
-            toExpandPaths =
-              (await (child as CompositeTreeNode).refreshTreeNodeByPaths([...toExpandPaths], token, origin)) || [];
+            const extraExpandedPaths = await (child as CompositeTreeNode).resolveChildrens(token);
             if (token?.isCancellationRequested) {
               return;
+            }
+            if (extraExpandedPaths) {
+              toExpandPaths = toExpandPaths.filter((path) => !extraExpandedPaths.find((a) => a.includes(path)));
+            }
+            if (toExpandPaths.length > 0 && !token?.isCancellationRequested) {
+              toExpandPaths =
+                (await (child as CompositeTreeNode).refreshTreeNodeByPaths([...toExpandPaths], token, origin)) || [];
+              if (token?.isCancellationRequested) {
+                return;
+              }
             }
           }
         }
