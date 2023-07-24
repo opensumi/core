@@ -1,5 +1,4 @@
 import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
-import PQueue from 'p-queue';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -14,6 +13,7 @@ import {
   SaveTaskErrorCause,
   iconvEncode,
   iconvDecode,
+  Throttler,
 } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
@@ -27,7 +27,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 
-  private saveQueueByUri = new Map<string, PQueue>();
+  private saveQueueByUri = new Map<string, Throttler>();
 
   // 由于此处只处理file协议，为了简洁，不再使用 fileService,
 
@@ -133,19 +133,9 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
 
     // 根据 URI 来区分保存队列，不同 URI 可并行保存，相同 URI 保证强时序
     if (!this.saveQueueByUri.get(uri)) {
-      this.saveQueueByUri.set(uri, new PQueue({ concurrency: 1 }));
+      this.saveQueueByUri.set(uri, new Throttler());
     }
-    // 根据 uri 做队列控制，保证执行新任务前必先完成前一个
-    return this.saveQueueByUri
-      .get(uri)!
-      .add(doSaveByContent)
-      .then((taskResult) => {
-        // 没有 pending 的保存队列，从 map 中移除，防止内存泄露
-        if (this.saveQueueByUri.get(uri)?.size === 0) {
-          this.saveQueueByUri.delete(uri);
-        }
-        return taskResult;
-      });
+    return this.saveQueueByUri.get(uri)!.queue(doSaveByContent);
   }
 
   async $getMd5(uri: string, encoding?: string | undefined): Promise<string | undefined> {

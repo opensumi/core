@@ -18,6 +18,7 @@ import {
   REPORT_NAME,
   SaveTaskErrorCause,
   SaveTaskResponseState,
+  Throttler,
   URI,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -116,7 +117,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 
-  private saveQueue = new PQueue({ concurrency: 1 });
+  private saveQueue = new Throttler();
 
   private monacoModel: ITextModel;
 
@@ -414,7 +415,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       }
       return false;
     };
-    return this.saveQueue.add(doSave.bind(this));
+    return this.saveQueue.queue(doSave);
   }
 
   private async compareAndSave() {

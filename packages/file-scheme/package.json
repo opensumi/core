@@ -19,8 +19,7 @@
   "dependencies": {
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
-    "@opensumi/ide-file-service": "workspace:*",
-    "p-queue": "^6.6.2"
+    "@opensumi/ide-file-service": "workspace:*"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
