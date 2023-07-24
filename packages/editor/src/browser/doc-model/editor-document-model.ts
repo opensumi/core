@@ -1,5 +1,4 @@
 import debounce from 'lodash/debounce';
-import PQueue from 'p-queue';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
