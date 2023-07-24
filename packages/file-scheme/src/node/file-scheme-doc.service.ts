@@ -1,4 +1,5 @@
 import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
+import PQueue from 'p-queue';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -25,6 +26,8 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
 
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
+
+  private saveQueueByUri = new Map<string, PQueue>();
 
   // 由于此处只处理file协议，为了简洁，不再使用 fileService,
 
@@ -84,45 +87,65 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     force = false,
     token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
-    try {
-      const stat = await this.fileService.getFileStat(uri);
-      if (token?.isCancellationRequested) {
+    const doSaveByContent = async () => {
+      try {
+        const stat = await this.fileService.getFileStat(uri);
+        if (token?.isCancellationRequested) {
+          return {
+            state: SaveTaskResponseState.ERROR,
+            errorMessage: SaveTaskErrorCause.CANCEL,
+          };
+        }
+        if (stat) {
+          if (!force) {
+            const res = await this.fileService.resolveContent(uri, { encoding });
+            if (token?.isCancellationRequested) {
+              return {
+                state: SaveTaskResponseState.ERROR,
+                errorMessage: SaveTaskErrorCause.CANCEL,
+              };
+            }
+            if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
+              return {
+                state: SaveTaskResponseState.DIFF,
+              };
+            }
+          }
+
+          await this.fileService.setContent(stat, content.content, { encoding });
+
+          return {
+            state: SaveTaskResponseState.SUCCESS,
+          };
+        } else {
+          await this.fileService.createFile(uri, { content: content.content, encoding });
+          return {
+            state: SaveTaskResponseState.SUCCESS,
+          };
+        }
+      } catch (e) {
         return {
           state: SaveTaskResponseState.ERROR,
-          errorMessage: SaveTaskErrorCause.CANCEL,
+          errorMessage: e.toString(),
         };
       }
-      if (stat) {
-        if (!force) {
-          const res = await this.fileService.resolveContent(uri, { encoding });
-          if (token?.isCancellationRequested) {
-            return {
-              state: SaveTaskResponseState.ERROR,
-              errorMessage: SaveTaskErrorCause.CANCEL,
-            };
-          }
-          if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
-            return {
-              state: SaveTaskResponseState.DIFF,
-            };
-          }
-        }
-        await this.fileService.setContent(stat, content.content, { encoding });
-        return {
-          state: SaveTaskResponseState.SUCCESS,
-        };
-      } else {
-        await this.fileService.createFile(uri, { content: content.content, encoding });
-        return {
-          state: SaveTaskResponseState.SUCCESS,
-        };
-      }
-    } catch (e) {
-      return {
-        state: SaveTaskResponseState.ERROR,
-        errorMessage: e.toString(),
-      };
+    };
+
+    // 根据 URI 来区分保存队列，不同 URI 可并行保存，相同 URI 保证强时序
+    if (!this.saveQueueByUri.get(uri)) {
+      this.saveQueueByUri.set(uri, new PQueue({ concurrency: 1 }));
     }
+    // 根据 uri 做队列控制，保证执行新任务前必先完成前一个
+    return this.saveQueueByUri
+      .get(uri)!
+      .add(doSaveByContent)
+      .then((taskResult) => {
+        // 没有 pending 的保存队列，从 map 中移除，防止内存泄露
+        if (this.saveQueueByUri.get(uri)?.size === 0) {
+          this.saveQueueByUri.delete(uri);
+        }
+        return taskResult;
+      });
   }
 
   async $getMd5(uri: string, encoding?: string | undefined): Promise<string | undefined> {

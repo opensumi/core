@@ -2916,6 +2916,7 @@ __metadata:
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
+    p-queue: ^6.6.2
     vscode-oniguruma: 1.5.1
   languageName: unknown
   linkType: soft
@@ -3057,6 +3058,7 @@ __metadata:
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-monaco": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
+    p-queue: ^6.6.2
   languageName: unknown
   linkType: soft
 

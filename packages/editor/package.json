@@ -22,6 +22,7 @@
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-utils": "workspace:*",
+    "p-queue": "^6.6.2",
     "vscode-oniguruma": "1.5.1"
   },
   "devDependencies": {
