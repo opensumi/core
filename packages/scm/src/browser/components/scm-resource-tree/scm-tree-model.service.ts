@@ -569,8 +569,15 @@ export class SCMTreeModelService {
   };
 
   public handleItemDoubleClick = (item: SCMResourceGroup | SCMResourceFile, type: TreeNodeType) => {
+    if (this.listOpenMode === 'doubleClick') {
+      if (type === TreeNodeType.TreeNode) {
+        this.openFile(item as SCMResourceFile);
+      } else {
+        this.toggleDirectory(item as SCMResourceGroup);
+      }
+    }
+
     if (type === TreeNodeType.TreeNode) {
-      this.openFile(item as SCMResourceFile);
       // 双击 pin 住当前文件对应的 editor
       const { currentEditorGroup, currentEditor } = this.workbenchEditorService;
       if (currentEditorGroup && currentEditor && currentEditor.currentUri) {
@@ -578,10 +585,6 @@ export class SCMTreeModelService {
         if (URI.from((item.resource as ISCMResource).sourceUri).isEqual(currentEditor.currentUri)) {
           currentEditorGroup.pin(currentEditor.currentUri);
         }
-      }
-    } else {
-      if (this.listOpenMode === 'doubleClick') {
-        this.toggleDirectory(item as SCMResourceGroup);
       }
     }
   };
@@ -600,18 +603,7 @@ export class SCMTreeModelService {
     // 如果为文件，则需要打开文件
     if (this.listOpenMode === 'singleClick') {
       if (type === TreeNodeType.TreeNode) {
-        const openFileItem = item as SCMResourceFile;
-        const commandID = openFileItem.resource.command?.id;
-        if (
-          commandID === EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID ||
-          commandID === EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID
-        ) {
-          this.commandService
-            .executeCommand(commandID, ...(openFileItem.resource.command?.arguments || []))
-            .catch((err) => this.logger.error('Failed to execute command:', err, commandID));
-        } else {
-          this.openFile(openFileItem);
-        }
+        this.openFile(item as SCMResourceFile);
       } else {
         this.toggleDirectory(item as SCMResourceGroup);
       }
@@ -619,8 +611,19 @@ export class SCMTreeModelService {
   };
 
   private openFile = (item: SCMResourceFile) => {
-    const scmResource = item.resource as ISCMResource;
-    scmResource.open(true /* preverseFocus 应该从 editorOptions 中取 */);
+    const openFileItem = item as SCMResourceFile;
+    const commandID = openFileItem.resource.command?.id;
+    if (
+      commandID === EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID ||
+      commandID === EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID
+    ) {
+      this.commandService
+        .executeCommand(commandID, ...(openFileItem.resource.command?.arguments || []))
+        .catch((err) => this.logger.error('Failed to execute command:', err, commandID));
+    } else {
+      const scmResource = item.resource as ISCMResource;
+      scmResource.open(true /* preverseFocus 应该从 editorOptions 中取 */);
+    }
   };
 
   public toggleDirectory = (item: SCMResourceGroup | SCMResourceFolder) => {
