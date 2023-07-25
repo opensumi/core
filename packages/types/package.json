@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/sumi",
-  "version": "2.25.4",
+  "version": "2.26.1",
   "typings": "index.d.ts",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
-import { DisposableCollection, Deferred, Emitter, Event, URI } from '@opensumi/ide-core-browser';
+import { DisposableCollection, Deferred, Emitter, Event, URI, runWhenIdle } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { IMarkerService } from '../../common/types';
@@ -194,7 +194,9 @@ export class MarkerModelService {
 
   async refresh() {
     await this.whenReady;
-    this.treeModel.root.refresh();
+    runWhenIdle(() => {
+      this.treeModel.root.refresh();
+    });
   }
 
   dispose() {

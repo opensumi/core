@@ -321,7 +321,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
         );
         return result;
       }),
-    [children, childList, resizeHandleClassName, dynamicTarget, resizeDelegates.current, hides],
+    [children, childList, resizeHandleClassName, dynamicTarget, resizeDelegates.current, hides, locks],
   );
 
   React.useEffect(() => {
