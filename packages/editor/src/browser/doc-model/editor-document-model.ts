@@ -17,6 +17,7 @@ import {
   REPORT_NAME,
   SaveTaskErrorCause,
   SaveTaskResponseState,
+  Throttler,
   URI,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -114,6 +115,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
+
+  private saveQueue = new Throttler();
 
   private monacoModel: ITextModel;
 
@@ -356,6 +359,62 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async save(force = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
+    const doSave = async (force = false, reason: SaveReason = SaveReason.Manual) => {
+      await this.formatOnSave(reason);
+      // 发送willSave并等待完成
+      await this.eventBus.fireAndAwait(
+        new EditorDocumentModelWillSaveEvent({
+          uri: this.uri,
+          reason,
+          language: this.languageId,
+        }),
+      );
+      if (!this.editorPreferences['editor.askIfDiff']) {
+        force = true;
+      }
+      if (!this.dirty) {
+        return false;
+      }
+      const versionId = this.monacoModel.getVersionId();
+      const lastSavingTask = this.savingTasks[this.savingTasks.length - 1];
+      if (lastSavingTask && lastSavingTask.versionId === versionId) {
+        lastSavingTask.cancel();
+        const task = this.savingTasks.pop();
+        task?.dispose();
+      }
+      const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText(), force);
+      this.savingTasks.push(task);
+      if (this.savingTasks.length > 0) {
+        this.initSave();
+      }
+      const res = await task.finished;
+      if (res.state === SaveTaskResponseState.SUCCESS) {
+        this.monacoModel.pushStackElement();
+        return true;
+      } else if (res.state === SaveTaskResponseState.ERROR) {
+        if (res.errorMessage !== SaveTaskErrorCause.CANCEL) {
+          this.logger.error(res.errorMessage);
+          this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
+        }
+        return false;
+      } else if (res.state === SaveTaskResponseState.DIFF) {
+        const diffAndSave = localize('doc.saveError.diffAndSave');
+        const overwrite = localize('doc.saveError.overwrite');
+        this.messageService
+          .error(formatLocalize('doc.saveError.diff', this.uri.toString()), [diffAndSave, overwrite])
+          .then((res) => {
+            if (res === diffAndSave) {
+              this.compareAndSave();
+            } else if (res === overwrite) {
+              doSave(true);
+            }
+          });
+        this.logger.error('The file cannot be saved, the version is inconsistent with the disk');
+        return false;
+      }
+      return false;
+    };
+    return this.saveQueue.queue(doSave);
     await this.formatOnSave(reason);
     // 发送willSave并等待完成
     await this.eventBus.fireAndAwait(
