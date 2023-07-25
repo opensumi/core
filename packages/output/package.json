@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-output",
-  "version": "2.25.4",
+  "version": "2.26.2",
   "files": [
     "lib",
     "src"

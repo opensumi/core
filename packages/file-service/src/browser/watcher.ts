@@ -43,4 +43,8 @@ export class FileSystemWatcher implements IFileServiceWatcher {
       this.fileServiceClient.unwatchFileChanges(this.watchId),
     ]) as any;
   }
+
+  isDisposed() {
+    return this.toDispose.disposed;
+  }
 }

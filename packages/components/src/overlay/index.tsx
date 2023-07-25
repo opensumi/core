@@ -8,12 +8,13 @@ import './styles.less';
 declare type getContainerFunc = () => HTMLElement;
 
 export interface IOverlayProps {
+  visible: boolean;
+  afterClose?: ModalProps['afterClose'];
+  onClose?: ModalProps['onCancel'];
+  children?: React.ReactNode;
   className?: string;
   width?: number;
   maskClosable?: boolean;
-  visible: boolean;
-  afterClose: ModalProps['afterClose'];
-  onClose: ModalProps['onCancel'];
   closable?: ModalProps['closable'];
   title?: ModalProps['title'];
   footer?: JSX.Element[] | JSX.Element;
