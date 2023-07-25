@@ -40,11 +40,7 @@ export const SCMResourceTree: FC<{
         await scmTreeModelService.treeModel.ensureReady;
       }
       isReady.current = true;
-    })();
-  }, []);
 
-  useEffect(() => {
-    if (isReady) {
       setModel(scmTreeModelService.treeModel);
       scmTreeModelService.onDidTreeModelChange(async (model) => {
         if (model) {
@@ -53,8 +49,8 @@ export const SCMResourceTree: FC<{
         }
         setModel(model);
       });
-    }
-  }, [isReady]);
+    })();
+  }, []);
 
   useEffect(() => {
     const handleBlur = () => {
