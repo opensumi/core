@@ -90,7 +90,7 @@ const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = ({ component, titleMenu, side }) => {
+}> = observer(({ component, titleMenu, side }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const configContext = useInjectable<AppConfig>(AppConfig);
@@ -143,13 +143,13 @@ const ContainerView: React.FC<{
       </div>
     </div>
   );
-};
+});
 
 const BottomPanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = ({ component, titleMenu, side }) => {
+}> = observer(({ component, titleMenu, side }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const configContext = useInjectable<AppConfig>(AppConfig);
@@ -201,7 +201,7 @@ const BottomPanelView: React.FC<{
       </div>
     </div>
   );
-};
+});
 
 export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
