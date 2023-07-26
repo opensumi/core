@@ -38,7 +38,6 @@ export interface ExtensionTabBarTreeViewProps {
 
 export const ExtensionTabBarTreeView = observer(
   ({ viewState, model, dataProvider, treeViewId }: PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
-    
     const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
     const decorationService = useInjectable<IDecorationsService>(IDecorationsService);
     const accordionService = useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
