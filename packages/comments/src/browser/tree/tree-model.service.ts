@@ -149,6 +149,12 @@ export class CommentModelService extends Disposable {
     this.removeFocusedDecoration();
   };
 
+  handleTwistierClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
+    if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
+      this.toggleDirectory(node as CommentFileNode | CommentContentNode);
+    }
+  };
+
   handleItemClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     this.applyFocusedDecoration(node);
     if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
