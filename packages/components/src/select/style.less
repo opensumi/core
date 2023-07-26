@@ -130,7 +130,8 @@
   }
 
   .kt-select-option-select {
-    & > span {
+    & > span,
+    .kt-select-option-wrapper {
       display: inline-block;
       margin: 0 2px;
       width: calc(100% - 4px);
@@ -150,7 +151,8 @@
     margin-bottom: -3px;
   }
 
-  & > span {
+  & > span,
+  .kt-select-option-wrapper {
     color: var(--kt-selectDropdown-foreground);
     background-color: var(--kt-selectDropdown-background);
     cursor: pointer;
