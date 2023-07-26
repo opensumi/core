@@ -481,6 +481,13 @@ export class CommentsService extends Disposable implements ICommentsService {
       onDidDecorationChange: this.decorationChangeEmitter.event,
       provideEditorDecoration: (uri: URI) =>
         this.commentsThreads
+          .filter((thread) => {
+            const isCurrentThread = thread.uri.isEqual(uri) && thread.comments.length > 0;
+            if (this.filterThreadDecoration) {
+              return isCurrentThread && this.filterThreadDecoration(thread);
+            }
+            return isCurrentThread;
+          })
           .map((thread) => {
             if (thread.uri.isEqual(uri)) {
               // 恢复之前的现场
@@ -490,13 +497,6 @@ export class CommentsService extends Disposable implements ICommentsService {
               thread.hideWidgetsByDispose();
             }
             return thread;
-          })
-          .filter((thread) => {
-            const isCurrentThread = thread.uri.isEqual(uri);
-            if (this.filterThreadDecoration) {
-              return isCurrentThread && this.filterThreadDecoration(thread);
-            }
-            return isCurrentThread;
           })
           .map((thread) => ({
             range: thread.range,
@@ -552,7 +552,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const uri = this.workbenchEditorService.currentEditor?.currentUri;
     uri && this.decorationChangeEmitter.fire(uri);
     // diffeditor 的 originalUri 也需要更新 Decoration
-    const originalUri = this.workbenchEditorService.currentEditorGroup?.diffEditor.originalEditor.currentUri;
+    const originalUri = this.workbenchEditorService.currentEditorGroup?.diffEditor?.originalEditor.currentUri;
     originalUri && this.decorationChangeEmitter.fire(originalUri);
   }
 
