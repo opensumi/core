@@ -13,9 +13,9 @@ export class ExtensionLogger2 implements IExtensionLogger {
   private injector: Injector;
   private loggerManager: LogServiceManager;
   private logger: ILogService;
-  private config: any;
+  private config: AppConfig;
 
-  constructor(injector) {
+  constructor(injector: Injector) {
     this.injector = injector;
     this.config = this.injector.get(AppConfig);
     this.injectLogService();

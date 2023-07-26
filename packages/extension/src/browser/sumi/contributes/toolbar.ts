@@ -95,7 +95,7 @@ export class ToolbarContributionPoint extends VSCodeContributePoint<KtToolbarSch
                 ),
               );
               break;
-            }
+          }
         }
       }
     }
