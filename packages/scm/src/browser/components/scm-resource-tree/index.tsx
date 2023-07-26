@@ -1,6 +1,6 @@
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { FC, useState, useRef, createRef, RefObject, useEffect, useCallback, memo } from 'react';
+import React, { FC, useState, createRef, RefObject, useEffect, useCallback, memo } from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
 import { isOSX } from '@opensumi/ide-core-browser';
@@ -20,7 +20,7 @@ export const SCMResourceTree: FC<{
   width: number;
   height: number;
 }> = observer(({ height }) => {
-  const isReady = useRef<boolean>(false);
+  const [isReady, setIsReady] = useState<boolean>(false);
   const [model, setModel] = useState<TreeModel>();
 
   const wrapperRef: RefObject<HTMLDivElement> = createRef();
@@ -39,7 +39,7 @@ export const SCMResourceTree: FC<{
         // 这里需要重新取一下treeModel的值确保为最新的TreeModel
         await scmTreeModelService.treeModel.ensureReady;
       }
-      isReady.current = true;
+      setIsReady(true);
     })();
   }, []);
 
@@ -142,7 +142,7 @@ export const SCMResourceTree: FC<{
       data-name={TREE_FIELD_NAME}
     >
       <SCMTreeView
-        isReady={isReady.current}
+        isReady={isReady}
         model={model}
         height={height}
         onTreeReady={handleTreeReady}
