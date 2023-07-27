@@ -481,22 +481,24 @@ export class CommentsService extends Disposable implements ICommentsService {
       onDidDecorationChange: this.decorationChangeEmitter.event,
       provideEditorDecoration: (uri: URI) =>
         this.commentsThreads
-          .filter((thread) => {
-            const isCurrentThread = thread.uri.isEqual(uri) && thread.comments.length > 0;
-            if (this.filterThreadDecoration) {
-              return isCurrentThread && this.filterThreadDecoration(thread);
-            }
-            return isCurrentThread;
-          })
           .map((thread) => {
             if (thread.uri.isEqual(uri)) {
-              // 恢复之前的现场
-              thread.showWidgetsIfShowed();
+              if (thread.comments.length) {
+                // 存在评论内容 恢复之前的现场
+                thread.showWidgetsIfShowed();
+              }
             } else {
               // 临时隐藏，当切回来时会恢复
               thread.hideWidgetsByDispose();
             }
             return thread;
+          })
+          .filter((thread) => {
+            const isCurrentThread = thread.uri.isEqual(uri);
+            if (this.filterThreadDecoration) {
+              return isCurrentThread && this.filterThreadDecoration(thread);
+            }
+            return isCurrentThread;
           })
           .map((thread) => ({
             range: thread.range,
