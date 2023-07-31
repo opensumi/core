@@ -357,8 +357,9 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
       editorOptions = {
         ...editorOptions,
         ...options.diffOptions,
-      }
+      };
     }
+
     return {
       editorOptions,
       modelOptions: { ...options.modelOptions, ...this._specialModelOptions },
