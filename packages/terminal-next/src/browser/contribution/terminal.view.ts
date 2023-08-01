@@ -48,7 +48,7 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
       '@opensumi/ide-terminal-next',
       {
         component: TerminalView,
-        id: 'ide-terminal-next',
+        id: TerminalRenderContribution.viewId,
       },
       {
         title: localize('terminal.name'),
