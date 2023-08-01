@@ -177,6 +177,26 @@ export class Decoration {
   }
 
   /**
+   * 清理所有应用的装饰器
+   */
+  public clearAppliedTarget() {
+    const appliedTargets = Array.from(this._appliedTargets.keys());
+    for (const target of appliedTargets) {
+      this.removeTarget(target);
+    }
+  }
+
+  /**
+   * 清理所有应用的否定装饰器
+   */
+  public clearNegateTarget() {
+    const negatedTargets = Array.from(this._negatedTargets.keys());
+    for (const target of negatedTargets) {
+      this.unNegateTarget(target);
+    }
+  }
+
+  /**
    * 否定装饰器绑定
    * negate 表示 :not修饰符
    * 定义节点不应用样式

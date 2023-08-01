@@ -483,8 +483,10 @@ export class CommentsService extends Disposable implements ICommentsService {
         this.commentsThreads
           .map((thread) => {
             if (thread.uri.isEqual(uri)) {
-              // 恢复之前的现场
-              thread.showWidgetsIfShowed();
+              if (thread.comments.length) {
+                // 存在评论内容 恢复之前的现场
+                thread.showWidgetsIfShowed();
+              }
             } else {
               // 临时隐藏，当切回来时会恢复
               thread.hideWidgetsByDispose();
@@ -552,7 +554,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     const uri = this.workbenchEditorService.currentEditor?.currentUri;
     uri && this.decorationChangeEmitter.fire(uri);
     // diffeditor 的 originalUri 也需要更新 Decoration
-    const originalUri = this.workbenchEditorService.currentEditorGroup?.diffEditor.originalEditor.currentUri;
+    const originalUri = this.workbenchEditorService.currentEditorGroup?.diffEditor?.originalEditor.currentUri;
     originalUri && this.decorationChangeEmitter.fire(originalUri);
   }
 

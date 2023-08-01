@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
@@ -195,19 +195,24 @@ const InlineActionWidget: React.FC<
     iconService?: IMenubarIconService;
   } & React.HTMLAttributes<HTMLElement>
 > = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+  const [loading, setLoading] = useState(false);
   const handleClick = React.useCallback(
-    (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
+    async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
+      if (loading) {
+        return;
+      }
+      setLoading(true);
       if (data.id === SubmenuItemNode.ID && event) {
         const anchor = { x: event.clientX, y: event.clientY };
-        data.execute([anchor, ...context]);
+        await data.execute([anchor, ...context]);
       } else if (typeof data.execute === 'function') {
-        data.execute([...context, ...extraArgs]);
+        await data.execute([...context, ...extraArgs]);
       }
-
+      setLoading(false);
       if (typeof afterClick === 'function') {
         afterClick();
       }
@@ -261,6 +266,7 @@ const InlineActionWidget: React.FC<
 
   return (
     <Button
+      loading={loading}
       className={clsx(className, styles.btnAction)}
       disabled={data.disabled}
       onClick={handleClick}

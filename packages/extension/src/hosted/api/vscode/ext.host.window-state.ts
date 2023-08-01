@@ -24,6 +24,7 @@ export class WindowStateImpl implements types.WindowState {
   public focused: boolean;
 
   constructor() {
-    this.focused = false;
+    // 当插件进程重启时，这里如果默认是 false，会与实际状态不一致，导致依赖该状态的插件处理有问题
+    this.focused = true;
   }
 }
