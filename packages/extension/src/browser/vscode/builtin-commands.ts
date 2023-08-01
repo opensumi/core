@@ -268,6 +268,11 @@ export const SETTINGS_COMMAND_OPEN_SETTINGS_JSON: Command = {
   delegate: 'preference.open.source',
 };
 
+export const SETTINGS_COMMAND_OPEN_GLOBAL_OPEN_KEYMAPS: Command = {
+  id: 'workbench.action.openGlobalKeybindings',
+  delegate: COMMON_COMMANDS.OPEN_KEYMAPS.id,
+};
+
 export const EDITOR_NAVIGATE_BACK: Command = {
   id: 'workbench.action.navigateBack',
   delegate: EDITOR_COMMANDS.GO_BACK.id,
