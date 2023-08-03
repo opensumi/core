@@ -261,12 +261,12 @@ export const LeftTabbarRenderer: React.FC = () => {
     >
       <InlineMenuBar className={clsx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
       <TabbarViewBase
-        tabSize={0}
+        tabSize={48}
         MoreTabView={IconElipses}
         className={styles.left_tab_content}
         tabClassName={styles.left_tab}
         TabView={IconTabView}
-        barSize={0}
+        barSize={48}
         margin={90}
         panelBorderSize={1}
       />

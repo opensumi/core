@@ -1,4 +1,4 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
 @Injectable()

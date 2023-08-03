@@ -11,7 +11,7 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.left]: {
     modules: [
       '@opensumi/ide-explorer',
-      // '@opensumi/ide-search',
+      '@opensumi/ide-search',
       // '@opensumi/ide-scm',
       // '@opensumi/ide-extension-manager',
       // '@opensumi/ide-debug',

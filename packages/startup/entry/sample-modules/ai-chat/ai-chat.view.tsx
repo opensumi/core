@@ -9,12 +9,12 @@ import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { CommandService } from '@opensumi/ide-core-common';
 import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import hljs from 'highlight.js';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { AiChatService } from './ai-chat.service';
-import { EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+// import { Markdown } from '@opensumi/ide-markdown';
+import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 
 const createMessage = (position: string, title: string, text: string | React.ReactNode) => {
   return {
@@ -49,6 +49,7 @@ export const AiChatView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [inputValue, setInputValue] = React.useState('');
@@ -424,6 +425,44 @@ setTimeout(() => {
 
     preMessagelist.push(createMessage('right', ME_NAME, preInputValue));
     setMessageListData(preMessagelist);
+
+    const aiSearchKey = '/search ';
+    const aiSearchCodeKey = '/searchcode ';
+    // 检查前缀 aiSearchKey
+    if (typeof preInputValue === 'string' && (preInputValue.startsWith(aiSearchKey) || preInputValue.startsWith(aiSearchCodeKey))) {
+      const searchValue = preInputValue.split(aiSearchKey)[1] || preInputValue.split(aiSearchCodeKey)[1]
+      
+      try {
+        const result = await aiGPTBackService.aiSearchRequest(searchValue, preInputValue.startsWith(aiSearchCodeKey) ? 'code' : 'overall');
+
+        const { responseText, urlMessage } = result;
+
+        console.log('ai search: >>>> ', result)
+
+        const aiMessage = createMessageByAI(<div style={{display: 'flex', flexDirection: 'column'}}>
+          {/* <div><Markdown content={responseText} options={{ headerIds: false }}></Markdown></div> */}
+          <div><Markdown value={responseText}></Markdown></div>
+          {/* <SyntaxHighlighter>{responseText}</SyntaxHighlighter> */}
+          {/* <div>{urlMessage}</div> */}
+          {/* <div><Markdown content={urlMessage} options={{ headerIds: false, gfm: true }}></Markdown></div> */}
+          <div style={{whiteSpace: 'pre-wrap'}}><Markdown value={urlMessage}></Markdown></div>
+          {/* <SyntaxHighlighter>{urlMessage}</SyntaxHighlighter> */}
+        </div>)
+        preMessagelist.push(aiMessage)
+        setMessageListData(preMessagelist);
+        updateState({})
+        if (containerRef && containerRef.current) {
+          containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+        }
+
+      } catch (error) {
+        console.log('/search: error >>>>>', error)
+      }
+
+      setLoading(false);
+      
+      return;
+    }
 
     await sleep(1000);
 

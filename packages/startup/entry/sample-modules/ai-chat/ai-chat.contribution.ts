@@ -5,7 +5,7 @@ import { AiChatView } from './ai-chat.view';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { QuickOpenContribution } from '@opensumi/ide-core-browser';
 import { AiQuickCommandHandler } from './ai-quick-open.command';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorDocumentModelContentRegistry, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IEditor } from '@opensumi/ide-editor';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
@@ -15,12 +15,19 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { AiChatService } from './ai-chat.service';
+import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser/types';
+import { ResourceService } from '@opensumi/ide-editor';
+import { IResource } from '@opensumi/ide-editor';
+import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 
 @Injectable()
 @Domain(ComponentContribution, QuickOpenContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
 export class AiChatContribution implements ComponentContribution, QuickOpenContribution, BrowserEditorContribution, MenuContribution, CommandContribution {
 
   static AiChatContainer = 'ai-chat';
+
+  @Autowired()
+  private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -289,5 +296,20 @@ lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('
         group: 'ai_group_3'
       },
     ])
+  }
+
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    registry.registerEditorDocumentModelContentProvider(this.aiDiffDocumentProvider);
+  }
+
+  registerResource(resourceService: ResourceService): void {
+    resourceService.registerResourceProvider({
+      scheme: 'AI',
+      provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
+        uri,
+        icon: getIcon('file-text'),
+        name: `AI Diff ${uri.displayName}`,
+      }),
+    });
   }
 }

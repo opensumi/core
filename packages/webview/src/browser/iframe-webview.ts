@@ -32,7 +32,9 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     this.iframe.setAttribute('src', `${this.config.webviewEndpoint}/index.html?id=${this.id}`);
     this.iframe.style.border = 'none';
     this.iframe.style.width = '100%';
-    this.iframe.style.position = 'absolute';
+    // this.iframe.style.position = 'absolute';
+    // 这里为了撑满高度
+    this.iframe.style.position = 'relative';
     this.iframe.style.height = '100%';
     this.iframe.style.zIndex = '2';
 
