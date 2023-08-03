@@ -1,23 +1,21 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, EDITOR_COMMANDS, FILE_COMMANDS, IQuickOpenHandlerRegistry, Position, QUICK_OPEN_COMMANDS, URI, getIcon } from '@opensumi/ide-core-browser';
-
-import { AiChatView } from './ai-chat.view';
-import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, IQuickOpenHandlerRegistry, Position, QUICK_OPEN_COMMANDS, URI, getIcon } from '@opensumi/ide-core-browser';
 import { QuickOpenContribution } from '@opensumi/ide-core-browser';
-import { AiQuickCommandHandler } from './ai-quick-open.command';
-import { BrowserEditorContribution, IEditorDocumentModelContentRegistry, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { IEditor } from '@opensumi/ide-editor';
-import { AiEditorContribution } from './ai-editor.contribution';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
-import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IMenuRegistry, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IEditor } from '@opensumi/ide-editor';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { AiChatService } from './ai-chat.service';
-import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser/types';
 import { ResourceService } from '@opensumi/ide-editor';
 import { IResource } from '@opensumi/ide-editor';
+import { BrowserEditorContribution, IEditorDocumentModelContentRegistry, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
+
+import { AiChatService } from './ai-chat.service';
+import { AiChatView } from './ai-chat.view';
+import { AiEditorContribution } from './ai-editor.contribution';
+import { AiQuickCommandHandler } from './ai-quick-open.command';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 
 @Injectable()
@@ -55,7 +53,7 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
       component: AiChatView,
       id: AiChatContribution.AiChatContainer,
     }, {
-      containerId: AiChatContribution.AiChatContainer
+      containerId: AiChatContribution.AiChatContainer,
     });
   }
 
@@ -83,8 +81,8 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
       execute: async (fileName) => {
         const workspaceDir = this.appConfig.workspaceDir;
         return await this.fileTreeAPI.createFile(URI.parse(`${workspaceDir}/${fileName}`));
-      }
-    })
+      },
+    });
 
     commands.registerCommand({
       id: 'ai.chat.createNodeHttpServerContent',
@@ -117,8 +115,8 @@ const server = http.createServer((request, response) => {
 server.listen(${prod}, () => {
   console.log('Server running at http://localhost:${prod}/');
 });`);
-      }
-    })
+      },
+    });
 
     commands.registerCommand({
       id: 'ai.chat.focusLine',
@@ -138,9 +136,9 @@ server.listen(${prod}, () => {
           currentEditor?.monacoEditor.setPosition(
             new Position(line, 0),
           );
-        }, 0)
-      }
-    })
+        }, 0);
+      },
+    });
 
     commands.registerCommand({
       id: 'ai.chat.createLazymanContent',
@@ -202,7 +200,7 @@ function lazyMan(name: string) {
 
 // 测试代码
 lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('dinner');
-`
+`;
 
         const currentEditor = this.editorService.currentEditor;
         if (!currentEditor) {
@@ -216,12 +214,12 @@ lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('
           return;
         }
 
-        return await this.fileServiceClient.setContent(stat, content)
-      }
-    })
+        return await this.fileServiceClient.setContent(stat, content);
+      },
+    });
 
     commands.registerCommand({
-      id: 'ai.chat.replaceContent.eat'
+      id: 'ai.chat.replaceContent.eat',
     }, {
       execute: async (content: string) => {
         const currentEditor = this.editorService.currentEditor;
@@ -235,26 +233,26 @@ lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('
           startLineNumber: 32,
           startColumn: 0,
           endLineNumber: 38,
-          endColumn: Number.MAX_SAFE_INTEGER
-        }
+          endColumn: Number.MAX_SAFE_INTEGER,
+        };
 
         if (monacoEditor) {
-          const model = monacoEditor.getModel()!
+          const model = monacoEditor.getModel()!;
 
           model.pushStackElement();
           model.pushEditOperations(null, [
             {
               range,
-              text: content
-            }
+              text: content,
+            },
           ], () => null);
           model.pushStackElement();
 
           monacoEditor.focus();
-          monacoEditor.setSelection(range)
+          monacoEditor.setSelection(range);
         }
-      }
-    })
+      },
+    });
 
   }
 
@@ -263,39 +261,39 @@ lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('
       {
         command: 'main-layout.left-panel.toggle',
         iconClass: getExternalIcon('hubot'),
-        group: 'ai_group_1'
+        group: 'ai_group_1',
       },
       {
         command: 'main-layout.right-panel.show',
         iconClass: getExternalIcon('comment-discussion'),
-        group: 'ai_group_1'
+        group: 'ai_group_1',
       },
       {
         command: 'main-layout.left-panel.toggle',
         iconClass: getExternalIcon('debug'),
-        group: 'ai_group_1'
+        group: 'ai_group_1',
       },
       {
         command: 'main-layout.left-panel.toggle',
         iconClass: getExternalIcon('book'),
-        group: 'ai_group_2'
+        group: 'ai_group_2',
       },
       {
         command: 'main-layout.left-panel.toggle',
         iconClass: getExternalIcon('list-unordered'),
-        group: 'ai_group_2'
+        group: 'ai_group_2',
       },
       {
         command: 'main-layout.left-panel.toggle',
         iconClass: getExternalIcon('symbol-color'),
-        group: 'ai_group_3'
+        group: 'ai_group_3',
       },
       {
         command: 'main-layout.left-panel.toggle',
         iconClass: getExternalIcon('wand'),
-        group: 'ai_group_3'
+        group: 'ai_group_3',
       },
-    ])
+    ]);
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {

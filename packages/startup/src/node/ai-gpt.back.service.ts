@@ -2,7 +2,7 @@ import nodeFetch from 'node-fetch';
 
 import { Injectable } from '@opensumi/di';
 
-const AI_SEARCH_HOST = ''
+const AI_SEARCH_HOST = '';
 
 @Injectable()
 export class AiGPTBackService {
@@ -41,7 +41,7 @@ export class AiGPTBackService {
     console.log('aiSearchRequest::>>>>>>', toJson);
     return {
       responseText,
-      urlMessage
+      urlMessage,
     };
   }
 }

@@ -1,14 +1,13 @@
 import * as React from 'react';
 
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import { IconMenuBar, MenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
+import { CommandService } from '@opensumi/ide-core-common';
+import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
-import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
-import { Select } from 'antd';
-import { Command, CommandService } from '@opensumi/ide-core-common';
-import { useInjectable } from '@opensumi/ide-core-browser';
 
 /**
  * Custom menu bar component.
@@ -20,11 +19,11 @@ export const MenuBarView = () => {
 
   const handleSelectFocus = () => {
     commandService.executeCommand('workbench.action.quickOpen');
-  }
+  };
 
   const handleRun = () => {
     commandService.executeCommand('ai.runAndDebug');
-  }
+  };
 
   // quick-open-overlay
   return (
@@ -47,5 +46,5 @@ export const MenuBarView = () => {
         <div className={styles.right}></div>
       </div>
     </div>
-  )
+  );
 };

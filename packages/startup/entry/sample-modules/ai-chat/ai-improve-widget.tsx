@@ -1,4 +1,5 @@
 import { StyleProvider } from '@ant-design/cssinjs';
+import { Input } from 'antd';
 import React, { CSSProperties } from 'react';
 import ReactDOM from 'react-dom';
 
@@ -8,7 +9,6 @@ import { ConfigProvider } from '@opensumi/ide-core-browser';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
-import { Input } from 'antd';
 
 const styles: CSSProperties = {
   height: '100%',
@@ -16,7 +16,7 @@ const styles: CSSProperties = {
   alignItems: 'flex-start',
   marginLeft: '66px',
   width: '100%',
-  flexDirection: 'column'
+  flexDirection: 'column',
 };
 
 @Injectable({ multiple: true })

@@ -1,8 +1,6 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, WithEventBus, MaybePromise, LabelService, Emitter, Event } from '@opensumi/ide-core-browser';
-import { IResource, IResourceProvider } from '@opensumi/ide-editor';
+import { Injectable } from '@opensumi/di';
+import { URI, MaybePromise, Emitter, Event } from '@opensumi/ide-core-browser';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser/index';
-import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 
 @Injectable()
 export class AiDiffDocumentProvider implements IEditorDocumentModelContentProvider {
