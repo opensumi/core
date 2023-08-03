@@ -348,7 +348,7 @@ export class MainLayoutModuleContribution
     Object.entries({
       [SlotLocation.left]: [
         EXPLORER_CONTAINER_ID,
-        // SEARCH_CONTAINER_ID,
+        SEARCH_CONTAINER_ID,
         // SCM_CONTAINER_ID,
         // DEBUG_CONTAINER_ID,
         // EXTENSION_CONTAINER_ID,

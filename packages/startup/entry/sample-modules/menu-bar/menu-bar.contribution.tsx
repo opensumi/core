@@ -47,7 +47,7 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
       iconClass: getExternalIcon('comment-discussion'),
     }, {
       execute: async () => {
-        await this.aiChatService.launchChatMessage('解释一下当前我选中的这段代码')
+        // await this.aiChatService.launchChatMessage('解释一下当前我选中的这段代码')
       }
     })
 

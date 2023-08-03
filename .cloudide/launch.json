@@ -1,0 +1,161 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to BackEnd",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "port": 9999,
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Electron Main",
+      "port": 9229,
+      "restart": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch BackEnd",
+      "args": [
+        "./entry/web/server.ts"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/packages/startup",
+      "protocol": "inspector",
+      "console": "internalConsole",
+      "env": {
+        "IS_DEV": "1",
+        "KTLOG_SHOW_DEBUG": "1"
+      }
+    },
+    {
+      "name": "Launch Frontend",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/webpack-dev-server",
+      "args": [
+        "--config",
+        "${workspaceRoot}/packages/startup/webpack.config.js"
+      ],
+      "cwd": "${workspaceRoot}/packages/startup",
+      "console": "internalConsole"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Extension Host",
+      "port": 9889,
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/tools/extension/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+        "webpack:///./*": "${workspaceRoot}/*",
+        "webpack:///*": "*"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Jest Current File",
+      "runtimeArgs": [
+        "--unhandled-rejections=strict",
+        "${workspaceRoot}/node_modules/.bin/jest"
+      ],
+      "args": [
+        "${relativeFile}",
+        "--detectOpenHandles"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Jest Current File(no timeout)",
+      "runtimeArgs": [
+        "--unhandled-rejections=strict",
+        "${workspaceRoot}/node_modules/.bin/jest"
+      ],
+      "args": [
+        "${relativeFile}",
+        "--detectOpenHandles",
+        "--testTimeout=100000000"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug Jest Tests",
+      "runtimeArgs": [
+        "--unhandled-rejections=strict",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--bail"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "port": 9229,
+      "type": "node",
+      "request": "launch"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Publish test",
+      "args": [
+        "./scripts/publish.ts"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "console": "internalConsole"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "changelog",
+      "program": "${workspaceFolder}/scripts/changelog/index.js"
+    },
+    {
+      "name": "Playwright Current File",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/playwright",
+      "args": [
+        "test",
+        "--debug",
+        "--config=./configs/playwright.debug.config.ts",
+        "${fileBasenameNoExtension}"
+      ],
+      "cwd": "${workspaceFolder}/tools/playwright",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "npm: build - tools/playwright"
+    }
+  ]
+}

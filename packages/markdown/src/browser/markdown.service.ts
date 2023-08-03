@@ -94,7 +94,7 @@ function renderBody(body: string): string {
         </style>
       </head>
       <body>
-        <a id="scroll-to-top" role="button" aria-label="scroll to top" href="#"><span class="icon"></span></a>
+        <!-- <a id="scroll-to-top" role="button" aria-label="scroll to top" href="#"><span class="icon"></span></a> -->
         ${body}
       </body>
     </html>`;
