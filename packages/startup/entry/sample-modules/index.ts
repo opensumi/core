@@ -13,7 +13,7 @@ export class SampleModule extends BrowserModule {
     MenuBarContribution,
     EditorEmptyComponentContribution,
     StatusBarContribution,
-    AiChatContribution
+    AiChatContribution,
   ];
 
   backServices = [

@@ -42,7 +42,7 @@ const AiInput = ({ onValueChange }) => {
   };
 
   const handleChange = (newValue: string) => {
-    console.log('select handleChange:>>> ', newValue)
+    console.log('select handleChange:>>> ', newValue);
     if (onValueChange) {
       onValueChange(newValue);
     }
@@ -151,7 +151,7 @@ export class AiZoneWidget extends ZoneWidget {
     return this;
   }
 
-  public showByLine(line: number, lineNumber: number = 2): void {
+  public showByLine(line: number, lineNumber = 2): void {
     this.recordLine = line;
     super.hide();
     super.show(

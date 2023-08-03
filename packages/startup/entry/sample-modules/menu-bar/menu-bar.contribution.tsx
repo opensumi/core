@@ -1,17 +1,17 @@
 import React from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, EDITOR_COMMANDS, MessageType, getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
-
-import { MenuBarView } from './menu-bar.view';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ITaskService } from '@opensumi/ide-task';
-import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+
 import { AiChatService } from '../ai-chat/ai-chat.service';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+
+import { MenuBarView } from './menu-bar.view';
 
 @Injectable()
 @Domain(ComponentContribution, MenuContribution, CommandContribution)
@@ -48,8 +48,8 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
     }, {
       execute: async () => {
         // await this.aiChatService.launchChatMessage('解释一下当前我选中的这段代码')
-      }
-    })
+      },
+    });
 
     commands.registerCommand({
       id: 'ai.runAndDebug',
@@ -59,24 +59,24 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
         if (!text) {
           const currentUri = this.editorService.currentEditor?.currentUri;
           isNodeJs = !!currentUri?.path.base.endsWith('.js');
-          text = `${isNodeJs ? 'node' : 'node_modules/.bin/ts-node'} ${currentUri?.path.base}`
+          text = `${isNodeJs ? 'node' : 'node_modules/.bin/ts-node'} ${currentUri?.path.base}`;
         }
 
         const terminal = await this.terminalApi.createTerminal({
           cwd: this.appConfig.workspaceDir,
           env: {
-            PROMPT_COMMAND: ''
-          }
-        })
+            PROMPT_COMMAND: '',
+          },
+        });
 
         const client = terminal.client;
 
-        console.log('client', client)
+        console.log('client', client);
 
         client.onOutput(async ({ data }) => {
-          console.log('client.output:>>>> data', data)
+          console.log('client.output:>>>> data', data);
           if (data.toString().includes('Error:')) {
-            const btn = await this.messageService.open('程序运行出错了！问问 AI 助手吧～', MessageType.Warning, ['好啊'])
+            const btn = await this.messageService.open('程序运行出错了！问问 AI 助手吧～', MessageType.Warning, ['好啊']);
 
             if (btn === '好啊') {
               this.aiChatService.launchChatMessage(<div>
@@ -84,8 +84,8 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
                 <SyntaxHighlighter language={'tsx'}>
                   {data}
                 </SyntaxHighlighter>
-              </div>)
-              console.log('client.output:>>>> error data', data)
+              </div>);
+              console.log('client.output:>>>> error data', data);
             }
           }
         });
@@ -93,10 +93,10 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
         await client.attached.promise;
 
         setTimeout(async () => {
-          await client.sendText(`${text} \n`)
-        }, 1000)
-      }
-    })
+          await client.sendText(`${text} \n`);
+        }, 1000);
+      },
+    });
   }
 
   registerMenus(menus: IMenuRegistry): void {
@@ -107,18 +107,18 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
         command: 'main-layout.left-panel.toggle',
         iconClass: getIcon('folder'),
         argsTransformer: (...args) => {
-          isShowMenuBar = !isShowMenuBar
-          return [isShowMenuBar, 0]
+          isShowMenuBar = !isShowMenuBar;
+          return [isShowMenuBar, 0];
         },
       },
       {
         command: EDITOR_COMMANDS.SELECT_ALL.id,
-        iconClass: getIcon('test')
+        iconClass: getIcon('test'),
       },
       {
         command: EDITOR_COMMANDS.UNDO.id,
-        iconClass: getIcon('keyboard')
+        iconClass: getIcon('keyboard'),
       },
-    ])
+    ]);
   }
 }

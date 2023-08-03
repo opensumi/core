@@ -40,8 +40,8 @@ renderApp({
     ...{
       [SlotLocation.right]: {
         modules: [AiChatContribution.AiChatContainer],
-      }
-    }
+      },
+    },
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,

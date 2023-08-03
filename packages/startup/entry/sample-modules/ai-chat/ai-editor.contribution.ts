@@ -1,12 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IDisposable, URI, MaybePromise, Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
-import { AiZoneWidget } from './ai-zone-widget';
-import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import { AiDiffWidget } from './diff-widget/ai-diff-widget';
+
 import { AiImproveWidget } from './ai-improve-widget';
+import { AiZoneWidget } from './ai-zone-widget';
+import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 
 @Injectable()
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -42,7 +43,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       if (aiImproveWidget) {
         aiImproveWidget.dispose();
       }
-    })
+    });
 
     Event.debounce(
       Event.any(
@@ -84,7 +85,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         aiImproveWidget.dispose();
       }
 
-      console.log('monacoEditor.onMouseUp: >>> text', text)
+      console.log('monacoEditor.onMouseUp: >>> text', text);
 
       aiZoneWidget = this.injector.get(AiZoneWidget, [monacoEditor!, this.menuse]);
       aiZoneWidget.create();
@@ -92,8 +93,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       // aiZoneWidget.showByLine(startLineNumber - 1);
       aiZoneWidget.showByLine(endLineNumber);
 
-      this.disposables.push(aiZoneWidget.onSelectChange(value => {
-        
+      this.disposables.push(aiZoneWidget.onSelectChange((value) => {
+
         if (aiDiffWidget) {
           aiDiffWidget.dispose();
         }
@@ -108,12 +109,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         aiImproveWidget = this.injector.get(AiImproveWidget, [monacoEditor!, text]);
         aiImproveWidget.create();
         aiImproveWidget.showByLine(endLineNumber, 3);
-        console.log('aiZoneWidget:>>>> value change', value)
-      }))
-    })
+        console.log('aiZoneWidget:>>>> value change', value);
+      }));
+    });
 
     // languageFeaturesService
-    console.log('AiEditorContribution:>>>', editor, monacoEditor)
+    console.log('AiEditorContribution:>>>', editor, monacoEditor);
 
     return this;
   }

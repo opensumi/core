@@ -11,7 +11,9 @@ import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { ProcessModule } from '@opensumi/ide-process/lib/node';
 import { SearchModule } from '@opensumi/ide-search/lib/node';
 import { TerminalNodePtyModule } from '@opensumi/ide-terminal-next/lib/node';
+
 import { AiGPTBackSerivcePath, AiGPTBackSerivceToken } from '../common/index';
+
 import { AiGPTBackService } from './ai-gpt.back.service';
 
 @Injectable()
@@ -44,5 +46,5 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   OpenVsxExtensionManagerModule,
   FileSchemeNodeModule,
   AddonsModule,
-  AiModule
+  AiModule,
 ];
