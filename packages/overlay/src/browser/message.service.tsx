@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { notification, open } from '@opensumi/ide-components';
+import { parseWithoutEscape } from '@opensumi/ide-components/lib/utils';
 import { IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
 import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
 
@@ -64,7 +65,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
     const promise = open<T>(
-      toMarkdown(message, this.openerService),
+      toMarkdown(message, this.openerService, { walkTokens: parseWithoutEscape }),
       type,
       closable,
       key,
