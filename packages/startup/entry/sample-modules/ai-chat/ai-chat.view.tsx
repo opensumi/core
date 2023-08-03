@@ -14,7 +14,7 @@ import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import 'react-chat-elements/dist/main.css';
 import { CommandService } from '@opensumi/ide-core-common';
-import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+import { AiGPTBackSerivcePath, AISerivceType } from '@opensumi/ide-startup/lib/common/index';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -34,8 +34,6 @@ const createMessageByAI = (text: string | React.ReactNode) => createMessage('lef
 
 const AI_NAME = 'AI 助手';
 const ME_NAME = '我';
-const aiSearchKey = '/search ';
-const aiSearchCodeKey = '/searchcode ';
 
 const sleep = (ms: number) => new Promise((resolve) => {
     setTimeout(() => {
@@ -409,9 +407,10 @@ setTimeout(() => {
     // 检查前缀 aiSearchKey
     if (typeof preInputValue === 'string') {
       let aiMessage;
-      if (preInputValue.startsWith(aiSearchKey) || preInputValue.startsWith(aiSearchCodeKey)) {
-        aiMessage = await AISearch(preInputValue, aiGPTBackService);
-      }
+      const userInput = aiChatService.switchAIService(preInputValue);
+      if (userInput.type === AISerivceType.Search || userInput.type === AISerivceType.SearchCode) {
+        aiMessage = await AISearch(userInput, aiGPTBackService);
+      } else if (userInput.type === AISerivceType.Sumi) {}
 
       if (aiMessage) {
         preMessagelist.push(aiMessage);
@@ -513,10 +512,9 @@ const AiReply = ({ text, endNode = <></> }) => {
   </div>;
 };
 
-const AISearch = async (input: string, aiGPTBackService) => {
-  const searchValue = input.split(aiSearchKey)[1] || input.split(aiSearchCodeKey)[1];
+const AISearch = async (input, aiGPTBackService) => {
   try {
-    const result = await aiGPTBackService.aiSearchRequest(searchValue, input.startsWith(aiSearchCodeKey) ? 'code' : 'overall');
+    const result = await aiGPTBackService.aiSearchRequest(input.message, input.type === AISerivceType.SearchCode ? 'code' : 'overall');
 
     const { responseText, urlMessage } = result;
 
