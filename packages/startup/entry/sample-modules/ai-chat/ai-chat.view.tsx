@@ -1,6 +1,10 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import hljs from 'highlight.js';
 import * as React from 'react';
+// @ts-ignore
 import { MessageList, SystemMessage } from 'react-chat-elements';
+// @ts-ignore
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
@@ -26,10 +30,12 @@ const createMessage = (position: string, title: string, text: string | React.Rea
 
 const createMessageByAI = (text: string | React.ReactNode) => createMessage('left', AI_NAME, text);
 
-const createMessageByMe = (text: string | React.ReactNode) => createMessage('right', ME_NAME, text);
+// const createMessageByMe = (text: string | React.ReactNode) => createMessage('right', ME_NAME, text);
 
 const AI_NAME = 'AI 助手';
 const ME_NAME = '我';
+const aiSearchKey = '/search ';
+const aiSearchCodeKey = '/searchcode ';
 
 const sleep = (ms: number) => new Promise((resolve) => {
     setTimeout(() => {
@@ -50,7 +56,7 @@ export const AiChatView = () => {
   const [loading, setLoading] = React.useState(false);
 
   const [, updateState] = React.useState<any>();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
+  // const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
@@ -103,7 +109,7 @@ export const AiChatView = () => {
       },
       {
         with: 'lazyman',
-        exec: async (value: string) => {
+        exec: async () => {
           await commandService.executeCommand('ai.chat.createNewFile', 'lazyman.ts');
 
           await sleep(2000);
@@ -119,10 +125,10 @@ export const AiChatView = () => {
       },
       {
         with: '运行代码出现这个错误',
-        exec: async (value: string) => {
+        exec: async () => {
           const content = `  eat(...foods: string[]) {
     this.taskList.push(() => {
-      console.log(\`Eat $\{[...foods]\}\`);
+      console.log(\`Eat $\{[...foods]}\`);
       this.next();
     });
     return this; // 实现链式调用
@@ -137,11 +143,11 @@ export const AiChatView = () => {
       },
       {
         with: '解释一下当前我选中的这段代码',
-        exec: async (value: string) => createMessageByAI(<AiReply text={
+        exec: async () => createMessageByAI(<AiReply text={
             '好的，这段代码是 LazyMan 类的构造函数，作用是初始化 LazyMan 实例的属性，将传入构造函数的 name 参数赋值给实例的 name 属性。然后将一个匿名函数添加到 taskList 任务列表中。\n\n 该函数会首先打印 "Hi, I\'m XXX" 这个字符串，其中 XXX 为该实例的 name 属性值。然后调用 next() 方法，继续执行下一个任务。使用 setTimeout() 函数创建一个新的任务。\n\n由于 setTimeout() 函数是异步执行的，所以该任务将会被放到事件队列的最后执行，即等到当前执行栈执行完毕后再执行。\n\n在这里，我们使用了一个延迟时间为 0 毫秒的 setTimeout()，这样可以确保在任务列表中添加了第一个任务之后，马上执行该任务，保证第一个任务能够被添加到任务列表中。该任务会调用 next() 方法，开始执行任务列表中的任务。'}
             endNode={<SyntaxHighlighter language={'tsx'}>{`this.name = name;
 this.taskList.push(() => {
-  console.log(\`Hi, I'm $\{this.name\}\`);
+  console.log(\`Hi, I'm $\{this.name}\`);
   this.next();
 });
 
@@ -152,7 +158,7 @@ setTimeout(() => {
       },
       {
         with: '提交全部代码',
-        exec: async (value: string) => createMessageByAI(<div>
+        exec: async () => createMessageByAI(<div>
             <div>代码已经全部提交，是否创建 PR？</div>
             <br />
             <a href='javascript:void(0)' onClick={() => {
@@ -163,11 +169,11 @@ setTimeout(() => {
       },
       {
         with: '创建合并请求',
-        exec: async (value: string) => createMessageByAI('是想要合入 master 分支吗？'),
+        exec: async () => createMessageByAI('是想要合入 master 分支吗？'),
       },
       {
         with: '创建 合并请求',
-        exec: async (value: string) => createMessageByAI(<div>
+        exec: async () => createMessageByAI(<div>
             <span>代码还未提交，是否需要提交全部代码呢？</span>
             <br />
             <a href='javascript:void(0)' onClick={() => {
@@ -178,7 +184,7 @@ setTimeout(() => {
       },
       {
         with: '是的',
-        exec: async (value: string) => createMessageByAI(<div>
+        exec: async () => createMessageByAI(<div>
             <span>好的，已创建合并请求（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
             <br />
             <br />
@@ -205,7 +211,7 @@ setTimeout(() => {
       },
       {
         with: '合入 main 分支',
-        exec: async (value: string) => createMessageByAI(<div>
+        exec: async () => createMessageByAI(<div>
             <span>好的，已更新合并请求（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
             <br />
             <br />
@@ -232,7 +238,7 @@ setTimeout(() => {
       },
       {
         with: '评审人去掉',
-        exec: async (value: string) => createMessageByAI(<div>
+        exec: async () => createMessageByAI(<div>
             <span>好的，已更新（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
             <br />
             <br />
@@ -268,7 +274,7 @@ setTimeout(() => {
       },
       {
         with: '更改主题',
-        exec: async (value: string) => {
+        exec: async () => {
           const themes = [
             {
                 'label': 'GitHub Light Default',
@@ -400,38 +406,20 @@ setTimeout(() => {
 
     preMessagelist.push(createMessage('right', ME_NAME, preInputValue));
     setMessageListData(preMessagelist);
-
-    const aiSearchKey = '/search ';
-    const aiSearchCodeKey = '/searchcode ';
     // 检查前缀 aiSearchKey
-    if (typeof preInputValue === 'string' && (preInputValue.startsWith(aiSearchKey) || preInputValue.startsWith(aiSearchCodeKey))) {
-      const searchValue = preInputValue.split(aiSearchKey)[1] || preInputValue.split(aiSearchCodeKey)[1];
+    if (typeof preInputValue === 'string') {
+      let aiMessage;
+      if (preInputValue.startsWith(aiSearchKey) || preInputValue.startsWith(aiSearchCodeKey)) {
+        aiMessage = await AISearch(preInputValue, aiGPTBackService);
+      }
 
-      try {
-        const result = await aiGPTBackService.aiSearchRequest(searchValue, preInputValue.startsWith(aiSearchCodeKey) ? 'code' : 'overall');
-
-        const { responseText, urlMessage } = result;
-
-        console.log('ai search: >>>> ', result);
-
-        const aiMessage = createMessageByAI(<div style={{display: 'flex', flexDirection: 'column'}}>
-          {/* <div><Markdown content={responseText} options={{ headerIds: false }}></Markdown></div> */}
-          <div><Markdown value={responseText}></Markdown></div>
-          {/* <SyntaxHighlighter>{responseText}</SyntaxHighlighter> */}
-          {/* <div>{urlMessage}</div> */}
-          {/* <div><Markdown content={urlMessage} options={{ headerIds: false, gfm: true }}></Markdown></div> */}
-          <div style={{whiteSpace: 'pre-wrap'}}><Markdown value={urlMessage}></Markdown></div>
-          {/* <SyntaxHighlighter>{urlMessage}</SyntaxHighlighter> */}
-        </div>);
+      if (aiMessage) {
         preMessagelist.push(aiMessage);
         setMessageListData(preMessagelist);
         updateState({});
         if (containerRef && containerRef.current) {
           containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
         }
-
-      } catch (error) {
-        console.log('/search: error >>>>>', error);
       }
 
       setLoading(false);
@@ -504,9 +492,7 @@ const AiReply = ({ text, endNode = <></> }) => {
 
   React.useEffect(() => {
     if (currentIndex < text.length) {
-      let timeoutId;
-
-      timeoutId = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
@@ -525,4 +511,29 @@ const AiReply = ({ text, endNode = <></> }) => {
       ? <>{currentText}{endNode}</>
       : currentText}
   </div>;
+};
+
+const AISearch = async (input: string, aiGPTBackService) => {
+  const searchValue = input.split(aiSearchKey)[1] || input.split(aiSearchCodeKey)[1];
+  try {
+    const result = await aiGPTBackService.aiSearchRequest(searchValue, input.startsWith(aiSearchCodeKey) ? 'code' : 'overall');
+
+    const { responseText, urlMessage } = result;
+
+    console.log('ai search: >>>> ', result);
+
+    const aiMessage = createMessageByAI(<div style={{display: 'flex', flexDirection: 'column'}}>
+      {/* <div><Markdown content={responseText} options={{ headerIds: false }}></Markdown></div> */}
+      <div><Markdown value={responseText}></Markdown></div>
+      {/* <SyntaxHighlighter>{responseText}</SyntaxHighlighter> */}
+      {/* <div>{urlMessage}</div> */}
+      {/* <div><Markdown content={urlMessage} options={{ headerIds: false, gfm: true }}></Markdown></div> */}
+      <div style={{whiteSpace: 'pre-wrap'}}><Markdown value={urlMessage}></Markdown></div>
+      {/* <SyntaxHighlighter>{urlMessage}</SyntaxHighlighter> */}
+    </div>);
+
+    return aiMessage;
+  } catch (error) {
+    console.log('/search: error >>>>>', error);
+  }
 };
