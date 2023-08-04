@@ -3,6 +3,7 @@ import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IDisposable, URI, MaybePromise, Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 
 import { AiImproveWidget } from './ai-improve-widget';
@@ -11,14 +12,14 @@ import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 
 @Injectable()
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
-  @Autowired(WorkbenchEditorServiceImpl)
-  private readonly editorService: WorkbenchEditorServiceImpl;
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
   @Autowired(AbstractMenuService)
   private readonly abstractMenuService: AbstractMenuService;
+
+  @Autowired(AiGPTBackSerivcePath)
+  private readonly aiGPTBackService: any;
 
   public menuse: any;
 
@@ -28,6 +29,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     const { monacoEditor, currentUri, currentDocumentModel } = editor;
+    if (currentUri && currentUri.codeUri.scheme !== 'file') {
+      return this;
+    }
 
     let aiZoneWidget: AiZoneWidget | undefined;
     let aiDiffWidget: AiDiffWidget | undefined;
@@ -93,22 +97,33 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       // aiZoneWidget.showByLine(startLineNumber - 1);
       aiZoneWidget.showByLine(endLineNumber);
 
-      this.disposables.push(aiZoneWidget.onSelectChange((value) => {
+      this.disposables.push(aiZoneWidget.onSelectChange(async (value) => {
 
         if (aiDiffWidget) {
           aiDiffWidget.dispose();
         }
 
-        aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text]);
-        aiDiffWidget.create();
-        aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
+        // gpt 模型测试
+        if (value) {
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`${value}, 要求只回答代码内容，不需要其他信息，代码内容是: \n` + text);
+          console.log('aiGPTcompletionRequest:>>> ', result)
 
-        aiZoneWidget?.dispose();
+          const answer = result && result.data;
 
-        // aiImproveWidget
-        aiImproveWidget = this.injector.get(AiImproveWidget, [monacoEditor!, text]);
-        aiImproveWidget.create();
-        aiImproveWidget.showByLine(endLineNumber, 3);
+          if (answer) {
+            aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer]);
+            aiDiffWidget.create();
+            aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
+
+            aiZoneWidget?.dispose();
+
+            // aiImproveWidget
+            aiImproveWidget = this.injector.get(AiImproveWidget, [monacoEditor!]);
+            aiImproveWidget.create();
+            aiImproveWidget.showByLine(endLineNumber, 3);
+          }
+        }
+        
         console.log('aiZoneWidget:>>>> value change', value);
       }));
     });
