@@ -8,7 +8,7 @@ import { MessageList, SystemMessage } from 'react-chat-elements';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -476,6 +476,11 @@ setTimeout(() => {
           <Loading></Loading>
           <span>正在生成中...</span>
         </div>}></SystemMessage>}
+      </div>
+      <div className={styles.quick_way}>
+        <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
+        <span className={`${styles.quick_way_item} ${getIcon('plus')}`} onClick={() => handleSend('/sumi 放大字体')}></span>
+        <span className={`${styles.quick_way_item} ${getIcon('min')}`} onClick={() => handleSend('/sumi 缩小字体')}></span>
       </div>
       <div className={styles.chat_input}>
         <Input placeholder="AI 助手为你服务" type={'textarea'} value={inputValue} onValueChange={handleInputChange} className={styles.input_wrapper} />
