@@ -410,7 +410,9 @@ setTimeout(() => {
       const userInput = aiChatService.switchAIService(preInputValue);
       if (userInput.type === AISerivceType.Search || userInput.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput, aiGPTBackService);
-      } else if (userInput.type === AISerivceType.Sumi) {}
+      } else if (userInput.type === AISerivceType.Sumi) {
+        aiMessage = await aiChatService.messageWithSumi(userInput.message!);
+      }
 
       if (aiMessage) {
         preMessagelist.push(aiMessage);
