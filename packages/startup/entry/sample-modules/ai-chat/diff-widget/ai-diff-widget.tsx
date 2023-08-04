@@ -29,13 +29,15 @@ const diffEditorOptions: IDiffEditorOptions = {
     enabled: false,
   },
   enableSplitViewResizing: true,
-  renderOverviewRuler: false,
+  renderOverviewRuler: true,
   ignoreTrimWhitespace: false,
   renderSideBySide: true,
+  lineNumbers: 'on',
+  glyphMargin: false
 };
 
-const DiffContentProvider = React.memo(((props: { dto: { originValue } | undefined }) => {
-  let { dto } = props;
+const DiffContentProvider = React.memo(((props: { dto: { originValue, modifiedValue } | undefined, onMaxLincCount: (n) => void }) => {
+  let { dto, onMaxLincCount } = props;
   const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
   const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -48,8 +50,6 @@ const DiffContentProvider = React.memo(((props: { dto: { originValue } | undefin
     let diffEditor: IDiffEditor;
 
     const random = Math.random() * 10;
-    // const originUri = Uri.parse(`AI://origin${random}`);
-    // const actualUri = Uri.parse(`AI://modified${random}`);
     const originUri = URI.parse(`AI://origin${random}`);
     const actualUri = URI.parse(`AI://modified${random}`);
 
@@ -62,7 +62,7 @@ const DiffContentProvider = React.memo(((props: { dto: { originValue } | undefin
         return;
       }
 
-      const { originValue } = dto!;
+      const { originValue, modifiedValue } = dto!;
 
       diffEditor = editorCollectionService.createDiffEditor(editorRef.current!, {
         ...getSimpleEditorOptions(),
@@ -71,18 +71,31 @@ const DiffContentProvider = React.memo(((props: { dto: { originValue } | undefin
 
       const originalModel = original.instance.getMonacoModel();
       const modifiedModel = modified.instance.getMonacoModel();
-      
+
       originalModel.setMode('java')
       modifiedModel.setMode('java')
 
       originalModel.setValue(originValue);
-
-      const mockModifiedValue = originValue + ' >>>>>';
-      modifiedModel.setValue(mockModifiedValue);
+      modifiedModel.setValue(modifiedValue);
 
       diffEditor.compare(original, modified);
       diffEditor.originalEditor.monacoEditor.setModel(originalModel);
       diffEditor.modifiedEditor.monacoEditor.setModel(modifiedModel);
+
+      diffEditor.originalEditor.monacoEditor.updateOptions({ readOnly: true });
+      diffEditor.modifiedEditor.monacoEditor.updateOptions({ readOnly: true });
+
+      if (onMaxLincCount) {
+        const { originalEditor, modifiedEditor }  = diffEditor
+
+        const originContentHeight = originalEditor.monacoEditor.getContentHeight();
+        const originLineCount = originContentHeight / originalEditor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight)
+
+        const modifiedContentHeight = modifiedEditor.monacoEditor.getContentHeight();
+        const modifiedLineCount = modifiedContentHeight / modifiedEditor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight)
+
+        onMaxLincCount(Math.max(originLineCount, modifiedLineCount))
+      }
     });
 
     return () => {
@@ -93,7 +106,7 @@ const DiffContentProvider = React.memo(((props: { dto: { originValue } | undefin
   }, [dto]);
 
   return <div ref={editorRef} style={{ height: 'inherit', width:'100%', border:'1px solid #6666' }}></div>;
-});
+}));
 
 const styles: CSSProperties = {
   height: '100%',
@@ -107,7 +120,9 @@ export class AiDiffWidget extends ZoneWidget {
   private configContext: AppConfig;
 
   private recordLine: number;
+
   private originValue: string;
+  private modifiedValue: string;
 
   protected applyClass(): void {}
   protected applyStyle(): void {}
@@ -118,14 +133,18 @@ export class AiDiffWidget extends ZoneWidget {
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
           <div style={styles}>
-            <DiffContentProvider dto={{ originValue: this.originValue }}/>
+            <DiffContentProvider dto={{ originValue: this.originValue, modifiedValue: this.modifiedValue }} onMaxLincCount={(n) => {
+              if (n) {
+                this._relayout(n);
+              }
+            }}/>
           </div>
       </ConfigProvider>,
       container,
     );
   }
 
-  constructor(editor: ICodeEditor, originValue: string) {
+  constructor(editor: ICodeEditor, originValue: string, modifiedValue: string) {
     super(editor, {
       showArrow: false,
       showFrame: false,
@@ -136,6 +155,7 @@ export class AiDiffWidget extends ZoneWidget {
     });
 
     this.originValue = originValue;
+    this.modifiedValue = modifiedValue;
   }
 
   // 覆写 revealLine 函数，使其在 show 的时候编辑器不会定位到对应位置
