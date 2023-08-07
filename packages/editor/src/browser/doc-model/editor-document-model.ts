@@ -60,6 +60,7 @@ import {
   IEditorDocumentModelService,
   ORIGINAL_DOC_SCHEME,
   EditorDocumentModelWillSaveEvent,
+  IDocModelUpdateOptions,
 } from './types';
 
 export interface EditorDocumentModelConstructionOptions {
@@ -197,15 +198,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     );
   }
 
-  updateOptions(options) {
+  updateOptions(options: IDocModelUpdateOptions) {
     const finalOptions = {
       tabSize: this.editorPreferences['editor.tabSize'] || 1,
       insertSpaces: this.editorPreferences['editor.insertSpaces'],
       detectIndentation: this.editorPreferences['editor.detectIndentation'],
       ...options,
-    };
+    } as IDocModelUpdateOptions;
     if (finalOptions.detectIndentation) {
-      this.monacoModel.detectIndentation(finalOptions.insertSpaces, finalOptions.tabSize);
+      this.monacoModel.detectIndentation(finalOptions.insertSpaces!, finalOptions.tabSize!);
     } else {
       this.monacoModel.updateOptions(finalOptions);
     }
@@ -308,7 +309,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   set eol(eol) {
-    this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : (EndOfLineSequence.CRLF as any));
+    this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : EndOfLineSequence.CRLF);
     if (!this._isInitOption) {
       this.eventBus.fire(
         new EditorDocumentModelOptionChangedEvent({
