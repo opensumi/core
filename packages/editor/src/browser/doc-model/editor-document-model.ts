@@ -406,7 +406,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
             if (res === diffAndSave) {
               this.compareAndSave();
             } else if (res === overwrite) {
-              doSave(true);
+              doSave(true, reason);
             }
           });
         this.logger.error('The file cannot be saved, the version is inconsistent with the disk');
@@ -414,7 +414,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       }
       return false;
     };
-    return this.saveQueue.queue(doSave);
+    return this.saveQueue.queue(doSave.bind(this, force, reason));
   }
 
   private async compareAndSave() {
