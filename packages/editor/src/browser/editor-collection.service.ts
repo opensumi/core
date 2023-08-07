@@ -353,7 +353,7 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
       ...this._specialEditorOptions,
     };
 
-    if (this.type > EditorType.CODE) {
+    if (this.type !== EditorType.CODE) {
       editorOptions = {
         ...editorOptions,
         ...options.diffOptions,
