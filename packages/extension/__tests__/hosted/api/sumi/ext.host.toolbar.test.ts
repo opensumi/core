@@ -17,6 +17,7 @@ import {
 } from '../../../../src/common/sumi/toolbar';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
+import { ExtensionLogger } from '../../__mocks__/extensionLogger';
 
 const actionMaps: Map<string, any> = new Map();
 
@@ -104,7 +105,12 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     extHostCommands = injector.get(ExtHostCommands, [rpcProtocol]);
     rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadToolbar, mockMainThreadToolbarProxy as any);
     rpcProtocol.set(ExtHostSumiAPIIdentifier.ExtHostCommon, extHostCommon);
-    extHostToolbar = injector.get(ExtHostToolbarActionService, [extHostCommands, extHostCommon, rpcProtocol]);
+    extHostToolbar = injector.get(ExtHostToolbarActionService, [
+      extHostCommands,
+      extHostCommon,
+      rpcProtocol,
+      new ExtensionLogger(),
+    ]);
     toolbarAPI = createToolbarAPIFactory(extension, extHostToolbar);
   });
 
