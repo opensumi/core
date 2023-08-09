@@ -26,6 +26,10 @@ export class QuickInputService implements IQuickInputService {
 
     const result = new Deferred<string | undefined>();
     const validateInput = options && options.validateInput;
+    // 兼容旧逻辑
+    if (options.hideOnDidAccept === undefined) {
+      options.hideOnDidAccept = true;
+    }
 
     const inputBox = this.injector.get(InputBoxImpl, [options]);
     this.inputBox = inputBox;
