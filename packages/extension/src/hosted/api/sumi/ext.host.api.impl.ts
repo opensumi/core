@@ -46,7 +46,7 @@ export function createAPIFactory(
   ) as ExtHostCommon;
   const extHostToolbar = rpcProtocol.set(
     ExtHostSumiAPIIdentifier.ExtHostToolbar,
-    new ExtHostToolbarActionService(extHostCommands, extHostCommon, rpcProtocol),
+    new ExtHostToolbarActionService(extHostCommands, extHostCommon, rpcProtocol, extensionService.logger),
   ) as ExtHostToolbarActionService;
   const extHostWindow = rpcProtocol.set(
     ExtHostSumiAPIIdentifier.ExtHostIDEWindow,
