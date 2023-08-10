@@ -19,7 +19,7 @@ import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { TreeModel } from './tree/model/TreeModel';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
-import { TreeNodeType, TreeNodeEvent } from './types';
+import { TreeNodeType, TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from './types';
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 
@@ -88,6 +88,9 @@ export interface IRecycleTreeProps<T = TreeModel> {
   filterProvider?: {
     fuzzyOptions: () => fuzzy.FilterOptions<any>;
     filterAlways?: boolean;
+
+    // 是否展示匹配目录下的文件
+    showChild?: boolean;
   };
   /**
    * 空白时的占位元素
@@ -762,10 +765,20 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const isPathFilter = /\//.test(filter);
     const idSets: Set<number> = new Set();
     const idToRenderTemplate: Map<number, any> = new Map();
-    const nodes: TreeNode[] = [];
+    const nodes: ITreeNodeOrCompositeTreeNode[] = [];
+
+    const addAllChildren = (items: ReadonlyArray<ITreeNodeOrCompositeTreeNode> | null) => {
+      if (!items || items.length === 0) {
+        return;
+      }
+      items.forEach((item) => {
+        idSets.add(item.id);
+        addAllChildren('children' in item ? item.children : []);
+      });
+    };
     for (let idx = 0, len = root.branchSize; idx < len; idx++) {
       const node = root.getTreeNodeAtIndex(idx)!;
-      nodes.push(node as TreeNode);
+      nodes.push(node as ITreeNodeOrCompositeTreeNode);
     }
     if (isPathFilter) {
       nodes.forEach((node) => {
@@ -780,7 +793,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }
       });
     } else {
-      let fuzzyLists: fuzzy.FilterResult<TreeNode>[] = [];
+      let fuzzyLists: fuzzy.FilterResult<ITreeNodeOrCompositeTreeNode>[] = [];
       if (filterProvider) {
         fuzzyLists = fuzzy.filter(filter, nodes, filterProvider.fuzzyOptions());
       } else {
@@ -788,9 +801,15 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
 
       fuzzyLists.forEach((item) => {
-        const node = (item as any).original as TreeNode;
+        const node = (item as any).original as ITreeNodeOrCompositeTreeNode;
         idSets.add(node.id);
         let parent = node.parent;
+
+        if (filterProvider?.showChild) {
+          // 展示匹配节点的所有子节点
+          addAllChildren('children' in node ? node.children : []);
+        }
+
         idToRenderTemplate.set(node.id, () => (
           <div
             style={{
