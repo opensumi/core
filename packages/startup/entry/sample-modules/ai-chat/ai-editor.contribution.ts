@@ -8,6 +8,7 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 
 import { AiImproveWidget } from './ai-improve-widget';
 import { AiZoneWidget } from './ai-zone-widget';
+import { AiContentWidget } from './content-widget/ai-content-widget';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 
 @Injectable()
@@ -33,11 +34,17 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
+    // @ts-ignore
+    window.aiGPTcompletionRequest = this.aiGPTBackService.aiGPTcompletionRequest;
+    // @ts-ignore
+    window.aiParsingLanguageService = this.aiGPTBackService.aiParsingLanguageService;
+
     let aiZoneWidget: AiZoneWidget | undefined;
     let aiDiffWidget: AiDiffWidget | undefined;
     let aiImproveWidget: AiImproveWidget | undefined;
+    let aiContentWidget: AiContentWidget | undefined;
 
-    monacoEditor.onDidChangeModel(() => {
+    const disposeAllWidget = () => {
       if (aiZoneWidget) {
         aiZoneWidget.dispose();
       }
@@ -47,6 +54,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       if (aiImproveWidget) {
         aiImproveWidget.dispose();
       }
+      if (aiContentWidget) {
+        aiContentWidget.dispose(); 
+      }
+    }
+
+    monacoEditor.onDidChangeModel(() => {
+      disposeAllWidget()
     });
 
     Event.debounce(
@@ -77,27 +91,23 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         return;
       }
 
-      if (aiZoneWidget) {
-        aiZoneWidget.dispose();
-      }
-
-      if (aiDiffWidget) {
-        aiDiffWidget.dispose();
-      }
-
-      if (aiImproveWidget) {
-        aiImproveWidget.dispose();
-      }
+      disposeAllWidget()
 
       console.log('monacoEditor.onMouseUp: >>> text', text);
 
-      aiZoneWidget = this.injector.get(AiZoneWidget, [monacoEditor!, this.menuse]);
-      aiZoneWidget.create();
+      aiContentWidget = this.injector.get(AiContentWidget, [monacoEditor]);
 
-      // aiZoneWidget.showByLine(startLineNumber - 1);
-      aiZoneWidget.showByLine(endLineNumber);
+      aiContentWidget.show({
+        selection: selection
+      })
 
-      this.disposables.push(aiZoneWidget.onSelectChange(async (value) => {
+      // aiZoneWidget = this.injector.get(AiZoneWidget, [monacoEditor!, this.menuse]);
+      // aiZoneWidget.create();
+
+      // // aiZoneWidget.showByLine(startLineNumber - 1);
+      // aiZoneWidget.showByLine(endLineNumber);
+
+      this.disposables.push(aiContentWidget.onSelectChange(async (value) => {
 
         if (aiDiffWidget) {
           aiDiffWidget.dispose();
@@ -105,7 +115,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         // gpt 模型测试
         if (value) {
-          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`${value}, 要求只回答代码内容，不需要其他信息，代码内容是: \n` + text);
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`${value}, 要求只回答代码内容，并去掉 markdown 格式。不需要给我解释，代码内容是: \n` + text);
           console.log('aiGPTcompletionRequest:>>> ', result)
 
           const answer = result && result.data;
@@ -121,6 +131,22 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             aiImproveWidget = this.injector.get(AiImproveWidget, [monacoEditor!]);
             aiImproveWidget.create();
             aiImproveWidget.showByLine(endLineNumber, 3);
+
+            this.disposables.push(aiImproveWidget.onClick(value => {
+              if (value === '采纳') {
+                monacoEditor.getModel()?.pushEditOperations(null, [
+                  {
+                    forceMoveMarkers: false,
+                    range: selection,
+                    text: answer,
+                  }
+                ], () => null);
+
+                setTimeout(() => {
+                  disposeAllWidget()
+                }, 110)
+              }
+            }));
           }
         }
         
