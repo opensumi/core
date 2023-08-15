@@ -39,11 +39,11 @@ export class AiChatService {
     例如：“java 如何生成质数？”、“log4j 官方文档” 等和文本搜索意图强相关的，则返回 '文本搜索'。
     例如：“打开 quick open”、“切换主题” 等和 IDE 有关的交互内容，则返回 'sumi'。
     我给你的这段话是 "${input}"。
-    请按照以下格式返回结果：{"tag": "xxx"}`
+    请按照以下格式返回结果：{"tag": "xxx"}`;
 
     const antglmType = await this.aiBackService.aiAntGlm(messageWithPrompt);
 
-    console.log('antglm result:>>> ', antglmType)
+    console.log('antglm result:>>> ', antglmType);
 
     if (antglmType && antglmType.data) {
       try {
@@ -64,7 +64,7 @@ export class AiChatService {
         }
       } catch (error) {
         type = AISerivceType.Sumi;
-        message = input
+        message = input;
       }
     }
 
@@ -110,25 +110,26 @@ export class AiChatService {
 
     const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
 
-    console.log('aiCodeGPTcompletionRequest: >>>> ', res)
+    console.log('aiCodeGPTcompletionRequest: >>>> ', res);
 
-    const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```\n?(?<example>[\s\S]+)\n```/i;
-    const command = commandReg.exec(res);
-    if (command) {
-      await this.removeOldExtension();
-      try {
-        await this.commandService.executeCommand(command.groups?.command!);
-      } catch {
-        await this.aiBackService.writeFile(command.groups?.example);
-        await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
-      }
-    }
+    // const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```\n?(?<example>[\s\S]+)\n```/i;
+    // const command = commandReg.exec(res);
+    // if (command) {
+    //   await this.removeOldExtension();
+    //   try {
+    //     await this.commandService.executeCommand(command.groups?.command!);
+    //   } catch {
 
-    const configReg = /ConfigCategory:\s*(?<category>\S+)\s*\n*ConfigKey:\s*(?<key>\S+)\s*\n*ConfigParams:\s*"?(?<params>[^"\n]+)"?\s*\n*Example:\s*\n*```(?<example>[\s\S]+)```/i;
-    const config = configReg.exec(res);
+    //   }
+    // }
+
+    const configReg = /ConfigCategory:\s*(?<category>\S+)\s*\n*ConfigKey:\s*(?<key>\S+)\s*\n*ConfigParams:\s*"?(?<params>[^"\n]+)"?\s*\n*Example:\s*\n*```(?<example>[^`]+)```/i;
+    const config = configReg.exec(res.data);
     if (config) {
-      const { category, key, params } = config.groups || {};
+      const { category, key, params, example } = config.groups || {};
       this.preferenceService.set(`${category}.${key}`, params);
+      await this.aiBackService.writeFile(example);
+      await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
     }
   }
 
