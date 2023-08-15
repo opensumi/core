@@ -93,5 +93,5 @@ iteration-plan.md
 tools/electron/app
 tools/electron/extensions
 tools/workspace
-
+packages/startup/src/common/config.ts
 ai-gpt.back.service.ts

@@ -29,8 +29,8 @@ export class AiImproveWidget extends ZoneWidget {
   protected applyClass(): void {}
   protected applyStyle(): void {}
 
-  private readonly _onSelectChange = new Emitter<string>();
-  public readonly onSelectChange: Event<string> = this._onSelectChange.event;
+  private readonly _onClick = new Emitter<string>();
+  public readonly onClick: Event<string> = this._onClick.event;
 
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('ai_widget');
@@ -50,7 +50,9 @@ export class AiImproveWidget extends ZoneWidget {
                 { title: '更多指令' },
               ].map(({ title }) => (
                   <li style={{ marginRight: '6px' }}>
-                    <a href='javascript:void(0)'>{title}</a>
+                    <a href='javascript:void(0)' onClick={() => {
+                      this._onClick.fire(title)
+                    }}>{title}</a>
                   </li>
                 ))}
             </ul>
