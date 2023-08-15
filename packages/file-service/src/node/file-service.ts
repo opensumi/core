@@ -84,6 +84,7 @@ export class FileService implements IFileService {
   }
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
+    this.logger.log(`register provider: ${scheme}, provider: ${provider}`);
     this.toDisposable.push(this.fileSystemManage.add(scheme, provider));
     this.toDisposable.push(provider.onDidChangeFile((e) => this.fireFilesChange(e)));
     this.toDisposable.push({
@@ -592,8 +593,8 @@ export function getSafeFileservice(injector: Injector) {
 }
 
 // 对于首个参数为uri的方法进行安全拦截
-function fileServiceInterceptor(fileService: IFileService, blackList: string[], blockPatterns: string[]) {
-  for (const method of blackList) {
+function fileServiceInterceptor(fileService: IFileService, toIntercept: string[], blockPatterns: string[]) {
+  for (const method of toIntercept) {
     if (typeof fileService[method] === 'function') {
       const originFunc: Function = fileService[method];
       fileService[method] = (...args) => {
@@ -618,7 +619,7 @@ function fileServiceInterceptor(fileService: IFileService, blackList: string[], 
           }
         }
         return originFunc.apply(fileService, args);
-        // copy和move第二个参数也为uri，只禁止来源
+        // copy 和 move第二个参数也为 uri，只禁止来源
       };
     }
   }
