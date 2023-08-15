@@ -35,7 +35,7 @@ export function DefaultLayout() {
           minResize={280}
         />
       </SplitPanel>
-      {/* <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' /> */}
+      <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
 }

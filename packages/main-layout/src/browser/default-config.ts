@@ -25,11 +25,11 @@ export const defaultConfig: LayoutConfig = {
   },
   [SlotLocation.bottom]: {
     // modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers'],
-    modules: ['@opensumi/ide-terminal-next'],
+    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-markers'],
   },
-  // [SlotLocation.statusBar]: {
-  //   modules: ['@opensumi/ide-status-bar'],
-  // },
+  [SlotLocation.statusBar]: {
+    modules: ['@opensumi/ide-status-bar'],
+  },
   [SlotLocation.extra]: {
     modules: ['breadcrumb-menu'],
   },
