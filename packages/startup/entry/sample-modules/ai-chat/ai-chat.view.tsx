@@ -63,8 +63,8 @@ export const AiChatView = () => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
     });
-
-    return () => dispose.dispose();
+    aiChatService.removeOldExtension();
+    return () => dispose.dispose();;
   }, []);
 
   const handleInputChange = React.useCallback((value) => {
@@ -483,8 +483,7 @@ setTimeout(() => {
       </div>
       <div className={styles.quick_way}>
         <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
-        <span className={`${styles.quick_way_item} ${getIcon('plus')}`} onClick={() => handleSend('/sumi 放大字体')}></span>
-        <span className={`${styles.quick_way_item} ${getIcon('min')}`} onClick={() => handleSend('/sumi 缩小字体')}></span>
+        <span className={`${styles.quick_way_item} ${getIcon('info-circle')}`} onClick={() => handleSend('/sumi 提示用户 hello world')}></span>
       </div>
       <div className={styles.chat_input}>
         <Input placeholder="AI 助手为你服务" type={'textarea'} value={inputValue} onValueChange={handleInputChange} className={styles.input_wrapper} />

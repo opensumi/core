@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
+import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 import { AISerivceType, AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 
 const aiSearchKey = '/search ';
@@ -18,6 +19,9 @@ export class AiChatService {
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
+
+  @Autowired()
+  protected extensionManagementService: ExtensionManagementService;
 
   private readonly _onChatMessageLaunch = new Emitter<string | React.ReactNode>();
   public readonly onChatMessageLaunch: Event<string | React.ReactNode> = this._onChatMessageLaunch.event;
@@ -79,7 +83,9 @@ export class AiChatService {
   }
 
   public async messageWithSumi(input: string) {
-    const messageWithPrompt = `You are a developer proficient in vscode extension development. I will ask you some questions about extension development. If a certain problem can be solved using a Command, please provide the command. If it's related to modifying configurations, please specify the category and identifier of the configuration item, along with an example code.
+    const messageWithPrompt = `You are a developer proficient in vscode extension development.I will ask you some questions about extension development.
+    If a certain problem can be solved using a Command, please provide the command.
+    If it's related to modifying configurations, please specify the category and identifier of the configuration item, along with an example code.
     An example question is as follow: “修改字体大小为 20 像素”.
     And then, give me an answer such as: “
     ConfigCategory: editor
@@ -106,10 +112,16 @@ export class AiChatService {
 
     console.log('aiCodeGPTcompletionRequest: >>>> ', res)
 
-    const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```(?<example>[\s\S]+)```/i;
+    const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```\n?(?<example>[\s\S]+)\n```/i;
     const command = commandReg.exec(res);
     if (command) {
-      this.commandService.tryExecuteCommand(command.groups?.command!);
+      await this.removeOldExtension();
+      try {
+        await this.commandService.executeCommand(command.groups?.command!);
+      } catch {
+        await this.aiBackService.writeFile(command.groups?.example);
+        await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
+      }
     }
 
     const configReg = /ConfigCategory:\s*(?<category>\S+)\s*\n*ConfigKey:\s*(?<key>\S+)\s*\n*ConfigParams:\s*"?(?<params>[^"\n]+)"?\s*\n*Example:\s*\n*```(?<example>[\s\S]+)```/i;
@@ -118,5 +130,9 @@ export class AiChatService {
       const { category, key, params } = config.groups || {};
       this.preferenceService.set(`${category}.${key}`, params);
     }
+  }
+
+  public async removeOldExtension() {
+    await this.extensionManagementService.postUninstallExtension(await this.aiBackService.getExtensionPath());
   }
 }
