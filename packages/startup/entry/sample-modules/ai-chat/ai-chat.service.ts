@@ -26,20 +26,54 @@ export class AiChatService {
     this._onChatMessageLaunch.fire(message);
   }
 
-  public switchAIService(input: string) {
+  public async switchAIService(input: string) {
     let type: AISerivceType | undefined;
     let message: string | undefined;
 
-    if (input.startsWith(aiSearchKey)) {
-      type = AISerivceType.Search;
-      message = input.split(aiSearchKey)[1];
-    } else if (input.startsWith(aiSearchCodeKey)) {
-      type = AISerivceType.SearchCode;
-      message = input.split(aiSearchCodeKey)[1];
-    } else if (input.startsWith(aiSumiKey)) {
-      type = AISerivceType.Sumi;
-      message = input.split(aiSumiKey)[1];
+    const messageWithPrompt = `我会给你一段话，你需要分析并推理出这段话属于以下哪个分类的 tag 里，并返回 tag 的名字给我，tags 的列表有['文本搜索', '代码搜索', 'sumi']。
+    例如：“java 生成质数”、“找出所有 markdown 的正则表达式” 等和代码搜索意图强相关的，则返回 '代码搜索'。
+    例如：“java 如何生成质数？”、“log4j 官方文档” 等和文本搜索意图强相关的，则返回 '文本搜索'。
+    例如：“打开 quick open”、“切换主题” 等和 IDE 有关的交互内容，则返回 'sumi'。
+    我给你的这段话是 "${input}"。
+    请按照以下格式返回结果：{"tag": "xxx"}`
+
+    const antglmType = await this.aiBackService.aiAntGlm(messageWithPrompt);
+
+    console.log('antglm result:>>> ', antglmType)
+
+    if (antglmType && antglmType.data) {
+      try {
+        const toJson = JSON.parse(antglmType.data);
+        if (toJson && toJson.tag) {
+          const tag = toJson.tag;
+
+          if (tag === '文本搜索') {
+            type = AISerivceType.Search;
+            message = input;
+          } else if (tag === '代码搜索') {
+            type = AISerivceType.SearchCode;
+            message = input;
+          } else if (tag === 'sumi') {
+            type = AISerivceType.Sumi;
+            message = input;
+          }
+        }
+      } catch (error) {
+        type = AISerivceType.Sumi;
+        message = input
+      }
     }
+
+    // if (input.startsWith(aiSearchKey)) {
+    //   type = AISerivceType.Search;
+    //   message = input.split(aiSearchKey)[1];
+    // } else if (input.startsWith(aiSearchCodeKey)) {
+    //   type = AISerivceType.SearchCode;
+    //   message = input.split(aiSearchCodeKey)[1];
+    // } else if (input.startsWith(aiSumiKey)) {
+    //   type = AISerivceType.Sumi;
+    //   message = input.split(aiSumiKey)[1];
+    // }
 
     return { type, message };
   }
@@ -68,7 +102,9 @@ export class AiChatService {
     (You need to distinguish between whether it's a Command or a Config in your answers and provide the corresponding format. Simply provide content similar to the examples given without the need for explanations.)
     My question is: ${input}`;
 
-    const res = await this.aiBackService.aiCommonRequest(messageWithPrompt);
+    const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
+
+    console.log('aiCodeGPTcompletionRequest: >>>> ', res)
 
     const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```(?<example>[\s\S]+)```/i;
     const command = commandReg.exec(res);

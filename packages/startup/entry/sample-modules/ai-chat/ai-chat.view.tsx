@@ -57,6 +57,9 @@ export const AiChatView = () => {
   // const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
+    // @ts-ignore
+    window.aiAntGlm = aiGPTBackService.aiAntGlm;
+
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
     });
@@ -407,7 +410,8 @@ setTimeout(() => {
     // 检查前缀 aiSearchKey
     if (typeof preInputValue === 'string') {
       let aiMessage;
-      const userInput = aiChatService.switchAIService(preInputValue);
+      const userInput = await aiChatService.switchAIService(preInputValue);
+
       if (userInput.type === AISerivceType.Search || userInput.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput, aiGPTBackService);
       } else if (userInput.type === AISerivceType.Sumi) {
