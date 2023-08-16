@@ -7,7 +7,9 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: var(--background);
+  background-image: url('./assets/dark-background.png');
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .rce-mbox-left-notch,
@@ -39,7 +41,7 @@
 }
 
 code {
-  color: #A31515;
+  color: #a31515;
 }
 
 blockquote {
@@ -48,12 +50,43 @@ blockquote {
 }
 
 .AI-Content-Widget {
-  box-shadow: 0 9px 28px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   padding: 12px 16px;
   background-color: white;
 
   .ai-shortcuts {
     margin-bottom: 12px;
+  }
+}
+
+// ai native main
+.ai_native_panel_container {
+  margin-right: 16px;
+  width: initial;
+}
+
+.ai_native_slot_main {
+  height: 100%;
+  width: 100%;
+  background-color: #151b21;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ai_native_slot_resize_horizontal {
+  height: 100%;
+  margin: 0 3px;
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    height: 25px;
+    width: 2px;
+    background-color: #31363b;
+    border-radius: 1px;
+    top: 50%;
+    left: 50%;
   }
 }
