@@ -333,12 +333,7 @@ export const Tabs = ({ group }: ITabsProps) => {
             style={
               wrapMode && i === group.resources.length - 1
                 ? { marginRight: lastMarginRight, height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
-                : {
-                    height:
-                      group.currentResource === resource
-                        ? LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT + 1
-                        : LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
-                  }
+                : { height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
             }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
@@ -387,29 +382,33 @@ export const Tabs = ({ group }: ITabsProps) => {
               e.dataTransfer.setData('uri-source-group', group.name);
             }}
           >
-            <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}>
-              {' '}
-            </div>
-            <div>{resource.name}</div>
-            {subname ? <div className={styles.subname}>{subname}</div> : null}
-            {decoration.readOnly ? (
-              <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
-            ) : null}
-            <div className={styles.tab_right}>
+            <div className={styles.kt_editor_tab_block}>
               <div
-                className={classnames({
-                  [styles.kt_hidden]: !decoration.dirty,
-                  [styles.dirty]: true,
-                })}
-              ></div>
-              <div
-                className={styles.close_tab}
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  group.close(resource.uri);
-                }}
+                className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}
               >
-                <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
+                {' '}
+              </div>
+              <div>{resource.name}</div>
+              {subname ? <div className={styles.subname}>{subname}</div> : null}
+              {decoration.readOnly ? (
+                <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
+              ) : null}
+              <div className={styles.tab_right}>
+                <div
+                  className={classnames({
+                    [styles.kt_hidden]: !decoration.dirty,
+                    [styles.dirty]: true,
+                  })}
+                ></div>
+                <div
+                  className={styles.close_tab}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    group.close(resource.uri);
+                  }}
+                >
+                  <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
+                </div>
               </div>
             </div>
           </div>
