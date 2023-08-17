@@ -493,6 +493,8 @@ const codIconId = [
   'verified-filled',
   'newline',
   'layout',
+  'layout-sidebar-left-off',
+  'send'
 ];
 
 /**

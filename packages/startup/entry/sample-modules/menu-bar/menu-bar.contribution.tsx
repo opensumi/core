@@ -105,19 +105,11 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
     menus.registerMenuItems(MenuId.IconMenubarContext, [
       {
         command: 'main-layout.left-panel.toggle',
-        iconClass: getIcon('folder'),
+        iconClass: getExternalIcon('layout-sidebar-left-off'),
         argsTransformer: (...args) => {
           isShowMenuBar = !isShowMenuBar;
           return [isShowMenuBar, 0];
         },
-      },
-      {
-        command: EDITOR_COMMANDS.SELECT_ALL.id,
-        iconClass: getIcon('test'),
-      },
-      {
-        command: EDITOR_COMMANDS.UNDO.id,
-        iconClass: getIcon('keyboard'),
       },
     ]);
   }

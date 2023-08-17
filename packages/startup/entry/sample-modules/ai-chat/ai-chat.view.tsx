@@ -9,7 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import 'react-chat-elements/dist/main.css';
@@ -50,20 +50,29 @@ export const AiChatView = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [inputValue, setInputValue] = React.useState('');
-  const [messageListData, setMessageListData] = React.useState<any[]>([createMessage('left', AI_NAME, '你好～ AI 助手为您服务！')]);
+  const [messageListData, setMessageListData] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   const [, updateState] = React.useState<any>();
   // const forceUpdate = React.useCallback(() => updateState({}), []);
 
+  const firstMsg = React.useMemo(() => {
+    return createMessageByAI('你好～ AI 助手为您服务！')
+  }, [])
+
   React.useEffect(() => {
     // @ts-ignore
     window.aiAntGlm = aiGPTBackService.aiAntGlm;
+
+    if (messageListData && messageListData.length === 0) {
+      setMessageListData([firstMsg])
+    }
 
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
     });
     aiChatService.removeOldExtension();
+
     return () => dispose.dispose();;
   }, []);
 
@@ -466,28 +475,53 @@ setTimeout(() => {
       id={VIEW_CONTAINERS.RIGHT_TABBAR}
       className={styles.ai_chat_view}
     >
-      <div className={styles.container} ref={containerRef}>
-        {/* @ts-ignore */}
-        <MessageList
-          className={styles.message_list}
-          lockable={true}
-          toBottomHeight={'100%'}
-          // @ts-ignore
-          dataSource={messageListData}
-        />
-        {/* @ts-ignore */}
-        {loading && <SystemMessage title={AI_NAME} className={styles.smsg} text={<div style={{ display: 'flex', alignItems: 'center' }}>
-          <Loading></Loading>
-          <span>正在生成中...</span>
-        </div>}></SystemMessage>}
+      <div className={styles.header_container}>
+        <div className={styles.left}>
+          <span className={styles.title}>AI 研发助手</span>
+          <span className={styles.line_vertical}> | </span>
+          <span className={styles.des}>Chat</span>
+        </div>
+        <div className={styles.right}>
+          <Icon className={getIcon('clear')} />
+          <Icon className={getIcon('close')} />
+        </div>
       </div>
-      <div className={styles.quick_way}>
-        <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
-        <span className={`${styles.quick_way_item} ${getIcon('info-circle')}`} onClick={() => handleSend('/sumi 提示用户 hello world')}></span>
-      </div>
-      <div className={styles.chat_input}>
-        <Input placeholder="AI 助手为你服务" type={'textarea'} value={inputValue} onValueChange={handleInputChange} className={styles.input_wrapper} />
-        <Button onClick={() => handleSend()}>Send</Button>
+      <div className={styles.body_container}>
+        <div className={styles.left_bar}>
+          <div className={styles.chat_container} ref={containerRef}>
+            {/* @ts-ignore */}
+            <MessageList
+              className={styles.message_list}
+              lockable={true}
+              toBottomHeight={'100%'}
+              // @ts-ignore
+              dataSource={messageListData}
+            />
+            {/* @ts-ignore */}
+            {loading && <SystemMessage title={AI_NAME} className={styles.smsg} text={<div style={{ display: 'flex', alignItems: 'center' }}>
+              <Loading></Loading>
+              <span>正在生成中...</span>
+            </div>}></SystemMessage>}
+          </div>
+          {/* <div className={styles.quick_way}>
+            <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
+            <span className={`${styles.quick_way_item} ${getIcon('info-circle')}`} onClick={() => handleSend('/sumi 提示用户 hello world')}></span>
+          </div> */}
+          <div className={styles.chat_input}>
+            <Input placeholder={`可以问我任何问题，或键入主题 "/"`} value={inputValue} onValueChange={handleInputChange} className={styles.input_wrapper} addonAfter={
+              <div className={styles.send_chat_btn} onClick={() => handleSend()}><Icon className={getIcon('right')}/></div>
+            } />
+            {/* <Button onClick={() => handleSend()}>Send</Button> */}
+          </div>
+        </div>
+        <div className={styles.right_bar}>
+          <ul className={styles.chat_list}>
+            <li className={styles.active_chat_bar}><Icon className={getExternalIcon('comment-discussion')} /></li>
+            <li><Icon className={getExternalIcon('comment-discussion')} /></li>
+            <li><Icon className={getExternalIcon('comment-discussion')} /></li>
+            <li><Icon className={getIcon('plus')} /></li>
+          </ul>
+        </div>
       </div>
     </div>
   );

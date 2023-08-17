@@ -1,3 +1,5 @@
+@bottomBarHeight: 32px;
+
 .dragging {
   background-color: var(--kt-activityBar-dropUpBackground) !important;
 }
@@ -23,23 +25,23 @@
 .icon_tab {
   padding: 0 0;
   position: relative;
-  height: 40px;
+  height: 32px;
   background-color: transparent;
   border: none;
   line-height: normal;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 48px;
+  width: 32px;
+  border-radius: 8px;
+
   :global {
     div.activity-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
+      font-size: 16px;
       color: var(--activityBar-inactiveForeground);
       &.mask-mode {
         background-color: var(--activityBar-inactiveForeground);
-        -webkit-mask-size: 24px;
+        -webkit-mask-size: 16px;
       }
     }
   }
@@ -63,14 +65,14 @@
   position: relative;
   flex: 1;
   &::before {
-    width: 100%;
-    height: 1px;
-    left: 0;
-    top: 0;
-    background-color: var(--sideBar-border);
-    position: absolute;
-    z-index: 2;
-    content: ' ';
+    // width: 100%;
+    // height: 1px;
+    // left: 0;
+    // top: 0;
+    // background-color: var(--sideBar-border);
+    // position: absolute;
+    // z-index: 2;
+    // content: ' ';
   }
 }
 
@@ -81,7 +83,7 @@
 
 :global(.left-slot) {
   .tab_panel {
-    border-right: 1px solid var(--sideBar-border);
+    // border-right: 1px solid var(--sideBar-border);
   }
 }
 
@@ -97,8 +99,8 @@
   flex-direction: column;
   justify-content: space-between;
   background-color: var(--activityBar-background);
-  border-right: 1px solid var(--activityBar-border);
-  border-top: 1px solid var(--activityBar-border);
+  // border-right: 1px solid var(--activityBar-border);
+  // border-top: 1px solid var(--activityBar-border);
   .tab_bar {
     flex: 1;
     overflow: hidden;
@@ -115,8 +117,8 @@
   .tab_bar {
     height: 100%;
     .icon_tab {
-      width: 48px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       margin: 0;
     }
   }
@@ -159,6 +161,7 @@
 }
 .bar_content {
   display: flex;
+  width: 100%;
 }
 .float_container {
   flex-direction: row;
@@ -201,7 +204,7 @@
   height: 100%;
   .tab_bar {
     background-color: var(--kt-panelTitle-background);
-    height: 24px;
+    height: 100%;
     color: var(--panelTitle-inactiveForeground);
     font-size: 12px;
     align-items: center;
@@ -261,18 +264,22 @@
 .right_tab {
   margin-top: 8px;
   background-color: var(--activityBar-background);
-  width: 48px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
   &:global(.on-drag-over) {
     background-color: var(--activityBar-dropBackground);
   }
   &:global(.active) {
     .icon_tab {
-      &::before {
-        content: '';
-        display: block;
-        position: absolute;
-        height: 100%;
-      }
+      background-color: var(--activityBar-activeBorder);
+      // &::before {
+      //   content: '';
+      //   display: block;
+      //   position: absolute;
+      //   height: 100%;
+      // }
       :global {
         div.activity-icon {
           color: var(--activityBar-foreground);
@@ -285,34 +292,34 @@
   }
 }
 
-.left_tab {
-  &:global(.active) {
-    .icon_tab {
-      &::before {
-        left: 0;
-        border-left: 3px solid var(--activityBar-activeBorder);
-      }
-    }
-  }
-}
+// .left_tab {
+//   &:global(.active) {
+//     .icon_tab {
+//       &::before {
+//         left: 0;
+//         border-left: 3px solid var(--activityBar-activeBorder);
+//       }
+//     }
+//   }
+// }
 
-.right_tab {
-  &:global(.active) {
-    .icon_tab {
-      &::before {
-        right: 0;
-        border-right: 3px solid var(--activityBar-activeBorder);
-      }
-    }
-  }
-}
+// .right_tab {
+//   &:global(.active) {
+//     .icon_tab {
+//       &::before {
+//         right: 0;
+//         border-right: 3px solid var(--activityBar-activeBorder);
+//       }
+//     }
+//   }
+// }
 
 .bottom_tab {
   margin: 0 4px;
   padding: 0 8px;
   position: relative;
-  height: 24px;
-  line-height: 24px;
+  height: 100%;
+  line-height: @bottomBarHeight;
   display: inline-block;
   font-size: 12px;
   background-color: var(--kt-panelTitle-background);
@@ -370,7 +377,8 @@
   align-items: center;
   z-index: 1;
   border-top: 1px solid var(--sideBar-border);
-  height: 24px;
+  height: @bottomBarHeight;
+  min-height: @bottomBarHeight;
 }
 
 .split_line {
