@@ -780,8 +780,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       clearTimeout(this.modifierKeySequenceTimer);
     }
     const keyCode = KeyCode.createKeyCode(event);
-    // 当传入的 KeyCode 不是修饰符时，不处理
+    // 当传入的 KeyCode 不是修饰符时，清空当前修饰符队列
     if (!keyCode.isModifierOnly()) {
+      this.modifierKeySequence = [];
       return;
     }
     this.modifierKeySequence.push(keyCode);
