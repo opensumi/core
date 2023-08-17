@@ -12,15 +12,23 @@
   background-size: cover;
 }
 
+.rce-container-mbox {
+  // overflow: hidden;
+}
+
 .rce-mbox-left-notch,
 .rce-mbox-right-notch {
   display: none;
 }
 
 .rce-mbox {
-  margin-left: 10px;
-  box-shadow: 0px 0px 0px 1px #0001;
+  margin-left: 56px;
+  background-color: #ffffff0a;
   max-width: 60%;
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 8px 12px;
+  min-width: initial;
 
   ::after {
     content: '';
@@ -28,7 +36,16 @@
 }
 
 .rce-smsg {
-  box-shadow: 0px 0px 0px 1px #0001;
+  background-color: #ffffff0a;
+  box-shadow: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 3px 5px 3px 0px;
+  max-width: initial;
+
+  .rce-smsg-text {
+    font-size: 12px;
+  }
 }
 
 .rce-mbox-right {
@@ -37,11 +54,47 @@
 
 .rce-container-smsg {
   justify-content: left;
-  margin-left: 10px;
+  margin-left: 8px;
+}
+
+.rce-mlist {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.rce-ai-msg {
+  .rce-mbox-body {
+    display: flex;
+    align-items: flex-start;
+    position: initial;
+    overflow: auto;
+
+    .rce-mbox-title {
+      position: absolute;
+      left: -40px;
+      top: 0;
+    }
+
+    .rce-avatar-container {
+      &.default {
+        height: 32px;
+        width: 32px;
+      }
+    }
+  }
+}
+
+.rce-user-msg {
+  .rce-mbox-right {
+    border-radius: 8px;
+    background-color: #3c8dff4d;
+  }
 }
 
 code {
-  color: #a31515;
+  // color: #a31515;
+  color: #666;
 }
 
 blockquote {

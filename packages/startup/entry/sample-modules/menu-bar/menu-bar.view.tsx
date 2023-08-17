@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandService } from '@opensumi/ide-core-common';
@@ -18,7 +18,7 @@ export const MenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
 
   const handleSelectFocus = () => {
-    commandService.executeCommand('workbench.action.quickOpen');
+    // commandService.executeCommand('workbench.action.quickOpen');
   };
 
   const handleRun = () => {
@@ -34,16 +34,27 @@ export const MenuBarView = () => {
     >
       {/* <span className={styles.menu_bar_logo} /> */}
       <div className={styles.container}>
-        <div className={styles.left}><IconMenuBar /></div>
+        <div className={styles.left}>
+          <IconMenuBar />
+        </div>
         <div className={styles.center}>
-          <div className={styles.input}>
-            <Input width={'100%'} placeholder='/搜索并选择指令' onFocus={handleSelectFocus}></Input>
-          </div>
           <div className={styles.run}>
-            <Button onClick={handleRun}>Run</Button>
+            <Button size={'large'} onClick={handleRun} className={styles.btn}>
+              <Icon className={getIcon('caret-right')} /> 运行
+            </Button>
           </div>
         </div>
-        <div className={styles.right}></div>
+        <div className={styles.right}>
+          <div className={styles.input}>
+            <Input
+              className={styles.input_wrapper}
+              width={'100%'}
+              addonBefore={<Icon style={{ color: '#ffffff1f' }} className={getIcon('search')} />}
+              placeholder='请搜索并选择指令'
+              onFocus={handleSelectFocus}
+            ></Input>
+          </div>
+        </div>
       </div>
     </div>
   );
