@@ -1,12 +1,4 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 declare module 'vscode' {
-
-  // todo@joaomoreno add issue reference
-
   /**
    * Represents the validation type of the Source Control input.
    */

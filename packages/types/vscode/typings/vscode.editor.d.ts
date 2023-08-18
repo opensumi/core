@@ -1,5 +1,4 @@
 declare module 'vscode' {
-
   /**
 	 * Represents sources that can cause [selection change events](#window.onDidChangeTextEditorSelection).
 	*/
