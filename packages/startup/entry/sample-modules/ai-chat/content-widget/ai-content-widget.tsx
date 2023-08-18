@@ -9,6 +9,8 @@ import { AppConfig, ConfigProvider, getExternalIcon } from '@opensumi/ide-core-b
 import { AiInput } from '../components/AIInput';
 import { AIImprove } from '../components/AIImprove';
 
+import * as styles from '../ai-chat.module.less';
+
 export interface IAiContentWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowAiContentOptions | undefined) => void;
   hide: (options?: ShowAiContentOptions | undefined) => void;
@@ -58,7 +60,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
               this._onSelectChange.fire(title);
             }} lists={[
               {
-                title: '给出测试用例',
+                title: '解释代码',
                 iconClass: getExternalIcon('git-pull-request')
               },
               {
@@ -66,7 +68,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
                 iconClass: ''
               },
               {
-                title: '优化一下代码',
+                title: '生成注释',
                 iconClass: getExternalIcon('git-pull-request')
               },
               {
@@ -74,7 +76,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
                 iconClass: ''
               },
               {
-                title: '添加注释',
+                title: '优化代码',
                 iconClass: getExternalIcon('git-pull-request')
               },
               {
@@ -82,12 +84,12 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
                 iconClass: ''
               },
               {
-                title: '检查代码是否有问题',
+                title: '其他',
                 iconClass: getExternalIcon('git-pull-request')
               }
             ]}/>
           </div>
-          <div className={'ai-input'}>
+          <div className={styles.ai_content_widget_input}>
             <AiInput onValueChange={(value) => {
               this._onSelectChange.fire(value);
             }}/>

@@ -1,4 +1,5 @@
 import { getExternalIcon, getIcon, getIconClass } from '@opensumi/ide-core-browser';
+import { Icon } from '@opensumi/ide-core-browser/lib/components/index';
 import React, { useCallback, useMemo } from 'react';
 
 export const AIImprove = (props: { onClick?: (title: string) => void, lists: { title: string, iconClass: string }[] = [] }) => {
@@ -31,11 +32,11 @@ export const AIImprove = (props: { onClick?: (title: string) => void, lists: { t
   return (
     <ul style={{ display: 'flex', alignItems: 'center', paddingLeft: '0', margin: '6px 0 6px 0' }}>
       {useLists.map(({ title, iconClass }) => (
-        <li style={{ marginRight: '6px', display: 'flex', alignItems: 'center' }}>
-          {iconClass && <span className={iconClass} style={{marginRight: '6px'}}></span>}
-          <a href='javascript:void(0)' onClick={() => handleClick(title)}>
+        <li style={{ marginRight: '6px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+          {iconClass && <Icon className={iconClass} style={{marginRight: '6px'}}></Icon>}
+          <span onClick={() => handleClick(title)}>
             {title}
-          </a>
+          </span>
         </li>
       ))}
     </ul>

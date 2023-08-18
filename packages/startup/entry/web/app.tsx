@@ -47,7 +47,8 @@ renderApp({
   useExperimentalShadowDom: true,
   defaultPreferences: {
     'general.language': defaultLanguage,
-    'general.theme': 'opensumi-dark',
+    // 'general.theme': 'opensumi-dark',
+    'general.theme': 'ai-native-dark',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,

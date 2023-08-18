@@ -103,10 +103,16 @@ blockquote {
 }
 
 .AI-Content-Widget {
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 9px 28px 8px rgba(0,0,0,0.15);;
   border-radius: 10px;
   padding: 12px 16px;
-  background-color: white;
+  background-color: rgba(23,28,37,1);
+  border: 1px solid rgba(54,57,64,1);
+
+  // 编辑区域的 content widget
+  .ant-select-selector {
+    background-color: #c0c7d008 !important;
+  }
 
   .ai-shortcuts {
     margin-bottom: 12px;
