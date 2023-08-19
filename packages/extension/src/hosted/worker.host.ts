@@ -25,7 +25,7 @@ import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createAPIFactory } from './api/worker/worker.host.api.impl';
-import { ExtensionLogger } from './extension-log';
+import { ExtensionWorkerLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 
 export function initRPCProtocol() {
@@ -54,7 +54,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private sumiAPIFactory: any;
   private sumiExtAPIImpl: Map<string, any> = new Map();
-  public logger: ExtensionLogger;
+  public logger: ExtensionWorkerLogger;
 
   private initDeferred = new Deferred();
 
@@ -74,7 +74,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   constructor(private rpcProtocol: RPCProtocol, private injector: Injector) {
     const reporter = this.injector.get(IReporter);
-    this.logger = new ExtensionLogger(rpcProtocol);
+    this.logger = new ExtensionWorkerLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
     this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this);
