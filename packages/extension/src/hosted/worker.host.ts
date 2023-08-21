@@ -54,6 +54,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private sumiAPIFactory: any;
   private sumiExtAPIImpl: Map<string, any> = new Map();
+
   public logger: ExtensionLogger;
 
   private initDeferred = new Deferred();
