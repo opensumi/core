@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/01d1ea52e639615c4513689ce66576829438f748/src/vs/base/common/platform.ts
 
-const LANGUAGE_DEFAULT = 'en';
+export const LANGUAGE_DEFAULT = 'en';
 
 let _isWindows = false;
 let _isMacintosh = false;

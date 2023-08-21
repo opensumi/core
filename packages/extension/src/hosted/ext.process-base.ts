@@ -130,8 +130,8 @@ function _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error') {
   Object.defineProperty(console, method, {
     set: () => {},
     get: () =>
-      function () {
-        original(arguments);
+      function (...args) {
+        original(...args);
       },
   });
 }

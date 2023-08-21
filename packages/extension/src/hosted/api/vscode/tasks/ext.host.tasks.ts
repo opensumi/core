@@ -22,7 +22,12 @@ import {
 import { UriComponents } from '@opensumi/ide-editor/lib/common';
 
 import { IExtensionProps } from '../../../../common';
-import { MainThreadAPIIdentifier, IExtHostTerminal, IExtHostWorkspace } from '../../../../common/vscode';
+import {
+  MainThreadAPIIdentifier,
+  IExtHostTerminal,
+  IExtHostWorkspace,
+  IExtensionDescription,
+} from '../../../../common/vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import {
   IExtHostTasks,
@@ -683,7 +688,10 @@ export class ExtHostTasks implements IExtHostTasks {
   }
 }
 
-export function createTaskApiFactory(extHostTasks: IExtHostTasks, extension): typeof vscode.tasks {
+export function createTaskApiFactory(
+  extHostTasks: IExtHostTasks,
+  extension: IExtensionDescription,
+): typeof vscode.tasks {
   return {
     registerTaskProvider: (type: string, provider: TaskProvider) =>
       extHostTasks.registerTaskProvider(type, provider, extension),

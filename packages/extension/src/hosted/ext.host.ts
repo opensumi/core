@@ -22,15 +22,16 @@ import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from 
 import {
   ExtHostAPIIdentifier,
   MainThreadAPIIdentifier,
-  VSCodeExtensionService,
   IExtensionDescription,
   ExtensionIdentifier,
+  IExtHostLocalization,
 } from '../common/vscode';
 
 import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
 import { createAPIFactory as createTelemetryAPIFactory } from './api/telemetry/ext.host.api.impl';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
+import { ExtHostLocalization } from './api/vscode/ext.host.localization';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { KTExtension } from './vscode.extension';
@@ -94,12 +95,7 @@ abstract class ApiImplFactory {
 
 class VSCodeAPIImpl extends ApiImplFactory {
   override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
-    return createVSCodeAPIFactory(
-      rpcProtocol,
-      extHost,
-      rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService),
-      injector.get(AppConfig),
-    );
+    return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig));
   }
 }
 
@@ -110,7 +106,7 @@ class OpenSumiAPIImpl extends ApiImplFactory {
 }
 
 class TelemetryAPIImpl extends ApiImplFactory {
-  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
+  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService) {
     return createTelemetryAPIFactory(rpcProtocol, extHost, 'node');
   }
 }
@@ -122,6 +118,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   public extensionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
   public secret: ExtHostSecret;
+  public localization: ExtHostLocalization;
 
   readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
 
@@ -133,7 +130,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private extensionErrors = new WeakMap<Error, IExtensionDescription | undefined>();
 
-  constructor(rpcProtocol: RPCProtocol, public logger: IExtensionLogger, private injector: Injector) {
+  constructor(rpcProtocol: RPCProtocol, public logger: IExtensionLogger, injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
@@ -143,6 +140,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.openSumiAPIImpl = new OpenSumiAPIImpl(rpcProtocol, this, injector);
     this.telemetryAPIImpl = new TelemetryAPIImpl(rpcProtocol, this, injector);
 
+    this.localization = rpcProtocol.get<IExtHostLocalization>(ExtHostAPIIdentifier.ExtHostLocalization);
     this.reporterService = new ReporterService(reporter, {
       host: REPORT_HOST.EXTENSION,
     });
@@ -231,6 +229,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     // node 层 extension 实例和 vscode 保持一致，并继承 IExtensionProps
     this.extensions = extensions.map((item) => ({
       ...item,
+      l10n: item.packageJSON?.l10n,
       displayName: item.displayName || item.packageJSON.displayName,
       isUnderDevelopment: !!item.isDevelopment,
       publisher: item.packageJSON?.publisher,
@@ -382,6 +381,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       this.logger.error(`extension ${id} not found`);
       return;
     }
+    await this.localization.initializeLocalizedMessages(extension);
 
     if (this.extensionsActivator.get(id)) {
       this.logger.warn(`extension ${id} is already activated.`);
