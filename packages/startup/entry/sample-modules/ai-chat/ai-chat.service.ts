@@ -107,21 +107,25 @@ export class AiChatService {
     // ”
     // (You need to distinguish between whether it's a Command or a Config in your answers and provide the corresponding format. Simply provide content similar to the examples given without the need for explanations.)
     // My question is: ${input}`;
-    const messageWithPrompt = `
-    You are a professional vscode plugin developer, and I have some questions about plugin development to ask you. Please provide API and give example codes with javascript.
-    An example question is as follow: "修改字体大小为 20 像素"
-    And then, give me an answer such as: "
-      API: vscode.workspace.getConfiguration
-      Example:
-      \`\`\`
-          const config = vscode.workspace.getConfiguration('editor');
-          config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
-      \`\`\`
-    "
-    (Please just provide example code and API, do not give other words)
-    My question is: ${input}`;
 
-    const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
+    const promptWithMessage = `
+    ### 介绍 ###
+    请根据我的需求返回一个 vscode 插件中可使用的 api，以及示例代码，只返回代码即可
+    
+    ### 示例 ###
+    需求：修改字体大小为 20 像素
+    回答：
+    API: vscode.workspace.getConfiguration
+    Example:
+    \`\`\`
+      const config = vscode.workspace.getConfiguration('editor');
+      config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
+    \`\`\`"
+    
+    ### 命令 ###
+    ${input}`;
+
+    const res = await this.aiBackService.aiGPTcompletionRequest(promptWithMessage);
 
     console.log('aiCodeGPTcompletionRequest: >>>> ', res);
 
@@ -129,10 +133,11 @@ export class AiChatService {
     const example = exampleReg.exec(res.data);
     if (example) {
       try {
-        await this.aiBackService.writeFile(example.groups?.example);
-        await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
-      } catch {
-        console.log('error');
+        // await this.aiBackService.writeFile(example.groups?.example);
+        // await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
+        await this.commandService.executeCommand('aiExt.execute', example.groups?.example);
+      } catch (e) {
+        console.log('error: ', e);
       }
     }
 
@@ -151,13 +156,13 @@ export class AiChatService {
     // const config = configReg.exec(res.data);
     // if (config) {
     //   const { category, key, params, example } = config.groups || {};
-    //   this.preferenceService.set(`${category}.${key}`, params);
+      this.preferenceService.set(`${category}.${key}`, params);
     //   await this.aiBackService.writeFile(example);
     //   await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
     // }
-    setTimeout(() => {
-      this.removeOldExtension();
-    }, 10000);
+    // setTimeout(() => {
+    //   this.removeOldExtension();
+    // }, 10000);
   }
 
   public async removeOldExtension() {

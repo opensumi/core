@@ -63,7 +63,7 @@ export const AiChatView = () => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
     });
-    aiChatService.removeOldExtension();
+    // aiChatService.removeOldExtension();
     return () => dispose.dispose();;
   }, []);
 
