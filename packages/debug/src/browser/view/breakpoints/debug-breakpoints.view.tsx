@@ -352,12 +352,16 @@ export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle:
       return <span className={styles.debug_breakpoints_description}>{description}</span>;
     }
 
+    if (!isDebugBreakpoint(data.breakpoint)) {
+      return null;
+    }
+
     return (
       <span className={cls(styles.debug_breakpoints_description, styles.blank)}>{`< ${localize(
         'debug.breakpoint.blank',
       )} >`}</span>
     );
-  }, [description]);
+  }, [description, data.breakpoint]);
 
   return (
     <div className={cls(styles.debug_breakpoints_item)}>

@@ -38,8 +38,6 @@ export interface ExtensionTabBarTreeViewProps {
 
 export const ExtensionTabBarTreeView = observer(
   ({ viewState, model, dataProvider, treeViewId }: PropsWithChildren<ExtensionTabBarTreeViewProps>) => {
-    const [isReady, setIsReady] = useState<boolean>(false);
-    const [isEmpty, setIsEmpty] = useState(dataProvider.isTreeEmpty);
     const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
     const decorationService = useInjectable<IDecorationsService>(IDecorationsService);
     const accordionService = useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
@@ -51,13 +49,6 @@ export const ExtensionTabBarTreeView = observer(
       }
       return !state.collapsed && !state.hidden;
     }, [accordionService]);
-
-    useEffect(() => {
-      const disposable = dataProvider.onDidChangeEmpty(() => {
-        setIsEmpty(dataProvider.isTreeEmpty);
-      });
-      return () => disposable.dispose();
-    }, []);
 
     const { height } = viewState;
     const { canSelectMany } = model.treeViewOptions || {};
@@ -186,23 +177,6 @@ export const ExtensionTabBarTreeView = observer(
     );
 
     useEffect(() => {
-      let unmouted = false;
-      (async () => {
-        await model.whenReady;
-        if (model.treeModel && isVisible) {
-          await model.treeModel.ensureReady;
-        }
-        if (!unmouted) {
-          setIsReady(true);
-        }
-      })();
-      return () => {
-        unmouted = true;
-        model && model.removeNodeDecoration();
-      };
-    }, [model, isVisible]);
-
-    useEffect(() => {
       const handleBlur = () => {
         model.handleTreeBlur();
       };
@@ -222,9 +196,8 @@ export const ExtensionTabBarTreeView = observer(
         data-tree-view-id={treeViewId}
       >
         <TreeView
-          isReady={isReady}
-          isEmpty={isEmpty}
           height={height}
+          isVisible={isVisible}
           handleTreeReady={handleTreeReady}
           handleItemClicked={handleItemClicked}
           handleTwistierClick={handleTwistierClick}
@@ -237,6 +210,7 @@ export const ExtensionTabBarTreeView = observer(
           draggable={model.draggable}
           treeViewId={treeViewId}
           model={model}
+          dataProvider={dataProvider}
           decorationService={decorationService}
         />
       </div>
@@ -245,10 +219,10 @@ export const ExtensionTabBarTreeView = observer(
 );
 
 interface TreeViewProps {
-  isReady: boolean;
-  isEmpty: boolean;
+  isVisible: boolean;
   height: number;
   treeViewId: string;
+  dataProvider: TreeViewDataProvider;
   model: ExtensionTreeViewModel;
   handleTreeReady(handle: IRecycleTreeHandle): void;
   handleItemClicked(ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType): void;
@@ -265,8 +239,7 @@ interface TreeViewProps {
 
 function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps) {
   return (
-    prevProps.isReady === nextProps.isReady &&
-    prevProps.isEmpty === nextProps.isEmpty &&
+    prevProps.isVisible === nextProps.isVisible &&
     prevProps.model === nextProps.model &&
     prevProps.treeViewId === nextProps.treeViewId &&
     prevProps.height === nextProps.height
@@ -275,11 +248,11 @@ function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps
 
 const TreeView = memo(
   ({
-    isReady,
-    isEmpty,
     model,
     treeViewId,
     height,
+    isVisible,
+    dataProvider,
     handleTreeReady,
     handleItemClicked,
     handleTwistierClick,
@@ -292,6 +265,35 @@ const TreeView = memo(
     draggable,
     decorationService,
   }: TreeViewProps) => {
+    const [isReady, setIsReady] = useState<boolean>(false);
+    const [isEmpty, setIsEmpty] = useState(false);
+
+    useEffect(() => {
+      let unmouted = false;
+      (async () => {
+        await model.whenReady;
+        if (model.treeModel && isVisible) {
+          await model.treeModel.ensureReady;
+        }
+        if (!unmouted) {
+          setIsReady(true);
+        }
+      })();
+      return () => {
+        unmouted = true;
+        model && model.removeNodeDecoration();
+      };
+    }, [model, isVisible]);
+
+    useEffect(() => {
+      const disposable = dataProvider.onDidChangeEmpty(() => {
+        if (dataProvider.isTreeEmpty !== isEmpty) {
+          setIsEmpty(dataProvider.isTreeEmpty);
+        }
+      });
+      return () => disposable.dispose();
+    }, []);
+
     const renderTreeNode = useCallback(
       (props: INodeRendererProps) => (
         <TreeViewNode

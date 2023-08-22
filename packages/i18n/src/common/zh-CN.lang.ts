@@ -238,7 +238,7 @@ export const localizationBundle = {
     'scm.title': '源代码管理',
     'scm.action.git.refresh': '刷新',
     'scm.action.git.commit': '提交',
-    'scm.action.git.more': '提交',
+    'scm.action.git.more': '更多操作...',
     'scm.statusbar.repo': '当前仓库',
     'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
@@ -411,6 +411,7 @@ export const localizationBundle = {
     'preference.debug.toolbar.float.title': '运行与调试：浮层模式',
     'preference.debug.breakpoint.editorHint.title': '控制是否开启编辑器断点闪烁提示',
     'preference.debug.breakpoint.editorHint': '启用后，点击断点列表跳转到编辑器时，会有背景色闪烁提示',
+    'preference.debug.breakpoint.showBreakpointsInOverviewRuler': '控制是否应在概览标尺中显示断点',
 
     'preference.debug.console.filter.mode': '调试控制台筛选器模式',
     'preference.debug.console.filter.mode.filter': '过滤模式',

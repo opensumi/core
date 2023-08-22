@@ -1,4 +1,4 @@
-@import '~@opensumi/ide-core-browser/lib/style/variable.less';
+@import '@opensumi/ide-core-browser/lib/style/variable.less';
 
 #main {
   display: flex;
@@ -7,7 +7,13 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: var(--background);
+  background-image: url('./assets/dark-background.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.rce-container-mbox {
+  // overflow: hidden;
 }
 
 .rce-mbox-left-notch,
@@ -16,9 +22,13 @@
 }
 
 .rce-mbox {
-  margin-left: 10px;
-  box-shadow: 0px 0px 0px 1px #0001;
+  margin-left: 56px;
+  background-color: #ffffff0a;
   max-width: 60%;
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 8px 12px;
+  min-width: initial;
 
   ::after {
     content: '';
@@ -26,7 +36,16 @@
 }
 
 .rce-smsg {
-  box-shadow: 0px 0px 0px 1px #0001;
+  background-color: #ffffff0a;
+  box-shadow: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 3px 5px 3px 0px;
+  max-width: initial;
+
+  .rce-smsg-text {
+    font-size: 12px;
+  }
 }
 
 .rce-mbox-right {
@@ -35,11 +54,47 @@
 
 .rce-container-smsg {
   justify-content: left;
-  margin-left: 10px;
+  margin-left: 8px;
+}
+
+.rce-mlist {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.rce-ai-msg {
+  .rce-mbox-body {
+    display: flex;
+    align-items: flex-start;
+    position: initial;
+    overflow: auto;
+
+    .rce-mbox-title {
+      position: absolute;
+      left: -40px;
+      top: 0;
+    }
+
+    .rce-avatar-container {
+      &.default {
+        height: 32px;
+        width: 32px;
+      }
+    }
+  }
+}
+
+.rce-user-msg {
+  .rce-mbox-right {
+    border-radius: 8px;
+    background-color: #3c8dff4d;
+  }
 }
 
 code {
-  color: #A31515;
+  // color: #a31515;
+  color: #666;
 }
 
 blockquote {
@@ -48,12 +103,49 @@ blockquote {
 }
 
 .AI-Content-Widget {
-  box-shadow: 0 9px 28px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 9px 28px 8px rgba(0,0,0,0.15);;
   border-radius: 10px;
   padding: 12px 16px;
-  background-color: white;
+  background-color: rgba(23,28,37,1);
+  border: 1px solid rgba(54,57,64,1);
+
+  // 编辑区域的 content widget
+  .ant-select-selector {
+    background-color: #c0c7d008 !important;
+  }
 
   .ai-shortcuts {
     margin-bottom: 12px;
+  }
+}
+
+// ai native main
+.ai_native_panel_container {
+  margin-right: 16px;
+  width: initial;
+}
+
+.ai_native_slot_main {
+  height: 100%;
+  width: 100%;
+  background-color: #151b21;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ai_native_slot_resize_horizontal {
+  height: 100%;
+  margin: 0 3px;
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    height: 25px;
+    width: 2px;
+    background-color: #31363b;
+    border-radius: 1px;
+    top: 50%;
+    left: 50%;
   }
 }

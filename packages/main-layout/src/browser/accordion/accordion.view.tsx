@@ -25,7 +25,7 @@ export const AccordionContainer = observer(
     alignment = 'vertical',
     views,
     containerId,
-    headerSize = 24,
+    headerSize = 36,
     minSize = 120,
     className,
     noRestore,

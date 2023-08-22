@@ -38,7 +38,8 @@ import { KTExtension } from './vscode.extension';
 const { enumValueToArray } = arrays;
 
 /**
- * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
+ * 对 extension-host 使用 webpack bundle 后，require 方法会被覆盖为 webpack 内部的 require
+ * 这里是一个 webpack 提供的 workaround，用于获取原始的 require
  */
 declare let __webpack_require__: any;
 declare let __non_webpack_require__: any;

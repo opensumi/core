@@ -70,11 +70,11 @@ export interface ExtProcessConfig {
   builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomChildProcessModule;
   customVSCodeEngineVersion?: string;
-   /**
+  /**
    * control rpcProtocol message timeout
    * default -1，it means disable
    */
-   rpcMessageTimeout?: number;
+  rpcMessageTimeout?: number;
 }
 
 async function initRPCProtocol(extInjector: Injector): Promise<any> {
@@ -105,7 +105,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
     timeout: appConfig.rpcMessageTimeout,
   });
 
-  logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);
+  logger = new ExtensionLogger2(extInjector);
   logger.log('process extConnection path', argv[KT_PROCESS_SOCK_OPTION_KEY]);
   return { extProtocol, logger };
 }

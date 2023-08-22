@@ -19,7 +19,7 @@ import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
 import { LineRangeMapping } from './model/line-range-mapping';
-import { ACCEPT_CURRENT_ACTIONS } from './types';
+import { ACCEPT_CURRENT_ACTIONS, IEditorMountParameter } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -59,6 +59,9 @@ export class MergeEditorService extends Disposable {
 
   private readonly _onDidInputNutrition = new Emitter<IOpenMergeEditorArgs>();
   public readonly onDidInputNutrition: Event<IOpenMergeEditorArgs> = this._onDidInputNutrition.event;
+
+  private readonly _onDidMount = new Emitter<IEditorMountParameter>();
+  public readonly onDidMount: Event<IEditorMountParameter> = this._onDidMount.event;
 
   private readonly _onRestoreState = new Emitter<URI>();
   public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
@@ -104,6 +107,12 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
     this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
     this.actionsManager.mount(this.currentView, this.resultView, this.incomingView);
+
+    this._onDidMount.fire({
+      currentView: this.currentView,
+      resultView: this.resultView,
+      incomingView: this.incomingView,
+    });
 
     this.initListenEvent();
   }

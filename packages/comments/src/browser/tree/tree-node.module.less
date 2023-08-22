@@ -1,4 +1,4 @@
-.search_node {
+.comment_node {
   height: 22px;
   line-height: 22px;
   display: flex;
@@ -11,6 +11,10 @@
     margin-right: 6px;
     display: inline;
     white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
   }
 
   .description {
@@ -71,6 +75,7 @@
   }
 
   .overflow_wrap {
+    display: flex;
     flex: 1;
     flex-shrink: 0;
     overflow: hidden;

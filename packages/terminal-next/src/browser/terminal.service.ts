@@ -210,6 +210,14 @@ export class NodePtyTerminalService implements ITerminalService {
     });
   }
 
+  async getCwd(sessionId: string) {
+    try {
+      return await this.serviceClientRPC.getCwd(sessionId);
+    } catch {
+      return undefined;
+    }
+  }
+
   async getDefaultSystemShell(): Promise<string> {
     return await this.serviceClientRPC.getDefaultSystemShell(await this.getOS());
   }

@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IToolbarPopoverStyle } from '@opensumi/ide-core-browser/lib/toolbar';
-import { Emitter, Disposable } from '@opensumi/ide-core-common';
+import { Emitter, Disposable, IExtensionLogger } from '@opensumi/ide-core-common';
 
 import {
   IToolbarButtonContribution,
@@ -59,6 +59,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
     private extHostCommands: IExtHostCommands,
     private extHostCommon: ExtHostCommon,
     private rpcProtocol: IRPCProtocol,
+    public logger: IExtensionLogger,
   ) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadSumiAPIIdentifier.MainThreadToolbar);
   }
@@ -76,10 +77,14 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
         await this.proxy.$registerDropdownButtonAction(extensionId, extensionPath, contribution);
         return this.getToolbarDropdownButtonActionHandle(contribution.id, extensionId);
       case TOOLBAR_ACTION_TYPE.SELECT:
-          await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
-          return this.getToolbarSelectActionHandle(contribution.id, extensionId);
+        await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
+        return this.getToolbarSelectActionHandle(contribution.id, extensionId);
       default:
-        await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution as IToolbarSelectContribution<T>);
+        await this.proxy.$registerToolbarSelectAction(
+          extensionId,
+          extensionPath,
+          contribution as IToolbarSelectContribution<T>,
+        );
         return this.getToolbarSelectActionHandle(contribution.id, extensionId);
     }
   }
@@ -87,14 +92,20 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
   getToolbarButtonActionHandle(id: string, extensionId: string): Promise<IToolbarButtonActionHandle> {
     const compositeKey = extensionId + '.' + id;
     if (!this.btnHandles.has(compositeKey)) {
-      const promise = new Promise<ToolbarBtnActionHandleController>(async (resolve, reject) => {
-        const h = new ToolbarBtnActionHandleController(compositeKey, this.extHostCommands, this.extHostCommon);
-        try {
-          await h.init();
-          resolve(h);
-        } catch (e) {
-          reject(e);
-        }
+      const promise = new Promise<ToolbarBtnActionHandleController>((resolve, reject) => {
+        const h = new ToolbarBtnActionHandleController(
+          compositeKey,
+          this.extHostCommands,
+          this.extHostCommon,
+          this.logger,
+        );
+        h.init()
+          .then(() => {
+            resolve(h);
+          })
+          .catch((e) => {
+            reject(e);
+          });
       });
       this.btnHandles.set(compositeKey, promise);
     }
@@ -104,14 +115,15 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
   getToolbarSelectActionHandle<T = any>(id: string, extensionId: string): Promise<IToolbarSelectActionHandle<T>> {
     const compositeKey = extensionId + '.' + id;
     if (!this.selectHandles.has(compositeKey)) {
-      const promise = new Promise<ToolbarSelectActionHandleController<T>>(async (resolve, reject) => {
+      const promise = new Promise<ToolbarSelectActionHandleController<T>>((resolve, reject) => {
         const h = new ToolbarSelectActionHandleController<T>(compositeKey, this.extHostCommands, this.extHostCommon);
-        try {
-          await h.init();
-          resolve(h);
-        } catch (e) {
-          reject(e);
-        }
+        h.init()
+          .then(() => {
+            resolve(h);
+          })
+          .catch((e) => {
+            reject(e);
+          });
       });
       this.selectHandles.set(compositeKey, promise);
     }
@@ -124,18 +136,19 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
   ): Promise<IToolbarDropdownButtonActionHandle<T>> {
     const compositeKey = extensionId + '.' + id;
     if (!this.dropdownButtonHandles.has(compositeKey)) {
-      const promise = new Promise<ToolbarDropdownButtonActionHandleController<T>>(async (resolve, reject) => {
+      const promise = new Promise<ToolbarDropdownButtonActionHandleController<T>>((resolve, reject) => {
         const h = new ToolbarDropdownButtonActionHandleController<T>(
           compositeKey,
           this.extHostCommands,
           this.extHostCommon,
         );
-        try {
-          await h.init();
-          resolve(h);
-        } catch (e) {
-          reject(e);
-        }
+        h.init()
+          .then(() => {
+            resolve(h);
+          })
+          .catch((e) => {
+            reject(e);
+          });
       });
       this.dropdownButtonHandles.set(compositeKey, promise);
     }
@@ -154,6 +167,7 @@ export class ToolbarBtnActionHandleController extends Disposable {
     public readonly id: string,
     private extHostCommands: IExtHostCommands,
     private kaitianCommon: ExtHostCommon,
+    private logger: IExtensionLogger,
   ) {
     super();
   }
@@ -195,6 +209,7 @@ export class ToolbarBtnActionHandleController extends Disposable {
         }
       }),
     );
+    this.logger.log('init button handle', this.id);
     return this.extHostCommands.executeCommand(BUTTON_CONNECT_HANDLE_ID, this.id);
   }
 }

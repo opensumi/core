@@ -1,10 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IDisposable, URI, MaybePromise, Disposable, Event } from '@opensumi/ide-core-common';
+import { IDisposable, URI, MaybePromise, Disposable, Event, IRange } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { Position } from '@opensumi/ide-monaco';
 import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AiImproveWidget } from './ai-improve-widget';
 import { AiZoneWidget } from './ai-zone-widget';
@@ -21,6 +24,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiGPTBackSerivcePath)
   private readonly aiGPTBackService: any;
+  
+  @Autowired(DocumentSymbolStore)
+  private documentSymbolStore: DocumentSymbolStore;
 
   public menuse: any;
 
@@ -28,6 +34,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     if (!editor) {
       return this;
     }
+
+    this.registerSuggestJavaDoc(editor);
 
     const { monacoEditor, currentUri, currentDocumentModel } = editor;
     if (currentUri && currentUri.codeUri.scheme !== 'file') {
@@ -59,9 +67,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }
     }
 
-    monacoEditor.onDidChangeModel(() => {
+    this.disposables.push(monacoEditor.onDidChangeModel(() => {
       disposeAllWidget()
-    });
+    }));
+
+    // this.disposables.push(monacoEditor.onDidFocusEditorText(() => {
+    //   disposeAllWidget()
+    // }));
 
     Event.debounce(
       Event.any(
@@ -72,6 +84,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       (_, e) => e,
       100,
     )((e) => {
+      disposeAllWidget();
 
       if (!this.menuse) {
         this.menuse = this.abstractMenuService.createMenu('ai/iconMenubar/context');
@@ -80,6 +93,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       const selection = monacoEditor.getSelection();
 
       if (!selection) {
+        disposeAllWidget();
         return;
       }
 
@@ -161,5 +175,87 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   }
   provideEditorOptionsForUri?(uri: URI): MaybePromise<Partial<MonacoEditor.IEditorOptions>> {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * java doc
+   */
+  private async registerSuggestJavaDoc(editor: IEditor): Promise<void> {
+    const { monacoEditor, currentUri, currentDocumentModel } = editor;
+
+    if (currentUri && currentUri.codeUri.scheme !== 'file') {
+      return;
+    }
+
+    let inlayHintDispose: IDisposable | undefined;
+
+    this.disposables.push(monacoEditor.onDidChangeModelContent((event) => {
+      const model = monacoEditor.getModel();
+      if (!model) {
+        return;
+      }
+
+      if (inlayHintDispose) {
+        inlayHintDispose.dispose();
+      }
+
+      const content = model.getValue();
+  
+      // 使用正则表达式匹配所有 "/**" 的位置
+      const matches = content.matchAll(/\/\*\*/g);
+
+      // 存在 /** 的 position 集合
+      const hasKeyPosition: Position[] = []
+  
+      // 遍历匹配结果并输出位置信息
+      for (const match of matches) {
+        // const startPosition = model.getPositionAt(match.index!);
+        const endPosition = model.getPositionAt(match.index! + match[0].length);
+        hasKeyPosition.push(endPosition);
+      }
+
+      
+      // @ts-ignore
+      const symbols = this.documentSymbolStore.getDocumentSymbol(model.uri!);
+      
+      console.log('documentSymbolStore: symbols>>> ', symbols)
+      const findRange = (range: Position) => {
+        if (!symbols) {
+          return { range: null }
+        }
+        return symbols.map(obj => (obj.children || []).find(child => child.range.startLineNumber === range.lineNumber)).filter(Boolean)[0];
+      }
+
+      if (hasKeyPosition.length > 0) {
+
+        inlayHintDispose = monaco.languages.registerInlayHintsProvider('java', {
+          provideInlayHints(model, range, token) {
+            return {
+              hints: hasKeyPosition.map(position => {
+
+                return {
+                  kind: monaco.languages.InlayHintKind.Parameter,
+                  position: { column: position.column, lineNumber: position.lineNumber },
+                  label: [
+                    {
+                      label: '✨ Suggest documentation',
+                      command: {
+                        id: 'ai.suggest.documentation',
+                        title: '',
+                        arguments: [findRange(position)?.range]
+                      }
+                    }
+                  ],
+                  paddingLeft: true
+                }
+              }),
+              dispose: () => {},
+            };
+          }
+        })
+
+        this.disposables.push(inlayHintDispose);
+      }
+    }))
   }
 }

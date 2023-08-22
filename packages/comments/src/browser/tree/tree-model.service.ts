@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
-import { DisposableCollection, Emitter, Event, Disposable } from '@opensumi/ide-core-browser';
+import { DisposableCollection, Emitter, Event, Disposable, runWhenIdle } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/index';
 import { ICommentsService } from '../../common/index';
 
@@ -149,6 +149,12 @@ export class CommentModelService extends Disposable {
     this.removeFocusedDecoration();
   };
 
+  handleTwistierClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
+    if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
+      this.toggleDirectory(node as CommentFileNode | CommentContentNode);
+    }
+  };
+
   handleItemClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     this.applyFocusedDecoration(node);
     if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
@@ -185,7 +191,9 @@ export class CommentModelService extends Disposable {
 
   async refresh() {
     await this.whenReady;
-    this.treeModel.root.refresh();
+    runWhenIdle(() => {
+      this.treeModel.root.refresh();
+    });
   }
 
   async collapsedAll() {

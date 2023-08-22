@@ -42,6 +42,7 @@ export const CommentsPanel: FC<{ viewState: ViewState }> = ({ viewState }) => {
         itemType={props.itemType}
         decorations={commentModelService.decorations.getDecorations(props.item as any)}
         defaultLeftPadding={8}
+        onTwistierClick={commentModelService.handleTwistierClick}
         onClick={commentModelService.handleItemClick}
         leftPadding={8}
       />
@@ -62,7 +63,7 @@ export const CommentsPanel: FC<{ viewState: ViewState }> = ({ viewState }) => {
     [commentsPanelOptions],
   );
 
-  const renderSearchTree = useCallback(() => {
+  const renderCommentTree = useCallback(() => {
     if (model) {
       return (
         <RecycleTree
@@ -83,7 +84,7 @@ export const CommentsPanel: FC<{ viewState: ViewState }> = ({ viewState }) => {
   return (
     <div className={styles.comment_panel} tabIndex={-1} onBlur={handleTreeBlur} ref={wrapperRef}>
       {headerComponent?.component}
-      {renderSearchTree()}
+      {renderCommentTree()}
     </div>
   );
 };

@@ -1399,6 +1399,10 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: true,
     description: '%editor.configuration.renderIndicators%',
   },
+  'diffEditor.minimap': {
+    type: 'boolean',
+    default: false,
+  },
   'editor.defaultFormatter': {
     type: 'string',
     description: '%editor.configuration.defaultFormatter%',

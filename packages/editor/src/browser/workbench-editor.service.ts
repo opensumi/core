@@ -1207,7 +1207,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
               resource: this.currentResource!,
               selections: e.selections,
               source: e.source,
-              editorUri: URI.from(editor.monacoEditor.getModel()?.uri!),
+              editorUri: URI.from(editor.monacoEditor.getModel()!.uri!),
               side,
             }),
           );

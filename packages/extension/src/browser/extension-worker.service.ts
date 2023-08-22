@@ -63,13 +63,13 @@ export class WorkerExtProcessService
   }
 
   public async activeExtension(extension: IExtension, isWebExtension: boolean): Promise<void> {
-    const { extendConfig, packageJSON } = extension;
+    const { extendConfig, packageJSON, id } = extension;
     // 对使用 kaitian.js 的老插件兼容
     // 因为可能存在即用了 kaitian.js 作为入口，又注册了 sumiContributes 贡献点的插件
     if (extendConfig?.worker?.main) {
       warning(
         false,
-        '[Deprecated warning]: kaitian.js is deprecated, please use `package.json#sumiContributes` instead',
+        `[Deprecated warning]: ${id}: kaitian.js is deprecated, please use \`package.json#sumiContributes\` instead`,
       );
       await this.doActivateExtension(extension);
       return;

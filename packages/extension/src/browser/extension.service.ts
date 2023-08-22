@@ -246,11 +246,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       });
     }
 
-    this.extensionMetaDataArr = await this.getExtensionsMetaData(
-      Array.from(this.extensionScanDir),
-      Array.from(this.extensionCandidatePath),
-    );
-    this.logger.log('extensions count:', this.extensionMetaDataArr.length);
+    await this.getExtensionsMetaData(Array.from(this.extensionScanDir), Array.from(this.extensionCandidatePath));
   }
 
   /**
@@ -536,10 +532,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       );
       this.extensionMetaDataArr = extensions;
     }
+
+    this.logger.log('extensions count:', this.extensionMetaDataArr.length);
+
     return this.extensionMetaDataArr;
   }
-
-  private normalExtensions: Extension[] = [];
 
   private async runEagerExtensionsContributes() {
     await Promise.all([this.contributesService.initialize(), this.sumiContributesService.initialize()]);

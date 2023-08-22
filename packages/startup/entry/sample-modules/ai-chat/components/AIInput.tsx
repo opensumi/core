@@ -1,4 +1,5 @@
-import { getExternalIcon } from '@opensumi/ide-core-browser';
+import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
+import { Icon, Input } from '@opensumi/ide-core-browser/lib/components/index';
 import { Select } from 'antd';
 import React, { CSSProperties, useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -42,28 +43,13 @@ export const AiInput = ({ onValueChange }) => {
   };
 
   return (
-    <Select
-      showSearch
+    <Input
+      placeholder={'可以问我任何问题，或键入主题 "/"'}
       value={value}
-      placeholder={'输入 /，针对选中代码，唤醒 AI 任务'}
-      style={{ width: 460 }}
-      defaultActiveFirstOption={false}
-      showArrow={false}
-      filterOption={false}
-      onSearch={handleSearch}
-      size={'middle'}
-      onChange={handleChange}
-      suffixIcon={<span className={getExternalIcon('send')}></span>}
-      notFoundContent={null}
-    >
-      {data.map(({ iconName, value }, i) => (
-        <Option key={i} value={value}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <span style={{marginRight: 6}} className={getExternalIcon(iconName)}></span>
-            <span>{value}</span>
-          </div>
-        </Option>
-      ))}
-    </Select>
+      onValueChange={handleChange}
+      addonAfter={
+        <Icon className={getIcon('right')} />
+      }
+    />
   );
 };

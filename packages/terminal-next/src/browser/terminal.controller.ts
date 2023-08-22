@@ -192,8 +192,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private async _createClient(widget: IWidget, options?: ICreateTerminalOptions) {
-    const client = await this.clientFactory(widget, /** @type ICreateTerminalOptions */ options);
-    this.logger.log('create client with clientFactory2', client);
+    const client = await this.clientFactory(widget, options);
+    this.logger.log('create client with ITerminalClientFactory2', client);
     return this.setupClient(widget, client);
   }
 

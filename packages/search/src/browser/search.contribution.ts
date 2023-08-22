@@ -307,6 +307,7 @@ export class SearchContribution
       title: localize('search.title'),
       component: Search,
       priority: 9,
+      activateKeyBinding: 'ctrlcmd+shift+f',
     });
   }
 

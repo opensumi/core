@@ -8,7 +8,12 @@ export function DefaultLayout() {
   return (
     <BoxPanel direction='top-to-bottom'>
       <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={35} slot='top' z-index={2} />
-      <SplitPanel id='main-horizontal' flex={1}>
+      <SplitPanel
+        id='main-horizontal'
+        flex={1}
+        className='ai_native_panel_container'
+        resizeHandleClassName='ai_native_slot_resize_horizontal'
+      >
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
           slot='left'
@@ -17,7 +22,13 @@ export function DefaultLayout() {
           minResize={280}
           maxResize={480}
         />
-        <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
+        <SplitPanel
+          id='main-vertical'
+          minResize={300}
+          flexGrow={1}
+          direction='top-to-bottom'
+          className='ai_native_slot_main'
+        >
           <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer
             backgroundColor={colors.panelBackground}
@@ -30,7 +41,7 @@ export function DefaultLayout() {
         </SplitPanel>
         <SlotRenderer
           slot='right'
-          isTabbar={true}
+          isTabbar={false}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
           minResize={280}
         />

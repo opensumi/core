@@ -18,6 +18,7 @@ import {
   PauseableEmitter,
   AsyncEmitter,
   WaitUntilEvent,
+  Dispatcher,
 } from '../src/event';
 
 function deepStrictEqual(a, b) {
@@ -912,5 +913,23 @@ describe('Event utils', () => {
     deepStrictEqual(result, [1, 2, 1, 3]);
 
     listener.dispose();
+  });
+});
+
+describe('Dispatcher', () => {
+  it('should dispatch events to listeners', () => {
+    const dispatcher = new Dispatcher<string>();
+
+    const listener1 = jest.fn();
+    const listener2 = jest.fn();
+    dispatcher.on('type1')(listener1);
+    dispatcher.on('type2')(listener2);
+
+    dispatcher.dispatch('type1', 'foo');
+    expect(listener1).toBeCalledWith('foo');
+    dispatcher.dispatch('type2', 'bar');
+    expect(listener2).toBeCalledWith('bar');
+
+    dispatcher.dispose();
   });
 });

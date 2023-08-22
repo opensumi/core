@@ -357,7 +357,7 @@ export class FileTreeModelService {
     );
     this.disposableCollection.push(
       this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
-        this.loadingDecoration.removeTarget(target);
+        this.loadingDecoration.clearAppliedTarget();
         this.treeModel.dispatchChange();
       }),
     );
@@ -382,7 +382,8 @@ export class FileTreeModelService {
         });
       }),
     );
-    await this.fileTreeService.startWatchFileEvent();
+    // 文件变化的监听不应该阻塞渲染
+    this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
 
     this._whenReady.resolve();
@@ -418,28 +419,22 @@ export class FileTreeModelService {
 
   // 清空所有节点选中态
   clearFileSelectedDecoration = () => {
-    this._selectedFiles.forEach((file) => {
-      this.selectedDecoration.removeTarget(file);
-    });
+    this.selectedDecoration.clearAppliedTarget();
     this._selectedFiles = [];
   };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeFileDecoration = (target: File | Directory, dispatchChange = true) => {
     if (this.contextMenuFile) {
-      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuDecoration.clearAppliedTarget();
       this.contextMenuFile = undefined;
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
-        // 因为选择装饰器可能通过其他方式添加而不能及时在selectedFiles上更新
-        // 故这里遍历所有选中装饰器的节点进行一次统一清理
-        for (const target of this.selectedDecoration.appliedTargets.keys()) {
-          this.selectedDecoration.removeTarget(target);
-        }
+        this.selectedDecoration.clearAppliedTarget();
       }
       if (this.focusedFile) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
+        this.focusedDecoration.clearAppliedTarget();
       }
       this.selectedDecoration.addTarget(target);
       this.focusedDecoration.addTarget(target);
@@ -460,17 +455,17 @@ export class FileTreeModelService {
     }
 
     if (this.contextMenuFile) {
-      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuDecoration.clearAppliedTarget();
       this.contextMenuFile = undefined;
     }
     if (target) {
       if (this.selectedFiles.length > 0) {
-        this.selectedFiles.forEach((file) => {
-          this.selectedDecoration.removeTarget(file);
-        });
+        // 由于文件树更新较为频繁，容易出现用户点击时刚好节点被更新情况
+        // 故这里需要从 Decoration 内移除节点
+        this.selectedDecoration.clearAppliedTarget();
       }
       if (this.focusedFile) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
+        this.focusedDecoration.clearAppliedTarget();
       }
       this.selectedDecoration.addTarget(target);
       this._selectedFiles = [target];
@@ -484,10 +479,11 @@ export class FileTreeModelService {
   // 右键菜单焦点态切换
   activateFileActivedDecoration = (target: File | Directory) => {
     if (this.contextMenuFile) {
-      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuDecoration.clearAppliedTarget();
+      this.contextMenuFile = undefined;
     }
     if (this.focusedFile) {
-      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedDecoration.clearAppliedTarget();
       this.focusedFile = undefined;
     }
     this.contextMenuDecoration.addTarget(target);
@@ -498,10 +494,10 @@ export class FileTreeModelService {
   // 右键菜单焦点态切换
   activateFileFocusedDecoration = (target: File | Directory) => {
     if (this.focusedFile) {
-      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedDecoration.clearAppliedTarget();
     }
     if (this.contextMenuFile) {
-      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuDecoration.clearAppliedTarget();
       this.contextMenuFile = undefined;
     }
     this.focusedDecoration.addTarget(target);
@@ -521,12 +517,12 @@ export class FileTreeModelService {
       if (removePreFocusedDecoration) {
         if (this.focusedFile) {
           // 多选情况下第一次切换焦点文件
-          this.focusedDecoration.removeTarget(this.focusedFile);
+          this.focusedDecoration.clearAppliedTarget();
         }
         this.contextMenuFile = target;
       } else if (this.focusedFile) {
         this.contextMenuFile = undefined;
-        this.focusedDecoration.removeTarget(this.focusedFile);
+        this.focusedDecoration.clearAppliedTarget();
       }
       if (target) {
         // 存在多选文件时切换焦点的情况
@@ -548,16 +544,16 @@ export class FileTreeModelService {
     const index = this._selectedFiles.indexOf(target);
     if (index > -1) {
       if (this.focusedFile === target) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
+        this.focusedDecoration.clearAppliedTarget();
         this.focusedFile = undefined;
       }
       this._selectedFiles.splice(index, 1);
-      this.selectedDecoration.removeTarget(target);
+      this.selectedDecoration.clearAppliedTarget();
     } else {
       this._selectedFiles.push(target);
       this.selectedDecoration.addTarget(target);
       if (this.focusedFile) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
+        this.focusedDecoration.clearAppliedTarget();
       }
       this.focusedFile = target;
       this.focusedDecoration.addTarget(target);
@@ -588,7 +584,7 @@ export class FileTreeModelService {
   // 取消选中节点焦点
   deactivateFileDecoration = () => {
     if (this.focusedFile) {
-      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedDecoration.clearAppliedTarget();
       this.focusedFile = undefined;
     }
     // 失去焦点状态时，仅清理右键菜单的选中态
@@ -898,7 +894,7 @@ export class FileTreeModelService {
     let node;
     if (this.focusedFile) {
       node = this.focusedFile;
-      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedDecoration.clearAppliedTarget();
       this.focusedFile = undefined;
     } else if (this.contextMenuFile) {
       node = this.contextMenuFile;
@@ -933,7 +929,7 @@ export class FileTreeModelService {
     let node;
     if (this.focusedFile) {
       node = this.focusedFile;
-      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedDecoration.clearAppliedTarget();
       this.focusedFile = undefined;
     } else if (this.contextMenuFile) {
       node = this.contextMenuFile;

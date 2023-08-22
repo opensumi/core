@@ -3,13 +3,13 @@
 import hljs from 'highlight.js';
 import * as React from 'react';
 // @ts-ignore
-import { MessageList, SystemMessage } from 'react-chat-elements';
+import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 // @ts-ignore
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Button, Input } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import 'react-chat-elements/dist/main.css';
@@ -21,26 +21,33 @@ import { AiChatService } from './ai-chat.service';
 
 // import { Markdown } from '@opensumi/ide-markdown';
 
-const createMessage = (position: string, title: string, text: string | React.ReactNode) => ({
-    position,
-    type: 'text',
-    title,
-    text,
-  });
+const AI_AVATAR =
+  'https://done.cdn.alibabadesign.com/2023/08/16/4866db7a5f59bba4/preview/assets/6D541F03-3063-4F43-9FCC-27CD9830AEC8/F3E22F76-4171-4263-BEAD-F28A5C0C0429.svg?sign=68948ee76126c039cd6befef7e79fd47&timestamp=1693670399999';
 
-const createMessageByAI = (text: string | React.ReactNode) => createMessage('left', AI_NAME, text);
+const createMessage = (position: string, title: string, text: string | React.ReactNode) => ({
+  position,
+  type: 'text',
+  title,
+  text,
+  className: position === 'left' ? 'rce-ai-msg' : 'rce-user-msg',
+});
+
+const createMessageByAI = (text: string | React.ReactNode) => ({
+    ...createMessage('left', '', text),
+    avatar: AI_AVATAR,
+  });
 
 // const createMessageByMe = (text: string | React.ReactNode) => createMessage('right', ME_NAME, text);
 
 const AI_NAME = 'AI 助手';
-const ME_NAME = '我';
+const ME_NAME = '';
 
-const sleep = (ms: number) => new Promise((resolve) => {
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
     setTimeout(() => {
       resolve(undefined);
     }, ms);
-  }
-  );
+  });
 
 export const AiChatView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
@@ -50,15 +57,53 @@ export const AiChatView = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [inputValue, setInputValue] = React.useState('');
-  const [messageListData, setMessageListData] = React.useState<any[]>([createMessage('left', AI_NAME, '你好～ AI 助手为您服务！')]);
+  const [messageListData, setMessageListData] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   const [, updateState] = React.useState<any>();
   // const forceUpdate = React.useCallback(() => updateState({}), []);
 
+  const InitMsgComponent = () => {
+    const lists = [
+      { icon: getIcon('plus'), text: '生成 Java 快排算法' },
+      { icon: getIcon('branches'), text: '提交代码' },
+      { icon: getIcon('open-changes'), text: '创建合并请求' },
+      { icon: getIcon('scm'), text: '触发流水线' },
+    ];
+
+    return (
+      <div>
+        <span style={{ display: 'block' }}>嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！</span>
+        <br />
+        <span style={{ display: 'block' }}>您可以提问我一些关于代码的问题，例如：</span>
+        <br />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {lists.map((data) => (
+            <a
+              href='javascript:void(0)'
+              style={{ marginBottom: '8px' }}
+              onClick={() => {
+                aiChatService.launchChatMessage(data.text);
+              }}
+            >
+              <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} />
+              <span>{data.text}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const firstMsg = React.useMemo(() => createMessageByAI(<InitMsgComponent />), [InitMsgComponent]);
+
   React.useEffect(() => {
     // @ts-ignore
     window.aiAntGlm = aiGPTBackService.aiAntGlm;
+
+    if (messageListData && messageListData.length === 0) {
+      setMessageListData([firstMsg]);
+    }
 
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
@@ -71,7 +116,8 @@ export const AiChatView = () => {
     setInputValue(value);
   }, []);
 
-  const switchTask = React.useMemo(() => [
+  const switchTask = React.useMemo(
+    () => [
       {
         with: '新建',
         exec: async (s) => {
@@ -89,21 +135,38 @@ export const AiChatView = () => {
         with: 'http 服务',
         exec: async (s) => {
           // 字符串提取数字
-          const num = s.replace(/[^0-9]/ig, '');
+          const num = s.replace(/[^0-9]/gi, '');
           await commandService.executeCommand('ai.chat.createNodeHttpServerContent', num);
 
-          return createMessageByAI(<div>
-            <AiReply text={'已为你创建了一个 node http 服务的代码示例，端口号为 8888，可点击'} endNode={<> <a href='javascript:void(0)' onClick={() => {
-              commandService.executeCommand('ai.runAndDebug');
-            }}> run</a> 运行～</>} />
-          </div>);
+          return createMessageByAI(
+            <div>
+              <AiReply
+                text={'已为你创建了一个 node http 服务的代码示例，端口号为 8888，可点击'}
+                endNode={
+                  <>
+                    {' '}
+                    <a
+                      href='javascript:void(0)'
+                      onClick={() => {
+                        commandService.executeCommand('ai.runAndDebug');
+                      }}
+                    >
+                      {' '}
+                      run
+                    </a>{' '}
+                    运行～
+                  </>
+                }
+              />
+            </div>,
+          );
         },
       },
       {
         with: '聚焦到',
         exec: async (value: string) => {
           // 字符串提取数字
-          const num = value.replace(/[^0-9]/ig, '');
+          const num = value.replace(/[^0-9]/gi, '');
           await commandService.executeCommand('ai.chat.focusLine', num);
           return createMessageByAI('已为您聚焦到第 ' + num + ' 行');
         },
@@ -117,11 +180,29 @@ export const AiChatView = () => {
 
           await commandService.executeCommand('ai.chat.createLazymanContent');
 
-          return createMessageByAI(<div>
-            <AiReply text={'已为你设计好了 lazyman 的实现，主人公 Jack 早上睡了 1 秒钟然后吃了个早餐又睡了 1 秒钟，就开始吃午餐，最后吃了晚餐，良好的作息习惯可以让您身体健康噢～，可以点击 '} endNode={<> <a href='javascript:void(0)' onClick={() => {
-              commandService.executeCommand('ai.runAndDebug');
-            }}>run</a> 运行看看</>} />
-          </div>);
+          return createMessageByAI(
+            <div>
+              <AiReply
+                text={
+                  '已为你设计好了 lazyman 的实现，主人公 Jack 早上睡了 1 秒钟然后吃了个早餐又睡了 1 秒钟，就开始吃午餐，最后吃了晚餐，良好的作息习惯可以让您身体健康噢～，可以点击 '
+                }
+                endNode={
+                  <>
+                    {' '}
+                    <a
+                      href='javascript:void(0)'
+                      onClick={() => {
+                        commandService.executeCommand('ai.runAndDebug');
+                      }}
+                    >
+                      run
+                    </a>{' '}
+                    运行看看
+                  </>
+                }
+              />
+            </div>,
+          );
         },
       },
       {
@@ -135,18 +216,38 @@ export const AiChatView = () => {
     return this; // 实现链式调用
   }`;
 
-          return createMessageByAI(<div>
-            <AiReply text={'这是因为你的 eat 方法只接收一个参数，可以像这样修改使其支持多个参数'} endNode={<><SyntaxHighlighter language={'tsx'}>{content}</SyntaxHighlighter><a href='javascript:void(0)' onClick={() => {
-              commandService.executeCommand('ai.chat.replaceContent.eat', content);
-            }}>一键应用</a></>} />
-          </div>);
+          return createMessageByAI(
+            <div>
+              <AiReply
+                text={'这是因为你的 eat 方法只接收一个参数，可以像这样修改使其支持多个参数'}
+                endNode={
+                  <>
+                    <SyntaxHighlighter language={'tsx'}>{content}</SyntaxHighlighter>
+                    <a
+                      href='javascript:void(0)'
+                      onClick={() => {
+                        commandService.executeCommand('ai.chat.replaceContent.eat', content);
+                      }}
+                    >
+                      一键应用
+                    </a>
+                  </>
+                }
+              />
+            </div>,
+          );
         },
       },
       {
         with: '解释一下当前我选中的这段代码',
-        exec: async () => createMessageByAI(<AiReply text={
-            '好的，这段代码是 LazyMan 类的构造函数，作用是初始化 LazyMan 实例的属性，将传入构造函数的 name 参数赋值给实例的 name 属性。然后将一个匿名函数添加到 taskList 任务列表中。\n\n 该函数会首先打印 "Hi, I\'m XXX" 这个字符串，其中 XXX 为该实例的 name 属性值。然后调用 next() 方法，继续执行下一个任务。使用 setTimeout() 函数创建一个新的任务。\n\n由于 setTimeout() 函数是异步执行的，所以该任务将会被放到事件队列的最后执行，即等到当前执行栈执行完毕后再执行。\n\n在这里，我们使用了一个延迟时间为 0 毫秒的 setTimeout()，这样可以确保在任务列表中添加了第一个任务之后，马上执行该任务，保证第一个任务能够被添加到任务列表中。该任务会调用 next() 方法，开始执行任务列表中的任务。'}
-            endNode={<SyntaxHighlighter language={'tsx'}>{`this.name = name;
+        exec: async () =>
+          createMessageByAI(
+            <AiReply
+              text={
+                '好的，这段代码是 LazyMan 类的构造函数，作用是初始化 LazyMan 实例的属性，将传入构造函数的 name 参数赋值给实例的 name 属性。然后将一个匿名函数添加到 taskList 任务列表中。\n\n 该函数会首先打印 "Hi, I\'m XXX" 这个字符串，其中 XXX 为该实例的 name 属性值。然后调用 next() 方法，继续执行下一个任务。使用 setTimeout() 函数创建一个新的任务。\n\n由于 setTimeout() 函数是异步执行的，所以该任务将会被放到事件队列的最后执行，即等到当前执行栈执行完毕后再执行。\n\n在这里，我们使用了一个延迟时间为 0 毫秒的 setTimeout()，这样可以确保在任务列表中添加了第一个任务之后，马上执行该任务，保证第一个任务能够被添加到任务列表中。该任务会调用 next() 方法，开始执行任务列表中的任务。'
+              }
+              endNode={
+                <SyntaxHighlighter language={'tsx'}>{`this.name = name;
 this.taskList.push(() => {
   console.log(\`Hi, I'm $\{this.name}\`);
   this.next();
@@ -154,19 +255,30 @@ this.taskList.push(() => {
 
 setTimeout(() => {
   this.next();
-}, 0);`}</SyntaxHighlighter>}
-            />),
+}, 0);`}</SyntaxHighlighter>
+              }
+            />,
+          ),
       },
       {
         with: '提交全部代码',
-        exec: async () => createMessageByAI(<div>
-            <div>代码已经全部提交，是否创建 PR？</div>
-            <br />
-            <a href='javascript:void(0)' onClick={() => {
-              handleSend('创建合并请求');
-            }}>好的</a>&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href='javascript:void(0)'>不了</a>
-          </div>),
+        exec: async () =>
+          createMessageByAI(
+            <div>
+              <div>代码已经全部提交，是否创建 PR？</div>
+              <br />
+              <a
+                href='javascript:void(0)'
+                onClick={() => {
+                  handleSend('创建合并请求');
+                }}
+              >
+                好的
+              </a>
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <a href='javascript:void(0)'>不了</a>
+            </div>,
+          ),
       },
       {
         with: '创建合并请求',
@@ -174,325 +286,302 @@ setTimeout(() => {
       },
       {
         with: '创建 合并请求',
-        exec: async () => createMessageByAI(<div>
-            <span>代码还未提交，是否需要提交全部代码呢？</span>
-            <br />
-            <a href='javascript:void(0)' onClick={() => {
-              handleSend('提交全部代码');
-            }}>好的</a>&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href='javascript:void(0)'>我自己来</a>
-          </div>),
+        exec: async () =>
+          createMessageByAI(
+            <div>
+              <span>代码还未提交，是否需要提交全部代码呢？</span>
+              <br />
+              <a
+                href='javascript:void(0)'
+                onClick={() => {
+                  handleSend('提交全部代码');
+                }}
+              >
+                好的
+              </a>
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <a href='javascript:void(0)'>我自己来</a>
+            </div>,
+          ),
       },
       {
         with: '是的',
-        exec: async () => createMessageByAI(<div>
-            <span>好的，已创建合并请求（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
-            <br />
-            <br />
-            {/* 字体变粗 */}
+        exec: async () =>
+          createMessageByAI(
             <div>
-              <span style={{ fontWeight: 'bold' }}>目标分支: </span>
-              <span>master</span>
-            </div>
-            <div>
-              <span style={{ fontWeight: 'bold' }}>标题: </span>
-              <span>实现 lazyman 类</span>
-            </div>
-            <br />
-            <div>
-              <span style={{ fontWeight: 'bold' }}>描述: </span>
-              <span>AI 助手实现的 lazyman 类</span>
-            </div>
-            <br />
-            <div>
-              <span style={{ fontWeight: 'bold' }}>评审人: </span>
-              <span>蛋总、古铜、彦熹、倾一</span>
-            </div>
-          </div>),
+              <span>
+                好的，已创建合并请求（
+                {
+                  <a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>
+                    链接
+                  </a>
+                }
+                ）
+              </span>
+              <br />
+              <br />
+              {/* 字体变粗 */}
+              <div>
+                <span style={{ fontWeight: 'bold' }}>目标分支: </span>
+                <span>master</span>
+              </div>
+              <div>
+                <span style={{ fontWeight: 'bold' }}>标题: </span>
+                <span>实现 lazyman 类</span>
+              </div>
+              <br />
+              <div>
+                <span style={{ fontWeight: 'bold' }}>描述: </span>
+                <span>AI 助手实现的 lazyman 类</span>
+              </div>
+              <br />
+              <div>
+                <span style={{ fontWeight: 'bold' }}>评审人: </span>
+                <span>蛋总、古铜、彦熹、倾一</span>
+              </div>
+            </div>,
+          ),
       },
       {
         with: '合入 main 分支',
-        exec: async () => createMessageByAI(<div>
-            <span>好的，已更新合并请求（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
-            <br />
-            <br />
-            {/* 字体变粗 */}
+        exec: async () =>
+          createMessageByAI(
             <div>
-              <span style={{ fontWeight: 'bold' }}>目标分支: </span>
-              <span>main</span>
-            </div>
-            <div>
-              <span style={{ fontWeight: 'bold' }}>标题: </span>
-              <span>实现 lazyman 类</span>
-            </div>
-            <br />
-            <div>
-              <span style={{ fontWeight: 'bold' }}>描述: </span>
-              <span>AI 助手实现的 lazyman 类</span>
-            </div>
-            <br />
-            <div>
-              <span style={{ fontWeight: 'bold' }}>评审人: </span>
-              <span>蛋总、古铜、彦熹、倾一</span>
-            </div>
-          </div>),
+              <span>
+                好的，已更新合并请求（
+                {
+                  <a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>
+                    链接
+                  </a>
+                }
+                ）
+              </span>
+              <br />
+              <br />
+              {/* 字体变粗 */}
+              <div>
+                <span style={{ fontWeight: 'bold' }}>目标分支: </span>
+                <span>main</span>
+              </div>
+              <div>
+                <span style={{ fontWeight: 'bold' }}>标题: </span>
+                <span>实现 lazyman 类</span>
+              </div>
+              <br />
+              <div>
+                <span style={{ fontWeight: 'bold' }}>描述: </span>
+                <span>AI 助手实现的 lazyman 类</span>
+              </div>
+              <br />
+              <div>
+                <span style={{ fontWeight: 'bold' }}>评审人: </span>
+                <span>蛋总、古铜、彦熹、倾一</span>
+              </div>
+            </div>,
+          ),
       },
       {
         with: '评审人去掉',
-        exec: async () => createMessageByAI(<div>
-            <span>好的，已更新（{<a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>链接</a>}）</span>
-            <br />
-            <br />
-            {/* 字体变粗 */}
+        exec: async () =>
+          createMessageByAI(
             <div>
-              <span style={{ fontWeight: 'bold' }}>目标分支: </span>
-              <span>main</span>
-            </div>
-            <div>
-              <span style={{ fontWeight: 'bold' }}>标题: </span>
-              <span>实现 lazyman 类</span>
-            </div>
-            <br />
-            <div>
-              <span style={{ fontWeight: 'bold' }}>描述: </span>
-              <span>AI 助手实现的 lazyman 类</span>
-            </div>
-            <br />
-            <div>
-              <span style={{ fontWeight: 'bold' }}>评审人: </span>
-              <span>蛋总、古铜、彦熹</span>
-            </div>
-          </div>),
+              <span>
+                好的，已更新（
+                {
+                  <a href='https://code.alipay.com/cloud-ide/crew-dragon/pull_requests/180' target='_blank'>
+                    链接
+                  </a>
+                }
+                ）
+              </span>
+              <br />
+              <br />
+              {/* 字体变粗 */}
+              <div>
+                <span style={{ fontWeight: 'bold' }}>目标分支: </span>
+                <span>main</span>
+              </div>
+              <div>
+                <span style={{ fontWeight: 'bold' }}>标题: </span>
+                <span>实现 lazyman 类</span>
+              </div>
+              <br />
+              <div>
+                <span style={{ fontWeight: 'bold' }}>描述: </span>
+                <span>AI 助手实现的 lazyman 类</span>
+              </div>
+              <br />
+              <div>
+                <span style={{ fontWeight: 'bold' }}>评审人: </span>
+                <span>蛋总、古铜、彦熹</span>
+              </div>
+            </div>,
+          ),
       },
       {
         with: '字体大小',
         exec: async (value: string) => {
           // 字符串提取数字
-          const num = value.replace(/[^0-9]/ig, '');
+          const num = value.replace(/[^0-9]/gi, '');
           preferenceService.set('editor.fontSize', num);
           return createMessageByAI('字体大小已更新～');
         },
       },
-      {
-        with: '更改主题',
-        exec: async () => {
-          const themes = [
-            {
-                'label': 'GitHub Light Default',
-                'value': 'vs vscode-theme-themes-light-default-json',
-                'groupLabel': '浅色主题',
-            },
-            {
-                'label': 'GitHub Light Colorblind (Beta)',
-                'value': 'vs vscode-theme-themes-light-colorblind-json',
-            },
-            {
-                'label': 'GitHub Light',
-                'value': 'vs vscode-theme-themes-light-json',
-            },
-            {
-                'label': 'Light+ (default light)',
-                'value': 'Default Light+',
-            },
-            {
-                'label': 'Light (Visual Studio)',
-                'value': 'Visual Studio Light',
-            },
-            {
-                'label': 'Quiet Light',
-                'value': 'Quiet Light',
-            },
-            {
-                'label': 'Solarized Light',
-                'value': 'Solarized Light',
-            },
-            {
-                'label': 'GitHub Dark Default',
-                'value': 'vs-dark vscode-theme-themes-dark-default-json',
-                'groupLabel': '深色主题',
-            },
-            {
-                'label': 'GitHub Dark Colorblind (Beta)',
-                'value': 'vs-dark vscode-theme-themes-dark-colorblind-json',
-            },
-            {
-                'label': 'GitHub Dark Dimmed',
-                'value': 'vs-dark vscode-theme-themes-dark-dimmed-json',
-            },
-            {
-                'label': 'GitHub Dark',
-                'value': 'vs-dark vscode-theme-themes-dark-json',
-            },
-            {
-                'label': 'One Dark Pro',
-                'value': 'vs-dark vscode-theme-themes-OneDark-Pro-json',
-            },
-            {
-                'label': 'Kimbie Dark',
-                'value': 'Kimbie Dark',
-            },
-            {
-                'label': 'Abyss',
-                'value': 'Abyss',
-            },
-            {
-                'label': 'Dark+ (default dark)',
-                'value': 'Default Dark+',
-            },
-            {
-                'label': 'Dark (Visual Studio)',
-                'value': 'Visual Studio Dark',
-            },
-            {
-                'label': 'Red',
-                'value': 'Red',
-            },
-            {
-                'label': 'Monokai Dimmed',
-                'value': 'Monokai Dimmed',
-            },
-            {
-                'label': 'Solarized Dark',
-                'value': 'Solarized Dark',
-            },
-            {
-                'label': 'Monokai',
-                'value': 'Monokai',
-            },
-            {
-                'label': 'Tomorrow Night Blue',
-                'value': 'Tomorrow Night Blue',
-            },
-            {
-                'label': 'GitHub Light High Contrast',
-                'value': 'hc-black vscode-theme-themes-light-high-contrast-json',
-                'groupLabel': '高对比度主题',
-            },
-            {
-                'label': 'GitHub Dark High Contrast',
-                'value': 'hc-black vscode-theme-themes-dark-high-contrast-json',
-            },
-            {
-                'label': 'Dark High Contrast',
-                'value': 'Default High Contrast',
-            },
-            {
-                'label': 'Light High Contrast',
-                'value': 'Default High Contrast Light',
-            },
-        ];
-          return createMessageByAI(<div>
-            <span>已为您列出所有主题，请选择您要更改的主题:</span>
-            <br />
-            <ul style={{padding: 0}}>
-              {themes.map(({label, value}) => <li key={value}><a href='javascript:void(0)' onClick={() => {
-                  preferenceService.set('general.theme', value);
-                }}>{label}</a></li>)}
-            </ul>
-          </div>);
-        },
-      },
-    ], []);
+    ],
+    [],
+  );
 
-  const handleSend = React.useCallback(async (value?: any) => {
-    const preMessagelist = messageListData;
-    const preInputValue = value || inputValue;
+  const handleSend = React.useCallback(
+    async (value?: any) => {
+      const preMessagelist = messageListData;
+      const preInputValue = value || inputValue;
 
-    if (containerRef && containerRef.current) {
-      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-    }
-
-    setLoading(true);
-    setInputValue('');
-
-    preMessagelist.push(createMessage('right', ME_NAME, preInputValue));
-    setMessageListData(preMessagelist);
-    // 检查前缀 aiSearchKey
-    if (typeof preInputValue === 'string') {
-      let aiMessage;
-      const userInput = await aiChatService.switchAIService(preInputValue);
-
-      if (userInput.type === AISerivceType.Search || userInput.type === AISerivceType.SearchCode) {
-        aiMessage = await AISearch(userInput, aiGPTBackService);
-      } else if (userInput.type === AISerivceType.Sumi) {
-        aiMessage = await aiChatService.messageWithSumi(userInput.message!);
+      if (containerRef && containerRef.current) {
+        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
       }
 
-      if (aiMessage) {
-        preMessagelist.push(aiMessage);
-        setMessageListData(preMessagelist);
-        updateState({});
-        if (containerRef && containerRef.current) {
-          containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      setLoading(true);
+      setInputValue('');
+
+      preMessagelist.push(createMessage('right', ME_NAME, preInputValue));
+      setMessageListData(preMessagelist);
+      // 检查前缀 aiSearchKey
+      if (typeof preInputValue === 'string') {
+        let aiMessage;
+        const userInput = await aiChatService.switchAIService(preInputValue);
+
+        if (userInput.type === AISerivceType.Search || userInput.type === AISerivceType.SearchCode) {
+          aiMessage = await AISearch(userInput, aiGPTBackService);
+        } else if (userInput.type === AISerivceType.Sumi) {
+          aiMessage = await aiChatService.messageWithSumi(userInput.message!);
         }
+
+        if (aiMessage) {
+          preMessagelist.push(aiMessage);
+          setMessageListData(preMessagelist);
+          updateState({});
+          if (containerRef && containerRef.current) {
+            containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+          }
+        }
+
+        setLoading(false);
+
+        return;
       }
+
+      await sleep(1000);
 
       setLoading(false);
 
-      return;
-    }
+      for await (const { with: _with, exec } of switchTask) {
+        const v = typeof preInputValue === 'string' ? preInputValue : preInputValue.props.children[0];
 
-    await sleep(1000);
-
-    setLoading(false);
-
-    for await (const { with: _with, exec } of switchTask) {
-      const v = typeof preInputValue === 'string' ? preInputValue : preInputValue.props.children[0];
-
-      if (v.includes(_with)) {
-        const msg = await exec(preInputValue);
-        preMessagelist.push(msg);
-        setMessageListData(preMessagelist);
-        updateState({});
-        if (containerRef && containerRef.current) {
-          containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+        if (v.includes(_with)) {
+          const msg = await exec(preInputValue);
+          preMessagelist.push(msg);
+          setMessageListData(preMessagelist);
+          updateState({});
+          if (containerRef && containerRef.current) {
+            containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+          }
+          return;
         }
-        return;
       }
-    }
-
-  }, [messageListData, inputValue, containerRef]);
+    },
+    [messageListData, inputValue, containerRef],
+  );
 
   React.useEffect(() => {
     document.querySelectorAll('pre code').forEach((block) => {
       // @ts-ignore
-      try { hljs.highlightBlock(block); }
-      catch (e) { console.log(e); }
+      try {
+        hljs.highlightBlock(block);
+      } catch (e) {
+        console.log(e);
+      }
     });
   }, []);
 
   return (
-    <div
-      id={VIEW_CONTAINERS.RIGHT_TABBAR}
-      className={styles.ai_chat_view}
-    >
-      <div className={styles.container} ref={containerRef}>
-        {/* @ts-ignore */}
-        <MessageList
-          className={styles.message_list}
-          lockable={true}
-          toBottomHeight={'100%'}
-          // @ts-ignore
-          dataSource={messageListData}
-        />
-        {/* @ts-ignore */}
-        {loading && <SystemMessage title={AI_NAME} className={styles.smsg} text={<div style={{ display: 'flex', alignItems: 'center' }}>
-          <Loading></Loading>
-          <span>正在生成中...</span>
-        </div>}></SystemMessage>}
+    <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view}>
+      <div className={styles.header_container}>
+        <div className={styles.left}>
+          <span className={styles.title}>AI 研发助手</span>
+          <span className={styles.line_vertical}> | </span>
+          <span className={styles.des}>Chat</span>
+        </div>
+        <div className={styles.right}>
+          <Icon className={getIcon('clear')} />
+          <Icon className={getIcon('close')} />
+        </div>
       </div>
-      <div className={styles.quick_way}>
-        <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
-        <span className={`${styles.quick_way_item} ${getIcon('info-circle')}`} onClick={() => handleSend('/sumi 提示用户 hello world')}></span>
-      </div>
-      <div className={styles.chat_input}>
-        <Input placeholder="AI 助手为你服务" type={'textarea'} value={inputValue} onValueChange={handleInputChange} className={styles.input_wrapper} />
-        <Button onClick={() => handleSend()}>Send</Button>
+      <div className={styles.body_container}>
+        <div className={styles.left_bar}>
+          <div className={styles.chat_container} ref={containerRef}>
+            {/* @ts-ignore */}
+            <MessageList
+              className={styles.message_list}
+              lockable={true}
+              toBottomHeight={'100%'}
+              // @ts-ignore
+              dataSource={messageListData}
+            />
+            {loading && (
+              <div className={styles.chat_loading_msg_box}>
+                <Avatar src={AI_AVATAR} className={styles.chat_loading_mgs_avatar} />
+                {/* @ts-ignore */}
+                <SystemMessage
+                  title={AI_NAME}
+                  className={styles.smsg}
+                  text={
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span>Thinking...</span>
+                    </div>
+                  }
+                ></SystemMessage>
+              </div>
+            )}
+          </div>
+          {/* <div className={styles.quick_way}>
+            <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
+            <span className={`${styles.quick_way_item} ${getIcon('info-circle')}`} onClick={() => handleSend('/sumi 提示用户 hello world')}></span>
+          </div> */}
+          <div className={styles.chat_input}>
+            <Input
+              placeholder={'可以问我任何问题，或键入主题 "/"'}
+              value={inputValue}
+              onValueChange={handleInputChange}
+              className={styles.input_wrapper}
+              addonAfter={
+                <div className={styles.send_chat_btn} onClick={() => handleSend()}>
+                  <Icon className={getIcon('right')} />
+                </div>
+              }
+            />
+            {/* <Button onClick={() => handleSend()}>Send</Button> */}
+          </div>
+        </div>
+        <div className={styles.right_bar}>
+          <ul className={styles.chat_list}>
+            <li className={styles.active_chat_bar}>
+              <Icon className={getExternalIcon('comment-discussion')} />
+            </li>
+            <li>
+              <Icon className={getExternalIcon('comment-discussion')} />
+            </li>
+            <li>
+              <Icon className={getExternalIcon('comment-discussion')} />
+            </li>
+            <li>
+              <Icon className={getIcon('plus')} />
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );
 };
-
 
 // AI 回复组件，就是能一个字一个出现的那种效果
 const AiReply = ({ text, endNode = <></> }) => {
@@ -512,33 +601,48 @@ const AiReply = ({ text, endNode = <></> }) => {
 
       return () => clearTimeout(timeoutId);
     }
-
   }, [currentIndex, text]);
 
-  return <div style={{whiteSpace: 'break-spaces'}}>{
-    currentIndex === text.length
-      ? <>{currentText}{endNode}</>
-      : currentText}
-  </div>;
+  return (
+    <div style={{ whiteSpace: 'break-spaces' }}>
+      {currentIndex === text.length ? (
+        <>
+          {currentText}
+          {endNode}
+        </>
+      ) : (
+        currentText
+      )}
+    </div>
+  );
 };
 
 const AISearch = async (input, aiGPTBackService) => {
   try {
-    const result = await aiGPTBackService.aiSearchRequest(input.message, input.type === AISerivceType.SearchCode ? 'code' : 'overall');
+    const result = await aiGPTBackService.aiSearchRequest(
+      input.message,
+      input.type === AISerivceType.SearchCode ? 'code' : 'overall',
+    );
 
     const { responseText, urlMessage } = result;
 
     console.log('ai search: >>>> ', result);
 
-    const aiMessage = createMessageByAI(<div style={{display: 'flex', flexDirection: 'column'}}>
-      {/* <div><Markdown content={responseText} options={{ headerIds: false }}></Markdown></div> */}
-      <div><Markdown value={responseText}></Markdown></div>
-      {/* <SyntaxHighlighter>{responseText}</SyntaxHighlighter> */}
-      {/* <div>{urlMessage}</div> */}
-      {/* <div><Markdown content={urlMessage} options={{ headerIds: false, gfm: true }}></Markdown></div> */}
-      <div style={{whiteSpace: 'pre-wrap'}}><Markdown value={urlMessage}></Markdown></div>
-      {/* <SyntaxHighlighter>{urlMessage}</SyntaxHighlighter> */}
-    </div>);
+    const aiMessage = createMessageByAI(
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* <div><Markdown content={responseText} options={{ headerIds: false }}></Markdown></div> */}
+        <div>
+          <Markdown value={responseText}></Markdown>
+        </div>
+        {/* <SyntaxHighlighter>{responseText}</SyntaxHighlighter> */}
+        {/* <div>{urlMessage}</div> */}
+        {/* <div><Markdown content={urlMessage} options={{ headerIds: false, gfm: true }}></Markdown></div> */}
+        <div style={{ whiteSpace: 'pre-wrap' }}>
+          <Markdown value={urlMessage}></Markdown>
+        </div>
+        {/* <SyntaxHighlighter>{urlMessage}</SyntaxHighlighter> */}
+      </div>,
+    );
 
     return aiMessage;
   } catch (error) {
