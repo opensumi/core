@@ -71,19 +71,19 @@ export class ExtHostLocalization implements IExtHostLocalization {
     }
 
     let contents: { [key: string]: string } | undefined;
-    const bundleUri = await this.getBundleLocation(extension);
-    if (!bundleUri) {
+    const locatization = await this.getBundleLocation(extension);
+    if (!locatization.uri) {
       this.logger.warn(`No bundle location found for extension ${extension.identifier.value}`);
       return;
     }
     try {
-      const response = await this.proxy.$fetchBundleContents(bundleUri);
+      const response = await this.proxy.$fetchBundleContents(locatization.uri);
       const result = JSON.parse(response);
       // 'contents.bundle' is a well-known key in the language pack json file that contains the _code_ translations for the extension
-      contents = extension.isBuiltin ? result.contents?.bundle : result;
+      contents = locatization.fromBundle ? result.contents?.bundle : result;
     } catch (e) {
       this.logger.error(
-        `Failed to load translations for ${extension.identifier.value} from ${bundleUri}: ${e.message}`,
+        `Failed to load translations for ${extension.identifier.value} from ${locatization.uri}: ${e.message}`,
       );
       return;
     }
@@ -91,25 +91,34 @@ export class ExtHostLocalization implements IExtHostLocalization {
     if (contents) {
       this.bundleCache.set(extension.identifier.value, {
         contents,
-        uri: bundleUri,
+        uri: locatization.uri as URI,
       });
     }
   }
 
-  private async getBundleLocation(extension: IExtensionDescription): Promise<URI | undefined> {
+  private async getBundleLocation(extension: IExtensionDescription) {
+    // VS Code 中，对于内置插件会默认从语言包内尝试获取 i18n 文件内容
+    // 由于内置的逻辑存在差异，这里对于每个插件都尝试获取一下，以便兼容性
+    // 见：https://github.com/microsoft/vscode/blob/d5277e8e2b73134126cabd4fe570a15b821e96c1/src/vs/workbench/api/common/extHostLocalizationService.ts#L97
     const uri = await this.proxy.$fetchBuiltInBundleUri(extension.identifier.value, this.currentLanguage);
     if (uri) {
-      return URI.revive(uri);
+      return {
+        fromBundle: true,
+        uri,
+      };
     }
-    return extension.l10n
-      ? URI.file(
-          path.join(
-            extension.extensionLocation.fsPath.toString(),
-            extension.l10n,
-            `bundle.l10n.${this.currentLanguage}.json`,
-          ),
-        )
-      : undefined;
+    return {
+      fromBundle: false,
+      uri: extension.l10n
+        ? URI.file(
+            path.join(
+              extension.extensionLocation.fsPath.toString(),
+              extension.l10n,
+              `bundle.l10n.${this.currentLanguage}.json`,
+            ),
+          )
+        : undefined,
+    };
   }
 }
 
