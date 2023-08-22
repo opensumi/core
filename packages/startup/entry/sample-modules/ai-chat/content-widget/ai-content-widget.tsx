@@ -115,7 +115,13 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
     this.editor.addContentWidget(this);
   }
 
+  /**
+   * 生成质数
+   */
+
+
   hide: (options?: ShowAiContentOptions | undefined) => void = () => {
+    // console.log('1231')
     this.options = undefined;
     this.editor.removeContentWidget(this);
   };
