@@ -103,7 +103,7 @@ export const Option: React.FC<
 > = ({ value, children, disabled, onClick, className, ...otherProps }) => (
   <span
     {...otherProps}
-    className={classNames(className, 'kt-select-option-wrapper', { 'kt-option-disabled': disabled })}
+    className={classNames(className, { 'kt-option-disabled': disabled })}
     onClick={() => onClick && !disabled && onClick(value)}
   >
     {children}
