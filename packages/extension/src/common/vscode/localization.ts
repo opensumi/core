@@ -11,7 +11,7 @@ export interface IStringDetails {
 }
 
 export interface IMainThreadLocalization {
-  $fetchBuiltInBundleUri(id: string, language: string): Promise<UriComponents | undefined>;
+  $fetchBuiltInBundleUri(id: string, language: string): Promise<Uri | undefined>;
   $fetchBundleContents(uriComponents: UriComponents): Promise<string>;
 }
 
