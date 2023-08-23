@@ -1,12 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IDisposable, URI, MaybePromise, Disposable, Event, IRange } from '@opensumi/ide-core-common';
+import { IDisposable, URI, MaybePromise, Disposable, Event, IRange, uuid } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { Position } from '@opensumi/ide-monaco';
 import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
+import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AiImproveWidget } from './ai-improve-widget';
@@ -24,7 +25,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiGPTBackSerivcePath)
   private readonly aiGPTBackService: any;
-  
+
   @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
 
@@ -36,6 +37,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     this.registerSuggestJavaDoc(editor);
+    this.registerCompletion(editor);
 
     const { monacoEditor, currentUri, currentDocumentModel } = editor;
     if (currentUri && currentUri.codeUri.scheme !== 'file') {
@@ -63,7 +65,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         aiImproveWidget.dispose();
       }
       if (aiContentWidget) {
-        aiContentWidget.dispose(); 
+        aiContentWidget.dispose();
       }
     }
 
@@ -163,7 +165,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             }));
           }
         }
-        
+
         console.log('aiZoneWidget:>>>> value change', value);
       }));
     });
@@ -200,13 +202,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }
 
       const content = model.getValue();
-  
+
       // 使用正则表达式匹配所有 "/**" 的位置
       const matches = content.matchAll(/\/\*\*/g);
 
       // 存在 /** 的 position 集合
       const hasKeyPosition: Position[] = []
-  
+
       // 遍历匹配结果并输出位置信息
       for (const match of matches) {
         // const startPosition = model.getPositionAt(match.index!);
@@ -214,21 +216,23 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         hasKeyPosition.push(endPosition);
       }
 
-      
+
       // @ts-ignore
       const symbols = this.documentSymbolStore.getDocumentSymbol(model.uri!);
-      
+
       console.log('documentSymbolStore: symbols>>> ', symbols)
       const findRange = (range: Position) => {
         if (!symbols) {
           return { range: null }
         }
-        return symbols.map(obj => (obj.children || []).find(child => child.range.startLineNumber === range.lineNumber)).filter(Boolean)[0];
+        return symbols.map(obj => 
+          (obj.range.startLineNumber === range.lineNumber ? obj : null) 
+          || (obj.children || []).find(child => child.range.startLineNumber === range.lineNumber)).filter(Boolean)[0];
       }
 
       if (hasKeyPosition.length > 0) {
 
-        inlayHintDispose = monaco.languages.registerInlayHintsProvider('java', {
+        inlayHintDispose = monaco.languages.registerInlayHintsProvider(model.getLanguageId(), {
           provideInlayHints(model, range, token) {
             return {
               hints: hasKeyPosition.map(position => {
@@ -249,13 +253,105 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
                   paddingLeft: true
                 }
               }),
-              dispose: () => {},
+              dispose: () => { },
             };
           }
         })
 
         this.disposables.push(inlayHintDispose);
       }
+    }))
+  }
+
+  /**
+   * 代码补全
+   */
+  private async registerCompletion(editor: IEditor): Promise<void> {
+    const { monacoEditor, currentUri, currentDocumentModel } = editor;
+
+    if (currentUri && currentUri.codeUri.scheme !== 'file') {
+      return;
+    }
+
+    let dispose: IDisposable | undefined;
+
+    this.disposables.push(monacoEditor.onDidChangeModel(() => {
+      if (dispose) {
+        dispose.dispose();
+      }
+    }))
+
+    this.disposables.push(Event.debounce(monacoEditor.onDidChangeModelContent, (_, e) => e, 1000)(async (event) => {
+      if (dispose) {
+        dispose.dispose();
+      }
+
+      const model = monacoEditor.getModel();
+      if (!model) {
+        return;
+      }
+
+      // 取光标的当前位置
+      const position = monacoEditor.getPosition();
+      if (!position) {
+        return;
+      }
+
+      // 补全上文
+      const startRange = new monaco.Range(
+        // 限制在 500 行内
+        Math.max(position.lineNumber - 500, 0),
+        Number.MAX_SAFE_INTEGER,
+        position.lineNumber,
+        position.column
+      )
+      const prompt = model.getValueInRange(startRange);
+      
+      // 补全下文
+      const endRange = new monaco.Range(
+        position.lineNumber,
+        position.column,
+        model.getLineCount(),
+        Number.MAX_SAFE_INTEGER
+      )
+      const suffix = model.getValueInRange(endRange);
+
+      const uid = uuid();
+
+      const language = model.getLanguageId();
+
+      const completionResult = await this.aiGPTBackService.aiCompletionRequest({
+        prompt,
+        suffix,
+        sessionId: uid,
+        language,
+        fileUrl: model.uri.toString().split('/').pop(),
+      })
+
+      dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
+        provideInlineCompletions(model, position, context, token) {
+          const items = completionResult.data.codeModelList;
+          return {
+            items: items.map(data => ({
+              insertText: data.content
+            }))
+          };
+        },
+        freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {
+          // console.log('freeInlineCompletions:>> ', completions)
+        }
+      })
+      
+      this.disposables.push(dispose);
+
+      console.log('onDidChangeModelContent:>>> 参数', {
+        prompt,
+        suffix,
+        uid,
+        language,
+      });
+      
+      console.log('onDidChangeModelContent:>>> ai 补全返回结果', completionResult);
     }))
   }
 }
