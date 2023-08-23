@@ -3,8 +3,8 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../../common';
+import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { Uri, UriComponents } from '../../../common/vscode/ext-types';
 import { IExtHostLocalization, IMainThreadLocalization } from '../../../common/vscode/localization';
 
