@@ -157,7 +157,7 @@ export const AccordionSection = ({
           className={cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
-          style={{ height: computedHeaderSize, lineHeight: headerSize + 'px' }}
+          style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
         >
           <div className={styles.label_wrap}>
             <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
