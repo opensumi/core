@@ -1,5 +1,4 @@
 declare module 'vscode' {
-
   /**
    * Represents the alignment of status bar items.
    */
@@ -893,5 +892,4 @@ declare module 'vscode' {
      */
     readonly kind: ColorThemeKind;
   }
-
 }

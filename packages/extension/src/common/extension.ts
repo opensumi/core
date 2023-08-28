@@ -31,7 +31,7 @@ import { Extension } from '../hosted/vscode.extension';
 
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
-import { IExtensionContributions, IMainThreadCommands } from './vscode';
+import { IExtensionContributions, IExtensionLanguagePack, IMainThreadCommands } from './vscode';
 import { ThemeIcon } from './vscode/ext-types';
 
 export interface IExtensionMetaData {
@@ -125,6 +125,7 @@ export interface IExtensionNodeClientService {
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
   setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
+  getLanguagePack(languageId: string): IExtensionLanguagePack | undefined;
 }
 
 export type ExtensionHostType = 'node' | 'worker';
