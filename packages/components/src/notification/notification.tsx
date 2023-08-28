@@ -191,11 +191,7 @@ function notice(args: ArgsProps) {
             {iconNode}
             <div className={`${prefixCls}-message`}>{args.message}</div>
             <div className={`${prefixCls}-description`}>{args.description}</div>
-            {args.btn ? (
-              <span className={`${prefixCls}-btn ${Array.isArray(args.btn) && args.btn.length >= 3 ? 'tile' : ''}`}>
-                {args.btn}
-              </span>
-            ) : null}
+            {args.btn ? <span className={`${prefixCls}-btn`}>{args.btn}</span> : null}
           </div>
         ),
         duration,
