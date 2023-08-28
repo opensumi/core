@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/order
 import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
@@ -19,12 +20,15 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-node';
 
+// 文件监听类型(更新、添加、删除)；文件监听下的文件修改时触发事件；启动和注销文件监听；
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../common';
 
+// 收集发生了修改的文件
 import { FileChangeCollection } from './file-change-collection';
 
+// 作用是?
 export interface WatcherOptions {
-  excludesPattern: ParsedPattern[];
+  excludesPattern: ParsedPattern[]; // 函数，返回布尔值
   excludes: string[];
 }
 
@@ -52,9 +56,12 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
   protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
 
+  // 收集发生改变的文件
   protected changes = new FileChangeCollection();
 
   @Autowired(ILogServiceManager)
+
+  // 一个symbol关键字，内容是ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
 
   private logger: ILogService;
@@ -102,6 +109,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       if (stat && stat.isDirectory()) {
         watchPath = basePath;
       } else {
+        // lookup, 向上查找存在的目录
         watchPath = await this.lookup(basePath);
       }
     } else {
@@ -285,6 +293,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     return disposables;
   }
 
+  // 根据watchId注销对应的文件监听
   unwatchFileChanges(watcherId: number): Promise<void> {
     const watcher = this.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
