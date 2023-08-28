@@ -107,6 +107,7 @@ export const AccordionSection = ({
 
   const clickHandler = React.useCallback(() => {
     const currentSize = getSize(false);
+    // 不知道这里的 onItemClick 的第一个入参有什么用，看起来哪儿都没用到
     onItemClick((targetSize) => setSize(targetSize, false), currentSize);
   }, [getSize, setSize]);
 
