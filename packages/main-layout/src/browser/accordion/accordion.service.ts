@@ -522,7 +522,7 @@ export class AccordionService extends WithEventBus {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;
 
-    const container = this.mainlayoutService.getConatiner(this.containerId)!;
+    const container = this.mainlayoutService.getContainer(this.containerId)!;
     if (container?.options?.alignment === 'vertical') {
       let sizeIncrement: number;
       if (collapsed) {
