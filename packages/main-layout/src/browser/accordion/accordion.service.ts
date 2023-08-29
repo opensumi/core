@@ -75,7 +75,7 @@ export class AccordionService extends WithEventBus {
   private viewContextKeyRegistry: ViewContextKeyRegistry;
 
   @Autowired(IMainLayoutService)
-  private readonly mainlayoutService: IMainLayoutService;
+  private readonly mainLayoutService: IMainLayoutService;
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
@@ -522,8 +522,8 @@ export class AccordionService extends WithEventBus {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;
 
-    const container = this.mainlayoutService.getConatiner(this.containerId)!;
-    if (container?.options?.alignment === 'vertical') {
+    const container = this.mainLayoutService.getContainer(this.containerId)!;
+    if (container?.options?.alignment !== 'horizontal') {
       let sizeIncrement: number;
       if (collapsed) {
         sizeIncrement = this.setSize(index, 0, false, noAnimation);
