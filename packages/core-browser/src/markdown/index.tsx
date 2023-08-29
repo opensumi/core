@@ -1,18 +1,22 @@
 import React from 'react';
 
 import { DATA_SET_COMMAND, RenderWrapper } from '@opensumi/ide-components/lib/markdown/render';
-import { createMarkedRenderer, toMarkdownHtml as toHtml } from '@opensumi/ide-components/lib/utils';
+import { createMarkedRenderer, toMarkdownHtml as toHtml, IMarkedOptions } from '@opensumi/ide-components/lib/utils';
 
 import { IOpenerService } from '../opener';
 
-export const toMarkdown = (message: string | React.ReactNode, opener?: IOpenerService): React.ReactNode =>
+export const toMarkdown = (
+  message: string | React.ReactNode,
+  opener?: IOpenerService,
+  options?: IMarkedOptions,
+): React.ReactNode =>
   typeof message === 'string' ? (
-    <RenderWrapper opener={opener} html={toMarkdownHtml(message)}></RenderWrapper>
+    <RenderWrapper opener={opener} html={toMarkdownHtml(message, options)}></RenderWrapper>
   ) : (
     message
   );
 
-export const toMarkdownHtml = (message: string): string => {
+export const toMarkdownHtml = (message: string, options?: IMarkedOptions): string => {
   const renderer = createMarkedRenderer();
 
   renderer.link = (href, title, text) =>
@@ -25,5 +29,6 @@ export const toMarkdownHtml = (message: string): string => {
     smartLists: true,
     smartypants: false,
     renderer,
+    ...(options || {}),
   });
 };

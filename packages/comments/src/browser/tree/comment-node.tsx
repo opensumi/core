@@ -12,6 +12,7 @@ export interface ICommentNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
+  onTwistierClick: (ev: React.MouseEvent, item: CommentContentNode | CommentFileNode) => void;
   onClick: (ev: React.MouseEvent, item: CommentContentNode | CommentFileNode) => void;
 }
 
@@ -23,15 +24,25 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   leftPadding = 8,
   decorations,
   onClick,
+  onTwistierClick,
 }: ICommentNodeRenderedProps) => {
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       if (item.onSelect) {
+        // 当节点绑定了自定义函数时，不通过默认逻辑处理点击事件
         item.onSelect(item);
+      } else {
+        onClick(ev, item as CommentContentNode);
       }
-      onClick(ev, item as CommentContentNode);
     },
     [onClick],
+  );
+
+  const handleTwistierClick = useCallback(
+    (ev: React.MouseEvent) => {
+      onTwistierClick(ev, item as CommentContentNode);
+    },
+    [onTwistierClick],
   );
 
   const paddingLeft = `${
@@ -90,12 +101,13 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: CommentFileNode) => (
       <div
+        onClick={handleTwistierClick}
         className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
         })}
       />
     ),
-    [],
+    [handleTwistierClick],
   );
 
   const renderTwice = useCallback((node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
@@ -111,7 +123,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(styles.search_node, decorations ? decorations.classlist : null)}
+      className={cls(styles.comment_node, decorations ? decorations.classlist : null)}
       style={renderedNodeStyle}
       data-id={item.id}
     >

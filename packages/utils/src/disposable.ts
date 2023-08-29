@@ -18,6 +18,7 @@ import { Event, Emitter } from './event';
 
 export class DisposableStore implements IDisposable {
   private toDispose = new Set<IDisposable>();
+  // 标记该对象是否已经被释放
   private _isDisposed = false;
 
   /**
@@ -30,6 +31,7 @@ export class DisposableStore implements IDisposable {
       return;
     }
 
+    // 调用markTracked函数来标记对象正在被处理
     markTracked(this);
     this._isDisposed = true;
     this.clear();
@@ -43,6 +45,15 @@ export class DisposableStore implements IDisposable {
     this.toDispose.clear();
   }
 
+  /**
+   * 注册一个可释放对象，并返回相同的对象
+   * 如果传入的对象为空，则直接返回
+   * 如果传入的对象是该DisposableStore实例本身，将抛出错误，不允许将自身注册为可释放对象
+   * 如果对象已被释放，则调用其dispose方法进行处理
+   * 否则，将对象添加到存储集合中
+   * @param t
+   * @returns
+   */
   public add<T extends IDisposable>(t: T): T {
     if (!t) {
       return t;

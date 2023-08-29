@@ -44,7 +44,7 @@ import {
   handleError,
 } from '../common/';
 
-import { FileSystemWatcherServer } from './file-service-watcher';
+import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 
 const { Path } = path;

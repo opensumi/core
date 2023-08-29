@@ -332,8 +332,14 @@ export class FileServiceClient implements IFileServiceClient {
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
     const _uri = this.convertUri(uri.toString());
-    if (this.uriWatcherMap.has(_uri.toString())) {
-      return this.uriWatcherMap.get(_uri.toString())!;
+    const originWatcher = this.uriWatcherMap.get(_uri.toString());
+    if (originWatcher) {
+      // 这里兼容重连逻辑，重连时 watcher 会 disposed，需要重新生成
+      if (!originWatcher.isDisposed()) {
+        return originWatcher;
+      } else {
+        this.uriWatcherMap.delete(_uri.toString());
+      }
     }
 
     const id = this.watcherId++;

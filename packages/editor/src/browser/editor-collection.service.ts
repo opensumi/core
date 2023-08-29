@@ -345,13 +345,23 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
     const basicEditorOptions: Partial<monaco.editor.IEditorOptions> = {
       readOnly: this.currentDocumentModel?.readonly || false,
     };
+
+    let editorOptions = {
+      ...basicEditorOptions,
+      ...options.editorOptions,
+      ...this._editorOptionsFromContribution,
+      ...this._specialEditorOptions,
+    };
+
+    if (this.type !== EditorType.CODE) {
+      editorOptions = {
+        ...editorOptions,
+        ...options.diffOptions,
+      };
+    }
+
     return {
-      editorOptions: {
-        ...basicEditorOptions,
-        ...options.editorOptions,
-        ...this._editorOptionsFromContribution,
-        ...this._specialEditorOptions,
-      },
+      editorOptions,
       modelOptions: { ...options.modelOptions, ...this._specialModelOptions },
     };
   }

@@ -767,6 +767,16 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey, NoConverter 
    * Defaults to false.
    */
   ['diffEditor.originalEditable', { monaco: 'originalEditable' }],
+
+  [
+    'diffEditor.minimap',
+    {
+      monaco: 'minimap',
+      convert: (value: any) => ({
+        enabled: value,
+      }),
+    },
+  ],
 ]);
 
 function isContainOptionKey(key: string, optionMap: Map<KaitianPreferenceKey, NoConverter | IMonacoOptionsConverter>) {

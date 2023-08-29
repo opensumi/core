@@ -9,6 +9,7 @@ import {
   formatLocalize,
   Schemes,
   Disposable,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next/index';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -313,7 +314,9 @@ export class SearchModelService extends Disposable {
 
   async refresh() {
     await this.whenReady;
-    this.treeModel.root.refresh();
+    runWhenIdle(() => {
+      this.treeModel.root.refresh();
+    });
   }
 
   collapsedAll() {

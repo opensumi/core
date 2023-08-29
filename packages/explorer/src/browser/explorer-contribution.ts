@@ -19,6 +19,7 @@ export class ExplorerContribution implements ClientAppContribution, ComponentCon
       title: localize('explorer.title'),
       priority: 10,
       containerId: EXPLORER_CONTAINER_ID,
+      activateKeyBinding: 'ctrlcmd+shift+e',
     });
   }
 

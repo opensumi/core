@@ -1,11 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {
-  DecorationsManager,
-  Decoration,
-  IRecycleTreeHandle,
-  TreeNodeType,
-  WatchEvent,
-} from '@opensumi/ide-components';
+import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
 import {
   URI,
   DisposableCollection,
@@ -84,7 +78,7 @@ export class OpenedEditorModelService {
   private _whenReady: Promise<void>;
 
   private _decorations: DecorationsManager;
-  private _openedEditorTreeHandle: IEditorTreeHandle;
+  private _openedEditorTreeHandle?: IEditorTreeHandle;
 
   public flushEventQueueDeferred: Deferred<void> | null;
   private _eventFlushTimeout: number;
@@ -427,6 +421,9 @@ export class OpenedEditorModelService {
       if (!node) {
         return;
       }
+      if (!this.editorTreeHandle) {
+        return;
+      }
       node = (await this.editorTreeHandle.ensureVisible(node as EditorFile)) as EditorFile;
       if (node) {
         if (this.focusedFile === node) {
@@ -443,7 +440,11 @@ export class OpenedEditorModelService {
     if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
       groupIndex = (node.parent as EditorFileGroup).group.index;
     }
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex, preserveFocus: true, disableNavigateOnOpendEditor: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, {
+      groupIndex,
+      preserveFocus: true,
+      disableNavigateOnOpendEditor: true,
+    });
   };
 
   public closeFile = (node: EditorFile) => {

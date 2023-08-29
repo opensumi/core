@@ -2838,9 +2838,9 @@ __metadata:
     "@opensumi/ide-variable": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     "@opensumi/ide-workspace-edit": "workspace:*"
-    "@rjsf/core": ^5.5.2
-    "@rjsf/utils": ^5.5.2
-    "@rjsf/validator-ajv6": ^5.4.0
+    "@rjsf/core": 5.5.2
+    "@rjsf/utils": 5.5.2
+    "@rjsf/validator-ajv6": 5.4.0
     "@types/btoa": ^1.2.3
     anser: ^1.4.9
     btoa: ^1.2.1
@@ -3783,47 +3783,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:^5.5.2":
-  version: 5.7.3
-  resolution: "@rjsf/core@npm:5.7.3"
+"@rjsf/core@npm:5.5.2":
+  version: 5.5.2
+  resolution: "@rjsf/core@npm:5.5.2"
   dependencies:
-    lodash: ^4.17.21
-    lodash-es: ^4.17.21
+    lodash: ^4.17.15
+    lodash-es: ^4.17.15
     markdown-to-jsx: ^7.2.0
-    nanoid: ^3.3.6
-    prop-types: ^15.8.1
+    nanoid: ^3.3.4
+    prop-types: ^15.7.2
   peerDependencies:
-    "@rjsf/utils": 5.7.x
+    "@rjsf/utils": ^5.0.0
     react: ^16.14.0 || >=17
-  checksum: bdae474fd0a6d4d8fd625ef74384a90624860841e1426b516358365a960d5627a98a1a159a6ddc59cc84659dd768ac7bba126d459c83c4f1d78acd8ad8d98f19
+  checksum: 3e0b9d23a45e90df76cbe0824190516dcaf2d5f82ce2bd528fcfd0d0032b36aa063b551a045cdab018a067f28c8e4708ec2984d892c78f0ba51c4f8b451aad2c
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:^5.5.2":
-  version: 5.7.3
-  resolution: "@rjsf/utils@npm:5.7.3"
+"@rjsf/utils@npm:5.5.2":
+  version: 5.5.2
+  resolution: "@rjsf/utils@npm:5.5.2"
   dependencies:
     json-schema-merge-allof: ^0.8.1
     jsonpointer: ^5.0.1
-    lodash: ^4.17.21
-    lodash-es: ^4.17.21
+    lodash: ^4.17.15
+    lodash-es: ^4.17.15
     react-is: ^18.2.0
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 30ceab80a98a33076eef3c680d079ca90bb7023d40524776fa6cce79f0dc21a5eeaec63fa786e3775b60ccee27f993d030b340d6704c3c4d23515f9d046d4354
+  checksum: 25ef467be23ee42fa2791e46ed73301952e30564b2085e224ca40763578a7268c54cf20c4cb620855771e357f60d2d8329301892395f0014a5f63e7025779e11
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv6@npm:^5.4.0":
-  version: 5.8.1
-  resolution: "@rjsf/validator-ajv6@npm:5.8.1"
+"@rjsf/validator-ajv6@npm:5.4.0":
+  version: 5.4.0
+  resolution: "@rjsf/validator-ajv6@npm:5.4.0"
   dependencies:
-    ajv: ^6.12.6
-    lodash: ^4.17.21
-    lodash-es: ^4.17.21
+    ajv: ^6.7.0
+    lodash: ^4.17.15
+    lodash-es: ^4.17.15
   peerDependencies:
-    "@rjsf/utils": ^5.8.x
-  checksum: bfb550b10fe575ad30b514bed02901dab50993d04fa7e1c311c30987175f437fa2b3e668b5681ec806988a29abb88c69f21743157a44cfc0d0de77da82f2d7d2
+    "@rjsf/utils": ^5.0.0
+  checksum: e43cbf2000369444b4500d75724af2b8948e6270ab99f54f593a8122b77d69fd491ea0380c244f69ad2e7f17f902ddb54442498bd58647f871fe49d32b490b2d
   languageName: node
   linkType: hard
 
@@ -5272,7 +5272,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^6.1.0, ajv@npm:^6.10.0, ajv@npm:^6.10.2, ajv@npm:^6.12.2, ajv@npm:^6.12.3, ajv@npm:^6.12.4, ajv@npm:^6.12.5, ajv@npm:^6.12.6":
+"ajv@npm:^6.1.0, ajv@npm:^6.10.0, ajv@npm:^6.10.2, ajv@npm:^6.12.2, ajv@npm:^6.12.3, ajv@npm:^6.12.4, ajv@npm:^6.12.5, ajv@npm:^6.7.0":
   version: 6.12.6
   resolution: "ajv@npm:6.12.6"
   dependencies:
@@ -14724,7 +14724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:^4.17.21":
+"lodash-es@npm:^4.17.15":
   version: 4.17.21
   resolution: "lodash-es@npm:4.17.21"
   checksum: 05cbffad6e2adbb331a4e16fbd826e7faee403a1a04873b82b42c0f22090f280839f85b95393f487c1303c8a3d2a010048bf06151a6cbe03eee4d388fb0a12d2
@@ -15768,15 +15768,6 @@ __metadata:
   bin:
     nanoid: bin/nanoid.cjs
   checksum: 2fddd6dee994b7676f008d3ffa4ab16035a754f4bb586c61df5a22cf8c8c94017aadd360368f47d653829e0569a92b129979152ff97af23a558331e47e37cd9c
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^3.3.6":
-  version: 3.3.6
-  resolution: "nanoid@npm:3.3.6"
-  bin:
-    nanoid: bin/nanoid.cjs
-  checksum: 7d0eda657002738aa5206107bd0580aead6c95c460ef1bdd0b1a87a9c7ae6277ac2e9b945306aaa5b32c6dcb7feaf462d0f552e7f8b5718abfc6ead5c94a71b3
   languageName: node
   linkType: hard
 
@@ -18131,7 +18122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.6, prop-types@npm:^15.5.8, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.6, prop-types@npm:^15.5.8, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -22729,9 +22720,9 @@ __metadata:
   linkType: hard
 
 "word-wrap@npm:^1.0.3, word-wrap@npm:^1.2.3, word-wrap@npm:~1.2.3":
-  version: 1.2.4
-  resolution: "word-wrap@npm:1.2.4"
-  checksum: 8f1f2e0a397c0e074ca225ba9f67baa23f99293bc064e31355d426ae91b8b3f6b5f6c1fc9ae5e9141178bb362d563f55e62fd8d5c31f2a77e3ade56cb3e35bd1
+  version: 1.2.3
+  resolution: "word-wrap@npm:1.2.3"
+  checksum: 30b48f91fcf12106ed3186ae4fa86a6a1842416df425be7b60485de14bec665a54a68e4b5156647dec3a70f25e84d270ca8bc8cd23182ed095f5c7206a938c1f
   languageName: node
   linkType: hard
 

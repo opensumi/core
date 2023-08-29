@@ -21,10 +21,14 @@ import {
 } from '@opensumi/ide-core-node';
 
 // 文件监听类型(更新、添加、删除)；文件监听下的文件修改时触发事件；启动和注销文件监听；
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../common';
-
-// 收集发生了修改的文件
-import { FileChangeCollection } from './file-change-collection';
+import {
+  FileChangeType,
+  FileSystemWatcherClient,
+  IFileSystemWatcherServer,
+  INsfw,
+  WatchOptions,
+} from '../../common/index';
+import { FileChangeCollection } from '../file-change-collection';
 
 // 作用是?
 export interface WatcherOptions {

@@ -1124,11 +1124,6 @@ export class FileTreeContribution
       keybinding: 'space',
       when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
     });
-
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
-      keybinding: 'ctrlcmd+shift+e',
-    });
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {

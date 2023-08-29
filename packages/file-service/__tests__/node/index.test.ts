@@ -9,7 +9,7 @@ import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileSystemWatcherServer } from '../../lib/node/file-service-watcher';
+import { FileSystemWatcherServer } from '../../lib/node/recursive/file-service-watcher';
 import { IFileService, FileChangeType } from '../../src/common';
 import { FileServiceModule, FileService } from '../../src/node';
 
