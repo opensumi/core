@@ -57,7 +57,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
     <div
       id={id}
       className={clsx(styles.tab_panel, {
-        [styles.tab_panel_hidden]: !currentContainerId || currentContainerId === '',
+        [styles.tab_panel_hidden]: !currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {

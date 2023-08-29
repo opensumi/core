@@ -107,6 +107,7 @@ export const AccordionSection = ({
 
   const clickHandler = React.useCallback(() => {
     const currentSize = getSize(false);
+    // 不知道这里的 onItemClick 的第一个入参有什么用，看起来哪儿都没用到
     onItemClick((targetSize) => setSize(targetSize, false), currentSize);
   }, [getSize, setSize]);
 
@@ -156,7 +157,7 @@ export const AccordionSection = ({
           className={cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
-          style={{ height: computedHeaderSize, lineHeight: headerSize + 'px' }}
+          style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
         >
           <div className={styles.label_wrap}>
             <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>

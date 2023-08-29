@@ -359,14 +359,13 @@ export class MainLayoutModuleContribution
         TERMINAL_CONTAINER_ID,
       ],
     }).forEach(([slotLocation, containerIds], index) => {
-      /**
-       * 这里使用 getContainer 是因为可能我们要注册到 menu 上的 id 在集成方并没有挂载。
-       * 所以如果 getContainer 有值，说明集成方也使用了这个 container，我们就把它注册到 menu 上
-       */
       const tabbarService = this.mainLayoutService.getTabbarService(slotLocation);
 
       tabbarService.viewReady.promise.then(() => {
         containerIds.forEach((id) => {
+          /**
+           * 这里先使用 getContainer 判断下这个 container id 在集成方上是否被挂载
+           */
           const info = tabbarService.getContainer(id);
           if (info) {
             menus.registerMenuItem(MenuId.MenubarViewMenu, {
