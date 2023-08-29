@@ -1,5 +1,3 @@
-/* tslint:disable no-reference */
-
 /// <reference path="./sumi-worker/sumi-worker.d.ts" />
 /// <reference path="./sumi-worker/worker.language.d.ts" />
 /// <reference path="./sumi-worker/worker.editor.d.ts" />

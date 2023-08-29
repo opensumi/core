@@ -264,5 +264,4 @@ declare module 'vscode' {
 		 */
 		waitUntil(thenable: Thenable<any>): void;
 	}
-
 }

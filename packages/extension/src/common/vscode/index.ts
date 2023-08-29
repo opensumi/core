@@ -30,6 +30,7 @@ import { IExtHostEditorTabs, IMainThreadEditorTabsShape } from './editor-tabs';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IMainThreadFileSystemShape } from './file-system';
 import { IMainThreadLanguages } from './languages';
+import { IExtHostLocalization, IMainThreadLocalization } from './localization';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IExtHostProgress, IMainThreadProgress } from './progress';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
@@ -104,6 +105,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadReporter: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadReporter'),
   MainThreadTests: createMainContextProxyIdentifier<IMainThreadSecret>('MainThreadTests'),
   MainThreadEditorTabs: createMainContextProxyIdentifier<IMainThreadEditorTabsShape>('MainThreadEditorTabs'),
+  MainThreadLocalization: createMainContextProxyIdentifier<IMainThreadLocalization>('MainThreadLocalization'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -145,6 +147,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostSecret: createExtHostContextProxyIdentifier<IExtHostSecret>('ExtHostSecret'),
   ExtHostTests: createExtHostContextProxyIdentifier<IExtHostTests>('ExtHostTests'),
   ExtHostEditorTabs: createExtHostContextProxyIdentifier<IExtHostEditorTabs>('ExtHostEditorTabs'),
+  ExtHostLocalization: createExtHostContextProxyIdentifier<IExtHostLocalization>('ExtHostLocalization'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -195,3 +198,4 @@ export * from './editor-tabs';
 export * from './scm';
 export * from './decoration';
 export * from './walkthrough';
+export * from './localization';

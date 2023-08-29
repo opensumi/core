@@ -1,7 +1,4 @@
-
-
 declare module 'vscode' {
-
   /**
    * An event describing a change to the set of [workspace folders](#workspace.workspaceFolders).
    */
@@ -663,5 +660,4 @@ declare module 'vscode' {
      */
     readonly files: ReadonlyArray<{ oldUri: Uri, newUri: Uri }>;
   }
-
 }
