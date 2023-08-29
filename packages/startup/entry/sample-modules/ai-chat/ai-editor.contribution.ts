@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IDisposable, URI, MaybePromise, Disposable, Event, IRange, uuid } from '@opensumi/ide-core-common';
+import { IDisposable, URI, MaybePromise, Disposable, Event, IRange, uuid, CommandService } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -9,12 +9,14 @@ import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { AiChatService } from './ai-chat.service';
 
 import { AiImproveWidget } from './ai-improve-widget';
 import { AiZoneWidget } from './ai-zone-widget';
 import { AiContentWidget } from './content-widget/ai-content-widget';
 import { AiInlineChatService, EChatStatus } from './content-widget/ai-inline-chat.service';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
+import { prePromptHandler, preSuffixHandler, ReqStack } from './inline-completions/provider';
 
 @Injectable()
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -32,6 +34,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
+
+  @Autowired(AiChatService)
+  protected readonly aiChatService: AiChatService;
 
   public menuse: any;
 
@@ -57,6 +65,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     let aiDiffWidget: AiDiffWidget | undefined;
     let aiImproveWidget: AiImproveWidget | undefined;
     let aiContentWidget: AiContentWidget | undefined;
+    let aiInlineChatDisposed = new Disposable();
 
     const disposeAllWidget = () => {
       if (aiZoneWidget) {
@@ -70,6 +79,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }
       if (aiContentWidget) {
         aiContentWidget.dispose();
+      }
+      if (aiInlineChatDisposed) {
+        aiInlineChatDisposed.dispose();
       }
     }
 
@@ -135,7 +147,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           aiDiffWidget.dispose();
         }
 
-        // gpt 模型测试
+        if (value === '解释代码') {
+          this.aiChatService.launchChatMessage(`解释代码`);
+          return;
+        }
+
         if (value) {
           this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING)
           const result = await this.aiGPTBackService.aiGPTcompletionRequest(`帮我${value}, 要求只回答代码内容，并保留代码的缩进。要求去掉 markdown 格式，不需要给我解释。代码内容是: \n` + text);
@@ -158,6 +174,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
           console.log('aiGPTcompletionRequest:>>> refresh answer', answer)
           if (answer) {
+
+            // 控制缩进
+            const indents = ' '.repeat(4);
+            const spcode = answer.split('\n');
+            answer = spcode.map((s, i) => i === 0 ? s : indents + s).join('\n');
+
             aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer]);
             aiDiffWidget.create();
             aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
@@ -178,26 +200,26 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             // aiImproveWidget.create();
             // aiImproveWidget.showByLine(endLineNumber, 3);
 
-            this.disposables.push(this.aiInlineChatService.onAccept(value => {
-              monacoEditor.getModel()?.pushStackElement();
+            aiInlineChatDisposed.addDispose(this.aiInlineChatService.onAccept(value => {
+              // monacoEditor.getModel()?.pushStackElement();
               monacoEditor.getModel()?.pushEditOperations(null, [
                 {
                   range: selection,
                   text: answer,
                 }
               ], () => null);
-              monacoEditor.getModel()?.pushStackElement();
+              // monacoEditor.getModel()?.pushStackElement();
 
               setTimeout(() => {
                 disposeAllWidget()
               }, 110)
-            }));
+            }))
 
-            this.disposables.push(this.aiInlineChatService.onDiscard(value => {
+            aiInlineChatDisposed.addDispose(this.aiInlineChatService.onDiscard(value => {
               setTimeout(() => {
                 disposeAllWidget()
               }, 110)
-            }));
+            }))
           }
         }
 
@@ -310,13 +332,29 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     let dispose: IDisposable | undefined;
 
+    const cancelRequest = () => {
+      if (reqStack) {
+          reqStack.cancleRqe()
+      }
+      if (timer) {
+          clearTimeout(timer);
+      }
+    }
+
     this.disposables.push(monacoEditor.onDidChangeModel(() => {
       if (dispose) {
         dispose.dispose();
       }
     }))
 
-    this.disposables.push(Event.debounce(monacoEditor.onDidChangeModelContent, (_, e) => e, 1000)(async (event) => {
+    const reqStack = new ReqStack();
+    let timer: any;
+
+    // dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), getCompletionProvider(this.aiGPTBackService))
+
+    let isCancelFlag = false;
+
+    this.disposables.push(Event.debounce(monacoEditor.onDidChangeModelContent, (_, e) => e, 300)(async (event) => {
       if (dispose) {
         dispose.dispose();
       }
@@ -332,61 +370,81 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         return;
       }
 
-      // 补全上文
-      const startRange = new monaco.Range(
-        // 限制在 500 行内
-        Math.max(position.lineNumber - 500, 0),
-        Number.MAX_SAFE_INTEGER,
-        position.lineNumber,
-        position.column
-      )
-      const prompt = model.getValueInRange(startRange);
-      
-      // 补全下文
-      const endRange = new monaco.Range(
-        position.lineNumber,
-        position.column,
-        model.getLineCount(),
-        Number.MAX_SAFE_INTEGER
-      )
-      const suffix = model.getValueInRange(endRange);
-
-      const uid = uuid();
-
-      const language = model.getLanguageId();
-
-      const completionResult = await this.aiGPTBackService.aiCompletionRequest({
-        prompt,
-        suffix,
-        sessionId: uid,
-        language,
-        fileUrl: model.uri.toString().split('/').pop(),
-      })
-
+      cancelRequest();
       dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
-        provideInlineCompletions(model, position, context, token) {
-          const items = completionResult.data.codeModelList;
-          return {
-            items: items.map(data => ({
-              insertText: data.content
-            }))
-          };
+        provideInlineCompletions: async (model, position, context, token) => {
+
+          // 补全上文
+          const startRange = new monaco.Range(
+            0,
+            0,
+            position.lineNumber,
+            position.column
+          )
+          let prompt = model.getValueInRange(startRange);
+          
+          // 补全下文
+          const endRange = new monaco.Range(
+            position.lineNumber,
+            position.column,
+            model.getLineCount(),
+            Number.MAX_SAFE_INTEGER
+          )
+          let suffix = model.getValueInRange(endRange);
+
+          prompt = prePromptHandler(prompt);
+          suffix = preSuffixHandler(suffix);
+
+          const uid = uuid();
+
+          const language = model.getLanguageId();
+
+          // if (isCancelFlag) return [];
+          
+          reqStack.addReq({
+            sendRequest:async () => {
+              isCancelFlag = false;
+              const completionResult = await this.aiGPTBackService.aiCompletionRequest({
+                prompt,
+                suffix,
+                sessionId: uid,
+                language,
+                fileUrl: model.uri.toString().split('/').pop(),
+              })
+    
+              const items = completionResult.data.codeModelList;
+              console.log('onDidChangeModelContent:>>> ai 补全返回结果', completionResult);
+              return {
+                items: items.map(data => ({
+                  insertText: data.content
+                }))
+              }
+            },
+            cancelRequest: () => {
+              isCancelFlag = true;
+            }
+          });
+          
+          await new Promise((f) => {
+            timer = setTimeout(f, 300)
+          });
+
+          console.log('onDidChangeModelContent:>>> 参数', {
+            prompt,
+            suffix,
+            uid,
+            language,
+          });
+          
+          // if (isCancelFlag) return [];
+          return reqStack.runReq() || []
         },
         freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {
           // console.log('freeInlineCompletions:>> ', completions)
         }
       })
-      
+      // dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), getCompletionProvider(this.aiGPTBackService))
       this.disposables.push(dispose);
-
-      console.log('onDidChangeModelContent:>>> 参数', {
-        prompt,
-        suffix,
-        uid,
-        language,
-      });
-      
-      console.log('onDidChangeModelContent:>>> ai 补全返回结果', completionResult);
     }))
   }
 }

@@ -29,5 +29,6 @@ export interface ChatCompletionRequestMessage {
 export enum AISerivceType {
   Search,
   SearchCode,
-  Sumi
+  Sumi,
+  GPT,
 }

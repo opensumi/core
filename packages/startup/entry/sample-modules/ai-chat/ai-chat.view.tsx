@@ -455,6 +455,9 @@ setTimeout(() => {
           aiMessage = await AISearch(userInput, aiGPTBackService);
         } else if (userInput.type === AISerivceType.Sumi) {
           aiMessage = await aiChatService.messageWithSumi(userInput.message!);
+        } else if (userInput.type === AISerivceType.GPT) {
+          aiMessage = await aiChatService.messageWithGPT(userInput.message!);
+          aiMessage = createMessageByAI(aiMessage);
         }
 
         if (aiMessage) {
