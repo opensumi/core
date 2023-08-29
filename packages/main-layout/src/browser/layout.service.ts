@@ -302,7 +302,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return handler;
   }
 
-  getConatiner(containerId: string): ComponentRegistryInfo | undefined {
+  getContainer(containerId: string): ComponentRegistryInfo | undefined {
     for (const service of this.tabbarServices.values()) {
       const container = service.getContainer(containerId);
       if (container) {
