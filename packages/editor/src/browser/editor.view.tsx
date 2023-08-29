@@ -444,8 +444,8 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         }
       }}
     >
-      {!editorHasNoTab && <NavigationBar editorGroup={group} />}
       {group.currentResource && <EditorSideView side={'top'} resource={group.currentResource}></EditorSideView>}
+      {!editorHasNoTab && <NavigationBar editorGroup={group} />}
       <div className={styles.kt_editor_components}>
         <div
           className={classnames({
