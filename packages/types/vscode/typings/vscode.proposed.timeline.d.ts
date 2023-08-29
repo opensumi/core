@@ -1,12 +1,5 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 declare module 'vscode' {
-
   // https://github.com/microsoft/vscode/issues/84297
-
   export class TimelineItem {
     /**
      * A timestamp (in milliseconds since 1 January 1970 00:00:00) for when the timeline item occurred.

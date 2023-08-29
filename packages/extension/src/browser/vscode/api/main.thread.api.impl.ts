@@ -47,6 +47,7 @@ import { MainThreadEnv } from './main.thread.env';
 import { MainThreadFileSystem } from './main.thread.file-system';
 import { MainThreadFileSystemEvent } from './main.thread.file-system-event';
 import { MainThreadLanguages } from './main.thread.language';
+import { MainThreadLocalization } from './main.thread.localization';
 import { MainThreadExtensionLog } from './main.thread.log';
 import { MainThreadMessage } from './main.thread.message';
 import { MainThreadOutput } from './main.thread.output';
@@ -108,6 +109,7 @@ export async function createApiFactory(
   const MainThreadSecretAPI = injector.get(MainThreadSecret, [rpcProtocol]);
   const MainthreadTestAPI = injector.get(MainThreadTestsImpl, [rpcProtocol]);
   const MainThreadEditorTabsAPI = injector.get(MainThreadEditorTabsService, [rpcProtocol]);
+  const MainThreadLocalizationAPI = injector.get(MainThreadLocalization, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -150,6 +152,7 @@ export async function createApiFactory(
   rpcProtocol.set<IMainThreadSecret>(MainThreadAPIIdentifier.MainThreadSecret, MainThreadSecretAPI);
   rpcProtocol.set<IMainThreadTesting>(MainThreadAPIIdentifier.MainThreadTests, MainthreadTestAPI);
   rpcProtocol.set<IMainThreadEditorTabsShape>(MainThreadAPIIdentifier.MainThreadEditorTabs, MainThreadEditorTabsAPI);
+  rpcProtocol.set<MainThreadLocalization>(MainThreadAPIIdentifier.MainThreadLocalization, MainThreadLocalizationAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -225,6 +228,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [workerProtocol]);
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [workerProtocol, 'worker']);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [workerProtocol]);
+  const MainThreadLocalizationAPI = injector.get(MainThreadLocalization, [workerProtocol]);
 
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
   workerProtocol.set<MainThreadExtensionDocumentData>(
@@ -265,6 +269,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadAPIIdentifier.MainThreadDecorations,
     MainThreadDecorationsAPI,
   );
+  workerProtocol.set<MainThreadLocalization>(MainThreadAPIIdentifier.MainThreadLocalization, MainThreadLocalizationAPI);
   // 作用和 node extension service 等同，用来设置 webview resourceRoots
   await MainThreadWebviewAPI.init();
 

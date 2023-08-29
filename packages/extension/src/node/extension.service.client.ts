@@ -14,6 +14,7 @@ import {
   IExtensionNodeClientService,
   ICreateProcessOptions,
 } from '../common';
+import { IExtensionLanguagePackMetadata } from '../common/vscode';
 
 import * as lp from './languagePack';
 
@@ -40,12 +41,13 @@ export class ExtensionServiceClientImpl
   private readonly hashCalculateService: IHashCalculateService;
 
   @Autowired(AppConfig)
-  private appConfig: AppConfig;
+  private readonly appConfig: AppConfig;
 
   @Autowired(INodeLogger)
-  logger: INodeLogger;
+  private readonly logger: INodeLogger;
 
   private clientId: string;
+  private languagePackCache: IExtensionLanguagePackMetadata | null = null;
 
   public setConnectionClientId(clientId: string) {
     this.clientId = clientId;
@@ -134,7 +136,7 @@ export class ExtensionServiceClientImpl
       name,
       version,
     } = packageJson;
-    const languagePacks: { [key: string]: any } = {};
+    const languagePacks: IExtensionLanguagePackMetadata = {};
     for (const localization of localizations) {
       // 这里需要添加languagePack路径作为id一部分，因为可能存在多个
       const id = `${languagePackPath}-${publisher.toLocaleLowerCase()}.${name.toLocaleLowerCase()}`;
@@ -173,7 +175,7 @@ export class ExtensionServiceClientImpl
   }
 
   public async updateLanguagePack(languageId: string, languagePack: string, storagePath: string): Promise<void> {
-    let languagePacks: { [key: string]: any } = {};
+    let languagePacks: IExtensionLanguagePackMetadata = {};
     storagePath = storagePath || DEFAULT_NLS_CONFIG_DIR;
     this.logger.log(`find ${languageId}， storagePath：${storagePath}`);
     const languagePath = Uri.file(path.join(storagePath, 'languagepacks.json')).toString();
@@ -205,7 +207,13 @@ export class ExtensionServiceClientImpl
       };
     }
     const languagePackJson = await this.fileService.getFileStat(languagePath);
+    this.languagePackCache = languagePacks;
     await this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
     await this.setupNLSConfig(languageId, storagePath);
+  }
+
+  public getLanguagePack(languageId: string) {
+    const languagePacks = this.languagePackCache?.[languageId];
+    return languagePacks;
   }
 }

@@ -9,16 +9,16 @@ import {
   ExtHostAPIIdentifier,
   TextEditorCursorStyle,
   TextEditorSelectionChangeKind,
-  VSCodeExtensionService,
   IExtensionDescription,
   IExtHostTests,
 } from '../../../common/vscode'; // '../../common';
+import { IExtHostEditorTabs } from '../../../common/vscode/editor-tabs';
 import { ViewColumn } from '../../../common/vscode/enums';
 import * as extTypes from '../../../common/vscode/ext-types';
 import * as fileSystemTypes from '../../../common/vscode/file-system';
+import { IExtHostLocalization } from '../../../common/vscode/localization';
 import { ExtHostAppConfig } from '../../ext.process-base';
 
-import { IExtHostEditorTabs } from './../../../common/vscode/editor-tabs';
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import { ExtensionHostEditorService } from './editor/editor.host';
@@ -37,6 +37,7 @@ import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
 import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
+import { ExtHostLocalization, createLocalizationApiFactory } from './ext.host.localization';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostPreference } from './ext.host.preference';
@@ -57,7 +58,6 @@ import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService,
-  mainThreadExtensionService: VSCodeExtensionService,
   appConfig: ExtHostAppConfig,
 ) {
   const builtinCommands = appConfig.builtinCommands;
@@ -182,6 +182,11 @@ export function createApiFactory(
     new ExtHostEditorTabs(rpcProtocol),
   ) as ExtHostEditorTabs;
 
+  const extHostLocalization = rpcProtocol.set<IExtHostLocalization>(
+    ExtHostAPIIdentifier.ExtHostLocalization,
+    new ExtHostLocalization(rpcProtocol, extensionService.logger),
+  ) as ExtHostLocalization;
+
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtensionDescription) => ({
@@ -239,6 +244,7 @@ export function createApiFactory(
         return extHostTests.createTestController(controllerId, label, refreshHandler);
       },
     },
+    l10n: createLocalizationApiFactory(extHostLocalization, extension),
     // 类型定义
     ...extTypes,
     // https://github.com/microsoft/vscode/blob/0ba16b83267cbab5811e12e0317fb47fd774324e/src/vs/workbench/api/common/extHost.api.impl.ts#L1288

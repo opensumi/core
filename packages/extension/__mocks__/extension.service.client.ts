@@ -45,4 +45,7 @@ export class MockExtNodeClientService implements IExtensionNodeClientService {
     process.env['TEST_KAITIAN_LANGUAGE_ID'] = languageId;
     return Promise.resolve();
   }
+  getLanguagePack(languageId: string) {
+    return undefined;
+  }
 }

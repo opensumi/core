@@ -128,6 +128,7 @@ export interface IExtensionManifest {
   readonly description?: string;
   readonly main?: string;
   readonly browser?: string;
+  readonly l10n?: string;
   readonly icon?: string;
   readonly categories?: string[];
   readonly keywords?: string[];
@@ -218,4 +219,22 @@ export function throwProposedApiError(extension: IExtensionDescription): void {
   throw new Error(
     `[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`,
   );
+}
+
+export interface IExtensionLanguagePackMetadata {
+  [languageId: string]: IExtensionLanguagePack;
+}
+
+export interface IExtensionLanguagePack {
+  hash: string;
+  extensions: {
+    version: string;
+    extensionIdentifier: {
+      id: string;
+      uuid: string;
+    };
+  }[];
+  translations: {
+    [key: string]: string;
+  };
 }
