@@ -497,6 +497,7 @@ setTimeout(() => {
     document.querySelectorAll('pre code').forEach((block) => {
       // @ts-ignore
       try {
+        // @ts-ignore
         hljs.highlightBlock(block);
       } catch (e) {
         console.log(e);
@@ -535,6 +536,7 @@ setTimeout(() => {
                 <SystemMessage
                   title={AI_NAME}
                   className={styles.smsg}
+                  // @ts-ignore
                   text={
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span>Thinking...</span>

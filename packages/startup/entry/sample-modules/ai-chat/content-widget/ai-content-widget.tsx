@@ -6,10 +6,7 @@ import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AppConfig, ConfigProvider, getExternalIcon } from '@opensumi/ide-core-browser';
-import { AiInput } from '../components/AIInput';
-import { AIImprove } from '../components/AIImprove';
-
-import * as styles from '../ai-chat.module.less';
+import { AIInlineChatPanel } from './ai-inline-chat-panel';
 
 export interface IAiContentWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowAiContentOptions | undefined) => void;
@@ -20,7 +17,12 @@ export interface ShowAiContentOptions {
   /**
    * 选中区域
    */
-  selection: monaco.Range;
+  selection?: monaco.Range;
+  
+  /**
+   * 行列
+   */
+  position?: monaco.IPosition;
 }
 
 @Injectable({ multiple: true })
@@ -53,48 +55,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
   private renderView(): void {
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
-        <div>
-          <div className={'ai-shortcuts'}>
-            <AIImprove onClick={(title) => {
-              console.log('title:>>>>', title)
-              this._onSelectChange.fire(title);
-            }} lists={[
-              {
-                title: '解释代码',
-                iconClass: getExternalIcon('git-pull-request')
-              },
-              {
-                title: '｜',
-                iconClass: ''
-              },
-              {
-                title: '生成注释',
-                iconClass: getExternalIcon('git-pull-request')
-              },
-              {
-                title: '｜',
-                iconClass: ''
-              },
-              {
-                title: '优化代码',
-                iconClass: getExternalIcon('git-pull-request')
-              },
-              {
-                title: '｜',
-                iconClass: ''
-              },
-              {
-                title: '其他',
-                iconClass: getExternalIcon('git-pull-request')
-              }
-            ]}/>
-          </div>
-          <div className={styles.ai_content_widget_input}>
-            <AiInput onValueChange={(value) => {
-              this._onSelectChange.fire(value);
-            }}/>
-          </div>
-        </div>
+        <AIInlineChatPanel selectChangeFire={this._onSelectChange} />
       </ConfigProvider>,
       this.getDomNode(),
     );
@@ -106,7 +67,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
       return;
     }
 
-    if (this.options && this.options.selection.equalsRange(options.selection)) {
+    if (this.options && this.options.selection && this.options.selection.equalsRange(options.selection)) {
       return;
     }
 
@@ -115,13 +76,11 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
     this.editor.addContentWidget(this);
   }
 
-  /**
-   * 生成质数
-   */
-
+  setOptions(options: ShowAiContentOptions): void {
+    this.options = options;
+  }
 
   hide: (options?: ShowAiContentOptions | undefined) => void = () => {
-    // console.log('1231')
     this.options = undefined;
     this.editor.removeContentWidget(this);
   };
@@ -130,7 +89,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
     return 'AI-Content-Widget';
   }
 
-  protected layoutContentWidget(): void {
+  layoutContentWidget(): void {
     this.editor.layoutContentWidget(this);
   }
 
@@ -143,7 +102,22 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
   }
 
   getPosition(): monaco.editor.IContentWidgetPosition | null {
-    const endPosition = this.options && this.options.selection.getEndPosition();
+    if (!this.options) {
+      return null
+    }
+
+    const { position, selection } = this.options;
+
+    if (position) {
+      return {
+        position,
+        preference: [
+          monaco.editor.ContentWidgetPositionPreference.BELOW,
+        ],
+      }
+    }
+
+    const endPosition = selection && selection.getEndPosition();
     return endPosition
       ? {
           // @ts-ignore

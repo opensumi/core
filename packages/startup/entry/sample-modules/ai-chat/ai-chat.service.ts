@@ -51,6 +51,7 @@ export class AiChatService {
         if (toJson && toJson.tag) {
           const tag = toJson.tag;
 
+          // @ts-ignore
           if (tag === '文本搜索') {
             type = AISerivceType.Search;
             message = input;

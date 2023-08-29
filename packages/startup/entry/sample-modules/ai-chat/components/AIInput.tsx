@@ -44,6 +44,7 @@ export const AiInput = ({ onValueChange }) => {
 
   return (
     <Input
+      className={'ai_native_input_container'}
       placeholder={'可以问我任何问题，或键入主题 "/"'}
       value={value}
       onValueChange={handleChange}

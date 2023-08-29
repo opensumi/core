@@ -13,6 +13,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AiImproveWidget } from './ai-improve-widget';
 import { AiZoneWidget } from './ai-zone-widget';
 import { AiContentWidget } from './content-widget/ai-content-widget';
+import { AiInlineChatService, EChatStatus } from './content-widget/ai-inline-chat.service';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 
 @Injectable()
@@ -25,6 +26,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiGPTBackSerivcePath)
   private readonly aiGPTBackService: any;
+
+  @Autowired(AiInlineChatService)
+  private readonly aiInlineChatService: AiInlineChatService;
 
   @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
@@ -111,6 +115,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       console.log('monacoEditor.onMouseUp: >>> text', text);
 
+      this.aiInlineChatService.launchChatMessage(EChatStatus.READY);
+
       aiContentWidget = this.injector.get(AiContentWidget, [monacoEditor]);
 
       aiContentWidget.show({
@@ -131,37 +137,66 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         // gpt 模型测试
         if (value) {
-          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`${value}, 要求只回答代码内容，并去掉 markdown 格式。不需要给我解释，代码内容是: \n` + text);
+          this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING)
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`帮我${value}, 要求只回答代码内容，并保留代码的缩进。要求去掉 markdown 格式，不需要给我解释。代码内容是: \n` + text);
+
+          // 说明接口有异常
+          if (result.errorCode !== 0) {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR)
+          } else {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.DONE)
+          }
+
           console.log('aiGPTcompletionRequest:>>> ', result)
 
-          const answer = result && result.data;
+          let answer = result && result.data;
 
+          // 提取代码内容
+          const regex = /```[Jj][Aa][Vv][Aa]\s*([\s\S]+?)\s*```/;
+          const regExec = regex.exec(answer);
+          answer = regExec && regExec[1] || answer;
+
+          console.log('aiGPTcompletionRequest:>>> refresh answer', answer)
           if (answer) {
             aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer]);
             aiDiffWidget.create();
             aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
 
-            aiZoneWidget?.dispose();
+            // 调整 aiContentWidget 位置
+            aiContentWidget?.setOptions({
+              position: {
+                lineNumber: endLineNumber + 1,
+                column: selection.startColumn
+              }
+            })
+            aiContentWidget?.layoutContentWidget();
+
+            // aiZoneWidget?.dispose();
 
             // aiImproveWidget
-            aiImproveWidget = this.injector.get(AiImproveWidget, [monacoEditor!]);
-            aiImproveWidget.create();
-            aiImproveWidget.showByLine(endLineNumber, 3);
+            // aiImproveWidget = this.injector.get(AiImproveWidget, [monacoEditor!]);
+            // aiImproveWidget.create();
+            // aiImproveWidget.showByLine(endLineNumber, 3);
 
-            this.disposables.push(aiImproveWidget.onClick(value => {
-              if (value === '采纳') {
-                monacoEditor.getModel()?.pushEditOperations(null, [
-                  {
-                    forceMoveMarkers: false,
-                    range: selection,
-                    text: answer,
-                  }
-                ], () => null);
+            this.disposables.push(this.aiInlineChatService.onAccept(value => {
+              monacoEditor.getModel()?.pushStackElement();
+              monacoEditor.getModel()?.pushEditOperations(null, [
+                {
+                  range: selection,
+                  text: answer,
+                }
+              ], () => null);
+              monacoEditor.getModel()?.pushStackElement();
 
-                setTimeout(() => {
-                  disposeAllWidget()
-                }, 110)
-              }
+              setTimeout(() => {
+                disposeAllWidget()
+              }, 110)
+            }));
+
+            this.disposables.push(this.aiInlineChatService.onDiscard(value => {
+              setTimeout(() => {
+                disposeAllWidget()
+              }, 110)
             }));
           }
         }
