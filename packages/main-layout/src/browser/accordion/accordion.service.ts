@@ -523,7 +523,7 @@ export class AccordionService extends WithEventBus {
     viewState.collapsed = collapsed;
 
     const container = this.mainLayoutService.getContainer(this.containerId)!;
-    if (container?.options?.alignment === 'vertical') {
+    if (container?.options?.alignment !== 'horizontal') {
       let sizeIncrement: number;
       if (collapsed) {
         sizeIncrement = this.setSize(index, 0, false, noAnimation);
