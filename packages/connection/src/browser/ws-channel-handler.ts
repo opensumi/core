@@ -3,7 +3,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 
-import { stringify, parse, WSCloseInfo } from '../common/utils';
+import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
 import { WSChannel, MessageString } from '../common/ws-channel';
 
 // 前台链接管理类
@@ -125,7 +125,7 @@ export class WSChannelHandler {
         this.channelCloseEventMap.set(channelId, {
           channelPath,
           closeEvent: { code, reason },
-          connectInfo: window.navigator.connection,
+          connectInfo: window.navigator.connection as unknown as ConnectionInfo,
         });
         this.logger.log('channel close: ', code, reason);
       });
