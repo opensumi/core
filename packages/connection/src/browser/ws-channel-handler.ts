@@ -125,7 +125,7 @@ export class WSChannelHandler {
         this.channelCloseEventMap.set(channelId, {
           channelPath,
           closeEvent: { code, reason },
-          connectInfo: window.navigator.connection as unknown as ConnectionInfo,
+          connectInfo: (navigator as any).connection as ConnectionInfo,
         });
         this.logger.log('channel close: ', code, reason);
       });
