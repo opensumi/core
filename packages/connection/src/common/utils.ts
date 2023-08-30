@@ -28,6 +28,12 @@ export interface ICapturedMessage {
   error?: any;
 }
 
+export interface WSCloseInfo {
+  channelPath: string;
+  closeEvent: { code: number; reason: string };
+  connectInfo: NetworkInformation;
+}
+
 export function stringify(obj: any): string {
   return JSON.stringify(obj);
 }
