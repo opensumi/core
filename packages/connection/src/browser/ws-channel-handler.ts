@@ -3,13 +3,14 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 
-import { stringify, parse } from '../common/utils';
+import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
 import { WSChannel, MessageString } from '../common/ws-channel';
 
 // 前台链接管理类
 export class WSChannelHandler {
   public connection: WebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
+  private channelCloseEventMap: Map<number | string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timer | null;
@@ -79,7 +80,9 @@ export class WSChannelHandler {
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
-              this.reporterService && this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT);
+              const closeInfo = this.channelCloseEventMap.get(channel.id);
+              this.reporterService &&
+                this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
               this.logger && this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
@@ -88,6 +91,14 @@ export class WSChannelHandler {
             if (channel.fireReOpen) {
               channel.fireReOpen();
             }
+          });
+        }
+      });
+
+      this.connection.addEventListener('close', (event) => {
+        if (this.channelMap.size) {
+          this.channelMap.forEach((channel) => {
+            channel.close(event.code, event.reason);
           });
         }
       });
@@ -109,6 +120,14 @@ export class WSChannelHandler {
     await new Promise((resolve) => {
       channel.onOpen(() => {
         resolve(undefined);
+      });
+      channel.onClose((code: number, reason: string) => {
+        this.channelCloseEventMap.set(channelId, {
+          channelPath,
+          closeEvent: { code, reason },
+          connectInfo: (navigator as any).connection as ConnectionInfo,
+        });
+        this.logger.log('channel close: ', code, reason);
       });
       channel.open(channelPath);
     });
