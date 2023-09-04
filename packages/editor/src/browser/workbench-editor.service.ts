@@ -1807,6 +1807,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resource,
         }),
       );
+      //  优先清理活动组件，否则后面的notifyBodyChanged方法调用触发重绘的时候取的是旧的值。导致组件没有及时被销毁。
+      for (const resources of this.activeComponents.values()) {
+        const i = resources.indexOf(resource);
+        if (i !== -1) {
+          resources.splice(i, 1);
+        }
+      }
       if (this.previewURI && this.previewURI.isEqual(uri)) {
         this.previewURI = null;
       }
@@ -1840,13 +1847,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       } else {
         this.notifyTabChanged();
+        this.notifyBodyChanged();
       }
-      for (const resources of this.activeComponents.values()) {
-        const i = resources.indexOf(resource);
-        if (i !== -1) {
-          resources.splice(i, 1);
-        }
-      }
+
       this.disposeDocumentRef(uri);
     }
     if (this.resources.length === 0) {
