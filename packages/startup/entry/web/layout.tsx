@@ -41,8 +41,8 @@ export function DefaultLayout() {
         </SplitPanel>
         <SlotRenderer
           slot='right'
-          isTabbar={false}
-          defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
+          isTabbar={true}
+          defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 2}
           minResize={280}
         />
       </SplitPanel>

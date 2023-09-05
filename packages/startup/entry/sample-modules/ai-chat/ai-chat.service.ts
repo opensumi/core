@@ -1,6 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 import { AISerivceType, AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 
@@ -20,6 +22,9 @@ export class AiChatService {
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
 
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorServiceImpl;
+
   @Autowired()
   protected extensionManagementService: ExtensionManagementService;
 
@@ -33,6 +38,32 @@ export class AiChatService {
   public async switchAIService(input: string) {
     let type: AISerivceType | undefined;
     let message: string | undefined;
+
+    if (input === '解释代码') { 
+      const currentEditor = this.editorService.currentEditor;
+      if (!currentEditor) {
+        return;
+      }
+  
+      const selection = currentEditor.monacoEditor.getSelection();
+      if (!selection) {
+        return;
+      }
+  
+      // 获取指定范围内的文本内容
+      const content = currentEditor.monacoEditor.getModel()?.getValueInRange(selection);
+  
+      const messageWithPrompt = `解释以下这段代码。\n \`\`\`${content}\`\`\``;
+
+      input = messageWithPrompt;
+    }
+
+    return { type: AISerivceType.GPT, message: input };
+
+    // 单独处理 解释代码
+    if (input === '解释代码') {
+      return { type: AISerivceType.GPT, message: input };
+    }
 
     const messageWithPrompt = `我会给你一段话，你需要分析并推理出这段话属于以下哪个分类的 tag 里，并返回 tag 的名字给我，tags 的列表有['文本搜索', '代码搜索', 'sumi']。
     例如：“java 生成质数”、“找出所有 markdown 的正则表达式” 等和代码搜索意图强相关的，则返回 '代码搜索'。
@@ -51,6 +82,7 @@ export class AiChatService {
         if (toJson && toJson.tag) {
           const tag = toJson.tag;
 
+          // @ts-ignore
           if (tag === '文本搜索') {
             type = AISerivceType.Search;
             message = input;
@@ -138,6 +170,12 @@ export class AiChatService {
     // setTimeout(() => {
     //   this.removeOldExtension();
     // }, 10000);
+  }
+
+  public async messageWithGPT(input: string) {
+    const res = await this.aiBackService.aiGPTcompletionRequest(input);
+    console.log('messageWithGPT: >>>> ', res);
+    return res.data;
   }
 
   public async removeOldExtension() {

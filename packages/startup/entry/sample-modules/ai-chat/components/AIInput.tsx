@@ -36,19 +36,23 @@ export const AiInput = ({ onValueChange }) => {
 
   const handleChange = (newValue: string) => {
     console.log('select handleChange:>>> ', newValue);
-    if (onValueChange) {
-      onValueChange(newValue);
-    }
     setValue(newValue);
   };
 
+  const emitterValueChange = useCallback(() => {
+    if (onValueChange) {
+      onValueChange(value)
+    }
+  }, [value]);
+
   return (
     <Input
+      className={'ai_native_input_container'}
       placeholder={'可以问我任何问题，或键入主题 "/"'}
       value={value}
       onValueChange={handleChange}
       addonAfter={
-        <Icon className={getIcon('right')} />
+        <Icon className={getIcon('right')} onClick={() => emitterValueChange()} />
       }
     />
   );

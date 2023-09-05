@@ -90,8 +90,8 @@ export const RightTabRenderer = ({
     id={VIEW_CONTAINERS.RIGHT_TABBAR}
     className={clsx(className, 'right-slot')}
     components={components}
-    // TabbarView={RightTabbarRenderer}
-    TabbarView={() => <></>}
+    TabbarView={RightTabbarRenderer}
+    // TabbarView={() => <></>}
     TabpanelView={RightTabPanelRenderer}
   />
 );
