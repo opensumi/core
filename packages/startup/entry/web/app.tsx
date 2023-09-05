@@ -38,7 +38,10 @@ renderApp({
       },
     },
     ...{
-      [SlotLocation.right]: {
+      // [SlotLocation.right]: {
+      //   modules: [AiChatContribution.AiChatContainer],
+      // },
+      ['ai-chat']: {
         modules: [AiChatContribution.AiChatContainer],
       },
     },
