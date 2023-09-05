@@ -84,7 +84,7 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
         if (!currentEditor || !range) {
           return;
         }
-        console.log('ai.suggest.documentation:>>> range', range)
+        console.log('ai.suggest.documentation:>>> range', range);
         const getContent = currentEditor.monacoEditor.getModel()!.getValueInRange(range);
 
         if (getContent) {
@@ -99,13 +99,13 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
 
 代码内容是:
 ${getContent}
-`
-          console.log('ai.suggest.documentation:>>> prompt', messageWithPrompt)
+`;
+          console.log('ai.suggest.documentation:>>> prompt', messageWithPrompt);
 
           const aiResult = await this.aiChatService.aiBackService.aiMFTCompletion(messageWithPrompt);
           const resultContent = aiResult.data;
-          
-          console.log('ai.suggest.documentation:>>> result', aiResult)
+
+          console.log('ai.suggest.documentation:>>> result', aiResult);
 
           // 提取 markdown 里的代码
           const regex = /```java\s*([\s\S]+?)\s*```/;
@@ -319,6 +319,25 @@ lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('
       },
     });
 
+    commands.registerCommand({
+      id: 'cloudide.command.workspace.getRuntimeConfig',
+    }, {
+      execute: async (key: string) => {
+        const obj = {
+          workspaceIP: '127.0.0.1',
+          workspaceDir: '/Users/mushi/Documents/workcode/opensumi/core/tools/workspace',
+          proxyHost: 'https://ide.cloudbaseapp-sanbox.cn',
+        };
+
+        return obj[key];
+      },
+    });
+
+    commands.registerCommand({
+      id: 'open-port.external',
+    }, {
+      execute: async (port: number) => `http://127.0.0.1:${port}`,
+    });
   }
 
   registerMenus(menus: IMenuRegistry): void {

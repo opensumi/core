@@ -9,8 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
-import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import 'react-chat-elements/dist/main.css';
 import { CommandService } from '@opensumi/ide-core-common';
@@ -63,6 +62,37 @@ export const AiChatView = () => {
   const [, updateState] = React.useState<any>();
   // const forceUpdate = React.useCallback(() => updateState({}), []);
 
+  const query = window.location.search?.slice(1).split('&');
+  let generateQuery;
+  if (query.length) {
+    generateQuery = query[0].split('=')[1];
+  }
+
+  const generateProject = React.useCallback(async (messageList) => {
+    const res = await aiChatService.switchProjectLanguage(decodeURIComponent(generateQuery));
+    console.log('gen res: ', res);
+    if (res) {
+      const { language, framework, requirements } = res;
+      const languageReply = `项目语言为：${language}\n使用框架：${framework[0]}`;
+      messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));
+      setMessageListData([...messageList]);
+
+      const filePathList = await aiChatService.generateProjectStructure(language, framework[0], requirements);
+      console.log('gen file list: ', filePathList);
+      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />));
+      setMessageListData([...messageList]);
+
+      await Promise.all(filePathList.map(async (file) => {
+        await aiChatService.generateFileContent(file, requirements, 1);
+        messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
+        setMessageListData([...messageList]);
+      }));
+
+      messageList.pop();
+      setMessageListData([...messageList]);
+    }
+  }, []);
+
   const InitMsgComponent = () => {
     const lists = [
       { icon: getIcon('plus'), text: '生成 Java 快排算法' },
@@ -70,6 +100,14 @@ export const AiChatView = () => {
       { icon: getIcon('open-changes'), text: '创建合并请求' },
       { icon: getIcon('scm'), text: '触发流水线' },
     ];
+
+    if (generateQuery) {
+      return (
+        <div>
+          <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
+        </div>
+      );
+    }
 
     return (
       <div>
@@ -101,7 +139,9 @@ export const AiChatView = () => {
     // @ts-ignore
     window.aiAntGlm = aiGPTBackService.aiAntGlm;
 
-    if (messageListData && messageListData.length === 0) {
+    if (generateQuery) {
+      generateProject([firstMsg]);
+    } else if (messageListData && messageListData.length === 0) {
       setMessageListData([firstMsg]);
     }
 
@@ -584,22 +624,26 @@ setTimeout(() => {
 };
 
 // AI 回复组件，就是能一个字一个出现的那种效果
-const AiReply = ({ text, endNode = <></> }) => {
+const AiReply = ({ text, endNode = <></>, immediately = false }) => {
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [currentText, setCurrentText] = React.useState('');
 
   React.useEffect(() => {
     if (currentIndex < text.length) {
-      const timeoutId = setTimeout(() => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
+      if (immediately) {
+        setCurrentText(text);
+        setCurrentIndex(text.length);
+      } else {
+        const timeoutId = setTimeout(() => {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
 
-        setCurrentText(text.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, Math.floor(Math.random() * 41) + 10);
-
-      return () => clearTimeout(timeoutId);
+          setCurrentText(text.slice(0, currentIndex + 1));
+          setCurrentIndex(currentIndex + 1);
+        }, Math.floor(Math.random() * 41) + 10);
+        return () => clearTimeout(timeoutId);
+      }
     }
   }, [currentIndex, text]);
 

@@ -22,7 +22,7 @@ export const MenuBarView = () => {
   };
 
   const handleRun = () => {
-    // commandService.executeCommand('ai.runAndDebug');
+    commandService.executeCommand('minidev.startDev');
   };
 
   // quick-open-overlay
