@@ -481,27 +481,29 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   );
 });
 
-export const ComponentsWrapper = ({
-  component,
-  resources,
-  current,
-  ...other
-}: {
-  component: IEditorComponent;
-  resources: IResource[];
-  current: MaybeNull<IResource>;
-}) => (
-  <div className={styles.kt_editor_component_wrapper}>
-    {resources.map((resource) => (
-      <ComponentWrapper
-        {...other}
-        key={resource.toString()}
-        component={component}
-        resource={resource}
-        hidden={!(current && current.uri.toString() === resource.uri.toString())}
-      />
-    ))}
-  </div>
+export const ComponentsWrapper = observer(
+  ({
+    component,
+    resources,
+    current,
+    ...other
+  }: {
+    component: IEditorComponent;
+    resources: IResource[];
+    current: MaybeNull<IResource>;
+  }) => (
+    <div className={styles.kt_editor_component_wrapper}>
+      {resources.map((resource) => (
+        <ComponentWrapper
+          {...other}
+          key={resource.uri.toString()}
+          component={component}
+          resource={resource}
+          hidden={!(current && current.uri.toString() === resource.uri.toString())}
+        />
+      ))}
+    </div>
+  ),
 );
 
 export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
