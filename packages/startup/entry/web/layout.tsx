@@ -39,12 +39,25 @@ export function DefaultLayout() {
             isTabbar={true}
           />
         </SplitPanel>
-        <SlotRenderer
-          slot='right'
-          isTabbar={true}
-          defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 2}
-          minResize={280}
-        />
+        <SplitPanel
+          id='main-vertical'
+          minResize={400}
+          direction='left-to-right'
+          className='ai_native_slot_main_right'
+        >
+          <SlotRenderer
+            slot='right'
+            isTabbar={false}
+            defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 320}
+            minResize={280}
+          />
+          <SlotRenderer
+            slot='ai-chat'
+            isTabbar={true}
+            defaultSize={layout['ai-chat']?.currentId ? layout['ai-chat']?.size || 360 : 360}
+            minResize={280}
+          />
+        </SplitPanel>
       </SplitPanel>
       <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>
