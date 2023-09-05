@@ -18,11 +18,12 @@ import { AiGPTBackSerivcePath, AISerivceType } from '@opensumi/ide-startup/lib/c
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
+import { ChatEditor } from './components/ChatEditor';
 
 // import { Markdown } from '@opensumi/ide-markdown';
 
 const AI_AVATAR =
-  'https://done.cdn.alibabadesign.com/2023/08/16/4866db7a5f59bba4/preview/assets/6D541F03-3063-4F43-9FCC-27CD9830AEC8/F3E22F76-4171-4263-BEAD-F28A5C0C0429.svg?sign=68948ee76126c039cd6befef7e79fd47&timestamp=1693670399999';
+  'https://done.alibaba-inc.com/preview/proxy/2023/08/16/4866db7a5f59bba4/preview/assets/BB6B2997-584C-4537-ACE5-27E0D671ECD2/84F80576-6A6E-44BA-8892-03DBDDE3798D.svg';
 
 const createMessage = (position: string, title: string, text: string | React.ReactNode) => ({
   position,
@@ -66,9 +67,9 @@ export const AiChatView = () => {
   const InitMsgComponent = () => {
     const lists = [
       { icon: getIcon('plus'), text: '生成 Java 快排算法' },
-      { icon: getIcon('branches'), text: '提交代码' },
-      { icon: getIcon('open-changes'), text: '创建合并请求' },
-      { icon: getIcon('scm'), text: '触发流水线' },
+      // { icon: getIcon('branches'), text: '提交代码' },
+      // { icon: getIcon('open-changes'), text: '创建合并请求' },
+      // { icon: getIcon('scm'), text: '触发流水线' },
     ];
 
     return (
@@ -451,12 +452,13 @@ setTimeout(() => {
         let aiMessage;
         const userInput = await aiChatService.switchAIService(preInputValue);
 
-        if (userInput.type === AISerivceType.Search || userInput.type === AISerivceType.SearchCode) {
+        if (userInput!.type === AISerivceType.Search || userInput!.type === AISerivceType.SearchCode) {
           aiMessage = await AISearch(userInput, aiGPTBackService);
-        } else if (userInput.type === AISerivceType.Sumi) {
-          aiMessage = await aiChatService.messageWithSumi(userInput.message!);
-        } else if (userInput.type === AISerivceType.GPT) {
-          aiMessage = await aiChatService.messageWithGPT(userInput.message!);
+        } else if (userInput!.type === AISerivceType.Sumi) {
+          aiMessage = await aiChatService.messageWithSumi(userInput!.message!);
+        } else if (userInput!.type === AISerivceType.GPT) {
+          aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
+          // aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
           aiMessage = createMessageByAI(aiMessage);
         }
 
@@ -559,6 +561,7 @@ setTimeout(() => {
               value={inputValue}
               onValueChange={handleInputChange}
               className={styles.input_wrapper}
+              onPressEnter={() => handleSend()}
               addonAfter={
                 <div className={styles.send_chat_btn} onClick={() => handleSend()}>
                   <Icon className={getIcon('right')} />
@@ -653,5 +656,22 @@ const AISearch = async (input, aiGPTBackService) => {
     return aiMessage;
   } catch (error) {
     console.log('/search: error >>>>>', error);
+  }
+};
+
+// 带有代码的 AI 回复组件
+const AIChatGPTReply = async (input, aiGPTBackService) => {
+  try {
+    console.log('ai chat gpt reply: >>>> ', input);
+
+    const aiMessage = createMessageByAI(
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <ChatEditor input={input}/>
+      </div>,
+    );
+
+    return aiMessage;
+  } catch (error) {
+    console.log('/chat gpt reply: error >>>>>', error);
   }
 };

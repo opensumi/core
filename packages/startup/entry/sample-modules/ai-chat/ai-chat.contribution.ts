@@ -16,6 +16,7 @@ import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiQuickCommandHandler } from './ai-quick-open.command';
+import { AiCodeDocumentProvider } from './code-widget/ai-code-document.provider';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 
 @Injectable()
@@ -26,6 +27,9 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
 
   @Autowired()
   private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
+
+  @Autowired()
+  private readonly aiCodeDocumentProvider: AiCodeDocumentProvider;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -51,7 +55,7 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AiChatContribution.AiChatContainer, {
       component: AiChatView,
-      id: AiChatContribution.AiChatContainer,
+      id: AiChatContribution.AiChatContainer
     }, {
       containerId: AiChatContribution.AiChatContainer,
     });

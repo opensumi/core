@@ -53,7 +53,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       { title: '｜', iconClass: '' },
       { title: '优化代码', iconClass: getExternalIcon('git-pull-request') },
       { title: '｜', iconClass: '' },
-      { title: '其他', iconClass: getExternalIcon('git-pull-request') },
+      { title: '生成测试用例', iconClass: getExternalIcon('git-pull-request') },
     ],
     [],
   );

@@ -4,6 +4,7 @@ import { IDisposable, URI, MaybePromise, Disposable, Event, IRange, uuid, Comman
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { Position } from '@opensumi/ide-monaco';
 import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
@@ -13,6 +14,7 @@ import { AiChatService } from './ai-chat.service';
 
 import { AiImproveWidget } from './ai-improve-widget';
 import { AiZoneWidget } from './ai-zone-widget';
+import { AiCodeWidget } from './code-widget/ai-code-widget';
 import { AiContentWidget } from './content-widget/ai-content-widget';
 import { AiInlineChatService, EChatStatus } from './content-widget/ai-inline-chat.service';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
@@ -41,6 +43,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(AiChatService)
   protected readonly aiChatService: AiChatService;
 
+  @Autowired(IFileTreeAPI)
+  private readonly fileTreeAPI: IFileTreeAPI;
+
   public menuse: any;
 
   contribute(editor: IEditor): IDisposable {
@@ -63,6 +68,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     let aiZoneWidget: AiZoneWidget | undefined;
     let aiDiffWidget: AiDiffWidget | undefined;
+    let aiCodeWidget: AiCodeWidget | undefined;
     let aiImproveWidget: AiImproveWidget | undefined;
     let aiContentWidget: AiContentWidget | undefined;
     let aiInlineChatDisposed = new Disposable();
@@ -73,6 +79,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }
       if (aiDiffWidget) {
         aiDiffWidget.dispose();
+      }
+      if (aiCodeWidget) {
+        aiCodeWidget.dispose();
       }
       if (aiImproveWidget) {
         aiImproveWidget.dispose();
@@ -147,8 +156,108 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           aiDiffWidget.dispose();
         }
 
+        const model = monacoEditor.getModel();
+        if (!model) {
+          return;
+        }
+
         if (value === '解释代码') {
           this.aiChatService.launchChatMessage(`解释代码`);
+          return;
+        }
+
+        if (value === '生成测试用例') {
+          this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING)
+          
+          // @ts-ignore
+          const symbols = this.documentSymbolStore.getDocumentSymbol(model.uri!);
+
+          const findRange = (range: {
+            startLineNumber: number;
+            endLineNumber: number;
+          }) => {
+            if (!symbols) {
+              return;
+            }
+
+            return symbols.map(obj => 
+              // (range.startLineNumber >= obj.range.startLineNumber && range.endLineNumber <= obj.range.endLineNumber ? obj : null) 
+              (obj.children || []).find(child => range.startLineNumber >= child.range.startLineNumber && range.endLineNumber <= child.range.endLineNumber )).filter(Boolean)[0];
+          }
+
+          const fullCode = monacoEditor.getValue();
+
+          const currentFunc = findRange(selection);
+
+          if (!currentFunc) {
+            return;
+          }
+
+          const prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的 junit 单元测试用例，不需要解释，只需要返回代码结果`
+          console.log('生成测试用例 prompt:>>> ', prompt)
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的 junit 单元测试用例，不需要解释，只需要返回代码结果`);
+          // const result = {
+          //   data: `ashdlakjshdlakjhsldkajshdlkajsh\nashdlakjshdlakjhsldkajshdlkajsh\nashdlakjshdlakjhsldkajshdlkajsh\nashdlakjshdlakjhsldkajshdlkajsh\n`,
+          //   errorCode: 0
+          // }
+
+          // 说明接口有异常
+          if (result.errorCode !== 0) {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR)
+          } else {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.DONE)
+          }
+
+          
+          let answer = result && result.data;
+          
+          // 提取代码内容
+          const regex = /```[Jj][Aa][Vv][Aa]\s*([\s\S]+?)\s*```/;
+          const regExec = regex.exec(answer);
+          answer = regExec && regExec[1] || answer;
+
+          console.log('生成测试用例 answer:>>> ', result);
+
+          if (answer) {
+
+            // 要新建的测试用例文件
+            const testUri = model.uri.with({
+              path: model.uri.path.replace('.java', '.test.java'),
+            })
+
+            console.log(testUri)
+            aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!, answer, testUri]);
+            aiCodeWidget.create();
+            aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
+
+            // 调整 aiContentWidget 位置
+            aiContentWidget?.setOptions({
+              position: {
+                lineNumber: endLineNumber + 1,
+                column: selection.startColumn
+              }
+            })
+            aiContentWidget?.layoutContentWidget();
+
+            aiInlineChatDisposed.addDispose(this.aiInlineChatService.onAccept(async value => {
+
+              // 采纳后在同级目录下新建测试文件
+              if (testUri) {
+                await this.fileTreeAPI.createFile(URI.parse(testUri.path), answer);
+              }
+
+              setTimeout(() => {
+                disposeAllWidget()
+              }, 110)
+            }))
+
+            aiInlineChatDisposed.addDispose(this.aiInlineChatService.onDiscard(value => {
+              setTimeout(() => {
+                disposeAllWidget()
+              }, 110)
+            }))
+          }
+
           return;
         }
 

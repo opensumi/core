@@ -39,6 +39,27 @@ export class AiChatService {
     let type: AISerivceType | undefined;
     let message: string | undefined;
 
+    if (input === '解释代码') { 
+      const currentEditor = this.editorService.currentEditor;
+      if (!currentEditor) {
+        return;
+      }
+  
+      const selection = currentEditor.monacoEditor.getSelection();
+      if (!selection) {
+        return;
+      }
+  
+      // 获取指定范围内的文本内容
+      const content = currentEditor.monacoEditor.getModel()?.getValueInRange(selection);
+  
+      const messageWithPrompt = `解释以下这段代码。\n \`\`\`${content}\`\`\``;
+
+      input = messageWithPrompt;
+    }
+
+    return { type: AISerivceType.GPT, message: input };
+
     // 单独处理 解释代码
     if (input === '解释代码') {
       return { type: AISerivceType.GPT, message: input };
@@ -172,23 +193,9 @@ export class AiChatService {
   }
 
   public async messageWithGPT(input: string) {
-    const currentEditor = this.editorService.currentEditor;
-    if (!currentEditor) {
-      return;
-    }
-
-    const selection = currentEditor.monacoEditor.getSelection();
-    if (!selection) {
-      return;
-    }
-
-    // 获取指定范围内的文本内容
-    const content = currentEditor.monacoEditor.getModel()?.getValueInRange(selection);
-
-    const messageWithPrompt = `解释以下这段代码。\n \`\`\`${content}\`\`\``;
-    const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
-    return res.data;
+    const res = await this.aiBackService.aiGPTcompletionRequest(input);
     console.log('messageWithGPT: >>>> ', res);
+    return res.data;
   }
 
   public async removeOldExtension() {

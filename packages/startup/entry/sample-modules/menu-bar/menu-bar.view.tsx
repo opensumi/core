@@ -8,6 +8,8 @@ import { CommandService } from '@opensumi/ide-core-common';
 import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
+import { TOGGLE_RIGHT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
+import { Avatar } from 'react-chat-elements';
 
 /**
  * Custom menu bar component.
@@ -24,6 +26,10 @@ export const MenuBarView = () => {
   const handleRun = () => {
     // commandService.executeCommand('ai.runAndDebug');
   };
+
+  const handleRightPanel = () => {
+    commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id);
+  }
 
   // quick-open-overlay
   return (
@@ -53,6 +59,15 @@ export const MenuBarView = () => {
               placeholder='请搜索并选择指令'
               onFocus={handleSelectFocus}
             ></Input>
+          </div>
+          <div className={styles.ai_switch}>
+            {/* <Icon className={getIcon('search')} onClick={handleRightPanel}/> */}
+            <div style={{
+                cursor: 'pointer',
+              }}
+              onClick={handleRightPanel}>
+              <Avatar src={'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*6Y9PQp_rk7QAAAAAAAAAAAAADhl8AQ/original'}  />
+            </div>
           </div>
         </div>
       </div>

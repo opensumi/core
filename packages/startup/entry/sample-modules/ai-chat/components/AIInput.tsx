@@ -36,11 +36,14 @@ export const AiInput = ({ onValueChange }) => {
 
   const handleChange = (newValue: string) => {
     console.log('select handleChange:>>> ', newValue);
-    if (onValueChange) {
-      onValueChange(newValue);
-    }
     setValue(newValue);
   };
+
+  const emitterValueChange = useCallback(() => {
+    if (onValueChange) {
+      onValueChange(value)
+    }
+  }, [value]);
 
   return (
     <Input
@@ -49,7 +52,7 @@ export const AiInput = ({ onValueChange }) => {
       value={value}
       onValueChange={handleChange}
       addonAfter={
-        <Icon className={getIcon('right')} />
+        <Icon className={getIcon('right')} onClick={() => emitterValueChange()} />
       }
     />
   );
