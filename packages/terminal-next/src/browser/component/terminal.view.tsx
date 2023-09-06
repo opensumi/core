@@ -28,7 +28,7 @@ export default observer(() => {
   const { errors } = errorService;
   const { groups, currentGroupIndex, currentGroupId } = view;
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     const dispose = searchService.onOpen(() => {

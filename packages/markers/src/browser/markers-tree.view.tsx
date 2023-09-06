@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState, useCallback, RefObject, createRef } from 'react';
+import React, { FC, useEffect, useState, useCallback, useRef } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components';
 import { ViewState, useInjectable, Disposable } from '@opensumi/ide-core-browser';
@@ -101,7 +101,7 @@ const Empty: FC = () => {
  */
 export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => {
   const markerModelService = useInjectable<MarkerModelService>(MarkerModelService);
-  const wrapperRef: RefObject<HTMLDivElement> = createRef();
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const handleOuterClick = useCallback(() => {
     // 空白区域点击，取消焦点状态

@@ -23,7 +23,7 @@ export default observer((props: IResizeViewProps) => {
   const { group, shadow } = props;
   const [event, setEvent] = React.useState(false);
   const [wholeWidth, setWholeWidth] = React.useState(Infinity);
-  const whole = React.createRef<HTMLDivElement>();
+  const whole = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (whole.current && whole.current.clientHeight !== wholeWidth) {

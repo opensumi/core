@@ -1,15 +1,5 @@
 import cls from 'classnames';
-import React, {
-  memo,
-  useCallback,
-  PropsWithChildren,
-  createRef,
-  useState,
-  useMemo,
-  useEffect,
-  FormEvent,
-  useRef,
-} from 'react';
+import React, { memo, useCallback, PropsWithChildren, useState, useMemo, useEffect, FormEvent, useRef } from 'react';
 
 import { ValidateMessage } from '@opensumi/ide-components';
 import { DisposableCollection, Key, ViewState } from '@opensumi/ide-core-browser';
@@ -42,8 +32,8 @@ export interface ISearchContentResult {
 }
 
 export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
-  const searchOptionRef = createRef<HTMLDivElement>();
-  const wrapperRef = createRef<HTMLDivElement>();
+  const searchOptionRef = useRef<HTMLDivElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const searchTreeService = useInjectable<SearchTreeService>(ISearchTreeService);
   const searchBrowserService = useInjectable<IContentSearchClientService>(IContentSearchClientService);
   const [offsetTop, setOffsetTop] = useState<number>(0);

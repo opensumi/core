@@ -34,7 +34,7 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
 
   const { height } = viewState;
 
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [model, setModel] = React.useState<TreeModel>();
 
   const debugWatchModelService = useInjectable<DebugWatchModelService>(DebugWatchModelService);
