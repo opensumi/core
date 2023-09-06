@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { useEffect, createRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Select, Option } from '@opensumi/ide-components';
 import { useInjectable, ViewState, AppConfig } from '@opensumi/ide-core-browser';
@@ -13,7 +13,7 @@ import { OutputService } from './output.service';
 
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
-  const outputRef = createRef<HTMLDivElement>();
+  const outputRef = useRef<HTMLDivElement | null>(null);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   useEffect(() => {

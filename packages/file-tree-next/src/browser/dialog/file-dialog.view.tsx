@@ -30,7 +30,7 @@ export const FILE_TREE_DIALOG_HEIGHT = 22;
 
 export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChildren<IFileDialogProps>) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [fileName, setFileName] = React.useState<string>('');
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [selectPath, setSelectPath] = React.useState<string>('');

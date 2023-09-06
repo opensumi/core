@@ -1,14 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import React, {
-  createRef,
   memo,
   MouseEvent,
   DragEvent,
   PropsWithChildren,
-  RefObject,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -52,7 +51,7 @@ export const ExtensionTabBarTreeView = observer(
 
     const { height } = viewState;
     const { canSelectMany } = model.treeViewOptions || {};
-    const wrapperRef: RefObject<HTMLDivElement> = createRef();
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
 
     const handleTreeReady = useCallback(
       (handle: IRecycleTreeHandle) => {
