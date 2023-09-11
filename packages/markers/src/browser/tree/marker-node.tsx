@@ -8,13 +8,16 @@ import {
   ClasslistComposite,
   TreeNodeType,
   Badge,
+  Icon,
 } from '@opensumi/ide-components';
-import { URI, getIcon, IMatch } from '@opensumi/ide-core-browser';
+import { URI, getIcon, IMatch, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
 import { MarkerGroupNode, MarkerNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
+import { getExternalIcon } from '@opensumi/ide-core-browser';
+import { AiChatService } from '../../../../startup/entry/sample-modules/ai-chat/ai-chat.service';
 
 export interface IMarkerNodeProps {
   item: any;
@@ -31,7 +34,7 @@ export type IMarkerNodeRenderedProps = IMarkerNodeProps & INodeRendererProps;
  * @param model model of renderable marker
  */
 const MarkerItemTitleDescription: FC<{ model: IRenderableMarkerModel }> = memo(({ model }) => (
-  <div className={styles.title_description}>{model.longname}</div>
+  <div className={styles.title_description} title={model.longname}>{model.longname}</div>
 ));
 
 /**
@@ -134,6 +137,9 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   decorations,
   onClick,
 }: IMarkerNodeRenderedProps) => {
+
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
+
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       ev.stopPropagation();
@@ -148,6 +154,10 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
     defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!MarkerGroupNode.is(item) ? 16 : 0)
   }px`;
 
+  const handleAiIcon = useCallback((node: MarkerNode) => {
+    aiChatService.launchChatMessage(`/explain ${node.marker.message}`)
+  }, [aiChatService])
+
   const renderedNodeStyle = {
     lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
     paddingLeft,
@@ -155,14 +165,19 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
 
   const renderIcon = useCallback(
     (node: MarkerGroupNode | MarkerNode) => (
-      <div
-        className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
-        style={{
-          height: MARKER_TREE_NODE_HEIGHT,
-          lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
-          ...(!MarkerGroupNode.is(node) && node.iconStyle),
-        }}
-      ></div>
+      <div className={cls(!(MarkerGroupNode.is(node)) && styles.icon_container)}>
+        {
+          !MarkerGroupNode.is(node) && <Icon onClick={() => handleAiIcon(node)} className={cls(getExternalIcon('lightbulb'), styles.ai_icon)}/>
+        }
+        <div
+          className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
+          style={{
+            height: MARKER_TREE_NODE_HEIGHT,
+            lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
+            ...(!MarkerGroupNode.is(node) && node.iconStyle),
+          }}
+        ></div>
+      </div>
     ),
     [],
   );

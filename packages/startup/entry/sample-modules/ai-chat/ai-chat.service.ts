@@ -9,6 +9,7 @@ import { AISerivceType, AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/c
 const aiSearchKey = '/search ';
 const aiSearchCodeKey = '/searchcode ';
 const aiSumiKey = '/sumi';
+const aiExplainKey = '/explain';
 
 @Injectable()
 export class AiChatService {
@@ -39,23 +40,44 @@ export class AiChatService {
     let type: AISerivceType | undefined;
     let message: string | undefined;
 
+    const currentEditor = this.editorService.currentEditor;
+    if (!currentEditor) {
+      return;
+    }
+
+    
+    const currentUri = currentEditor.currentUri;
+    if (!currentUri) {
+      return;
+    }
+
+    
     if (input === '解释代码') { 
-      const currentEditor = this.editorService.currentEditor;
-      if (!currentEditor) {
-        return;
-      }
-  
+      // 获取指定范围内的文本内容
       const selection = currentEditor.monacoEditor.getSelection();
       if (!selection) {
         return;
       }
-  
-      // 获取指定范围内的文本内容
-      const content = currentEditor.monacoEditor.getModel()?.getValueInRange(selection);
-  
-      const messageWithPrompt = `解释以下这段代码。\n \`\`\`${content}\`\`\``;
+      const selectionContent = currentEditor.monacoEditor.getModel()?.getValueInRange(selection);
+      const messageWithPrompt = `解释以下这段代码。\n \`\`\`${selectionContent}\`\`\``;
 
-      input = messageWithPrompt;
+      return { type: AISerivceType.GPT, message: messageWithPrompt };
+    }
+
+    if (input.startsWith(aiSumiKey)) {
+      type = AISerivceType.Sumi;
+      message = input.split(aiSumiKey)[1];
+
+      return { type: AISerivceType.Sumi, message: message };
+    }
+
+    if (input.startsWith(aiExplainKey)) { 
+      message = input.split(aiExplainKey)[1];
+      const displayName = currentUri.displayName;
+      const content = currentEditor.monacoEditor.getValue();
+      const messageWithPrompt = `我有一个 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`. 此时有个异常问题是 "${message}", 请给我解释这个异常问题并给出修复建议`;
+
+      return { type: AISerivceType.Explain, message: messageWithPrompt };
     }
 
     return { type: AISerivceType.GPT, message: input };
@@ -139,45 +161,83 @@ export class AiChatService {
     // ”
     // (You need to distinguish between whether it's a Command or a Config in your answers and provide the corresponding format. Simply provide content similar to the examples given without the need for explanations.)
     // My question is: ${input}`;
-    const messageWithPrompt = `
-    You are a professional vscode plugin developer, and I have some questions about plugin development to ask you. Please provide API and give example codes with javascript.
-    An example question is as follow: "修改字体大小为 20 像素"
-    And then, give me an answer such as: "
-      API: vscode.workspace.getConfiguration
-      Example:
-      \`\`\`
-          const config = vscode.workspace.getConfiguration('editor');
-          config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
-      \`\`\`
+    // const messageWithPrompt = `
+    // You are a professional vscode plugin developer, and I have some questions about plugin development to ask you. Please provide API and give example codes with javascript.
+    // An example question is as follow: "修改字体大小为 20 像素"
+    // And then, give me an answer such as: "
+    //   API: vscode.workspace.getConfiguration
+    //   Example:
+    //   \`\`\`
+    //       const config = vscode.workspace.getConfiguration('editor');
+    //       config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
+    //   \`\`\`
+    // "
+    // (Please just provide example code and API, do not give other words)
+    // My question is: ${input}`;
+
+    // const messageWithPrompt = `你是一位精通 vscode 的开发者，我会问你一些关于 vscode 的问题。
+    // 如果某个问题可以使用命令解决，请提供该命令，并给我解释。
+    // 示例问题如下：\"打开设置面板\"，
+    // 然后回答：\"
+    // 您可以用以下命令 xxxxx:
+    // 1. xxx
+    // 2. xxxx
+    // 3. xxxx
+    
+    // 命令：workbench.action.openSettings
+    // 例子：
+    // \`\`\`
+    // vscode.workspace.executeCommand('workbench.action.openSettings')
+    // \`\`\`
+    // ”
+    // （您需要提供相应的格式回答。同时需要解释我的问题需要哪些操作。）
+    // 我的问题是：${input}`
+
+    const messageWithPrompt = `You are a developer proficient in vscode, I will ask you some questions about vscode.
+    If a problem can be solved with a command, please provide that command and explain it to me.
+    A sample question would be: \"打开设置面板\",
+    Then answer: \"
+    You can use the following command xxxxx:
+    1. xxx
+    2. xxxx
+    3. xxxx
+    
+    Command: workbench.action.openGlobalKeybindings
+    Example:
+    \`\`\`
+    vscode.workspace.executeCommand('workbench.action.openGlobalKeybindings')
+    \`\`\`
     "
-    (Please just provide example code and API, do not give other words)
-    My question is: ${input}`;
+    (You need to distinguish between Command and Config in your answer and provide the appropriate format. Also explain what actions my question requires. 用中文回答我，其中 Command 和 Example 不用翻译)
+    My problem is: ${input}`
 
     const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
 
-    console.log('aiCodeGPTcompletionRequest: >>>> ', res);
+    console.log('aiCodeGPTcompletionRequest with sumi: >>>> ', res);
 
-    const exampleReg = /(Example:)?\n*```(javascript)?\n?(?<example>[\s\S]+)```/i;
-    const example = exampleReg.exec(res.data);
-    if (example) {
-      try {
-        await this.aiBackService.writeFile(example.groups?.example);
-        await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
-      } catch {
-        console.log('error');
-      }
-    }
-
-    // const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```\n?(?<example>[\s\S]+)\n```/i;
-    // const command = commandReg.exec(res.data);
-    // if (command) {
+    // const exampleReg = /(Example:)?\n*```(javascript)?\n?(?<example>[\s\S]+)```/i;
+    // const example = exampleReg.exec(res.data);
+    // if (example) {
     //   try {
-    //     await this.commandService.executeCommand(command.groups?.command!);
-    //   } catch {
-    //     await this.aiBackService.writeFile(command.groups?.example);
+    //     await this.aiBackService.writeFile(example.groups?.example);
     //     await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
+    //   } catch {
+    //     console.log('error');
     //   }
     // }
+
+    return res.data;
+
+    const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```\n?(?<example>[\s\S]+)\n```/i;
+    const command = commandReg.exec(res.data);
+    if (command) {
+      try {
+        await this.commandService.executeCommand(command.groups?.command!);
+      } catch {
+        // await this.aiBackService.writeFile(command.groups?.example);
+        // await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
+      }
+    }
 
     // const configReg = /ConfigCategory:\s*(?<category>\S+)\s*\n*ConfigKey:\s*(?<key>\S+)\s*\n*ConfigParams:\s*"?(?<params>[^"\n]+)"?\s*\n*Example:\s*\n*```(?<example>[^`]+)```/i;
     // const config = configReg.exec(res.data);
