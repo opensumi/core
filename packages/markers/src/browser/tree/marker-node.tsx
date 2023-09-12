@@ -167,7 +167,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
     (node: MarkerGroupNode | MarkerNode) => (
       <div className={cls(!(MarkerGroupNode.is(node)) && styles.icon_container)}>
         {
-          !MarkerGroupNode.is(node) && <Icon onClick={() => handleAiIcon(node)} className={cls(getExternalIcon('lightbulb'), styles.ai_icon)}/>
+          !MarkerGroupNode.is(node) && <Icon tooltip='AI 智能问题诊断' onClick={() => handleAiIcon(node)} className={cls(getExternalIcon('lightbulb'), styles.ai_icon)}/>
         }
         <div
           className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}

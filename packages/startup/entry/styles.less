@@ -158,3 +158,26 @@ blockquote {
 .ai_native_slot_main_right {
   
 }
+
+// ai chat code wrapper
+.ai-chat-code-wrapper {
+  span.code-inline {
+    display: inline;
+    color: #d7ba7d;
+
+    &::after {
+      content: none;
+    }
+  }
+
+  .code-block {
+    margin: 16px 0;
+    
+    .monaco-editor {
+      border-radius: 4px;
+      border: 1px solid #3c3c3c;
+      overflow: hidden;
+    }
+
+  }
+}

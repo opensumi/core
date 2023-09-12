@@ -9,7 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Icon, Input } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import 'react-chat-elements/dist/main.css';
 import { CommandService } from '@opensumi/ide-core-common';
@@ -17,9 +17,7 @@ import { AiGPTBackSerivcePath, AISerivceType } from '@opensumi/ide-startup/lib/c
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
-import { ChatEditor } from './components/ChatEditor';
-
-// import { Markdown } from '@opensumi/ide-markdown';
+import { CodeBlockWrapper } from './components/ChatEditor';
 
 const AI_AVATAR =
   'https://done.alibaba-inc.com/preview/proxy/2023/08/16/4866db7a5f59bba4/preview/assets/BB6B2997-584C-4537-ACE5-27E0D671ECD2/84F80576-6A6E-44BA-8892-03DBDDE3798D.svg';
@@ -503,7 +501,7 @@ setTimeout(() => {
           aiMessage = createMessageByAI(aiMessage);
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          aiMessage = createMessageByAI(aiMessage);
+          aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
         }
 
         if (aiMessage) {
@@ -714,7 +712,7 @@ const AIChatGPTReply = async (input, aiGPTBackService) => {
 
     const aiMessage = createMessageByAI(
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <ChatEditor input={input}/>
+        <CodeBlockWrapper text={input}/>
       </div>,
     );
 

@@ -61,11 +61,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    // @ts-ignore
-    window.aiGPTcompletionRequest = this.aiGPTBackService.aiGPTcompletionRequest;
-    // @ts-ignore
-    window.aiParsingLanguageService = this.aiGPTBackService.aiParsingLanguageService;
-
     let aiZoneWidget: AiZoneWidget | undefined;
     let aiDiffWidget: AiDiffWidget | undefined;
     let aiCodeWidget: AiCodeWidget | undefined;
@@ -112,6 +107,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       100,
     )((e) => {
       disposeAllWidget();
+
+      if (currentUri && currentUri.codeUri.scheme !== 'file') {
+        return;
+      }
 
       if (!this.menuse) {
         this.menuse = this.abstractMenuService.createMenu('ai/iconMenubar/context');
@@ -398,7 +397,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       if (hasKeyPosition.length > 0) {
 
-        inlayHintDispose = monaco.languages.registerInlayHintsProvider(model.getLanguageId(), {
+        // inlayHintDispose = monaco.languages.registerInlayHintsProvider(model.getLanguageId(), {
+        inlayHintDispose = monaco.languages.registerInlayHintsProvider({
+          language: model.getLanguageId(),
+          scheme: 'file'
+        }, {
           provideInlayHints(model, range, token) {
             return {
               hints: hasKeyPosition.map(position => {
