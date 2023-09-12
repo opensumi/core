@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, CancellationTokenSource, DefaultReporter, Schemes } from '@opensumi/ide-core-common';
+import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
@@ -180,11 +180,8 @@ export function createAPIFactory(
     TextEditorCursorStyle,
     TextEditorSelectionChangeKind,
     // VS Code 纯前端插件 API
-    env: {
-      // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
-      uriScheme: Schemes.file,
-      ...createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
-    },
+    // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
+    env: createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     extensions: createExtensionsApiFactory(extensionService),
     workspace: createWorkspaceApiFactory(
@@ -203,7 +200,7 @@ export function createAPIFactory(
       createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
         return extHostSCM.createSourceControl(extension, id, label, rootUri);
       },
-      cgetSourceControl(extensionId: string, id: string) {
+      getSourceControl(extensionId: string, id: string) {
         return extHostSCM.getSourceControl(extensionId, id);
       },
     },
