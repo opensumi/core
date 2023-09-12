@@ -25,7 +25,7 @@ import {
   ResizeHandleVertical,
 } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import { IResource, WorkbenchEditorService } from '../common';
 
@@ -45,6 +45,7 @@ import {
   IEditorComponent,
   CodeEditorDidVisibleEvent,
   EditorOpenType,
+  ResoucesOfActiveComponentChangedEvent,
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -489,19 +490,22 @@ export const ComponentsWrapper = ({
   component: IEditorComponent;
   resources: IResource[];
   current: MaybeNull<IResource>;
-}) => (
-  <div className={styles.kt_editor_component_wrapper}>
-    {resources.map((resource) => (
-      <ComponentWrapper
-        {...other}
-        key={resource.toString()}
-        component={component}
-        resource={resource}
-        hidden={!(current && current.uri.toString() === resource.uri.toString())}
-      />
-    ))}
-  </div>
-);
+}) => {
+  useUpdateOnEventBusEvent(ResoucesOfActiveComponentChangedEvent, [component], (t) => t.component === component);
+  return (
+    <div className={styles.kt_editor_component_wrapper}>
+      {resources.map((resource) => (
+        <ComponentWrapper
+          {...other}
+          key={resource.uri.toString()}
+          component={component}
+          resource={resource}
+          hidden={!(current && current.uri.toString() === resource.uri.toString())}
+        />
+      ))}
+    </div>
+  );
+};
 
 export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
   const componentService: EditorComponentRegistryImpl = useInjectable(EditorComponentRegistry);
