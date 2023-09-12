@@ -39,7 +39,13 @@ export function DefaultLayout() {
             isTabbar={true}
           />
         </SplitPanel>
-        <SplitPanel
+        <SlotRenderer
+            slot='right'
+            isTabbar={false}
+            defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 320}
+            minResize={280}
+          />
+        {/* <SplitPanel
           id='main-vertical'
           minResize={400}
           direction='left-to-right'
@@ -57,7 +63,7 @@ export function DefaultLayout() {
             defaultSize={layout['ai-chat']?.currentId ? layout['ai-chat']?.size || 360 : 360}
             minResize={280}
           />
-        </SplitPanel>
+        </SplitPanel> */}
       </SplitPanel>
       <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>

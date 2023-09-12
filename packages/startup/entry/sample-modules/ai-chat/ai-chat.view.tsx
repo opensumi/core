@@ -96,7 +96,7 @@ export const AiChatView = () => {
 
   const InitMsgComponent = () => {
     const lists = [
-      { icon: getIcon('plus'), text: '生成 Java 快排算法' },
+      // { icon: getIcon('plus'), text: '生成 Java 快排算法' },
       // { icon: getIcon('branches'), text: '提交代码' },
       // { icon: getIcon('open-changes'), text: '创建合并请求' },
       // { icon: getIcon('scm'), text: '触发流水线' },
@@ -114,7 +114,7 @@ export const AiChatView = () => {
       <div>
         <span style={{ display: 'block' }}>嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！</span>
         <br />
-        <span style={{ display: 'block' }}>您可以提问我一些关于代码的问题，例如：</span>
+        <span style={{ display: 'block' }}>您可以提问我一些关于代码的问题</span>
         <br />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {lists.map((data) => (
@@ -495,9 +495,14 @@ setTimeout(() => {
           aiMessage = await AISearch(userInput, aiGPTBackService);
         } else if (userInput!.type === AISerivceType.Sumi) {
           aiMessage = await aiChatService.messageWithSumi(userInput!.message!);
+
+          aiMessage = await AIWithCommandReply(aiMessage);
         } else if (userInput!.type === AISerivceType.GPT) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
           // aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
+          aiMessage = createMessageByAI(aiMessage);
+        } else if (userInput!.type === AISerivceType.Explain) {
+          aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
           aiMessage = createMessageByAI(aiMessage);
         }
 
@@ -716,5 +721,29 @@ const AIChatGPTReply = async (input, aiGPTBackService) => {
     return aiMessage;
   } catch (error) {
     console.log('/chat gpt reply: error >>>>>', error);
+  }
+};
+
+// 带有命令按钮的 AI 回复
+const AIWithCommandReply = async (input) => {
+  try {
+    console.log('ai command reply: >>>> ', input);
+
+    const commandReg = /[Command命令command][:：]\s*(?<command>\S+)\s*/i;
+    const command = commandReg.exec(input);
+    if (!command) {
+      return createMessageByAI(input);
+    }
+
+    const aiMessage = createMessageByAI(
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div style={{ whiteSpace: 'pre-wrap' }}>{input}</div>
+        <Button>打开命令面板</Button>
+      </div>,
+    );
+
+    return aiMessage;
+  } catch (error) {
+    console.log('/ai command reply: error >>>>>', error);
   }
 };

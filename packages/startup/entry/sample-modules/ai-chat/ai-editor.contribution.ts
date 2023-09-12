@@ -263,7 +263,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         if (value) {
           this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING)
-          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`帮我${value}, 要求只回答代码内容，并保留代码的缩进。要求去掉 markdown 格式，不需要给我解释。代码内容是: \n` + text);
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`${value}, 要求只回答代码内容，并保留代码的缩进。不需要给我解释。代码内容是: \n` + text);
 
           // 说明接口有异常
           if (result.errorCode !== 0) {

@@ -38,12 +38,12 @@ renderApp({
       },
     },
     ...{
-      // [SlotLocation.right]: {
-      //   modules: [AiChatContribution.AiChatContainer],
-      // },
-      ['ai-chat']: {
+      [SlotLocation.right]: {
         modules: [AiChatContribution.AiChatContainer],
       },
+      // ['ai-chat']: {
+      //   modules: [AiChatContribution.AiChatContainer],
+      // },
     },
   },
   useCdnIcon: true,
