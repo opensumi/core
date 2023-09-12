@@ -482,6 +482,10 @@ export class DebugModel implements IDebugModel {
         if (positions.length <= 1) {
           return;
         }
+        const maxLineCount = model.getLineCount();
+        if (lineNumber > maxLineCount) {
+          return;
+        }
         const firstColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
         const lastColumn = model.getLineLastNonWhitespaceColumn(lineNumber);
         positions.forEach((p) => {
@@ -538,7 +542,8 @@ export class DebugModel implements IDebugModel {
     const lineNumber = status && status.line ? status.line : breakpoint.raw.line;
     const column = breakpoint.raw.column || 0;
     const model = this.editor.getModel()!;
-    const renderInline = column > model.getLineFirstNonWhitespaceColumn(lineNumber);
+    const maxLine = model.getLineCount();
+    const renderInline = lineNumber > maxLine ? false : column > model.getLineFirstNonWhitespaceColumn(lineNumber);
     const range = new monaco.Range(lineNumber, column, lineNumber, column + 1);
     const { className, message } = this.decorator.getDecoration(
       breakpoint,
