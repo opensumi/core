@@ -17,7 +17,7 @@ import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 import { MarkerGroupNode, MarkerNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { AiChatService } from '../../../../startup/entry/sample-modules/ai-chat/ai-chat.service';
+import { AiChatService } from '@opensumi/ide-startup/src/browser/ai-chat/ai-chat.service';
 
 export interface IMarkerNodeProps {
   item: any;

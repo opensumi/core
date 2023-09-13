@@ -35,7 +35,6 @@ export const AiInput = ({ onValueChange }) => {
   };
 
   const handleChange = (newValue: string) => {
-    console.log('select handleChange:>>> ', newValue);
     setValue(newValue);
   };
 

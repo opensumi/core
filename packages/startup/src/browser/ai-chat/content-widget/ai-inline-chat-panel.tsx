@@ -135,7 +135,6 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         <div className={'ai-shortcuts'}>
           <AIImprove
             onClick={(title) => {
-              console.log('title:>>>>', title);
               props.selectChangeFire.fire(title);
               setCurrentCheckText(title);
             }}

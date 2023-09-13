@@ -3,8 +3,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
-import { AISerivceType, AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+import { AISerivceType, AiGPTBackSerivcePath } from '../../common';
 
 const aiSearchKey = '/search ';
 const aiSearchCodeKey = '/searchcode ';
@@ -25,9 +24,6 @@ export class AiChatService {
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
-
-  @Autowired()
-  protected extensionManagementService: ExtensionManagementService;
 
   private readonly _onChatMessageLaunch = new Emitter<string | React.ReactNode>();
   public readonly onChatMessageLaunch: Event<string | React.ReactNode> = this._onChatMessageLaunch.event;
@@ -211,55 +207,16 @@ export class AiChatService {
     (You need to distinguish between Command and Config in your answer and provide the appropriate format. Also explain what actions my question requires. 用中文回答我，其中 Command 和 Example 不用翻译)
     My problem is: ${input}`
 
-    const res = await this.aiBackService.aiGPTcompletionRequest(promptWithMessage);
+    const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
 
     console.log('aiCodeGPTcompletionRequest with sumi: >>>> ', res);
-
-    // const exampleReg = /(Example:)?\n*```(javascript)?\n?(?<example>[\s\S]+)```/i;
-    // const example = exampleReg.exec(res.data);
-    // if (example) {
-    //   try {
-    //     await this.aiBackService.writeFile(example.groups?.example);
-    //     await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
-    //   } catch {
-    //     console.log('error');
-    //   }
-    // }
-
     return res.data;
-
-    const commandReg = /Command:\s*(?<command>\S+)\s*\n*Example:\s*```\n?(?<example>[\s\S]+)\n```/i;
-    const command = commandReg.exec(res.data);
-    if (command) {
-      try {
-        await this.commandService.executeCommand(command.groups?.command!);
-      } catch {
-        // await this.aiBackService.writeFile(command.groups?.example);
-        // await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
-      }
-    }
-
-    // const configReg = /ConfigCategory:\s*(?<category>\S+)\s*\n*ConfigKey:\s*(?<key>\S+)\s*\n*ConfigParams:\s*"?(?<params>[^"\n]+)"?\s*\n*Example:\s*\n*```(?<example>[^`]+)```/i;
-    // const config = configReg.exec(res.data);
-    // if (config) {
-    //   const { category, key, params, example } = config.groups || {};
-      this.preferenceService.set(`${category}.${key}`, params);
-    //   await this.aiBackService.writeFile(example);
-    //   await this.extensionManagementService.postChangedExtension(false, await this.aiBackService.getExtensionPath());
-    // }
-    // setTimeout(() => {
-    //   this.removeOldExtension();
-    // }, 10000);
   }
 
   public async messageWithGPT(input: string) {
     const res = await this.aiBackService.aiGPTcompletionRequest(input);
     console.log('messageWithGPT: >>>> ', res);
     return res.data;
-  }
-
-  public async removeOldExtension() {
-    await this.extensionManagementService.postUninstallExtension(await this.aiBackService.getExtensionPath());
   }
 
   public async switchProjectLanguage(input: string) {
@@ -354,7 +311,7 @@ export class AiChatService {
     }
   }
 
-  codeStructure: string;
+  codeStructure: RegExpExecArray | null;
 
   public async generateProjectStructure(language: string, framework: string, requirements: string) {
     const prompt = `

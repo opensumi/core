@@ -72,7 +72,6 @@ export const HIDE_RIGHT_PANEL_COMMAND: Command = {
 export const SHOW_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.show',
   label: '%main-layout.right-panel.show%',
-  delegate: 'ai.chat.explain.code'
 };
 export const TOGGLE_RIGHT_PANEL_COMMAND: MenuCommandDesc = {
   id: 'main-layout.right-panel.toggle',

@@ -149,7 +149,7 @@ export class AiCodeWidget extends ZoneWidget {
     );
   }
 
-  constructor(editor: ICodeEditor, answerValue: string, headUri: URI) {
+  constructor(editor: ICodeEditor, answerValue: string, headUri: string) {
     // @ts-ignore
     super(editor, {
       showArrow: false,

@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
-import { AISerivceType, AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+import { AISerivceType, AiGPTBackSerivcePath } from '../../../common/index';
 
 export const enum EChatStatus {
   READY,

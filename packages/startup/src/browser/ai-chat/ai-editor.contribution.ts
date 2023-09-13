@@ -6,7 +6,7 @@ import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { Position } from '@opensumi/ide-monaco';
-import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+import { AiGPTBackSerivcePath } from '../../common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
