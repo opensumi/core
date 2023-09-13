@@ -4,23 +4,22 @@ import hljs from 'highlight.js';
 import * as React from 'react';
 // @ts-ignore
 import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
-// @ts-ignore
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+
 import 'react-chat-elements/dist/main.css';
-import { CommandService } from '@opensumi/ide-core-common';
 import { AiGPTBackSerivcePath, AISerivceType } from '../../common/index';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
+import { ChatInput } from './components/ChatInput';
+import { Thinking } from './components/Thinking';
 
-const AI_AVATAR =
-  'https://done.alibaba-inc.com/preview/proxy/2023/08/16/4866db7a5f59bba4/preview/assets/BB6B2997-584C-4537-ACE5-27E0D671ECD2/84F80576-6A6E-44BA-8892-03DBDDE3798D.svg';
+const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
 
 const createMessage = (position: string, title: string, text: string | React.ReactNode) => ({
   position,
@@ -30,14 +29,9 @@ const createMessage = (position: string, title: string, text: string | React.Rea
   className: position === 'left' ? 'rce-ai-msg' : 'rce-user-msg',
 });
 
-const createMessageByAI = (text: string | React.ReactNode) => ({
-    ...createMessage('left', '', text),
-    avatar: AI_AVATAR,
-  });
+const createMessageByAI = (text: string | React.ReactNode) => createMessage('left', '', text);
 
-// const createMessageByMe = (text: string | React.ReactNode) => createMessage('right', ME_NAME, text);
-
-const AI_NAME = 'AI 助手';
+const AI_NAME = 'AI 研发助手';
 const ME_NAME = '';
 
 const sleep = (ms: number) =>
@@ -48,18 +42,14 @@ const sleep = (ms: number) =>
   });
 
 export const AiChatView = () => {
-  const commandService = useInjectable<CommandService>(CommandService);
-  const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const [inputValue, setInputValue] = React.useState('');
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   const [, updateState] = React.useState<any>();
-  // const forceUpdate = React.useCallback(() => updateState({}), []);
 
   const query = window.location.search?.slice(1).split('&');
   let generateQuery;
@@ -78,14 +68,20 @@ export const AiChatView = () => {
 
       const filePathList = await aiChatService.generateProjectStructure(language, framework[0], requirements);
       console.log('gen file list: ', filePathList);
-      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />));
+      messageList.splice(
+        -1,
+        0,
+        createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
+      );
       setMessageListData([...messageList]);
 
-      await Promise.all(filePathList.map(async (file) => {
-        await aiChatService.generateFileContent(file, requirements);
-        messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
-        setMessageListData([...messageList]);
-      }));
+      await Promise.all(
+        filePathList.map(async (file) => {
+          await aiChatService.generateFileContent(file, requirements);
+          messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
+          setMessageListData([...messageList]);
+        }),
+      );
 
       messageList.pop();
       setMessageListData([...messageList]);
@@ -148,29 +144,19 @@ export const AiChatView = () => {
       await handleSend(message);
     });
     // aiChatService.removeOldExtension();
-    return () => dispose.dispose();;
+    return () => dispose.dispose();
   }, []);
-
-  const handleInputChange = React.useCallback((value) => {
-    setInputValue(value);
-  }, []);
-
-  const switchTask = React.useMemo(
-    () => [],
-    [],
-  );
 
   const handleSend = React.useCallback(
     async (value?: any) => {
       const preMessagelist = messageListData;
-      const preInputValue = value || inputValue;
+      const preInputValue = value;
 
       if (containerRef && containerRef.current) {
         containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
       }
 
       setLoading(true);
-      setInputValue('');
 
       preMessagelist.push(createMessage('right', ME_NAME, preInputValue));
       setMessageListData(preMessagelist);
@@ -188,7 +174,7 @@ export const AiChatView = () => {
         } else if (userInput!.type === AISerivceType.GPT) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
           // aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
-          aiMessage = createMessageByAI(aiMessage);
+          aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
           aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
@@ -207,47 +193,19 @@ export const AiChatView = () => {
 
         return;
       }
-
-      await sleep(1000);
-
-      setLoading(false);
-
-      for await (const { with: _with, exec } of switchTask) {
-        const v = typeof preInputValue === 'string' ? preInputValue : preInputValue.props.children[0];
-
-        if (v.includes(_with)) {
-          const msg = await exec(preInputValue);
-          preMessagelist.push(msg);
-          setMessageListData(preMessagelist);
-          updateState({});
-          if (containerRef && containerRef.current) {
-            containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-          }
-          return;
-        }
-      }
     },
-    [messageListData, inputValue, containerRef],
+    [messageListData, containerRef],
   );
-
-  React.useEffect(() => {
-    document.querySelectorAll('pre code').forEach((block) => {
-      // @ts-ignore
-      try {
-        // @ts-ignore
-        hljs.highlightBlock(block);
-      } catch (e) {
-        console.log(e);
-      }
-    });
-  }, []);
 
   return (
     <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view}>
       <div className={styles.header_container}>
         <div className={styles.left}>
-          <span className={styles.title}>AI 研发助手</span>
-          <span className={styles.line_vertical}> | </span>
+          <div className={styles.ai_avatar_icon}>
+            <Avatar src={AI_AVATAR} className={styles.ai_chat_avatar_icon} />
+          </div>
+          <span className={styles.title}>{AI_NAME}</span>
+          <span className={styles.line_vertical} />
           <span className={styles.des}>Chat</span>
         </div>
         <div className={styles.right}>
@@ -268,40 +226,17 @@ export const AiChatView = () => {
             />
             {loading && (
               <div className={styles.chat_loading_msg_box}>
-                <Avatar src={AI_AVATAR} className={styles.chat_loading_mgs_avatar} />
                 {/* @ts-ignore */}
                 <SystemMessage
                   title={AI_NAME}
                   className={styles.smsg}
                   // @ts-ignore
-                  text={
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span>Thinking...</span>
-                    </div>
-                  }
+                  text={<Thinking />}
                 ></SystemMessage>
               </div>
             )}
           </div>
-          {/* <div className={styles.quick_way}>
-            <span className={`${styles.quick_way_item} ${getExternalIcon('color-mode')}`} onClick={() => handleSend('/sumi 设置主题')}></span>
-            <span className={`${styles.quick_way_item} ${getIcon('info-circle')}`} onClick={() => handleSend('/sumi 提示用户 hello world')}></span>
-          </div> */}
-          <div className={styles.chat_input}>
-            <Input
-              placeholder={'可以问我任何问题，或键入主题 "/"'}
-              value={inputValue}
-              onValueChange={handleInputChange}
-              className={styles.input_wrapper}
-              onPressEnter={() => handleSend()}
-              addonAfter={
-                <div className={styles.send_chat_btn} onClick={() => handleSend()}>
-                  <Icon className={getIcon('right')} />
-                </div>
-              }
-            />
-            {/* <Button onClick={() => handleSend()}>Send</Button> */}
-          </div>
+          <ChatInput onSend={handleSend} />
         </div>
         <div className={styles.right_bar}>
           <ul className={styles.chat_list}>
@@ -375,17 +310,12 @@ const AISearch = async (input, aiGPTBackService) => {
 
     const aiMessage = createMessageByAI(
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {/* <div><Markdown content={responseText} options={{ headerIds: false }}></Markdown></div> */}
         <div>
           <Markdown value={responseText}></Markdown>
         </div>
-        {/* <SyntaxHighlighter>{responseText}</SyntaxHighlighter> */}
-        {/* <div>{urlMessage}</div> */}
-        {/* <div><Markdown content={urlMessage} options={{ headerIds: false, gfm: true }}></Markdown></div> */}
         <div style={{ whiteSpace: 'pre-wrap' }}>
           <Markdown value={urlMessage}></Markdown>
         </div>
-        {/* <SyntaxHighlighter>{urlMessage}</SyntaxHighlighter> */}
       </div>,
     );
 
@@ -402,7 +332,7 @@ const AIChatGPTReply = async (input, aiGPTBackService) => {
 
     const aiMessage = createMessageByAI(
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <CodeBlockWrapper text={input}/>
+        <CodeBlockWrapper text={input} />
       </div>,
     );
 
