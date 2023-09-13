@@ -1,13 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import hljs from 'highlight.js';
 import * as React from 'react';
 // @ts-ignore
 import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { PreferenceService, useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
+import { useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
+import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
 import 'react-chat-elements/dist/main.css';
@@ -15,6 +14,7 @@ import { AiGPTBackSerivcePath, AISerivceType } from '../../common/index';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
+import { AiProjectGenerateService } from './ai-project/generate.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { Thinking } from './components/Thinking';
@@ -43,6 +43,7 @@ const sleep = (ms: number) =>
 
 export const AiChatView = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -58,30 +59,23 @@ export const AiChatView = () => {
   }
 
   const generateProject = React.useCallback(async (messageList) => {
-    const res = await aiChatService.switchProjectLanguage(decodeURIComponent(generateQuery));
+    await aiProjectGenerateService.clearWorkspace();
+    const res = await aiProjectGenerateService.switchProjectLanguage(decodeURIComponent(generateQuery));
     console.log('gen res: ', res);
     if (res) {
-      const { language, framework, requirements } = res;
-      const languageReply = `项目语言为：${language}\n使用框架：${framework[0]}`;
+      const projectInfo = { framework: res.framework[0], language: res.language, requirements: res.requirements };
+      const languageReply = `项目语言为：${projectInfo.language}\n使用框架：${projectInfo.framework}`;
       messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));
       setMessageListData([...messageList]);
-
-      const filePathList = await aiChatService.generateProjectStructure(language, framework[0], requirements);
+      const filePathList = await aiProjectGenerateService.generateProjectStructure(projectInfo);
       console.log('gen file list: ', filePathList);
-      messageList.splice(
-        -1,
-        0,
-        createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
-      );
+      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />));
       setMessageListData([...messageList]);
 
-      await Promise.all(
-        filePathList.map(async (file) => {
-          await aiChatService.generateFileContent(file, requirements);
-          messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
+      await aiProjectGenerateService.generateFile(filePathList, projectInfo, (file: string) => {
+        messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
           setMessageListData([...messageList]);
-        }),
-      );
+      });
 
       messageList.pop();
       setMessageListData([...messageList]);

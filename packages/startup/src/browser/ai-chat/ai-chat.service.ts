@@ -3,6 +3,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+
 import { AISerivceType, AiGPTBackSerivcePath } from '../../common';
 
 const aiSearchKey = '/search ';
@@ -41,14 +42,12 @@ export class AiChatService {
       return;
     }
 
-    
     const currentUri = currentEditor.currentUri;
     if (!currentUri) {
       return;
     }
 
-    
-    if (input === '解释代码') { 
+    if (input === '解释代码') {
       // 获取指定范围内的文本内容
       const selection = currentEditor.monacoEditor.getSelection();
       if (!selection) {
@@ -64,10 +63,10 @@ export class AiChatService {
       type = AISerivceType.Sumi;
       message = input.split(aiSumiKey)[1];
 
-      return { type: AISerivceType.Sumi, message: message };
+      return { type: AISerivceType.Sumi, message };
     }
 
-    if (input.startsWith(aiExplainKey)) { 
+    if (input.startsWith(aiExplainKey)) {
       message = input.split(aiExplainKey)[1];
       const displayName = currentUri.displayName;
       const content = currentEditor.monacoEditor.getValue();
@@ -179,7 +178,7 @@ export class AiChatService {
     // 1. xxx
     // 2. xxxx
     // 3. xxxx
-    
+
     // 命令：workbench.action.openSettings
     // 例子：
     // \`\`\`
@@ -205,7 +204,7 @@ export class AiChatService {
     \`\`\`
     "
     (You need to distinguish between Command and Config in your answer and provide the appropriate format. Also explain what actions my question requires. 用中文回答我，其中 Command 和 Example 不用翻译)
-    My problem is: ${input}`
+    My problem is: ${input}`;
 
     const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
 
@@ -218,241 +217,4 @@ export class AiChatService {
     console.log('messageWithGPT: >>>> ', res);
     return res.data;
   }
-
-  public async switchProjectLanguage(input: string) {
-    const prompt = `
-    ### 介绍 ###
-    我会提供一份关于编程项目的描述，请基于项目描述提取出项目所使用的编程语言、适合的编程框架，以及分析一下项目的具体需求。
-    如果是支付宝小程序相关的需求，编程语言为 Javascript，编程框架使用: Minifish
-    如果是与前端有关的需求，编程框架请使用: Bigfish
-    下面是一个问答示例，请参照示例的格式，给出回答。
-
-    ### 示例 ###
-    示例提问：创建一个 java 项目，与营销相关
-    示例回答：
-    编程语言: JAVA
-    编程框架: Sofa Boot、Sofa4
-    项目需求：创建一个用于营销的项目
-
-    ### 需求 ###
-    我的问题: ${input}
-    `;
-    const res = await this.aiBackService.aiAntGlm(prompt);
-    console.log('gen request res: ', res);
-    const reg = /(编程语言)(:|：)?\s?(?<language>.*)\n*\s*(编程框架)(:|：)?\s?(?<framework>.*)\n*\s*(项目需求)(:|：)?\s?(?<requirements>.*)/i;
-    const match = reg.exec(res.data);
-
-    return match && ({
-      ...(match.groups || {}),
-      framework: match.groups?.framework.split('、'),
-    } as { language: string; framework: string[]; requirements: string });
-  }
-
-  private generateStructurePrompt(language: string, framework: string) {
-    if (/javascript/i.test(language)) {
-      // 前端
-      if (/minifish/i.test(framework)) {
-        // 小程序
-        return `
-        root
-        ├──mini.project.json
-        ├──app.js
-        ├──app.json
-        ├──README.md
-        ├──.gitignore
-        └──pages
-            ├──order
-            │   ├──index.js
-            │   ├──index.axml
-            │   ├──index.acss
-            │   └──index.json
-            └──detail
-                ├──index.js
-                ├──index.axml
-                ├──index.acss
-                └──index.json
-        `;
-      } else {
-        return `
-        root
-        ├──package.json
-        ├──app.tsx
-        ├──README.md
-        ├──.gitignore
-        ├──.eslintrc
-        ├──src
-        │  └──pages
-        │     └──order
-        │        ├──index.js
-        │        ├──index.axml
-        │        ├──index.acss
-        │        └──index.json
-        └──config
-           ├──config.ts
-           └──router.config.ts
-        `;
-      }
-    } else if (/java$/i.test(language)) {
-      // java
-      return `
-      src/main/java/com/example/order/controller/OrderApplication.java
-      src/main/java/com/example/order/model/OrderModel.java
-      src/main/java/com/example/order/repository/OrderRepository.java
-      src/main/java/com/example/order/service/OrderService.java
-      src/main/java/com/example/order/OrderApplication.java
-      src/main/resources/application.properties
-      src/main/resources/config/application.yaml
-      src/main/resources/data
-      src/test/java/com/example/order/OrderControllerTest.java
-      src/test/java/com/example/order/OrderApplicationTests.java
-      pom.xml
-      README.md
-      `;
-    }
-  }
-
-  codeStructure: RegExpExecArray | null;
-
-  public async generateProjectStructure(language: string, framework: string, requirements: string) {
-    const prompt = `
-    我会提供一份项目的需求，包含使用的编程语言、编程框架、以及项目的具体需求，请结合具体需求，给出代码目录结构。只给出关键的文件以及文件路径即可。
-
-    示例提问：使用 ${language} 的 ${framework} 框架，创建一个关于订单的项目
-    示例回答：\`\`\`${this.generateStructurePrompt(language, framework)}\`\`\`
-
-    (请参照示例回答，根据需求按照回答格式返回答案)
-    我的问题：${requirements}
-    `;
-    const structure = await this.aiBackService.aiGPTcompletionRequest(prompt);
-    console.log('gen structure res: ', structure);
-
-    const structureCode = /```\n?(?<code>[\s\S]*?)```/g.exec(structure.data);
-    this.codeStructure = structureCode;
-    console.log('gen structure code: ', structureCode);
-
-    let flag = false;
-    let filePathList: string[] = [];
-    if (structureCode) {
-      filePathList = this.parseFilePath(structureCode.groups?.code || '');
-      const filePathRegex = /^([a-zA-Z0-9\s_\-]+[\\/])*[a-zA-Z0-9\s_-]*(\.[a-zA-Z0-9]+)+$/;
-      if (filePathList.filter((f) => filePathRegex.test(f)).length === filePathList.length) {
-        flag = true;
-      }
-    }
-
-
-    return flag ? filePathList : await this.generateProjectStructure(language, framework, requirements);
-  }
-
-  private parseFilePath(input: string) {
-    const lines = input.split('\n');
-    const paths: string[] = [];
-    const stack: string[] = [];
-
-    let lastDepth = 0;
-    for (const line of lines) {
-      if (!/\w/.test(line)) {
-        continue;
-      }
-      const lineWithoutSpace = line.replace(/(├──|└──)\s/g, '$1');
-      const match = lineWithoutSpace.match(/(\s)/g);
-      const depth = match ? Math.round(match.length / 2) : 0;
-
-      // 获取文件或目录的名称
-      const name = lineWithoutSpace.replace(/(├──|└──|│\s+)/g, '').trim();
-
-      // 如果当前深度小于栈的深度，从栈中弹出元素
-      if (depth < lastDepth) {
-        stack.splice(depth - 1);
-      }
-      lastDepth = depth;
-
-      while (depth < stack.length) {
-        stack.pop();
-      }
-
-      if (lineWithoutSpace.indexOf('.') !== -1) {
-        const path = [...stack, name].join('/');
-        paths.push(path);
-      } else {
-        // 如果是目录，将其添加到栈中
-        stack.push(name);
-      }
-    }
-
-    return paths;
-  }
-
-  public async generateFileContent(filePath: string, requirements: string) {
-
-    const commonFile = ['mini.project.json', 'README.md', '.gitignore'];
-
-    let code;
-    if (commonFile.find((f) => f === filePath)) {
-       code = template[filePath];
-    } else {
-      const prompt = `
-      基于我提供的项目需求与文件路径，生成对应的代码。我的需求可能需要多个文件才能满足，我会提供完整的目录结构，但每次我只会提供一个文件路径。你需要分析我的需求，找到提供文件相匹配的需求，生成代码，
-      文件内容请符合 Markdown 语法。
-
-      文件目录是：${this.codeStructure}
-      
-      我的需求是：${requirements}
-      需要生成的代码文件是: ${filePath}
-      `;
-
-      let times = 0;
-      while (!code && times < 5) {
-        const content = await this.aiBackService.aiGPTcompletionRequest(prompt);
-        console.log('gen file content: ', content);
-        const codeMatch = /```\w*\n?(?<code>[\s\S]*?)```/g.exec(content.data);
-        code = codeMatch && codeMatch.groups?.code;
-        console.log('gen file code: ', code);
-        times++;
-      }
-
-    }
-    await this.aiBackService.generateFileByPath(filePath, code || '{}');
-  }
-
-  public async generateFile(filePath: string) {
-    await this.aiBackService.generateFileByPath(filePath, '');
-  }
 }
-
-const template = {
-  'mini.project.json': `
-{
-  "enableAppxNg": true
-}
-`,
-  'README.md': `
-一个简单的示例 Demo
-`,
-  '.gitignore': `
-logs
-node_modules
-npm-debug.log
-coverage/
-run
-dist
-dist.zip
-public
-.DS_Store
-.nyc_output
-.basement
-config.local.js
-.umi
-.umi-production
-.idea
-distTarget/
-
-config/config.js
-speed-measure.json
-.history
-.node
-
-*.less.d.ts
-yarn.lock
-`,
-};
