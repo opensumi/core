@@ -23,6 +23,34 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  background-color: #1b232b;
+  box-shadow: 0 -1px 12px 0 rgba(0, 0, 0, 0.12), 0 -1px 3px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 0 0 0 12px;
+
+  .block {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 4px;
+    width: fit-content;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    .name {
+      margin-left: 4px;
+    }
+  }
+
+  .header_operate {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .block {
+      margin-right: 8px;
+    }
+  }
 
   .instruction_options_container {
     position: absolute;
@@ -32,20 +60,6 @@
     box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
     border-radius: 8px;
     bottom: 61px;
-
-    .block {
-      background-color: rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
-      padding: 4px;
-      width: fit-content;
-      height: 24px;
-      display: flex;
-      align-items: center;
-
-      .name {
-        margin-left: 4px;
-      }
-    }
 
     .options {
       ul {
@@ -80,9 +94,16 @@
   }
 
   .input_wrapper {
-    height: 40px;
+    min-height: 40px;
+    max-height: 160px;
     border-radius: 8px;
     background-color: #ffffff14;
+    padding: 9px 12px;
+    font-size: 14px;
+
+    :global(.kt-input-addon) {
+      align-items: flex-end;
+    }
 
     textarea {
       resize: none;
@@ -92,11 +113,18 @@
       border-radius: 2px;
       background-color: rgba(95, 101, 107, 0.25);
       width: 24px;
-      height: 24px;
+      height: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+
+      &.active {
+        background-color: rgba(60, 141, 255, 1);
+        span {
+          color: #fff;
+        }
+      }
 
       span {
         color: rgba(95, 101, 107, 1);
