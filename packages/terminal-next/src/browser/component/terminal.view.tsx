@@ -1,3 +1,4 @@
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -105,7 +106,7 @@ export default observer(() => {
               onKeyDown={searchKeyDown}
             />
           </div>
-          <div className={getIcon('close')} onClick={() => searchService.close()}></div>
+          <div className={clx(styles.closeBtn, getIcon('close'))} onClick={() => searchService.close()}></div>
         </div>
       )}
       {groups.map((group, index) => {
