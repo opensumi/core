@@ -12,10 +12,6 @@
   background-size: cover;
 }
 
-.rce-container-mbox {
-  // overflow: hidden;
-}
-
 .rce-mbox-left-notch,
 .rce-mbox-right-notch {
   display: none;
@@ -23,17 +19,20 @@
 
 .rce-mbox {
   background-color: #ffffff0a;
-  max-width: 60%;
   border-radius: 2px 12px 12px 12px;
   box-shadow: none;
   padding: 8px 12px;
   min-width: initial;
-  margin-left: 16px;
-  margin-bottom: 16px;
+  margin: 0 16px 16px 16px;
 
   ::after {
     content: '';
   }
+}
+
+.rce-mbox-text {
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .rce-smsg {
@@ -156,29 +155,4 @@ blockquote {
 // ai native input
 .ai_native_input_container {
   height: 32px;
-}
-
-.ai_native_slot_main_right {
-}
-
-// ai chat code wrapper
-.ai-chat-code-wrapper {
-  span.code-inline {
-    display: inline;
-    color: #d7ba7d;
-
-    &::after {
-      content: none;
-    }
-  }
-
-  .code-block {
-    margin: 16px 0;
-
-    .monaco-editor {
-      border-radius: 4px;
-      border: 1px solid #3c3c3c;
-      overflow: hidden;
-    }
-  }
 }

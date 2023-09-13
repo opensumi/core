@@ -150,3 +150,62 @@
     }
   }
 }
+
+// chat 面板的代码展示部分
+.ai_chat_code_wrapper {
+  span.code_inline {
+    display: inline;
+    color: #d7ba7d;
+
+    &::after {
+      content: none;
+    }
+  }
+
+  .code_block {
+    margin: 16px 0;
+
+    .monaco_wrapper {
+      position: relative;
+
+      &:hover {
+        .action_toolbar {
+          display: flex;
+        }
+      }
+
+      .editor {
+        border-radius: 8px;
+        border: 1px solid #ffffff1a;
+        overflow: hidden;
+      }
+
+      .action_toolbar {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+        background-color: #151b21;
+        border-radius: 6px 6px 0 6px;
+        z-index: 100;
+        top: -15px;
+        height: 30px;
+        border: 1px solid #ffffff1a;
+        align-items: center;
+        overflow: hidden;
+
+        span {
+          width: 30px;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+          }
+        }
+      }
+    }
+  }
+}

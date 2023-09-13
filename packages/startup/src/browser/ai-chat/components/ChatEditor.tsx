@@ -1,9 +1,12 @@
 import React from 'react';
 
-import { Schemes, URI, useInjectable } from '@opensumi/ide-core-browser';
+import { Schemes, URI, getExternalIcon, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
+
+import * as styles from './components.module.less';
 
 const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
@@ -13,24 +16,24 @@ const ChatEditor = ({ input, language }) => {
   const createEditor = async (container: HTMLElement): Promise<ICodeEditor> => {
     const codeEditor: ICodeEditor = await editorCollectionService.createCodeEditor(container!, {
       ...getSimpleEditorOptions(),
-      lineHeight: 21,
-      scrollbar: {
-        horizontal: 'hidden',
-        vertical: 'hidden',
-        handleMouseWheel: false,
-      },
-      tabSize: 2,
-      contentLeft: 8,
-      contentWidth: 8,
-      acceptSuggestionOnEnter: 'on',
-      renderIndentGuides: false,
       readOnly: true,
-      wordWrap: 'on',
-      automaticLayout: true
+      lineNumbers: 'off',
+      selectOnLineNumbers: true,
+      scrollBeyondLastLine: false,
+      lineDecorationsWidth: 8,
+      dragAndDrop: false,
+      padding: { top: 8, bottom: 8 },
+      mouseWheelZoom: false,
+      scrollbar: {
+        alwaysConsumeMouseWheel: false,
+      },
+      wordWrap: 'off',
+      ariaLabel: 'Code block',
+      automaticLayout: true,
     });
 
     const docModel = await documentService.createModelReference(
-      new URI(`ai/chat/editor/`).withScheme(Schemes.walkThroughSnippet),
+      new URI(`ai/chat/editor/${uuid(12)}`).withScheme(Schemes.walkThroughSnippet),
     );
 
     const model = docModel.instance.getMonacoModel();
@@ -47,22 +50,30 @@ const ChatEditor = ({ input, language }) => {
         if (codeEditor) {
           codeEditor.monacoEditor.setValue(input);
           requestAnimationFrame(() => {
-            ref.current!.style.height = codeEditor.monacoEditor.getContentHeight() + 'px';
-          })
+            ref.current!.style.height = codeEditor.monacoEditor.getContentHeight() + 2 + 'px';
+          });
         }
       });
     }
   }, [ref.current]);
 
-  return <div ref={ref}></div>;
+  return (
+    <div className={styles.monaco_wrapper}>
+      <div className={styles.action_toolbar}>
+        <Icon className={getIcon('openfile')} />
+        <Icon className={getIcon('file-copy')} />
+      </div>
+      <div ref={ref} className={styles.editor}></div>
+    </div>
+  );
 };
 
-export const CodeBlockWrapper = ({ text }) => {
+export const CodeBlockWrapper = ({ text }: { text: string }) => {
   const renderText = (content) => {
     const regexInlineCode = /`([^`]+)`/g;
     const regexBlockCode = /```([^`]+)```/g;
 
-    return content.split(regexBlockCode).map((block, index) => {
+    return content.split(regexBlockCode).map((block: string, index) => {
       if (index % 2 === 0) {
         // 文本内容
         return block.split(regexInlineCode).map((inline, index) => {
@@ -72,21 +83,28 @@ export const CodeBlockWrapper = ({ text }) => {
           } else {
             // 用 <span> 包裹代码行
             return (
-              <span className='code-inline' key={index}>
+              <span className={styles.code_inline} key={index}>
                 {inline}
               </span>
             );
           }
         });
       } else {
+        // 通常第一个换行前的字符就是 language，比如 ```typescript
+        const language = block.split('\n')[0] || 'plaintext';
+
+        // 并去掉第一个 \n 前面的字符
+        block = block.replace(/.*?\n/, '');
+        block = block.trim();
+
         return (
-          <div className='code-block'>
-            <ChatEditor input={block} language={'java'}/>
+          <div className={styles.code_block}>
+            <ChatEditor input={block} language={language} />
           </div>
         );
       }
     });
   };
 
-  return <div className='ai-chat-code-wrapper'>{renderText(text)}</div>;
+  return <div className={styles.ai_chat_code_wrapper}>{renderText(text)}</div>;
 };

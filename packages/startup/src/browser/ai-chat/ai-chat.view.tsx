@@ -7,6 +7,7 @@ import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
 import 'react-chat-elements/dist/main.css';
@@ -69,12 +70,16 @@ export const AiChatView = () => {
       setMessageListData([...messageList]);
       const filePathList = await aiProjectGenerateService.generateProjectStructure(projectInfo);
       console.log('gen file list: ', filePathList);
-      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />));
+      messageList.splice(
+        -1,
+        0,
+        createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
+      );
       setMessageListData([...messageList]);
 
       await aiProjectGenerateService.generateFile(filePathList, projectInfo, (file: string) => {
         messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
-          setMessageListData([...messageList]);
+        setMessageListData([...messageList]);
       });
 
       messageList.pop();
@@ -157,6 +162,7 @@ export const AiChatView = () => {
       // 检查前缀 aiSearchKey
       if (typeof preInputValue === 'string') {
         let aiMessage;
+
         const userInput = await aiChatService.switchAIService(preInputValue);
 
         if (userInput!.type === AISerivceType.Search || userInput!.type === AISerivceType.SearchCode) {
@@ -191,8 +197,10 @@ export const AiChatView = () => {
     [messageListData, containerRef],
   );
 
+  const viewHeight = React.useMemo(() => `calc(100vh - ${LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT + LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT}px)`, []);
+
   return (
-    <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view}>
+    <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view} style={{ height: viewHeight }}>
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>
@@ -235,16 +243,11 @@ export const AiChatView = () => {
         <div className={styles.right_bar}>
           <ul className={styles.chat_list}>
             <li className={styles.active_chat_bar}>
-              <Icon className={getExternalIcon('comment-discussion')} />
-            </li>
-            <li>
-              <Icon className={getExternalIcon('comment-discussion')} />
-            </li>
-            <li>
-              <Icon className={getExternalIcon('comment-discussion')} />
-            </li>
-            <li>
-              <Icon className={getIcon('plus')} />
+              {/* <Icon className={getExternalIcon('comment-discussion')} /> */}
+              <Avatar
+                src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*CfffRK50dpQAAAAAAAAAAAAADhl8AQ/original'
+                className={styles.ai_chat_avatar_icon}
+              />
             </li>
           </ul>
         </div>

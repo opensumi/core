@@ -99,36 +99,33 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
   const [slashWidget, setSlashWidget] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleInputChange = useCallback(
-    (value: string) => {
-      setValue(value);
+  useEffect(() => {
+    if (value.length === 1 && value.startsWith('/')) {
+      setIsShowOptions(true);
+    } else {
+      setIsShowOptions(false);
+    }
 
-      if (value.startsWith('/')) {
-        setIsShowOptions(true);
-      } else {
-        setIsShowOptions(false);
-      }
+    // 自适应高度
+    if (inputRef && inputRef.current) {
+      const lineCount = value.split('\n').length;
+      setWrapperHeight(16 * (lineCount + 1) + 8);
+    }
 
-      // 自适应高度
-      if (inputRef && inputRef.current) {
-        const lineCount = value.split('\n').length;
-        setWrapperHeight(16 * (lineCount + 1) + 8);
+    // 设置 slash widget 块
+    const regex = /^\/([^/]+)\s/;
+    const match = value.match(regex);
+    if (match) {
+      const keyword = match[0];
+      if (optionsList.find(({ name }) => name === keyword)) {
+        setSlashWidget(keyword);
       }
+    } else {
+      setSlashWidget('');
+    }
+  }, [inputRef, value]);
 
-      // 设置 slash widget 块
-      const regex = /^\/([^/]+)\s/;
-      const match = value.match(regex);
-      if (match) {
-        const keyword = match[0];
-        if (optionsList.find(({ name }) => name === keyword)) {
-          setSlashWidget(keyword);
-        }
-      } else {
-        setSlashWidget('');
-      }
-    },
-    [inputRef],
-  );
+  const handleInputChange = useCallback((value: string) => setValue(value), []);
 
   const handleSend = useCallback(() => {
     if (onSend) {
@@ -137,12 +134,19 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
     }
   }, [onSend, value]);
 
-  const acquireOptionsCheck = useCallback((value: string) => {
-    if (value) {
-      setValue(value);
-      setIsShowOptions(false);
-    }
-  }, []);
+  const acquireOptionsCheck = useCallback(
+    (value: string) => {
+      if (value) {
+        setValue(value);
+        setIsShowOptions(false);
+
+        if (inputRef && inputRef.current) {
+          inputRef.current.focus();
+        }
+      }
+    },
+    [inputRef],
+  );
 
   const optionsBottomPosition = useMemo(() => Math.min(181, Math.max(61, 21 + wrapperHeight)), [wrapperHeight]);
 
