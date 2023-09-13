@@ -15,6 +15,7 @@
   .title_description {
     display: inline;
     color: var(--descriptionForeground);
+    overflow: hidden;
   }
 
   .detail_name {
@@ -85,6 +86,29 @@
     match {
       background-color: var(--editor-findMatchHighlightBackground);
     }
+
+    .icon_container {
+      display: flex;
+      align-items: center;
+
+      .ai_icon {
+        color: #ffcc00;
+        display: none !important;
+        margin-right: 4px;
+      }
+    }
+
+
+    &:hover {
+      .icon_container {
+        .icon {
+          display: none !important;
+        }
+        .ai_icon {
+          display: inline-block !important;
+        }
+      }
+    }
   }
 
   .status {
@@ -125,6 +149,7 @@
     color: var(--foreground);
     flex-direction: row;
     width: 0;
+    white-space: nowrap;
   }
 
   .flex_wrap {

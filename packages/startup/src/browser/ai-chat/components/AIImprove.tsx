@@ -2,7 +2,7 @@ import { getExternalIcon, getIcon, getIconClass } from '@opensumi/ide-core-brows
 import { Icon } from '@opensumi/ide-core-browser/lib/components/index';
 import React, { useCallback, useMemo } from 'react';
 
-export const AIImprove = (props: { onClick?: (title: string) => void, lists: { title: string, iconClass: string }[] = [] }) => {
+export const AIImprove = (props: { onClick?: (title: string) => void, lists?: { title: string, iconClass: string }[] }) => {
   const { onClick, lists } = props;
 
   const handleClick = useCallback(

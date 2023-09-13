@@ -1,4 +1,3 @@
-import { CodeFuseConfigModel } from './competionModel';
 export const apiBaseUrl = "http://localhost:3002";
 const URL = 'https://caselike.alipay.com'
 // 1.1基于GPT模型的代码补全(原COMMAND_GPT_CODEGEN)
@@ -32,6 +31,17 @@ export const MASTER_KEY = 'IiBub2NWe0m7Va27heW0dY_f';
  * 接受补全事件
  */
 export const COMMAND_ACCEPT = "CF_COMMAND_ACCEPT";
+
+interface CodeFuseConfigModel {
+  chatPromptMaxSize: number,
+	completionFileList: string[],
+	completionPromptMaxLineSize: number,
+	completionSuffixMaxLineSize: number,
+	intervalTime: number,
+	streamTimeOut: number,
+	timeOut: number,
+	completionRegular: string
+}
 
 /**
  * 插件配置信息

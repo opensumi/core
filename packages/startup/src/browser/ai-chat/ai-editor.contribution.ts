@@ -6,7 +6,7 @@ import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { Position } from '@opensumi/ide-monaco';
-import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+import { AiGPTBackSerivcePath } from '../../common/index';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -61,11 +61,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    // @ts-ignore
-    window.aiGPTcompletionRequest = this.aiGPTBackService.aiGPTcompletionRequest;
-    // @ts-ignore
-    window.aiParsingLanguageService = this.aiGPTBackService.aiParsingLanguageService;
-
     let aiZoneWidget: AiZoneWidget | undefined;
     let aiDiffWidget: AiDiffWidget | undefined;
     let aiCodeWidget: AiCodeWidget | undefined;
@@ -112,6 +107,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       100,
     )((e) => {
       disposeAllWidget();
+
+      if (currentUri && currentUri.codeUri.scheme !== 'file') {
+        return;
+      }
 
       if (!this.menuse) {
         this.menuse = this.abstractMenuService.createMenu('ai/iconMenubar/context');
@@ -263,7 +262,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         if (value) {
           this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING)
-          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`帮我${value}, 要求只回答代码内容，并保留代码的缩进。要求去掉 markdown 格式，不需要给我解释。代码内容是: \n` + text);
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(`${value}, 要求只回答代码内容，并保留代码的缩进。不需要给我解释。代码内容是: \n` + text);
 
           // 说明接口有异常
           if (result.errorCode !== 0) {
@@ -398,7 +397,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       if (hasKeyPosition.length > 0) {
 
-        inlayHintDispose = monaco.languages.registerInlayHintsProvider(model.getLanguageId(), {
+        // inlayHintDispose = monaco.languages.registerInlayHintsProvider(model.getLanguageId(), {
+        inlayHintDispose = monaco.languages.registerInlayHintsProvider({
+          language: model.getLanguageId(),
+          scheme: 'file'
+        }, {
           provideInlayHints(model, range, token) {
             return {
               hints: hasKeyPosition.map(position => {

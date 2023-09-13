@@ -55,7 +55,7 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AiChatContribution.AiChatContainer, {
       component: AiChatView,
-      id: AiChatContribution.AiChatContainer
+      id: AiChatContribution.AiChatContainer,
     }, {
       containerId: AiChatContribution.AiChatContainer,
     });
@@ -88,7 +88,7 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
         if (!currentEditor || !range) {
           return;
         }
-        console.log('ai.suggest.documentation:>>> range', range);
+
         const getContent = currentEditor.monacoEditor.getModel()!.getValueInRange(range);
 
         if (getContent) {
@@ -104,12 +104,9 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
 代码内容是:
 ${getContent}
 `;
-          console.log('ai.suggest.documentation:>>> prompt', messageWithPrompt);
 
           const aiResult = await this.aiChatService.aiBackService.aiMFTCompletion(messageWithPrompt);
           const resultContent = aiResult.data;
-
-          console.log('ai.suggest.documentation:>>> result', aiResult);
 
           // 提取 markdown 里的代码
           const regex = /```java\s*([\s\S]+?)\s*```/;
@@ -154,40 +151,6 @@ ${getContent}
     });
 
     commands.registerCommand({
-      id: 'ai.chat.createNodeHttpServerContent',
-    }, {
-      execute: async (prod) => {
-        const currentEditor = this.editorService.currentEditor;
-        if (!currentEditor) {
-          return;
-        }
-
-        const newfile = URI.parse(currentEditor.currentUri?.path.toString()!);
-        const stat = await this.fileServiceClient.getFileStat(newfile.toString(), false);
-
-        if (!stat) {
-          return;
-        }
-
-        await this.fileServiceClient.setContent(stat, `const http = require('http');
-
-const server = http.createServer((request, response) => {
-  // 设置响应头
-  response.setHeader('Content-Type', 'text/plain');
-  response.statusCode = 200;
-
-  // 响应消息
-  response.write('Hello, World!');
-  response.end();
-});
-
-server.listen(${prod}, () => {
-  console.log('Server running at http://localhost:${prod}/');
-});`);
-      },
-    });
-
-    commands.registerCommand({
       id: 'ai.chat.focusLine',
     }, {
       execute: async (line: number) => {
@@ -206,120 +169,6 @@ server.listen(${prod}, () => {
             new Position(line, 0),
           );
         }, 0);
-      },
-    });
-
-    commands.registerCommand({
-      id: 'ai.chat.createLazymanContent',
-    }, {
-      execute: async () => {
-        const content = `class LazyMan {
-  private taskList: Function[] = [];
-  private name: string;
-
-  constructor(name: string) {
-    this.name = name;
-    this.taskList.push(() => {
-      console.log(\`Hi, I'm $\{this.name\}\`);
-      this.next();
-    });
-
-    setTimeout(() => {
-      this.next();
-    }, 0);
-  }
-
-  private next() {
-    const task = this.taskList.shift();
-    task && task();
-  }
-
-  sleep(time: number) {
-    this.taskList.push(() => {
-      setTimeout(() => {
-        console.log(\`Wake up after $\{time\}ms\`);
-        this.next();
-      }, time);
-    });
-    return this; // 实现链式调用
-  }
-
-  eat(food: string) {
-    this.taskList.push(() => {
-      console.log(\`Eat $\{food\}\`);
-      this.next();
-    });
-    return this; // 实现链式调用
-  }
-
-  sleepFirst(time: number) {
-    this.taskList.unshift(() => {
-      setTimeout(() => {
-        console.log(\`Wake up after $\{time\}ms\`);
-        this.next();
-      }, time);
-    });
-    return this; // 实现链式调用
-  }
-}
-
-function lazyMan(name: string) {
-  return new LazyMan(name);
-}
-
-// 测试代码
-lazyMan('Jack').eat('breakfast').sleep(1000).eat('lunch').sleepFirst(1000).eat('dinner');
-`;
-
-        const currentEditor = this.editorService.currentEditor;
-        if (!currentEditor) {
-          return;
-        }
-
-        const newfile = URI.parse(currentEditor.currentUri?.path.toString()!);
-        const stat = await this.fileServiceClient.getFileStat(newfile.toString(), false);
-
-        if (!stat) {
-          return;
-        }
-
-        return await this.fileServiceClient.setContent(stat, content);
-      },
-    });
-
-    commands.registerCommand({
-      id: 'ai.chat.replaceContent.eat',
-    }, {
-      execute: async (content: string) => {
-        const currentEditor = this.editorService.currentEditor;
-        if (!currentEditor) {
-          return;
-        }
-
-        const monacoEditor = currentEditor.monacoEditor;
-
-        const range = {
-          startLineNumber: 32,
-          startColumn: 0,
-          endLineNumber: 38,
-          endColumn: Number.MAX_SAFE_INTEGER,
-        };
-
-        if (monacoEditor) {
-          const model = monacoEditor.getModel()!;
-
-          model.pushStackElement();
-          model.pushEditOperations(null, [
-            {
-              range,
-              text: content,
-            },
-          ], () => null);
-          model.pushStackElement();
-
-          monacoEditor.focus();
-          monacoEditor.setSelection(range);
-        }
       },
     });
 

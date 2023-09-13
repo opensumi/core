@@ -67,7 +67,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
       return;
     }
 
-    if (this.options && this.options.selection && this.options.selection.equalsRange(options.selection)) {
+    if (this.options && this.options.selection && this.options.selection.equalsRange(options.selection!)) {
       return;
     }
 

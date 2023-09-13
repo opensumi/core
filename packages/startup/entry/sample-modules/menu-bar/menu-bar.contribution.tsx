@@ -2,14 +2,14 @@ import React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, EDITOR_COMMANDS, MessageType, getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
+import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, MessageType, getExternalIcon } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
-import { AiChatService } from '../ai-chat/ai-chat.service';
+import { AiChatService } from '../../../src/browser/ai-chat/ai-chat.service';
 
 import { MenuBarView } from './menu-bar.view';
 
@@ -43,15 +43,6 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
   registerCommands(commands: CommandRegistry): void {
 
     commands.registerCommand({
-      id: 'ai.chat.explain.code',
-      iconClass: getExternalIcon('comment-discussion'),
-    }, {
-      execute: async () => {
-        // await this.aiChatService.launchChatMessage('解释一下当前我选中的这段代码')
-      },
-    });
-
-    commands.registerCommand({
       id: 'ai.runAndDebug',
     }, {
       execute: async (text: string, isDebug: boolean) => {
@@ -71,10 +62,7 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
 
         const client = terminal.client;
 
-        console.log('client', client);
-
         client.onOutput(async ({ data }) => {
-          console.log('client.output:>>>> data', data);
           if (data.toString().includes('Error:')) {
             const btn = await this.messageService.open('程序运行出错了！问问 AI 助手吧～', MessageType.Warning, ['好啊']);
 
@@ -85,7 +73,6 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
                   {data}
                 </SyntaxHighlighter>
               </div>);
-              console.log('client.output:>>>> error data', data);
             }
           }
         });

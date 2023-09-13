@@ -15,7 +15,6 @@ export class AiQuickCommandHandler implements QuickOpenHandler {
   prefix = '/ ';
   description = 'AI 助手';
   init?(): MaybePromise<void> {
-    console.log('init');
   }
   getModel(): QuickOpenModel {
     return {

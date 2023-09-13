@@ -112,14 +112,6 @@ export class ClientCommonContribution
     menus.registerMenubarItem(MenuId.MenubarTerminalMenu, { label: localize('menu-bar.title.terminal'), order: 5 });
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
-    menus.registerMenuItems('ai/iconMenubar/context', [
-      {
-        command: 'ai.chat.explain.code',
-        iconClass: getExternalIcon('comment-discussion'),
-        group: 'ai_group_1'
-      },
-    ])
-
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [
       {

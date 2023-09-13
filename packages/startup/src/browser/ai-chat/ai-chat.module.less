@@ -9,20 +9,42 @@
   border-radius: 12px;
   overflow: hidden;
 
+  // ai 助手头像
+  .ai_chat_avatar_icon {
+    width: 24px;
+    height: 24px;
+    background-image: radial-gradient(circle at 21% 21%, #00f6ff 0%, #9c03ff 95%);
+    border-radius: 12px;
+
+    img {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
   .header_container {
     height: 48px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--sideBar-border);
 
     .left {
       font-size: 14px;
+      display: flex;
+      align-items: center;
+      height: 8px;
+
+      & > * {
+        margin-right: 8px;
+      }
 
       .line_vertical {
-        color: #666;
-        margin: 0 4px;
+        border-left: 1px solid #666;
+        height: 100%;
+        width: 1px;
+        display: block;
       }
     }
 
@@ -39,7 +61,10 @@
 
   .body_container {
     display: flex;
-    height: calc(100% - 48px);
+    height: 0;
+    flex-grow: 1;
+    flex-shrink: 0;
+    max-height: unset;
 
     .left_bar {
       flex: 1;

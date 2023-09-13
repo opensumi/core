@@ -22,13 +22,13 @@
 }
 
 .rce-mbox {
-  margin-left: 56px;
   background-color: #ffffff0a;
   max-width: 60%;
-  border-radius: 8px;
+  border-radius: 2px 12px 12px 12px;
   box-shadow: none;
   padding: 8px 12px;
   min-width: initial;
+  margin-left: 16px;
 
   ::after {
     content: '';
@@ -39,22 +39,23 @@
   background-color: #ffffff0a;
   box-shadow: none;
   border-radius: 8px;
-  padding: 8px 12px;
-  margin: 3px 5px 3px 0px;
   max-width: initial;
+  border-radius: 2px 12px 12px 12px;
+  width: 100%;
+  flex-direction: initial;
+  justify-content: left;
+  padding: 8px 12px 12px;
+  margin: 0;
 
   .rce-smsg-text {
     font-size: 12px;
+    width: 100%;
+    text-align: left;
   }
 }
 
-.rce-mbox-right {
-  margin-right: 10px;
-}
-
 .rce-container-smsg {
-  justify-content: left;
-  margin-left: 8px;
+  width: 100%;
 }
 
 .rce-mlist {
@@ -87,8 +88,9 @@
 
 .rce-user-msg {
   .rce-mbox-right {
-    border-radius: 8px;
+    border-radius: 12px 12px 2px 12px;
     background-color: #3c8dff4d;
+    margin-right: 16px;
   }
 }
 
@@ -103,11 +105,11 @@ blockquote {
 }
 
 .AI-Content-Widget {
-  box-shadow: 0 9px 28px 8px rgba(0,0,0,0.15);;
+  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   padding: 12px 16px;
-  background-color: rgba(23,28,37,1);
-  border: 1px solid rgba(54,57,64,1);
+  background-color: rgba(23, 28, 37, 1);
+  border: 1px solid rgba(54, 57, 64, 1);
 
   // 编辑区域的 content widget
   .ant-select-selector {
@@ -156,5 +158,26 @@ blockquote {
 }
 
 .ai_native_slot_main_right {
-  
+}
+
+// ai chat code wrapper
+.ai-chat-code-wrapper {
+  span.code-inline {
+    display: inline;
+    color: #d7ba7d;
+
+    &::after {
+      content: none;
+    }
+  }
+
+  .code-block {
+    margin: 16px 0;
+
+    .monaco-editor {
+      border-radius: 4px;
+      border: 1px solid #3c3c3c;
+      overflow: hidden;
+    }
+  }
 }
