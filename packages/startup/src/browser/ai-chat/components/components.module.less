@@ -100,13 +100,30 @@
     background-color: #ffffff14;
     padding: 9px 12px;
     font-size: 14px;
+    position: relative;
 
-    :global(.kt-input-addon) {
-      align-items: flex-end;
+    :global {
+      .kt-input-addon-after {
+        align-items: flex-end;
+      }
+
+      .kt-input-addon-before {
+        margin-right: 0;
+      }
     }
 
     textarea {
       resize: none;
+    }
+
+    .slash_widget_block {
+      position: absolute;
+      background-color: #34414b;
+      color: #40a6ff;
+      border-radius: 3px;
+      padding: 1px;
+      z-index: 1;
+      top: 10px;
     }
 
     .send_chat_btn {
@@ -121,6 +138,7 @@
 
       &.active {
         background-color: rgba(60, 141, 255, 1);
+
         span {
           color: #fff;
         }

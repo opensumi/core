@@ -131,20 +131,7 @@ export const AiChatView = () => {
     if (generateQuery) {
       generateProject([firstMsg]);
     } else if (messageListData && messageListData.length === 0) {
-      setMessageListData([
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-        firstMsg,
-      ]);
+      setMessageListData([firstMsg]);
     }
 
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
