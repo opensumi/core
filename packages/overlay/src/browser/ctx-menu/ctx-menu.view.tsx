@@ -37,7 +37,7 @@ export const CtxMenu = observer(() => {
           adjustX: 1,
           adjustY: 1,
         },
-        offset: [window.scrollX, window.scrollY],
+        offset: [window.scrollX, window.scrollY + 10],
       }}
       point={ctxMenuService.point || {}}
       popupClassName='point-popup'
