@@ -55,7 +55,7 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AiChatContribution.AiChatContainer, {
       component: AiChatView,
-      id: AiChatContribution.AiChatContainer,
+      id: AiChatContribution.AiChatContainer
     }, {
       containerId: AiChatContribution.AiChatContainer,
     });

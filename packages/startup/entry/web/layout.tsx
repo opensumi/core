@@ -39,8 +39,14 @@ export function DefaultLayout() {
             isTabbar={true}
           />
         </SplitPanel>
-        <SplitPanel
-          id='main-vertical-right'
+        <SlotRenderer
+            slot='right'
+            isTabbar={false}
+            defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 320}
+            minResize={280}
+          />
+        {/* <SplitPanel
+          id='main-vertical'
           minResize={400}
           direction='left-to-right'
           className='ai_native_slot_main_right'
@@ -60,7 +66,6 @@ export function DefaultLayout() {
             minResize={280}
             // savedSize={450}
           />
-        </SplitPanel> */}
       </SplitPanel>
       <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>
