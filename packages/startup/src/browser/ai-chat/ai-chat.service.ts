@@ -80,7 +80,8 @@ export class AiChatService {
 
         messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。我会给你一段代码片段，你需要给我解释这段代码片段的意思。我的代码片段是: \`\`\`\n${message}\n\`\`\` `;
       } else {
-        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。此时有个异常问题是 "${message}", 请给我解释这个异常问题并给出修复建议`;
+        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。你要根据我提供的代码内容回答我的问题，我的问题是: "${message}"`;
+        // messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。此时有个异常问题是 "${message}", 请给我解释这个异常问题并给出修复建议`;
       }
 
       console.log('ai explain prompt: >>> ', messageWithPrompt)
@@ -104,7 +105,10 @@ export class AiChatService {
 
   public async messageWithGPT(input: string) {
     const res = await this.aiBackService.aiGPTcompletionRequest(input);
-    console.log('messageWithGPT: >>>> ', res);
-    return res.data;
+    if (res.errorCode !== 0) {
+      return res.errorMsg || '';
+    } else {
+      return res.data || ''
+    }
   }
 }

@@ -108,6 +108,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     )((e) => {
       disposeAllWidget();
 
+      const { monacoEditor, currentUri } = editor;
+
+      if (!currentUri) {
+        return;
+      }
+
       if (currentUri && currentUri.codeUri.scheme !== 'file') {
         return;
       }
