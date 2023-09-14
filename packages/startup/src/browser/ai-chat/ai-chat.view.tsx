@@ -5,7 +5,7 @@ import * as React from 'react';
 import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
+import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -363,8 +363,8 @@ const AIWithCommandReply = async (command: Command, opener) => {
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
         <ol style={{ margin: '8px 0' }}>
-          <li>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
-          <li>输入：{labelLocalized?.localized || label}</li>
+          <li style={{ listStyle: 'inherit' }}>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
+          <li style={{ listStyle: 'inherit' }}>输入：{labelLocalized?.localized || label}</li>
         </ol>
         <Button onClick={() => opener.open(URI.parse(`command:${delegate || id}`))}>点击执行命令</Button>
       </div>,

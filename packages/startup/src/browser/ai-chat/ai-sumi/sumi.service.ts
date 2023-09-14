@@ -3,7 +3,6 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { CommandService, CommandRegistry, Command } from '@opensumi/ide-core-common';
 import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 
-
 @Injectable()
 export class AiSumiService {
   @Autowired(AiGPTBackSerivcePath)
@@ -19,14 +18,16 @@ export class AiSumiService {
     return `
 在我的系统中有一些 Command，通过这些命令可以实现一些功能。请通过分析我的问题，找到我想要实现的功能，匹配适合的 Command。
 请参照下面的示例问答，按照示例回答的格式返回。如果找不到合适的命令，请返回未找到合适命令。
-以下是系统内的全部 Command: ${command.join('、')}、workbench.action.openGlobalKeybindings`;
+以下是系统内的全部 Command: ${command.join('、')}、workbench.action.openGlobalKeybindings、editor.action.setEncoding`;
   }
 
   public async message(input: string): Promise<Command | undefined> {
     const commands = this.commandRegistryService.getCommands();
     const commandIds = commands.filter((c) => !!c.label).map((c) => c.delegate || c.id);
     const step = 50;
-    const partCommands = Array.from({ length: Math.round(commandIds.length / step) }, (_, index) => index).map((i) => commandIds.slice(i * step, (i + 1) * step));
+    const partCommands = Array.from({ length: Math.round(commandIds.length / step) }, (_, index) => index).map((i) =>
+      commandIds.slice(i * step, (i + 1) * step),
+    );
 
     const res = await Promise.all(partCommands.map((c) => this.requestCommand(c, input)));
     const passibleCommands = res.filter((r) => !!r);
