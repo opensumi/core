@@ -6,7 +6,8 @@ import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Icon, Button } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { URI, Command, isMacintosh } from '@opensumi/ide-core-common';
@@ -20,6 +21,7 @@ import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
+import { LineVertical } from './components/lineVertical';
 import { Thinking } from './components/Thinking';
 
 const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
@@ -74,12 +76,16 @@ export const AiChatView = () => {
       setMessageListData([...messageList]);
       const filePathList = await aiProjectGenerateService.generateProjectStructure(projectInfo);
       console.log('gen file list: ', filePathList);
-      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />));
+      messageList.splice(
+        -1,
+        0,
+        createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
+      );
       setMessageListData([...messageList]);
 
       await aiProjectGenerateService.generateFile(filePathList, projectInfo, (file: string) => {
         messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
-          setMessageListData([...messageList]);
+        setMessageListData([...messageList]);
       });
 
       messageList.pop();
@@ -162,6 +168,7 @@ export const AiChatView = () => {
       // 检查前缀 aiSearchKey
       if (typeof preInputValue === 'string') {
         let aiMessage;
+
         const userInput = await aiChatService.switchAIService(preInputValue);
 
         if (userInput!.type === AISerivceType.Search || userInput!.type === AISerivceType.SearchCode) {
@@ -196,20 +203,29 @@ export const AiChatView = () => {
     [messageListData, containerRef],
   );
 
+  const viewHeight = React.useMemo(
+    () => `calc(100vh - ${LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT + LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT}px)`,
+    [],
+  );
+
   return (
-    <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view}>
+    <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view} style={{ height: viewHeight }}>
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>
             <Avatar src={AI_AVATAR} className={styles.ai_chat_avatar_icon} />
           </div>
           <span className={styles.title}>{AI_NAME}</span>
-          <span className={styles.line_vertical} />
+          <LineVertical />
           <span className={styles.des}>Chat</span>
         </div>
         <div className={styles.right}>
-          <Icon className={getIcon('clear')} />
-          <Icon className={getIcon('close')} />
+          <Popover id={'ai-chat-header-clear'} title='清空'>
+            <Icon className={getIcon('clear')} />
+          </Popover>
+          <Popover id={'ai-chat-header-close'} title='关闭'>
+            <Icon className={getIcon('close')} />
+          </Popover>
         </div>
       </div>
       <div className={styles.body_container}>
@@ -240,16 +256,11 @@ export const AiChatView = () => {
         <div className={styles.right_bar}>
           <ul className={styles.chat_list}>
             <li className={styles.active_chat_bar}>
-              <Icon className={getExternalIcon('comment-discussion')} />
-            </li>
-            <li>
-              <Icon className={getExternalIcon('comment-discussion')} />
-            </li>
-            <li>
-              <Icon className={getExternalIcon('comment-discussion')} />
-            </li>
-            <li>
-              <Icon className={getIcon('plus')} />
+              {/* <Icon className={getExternalIcon('comment-discussion')} /> */}
+              <Avatar
+                src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*CfffRK50dpQAAAAAAAAAAAAADhl8AQ/original'
+                className={styles.ai_chat_avatar_icon}
+              />
             </li>
           </ul>
         </div>
@@ -329,11 +340,7 @@ const AIChatGPTReply = async (input, aiGPTBackService) => {
   try {
     console.log('ai chat gpt reply: >>>> ', input);
 
-    const aiMessage = createMessageByAI(
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <CodeBlockWrapper text={input} />
-      </div>,
-    );
+    const aiMessage = createMessageByAI(<CodeBlockWrapper text={input} />);
 
     return aiMessage;
   } catch (error) {

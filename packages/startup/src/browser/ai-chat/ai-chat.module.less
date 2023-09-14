@@ -34,26 +34,22 @@
       font-size: 14px;
       display: flex;
       align-items: center;
-      height: 8px;
+      height: 16px;
 
       & > * {
         margin-right: 8px;
       }
-
-      .line_vertical {
-        border-left: 1px solid #666;
-        height: 100%;
-        width: 1px;
-        display: block;
-      }
     }
 
     .right {
+      display: flex;
+      align-items: center;
+
       span {
         color: #666;
       }
 
-      span:first-child {
+      *:first-child {
         margin-right: 10px;
       }
     }
@@ -65,6 +61,8 @@
 
     .left_bar {
       flex: 1;
+      display: flex;
+      flex-direction: column;
 
       // chat loading
       .chat_loading_msg_box {
@@ -84,7 +82,7 @@
       // 聊天框
       .chat_container {
         flex: 1;
-        height: calc(100% - 72px);
+        height: 100%;
         overflow: auto;
         padding-top: 10px;
 
@@ -158,6 +156,9 @@
           line-height: 40px;
           text-align: center;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
           &.active_chat_bar {
             background-color: #ffffff14;

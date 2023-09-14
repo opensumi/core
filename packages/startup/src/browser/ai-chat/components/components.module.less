@@ -23,6 +23,34 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  background-color: #1b232b;
+  box-shadow: 0 -1px 12px 0 rgba(0, 0, 0, 0.12), 0 -1px 3px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 0 0 0 12px;
+
+  .block {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 4px;
+    width: fit-content;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    .name {
+      margin-left: 4px;
+    }
+  }
+
+  .header_operate {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .block {
+      margin-right: 8px;
+    }
+  }
 
   .instruction_options_container {
     position: absolute;
@@ -32,20 +60,7 @@
     box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
     border-radius: 8px;
     bottom: 61px;
-
-    .block {
-      background-color: rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
-      padding: 4px;
-      width: fit-content;
-      height: 24px;
-      display: flex;
-      align-items: center;
-
-      .name {
-        margin-left: 4px;
-      }
-    }
+    z-index: 1000;
 
     .options {
       ul {
@@ -80,26 +95,154 @@
   }
 
   .input_wrapper {
-    height: 40px;
+    min-height: 40px;
+    max-height: 160px;
     border-radius: 8px;
     background-color: #ffffff14;
+    padding: 9px 12px;
+    font-size: 14px;
+    position: relative;
+
+    :global {
+      .kt-input-addon-after {
+        align-items: flex-end;
+      }
+
+      .kt-input-addon-before {
+        margin-right: 0;
+      }
+    }
 
     textarea {
       resize: none;
+    }
+
+    .slash_widget_block {
+      position: absolute;
+      background-color: #34414b;
+      color: #40a6ff;
+      border-radius: 3px;
+      padding: 1px 2px;
+      z-index: 1;
+      top: 9.5px;
     }
 
     .send_chat_btn {
       border-radius: 2px;
       background-color: rgba(95, 101, 107, 0.25);
       width: 24px;
-      height: 24px;
+      height: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
 
+      &.active {
+        background-color: rgba(60, 141, 255, 1);
+
+        span {
+          color: #fff;
+        }
+      }
+
       span {
         color: rgba(95, 101, 107, 1);
+      }
+    }
+  }
+}
+
+// chat 面板的代码展示部分
+.ai_chat_code_wrapper {
+  position: relative;
+
+  .render_text {
+    span.code_inline {
+      display: inline;
+      color: #d7ba7d;
+
+      &::after {
+        content: none;
+      }
+    }
+
+    .code_block {
+      margin: 16px 0;
+
+      .monaco_wrapper {
+        position: relative;
+
+        &:hover {
+          .action_toolbar {
+            display: flex;
+          }
+        }
+
+        .editor {
+          border-radius: 8px;
+          border: 1px solid #ffffff1a;
+          overflow: hidden;
+        }
+
+        .action_toolbar {
+          display: none;
+          position: absolute;
+          right: 0;
+          top: 0;
+          background-color: #151b21;
+          border-radius: 6px 6px 0 6px;
+          z-index: 100;
+          top: -15px;
+          height: 30px;
+          border: 1px solid #ffffff1a;
+          align-items: center;
+          overflow: hidden;
+
+          :global {
+            .kt-popover {
+              height: inherit;
+            }
+          }
+
+          span {
+            width: 30px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+              background-color: rgba(255, 255, 255, 0.08);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .more_actions {
+    position: absolute;
+    z-index: 1000;
+    bottom: -36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 16px;
+
+    &::after {
+      content: initial;
+    }
+
+    .side {
+      display: flex;
+      align-items: center;
+      justify-items: right;
+      height: inherit;
+
+      span {
+        margin-right: 6px;
+        cursor: pointer;
       }
     }
   }
