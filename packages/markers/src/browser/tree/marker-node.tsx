@@ -155,7 +155,9 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   }px`;
 
   const handleAiIcon = useCallback((node: MarkerNode) => {
-    aiChatService.launchChatMessage(`/explain ${node.marker.message}`)
+    aiChatService.launchChatMessage({
+      message: `/explain ${node.marker.message}`,
+    })
   }, [aiChatService])
 
   const renderedNodeStyle = {

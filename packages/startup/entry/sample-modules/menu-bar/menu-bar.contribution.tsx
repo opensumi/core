@@ -46,42 +46,6 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
       id: 'ai.runAndDebug',
     }, {
       execute: async (text: string, isDebug: boolean) => {
-        let isNodeJs = false;
-        if (!text) {
-          const currentUri = this.editorService.currentEditor?.currentUri;
-          isNodeJs = !!currentUri?.path.base.endsWith('.js');
-          text = `${isNodeJs ? 'node' : 'node_modules/.bin/ts-node'} ${currentUri?.path.base}`;
-        }
-
-        const terminal = await this.terminalApi.createTerminal({
-          cwd: this.appConfig.workspaceDir,
-          env: {
-            PROMPT_COMMAND: '',
-          },
-        });
-
-        const client = terminal.client;
-
-        client.onOutput(async ({ data }) => {
-          if (data.toString().includes('Error:')) {
-            const btn = await this.messageService.open('程序运行出错了！问问 AI 助手吧～', MessageType.Warning, ['好啊']);
-
-            if (btn === '好啊') {
-              this.aiChatService.launchChatMessage(<div>
-                运行代码出现这个错误:
-                <SyntaxHighlighter language={'tsx'}>
-                  {data}
-                </SyntaxHighlighter>
-              </div>);
-            }
-          }
-        });
-
-        await client.attached.promise;
-
-        setTimeout(async () => {
-          await client.sendText(`${text} \n`);
-        }, 1000);
       },
     });
   }

@@ -16,7 +16,7 @@ import 'react-chat-elements/dist/main.css';
 import { AiGPTBackSerivcePath, AISerivceType } from '../../common/index';
 
 import * as styles from './ai-chat.module.less';
-import { AiChatService } from './ai-chat.service';
+import { AiChatService, IChatMessageStructure } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
@@ -38,13 +38,6 @@ const createMessageByAI = (text: string | React.ReactNode) => createMessage('lef
 
 const AI_NAME = 'AI 研发助手';
 const ME_NAME = '';
-
-const sleep = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(undefined);
-    }, ms);
-  });
 
 export const AiChatView = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
@@ -121,7 +114,7 @@ export const AiChatView = () => {
               href='javascript:void(0)'
               style={{ marginBottom: '8px' }}
               onClick={() => {
-                aiChatService.launchChatMessage(data.text);
+                aiChatService.launchChatMessage({ message: data.text });
               }}
             >
               <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} />
@@ -153,9 +146,11 @@ export const AiChatView = () => {
   }, []);
 
   const handleSend = React.useCallback(
-    async (value?: any) => {
+    async (value: IChatMessageStructure) => {
+      const { message, prompt } = value;
+      
       const preMessagelist = messageListData;
-      const preInputValue = value;
+      const preInputValue = message;
 
       if (containerRef && containerRef.current) {
         containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
@@ -169,7 +164,7 @@ export const AiChatView = () => {
       if (typeof preInputValue === 'string') {
         let aiMessage;
 
-        const userInput = await aiChatService.switchAIService(preInputValue);
+        const userInput = await aiChatService.switchAIService(preInputValue, prompt);
 
         if (userInput!.type === AISerivceType.Search || userInput!.type === AISerivceType.SearchCode) {
           aiMessage = await AISearch(userInput, aiGPTBackService);
@@ -179,11 +174,10 @@ export const AiChatView = () => {
           aiMessage = await AIWithCommandReply(aiMessage, opener);
         } else if (userInput!.type === AISerivceType.GPT) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          // aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
-          aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
+          aiMessage = await AIChatGPTReply(aiMessage);
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
+          aiMessage = await AIChatGPTReply(aiMessage);
         }
 
         if (aiMessage) {
@@ -251,7 +245,7 @@ export const AiChatView = () => {
               </div>
             )}
           </div>
-          <ChatInput onSend={handleSend} />
+          <ChatInput onSend={(value) => handleSend({ message: value })} />
         </div>
         <div className={styles.right_bar}>
           <ul className={styles.chat_list}>
@@ -321,10 +315,12 @@ const AISearch = async (input, aiGPTBackService) => {
     const aiMessage = createMessageByAI(
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div>
-          <Markdown value={responseText}></Markdown>
+          {/* <Markdown value={responseText}></Markdown> */}
+          {AIChatGPTReply(responseText)}
         </div>
         <div style={{ whiteSpace: 'pre-wrap' }}>
           <Markdown value={urlMessage}></Markdown>
+          {/* {AIChatGPTReply(urlMessage)} */}
         </div>
       </div>,
     );
@@ -336,7 +332,7 @@ const AISearch = async (input, aiGPTBackService) => {
 };
 
 // 带有代码的 AI 回复组件
-const AIChatGPTReply = async (input, aiGPTBackService) => {
+const AIChatGPTReply = async (input) => {
   try {
     console.log('ai chat gpt reply: >>>> ', input);
 

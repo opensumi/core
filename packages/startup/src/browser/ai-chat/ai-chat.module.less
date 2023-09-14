@@ -49,7 +49,7 @@
         color: #666;
       }
 
-      *:first-child {
+      div:first-child {
         margin-right: 10px;
       }
     }
@@ -60,9 +60,9 @@
     height: calc(100% - 48px);
 
     .left_bar {
-      flex: 1;
       display: flex;
       flex-direction: column;
+      width: calc(100% - 40px);
 
       // chat loading
       .chat_loading_msg_box {

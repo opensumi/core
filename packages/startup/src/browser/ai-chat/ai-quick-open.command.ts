@@ -21,16 +21,6 @@ export class AiQuickCommandHandler implements QuickOpenHandler {
       onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
         acceptor([
           new QuickOpenItem({
-            label: '$(git-pull-request-create)  创建合并请求',
-            run: (mode: Mode) => {
-              if (mode === Mode.OPEN) {
-                this.aiChatService.launchChatMessage('创建 合并请求');
-                return true;
-              }
-              return false;
-            },
-          }),
-          new QuickOpenItem({
             label: '$(repo-push)  提交代码',
             run: () => false,
           }),

@@ -117,7 +117,7 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
     }
 
     // 设置 slash widget 块
-    const regex = /^\/([^/]+)\s/;
+    const regex = /\/(\w+)\s/;
     const match = value.match(regex);
     if (match) {
       const keyword = match[0];

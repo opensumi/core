@@ -11,6 +11,11 @@ const aiSearchCodeKey = '/searchcode ';
 const aiSumiKey = '/sumi';
 const aiExplainKey = '/explain';
 
+export interface IChatMessageStructure {
+  message: string | React.ReactNode;
+  prompt?: string
+}
+
 @Injectable()
 export class AiChatService {
 
@@ -23,14 +28,14 @@ export class AiChatService {
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
 
-  private readonly _onChatMessageLaunch = new Emitter<string | React.ReactNode>();
-  public readonly onChatMessageLaunch: Event<string | React.ReactNode> = this._onChatMessageLaunch.event;
+  private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
+  public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
-  public launchChatMessage(message: string | React.ReactNode) {
-    this._onChatMessageLaunch.fire(message);
+  public launchChatMessage(data: IChatMessageStructure) {
+    this._onChatMessageLaunch.fire(data);
   }
 
-  public async switchAIService(input: string) {
+  public async switchAIService(input: string, prompt: string = '') {
     let type: AISerivceType | undefined;
     let message: string | undefined;
 
@@ -65,65 +70,34 @@ export class AiChatService {
 
     if (input.startsWith(aiExplainKey)) {
       message = input.split(aiExplainKey)[1];
+      
       const displayName = currentUri.displayName;
       const content = currentEditor.monacoEditor.getValue();
-      const messageWithPrompt = `我有一个 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`. 此时有个异常问题是 "${message}", 请给我解释这个异常问题并给出修复建议`;
+      let messageWithPrompt: string = '';
+
+      if (!message.trim()) {
+        message = currentEditor.monacoEditor.getModel()?.getValueInRange(currentEditor.monacoEditor.getSelection()!);
+
+        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。我会给你一段代码片段，你需要给我解释这段代码片段的意思。我的代码片段是: \`\`\`\n${message}\n\`\`\` `;
+      } else {
+        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。此时有个异常问题是 "${message}", 请给我解释这个异常问题并给出修复建议`;
+      }
+
+      console.log('ai explain prompt: >>> ', messageWithPrompt)
 
       return { type: AISerivceType.Explain, message: messageWithPrompt };
     }
 
-    return { type: AISerivceType.GPT, message: input };
-
-    // 单独处理 解释代码
-    if (input === '解释代码') {
-      return { type: AISerivceType.GPT, message: input };
+    if (input.startsWith(aiSearchKey)) {
+      type = AISerivceType.Search;
+      message = input.split(aiSearchKey)[1];
+    } else if (input.startsWith(aiSearchCodeKey)) {
+      type = AISerivceType.SearchCode;
+      message = input.split(aiSearchCodeKey)[1];
+    } else {
+      type = AISerivceType.GPT;
+      message = input;
     }
-
-    const messageWithPrompt = `我会给你一段话，你需要分析并推理出这段话属于以下哪个分类的 tag 里，并返回 tag 的名字给我，tags 的列表有['文本搜索', '代码搜索', 'sumi']。
-    例如：“java 生成质数”、“找出所有 markdown 的正则表达式” 等和代码搜索意图强相关的，则返回 '代码搜索'。
-    例如：“java 如何生成质数？”、“log4j 官方文档” 等和文本搜索意图强相关的，则返回 '文本搜索'。
-    例如：“打开 quick open”、“切换主题” 等和 IDE 有关的交互内容，则返回 'sumi'。
-    我给你的这段话是 "${input}"。
-    请按照以下格式返回结果：{"tag": "xxx"}`;
-
-    const antglmType = await this.aiBackService.aiAntGlm(messageWithPrompt);
-
-    console.log('antglm result:>>> ', antglmType);
-
-    if (antglmType && antglmType.data) {
-      try {
-        const toJson = JSON.parse(antglmType.data);
-        if (toJson && toJson.tag) {
-          const tag = toJson.tag;
-
-          // @ts-ignore
-          if (tag === '文本搜索') {
-            type = AISerivceType.Search;
-            message = input;
-          } else if (tag === '代码搜索') {
-            type = AISerivceType.SearchCode;
-            message = input;
-          } else if (tag === 'sumi') {
-            type = AISerivceType.Sumi;
-            message = input;
-          }
-        }
-      } catch (error) {
-        type = AISerivceType.Sumi;
-        message = input;
-      }
-    }
-
-    // if (input.startsWith(aiSearchKey)) {
-    //   type = AISerivceType.Search;
-    //   message = input.split(aiSearchKey)[1];
-    // } else if (input.startsWith(aiSearchCodeKey)) {
-    //   type = AISerivceType.SearchCode;
-    //   message = input.split(aiSearchCodeKey)[1];
-    // } else if (input.startsWith(aiSumiKey)) {
-    //   type = AISerivceType.Sumi;
-    //   message = input.split(aiSumiKey)[1];
-    // }
 
     return { type, message };
   }

@@ -161,7 +161,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         if (value === '解释代码') {
-          this.aiChatService.launchChatMessage(`解释代码`);
+          this.aiChatService.launchChatMessage({ message: '/explain ' });
           return;
         }
 
