@@ -1,17 +1,31 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { Schemes, URI, getExternalIcon, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
-import { Icon } from '@opensumi/ide-core-browser/lib/components';
+import {
+  ExtensionActivateEvent,
+  IEventBus,
+  Schemes,
+  URI,
+  getExternalIcon,
+  getIcon,
+  useInjectable,
+  uuid,
+} from '@opensumi/ide-core-browser';
+import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
+import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 
 import * as styles from './components.module.less';
+import { LineVertical } from './lineVertical';
 
 const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const editorCollectionService = useInjectable<EditorCollectionService>(EditorCollectionService);
   const documentService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
+  const textmateTokenizer = useInjectable<TextmateService>(TextmateService);
+
+  const useUUID = useMemo(() => uuid(12), [ref, ref.current]);
 
   const createEditor = async (container: HTMLElement): Promise<ICodeEditor> => {
     const codeEditor: ICodeEditor = await editorCollectionService.createCodeEditor(container!, {
@@ -33,7 +47,7 @@ const ChatEditor = ({ input, language }) => {
     });
 
     const docModel = await documentService.createModelReference(
-      new URI(`ai/chat/editor/${uuid(12)}`).withScheme(Schemes.walkThroughSnippet),
+      new URI(`ai/chat/editor/${useUUID}`).withScheme(Schemes.walkThroughSnippet),
     );
 
     const model = docModel.instance.getMonacoModel();
@@ -46,7 +60,8 @@ const ChatEditor = ({ input, language }) => {
 
   React.useEffect(() => {
     if (ref && ref.current) {
-      createEditor(ref.current).then((codeEditor) => {
+      textmateTokenizer.activateLanguage(language).then(async () => {
+        const codeEditor = await createEditor(ref.current!);
         if (codeEditor) {
           codeEditor.monacoEditor.setValue(input);
           requestAnimationFrame(() => {
@@ -60,8 +75,12 @@ const ChatEditor = ({ input, language }) => {
   return (
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
-        <Icon className={getIcon('openfile')} />
-        <Icon className={getIcon('file-copy')} />
+        <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
+          <Icon className={getIcon('openfile')} />
+        </Popover>
+        <Popover id={`ai-chat-copy-${useUUID}`} title='复制代码'>
+          <Icon className={getIcon('file-copy')} />
+        </Popover>
       </div>
       <div ref={ref} className={styles.editor}></div>
     </div>
@@ -106,5 +125,26 @@ export const CodeBlockWrapper = ({ text }: { text: string }) => {
     });
   };
 
-  return <div className={styles.ai_chat_code_wrapper}>{renderText(text)}</div>;
+  const useUUID = useMemo(() => uuid(12), [text]);
+
+  return (
+    <div className={styles.ai_chat_code_wrapper}>
+      <div className={styles.render_text}>{renderText(text)}</div>
+      <div className={styles.more_actions}>
+        <div className={styles.side}>
+          <Icon className={getExternalIcon('history')} />
+          <span>重新生成</span>
+        </div>
+        <div className={styles.side}>
+          <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
+            <Icon className={getExternalIcon('thumbsup')} />
+          </Popover>
+          <LineVertical />
+          <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
+            <Icon className={getExternalIcon('thumbsdown')} />
+          </Popover>
+        </div>
+      </div>
+    </div>
+  );
 };

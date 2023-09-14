@@ -23,7 +23,7 @@
   box-shadow: none;
   padding: 8px 12px;
   min-width: initial;
-  margin: 0 16px 16px 16px;
+  margin: 0;
 
   ::after {
     content: '';
@@ -65,11 +65,14 @@
 }
 
 .rce-ai-msg {
+  > .rce-mbox {
+    margin-bottom: 28px;
+  }
+
   .rce-mbox-body {
     display: flex;
     align-items: flex-start;
     position: initial;
-    overflow: auto;
 
     .rce-mbox-title {
       position: absolute;
@@ -86,11 +89,17 @@
   }
 }
 
+.rce-container-mbox {
+  overflow: hidden;
+  margin: 0 16px 16px 16px;
+}
+
 .rce-user-msg {
   .rce-mbox-right {
     border-radius: 12px 12px 2px 12px;
     background-color: #3c8dff4d;
-    margin-right: 16px;
+    margin-right: 0;
+    margin-left: 0;
   }
 }
 

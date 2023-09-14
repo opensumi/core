@@ -108,8 +108,12 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
 
     // 自适应高度
     if (inputRef && inputRef.current) {
-      const lineCount = value.split('\n').length;
-      setWrapperHeight(16 * (lineCount + 1) + 8);
+      inputRef.current.style.height = 0 + 'px';
+
+      const scrollHeight = inputRef.current.scrollHeight;
+      inputRef.current.style.height = Math.min(scrollHeight, 140) + 'px';
+
+      setWrapperHeight(scrollHeight + 20);
     }
 
     // 设置 slash widget 块

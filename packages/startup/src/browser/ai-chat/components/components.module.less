@@ -60,6 +60,7 @@
     box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
     border-radius: 8px;
     bottom: 61px;
+    z-index: 1000;
 
     .options {
       ul {
@@ -121,9 +122,9 @@
       background-color: #34414b;
       color: #40a6ff;
       border-radius: 3px;
-      padding: 1px;
+      padding: 1px 2px;
       z-index: 1;
-      top: 10px;
+      top: 9.5px;
     }
 
     .send_chat_btn {
@@ -153,58 +154,95 @@
 
 // chat 面板的代码展示部分
 .ai_chat_code_wrapper {
-  span.code_inline {
-    display: inline;
-    color: #d7ba7d;
+  position: relative;
 
-    &::after {
-      content: none;
+  .render_text {
+    span.code_inline {
+      display: inline;
+      color: #d7ba7d;
+
+      &::after {
+        content: none;
+      }
+    }
+
+    .code_block {
+      margin: 16px 0;
+
+      .monaco_wrapper {
+        position: relative;
+
+        &:hover {
+          .action_toolbar {
+            display: flex;
+          }
+        }
+
+        .editor {
+          border-radius: 8px;
+          border: 1px solid #ffffff1a;
+          overflow: hidden;
+        }
+
+        .action_toolbar {
+          display: none;
+          position: absolute;
+          right: 0;
+          top: 0;
+          background-color: #151b21;
+          border-radius: 6px 6px 0 6px;
+          z-index: 100;
+          top: -15px;
+          height: 30px;
+          border: 1px solid #ffffff1a;
+          align-items: center;
+          overflow: hidden;
+
+          :global {
+            .kt-popover {
+              height: inherit;
+            }
+          }
+
+          span {
+            width: 30px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+              background-color: rgba(255, 255, 255, 0.08);
+            }
+          }
+        }
+      }
     }
   }
 
-  .code_block {
-    margin: 16px 0;
+  .more_actions {
+    position: absolute;
+    z-index: 1000;
+    bottom: -36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 16px;
 
-    .monaco_wrapper {
-      position: relative;
+    &::after {
+      content: initial;
+    }
 
-      &:hover {
-        .action_toolbar {
-          display: flex;
-        }
-      }
+    .side {
+      display: flex;
+      align-items: center;
+      justify-items: right;
+      height: inherit;
 
-      .editor {
-        border-radius: 8px;
-        border: 1px solid #ffffff1a;
-        overflow: hidden;
-      }
-
-      .action_toolbar {
-        display: none;
-        position: absolute;
-        right: 0;
-        top: 0;
-        background-color: #151b21;
-        border-radius: 6px 6px 0 6px;
-        z-index: 100;
-        top: -15px;
-        height: 30px;
-        border: 1px solid #ffffff1a;
-        align-items: center;
-        overflow: hidden;
-
-        span {
-          width: 30px;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          &:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-          }
-        }
+      span {
+        margin-right: 6px;
+        cursor: pointer;
       }
     }
   }

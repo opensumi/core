@@ -6,7 +6,7 @@ import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
@@ -18,6 +18,7 @@ import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
+import { LineVertical } from './components/lineVertical';
 import { Thinking } from './components/Thinking';
 
 const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
@@ -197,7 +198,10 @@ export const AiChatView = () => {
     [messageListData, containerRef],
   );
 
-  const viewHeight = React.useMemo(() => `calc(100vh - ${LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT + LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT}px)`, []);
+  const viewHeight = React.useMemo(
+    () => `calc(100vh - ${LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT + LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT}px)`,
+    [],
+  );
 
   return (
     <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view} style={{ height: viewHeight }}>
@@ -207,12 +211,16 @@ export const AiChatView = () => {
             <Avatar src={AI_AVATAR} className={styles.ai_chat_avatar_icon} />
           </div>
           <span className={styles.title}>{AI_NAME}</span>
-          <span className={styles.line_vertical} />
+          <LineVertical />
           <span className={styles.des}>Chat</span>
         </div>
         <div className={styles.right}>
-          <Icon className={getIcon('clear')} />
-          <Icon className={getIcon('close')} />
+          <Popover id={'ai-chat-header-clear'} title='清空'>
+            <Icon className={getIcon('clear')} />
+          </Popover>
+          <Popover id={'ai-chat-header-close'} title='关闭'>
+            <Icon className={getIcon('close')} />
+          </Popover>
         </div>
       </div>
       <div className={styles.body_container}>
@@ -327,11 +335,7 @@ const AIChatGPTReply = async (input, aiGPTBackService) => {
   try {
     console.log('ai chat gpt reply: >>>> ', input);
 
-    const aiMessage = createMessageByAI(
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <CodeBlockWrapper text={input} />
-      </div>,
-    );
+    const aiMessage = createMessageByAI(<CodeBlockWrapper text={input} />);
 
     return aiMessage;
   } catch (error) {
