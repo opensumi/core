@@ -333,11 +333,16 @@ ${axmlCode}
   }
 
   private async generateBigfishProject(fileList: string[], projectInfo: Requirements, callback: (path: string) => void) {
+    const templateFile = ['package.json'];
     while (fileList.length) {
       const part = fileList.splice(0, 1);
       await Promise.all(part.map(async (file) => {
         callback(file);
-        await this.generateBigfishFile(file, projectInfo);
+        if (templateFile.find((f) => f === file)) {
+          await this.aiBackService.generateFileByPath(file, template[file]);
+        } else {
+          await this.generateBigfishFile(file, projectInfo);
+        }
       }));
     }
   }
@@ -436,5 +441,49 @@ public
 .idea
 .history
 .node
+`,
+  'package.json': `
+{
+  "name": "new project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "bigfish build",
+    "ci": "bigfish lint",
+    "dev": "bigfish dev",
+    "devs": "cross-env MOCK=none bigfish dev",
+    "format": "prettier --cache --write .",
+    "postinstall": "bigfish setup",
+    "lint": "bigfish lint",
+    "lint:fix": "bigfish lint --fix",
+    "oneapi": "npm run oneapi:service && npm run oneapi:mock",
+    "oneapi:mock": "bigfish api generate mock",
+    "oneapi:service": "bigfish api generate service",
+    "prepare": "husky install",
+    "setup": "bigfish setup",
+    "test": "bigfish test"
+  },
+  "dependencies": {
+    "@alipay/bigfish": "^4.0.157",
+    "@alipay/tech-ui": "^3.2.2",
+    "@monaco-editor/react": "^4.4.6",
+    "antd": "conch-v5"
+  },
+  "devDependencies": {
+    "@ali/ci": "^4.43.0",
+    "cross-env": "^7.0.3",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "typescript": "^4.1.2"
+  },
+  "engines": {
+    "install-node": "16"
+  },
+  "ci": {
+    "type": "aci",
+    "coverage": false
+  }
+}
 `,
 };

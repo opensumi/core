@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
@@ -16,9 +16,6 @@ export class AiChatService {
 
   @Autowired(AiGPTBackSerivcePath)
   aiBackService: any;
-
-  @Autowired(CommandService)
-  protected readonly commandService: CommandService;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -129,87 +126,6 @@ export class AiChatService {
     // }
 
     return { type, message };
-  }
-
-  public async messageWithSumi(input: string) {
-    // const messageWithPrompt = `You are a developer proficient in vscode extension development.I will ask you some questions about extension development.
-    // If a certain problem can be solved using a Command, please provide the command.
-    // If it's related to modifying configurations, please specify the category and identifier of the configuration item, along with an example code.
-    // An example question is as follow: “修改字体大小为 20 像素”.
-    // And then, give me an answer such as: “
-    // ConfigCategory: editor
-    // ConfigKey: fontSize
-    // ConfigParams: 16
-    // Example:
-    // \`\`\`
-    // const config = vscode.workspace.getConfiguration('editor');
-    // config.update('fontSize', 16, vscode.ConfigurationTarget.Global);
-    // \`\`\`
-    // ”
-    // Another example is : “唤起弹窗”
-    // And answer such as :”
-    // Command: workbench.action.openGlobalKeybindings
-    // Example:
-    // \`\`\`
-    // vscode.workspace.executeCommand('workbench.action.openGlobalKeybindings')
-    // \`\`\`
-    // ”
-    // (You need to distinguish between whether it's a Command or a Config in your answers and provide the corresponding format. Simply provide content similar to the examples given without the need for explanations.)
-    // My question is: ${input}`;
-    // const messageWithPrompt = `
-    // You are a professional vscode plugin developer, and I have some questions about plugin development to ask you. Please provide API and give example codes with javascript.
-    // An example question is as follow: "修改字体大小为 20 像素"
-    // And then, give me an answer such as: "
-    //   API: vscode.workspace.getConfiguration
-    //   Example:
-    //   \`\`\`
-    //       const config = vscode.workspace.getConfiguration('editor');
-    //       config.update('fontSize', 20, vscode.ConfigurationTarget.Global);
-    //   \`\`\`
-    // "
-    // (Please just provide example code and API, do not give other words)
-    // My question is: ${input}`;
-
-    // const messageWithPrompt = `你是一位精通 vscode 的开发者，我会问你一些关于 vscode 的问题。
-    // 如果某个问题可以使用命令解决，请提供该命令，并给我解释。
-    // 示例问题如下：\"打开设置面板\"，
-    // 然后回答：\"
-    // 您可以用以下命令 xxxxx:
-    // 1. xxx
-    // 2. xxxx
-    // 3. xxxx
-
-    // 命令：workbench.action.openSettings
-    // 例子：
-    // \`\`\`
-    // vscode.workspace.executeCommand('workbench.action.openSettings')
-    // \`\`\`
-    // ”
-    // （您需要提供相应的格式回答。同时需要解释我的问题需要哪些操作。）
-    // 我的问题是：${input}`
-
-    const messageWithPrompt = `You are a developer proficient in vscode, I will ask you some questions about vscode.
-    If a problem can be solved with a command, please provide that command and explain it to me.
-    A sample question would be: \"打开设置面板\",
-    Then answer: \"
-    You can use the following command xxxxx:
-    1. xxx
-    2. xxxx
-    3. xxxx
-    
-    Command: workbench.action.openGlobalKeybindings
-    Example:
-    \`\`\`
-    vscode.workspace.executeCommand('workbench.action.openGlobalKeybindings')
-    \`\`\`
-    "
-    (You need to distinguish between Command and Config in your answer and provide the appropriate format. Also explain what actions my question requires. 用中文回答我，其中 Command 和 Example 不用翻译)
-    My problem is: ${input}`;
-
-    const res = await this.aiBackService.aiGPTcompletionRequest(messageWithPrompt);
-
-    console.log('aiCodeGPTcompletionRequest with sumi: >>>> ', res);
-    return res.data;
   }
 
   public async messageWithGPT(input: string) {

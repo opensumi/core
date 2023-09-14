@@ -6,8 +6,10 @@ import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { useInjectable, getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
-import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Button } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
+import { URI, Command, isMacintosh } from '@opensumi/ide-core-common';
 
 import 'react-chat-elements/dist/main.css';
 import { AiGPTBackSerivcePath, AISerivceType } from '../../common/index';
@@ -15,6 +17,7 @@ import { AiGPTBackSerivcePath, AISerivceType } from '../../common/index';
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
+import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { Thinking } from './components/Thinking';
@@ -44,7 +47,9 @@ const sleep = (ms: number) =>
 export const AiChatView = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
+  const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
+  const opener = useInjectable<CommandOpener>(CommandOpener);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
@@ -162,9 +167,9 @@ export const AiChatView = () => {
         if (userInput!.type === AISerivceType.Search || userInput!.type === AISerivceType.SearchCode) {
           aiMessage = await AISearch(userInput, aiGPTBackService);
         } else if (userInput!.type === AISerivceType.Sumi) {
-          aiMessage = await aiChatService.messageWithSumi(userInput!.message!);
+          aiMessage = await aiSumiService.message(userInput!.message!);
 
-          aiMessage = await AIWithCommandReply(aiMessage);
+          aiMessage = await AIWithCommandReply(aiMessage, opener);
         } else if (userInput!.type === AISerivceType.GPT) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
           // aiMessage = await AIChatGPTReply(aiMessage, aiGPTBackService);
@@ -337,20 +342,24 @@ const AIChatGPTReply = async (input, aiGPTBackService) => {
 };
 
 // 带有命令按钮的 AI 回复
-const AIWithCommandReply = async (input) => {
+const AIWithCommandReply = async (command: Command, opener) => {
   try {
-    console.log('ai command reply: >>>> ', input);
+    console.log('ai command reply: >>>> ', command);
 
-    const commandReg = /[Command命令command][:：]\s*(?<command>\S+)\s*/i;
-    const command = commandReg.exec(input);
     if (!command) {
-      return createMessageByAI(input);
+      return createMessageByAI('未找到合适的功能');
     }
+
+    const { labelLocalized, label, delegate, id } = command;
 
     const aiMessage = createMessageByAI(
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <div style={{ whiteSpace: 'pre-wrap' }}>{input}</div>
-        <Button>打开命令面板</Button>
+        <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
+        <ol style={{ margin: '8px 0' }}>
+          <li>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
+          <li>输入：{labelLocalized?.localized || label}</li>
+        </ol>
+        <Button onClick={() => opener.open(URI.parse(`command:${delegate || id}`))}>点击执行命令</Button>
       </div>,
     );
 
