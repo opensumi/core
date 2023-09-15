@@ -17,8 +17,9 @@ import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiQuickCommandHandler } from './ai-quick-open.command';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
-import { AI_EXPLAIN_TERMINAL_COMMANDS } from '../../common/command';
+import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS } from '../../common/command';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
+import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 // import { TerminalClient } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 
 @Injectable()
@@ -206,6 +207,18 @@ ${getContent}
         }
       },
     });
+
+    commands.registerCommand(AI_EXPLAIN_DEBUG_COMMANDS, {
+      execute: (node: DebugConsoleNode) => {
+        const description = node.description;
+        if (description) {
+          this.aiChatService.launchChatMessage({
+            message: '/explain @debugSelection',
+            prompt: `我在运行并调试我的项目代码，请解释调试运行过程当中的这段日志: \`\`\`\n${description}\n\`\`\` `
+          })
+        }
+      },
+    });
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
@@ -213,6 +226,11 @@ ${getContent}
       command: AI_EXPLAIN_TERMINAL_COMMANDS,
       group: '0_ai',
     });
+
+    menus.registerMenuItem(MenuId.DebugConsoleContext, {
+      command: AI_EXPLAIN_DEBUG_COMMANDS,
+      group: '0_ai',
+    })
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
