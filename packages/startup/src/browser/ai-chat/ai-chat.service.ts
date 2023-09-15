@@ -12,7 +12,13 @@ const aiSumiKey = '/sumi';
 const aiExplainKey = '/explain';
 
 export interface IChatMessageStructure {
+  /**
+   * 用于 chat 面板展示
+   */
   message: string | React.ReactNode;
+  /**
+   * 实际调用的 prompt
+   */
   prompt?: string
 }
 
@@ -31,6 +37,10 @@ export class AiChatService {
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
+  private get currentEditor() {
+    return this.editorService.currentEditor;
+  }
+
   public launchChatMessage(data: IChatMessageStructure) {
     this._onChatMessageLaunch.fire(data);
   }
@@ -39,26 +49,13 @@ export class AiChatService {
     let type: AISerivceType | undefined;
     let message: string | undefined;
 
-    const currentEditor = this.editorService.currentEditor;
-    if (!currentEditor) {
+    if (!this.currentEditor) {
       return;
     }
 
-    const currentUri = currentEditor.currentUri;
+    const currentUri = this.currentEditor.currentUri;
     if (!currentUri) {
       return;
-    }
-
-    if (input === '解释代码') {
-      // 获取指定范围内的文本内容
-      const selection = currentEditor.monacoEditor.getSelection();
-      if (!selection) {
-        return;
-      }
-      const selectionContent = currentEditor.monacoEditor.getModel()?.getValueInRange(selection);
-      const messageWithPrompt = `解释以下这段代码。\n \`\`\`${selectionContent}\`\`\``;
-
-      return { type: AISerivceType.GPT, message: messageWithPrompt };
     }
 
     if (input.startsWith(aiSumiKey)) {
@@ -70,23 +67,12 @@ export class AiChatService {
 
     if (input.startsWith(aiExplainKey)) {
       message = input.split(aiExplainKey)[1];
-      
-      const displayName = currentUri.displayName;
-      const content = currentEditor.monacoEditor.getValue();
-      let messageWithPrompt: string = '';
 
-      if (!message.trim()) {
-        message = currentEditor.monacoEditor.getModel()?.getValueInRange(currentEditor.monacoEditor.getSelection()!);
-
-        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。我会给你一段代码片段，你需要给我解释这段代码片段的意思。我的代码片段是: \`\`\`\n${message}\n\`\`\` `;
-      } else {
-        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。你要根据我提供的代码内容回答我的问题，我的问题是: "${message}"`;
-        // messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。此时有个异常问题是 "${message}", 请给我解释这个异常问题并给出修复建议`;
+      if (!prompt) {
+        prompt = this.explainCodePrompt(message);
       }
 
-      console.log('ai explain prompt: >>> ', messageWithPrompt)
-
-      return { type: AISerivceType.Explain, message: messageWithPrompt };
+      return { type: AISerivceType.Explain, message: prompt };
     }
 
     if (input.startsWith(aiSearchKey)) {
@@ -101,6 +87,70 @@ export class AiChatService {
     }
 
     return { type, message };
+  }
+
+  // 解释“问题”面板的 prompt
+  public explainProblemPrompt(message: string): string {
+    if (!this.currentEditor) {
+      return '';
+    }
+
+    const currentUri = this.currentEditor.currentUri;
+    if (!currentUri) {
+      return '';
+    }
+
+    const displayName = currentUri.displayName;
+    const content = this.currentEditor.monacoEditor.getValue();
+
+    const messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。此时有个异常问题是 "${message}", 你需要解释这个异常问题并给出修复建议`;
+    return messageWithPrompt;
+  }
+
+  // 解释当前文件的代码或者选中的某个代码片段的 prompt，也可以用于对选中的代码加上用户的描述进行解释
+  public explainCodePrompt(message: string = ''): string {
+    if (!this.currentEditor) {
+      return '';
+    }
+
+    const currentUri = this.currentEditor.currentUri;
+    if (!currentUri) {
+      return '';
+    }
+
+    const displayName = currentUri.displayName;
+    const fsPath = currentUri.codeUri.fsPath;
+    const content = this.currentEditor.monacoEditor.getValue();
+    const selectionContent = this.currentEditor.monacoEditor.getModel()?.getValueInRange(this.currentEditor.monacoEditor.getSelection()!) || '';
+    let messageWithPrompt = '';
+
+    /**
+     * 分三种情况
+     * 1. 没打开任意一个文件，则提供当前文件目录树给出当前项目的解释。如果用户有 prompt，则在最后带上
+     * 2. 没选中任意代码，则解释当前打开的代码文件（文件路径、代码）
+     * 3. 选中任意代码，则带上当前文件信息（文件路径、代码）和选中片段
+     * 4. 打开当前文件，用户如果有 prompt，则在最后带上。此时如果有选中代码片段，则带上，没有则带上文件代码
+     */
+    if (!this.currentEditor || !this.currentEditor.currentUri) {
+      // 
+    }
+    
+    if (!selectionContent) {
+      messageWithPrompt = `这是 ${displayName} 文件, 位置是在 ${fsPath}, 代码内容是 \`\`\`\n${content}\n\`\`\`。向我解释这个代码内容的意思`;
+    }
+
+    if (selectionContent) {
+      messageWithPrompt = `这是 ${displayName} 文件, 位置是在 ${fsPath}, 代码内容是 \`\`\`\n${content}\n\`\`\`。我会给你一段代码片段，你需要给我解释这段代码片段的意思。我的代码片段是: \`\`\`\n${selectionContent}\n\`\`\` `;
+    }
+
+    if (message.trim()) {
+      if (selectionContent) {
+        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。我会提供给你其中的某个代码片段以及我的问题, 你需要根据我给的代码片段来解释我的问题。我提供的代码片段是: \`\`\`\n${selectionContent}\n\`\`\`，我的问题是: "${message}" `;
+      } else {
+        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。根据我提供的代码内容来回答我的问题，我的问题是: "${message}" `;
+      }
+    }
+    return messageWithPrompt;
   }
 
   public async messageWithGPT(input: string) {
