@@ -46,8 +46,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
 
-  public menuse: any;
-
   contribute(editor: IEditor): IDisposable {
     if (!editor) {
       return this;
@@ -116,10 +114,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       if (currentUri && currentUri.codeUri.scheme !== 'file') {
         return;
-      }
-
-      if (!this.menuse) {
-        this.menuse = this.abstractMenuService.createMenu('ai/iconMenubar/context');
       }
 
       const selection = monacoEditor.getSelection();
@@ -201,10 +195,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           const prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的 junit 单元测试用例，不需要解释，只需要返回代码结果`
           console.log('生成测试用例 prompt:>>> ', prompt)
           const result = await this.aiGPTBackService.aiGPTcompletionRequest(`这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的 junit 单元测试用例，不需要解释，只需要返回代码结果`);
-          // const result = {
-          //   data: `ashdlakjshdlakjhsldkajshdlkajsh\nashdlakjshdlakjhsldkajshdlkajsh\nashdlakjshdlakjhsldkajshdlkajsh\nashdlakjshdlakjhsldkajshdlkajsh\n`,
-          //   errorCode: 0
-          // }
 
           // 说明接口有异常
           if (result.errorCode !== 0) {
