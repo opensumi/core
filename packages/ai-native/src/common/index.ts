@@ -1,8 +1,6 @@
 export const AiGPTBackSerivceToken = Symbol('AiGPTBackSerivceToken');
 export const AiGPTBackSerivcePath = 'AiGPTBackSerivcePath';
 
-export * from './command';
-
 export enum ChatCompletionRequestMessageRoleEnum {
   System = 'system',
   User = 'user',

@@ -126,9 +126,6 @@ export const AiChatView = () => {
   const firstMsg = React.useMemo(() => createMessageByAI(<InitMsgComponent />), [InitMsgComponent]);
 
   React.useEffect(() => {
-    // @ts-ignore
-    window.aiAntGlm = aiGPTBackService.aiAntGlm;
-
     if (aiGenerateInfo) {
       generateProject([firstMsg]);
     } else if (messageListData && messageListData.length === 0) {

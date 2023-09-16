@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Avatar } from 'react-chat-elements';
 
-import { AiRunService } from '@opensumi/ide-ai-native/lib/browser/run/run.service';
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -11,6 +10,7 @@ import { TOGGLE_RIGHT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browse
 import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
+import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-ai-native/lib/common/command';
 
 /**
  * Custom menu bar component.
@@ -19,15 +19,14 @@ import * as styles from './menu-bar.module.less';
  */
 export const MenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
-  const aiRunService = useInjectable<AiRunService>(AiRunService);
 
   const handleSelectFocus = () => {
     // commandService.executeCommand('workbench.action.quickOpen');
   };
 
   const handleRun = () => {
-    // commandService.executeCommand('minidev.startDev');
-    aiRunService.run();
+    commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
+    // aiRunService.run();
   };
 
   const handleRightPanel = () => {

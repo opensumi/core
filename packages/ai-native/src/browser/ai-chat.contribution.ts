@@ -11,12 +11,13 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
-import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS } from '../common';
+import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
+import { AiRunService } from './run/run.service';
 
 @Injectable()
 @Domain(ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
@@ -47,6 +48,9 @@ export class AiChatContribution implements ComponentContribution, BrowserEditorC
 
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
+
+  @Autowired(AiRunService)
+  protected readonly aiRunService: AiRunService;
 
   onStart() {
     // console.log('terminalClient:>>>', this.terminalClient)
@@ -202,6 +206,12 @@ ${getContent}
             prompt: `我在运行并调试我的项目代码，请解释调试运行过程当中的这段日志: \`\`\`\n${description}\n\`\`\` `,
           });
         }
+      },
+    });
+
+    commands.registerCommand(AI_RUN_DEBUG_COMMANDS, {
+      execute: () => {
+        this.aiRunService.run();
       },
     });
   }

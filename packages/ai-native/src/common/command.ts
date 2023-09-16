@@ -11,3 +11,7 @@ export const AI_EXPLAIN_DEBUG_COMMANDS = {
     label: 'AI 助手: 对此进行解释',
     category: 'debug',
 };
+
+export const AI_RUN_DEBUG_COMMANDS = {
+    id: 'ai.run.debug'
+};

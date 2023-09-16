@@ -39,6 +39,7 @@ import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { WebviewModule } from '@opensumi/ide-webview';
 import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
 import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
+import { AiNativeModule } from '@opensumi/ide-ai-native/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,
@@ -87,4 +88,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   CommentsModule,
   TaskModule,
   TestingModule,
+
+  AiNativeModule,
 ];
