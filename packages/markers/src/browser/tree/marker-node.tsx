@@ -10,14 +10,14 @@ import {
   Badge,
   Icon,
 } from '@opensumi/ide-components';
+import { AiChatService } from '@opensumi/ide-ai-native/src/browser/ai-chat.service';
 import { URI, getIcon, IMatch, useInjectable } from '@opensumi/ide-core-browser';
+import { getExternalIcon } from '@opensumi/ide-core-browser';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
 import { MarkerGroupNode, MarkerNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
-import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { AiChatService } from '@opensumi/ide-startup/src/browser/ai-chat/ai-chat.service';
 
 export interface IMarkerNodeProps {
   item: any;
@@ -158,8 +158,8 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
     aiChatService.launchChatMessage({
       message: `/explain ${node.marker.message}`,
       prompt: aiChatService.explainProblemPrompt(node.marker.message),
-    })
-  }, [aiChatService])
+    });
+  }, [aiChatService]);
 
   const renderedNodeStyle = {
     lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,

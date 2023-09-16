@@ -1,16 +1,16 @@
 import * as React from 'react';
+import { Avatar } from 'react-chat-elements';
 
+import { AiRunService } from '@opensumi/ide-ai-native/lib/browser/run/run.service';
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandService } from '@opensumi/ide-core-common';
+import { TOGGLE_RIGHT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
-import { TOGGLE_RIGHT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
-import { Avatar } from 'react-chat-elements';
-import { AiRunService } from '@opensumi/ide-startup/lib/browser/ai-chat/run/run.service';
 
 /**
  * Custom menu bar component.
@@ -32,7 +32,7 @@ export const MenuBarView = () => {
 
   const handleRightPanel = () => {
     commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id);
-  }
+  };
 
   // quick-open-overlay
   return (

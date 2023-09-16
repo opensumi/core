@@ -2,7 +2,6 @@ import { Injectable, Autowired } from '@opensumi/di';
 import {
   ClientAppContribution,
   Domain,
-  getIcon,
   IStatusBarService,
   StatusBarAlignment,
   StatusBarEntryAccessor,

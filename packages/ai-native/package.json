@@ -1,0 +1,34 @@
+{
+  "name": "@opensumi/ide-ai-native",
+  "version": "2.26.8",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "private": true,
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "prepublishOnly": "yarn run build",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.ai-native.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:opensumi/core.git"
+  },
+  "dependencies": {
+    "@opensumi/ide-components": "workspace:^",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-core-node": "workspace:^",
+    "@opensumi/ide-debug": "workspace:^",
+    "@opensumi/ide-editor": "workspace:^",
+    "@opensumi/ide-file-service": "workspace:^",
+    "@opensumi/ide-file-tree-next": "workspace:^",
+    "@opensumi/ide-monaco": "workspace:^",
+    "@opensumi/ide-terminal-next": "workspace:^",
+    "@opensumi/ide-workspace": "workspace:^"
+  },
+  "devDependencies": {
+    "@opensumi/ide-core-browser": "workspace:^"
+  }
+}

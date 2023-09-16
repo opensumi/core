@@ -2,6 +2,7 @@
 import { Injectable } from '@opensumi/di';
 import { ComponentContribution, ComponentRegistry, Domain, getExternalIcon } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+
 import { MenuBarView } from './menu-bar.view';
 
 @Injectable()
@@ -20,7 +21,7 @@ export class MenuBarContribution implements ComponentContribution, MenuContribut
     menus.registerMenuItems(MenuId.IconMenubarContext, [
       {
         command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('layout-sidebar-left-off')
+        iconClass: getExternalIcon('layout-sidebar-left-off'),
       },
     ]);
   }

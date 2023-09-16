@@ -1,7 +1,6 @@
 import childProcess from 'child_process';
 import fs from 'fs';
 import net, { ListenOptions, Server } from 'net';
-import os from 'os';
 import { promisify } from 'util';
 
 import * as pty from 'node-pty';

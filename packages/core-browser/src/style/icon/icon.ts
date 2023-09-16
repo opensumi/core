@@ -494,7 +494,7 @@ const codIconId = [
   'newline',
   'layout',
   'layout-sidebar-left-off',
-  'send'
+  'send',
 ];
 
 /**
