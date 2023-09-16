@@ -8,16 +8,14 @@ import {
   ClasslistComposite,
   TreeNodeType,
   Badge,
-  Icon,
 } from '@opensumi/ide-components';
-import { AiChatService } from '@opensumi/ide-ai-native/src/browser/ai-chat.service';
 import { URI, getIcon, IMatch, useInjectable } from '@opensumi/ide-core-browser';
-import { getExternalIcon } from '@opensumi/ide-core-browser';
 
-import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
+import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
 import { MarkerGroupNode, MarkerNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
+import { MarkerService } from '../markers-service';
 
 export interface IMarkerNodeProps {
   item: any;
@@ -138,7 +136,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   onClick,
 }: IMarkerNodeRenderedProps) => {
 
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const markerService = useInjectable<MarkerService>(IMarkerService);
 
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
@@ -154,24 +152,14 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
     defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!MarkerGroupNode.is(item) ? 16 : 0)
   }px`;
 
-  const handleAiIcon = useCallback((node: MarkerNode) => {
-    aiChatService.launchChatMessage({
-      message: `/explain ${node.marker.message}`,
-      prompt: aiChatService.explainProblemPrompt(node.marker.message),
-    });
-  }, [aiChatService]);
-
   const renderedNodeStyle = {
     lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
     paddingLeft,
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: MarkerGroupNode | MarkerNode) => (
-      <div className={cls(!(MarkerGroupNode.is(node)) && styles.icon_container)}>
-        {
-          !MarkerGroupNode.is(node) && <Icon tooltip='AI 智能问题诊断' onClick={() => handleAiIcon(node)} className={cls(getExternalIcon('lightbulb'), styles.ai_icon)}/>
-        }
+    (node: MarkerGroupNode | MarkerNode) => {
+      return markerService.renderMarkerNodeIcon((
         <div
           className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
           style={{
@@ -180,8 +168,8 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
             ...(!MarkerGroupNode.is(node) && node.iconStyle),
           }}
         ></div>
-      </div>
-    ),
+      ), node);
+    },
     [],
   );
 

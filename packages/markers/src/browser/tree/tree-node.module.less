@@ -87,25 +87,15 @@
       background-color: var(--editor-findMatchHighlightBackground);
     }
 
-    .icon_container {
-      display: flex;
-      align-items: center;
-
-      .ai_icon {
-        color: #ffcc00;
-        display: none !important;
-        margin-right: 4px;
-      }
-    }
-
-
     &:hover {
-      .icon_container {
-        .icon {
-          display: none !important;
-        }
-        .ai_icon {
-          display: inline-block !important;
+      :global {
+        div[class*=ai_marker_node_icon_container] {
+          :first-child {
+            display: inline-block !important;
+          }
+          :last-child {
+            display: none !important;
+          }
         }
       }
     }

@@ -26,7 +26,8 @@
     "@opensumi/ide-file-tree-next": "workspace:^",
     "@opensumi/ide-monaco": "workspace:^",
     "@opensumi/ide-terminal-next": "workspace:^",
-    "@opensumi/ide-workspace": "workspace:^"
+    "@opensumi/ide-workspace": "workspace:^",
+    "react-chat-elements": "^12.0.10"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:^"

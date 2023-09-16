@@ -52,10 +52,6 @@ export class AiChatContribution implements ComponentContribution, BrowserEditorC
   @Autowired(AiRunService)
   protected readonly aiRunService: AiRunService;
 
-  onStart() {
-    // console.log('terminalClient:>>>', this.terminalClient)
-  }
-
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AiChatContribution.AiChatContainer, {
       component: AiChatView,
