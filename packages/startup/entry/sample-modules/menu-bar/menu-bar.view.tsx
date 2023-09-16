@@ -10,6 +10,7 @@ import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 import * as styles from './menu-bar.module.less';
 import { TOGGLE_RIGHT_PANEL_COMMAND } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 import { Avatar } from 'react-chat-elements';
+import { AiRunService } from '@opensumi/ide-startup/lib/browser/ai-chat/run/run.service';
 
 /**
  * Custom menu bar component.
@@ -18,13 +19,15 @@ import { Avatar } from 'react-chat-elements';
  */
 export const MenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
+  const aiRunService = useInjectable<AiRunService>(AiRunService);
 
   const handleSelectFocus = () => {
     // commandService.executeCommand('workbench.action.quickOpen');
   };
 
   const handleRun = () => {
-    commandService.executeCommand('minidev.startDev');
+    // commandService.executeCommand('minidev.startDev');
+    aiRunService.run();
   };
 
   const handleRightPanel = () => {

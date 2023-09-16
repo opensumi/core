@@ -169,6 +169,10 @@ export const AiChatView = () => {
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
           aiMessage = await AIChatGPTReply(aiMessage);
+        } else if (userInput!.type === AISerivceType.Run) {
+          aiMessage = await aiChatService.aiBackService.aiAntGlm(userInput!.message!);
+          console.log('aiMessage run: >>>> ', aiMessage)
+          aiMessage = await AIChatGPTReply(aiMessage.data);
         }
 
         if (aiMessage) {
