@@ -75,6 +75,7 @@ export const AiChatView = () => {
 
     messageList.pop();
     setMessageListData([...messageList]);
+    localStorage.removeItem('ai-generate');
   }, []);
 
   const InitMsgComponent = () => {
