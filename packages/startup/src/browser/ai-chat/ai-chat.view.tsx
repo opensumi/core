@@ -315,14 +315,13 @@ const AISearch = async (input, aiGPTBackService) => {
       <ChatMoreActions>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div>
-            {/* <Markdown value={responseText}></Markdown> */}
-            {AIChatGPTReply(responseText)}
+            <CodeBlockWrapper text={responseText} />
           </div>
           <div style={{ whiteSpace: 'pre-wrap' }}>
             <Markdown value={urlMessage}></Markdown>
             {/* {AIChatGPTReply(urlMessage)} */}
           </div>
-        </div>,
+        </div>
       </ChatMoreActions>
     );
 

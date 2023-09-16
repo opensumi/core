@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { View, useInjectable } from '@opensumi/ide-core-browser';
-import { Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { EDirection, Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';
@@ -57,7 +57,7 @@ export const AccordionContainer = observer(
         id={containerId}
         resizeKeep={false}
         useDomSize={allCollapsed}
-        direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}
+        direction={alignment === 'horizontal' ? EDirection.LeftToRight : EDirection.TopToBottom}
       >
         {accordionService.visibleViews.map((view, index) => {
           const viewState: SectionState = accordionService.getViewState(view.id);
@@ -66,7 +66,9 @@ export const AccordionContainer = observer(
           return (
             <AccordionSection
               noHeader={accordionService.visibleViews.length === 1}
-              onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
+              onItemClick={() => {
+                accordionService.handleSectionClick(view.id, !collapsed, index);
+              }}
               onContextMenuHandler={accordionService.handleContextMenu}
               alignment={alignment as Layout.alignment}
               header={(view.name && replaceLocalizePlaceholder(view.name)) || view.id}

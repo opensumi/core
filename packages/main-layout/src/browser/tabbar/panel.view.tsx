@@ -57,7 +57,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
     <div
       id={id}
       className={clsx(styles.tab_panel, {
-        [styles.tab_panel_hidden]: !currentContainerId || currentContainerId === '',
+        [styles.tab_panel_hidden]: !currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -207,4 +207,4 @@ export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView
 
 export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
-export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={BottomPanelView} />;
+export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={BottomPanelView} panelSize={280} />;

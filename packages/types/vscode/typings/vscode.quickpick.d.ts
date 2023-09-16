@@ -1,5 +1,4 @@
 declare module 'vscode' {
-
   /**
    * The kind of {@link QuickPickItem quick pick item}.
    */
@@ -571,5 +570,4 @@ declare module 'vscode' {
      */
     readonly severity: InputBoxValidationSeverity;
   }
-
 }

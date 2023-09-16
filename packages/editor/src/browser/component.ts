@@ -35,6 +35,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private sideWidgets = {
     bottom: new Set<IEditorSideWidget>(),
+    top: new Set<IEditorSideWidget>(),
   };
 
   private initialPropsMap: Map<string, any> = new Map();

@@ -1287,24 +1287,24 @@ export class EditorContribution
   }
 
   registerQuickOpenHandlers(handlers: IQuickOpenHandlerRegistry): void {
-    // handlers.registerHandler(this.workspaceSymbolQuickOpenHandler, {
-    //   title: localize('quickopen.tab.symbol'),
-    //   order: 3,
-    //   commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
-    //   sub: {
-    //     // 将类单独作为一个 tab，Java 场景比较常见，其它技术栈可能不一定
-    //     '#': {
-    //       title: localize('quickopen.tab.class'),
-    //       order: 2,
-    //       commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
-    //     },
-    //   },
-    // });
-    // handlers.registerHandler(this.goToLineQuickOpenHandler, {
-    //   title: localize('quickopen.tab.goToLine'),
-    //   commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
-    //   order: 5,
-    // });
+    handlers.registerHandler(this.workspaceSymbolQuickOpenHandler, {
+      title: localize('quickopen.tab.symbol'),
+      order: 3,
+      commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL.id,
+      sub: {
+        // 将类单独作为一个 tab，Java 场景比较常见，其它技术栈可能不一定
+        '#': {
+          title: localize('quickopen.tab.class'),
+          order: 2,
+          commandId: EDITOR_COMMANDS.SEARCH_WORKSPACE_SYMBOL_CLASS.id,
+        },
+      },
+    });
+    handlers.registerHandler(this.goToLineQuickOpenHandler, {
+      title: localize('quickopen.tab.goToLine'),
+      commandId: EDITOR_COMMANDS.GO_TO_LINE.id,
+      order: 5,
+    });
   }
 }
 

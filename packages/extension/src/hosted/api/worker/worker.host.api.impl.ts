@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, CancellationTokenSource, DefaultReporter, Schemes } from '@opensumi/ide-core-common';
+import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
@@ -10,6 +10,7 @@ import {
   ViewColumn,
   TextEditorSelectionChangeKind,
   IExtensionDescription,
+  IExtHostLocalization,
 } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
@@ -19,7 +20,7 @@ import { ExtHostEnv } from '../vscode/env/ext.host.env';
 import { createWorkerHostEnvAPIFactory } from '../vscode/env/workerEnvApiFactory';
 import { ExtHostWebviewService, ExtHostWebviewViews } from '../vscode/ext.host.api.webview';
 import { createAuthenticationApiFactory, ExtHostAuthentication } from '../vscode/ext.host.authentication';
-import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.command';
+import { ExtHostCommands } from '../vscode/ext.host.command';
 import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';
 import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
 import { ExtHostDecorations } from '../vscode/ext.host.decoration';
@@ -29,6 +30,7 @@ import { ExtHostFileSystem } from '../vscode/ext.host.file-system';
 import { ExtHostFileSystemEvent } from '../vscode/ext.host.file-system-event';
 import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
 import { createLanguagesApiFactory, ExtHostLanguages } from '../vscode/ext.host.language';
+import { ExtHostLocalization, createLocalizationApiFactory } from '../vscode/ext.host.localization';
 import { ExtHostMessage } from '../vscode/ext.host.message';
 import { ExtHostOutput } from '../vscode/ext.host.output';
 import { ExtHostPreference } from '../vscode/ext.host.preference';
@@ -157,6 +159,11 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostAuthentication,
     new ExtHostAuthentication(rpcProtocol),
   ) as ExtHostAuthentication;
+  const extHostLocalization = rpcProtocol.set<IExtHostLocalization>(
+    ExtHostAPIIdentifier.ExtHostLocalization,
+    new ExtHostLocalization(rpcProtocol, extensionService.logger),
+  ) as ExtHostLocalization;
+
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol)) as ExtHostEnv;
 
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
@@ -173,11 +180,8 @@ export function createAPIFactory(
     TextEditorCursorStyle,
     TextEditorSelectionChangeKind,
     // VS Code 纯前端插件 API
-    env: {
-      // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
-      uriScheme: Schemes.file,
-      ...createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
-    },
+    // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
+    env: createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     extensions: createExtensionsApiFactory(extensionService),
     workspace: createWorkspaceApiFactory(
@@ -196,10 +200,11 @@ export function createAPIFactory(
       createSourceControl(id: string, label: string, rootUri: vscode.Uri) {
         return extHostSCM.createSourceControl(extension, id, label, rootUri);
       },
-      cgetSourceControl(extensionId: string, id: string) {
+      getSourceControl(extensionId: string, id: string) {
         return extHostSCM.getSourceControl(extensionId, id);
       },
     },
+    l10n: createLocalizationApiFactory(extHostLocalization, extension),
     window: createWindowApiFactory(
       extension,
       extHostEditors,

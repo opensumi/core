@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import {
   RecycleTree,
@@ -24,7 +24,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
 
   const { width, height } = viewState;
 
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const openedEditorModelService = useInjectable<OpenedEditorModelService>(OpenedEditorModelService);
   const { decorationService, labelService, commandService } = openedEditorModelService;

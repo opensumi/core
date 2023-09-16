@@ -1,4 +1,7 @@
-/* tslint:disable no-reference */
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 /// <reference path='./vscode/typings/vscode.d.ts' />
 /// <reference path='./vscode/typings/vscode.command.d.ts' />
@@ -18,6 +21,7 @@
 /// <reference path='./vscode/typings/vscode.editor.d.ts' />
 /// <reference path='./vscode/typings/vscode.authentication.d.ts' />
 /// <reference path='./vscode/typings/vscode.tests.d.ts' />
+/// <reference path='./vscode/typings/vscode.l10n.d.ts' />
 
 /// <reference path='./vscode/typings-pending/vscode.d.ts' />
 /// <reference path='./vscode/typings-pending/vscode.proposed.d.ts' />

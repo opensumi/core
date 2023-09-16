@@ -34,7 +34,7 @@ export const DebugVariableView = observer(({ viewState }: React.PropsWithChildre
 
   const { width, height } = viewState;
 
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [model, setModel] = React.useState<TreeModel>();
 
   const debugVariablesModelService = useInjectable<DebugVariablesModelService>(DebugVariablesModelService);

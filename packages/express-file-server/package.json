@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-express-file-server",
-  "version": "2.26.5",
+  "version": "2.26.8",
   "files": [
     "lib",
     "src"

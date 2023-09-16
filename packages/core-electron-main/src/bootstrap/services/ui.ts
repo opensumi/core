@@ -82,13 +82,7 @@ export class ElectronMainUIService
   }
 
   async moveToTrash(path: string) {
-    if (semver.lt(process.versions.electron, '13.0.0')) {
-      // Removed: shell.moveItemToTrash()
-      // https://www.electronjs.org/docs/latest/breaking-changes#removed-shellmoveitemtotrash
-      await (shell as any).moveItemToTrash(path);
-    } else {
-      await shell.trashItem(path);
-    }
+    await shell.trashItem(path);
   }
 
   async revealInFinder(path: string) {
@@ -145,23 +139,17 @@ export class ElectronMainUIService
   async showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined> {
     return new Promise((resolve, reject) => {
       try {
-        if (semver.lt(process.versions.electron, '6.0.0')) {
-          (dialog as any).showOpenDialog(BrowserWindow.fromId(windowId), options, (paths) => {
-            resolve(paths);
-          });
-        } else {
-          const win = BrowserWindow.fromId(windowId);
-          if (!win) {
-            return reject(new Error(`BrowserWindow ${windowId} not found`));
-          }
-          dialog.showOpenDialog(win, options).then((value) => {
-            if (value.canceled) {
-              resolve(undefined);
-            } else {
-              resolve(value.filePaths);
-            }
-          }, reject);
+        const win = BrowserWindow.fromId(windowId);
+        if (!win) {
+          return reject(new Error(`BrowserWindow ${windowId} not found`));
         }
+        dialog.showOpenDialog(win, options).then((value) => {
+          if (value.canceled) {
+            resolve(undefined);
+          } else {
+            resolve(value.filePaths);
+          }
+        }, reject);
       } catch (e) {
         reject(e);
       }
@@ -170,23 +158,17 @@ export class ElectronMainUIService
   async showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
       try {
-        if (semver.lt(process.versions.electron, '6.0.0')) {
-          (dialog as any).showSaveDialog(BrowserWindow.fromId(windowId), options, (path) => {
-            resolve(path);
-          });
-        } else {
-          const win = BrowserWindow.fromId(windowId);
-          if (!win) {
-            return reject(new Error(`BrowserWindow ${windowId} not found`));
-          }
-          dialog.showSaveDialog(win, options).then((value) => {
-            if (value.canceled) {
-              resolve(undefined);
-            } else {
-              resolve(value.filePath);
-            }
-          }, reject);
+        const win = BrowserWindow.fromId(windowId);
+        if (!win) {
+          return reject(new Error(`BrowserWindow ${windowId} not found`));
         }
+        dialog.showSaveDialog(win, options).then((value) => {
+          if (value.canceled) {
+            resolve(undefined);
+          } else {
+            resolve(value.filePath);
+          }
+        }, reject);
       } catch (e) {
         reject(e);
       }

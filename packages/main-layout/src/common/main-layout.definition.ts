@@ -47,7 +47,7 @@ export interface IMainLayoutService {
    * 获指定 containerId 的注册实例
    * @param containerId container id
    */
-  getConatiner(containerId: string): ComponentRegistryInfo | undefined;
+  getContainer(containerId: string): ComponentRegistryInfo | undefined;
   /**
    * 向侧边栏container内附加新的子视图
    * @param view 子视图信息

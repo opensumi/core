@@ -22,8 +22,7 @@ export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: 
 
 export const Progress: React.FC<{
   loading: boolean;
-  className?: string;
-}> = React.memo(({ loading, className }) => {
+}> = React.memo(({ loading }) => {
   if (!loading) {
     return null;
   }

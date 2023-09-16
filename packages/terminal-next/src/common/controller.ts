@@ -22,7 +22,6 @@ export interface ITerminalExternalClient {
   show(preserveFocus?: boolean): void;
   hide(): void;
   dispose(): void;
-  client: ITerminalClient
 }
 
 export interface IBoundSize {

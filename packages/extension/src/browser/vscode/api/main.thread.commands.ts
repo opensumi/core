@@ -149,7 +149,7 @@ export class MainThreadCommands implements IMainThreadCommands {
     try {
       return await this.monacoCommandService.executeCommand(id, ...args);
     } catch (e) {
-      // this.logger.error(e);
+      this.logger.error(e);
       throw e;
     }
   }

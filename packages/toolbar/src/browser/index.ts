@@ -45,10 +45,10 @@ export class ToolBarModuleContribution
   protected readonly extensionsPointService: IExtensionsSchemaService;
 
   registerComponent(registry: ComponentRegistry): void {
-    // registry.register('toolbar', {
-    //   id: 'toolbar',
-    //   component: ToolBar,
-    // });
+    registry.register('toolbar', {
+      id: 'toolbar',
+      component: ToolBar,
+    });
   }
 
   onStart() {

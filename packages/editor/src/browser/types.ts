@@ -48,7 +48,7 @@ export interface IEditorComponent<MetaData = any> {
   renderMode?: EditorComponentRenderMode;
 }
 
-export type EditorSide = 'bottom';
+export type EditorSide = 'bottom' | 'top';
 
 export interface IEditorSideWidget<MetaData = any> {
   /**
@@ -126,7 +126,7 @@ export abstract class EditorComponentRegistry {
   abstract clearPerWorkbenchComponentCache(componentId: string): void;
 
   /**
-   * 注册一个编辑器的边缘组件（目前只开放了bottom)
+   * 注册一个编辑器的边缘组件（目前只开放了bottom、top)
    * @param widget
    */
   abstract registerEditorSideWidget(widget: IEditorSideWidget): IDisposable;
@@ -476,4 +476,9 @@ export class CodeEditorDidVisibleEvent extends BasicEvent<{
   type: EditorOpenType.code | EditorOpenType.diff;
   groupName: string;
   editorId: string;
+}> {}
+
+export class ResoucesOfActiveComponentChangedEvent extends BasicEvent<{
+  component: IEditorComponent;
+  resources: IResource[];
 }> {}

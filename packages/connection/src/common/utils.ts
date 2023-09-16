@@ -28,6 +28,19 @@ export interface ICapturedMessage {
   error?: any;
 }
 
+export interface ConnectionInfo {
+  type: string;
+  downlink: number;
+  uplink: number;
+  rtt: number;
+}
+
+export interface WSCloseInfo {
+  channelPath: string;
+  closeEvent: { code: number; reason: string };
+  connectInfo: ConnectionInfo;
+}
+
 export function stringify(obj: any): string {
   return JSON.stringify(obj);
 }

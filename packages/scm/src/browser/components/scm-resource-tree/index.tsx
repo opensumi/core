@@ -1,6 +1,6 @@
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { FC, useState, createRef, RefObject, useEffect, useCallback, memo } from 'react';
+import React, { FC, useState, useRef, useEffect, useCallback, memo } from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
 import { isOSX } from '@opensumi/ide-core-browser';
@@ -23,7 +23,7 @@ export const SCMResourceTree: FC<{
   const [isReady, setIsReady] = useState<boolean>(false);
   const [model, setModel] = useState<TreeModel>();
 
-  const wrapperRef: RefObject<HTMLDivElement> = createRef();
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
 

@@ -44,6 +44,4 @@ export namespace Schemes {
   export const userData = 'vscode-userdata';
 
   export const userStorage = 'user_storage';
-
-  export const ai = 'ai';
 }

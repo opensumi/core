@@ -9,6 +9,7 @@ import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
 import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+import { ExtHostAPIIdentifier, IExtHostLocalization } from '../../../../src/common/vscode';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
 const enum MessageType {
@@ -71,6 +72,8 @@ describe('Extension process test', () => {
       };
       const rpcProtocol = await initMockRPCProtocol(mockClient);
       extHostImpl = new ExtensionHostServiceImpl(rpcProtocol, injector.get(ILoggerManagerClient).getLogger(), injector);
+      const localization = rpcProtocol.get<IExtHostLocalization>(ExtHostAPIIdentifier.ExtHostLocalization);
+      localization.$setCurrentLanguage('en');
       await extHostImpl.init();
       await extHostImpl.$updateExtHostData();
     });

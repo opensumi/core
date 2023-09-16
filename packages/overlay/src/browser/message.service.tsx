@@ -25,7 +25,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
 
   // 参考 vscode message 组件消失的时间
   protected static DURATION: { [type: number]: number } = {
-    [MessageType.Info]: 150000,
+    [MessageType.Info]: 15,
     [MessageType.Warning]: 18,
     [MessageType.Error]: 20,
   };

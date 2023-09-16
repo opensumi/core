@@ -22,7 +22,6 @@ import { AppConfig } from '../react-providers/config-provider';
 
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS, TERMINAL_COMMANDS } from './common.command';
 import { ClientAppContribution } from './common.define';
-import { getExternalIcon } from '..';
 
 export const inputFocusedContextKey = 'inputFocus';
 export const locationProtocolContextKey = 'locationProtocol';

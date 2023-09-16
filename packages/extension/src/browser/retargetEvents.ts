@@ -32,7 +32,7 @@ const reactEvents = [
   'onPointerLeave',
   'onPointerMove',
   'onPointerOut',
-  // 'onPointerOver',
+  'onPointerOver',
   'onPointerUp',
   'onReset',
   'onResize',

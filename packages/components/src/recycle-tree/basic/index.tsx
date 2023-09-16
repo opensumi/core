@@ -54,7 +54,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   const isDisposed = useRef<boolean>(false);
   const treeService = useRef<BasicTreeService>();
   const treeHandle = useRef<IRecycleTreeHandle>();
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const renderTreeNode = useCallback(
     (props: INodeRendererWrapProps) => (

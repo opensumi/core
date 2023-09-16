@@ -292,7 +292,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
       }
 
       if (options.showInEditor) {
-        await editorService.open(this.newResource);
+        editorService.open(this.newResource);
       }
     } else if (!this.newResource && this.oldResource) {
       // 删除文件
@@ -327,7 +327,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
         }
       }
       if (!options.isDirectory && options.showInEditor) {
-        await editorService.open(this.newResource);
+        editorService.open(this.newResource);
       }
     }
   }

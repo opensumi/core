@@ -20,6 +20,8 @@ import { MarkersModule } from '@opensumi/ide-markers/lib/browser';
 import { MenuBarModule } from '@opensumi/ide-menu-bar/lib/browser';
 import { MonacoModule } from '@opensumi/ide-monaco/lib/browser';
 import { MonacoEnhanceModule } from '@opensumi/ide-monaco-enhance/lib/browser/module';
+import { OpenedEditorModule } from '@opensumi/ide-opened-editor/lib/browser';
+import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
 import { OutputModule } from '@opensumi/ide-output/lib/browser';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
 import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
@@ -37,8 +39,6 @@ import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { WebviewModule } from '@opensumi/ide-webview';
 import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
 import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
-import { OpenedEditorModule } from '@opensumi/ide-opened-editor/lib/browser/index';
-import { OutlineModule } from '@opensumi/ide-outline/lib/browser/index';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,

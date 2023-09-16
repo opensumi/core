@@ -587,7 +587,7 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(quickFileOpen, {
-      execute: () => this.quickOpenService.open(''),
+      execute: () => this.quickOpenService.open('...'),
     });
     commands.registerCommand(quickGoToSymbol, {
       execute: () => this.quickOpenService.open('...@'),

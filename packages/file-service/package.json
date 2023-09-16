@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-file-service",
-  "version": "2.26.5",
+  "version": "2.26.8",
   "files": [
     "lib",
     "src"

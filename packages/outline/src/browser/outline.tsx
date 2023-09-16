@@ -1,14 +1,5 @@
 import debounce from 'lodash/debounce';
-import React, {
-  PropsWithChildren,
-  useCallback,
-  RefObject,
-  MouseEvent,
-  useState,
-  createRef,
-  useEffect,
-  memo,
-} from 'react';
+import React, { PropsWithChildren, useCallback, MouseEvent, useState, useEffect, memo, useRef } from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
@@ -25,7 +16,7 @@ import { OutlineModelService } from './services/outline-model.service';
 export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
   const { height } = viewState;
 
-  const wrapperRef: RefObject<HTMLDivElement> = createRef();
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
   const [model, setModel] = useState<OutlineTreeModel | undefined>(undefined);
