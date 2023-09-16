@@ -23,6 +23,9 @@ import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { LineVertical } from './components/lineVertical';
 import { Thinking } from './components/Thinking';
+import { AiRunService } from './run/run.service';
+import { DebugConfiguration } from '@opensumi/ide-debug';
+import { ChatMoreActions } from './components/ChatMoreActions';
 
 const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
 
@@ -44,6 +47,7 @@ export const AiChatView = () => {
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
   const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
+  const aiRunService = useInjectable<AiRunService>(AiRunService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -171,8 +175,7 @@ export const AiChatView = () => {
           aiMessage = await AIChatGPTReply(aiMessage);
         } else if (userInput!.type === AISerivceType.Run) {
           aiMessage = await aiChatService.aiBackService.aiAntGlm(userInput!.message!);
-          console.log('aiMessage run: >>>> ', aiMessage)
-          aiMessage = await AIChatGPTReply(aiMessage.data);
+          aiMessage = await AIChatRunReply(aiMessage.data, aiRunService);
         }
 
         if (aiMessage) {
@@ -308,16 +311,18 @@ const AISearch = async (input, aiGPTBackService) => {
     console.log('ai search: >>>> ', result);
 
     const aiMessage = createMessageByAI(
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div>
-          {/* <Markdown value={responseText}></Markdown> */}
-          {AIChatGPTReply(responseText)}
-        </div>
-        <div style={{ whiteSpace: 'pre-wrap' }}>
-          <Markdown value={urlMessage}></Markdown>
-          {/* {AIChatGPTReply(urlMessage)} */}
-        </div>
-      </div>,
+      <ChatMoreActions>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div>
+            {/* <Markdown value={responseText}></Markdown> */}
+            {AIChatGPTReply(responseText)}
+          </div>
+          <div style={{ whiteSpace: 'pre-wrap' }}>
+            <Markdown value={urlMessage}></Markdown>
+            {/* {AIChatGPTReply(urlMessage)} */}
+          </div>
+        </div>,
+      </ChatMoreActions>
     );
 
     return aiMessage;
@@ -331,11 +336,55 @@ const AIChatGPTReply = async (input) => {
   try {
     console.log('ai chat gpt reply: >>>> ', input);
 
-    const aiMessage = createMessageByAI(<CodeBlockWrapper text={input} />);
+    const aiMessage = createMessageByAI(
+      <ChatMoreActions><CodeBlockWrapper text={input} /></ChatMoreActions>
+    );
 
     return aiMessage;
   } catch (error) {
     console.log('/chat gpt reply: error >>>>>', error);
+  }
+};
+
+// run 的 AI 回复组件
+const AIChatRunReply = async (input, aiRunService: AiRunService) => {
+  try {
+    console.log('ai chat run reply: >>>> ', input);
+    const regex = /"(\S+)"/s;
+    const value = regex.exec(input);
+    if (!value) {
+      return createMessageByAI('未找到合适的启动命令，请重试');
+    };
+
+    const [, command] = value;
+    const configuration: DebugConfiguration = {
+      name: `Run Tnpm ${command}`,
+      type: 'node',
+      request: 'launch',
+      runtimeExecutable: 'tnpm',
+      runtimeArgs: [
+        'run',
+        `${command}`
+      ],
+      cwd: '\${workspaceFolder}',
+      console: 'integratedTerminal'
+    }
+
+    const launchContent = `
+根据您的项目类型，已为您找到合适的项目启动运行命令
+以下是 launch.json 的运行命令配置
+\`\`\`json
+${JSON.stringify(configuration, undefined, 2)}
+\`\`\``
+
+    const aiMessage = createMessageByAI(<ChatMoreActions>
+      <CodeBlockWrapper text={launchContent} />
+      <Button onClick={() => aiRunService.addRunConfiguration(configuration)}>添加该配置并再次执行 run</Button>
+    </ChatMoreActions>);
+
+    return aiMessage;
+  } catch (error) {
+    console.log('/chat run reply: error >>>>>', error);
   }
 };
 
@@ -351,14 +400,16 @@ const AIWithCommandReply = async (command: Command, opener) => {
     const { labelLocalized, label, delegate, id } = command;
 
     const aiMessage = createMessageByAI(
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
-        <ol style={{ margin: '8px 0' }}>
-          <li style={{ listStyle: 'inherit' }}>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
-          <li style={{ listStyle: 'inherit' }}>输入：{labelLocalized?.localized || label}</li>
-        </ol>
-        <Button onClick={() => opener.open(URI.parse(`command:${delegate || id}`))}>点击执行命令</Button>
-      </div>,
+      <ChatMoreActions>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+          <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
+          <ol style={{ margin: '8px 0' }}>
+            <li style={{ listStyle: 'inherit' }}>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
+            <li style={{ listStyle: 'inherit' }}>输入：{labelLocalized?.localized || label}</li>
+          </ol>
+          <Button onClick={() => opener.open(URI.parse(`command:${delegate || id}`))}>点击执行命令</Button>
+        </div>
+      </ChatMoreActions>
     );
 
     return aiMessage;

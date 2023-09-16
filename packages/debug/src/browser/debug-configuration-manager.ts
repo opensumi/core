@@ -430,19 +430,10 @@ export class DebugConfigurationManager {
     });
   }
 
-  protected async doCreate(model: DebugConfigurationModel): Promise<URI> {
-    // 设置launch初始值
-    await this.preferences.set('launch', {});
-    // 获取可写入内容的文件
-    const { configUri } = this.preferences.resolve('launch');
-    let uri: URI;
-    if (configUri && configUri.path.base === 'launch.json') {
-      uri = configUri;
-    } else {
-      uri = new URI(model.workspaceFolderUri).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
-    }
-    const debugType = await this.selectDebugType();
-    const configurations = debugType ? await this.provideDebugConfigurations(debugType, model.workspaceFolderUri) : [];
+  /**
+   * 初始化 launch 文件
+   */
+  public async cretaInitialConfig(uri: URI ,configurations: DebugConfiguration[] = []): Promise<void> {
     const content = this.getInitialConfigurationContent(configurations);
     const fileStat = await this.filesystem.getFileStat(uri.toString());
 
@@ -459,7 +450,22 @@ export class DebugConfigurationManager {
         }
       }
     }
+  }
 
+  protected async doCreate(model: DebugConfigurationModel): Promise<URI> {
+    // 设置launch初始值
+    await this.preferences.set('launch', {});
+    // 获取可写入内容的文件
+    const { configUri } = this.preferences.resolve('launch');
+    let uri: URI;
+    if (configUri && configUri.path.base === 'launch.json') {
+      uri = configUri;
+    } else {
+      uri = new URI(model.workspaceFolderUri).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
+    }
+    const debugType = await this.selectDebugType();
+    const configurations = debugType ? await this.provideDebugConfigurations(debugType, model.workspaceFolderUri) : [];
+    await this.cretaInitialConfig(uri, configurations);
     return uri;
   }
 

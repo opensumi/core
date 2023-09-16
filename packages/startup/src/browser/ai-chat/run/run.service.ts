@@ -5,10 +5,11 @@ import { AiGPTBackSerivcePath } from '../../../common';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 import { PreferenceConfigurations } from '@opensumi/ide-core-browser';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
-import { DEBUG_COMMANDS } from '@opensumi/ide-debug';
+import { DEBUG_COMMANDS, DebugConfiguration } from '@opensumi/ide-debug';
 import * as jsoncparser from 'jsonc-parser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { AiChatService } from '../ai-chat.service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 // 暂定的技术栈集合
 enum EStackName {
@@ -49,6 +50,9 @@ export class AiRunService {
   @Autowired(DebugConfigurationManager)
   protected readonly debugConfigurationManager: DebugConfigurationManager;
 
+  @Autowired(WorkbenchEditorService)
+  protected readonly workbenchEditorService: WorkbenchEditorService;
+  
   @Autowired(IFileServiceClient)
   private readonly fileSystem: IFileServiceClient;
 
@@ -64,13 +68,9 @@ export class AiRunService {
     }
   }
 
-  private getLaunchUri(): URI | undefined {
+  private getLaunchUri(): URI {
     const workspaceFolderUri = this.workspaceVariables.getWorkspaceRootUri();
-    if (!workspaceFolderUri) {
-      return undefined;
-    }
-
-    const uri = new URI(workspaceFolderUri.toString()).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
+    const uri = new URI(workspaceFolderUri!.toString()).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
     return uri;
   }
 
@@ -143,9 +143,9 @@ export class AiRunService {
 
         const prompt = `我会给你一个项目类型和 package.json 文件内容。你需要通过分析里面的 scripts 内容，找到合适的运行命令来启动项目。如果找到合适的命令后直接返回，不需要解释。请参照下面的示例问答的格式返回。
 提问: 这是一个 node.js 项目，package.json 的文件内容是 \`\`\`\n${{ scripts: { dev: 'npm run dev', test: 'npm run test' } }}\n\`\`\`
-回答: dev
+回答: "dev"
 提问: 这是一个 front-end 项目，package.json 的文件内容是 \`\`\`\n${{ scripts: { start: 'npm run start', build: 'npm run build' } }}\n\`\`\`
-回答: start
+回答: "start"
 提问: 这是一个 ${stackName} 项目，package.json 的文件内容是 \`\`\`\n${jsonContent}\n\`\`\`
 `;
         this.aiChatService.launchChatMessage({
@@ -154,8 +154,27 @@ export class AiRunService {
         });
       }
     }
-
-    console.log(this.debugConfigurationManager)
   }
 
+
+  /**
+   * 添加运行配置
+   */
+  public async addRunConfiguration(configuration: DebugConfiguration) {
+    let uri = this.getLaunchUri();
+
+    if (this.debugConfigurationManager.all.length === 0) {
+      await this.debugConfigurationManager.cretaInitialConfig(uri, [configuration]);
+      return;
+    }
+
+    if (!this.debugConfigurationManager.all.some(item => item.configuration.name === configuration.name)) {
+      await this.debugConfigurationManager.insertConfiguration(uri, configuration);
+      await this.workbenchEditorService.open(uri, {
+        disableNavigate: true,
+      });
+    }
+
+    this.run();
+  }
 }
