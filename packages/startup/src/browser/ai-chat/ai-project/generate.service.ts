@@ -5,10 +5,10 @@ import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
 const enum FRAMEWORK {
   minifish = 'minifish',
   bigfish = 'bigfish',
-  sofa = 'sofa'
+  sofa = 'sofa',
 }
 
-interface Requirements {
+export interface Requirements {
   language: string;
   framework: string;
   requirements: string;
@@ -51,13 +51,17 @@ export class AiProjectGenerateService {
     `;
     const res = await this.aiBackService.aiAntGlm(prompt);
     console.log('gen request res: ', res);
-    const reg = /(编程语言)(:|：)?\s?(?<language>.*)\n*\s*(编程框架)(:|：)?\s?(?<framework>.*)\n*\s*(项目需求)(:|：)?\s?(?<requirements>.*)/i;
+    const reg =
+      /(编程语言)(:|：)?\s?(?<language>.*)\n*\s*(编程框架)(:|：)?\s?(?<framework>.*)\n*\s*(项目需求)(:|：)?\s?(?<requirements>.*)/i;
     const match = reg.exec(res.data);
 
-    return match && ({
-      ...(match.groups || {}),
-      framework: match.groups?.framework.split('、'),
-    }) as ({ language: string; framework: string[]; requirements: string });
+    return (
+      match &&
+      ({
+        ...(match.groups || {}),
+        framework: match.groups?.framework.split('、'),
+      } as { language: string; framework: string[]; requirements: string })
+    );
   }
 
   private generateStructurePrompt({ language, framework }: Requirements) {
@@ -186,7 +190,6 @@ export class AiProjectGenerateService {
       }
     }
 
-
     return flag ? filePathList : await this.generateProjectStructure(projectInfo);
   }
 
@@ -258,10 +261,12 @@ export class AiProjectGenerateService {
       }
     });
 
-    await Promise.all(singleFileList.map(async (path) => {
-      callback(path);
-      await this.generateMinifishSingleFile(path, requirements);
-    }));
+    await Promise.all(
+      singleFileList.map(async (path) => {
+        callback(path);
+        await this.generateMinifishSingleFile(path, requirements);
+      }),
+    );
 
     for (const dir of dirMap.values()) {
       dir.forEach((path) => callback(path));
@@ -310,8 +315,9 @@ ${this.requirementPrompt(requirements)}
     if (axmlFile) {
       const axmlCode = await this.generateMinifishSingleFile(axmlFile, requirements);
       const otherFile = filePathList.filter((path) => path !== axmlFile);
-      await Promise.all(otherFile.map(async (path) => {
-        const prompt = `
+      await Promise.all(
+        otherFile.map(async (path) => {
+          const prompt = `
 我会给出项目的需求，需求可能需要多个页面才能实现，我会提供完整的项目路径，以及其中单个页面的 axml 文件代码。
 请帮我基于需要生成的文件路径，先判断属于需求中的哪个页面的文件，再判断文件类型，根据 axml 文件代码，生成对应的 js、acss、json 文件的代码。
 ${this.pointPrompt}
@@ -324,26 +330,33 @@ ${axmlCode}
 
 需要生成代码文件为：${path}
         `;
-        const code = await this.generateFileCode(prompt);
-        await this.aiBackService.generateFileByPath(path, code || '{}');
-      }));
+          const code = await this.generateFileCode(prompt);
+          await this.aiBackService.generateFileByPath(path, code || '{}');
+        }),
+      );
     } else {
       await Promise.all(filePathList.map((path) => this.generateMinifishSingleFile(path, requirements)));
     }
   }
 
-  private async generateBigfishProject(fileList: string[], projectInfo: Requirements, callback: (path: string) => void) {
+  private async generateBigfishProject(
+    fileList: string[],
+    projectInfo: Requirements,
+    callback: (path: string) => void,
+  ) {
     const templateFile = ['package.json'];
     while (fileList.length) {
       const part = fileList.splice(0, 1);
-      await Promise.all(part.map(async (file) => {
-        callback(file);
-        if (templateFile.find((f) => f === file)) {
-          await this.aiBackService.generateFileByPath(file, template[file]);
-        } else {
-          await this.generateBigfishFile(file, projectInfo);
-        }
-      }));
+      await Promise.all(
+        part.map(async (file) => {
+          callback(file);
+          if (templateFile.find((f) => f === file)) {
+            await this.aiBackService.generateFileByPath(file, template[file]);
+          } else {
+            await this.generateBigfishFile(file, projectInfo);
+          }
+        }),
+      );
     }
   }
 
@@ -362,19 +375,21 @@ ${this.codeStructure}
 (The generated code needs to be wrapped in Markdown code block syntax and just reply code only)
 The code need generate is: ${filePath}`;
 
-      const code = await this.generateFileCode(prompt);
-      await this.aiBackService.generateFileByPath(filePath, code || '');
+    const code = await this.generateFileCode(prompt);
+    await this.aiBackService.generateFileByPath(filePath, code || '');
 
-      return code;
+    return code;
   }
 
   private async generateCommonProject(fileList: string[], projectInfo: Requirements, callback: (path: string) => void) {
     while (fileList.length) {
       const part = fileList.splice(0, 1);
-      await Promise.all(part.map(async (file) => {
-        callback(file);
-        await this.generateCommonFile(file, projectInfo);
-      }));
+      await Promise.all(
+        part.map(async (file) => {
+          callback(file);
+          await this.generateCommonFile(file, projectInfo);
+        }),
+      );
     }
   }
 
@@ -392,10 +407,10 @@ ${this.codeStructure}
 (The generated code needs to be wrapped in Markdown code block syntax and just reply code only)
 The code need generate is: ${filePath}`;
 
-      const code = await this.generateFileCode(prompt);
-      await this.aiBackService.generateFileByPath(filePath, code || '');
+    const code = await this.generateFileCode(prompt);
+    await this.aiBackService.generateFileByPath(filePath, code || '');
 
-      return code;
+    return code;
   }
 
   private async generateFileCode(prompt: string) {

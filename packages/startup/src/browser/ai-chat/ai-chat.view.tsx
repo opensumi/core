@@ -17,7 +17,7 @@ import { AiGPTBackSerivcePath, AISerivceType } from '../../common/index';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService, IChatMessageStructure } from './ai-chat.service';
-import { AiProjectGenerateService } from './ai-project/generate.service';
+import { AiProjectGenerateService, Requirements } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
@@ -52,38 +52,29 @@ export const AiChatView = () => {
 
   const [, updateState] = React.useState<any>();
 
-  const query = window.location.search?.slice(1).split('&');
-  let generateQuery;
-  if (query.length) {
-    generateQuery = query[0].split('=')[1];
-  }
+  const aiGenerateInfo: Requirements =
+    localStorage.getItem('ai-generate') && JSON.parse(localStorage.getItem('ai-generate')!);
 
   const generateProject = React.useCallback(async (messageList) => {
     await aiProjectGenerateService.clearWorkspace();
-    const res = await aiProjectGenerateService.switchProjectLanguage(decodeURIComponent(generateQuery));
-    console.log('gen res: ', res);
-    if (res) {
-      const projectInfo = { framework: res.framework[0], language: res.language, requirements: res.requirements };
-      const languageReply = `项目语言为：${projectInfo.language}\n使用框架：${projectInfo.framework}`;
-      messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));
-      setMessageListData([...messageList]);
-      const filePathList = await aiProjectGenerateService.generateProjectStructure(projectInfo);
-      console.log('gen file list: ', filePathList);
-      messageList.splice(
-        -1,
-        0,
-        createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
-      );
-      setMessageListData([...messageList]);
+    const languageReply = `项目语言为：${aiGenerateInfo.language}\n使用框架：${aiGenerateInfo.framework}`;
+    messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));
+    setMessageListData([...messageList]);
+    const filePathList = await aiProjectGenerateService.generateProjectStructure(aiGenerateInfo);
+    messageList.splice(
+      -1,
+      0,
+      createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
+    );
+    setMessageListData([...messageList]);
 
-      await aiProjectGenerateService.generateFile(filePathList, projectInfo, (file: string) => {
-        messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
-        setMessageListData([...messageList]);
-      });
-
-      messageList.pop();
+    await aiProjectGenerateService.generateFile(filePathList, aiGenerateInfo, (file: string) => {
+      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
       setMessageListData([...messageList]);
-    }
+    });
+
+    messageList.pop();
+    setMessageListData([...messageList]);
   }, []);
 
   const InitMsgComponent = () => {
@@ -94,7 +85,7 @@ export const AiChatView = () => {
       // { icon: getIcon('scm'), text: '触发流水线' },
     ];
 
-    if (generateQuery) {
+    if (aiGenerateInfo) {
       return (
         <div>
           <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
@@ -132,7 +123,7 @@ export const AiChatView = () => {
     // @ts-ignore
     window.aiAntGlm = aiGPTBackService.aiAntGlm;
 
-    if (generateQuery) {
+    if (aiGenerateInfo) {
       generateProject([firstMsg]);
     } else if (messageListData && messageListData.length === 0) {
       setMessageListData([firstMsg]);
@@ -148,7 +139,7 @@ export const AiChatView = () => {
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, prompt } = value;
-      
+
       const preMessagelist = messageListData;
       const preInputValue = message;
 
