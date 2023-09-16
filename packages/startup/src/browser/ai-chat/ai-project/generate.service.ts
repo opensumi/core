@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Injectable, Autowired } from '@opensumi/di';
-import { AiGPTBackSerivcePath } from '@opensumi/ide-startup/lib/common/index';
+import { AiGPTBackSerivcePath } from '../../../common';
 
 const enum FRAMEWORK {
   minifish = 'minifish',

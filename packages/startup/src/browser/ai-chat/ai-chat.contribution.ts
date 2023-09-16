@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, IQuickOpenHandlerRegistry, Position, QUICK_OPEN_COMMANDS, URI, getIcon, IRange } from '@opensumi/ide-core-browser';
 import { QuickOpenContribution } from '@opensumi/ide-core-browser';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { IMenuRegistry, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditor } from '@opensumi/ide-editor';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ResourceService } from '@opensumi/ide-editor';
@@ -16,8 +16,11 @@ import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiQuickCommandHandler } from './ai-quick-open.command';
-import { AiCodeDocumentProvider } from './code-widget/ai-code-document.provider';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
+import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS } from '../../common/command';
+import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
+import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
+// import { TerminalClient } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 
 @Injectable()
 @Domain(ComponentContribution, QuickOpenContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
@@ -27,9 +30,6 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
 
   @Autowired()
   private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
-
-  @Autowired()
-  private readonly aiCodeDocumentProvider: AiCodeDocumentProvider;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -43,14 +43,21 @@ export class AiChatContribution implements ComponentContribution, QuickOpenContr
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
-
   @Autowired(AiChatService)
   protected readonly aiChatService: AiChatService;
 
   @Autowired()
   private readonly aiQuickCommandHandler: AiQuickCommandHandler;
+
+  @Autowired(ITerminalGroupViewService)
+  protected readonly view: ITerminalGroupViewService;
+
+  @Autowired(ITerminalController)
+  protected readonly terminalController: ITerminalController;
+
+  onStart() {
+    // console.log('terminalClient:>>>', this.terminalClient)
+  }
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register(AiChatContribution.AiChatContainer, {
@@ -181,56 +188,49 @@ ${getContent}
           workspaceDir: '/Users/mushi/Documents/workcode/opensumi/core/tools/workspace',
           proxyHost: 'https://ide.cloudbaseapp-sanbox.cn',
         };
-
         return obj[key];
       },
     });
 
-    commands.registerCommand({
-      id: 'open-port.external',
-    }, {
-      execute: async (port: number) => `http://127.0.0.1:${port}`,
+    commands.registerCommand(AI_EXPLAIN_TERMINAL_COMMANDS, {
+      execute: () => {
+        const current = this.view.currentWidgetId;
+        const client = this.terminalController.findClientFromWidgetId(current);
+        if (client) {
+          const name = client.name;
+          const selectionContent = client.getSelection();
+
+          this.aiChatService.launchChatMessage({
+            message: '/explain @terminalSelection',
+            prompt: `请解释一下这一段 ${name} 终端面板里的这部分内容: \`\`\`\n${selectionContent}\n\`\`\` `
+          })
+        }
+      },
+    });
+
+    commands.registerCommand(AI_EXPLAIN_DEBUG_COMMANDS, {
+      execute: (node: DebugConsoleNode) => {
+        const description = node.description;
+        if (description) {
+          this.aiChatService.launchChatMessage({
+            message: '/explain @debugSelection',
+            prompt: `我在运行并调试我的项目代码，请解释调试运行过程当中的这段日志: \`\`\`\n${description}\n\`\`\` `
+          })
+        }
+      },
     });
   }
-
+  // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
-    menus.registerMenuItems('ai/iconMenubar/context', [
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('hubot'),
-        group: 'ai_group_1',
-      },
-      {
-        command: 'main-layout.right-panel.show',
-        iconClass: getExternalIcon('comment-discussion'),
-        group: 'ai_group_1',
-      },
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('debug'),
-        group: 'ai_group_1',
-      },
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('book'),
-        group: 'ai_group_2',
-      },
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('list-unordered'),
-        group: 'ai_group_2',
-      },
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('symbol-color'),
-        group: 'ai_group_3',
-      },
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('wand'),
-        group: 'ai_group_3',
-      },
-    ]);
+    menus.registerMenuItem(MenuId.TerminalInstanceContext, {
+      command: AI_EXPLAIN_TERMINAL_COMMANDS,
+      group: '0_ai',
+    });
+
+    menus.registerMenuItem(MenuId.DebugConsoleContext, {
+      command: AI_EXPLAIN_DEBUG_COMMANDS,
+      group: '0_ai',
+    })
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
