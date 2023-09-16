@@ -125,26 +125,9 @@ export const CodeBlockWrapper = ({ text }: { text: string }) => {
     });
   };
 
-  const useUUID = useMemo(() => uuid(12), [text]);
-
   return (
     <div className={styles.ai_chat_code_wrapper}>
       <div className={styles.render_text}>{renderText(text)}</div>
-      <div className={styles.more_actions}>
-        <div className={styles.side}>
-          <Icon className={getExternalIcon('history')} />
-          <span>重新生成</span>
-        </div>
-        <div className={styles.side}>
-          <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
-            <Icon className={getExternalIcon('thumbsup')} />
-          </Popover>
-          <LineVertical />
-          <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
-            <Icon className={getExternalIcon('thumbsdown')} />
-          </Popover>
-        </div>
-      </div>
     </div>
   );
 };

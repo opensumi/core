@@ -8,8 +8,9 @@ import { AISerivceType, AiGPTBackSerivcePath } from '../../common';
 
 const aiSearchKey = '/search ';
 const aiSearchCodeKey = '/searchcode ';
-const aiSumiKey = '/sumi';
-const aiExplainKey = '/explain';
+const aiSumiKey = '/sumi ';
+const aiExplainKey = '/explain ';
+const aiRunKey = '/run ';
 
 export interface IChatMessageStructure {
   /**
@@ -74,6 +75,11 @@ export class AiChatService {
 
       return { type: AISerivceType.Explain, message: prompt };
     }
+
+    if (input.startsWith(aiRunKey)) {
+      return { type: AISerivceType.Run, message: prompt };
+    }
+
 
     if (input.startsWith(aiSearchKey)) {
       type = AISerivceType.Search;

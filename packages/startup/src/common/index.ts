@@ -31,5 +31,6 @@ export enum AISerivceType {
   SearchCode,
   Sumi,
   GPT,
-  Explain
+  Explain,
+  Run
 }
