@@ -95,24 +95,6 @@ export class AiChatService {
     return { type, message };
   }
 
-  // 解释“问题”面板的 prompt
-  public explainProblemPrompt(message: string): string {
-    if (!this.currentEditor) {
-      return '';
-    }
-
-    const currentUri = this.currentEditor.currentUri;
-    if (!currentUri) {
-      return '';
-    }
-
-    const displayName = currentUri.displayName;
-    const content = this.currentEditor.monacoEditor.getValue();
-
-    const messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。此时有个异常问题是 "${message}", 你需要解释这个异常问题并给出修复建议`;
-    return messageWithPrompt;
-  }
-
   // 解释当前文件的代码或者选中的某个代码片段的 prompt，也可以用于对选中的代码加上用户的描述进行解释
   public explainCodePrompt(message = ''): string {
     if (!this.currentEditor) {

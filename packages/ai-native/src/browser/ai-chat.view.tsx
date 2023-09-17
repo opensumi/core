@@ -5,7 +5,7 @@ import * as React from 'react';
 import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
 
 import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
+import { useInjectable, getIcon, AppConfig } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -50,6 +50,7 @@ export const AiChatView = () => {
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const aiRunService = useInjectable<AiRunService>(AiRunService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
@@ -194,8 +195,12 @@ export const AiChatView = () => {
     [messageListData, containerRef],
   );
 
+  const layoutViewSize = React.useMemo(() => {
+    return appConfig.layoutViewSize || LAYOUT_VIEW_SIZE;
+  }, [appConfig])
+
   const viewHeight = React.useMemo(
-    () => `calc(100vh - ${LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT + LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT}px)`,
+    () => `calc(100vh - ${layoutViewSize.MENUBAR_HEIGHT + layoutViewSize.STATUSBAR_HEIGHT}px)`,
     [],
   );
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Avatar } from 'react-chat-elements';
 
-import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -19,6 +19,7 @@ import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-ai-native/lib/common/comman
  */
 export const MenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const handleSelectFocus = () => {
     // commandService.executeCommand('workbench.action.quickOpen');
@@ -33,12 +34,16 @@ export const MenuBarView = () => {
     commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id);
   };
 
+  const MENUBAR_HEIGHT = React.useMemo(() => {
+    return appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT;
+  }, [appConfig])
+
   // quick-open-overlay
   return (
     <div
       id={VIEW_CONTAINERS.MENUBAR}
       className={styles.menu_bar_view}
-      style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
+      style={{ height: MENUBAR_HEIGHT }}
     >
       {/* <span className={styles.menu_bar_logo} /> */}
       <div className={styles.container}>

@@ -5,7 +5,7 @@ import React from 'react';
 import { ClickOutside } from '@opensumi/ide-components';
 import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
 import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
-import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-core-browser';
+import { useInjectable, SlotRenderer, ComponentRegistry, AppConfig } from '@opensumi/ide-core-browser';
 import { InlineActionBar, MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { AbstractMenuService, IMenubarItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -83,6 +83,7 @@ const MenubarItem = observer<
 export const MenuBar = observer(() => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
   const [focusMode, setFocusMode] = React.useState(false);
   const relatedTarget = React.useRef<HTMLElement>();
 
@@ -107,10 +108,14 @@ export const MenuBar = observer(() => {
 
   const LogoIcon = componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar-logo')?.views[0].component;
 
+  const MENUBAR_HEIGHT = React.useMemo(() => {
+    return appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT;
+  }, [appConfig])
+
   return (
     <ClickOutside
       className={styles.menubars}
-      style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
+      style={{ height: MENUBAR_HEIGHT }}
       mouseEvents={['click', 'contextmenu']}
       tabIndex={-1} // make focus event implement
       onFocus={handleMenubarFocusIn}

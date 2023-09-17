@@ -9,18 +9,37 @@ import * as styles from './override.module.less';
 import { Icon } from '@opensumi/ide-components';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { AiChatService } from '../ai-chat.service';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 @Injectable()
 export class AiMarkerService extends MarkerService {
 
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorServiceImpl;
+
   @Autowired()
   private aiChatService: AiChatService;
 
-  private handleAiIcon(node: MarkerNode) {
-    this.aiChatService.launchChatMessage({
-      message: `/explain ${node.marker.message}`,
-      prompt: this.aiChatService.explainProblemPrompt(node.marker.message),
-    });
+  @Autowired(IFileServiceClient)
+  private readonly fileSystem: IFileServiceClient;
+
+  private async handleAiIcon(node: MarkerNode) {
+    try {
+      const resource = node.marker.resource;
+      const message = node.marker.message;
+      const { content } = await this.fileSystem.readFile(resource.toString());
+
+      const messageWithPrompt = `代码内容是 \`\`\`\n${content.toString()}\n\`\`\`。此时有个异常问题是 "${message}", 你需要解释这个异常问题并给出修复建议`;
+  
+      this.aiChatService.launchChatMessage({
+        message: `/explain ${node.marker.message}`,
+        prompt: messageWithPrompt,
+      });
+    } catch (error) {
+      throw Error('read file error', error)
+    }
   }
 
   override renderMarkerNodeIcon(component: ReactNode, node: MarkerGroupNode | MarkerNode): ReactNode {
