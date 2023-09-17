@@ -28,6 +28,7 @@ import {
   DisposableCollection,
   Event,
   getExternalIcon,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -62,6 +63,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
   const [wrapMode, setWrapMode] = useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
@@ -314,6 +316,11 @@ export const Tabs = ({ group }: ITabsProps) => {
     [editorService],
   );
 
+  const EDITOR_TABS_HEIGHT = React.useMemo(
+    () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+    [appConfig],
+  );
+
   const renderTabContent = () => (
     <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
       {group.resources.map((resource, i) => {
@@ -332,13 +339,8 @@ export const Tabs = ({ group }: ITabsProps) => {
             })}
             style={
               wrapMode && i === group.resources.length - 1
-                ? { marginRight: lastMarginRight, height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
-                : {
-                    height:
-                      group.currentResource === resource
-                        ? LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT + 1
-                        : LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
-                  }
+                ? { marginRight: lastMarginRight, height: EDITOR_TABS_HEIGHT }
+                : { height: EDITOR_TABS_HEIGHT }
             }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
@@ -469,6 +471,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
 
     const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
+    const appConfig = useInjectable<AppConfig>(AppConfig);
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
@@ -495,13 +498,14 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       };
     }, [group]);
 
+    const EDITOR_TABS_HEIGHT = React.useMemo(
+      () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+      [appConfig],
+    );
+
     // 第三个参数是当前编辑器的URI（如果有）
     return (
-      <div
-        ref={ref}
-        className={cls(styles.editor_actions, className)}
-        style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
-      >
+      <div ref={ref} className={cls(styles.editor_actions, className)} style={{ height: EDITOR_TABS_HEIGHT }}>
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}
           context={args as any}

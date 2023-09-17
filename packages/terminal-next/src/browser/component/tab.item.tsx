@@ -1,10 +1,10 @@
 import cls from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
+import React, { useEffect, useRef, KeyboardEvent, createElement, useMemo } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { getIcon, useInjectable, URI, localize, TERMINAL_COMMANDS } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, URI, localize, TERMINAL_COMMANDS, AppConfig } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
@@ -18,6 +18,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
   const iconService = useInjectable<IIconService>(IconService);
   const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const handleOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && props.onInputEnter && props.id) {
@@ -46,6 +47,11 @@ export const renderInfoItem = observer((props: ItemProps) => {
     }
   }
 
+  const PANEL_TITLEBAR_HEIGHT = useMemo(
+    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
+    [appConfig],
+  );
+
   return (
     <div
       ref={ref}
@@ -53,7 +59,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,
       })}
-      style={{ height: LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT }}
+      style={{ height: PANEL_TITLEBAR_HEIGHT }}
       onClick={() => handleSelect()}
       onContextMenu={(event) => props.onContextMenu && props.onContextMenu(event)}
     >
