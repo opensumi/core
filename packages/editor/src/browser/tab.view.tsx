@@ -40,7 +40,7 @@ import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, Resou
 
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
-import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
+import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent, IEditorTabService } from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -63,6 +63,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
+  const editorTabService = useInjectable<IEditorTabService>(IEditorTabService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
@@ -320,12 +321,45 @@ export const Tabs = ({ group }: ITabsProps) => {
     return appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT;
   }, [appConfig])
 
+  const renderEditorTab = React.useCallback((resource: IResource, isCurrent: boolean) => {
+    const decoration = resourceService.getResourceDecoration(resource.uri);
+    const subname = resourceService.getResourceSubname(resource, group.resources);
+
+    return editorTabService.renderEditorTab(<>
+      <div
+        className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}
+      >
+        {' '}
+      </div>
+      <div>{resource.name}</div>
+      {subname ? <div className={styles.subname}>{subname}</div> : null}
+      {decoration.readOnly ? (
+        <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
+      ) : null}
+      <div className={styles.tab_right}>
+        <div
+          className={classnames({
+            [styles.kt_hidden]: !decoration.dirty,
+            [styles.dirty]: true,
+          })}
+        ></div>
+        <div
+          className={styles.close_tab}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            group.close(resource.uri);
+          }}
+        >
+          <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
+        </div>
+      </div>
+    </>, isCurrent)
+  }, [editorTabService])
+
   const renderTabContent = () => (
     <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
       {group.resources.map((resource, i) => {
         let ref: HTMLDivElement | null;
-        const decoration = resourceService.getResourceDecoration(resource.uri);
-        const subname = resourceService.getResourceSubname(resource, group.resources);
         return (
           <div
             draggable={true}
@@ -388,35 +422,7 @@ export const Tabs = ({ group }: ITabsProps) => {
               e.dataTransfer.setData('uri-source-group', group.name);
             }}
           >
-            <div className={styles.kt_editor_tab_block}>
-              <div
-                className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}
-              >
-                {' '}
-              </div>
-              <div>{resource.name}</div>
-              {subname ? <div className={styles.subname}>{subname}</div> : null}
-              {decoration.readOnly ? (
-                <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
-              ) : null}
-              <div className={styles.tab_right}>
-                <div
-                  className={classnames({
-                    [styles.kt_hidden]: !decoration.dirty,
-                    [styles.dirty]: true,
-                  })}
-                ></div>
-                <div
-                  className={styles.close_tab}
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    group.close(resource.uri);
-                  }}
-                >
-                  <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
-                </div>
-              </div>
-            </div>
+            {renderEditorTab(resource, group.currentResource === resource)}
           </div>
         );
       })}

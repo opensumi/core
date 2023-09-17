@@ -234,11 +234,11 @@ export const RightTabbarRenderer: React.FC = () => {
       onContextMenu={tabbarService.handleContextMenu}
     >
       <TabbarViewBase
-        tabSize={0}
+        tabSize={48}
         MoreTabView={IconElipses}
         tabClassName={styles.right_tab}
         TabView={IconTabView}
-        barSize={0}
+        barSize={48}
         panelBorderSize={1}
       />
     </div>
@@ -286,11 +286,11 @@ export const BottomTabbarRenderer: React.FC = () => {
     >
       <TabbarViewBase
         // TODO: 暂时通过预估值来计算是否超出可视范围，实际上需要通过dom尺寸的计算
-        tabSize={0}
+        tabSize={80}
         MoreTabView={TextElipses}
         tabClassName={styles.bottom_tab}
         TabView={TextTabView}
-        barSize={0}
+        barSize={24}
         panelBorderSize={1}
         canHideTabbar
       />

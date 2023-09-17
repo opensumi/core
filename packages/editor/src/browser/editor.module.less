@@ -3,7 +3,7 @@
 
 .kt_workbench_editor {
   height: 100%;
-  // background-color: var(--editor-background);
+  background-color: var(--editor-background);
   display: flex;
   border-top: 1px solid var(--tab-border);
 }
@@ -188,13 +188,13 @@
       display: none;
     }
     .kt_editor_tab {
-      position: relative;
       display: flex;
+      position: relative;
       align-items: center;
       flex-shrink: 1;
       flex-grow: 1;
       padding: 0 12px;
-      // border-right: 1px solid var(--tab-border);
+      border-right: 1px solid var(--tab-border);
       height: 100%;
       line-height: 100%;
       font-size: 12px;
@@ -202,7 +202,7 @@
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
-      // border-top: 1px solid transparent;
+      border-top: 1px solid transparent;
       box-sizing: border-box;
       z-index: 1;
       word-break: keep-all;
@@ -233,6 +233,15 @@
       &:hover {
         color: var(--tab-hoverForeground);
         background-color: var(--tab-hoverBackground);
+      }
+      div:first-child {
+        margin-right: 5px;
+        flex-shrink: 0;
+        flex-grow: 0;
+        &::before {
+          background-size: 14px;
+          background-position: 2px;
+        }
       }
       .editor_readonly_icon {
         margin-left: 8px;
@@ -287,12 +296,9 @@
       }
       &.kt_editor_tab_current {
         position: relative;
+        background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
         z-index: 11;
-
-        .kt_editor_tab_block {
-          background: var(--tab-activeBackground);
-        }
 
         .close_tab {
           display: block;
@@ -314,25 +320,6 @@
           }
         }
       }
-
-      .kt_editor_tab_block {
-        display: flex;
-        align-items: center;
-        height: 28px;
-        border-radius: 8px;
-        padding: 0 8px;
-
-        div:first-child {
-          margin-right: 5px;
-          flex-shrink: 0;
-          flex-grow: 0;
-          &::before {
-            background-size: 14px;
-            background-position: 2px;
-          }
-        }
-      }
-
       &.kt_on_drag_over {
         background-color: var(--editorGroup-dropBackground);
       }

@@ -1,0 +1,102 @@
+/**
+* ---------------- 覆盖 editor tab 样式 ---------------------
+*/
+div[class*=kt_editor_group___] div[class*=kt_editor_tabs_content___] {
+  div[class*=kt_editor_tab___] {
+    border-right: none;
+    border-top: none;
+  }
+
+  div[class*=kt_editor_tab_current___] {
+    background-color: transparent !important;
+  }
+}
+
+/**
+* ---------------- 覆盖 editor navigation 导航条样式 ---------------------
+*/
+div[class*=navigation_container___] {
+  height: 28px;
+  margin-bottom: 10px;
+}
+
+
+div[class*=file_tree_node___] {
+  border-radius: 4px;
+}
+
+/**
+* ---------------- 覆盖 左、右、底 tabbar 样式 ---------------------
+*/
+@bottomBarHeight: 32px;
+
+div[class*=icon_tab___] {
+  height: 32px;
+  width: 32px;
+  border-radius: 8px;
+
+  div.activity-icon {
+    font-size: 16px;
+    width: initial;
+    height: initial;
+    color: var(--activityBar-inactiveForeground);
+
+    &.mask-mode {
+      background-color: var(--activityBar-inactiveForeground);
+      -webkit-mask-size: 16px;
+    }
+  }
+}
+
+div[class*=tab_panel___] {
+  &::before {
+    content: none;
+  }
+}
+
+div[class*=tab_panel_hidden___] {
+  display: none;
+}
+
+.left-slot div[class*=tab_panel___] {
+  border-right: none;
+}
+
+li[class*=left_tab___] {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  &.active {
+    div[class*=icon_tab___] {
+      background-color: var(--activityBar-activeBorder);
+      &::before {
+        content: none;
+      }
+    }
+  }
+}
+
+div[class*=left_tab_bar___] {
+  border-right: none;
+  border-top: none;
+}
+
+div[class*=bar_content___] {
+  width: 100%;
+}
+
+.bottom-slot div[class*=tab_bar___] {
+  height: 100%;
+}
+
+li[class*=bottom_tab___] {
+  height: 100%;
+  line-height: @bottomBarHeight;
+}
+
+div[class*=bottom_bar_container___] {
+  width: 100%;
+  height: @bottomBarHeight;
+  min-height: @bottomBarHeight;
+}

@@ -63,8 +63,10 @@ import {
   IBreadCrumbService,
   IEditorFeatureRegistry,
   ILanguageStatusService,
+  IEditorTabService,
 } from './types';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
+import { EditorTabService } from './editor.tab.service';
 export * from './preference/schema';
 export * from './types';
 export * from './doc-model/types';
@@ -162,6 +164,10 @@ export class EditorModule extends BrowserModule {
     {
       token: ILanguageStatusService,
       useClass: LanguageStatusService,
+    },
+    {
+      token: IEditorTabService,
+      useClass: EditorTabService,
     },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,

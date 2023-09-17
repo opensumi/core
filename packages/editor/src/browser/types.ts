@@ -28,6 +28,7 @@ import {
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { EditorGroup } from './workbench-editor.service';
+import { ReactNode } from 'react';
 
 export * from '../common';
 
@@ -482,3 +483,9 @@ export class ResoucesOfActiveComponentChangedEvent extends BasicEvent<{
   component: IEditorComponent;
   resources: IResource[];
 }> {}
+
+export const IEditorTabService = Symbol('IEditorTabService');
+
+export interface IEditorTabService {
+  renderEditorTab(component: ReactNode, isCurrent?: boolean): ReactNode;
+}

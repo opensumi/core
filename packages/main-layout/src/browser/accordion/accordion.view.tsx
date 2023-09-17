@@ -1,12 +1,13 @@
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { View, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, View, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection, Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';
 import { AccordionSection } from './section.view';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 
 interface AccordionContainerProps {
   alignment?: Layout.alignment;
@@ -25,13 +26,23 @@ export const AccordionContainer = observer(
     alignment = 'vertical',
     views,
     containerId,
-    headerSize = 36,
+    headerSize,
     minSize = 120,
     className,
     noRestore,
     style,
   }: AccordionContainerProps) => {
     const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
+    const appConfig: AppConfig = useInjectable(AppConfig);
+
+    const layoutHeaderSize = useMemo(() => {
+      if (headerSize) {
+        return headerSize;
+      }
+
+      return appConfig.layoutViewSize ? appConfig.layoutViewSize.ACCORDION_HEADER_SIZE_HEIGHT : LAYOUT_VIEW_SIZE.ACCORDION_HEADER_SIZE_HEIGHT;
+    }, [headerSize])
+
     React.useEffect(() => {
       // 解决视图在渲染前注册的问题
       if (!views.length) {
@@ -42,7 +53,7 @@ export const AccordionContainer = observer(
       }
     }, [views]);
     React.useEffect(() => {
-      accordionService.initConfig({ headerSize, minSize });
+      accordionService.initConfig({ headerSize: layoutHeaderSize, minSize });
     }, []);
     const allCollapsed = !accordionService.visibleViews.find((view) => {
       const viewState: SectionState = accordionService.getViewState(view.id);
@@ -77,12 +88,12 @@ export const AccordionContainer = observer(
               expanded={!collapsed}
               accordionService={accordionService}
               index={index}
-              headerSize={headerSize}
-              minSize={headerSize}
+              headerSize={layoutHeaderSize}
+              minSize={layoutHeaderSize}
               initialProps={view.initialProps}
               titleMenu={titleMenu}
               titleMenuContext={view.titleMenuContext}
-              savedSize={collapsed ? headerSize : nextSize}
+              savedSize={collapsed ? layoutHeaderSize : nextSize}
               flex={view.weight || 1}
             >
               {view.component}
