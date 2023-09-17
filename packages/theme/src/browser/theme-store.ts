@@ -1,13 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { URI, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { ThemeContribution, getThemeId } from '../common/theme.service';
+import { IThemeData, ThemeContribution, getThemeId } from '../common/theme.service';
 
-import defaultTheme from './default-theme';
 import { ThemeData } from './theme-data';
+import { IThemeStore } from '../common/';
 
 @Injectable()
-export class ThemeStore {
+export class ThemeStore implements IThemeStore {
   static STORE_THEME_DATA_KEY = 'latestTheme';
 
   private themes: {
@@ -30,16 +30,16 @@ export class ThemeStore {
   private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: URI) {
     let themeData = this.themes[id];
     if (!themeData) {
-      themeData = this.injector.get(ThemeData);
+      themeData = this.injector.get(IThemeData);
       await themeData.initializeThemeData(id, themeName, themeBase, themeLocation);
       this.themes[id] = themeData;
     }
   }
 
-  loadDefaultTheme() {
+  loadDefaultTheme(): IThemeData {
     getDebugLogger().warn('The default theme extension is not detected, and the default theme style is used.');
-    const theme = this.injector.get(ThemeData);
-    theme.initializeFromData(defaultTheme);
+    const theme = this.injector.get(IThemeData);
+    theme.initializeFromData(theme.getDefaultTheme());
     return theme;
   }
 
@@ -73,7 +73,7 @@ export class ThemeStore {
     }
   }
 
-  public async getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<ThemeData> {
+  public async getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<IThemeData> {
     // 测试情况下传入的contribution为空，尝试加载上次缓存的最新主题
     if (!contribution || !basePath) {
       return await this.tryLoadLatestTheme();

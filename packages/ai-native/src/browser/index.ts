@@ -8,6 +8,11 @@ import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constant
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 
+import { Color, IThemeData, IThemeStore } from '@opensumi/ide-theme';
+import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
+import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
+import defaultTheme from './override/theme/default-theme';
+
 import './override/global.styles.less';
 
 @Injectable()
@@ -29,7 +34,39 @@ export class AiNativeModule extends BrowserModule {
         useClass: AiEditorTabService,
         override: true,
         isDefault: true
-      }
+      },
+      {
+        token: IThemeData,
+        useClass: class extends ThemeData {
+          override getDefaultTheme() {
+            return defaultTheme
+          }
+        },
+        override: true,
+        isDefault: true
+      },
+      {
+        // AI Native 模式下默认使用该主题
+        token: IThemeStore,
+        useClass: class extends ThemeStore {
+          override async getThemeData() {
+            const theme = this.loadDefaultTheme();
+            const colors = theme.colors;
+            if (colors) {
+              for (const colorId in colors) {
+                const colorHex = colors[colorId];
+                if (typeof colorHex === 'string') {
+                  theme.colorMap[colorId] = Color.fromHex(colors[colorId]);
+                }
+              }
+            }
+
+            return theme;
+          }
+        },
+        override: true,
+        isDefault: true
+      },
     );
 
     if (!this.app.config.layoutViewSize) {

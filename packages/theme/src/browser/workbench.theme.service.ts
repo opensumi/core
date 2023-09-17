@@ -51,6 +51,8 @@ import {
   ITokenColorCustomizations,
   DEFAULT_THEME_ID,
   colorIdPattern,
+  IThemeStore,
+  IThemeData,
 } from '../common/theme.service';
 
 import { ThemeData } from './theme-data';
@@ -90,7 +92,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public onThemeChange: Event<ITheme> = this.themeChangeEmitter.event;
 
-  @Autowired()
+  @Autowired(IThemeStore)
   private themeStore: ThemeStore;
 
   @Autowired()
@@ -428,7 +430,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return Color.red;
   };
 
-  private async getTheme(id: string): Promise<ThemeData> {
+  private async getTheme(id: string): Promise<IThemeData> {
     const theme = this.themes.get(id);
     if (theme) {
       return theme;
@@ -554,7 +556,7 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeData;
+  readonly themeData: IThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined } = Object.create(null);
 
@@ -562,7 +564,7 @@ class Theme implements ITheme {
   private customColorMap: IColorMap = {};
   private customTokenColors: ITokenColorizationRule[] = [];
 
-  constructor(type: ThemeType, themeData: ThemeData) {
+  constructor(type: ThemeType, themeData: IThemeData) {
     this.type = type;
     this.themeData = themeData;
     this.patchColors();

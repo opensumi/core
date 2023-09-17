@@ -76,6 +76,8 @@ export interface IIconService {
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
+export const IThemeData = Symbol('IThemeData');
+
 export interface IThemeData extends IStandaloneThemeData {
   name: string;
   id: string;
@@ -84,6 +86,13 @@ export interface IThemeData extends IStandaloneThemeData {
   settings: IRawThemeSetting[];
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: URI): Promise<void>;
+  loadCustomTokens(customTokenColors: ITokenColorizationRule[]): unknown;
+}
+
+export const IThemeStore = Symbol('IThemeStore');
+
+export interface IThemeStore {
+  getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<IThemeData>
 }
 
 export interface FontIconDefinition {
