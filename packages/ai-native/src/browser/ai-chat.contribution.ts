@@ -1,31 +1,60 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, Position, URI, getIcon, IRange, SlotRendererContribution, SlotRendererRegistry, SlotLocation } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  CommandContribution,
+  CommandRegistry,
+  ComponentContribution,
+  ComponentRegistry,
+  Domain,
+  Position,
+  URI,
+  getIcon,
+  IRange,
+  SlotRendererContribution,
+  SlotRendererRegistry,
+  SlotLocation,
+} from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor } from '@opensumi/ide-editor';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ResourceService } from '@opensumi/ide-editor';
 import { IResource } from '@opensumi/ide-editor';
-import { BrowserEditorContribution, IEditorDocumentModelContentRegistry, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import {
+  BrowserEditorContribution,
+  IEditorDocumentModelContentRegistry,
+  IEditorFeatureRegistry,
+} from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
+import { Ai_CHAT_CONTAINER_VIEW_ID } from '../common';
 import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
+import { AiChatTabRenderer, AiLeftTabRenderer, AiRightTabRenderer } from './override/layout/tabbar.view';
 import { AiRunService } from './run/run.service';
-import { LeftTabRenderer, RightTabRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
-import { AiLeftTabRenderer, AiRightTabRenderer } from './override/layout/tabbar.view';
 
 @Injectable()
-@Domain(ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution, SlotRendererContribution)
-export class AiChatContribution implements ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution, SlotRendererContribution {
-  static AiChatContainer = 'ai-chat';
-
+@Domain(
+  ComponentContribution,
+  BrowserEditorContribution,
+  MenuContribution,
+  CommandContribution,
+  SlotRendererContribution,
+)
+export class AiChatContribution
+  implements
+    ComponentContribution,
+    BrowserEditorContribution,
+    MenuContribution,
+    CommandContribution,
+    SlotRendererContribution
+{
   @Autowired()
   private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
 
@@ -54,12 +83,16 @@ export class AiChatContribution implements ComponentContribution, BrowserEditorC
   protected readonly aiRunService: AiRunService;
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(AiChatContribution.AiChatContainer, {
-      component: AiChatView,
-      id: AiChatContribution.AiChatContainer,
-    }, {
-      containerId: AiChatContribution.AiChatContainer,
-    });
+    registry.register(
+      Ai_CHAT_CONTAINER_VIEW_ID,
+      {
+        component: AiChatView,
+        id: Ai_CHAT_CONTAINER_VIEW_ID,
+      },
+      {
+        containerId: Ai_CHAT_CONTAINER_VIEW_ID,
+      },
+    );
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
@@ -72,20 +105,21 @@ export class AiChatContribution implements ComponentContribution, BrowserEditorC
   }
 
   registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(
+      {
+        id: 'ai.suggest.documentation',
+      },
+      {
+        execute: async (range: IRange) => {
+          const currentEditor = this.editorService.currentEditor;
+          if (!currentEditor || !range) {
+            return;
+          }
 
-    commands.registerCommand({
-      id: 'ai.suggest.documentation',
-    }, {
-      execute: async (range: IRange) => {
-        const currentEditor = this.editorService.currentEditor;
-        if (!currentEditor || !range) {
-          return;
-        }
+          const getContent = currentEditor.monacoEditor.getModel()!.getValueInRange(range);
 
-        const getContent = currentEditor.monacoEditor.getModel()!.getValueInRange(range);
-
-        if (getContent) {
-          const messageWithPrompt = `基于提供的代码，需要按照以下这种格式为这段代码添加 javadoc。
+          if (getContent) {
+            const messageWithPrompt = `基于提供的代码，需要按照以下这种格式为这段代码添加 javadoc。
 格式要求是:
 /**
  * $\{关于这段代码的注释\}
@@ -98,85 +132,97 @@ export class AiChatContribution implements ComponentContribution, BrowserEditorC
 ${getContent}
 `;
 
-          const aiResult = await this.aiChatService.aiBackService.aiMFTCompletion(messageWithPrompt);
-          const resultContent = aiResult.data;
+            const aiResult = await this.aiChatService.aiBackService.aiMFTCompletion(messageWithPrompt);
+            const resultContent = aiResult.data;
 
-          // 提取 markdown 里的代码
-          const regex = /```java\s*([\s\S]+?)\s*```/;
-          let code = regex.exec(resultContent)![1];
+            // 提取 markdown 里的代码
+            const regex = /```java\s*([\s\S]+?)\s*```/;
+            let code = regex.exec(resultContent)![1];
 
-          if (!code) {
-            return;
+            if (!code) {
+              return;
+            }
+
+            const monacoEditor = currentEditor.monacoEditor;
+
+            if (monacoEditor) {
+              const model = monacoEditor.getModel()!;
+
+              const indents = ' '.repeat(4);
+
+              const spcode = code.split('\n');
+              code = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
+
+              model.pushStackElement();
+              model.pushEditOperations(
+                null,
+                [
+                  {
+                    range,
+                    text: code,
+                  },
+                ],
+                () => null,
+              );
+              model.pushStackElement();
+
+              monacoEditor.focus();
+            }
+          }
+        },
+      },
+    );
+
+    commands.registerCommand(
+      {
+        id: 'ai.chat.createNewFile',
+      },
+      {
+        execute: async (fileName) => {
+          const workspaceDir = this.appConfig.workspaceDir;
+          return await this.fileTreeAPI.createFile(URI.parse(`${workspaceDir}/${fileName}`));
+        },
+      },
+    );
+
+    commands.registerCommand(
+      {
+        id: 'ai.chat.focusLine',
+      },
+      {
+        execute: async (line: number) => {
+          line = Number(line);
+          let currentEditor = this.editorService.currentEditor;
+          if (!currentEditor) {
+            this.editorService.setCurrentGroup(this.editorService.editorGroups[0]);
           }
 
-          const monacoEditor = currentEditor.monacoEditor;
+          currentEditor = this.editorService.currentEditor;
 
-          if (monacoEditor) {
-            const model = monacoEditor.getModel()!;
-
-            const indents = ' '.repeat(4);
-
-            const spcode = code.split('\n');
-            code = spcode.map((s, i) => i === 0 ? s : indents + s).join('\n');
-
-            model.pushStackElement();
-            model.pushEditOperations(null, [
-              {
-                range,
-                text: code,
-              },
-            ], () => null);
-            model.pushStackElement();
-
-            monacoEditor.focus();
-          }
-        }
+          currentEditor?.monacoEditor.focus();
+          setTimeout(() => {
+            currentEditor?.monacoEditor.revealLineInCenter(Number(line));
+            currentEditor?.monacoEditor.setPosition(new Position(line, 0));
+          }, 0);
+        },
       },
-    });
+    );
 
-    commands.registerCommand({
-      id: 'ai.chat.createNewFile',
-    }, {
-      execute: async (fileName) => {
-        const workspaceDir = this.appConfig.workspaceDir;
-        return await this.fileTreeAPI.createFile(URI.parse(`${workspaceDir}/${fileName}`));
+    commands.registerCommand(
+      {
+        id: 'cloudide.command.workspace.getRuntimeConfig',
       },
-    });
-
-    commands.registerCommand({
-      id: 'ai.chat.focusLine',
-    }, {
-      execute: async (line: number) => {
-        line = Number(line);
-        let currentEditor = this.editorService.currentEditor;
-        if (!currentEditor) {
-          this.editorService.setCurrentGroup(this.editorService.editorGroups[0]);
-        }
-
-        currentEditor = this.editorService.currentEditor;
-
-        currentEditor?.monacoEditor.focus();
-        setTimeout(() => {
-          currentEditor?.monacoEditor.revealLineInCenter(Number(line));
-          currentEditor?.monacoEditor.setPosition(
-            new Position(line, 0),
-          );
-        }, 0);
+      {
+        execute: async (key: string) => {
+          const obj = {
+            workspaceIP: '127.0.0.1',
+            workspaceDir: '/Users/mushi/Documents/workcode/opensumi/core/tools/workspace',
+            proxyHost: 'https://ide.cloudbaseapp-sanbox.cn',
+          };
+          return obj[key];
+        },
       },
-    });
-
-    commands.registerCommand({
-      id: 'cloudide.command.workspace.getRuntimeConfig',
-    }, {
-      execute: async (key: string) => {
-        const obj = {
-          workspaceIP: '127.0.0.1',
-          workspaceDir: '/Users/mushi/Documents/workcode/opensumi/core/tools/workspace',
-          proxyHost: 'https://ide.cloudbaseapp-sanbox.cn',
-        };
-        return obj[key];
-      },
-    });
+    );
 
     commands.registerCommand(AI_EXPLAIN_TERMINAL_COMMANDS, {
       execute: () => {
@@ -243,5 +289,6 @@ ${getContent}
   registerRenderer(registry: SlotRendererRegistry): void {
     registry.registerSlotRenderer(SlotLocation.left, AiLeftTabRenderer);
     registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
+    registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
   }
 }

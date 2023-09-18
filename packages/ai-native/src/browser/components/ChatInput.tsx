@@ -154,6 +154,15 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
 
   const optionsBottomPosition = useMemo(() => Math.min(181, Math.max(61, 21 + wrapperHeight)), [wrapperHeight]);
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+      if (!event.shiftKey) {
+        event.preventDefault();
+        handleSend();
+      }
+    }
+  };
+
   return (
     <div className={styles.chat_input_container}>
       {isShowOptions && <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />}
@@ -167,9 +176,9 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         value={value}
         type={'textarea'}
+        onKeyDown={handleKeyDown}
         onValueChange={handleInputChange}
         className={styles.input_wrapper}
-        // onPressEnter={() => handleSend()}
         addonBefore={
           slashWidget && (
             <div className={styles.slash_widget_block}>

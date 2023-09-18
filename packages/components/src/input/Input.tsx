@@ -224,6 +224,8 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
             {...restProps}
             value={inputValue}
             onChange={handleChange}
+            // @ts-ignore
+            onKeyDown={handleKeyDown}
           />
         ) : (
           <input
