@@ -2,18 +2,15 @@ import React from 'react';
 
 import { SlotRenderer } from '@opensumi/ide-core-browser';
 import { BoxPanel, getStorageValue, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { AiMainSlotRenderer } from '@opensumi/ide-ai-native/lib/browser/override/layout/main-slot-renderer';
 
 export function DefaultLayout() {
   const { colors, layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
       <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={35} slot='top' z-index={2} />
-      <SplitPanel
-        id='main-horizontal'
-        flex={1}
-        className='ai_native_panel_container'
-        resizeHandleClassName='ai_native_slot_resize_horizontal'
-      >
+      <AiMainSlotRenderer />
+      {/* <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
           slot='left'
@@ -21,14 +18,9 @@ export function DefaultLayout() {
           defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
           minResize={280}
           maxResize={480}
+          minSize={49}
         />
-        <SplitPanel
-          id='main-vertical'
-          minResize={300}
-          flexGrow={1}
-          direction='top-to-bottom'
-          className='ai_native_slot_main'
-        >
+        <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
           <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer
             backgroundColor={colors.panelBackground}
@@ -45,14 +37,9 @@ export function DefaultLayout() {
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
           maxResize={480}
           minResize={280}
+          minSize={0}
         />
-        <SlotRenderer
-          slot='ai-chat'
-          isTabbar={true}
-          defaultSize={layout['ai-chat']?.currentId ? layout['ai-chat']?.size || 280 : 280}
-          minResize={280}
-        />
-      </SplitPanel>
+      </SplitPanel> */}
       <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );

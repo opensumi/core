@@ -7,9 +7,5 @@ import { StatusBarContribution } from './status-bar.contribution';
 
 @Injectable()
 export class SampleModule extends BrowserModule {
-  providers: Provider[] = [
-    MenuBarContribution,
-    EditorEmptyComponentContribution,
-    StatusBarContribution,
-  ];
+  providers: Provider[] = [MenuBarContribution, EditorEmptyComponentContribution, StatusBarContribution];
 }

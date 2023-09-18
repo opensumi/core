@@ -14,6 +14,7 @@ import { SlotLocation } from '@opensumi/ide-core-browser';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
+import { AiLayoutConfig } from '@opensumi/ide-ai-native/lib/browser/override/layout/layout-config';
 
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
@@ -21,7 +22,6 @@ import { SampleModule } from '../sample-modules';
 import { renderApp } from './render-app';
 
 import '../styles.less';
-import { AiChatContribution } from '@opensumi/ide-ai-native/lib/browser/ai-chat.contribution';
 
 renderApp({
   modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule],
@@ -37,18 +37,13 @@ renderApp({
         modules: ['@opensumi/ide-toolbar-action'],
       },
     },
-    ...{
-      ['ai-chat']: {
-        modules: [AiChatContribution.AiChatContainer],
-      },
-    },
+    ...AiLayoutConfig
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,
   defaultPreferences: {
     'general.language': defaultLanguage,
-    // 'general.theme': 'opensumi-dark',
-    // 'general.theme': 'ai-native-dark',
+    'general.theme': 'opensumi-dark',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,

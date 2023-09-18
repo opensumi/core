@@ -11,6 +11,7 @@ import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { Color, IThemeData, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
+import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
 
 import './override/global.styles.less';
@@ -18,6 +19,7 @@ import './override/global.styles.less';
 @Injectable()
 export class AiNativeModule extends BrowserModule {
   providers: Provider[] = [
+    AiMenuBarContribution,
     AiChatContribution
   ];
 
