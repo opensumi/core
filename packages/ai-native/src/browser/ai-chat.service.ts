@@ -7,7 +7,7 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { AISerivceType, AiGPTBackSerivcePath } from '../common';
 
 const aiSearchKey = '/search ';
-const aiSearchCodeKey = '/searchcode ';
+const aiSearchCodeKey = '/searchCode ';
 const aiSumiKey = '/sumi ';
 const aiExplainKey = '/explain ';
 const aiRunKey = '/run ';
@@ -25,7 +25,6 @@ export interface IChatMessageStructure {
 
 @Injectable()
 export class AiChatService {
-
   @Autowired(AiGPTBackSerivcePath)
   aiBackService: any;
 
@@ -80,7 +79,6 @@ export class AiChatService {
       return { type: AISerivceType.Run, message: prompt };
     }
 
-
     if (input.startsWith(aiSearchKey)) {
       type = AISerivceType.Search;
       message = input.split(aiSearchKey)[1];
@@ -109,7 +107,9 @@ export class AiChatService {
     const displayName = currentUri.displayName;
     const fsPath = currentUri.codeUri.fsPath;
     const content = this.currentEditor.monacoEditor.getValue();
-    const selectionContent = this.currentEditor.monacoEditor.getModel()?.getValueInRange(this.currentEditor.monacoEditor.getSelection()!) || '';
+    const selectionContent =
+      this.currentEditor.monacoEditor.getModel()?.getValueInRange(this.currentEditor.monacoEditor.getSelection()!) ||
+      '';
     let messageWithPrompt = '';
 
     /**
