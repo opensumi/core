@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, Position, URI, getIcon, IRange } from '@opensumi/ide-core-browser';
+import { AppConfig, CommandContribution, CommandRegistry, ComponentContribution, ComponentRegistry, Domain, Position, URI, getIcon, IRange, SlotRendererContribution, SlotRendererRegistry, SlotLocation } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor } from '@opensumi/ide-editor';
@@ -18,11 +18,12 @@ import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 import { AiRunService } from './run/run.service';
+import { LeftTabRenderer, RightTabRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
+import { AiLeftTabRenderer, AiRightTabRenderer } from './override/layout/tabbar.view';
 
 @Injectable()
-@Domain(ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
-export class AiChatContribution implements ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution {
-
+@Domain(ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution, SlotRendererContribution)
+export class AiChatContribution implements ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution, SlotRendererContribution {
   static AiChatContainer = 'ai-chat';
 
   @Autowired()
@@ -237,5 +238,10 @@ ${getContent}
         name: `AI Diff ${uri.displayName}`,
       }),
     });
+  }
+
+  registerRenderer(registry: SlotRendererRegistry): void {
+    registry.registerSlotRenderer(SlotLocation.left, AiLeftTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
   }
 }

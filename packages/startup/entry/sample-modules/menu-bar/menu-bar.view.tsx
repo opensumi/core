@@ -11,6 +11,7 @@ import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
 import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-ai-native/lib/common/command';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 /**
  * Custom menu bar component.
@@ -19,6 +20,7 @@ import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-ai-native/lib/common/comman
  */
 export const MenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
+  const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const handleSelectFocus = () => {
@@ -29,9 +31,10 @@ export const MenuBarView = () => {
     commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
     // aiRunService.run();
   };
-
+  
   const handleRightPanel = () => {
-    commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id);
+    mainLayoutService.toggleSlot('ai-chat', true);
+    // commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id);
   };
 
   const MENUBAR_HEIGHT = React.useMemo(() => {

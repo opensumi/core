@@ -8,7 +8,6 @@ import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { useInjectable, getIcon, AppConfig } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { URI, Command, isMacintosh } from '@opensumi/ide-core-common';
 
@@ -205,7 +204,7 @@ export const AiChatView = () => {
   );
 
   return (
-    <div id={VIEW_CONTAINERS.RIGHT_TABBAR} className={styles.ai_chat_view} style={{ height: viewHeight }}>
+    <div className={styles.ai_chat_view} style={{ height: viewHeight }}>
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>

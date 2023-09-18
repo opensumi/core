@@ -40,9 +40,16 @@ export function DefaultLayout() {
           />
         </SplitPanel>
         <SlotRenderer
+          slot='right'
+          isTabbar={true}
+          defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
+          maxResize={480}
+          minResize={280}
+        />
+        <SlotRenderer
           slot='ai-chat'
-          isTabbar={false}
-          defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 320}
+          isTabbar={true}
+          defaultSize={layout['ai-chat']?.currentId ? layout['ai-chat']?.size || 280 : 280}
           minResize={280}
         />
       </SplitPanel>

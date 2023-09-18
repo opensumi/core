@@ -38,9 +38,6 @@ renderApp({
       },
     },
     ...{
-      [SlotLocation.right]: {
-        modules: [],
-      },
       ['ai-chat']: {
         modules: [AiChatContribution.AiChatContainer],
       },

@@ -87,7 +87,7 @@ export const RightTabRenderer = ({
   <TabRendererBase
     side='right'
     direction='right-to-left'
-    id={VIEW_CONTAINERS.RIGHT_TABBAR}
+    id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL}
     className={clsx(className, 'right-slot')}
     components={components}
     TabbarView={RightTabbarRenderer}
