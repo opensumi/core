@@ -1695,12 +1695,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nrwl/cli@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/cli@npm:15.9.6"
+"@nrwl/cli@npm:15.6.3":
+  version: 15.6.3
+  resolution: "@nrwl/cli@npm:15.6.3"
   dependencies:
-    nx: 15.9.6
-  checksum: cf1b702c66e2e0a82510bcb4e0c672f5481ef5265044573b8e15bc87e0234e961cb38f4b951d00335fad284bc5e539ee6eaf71276f5248a20902c05d26b91162
+    nx: 15.6.3
+  checksum: 66219cbf0a99d7cc4bb8bcf1c56f42e088e825b862d0df44710c4aa2466ce3d2c7286e0d208327e8325e5e370c3a0bad205df52ac311774f9d7a960e8a41c7c5
   languageName: node
   linkType: hard
 
@@ -1719,77 +1719,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nrwl/nx-darwin-arm64@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-darwin-arm64@npm:15.9.6"
-  conditions: os=darwin & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-darwin-x64@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-darwin-x64@npm:15.9.6"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-linux-arm-gnueabihf@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-linux-arm-gnueabihf@npm:15.9.6"
-  conditions: os=linux & cpu=arm
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-linux-arm64-gnu@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-linux-arm64-gnu@npm:15.9.6"
-  conditions: os=linux & cpu=arm64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-linux-arm64-musl@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-linux-arm64-musl@npm:15.9.6"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-linux-x64-gnu@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-linux-x64-gnu@npm:15.9.6"
-  conditions: os=linux & cpu=x64 & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-linux-x64-musl@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-linux-x64-musl@npm:15.9.6"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-win32-arm64-msvc@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-win32-arm64-msvc@npm:15.9.6"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@nrwl/nx-win32-x64-msvc@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/nx-win32-x64-msvc@npm:15.9.6"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@nrwl/tao@npm:15.9.6":
-  version: 15.9.6
-  resolution: "@nrwl/tao@npm:15.9.6"
+"@nrwl/tao@npm:15.6.3":
+  version: 15.6.3
+  resolution: "@nrwl/tao@npm:15.6.3"
   dependencies:
-    nx: 15.9.6
+    nx: 15.6.3
   bin:
     tao: index.js
-  checksum: a100531e052de10d94e1040ffe0fb9459b83be1d6e30a9cdb9436f7c5d10a5e0e7889381d4fe1335fd6a76493666493bcc3d68aa65b1ef803da3880b54fce4f1
+  checksum: ff56f21c7a2063a7719ed192e7997121dae42135bbff504f4847af86bede9db34fbd6c5d9573cd5368d594c44dd68c4e8d9ab5d57b346113e86015b2f4db47bc
   languageName: node
   linkType: hard
 
@@ -4644,13 +4581,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/parsers@npm:3.0.0-rc.46":
-  version: 3.0.0-rc.46
-  resolution: "@yarnpkg/parsers@npm:3.0.0-rc.46"
+"@yarnpkg/parsers@npm:^3.0.0-rc.18":
+  version: 3.0.0-rc.51
+  resolution: "@yarnpkg/parsers@npm:3.0.0-rc.51"
   dependencies:
     js-yaml: ^3.10.0
     tslib: ^2.4.0
-  checksum: 35dfd1b1ac7ed9babf231721eb90b58156e840e575f6792a8e5ab559beaed6e2d60833b857310e67d6282c9406357648df2f510e670ec37ef4bd41657f329a51
+  checksum: 35748fada41e45ada477e9e9da67e5e79acf895d4170d500966855a147912103e5bf33f3a658ad08a60ed22f21be05c5cfe13e342145c074b8ef6dd34b14572e
   languageName: node
   linkType: hard
 
@@ -16581,24 +16518,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nx@npm:15.9.6":
-  version: 15.9.6
-  resolution: "nx@npm:15.9.6"
+"nx@npm:15.6.3":
+  version: 15.6.3
+  resolution: "nx@npm:15.6.3"
   dependencies:
-    "@nrwl/cli": 15.9.6
-    "@nrwl/nx-darwin-arm64": 15.9.6
-    "@nrwl/nx-darwin-x64": 15.9.6
-    "@nrwl/nx-linux-arm-gnueabihf": 15.9.6
-    "@nrwl/nx-linux-arm64-gnu": 15.9.6
-    "@nrwl/nx-linux-arm64-musl": 15.9.6
-    "@nrwl/nx-linux-x64-gnu": 15.9.6
-    "@nrwl/nx-linux-x64-musl": 15.9.6
-    "@nrwl/nx-win32-arm64-msvc": 15.9.6
-    "@nrwl/nx-win32-x64-msvc": 15.9.6
-    "@nrwl/tao": 15.9.6
+    "@nrwl/cli": 15.6.3
+    "@nrwl/tao": 15.6.3
     "@parcel/watcher": 2.0.4
     "@yarnpkg/lockfile": ^1.1.0
-    "@yarnpkg/parsers": 3.0.0-rc.46
+    "@yarnpkg/parsers": ^3.0.0-rc.18
     "@zkochan/js-yaml": 0.0.6
     axios: ^1.0.0
     chalk: ^4.1.0
@@ -16632,25 +16560,6 @@ __metadata:
   peerDependencies:
     "@swc-node/register": ^1.4.2
     "@swc/core": ^1.2.173
-  dependenciesMeta:
-    "@nrwl/nx-darwin-arm64":
-      optional: true
-    "@nrwl/nx-darwin-x64":
-      optional: true
-    "@nrwl/nx-linux-arm-gnueabihf":
-      optional: true
-    "@nrwl/nx-linux-arm64-gnu":
-      optional: true
-    "@nrwl/nx-linux-arm64-musl":
-      optional: true
-    "@nrwl/nx-linux-x64-gnu":
-      optional: true
-    "@nrwl/nx-linux-x64-musl":
-      optional: true
-    "@nrwl/nx-win32-arm64-msvc":
-      optional: true
-    "@nrwl/nx-win32-x64-msvc":
-      optional: true
   peerDependenciesMeta:
     "@swc-node/register":
       optional: true
@@ -16658,7 +16567,7 @@ __metadata:
       optional: true
   bin:
     nx: bin/nx.js
-  checksum: 27ffd2559624cd0d7a40110540f8048994686c1032ac45483092bf00a3b128444236d47de9f02ae7e4830ac20763b251d430f609d7f317916057f9615ea68ac7
+  checksum: 09fe9a8f75a0e8e656930c1eaa9ab1eb39f4ffb9e964e7f3381920bf71cf75f8b3c0e0845b303c30e5818eb1c1eac9aa728e6f1d94d59743298b4bdf8f4d70ab
   languageName: node
   linkType: hard
 
