@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { Avatar } from 'react-chat-elements';
 
-import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-ai-native/lib/common/command';
 import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandService } from '@opensumi/ide-core-common';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
+
+import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
 
 import * as styles from './menu-bar.module.less';
 
