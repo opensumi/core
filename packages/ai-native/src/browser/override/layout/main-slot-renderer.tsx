@@ -52,7 +52,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
       <SlotRenderer
         slot={Ai_CHAT_CONTAINER_VIEW_ID}
         isTabbar={true}
-        defaultSize={320}
+        defaultSize={420}
         maxResize={480}
         minResize={280}
         minSize={0}
