@@ -1,4 +1,3 @@
-// tslint:disable:no-var-requires
 const path = require('path');
 
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -10,7 +9,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const threadLoader = require('thread-loader');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 threadLoader.warmup({}, ['ts-loader']);
 

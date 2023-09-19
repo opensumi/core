@@ -13,7 +13,7 @@ import {
   editorSelectionHighlight,
 } from './color-registry';
 import { IStandaloneThemeData } from './theme.service';
-// tslint:disable:variable-name
+
 /* -------------------------------- Begin vs theme -------------------------------- */
 export const vs: IStandaloneThemeData = {
   base: 'vs',

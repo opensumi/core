@@ -13,7 +13,6 @@ import { FileSystemWatcherServer } from '../../lib/node/file-service-watcher';
 import { IFileService, FileChangeType } from '../../src/common';
 import { FileServiceModule, FileService } from '../../src/node';
 
-// tslint:disable:variable-name
 describe('FileService', () => {
   let root: URI;
   let fileService: IFileService;
