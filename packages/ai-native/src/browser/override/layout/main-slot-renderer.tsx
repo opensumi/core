@@ -35,7 +35,6 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
           flexGrow={1}
           direction='top-to-bottom'
           className='ai_native_slot_main'
-          resizeHandleClassName='ai_native_slot_resize_horizontal'
         >
           <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer

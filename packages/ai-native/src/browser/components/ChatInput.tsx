@@ -166,10 +166,10 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
   return (
     <div className={styles.chat_input_container}>
       {isShowOptions && <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />}
-      <div className={styles.header_operate}>
+      {/* <div className={styles.header_operate}>
         <Block icon={getIcon('add-comments')} name={'新对话'} />
-        {/* <Icon className={getExternalIcon('history')} /> */}
-      </div>
+        <Icon className={getExternalIcon('history')} />
+      </div> */}
       <Input
         ref={inputRef}
         placeholder={'可以问我任何问题，或键入主题 "/"'}

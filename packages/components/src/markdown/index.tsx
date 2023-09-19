@@ -5,7 +5,7 @@ import { DATA_SET_COMMAND, IOpenerShape, RenderWrapper } from './render';
 
 interface IMarkdownProps {
   value: string;
-  renderer?: marked.Renderer;
+  renderer: marked.Renderer;
   opener?: IOpenerShape;
 }
 
