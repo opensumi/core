@@ -9,6 +9,7 @@ import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
 
 import { getWorkerBootstrapUrl } from './loader';
+import { createSumiApiFactory } from './sumi/main.thread.api.impl';
 import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';
 
@@ -35,10 +36,13 @@ export class WorkerExtProcessService
 
   public protocol: IRPCProtocol;
 
-  private apiFactoryDisposable?: IDisposable;
+  private apiFactoryDisposable: IDisposable[] = [];
 
   public disposeApiFactory() {
-    this.apiFactoryDisposable?.dispose();
+    this.apiFactoryDisposable.forEach((disposable) => {
+      disposable.dispose();
+    });
+    this.apiFactoryDisposable = [];
   }
 
   public disposeProcess() {
@@ -53,7 +57,10 @@ export class WorkerExtProcessService
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
       this.logger.verbose(this.protocol);
-      this.apiFactoryDisposable = toDisposable(await initWorkerThreadAPIProxy(this.protocol, this.injector, this));
+      this.apiFactoryDisposable.push(
+        toDisposable(await initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
+        toDisposable(createSumiApiFactory(this.protocol, this.injector)),
+      );
       this.addDispose(this.apiFactoryDisposable);
 
       await this.getProxy().$updateExtHostData();
