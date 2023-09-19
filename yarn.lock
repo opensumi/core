@@ -8959,15 +8959,15 @@ __metadata:
   linkType: hard
 
 "electron@npm:^22.3.21":
-  version: 22.3.23
-  resolution: "electron@npm:22.3.23"
+  version: 22.3.24
+  resolution: "electron@npm:22.3.24"
   dependencies:
     "@electron/get": ^2.0.0
     "@types/node": ^16.11.26
     extract-zip: ^2.0.1
   bin:
     electron: cli.js
-  checksum: 5fdbfbe4f00eb6697f3d1a9878072d1194d99253a5ec5e25ee65cddfe983ed5366010c99255dae653e05581a9173025fd04cba5c2863887129a93fcb26294fba
+  checksum: 28f0134e7e66ab8d89ec03059c759d9463ca1a2f5bac99069d1cbe18de78bb71dd4c29a63166456a46a701e62826fbf7533c754533b744965046012c4f220f68
   languageName: node
   linkType: hard
 
