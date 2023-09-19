@@ -85,10 +85,14 @@ li[class*='left_tab___'] {
 div[class*='left_tab_bar___'] {
   border-right: none;
   border-top: none;
-}
 
-div[class*='bar_content___'] {
-  width: 100%;
+  div[class*='bar_content___'] {
+    width: 100%;
+    overflow-y: auto;
+    &::-webkit-scrollbar {
+      display: none !important;
+    }
+  }
 }
 
 .bottom-slot div[class*='tab_bar___'] {

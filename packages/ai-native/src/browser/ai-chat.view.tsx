@@ -2,17 +2,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as React from 'react';
 // @ts-ignore
-import { MessageList, SystemMessage, Avatar } from 'react-chat-elements';
+import { Avatar, MessageList, SystemMessage } from 'react-chat-elements';
 
-import { Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { useInjectable, getIcon, AppConfig } from '@opensumi/ide-core-browser';
+import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown/index';
+import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import { URI, Command, isMacintosh } from '@opensumi/ide-core-common';
-
-import 'react-chat-elements/dist/main.css';
+import { Command, isMacintosh, URI } from '@opensumi/ide-core-common';
 import { DebugConfiguration } from '@opensumi/ide-debug';
+import 'react-chat-elements/dist/main.css';
 
 import { AiGPTBackSerivcePath, AISerivceType } from '../common';
 
@@ -194,9 +193,7 @@ export const AiChatView = () => {
     [messageListData, containerRef],
   );
 
-  const layoutViewSize = React.useMemo(() => {
-    return appConfig.layoutViewSize || LAYOUT_VIEW_SIZE;
-  }, [appConfig])
+  const layoutViewSize = React.useMemo(() => appConfig.layoutViewSize || LAYOUT_VIEW_SIZE, [appConfig]);
 
   const viewHeight = React.useMemo(
     () => `calc(100vh - ${layoutViewSize.MENUBAR_HEIGHT + layoutViewSize.STATUSBAR_HEIGHT}px)`,
@@ -302,6 +299,12 @@ const AiReply = ({ text, endNode = <></>, immediately = false }) => {
   );
 };
 
+const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
+  link(href: string | null, title: string | null, text: string): string {
+    return `<a rel="noopener" target="_blank" href="${href}" target="${href}" title="${title ?? href}">${text}</a>`;
+  }
+})();
+
 const AISearch = async (input, aiGPTBackService) => {
   try {
     const result = await aiGPTBackService.aiSearchRequest(
@@ -320,11 +323,11 @@ const AISearch = async (input, aiGPTBackService) => {
             <CodeBlockWrapper text={responseText} />
           </div>
           <div style={{ whiteSpace: 'pre-wrap' }}>
-            <Markdown value={urlMessage}></Markdown>
+            <Markdown value={urlMessage} renderer={codeSearchMarkedRender}></Markdown>
             {/* {AIChatGPTReply(urlMessage)} */}
           </div>
         </div>
-      </ChatMoreActions>
+      </ChatMoreActions>,
     );
 
     return aiMessage;
@@ -339,7 +342,9 @@ const AIChatGPTReply = async (input) => {
     console.log('ai chat gpt reply: >>>> ', input);
 
     const aiMessage = createMessageByAI(
-      <ChatMoreActions><CodeBlockWrapper text={input} /></ChatMoreActions>
+      <ChatMoreActions>
+        <CodeBlockWrapper text={input} />
+      </ChatMoreActions>,
     );
 
     return aiMessage;
@@ -356,7 +361,7 @@ const AIChatRunReply = async (input, aiRunService: AiRunService) => {
     const value = regex.exec(input);
     if (!value) {
       return createMessageByAI('未找到合适的启动命令，请重试');
-    };
+    }
 
     const [, command] = value;
     const configuration: DebugConfiguration = {
@@ -364,11 +369,8 @@ const AIChatRunReply = async (input, aiRunService: AiRunService) => {
       type: 'node',
       request: 'launch',
       runtimeExecutable: 'tnpm',
-      runtimeArgs: [
-        'run',
-        `${command}`,
-      ],
-      cwd: '\${workspaceFolder}',
+      runtimeArgs: ['run', `${command}`],
+      cwd: '${workspaceFolder}',
       console: 'integratedTerminal',
     };
 
@@ -379,10 +381,12 @@ const AIChatRunReply = async (input, aiRunService: AiRunService) => {
 ${JSON.stringify(configuration, undefined, 2)}
 \`\`\``;
 
-    const aiMessage = createMessageByAI(<ChatMoreActions>
-      <CodeBlockWrapper text={launchContent} />
-      <Button onClick={() => aiRunService.addRunConfiguration(configuration)}>添加该配置并再次执行 run</Button>
-    </ChatMoreActions>);
+    const aiMessage = createMessageByAI(
+      <ChatMoreActions>
+        <CodeBlockWrapper text={launchContent} />
+        <Button onClick={() => aiRunService.addRunConfiguration(configuration)}>添加该配置并再次执行 run</Button>
+      </ChatMoreActions>,
+    );
 
     return aiMessage;
   } catch (error) {
@@ -411,7 +415,7 @@ const AIWithCommandReply = async (command: Command, opener) => {
           </ol>
           <Button onClick={() => opener.open(URI.parse(`command:${delegate || id}`))}>点击执行命令</Button>
         </div>
-      </ChatMoreActions>
+      </ChatMoreActions>,
     );
 
     return aiMessage;
