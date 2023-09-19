@@ -27,7 +27,7 @@ export default observer((props: IResizeViewProps) => {
   const [event, setEvent] = React.useState(false);
   const [wholeWidth, setWholeWidth] = React.useState(Infinity);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
-  const whole = React.createRef<HTMLDivElement>();
+  const whole = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (whole.current && whole.current.clientHeight !== wholeWidth) {

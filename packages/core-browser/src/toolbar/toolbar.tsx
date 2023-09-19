@@ -148,7 +148,7 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
       }
       return () => disposer.dispose();
     }
-  }, []);
+  }, [preferences.noDropDown]);
 
   return (
     <div

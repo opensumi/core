@@ -28,8 +28,13 @@ enum BUTTON_TITLE_STYLE {
 export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionElementProps) => {
   const context = useInjectable<AppConfig>(AppConfig);
   const ref = React.useRef<HTMLDivElement>();
+
   const [viewState, setViewState] = React.useState(props.defaultState || 'default');
-  const [title, setTitle] = React.useState(undefined);
+
+  const viewStateRef = React.useRef<string>(viewState);
+  viewStateRef.current = viewState;
+
+  const [title, setTitle] = React.useState<string>('');
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
@@ -74,11 +79,11 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       delegate.current = context.injector.get(ToolbarBtnDelegate, [
         ref.current,
         props.id,
-        (state, title) => {
+        (state: string, title: string) => {
           setViewState(state);
           setTitle(title);
         },
-        () => viewState,
+        () => viewStateRef.current,
         context,
         getPopoverParent,
         props.popoverComponent,
@@ -301,6 +306,10 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
         }
       }
     });
+  }
+
+  getState() {
+    return this._getState();
   }
 
   setState(to, title?) {

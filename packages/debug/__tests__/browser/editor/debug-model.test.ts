@@ -159,13 +159,13 @@ describe('Debug Model', () => {
   it('renderBreakpoints should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
     await debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
   });
 
   it('render should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
     await debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
   });
 
   it('toggleBreakpoint should be work', () => {

@@ -771,16 +771,16 @@ export class FileTreeModelService {
     this.updateExplorerCompressedContextKey(item, activeUri);
 
     this._isMultiSelected = false;
+    // 单选操作默认先更新选中状态
+    if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
+      this.activeFileDecoration(item);
+    }
     if (this.fileTreeService.isCompactMode && activeUri) {
       this._activeUri = activeUri;
       // 存在 activeUri 的情况默认 explorerResourceIsFolder 的值都为 true
       this.contextKey?.explorerResourceIsFolder.set(true);
     } else if (!activeUri) {
       this._activeUri = null;
-      // 单选操作默认先更新选中状态
-      if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
-        this.activeFileDecoration(item);
-      }
       this.contextKey?.explorerResourceIsFolder.set(type === TreeNodeType.CompositeTreeNode);
     }
 

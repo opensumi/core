@@ -477,3 +477,8 @@ export class CodeEditorDidVisibleEvent extends BasicEvent<{
   groupName: string;
   editorId: string;
 }> {}
+
+export class ResoucesOfActiveComponentChangedEvent extends BasicEvent<{
+  component: IEditorComponent;
+  resources: IResource[];
+}> {}

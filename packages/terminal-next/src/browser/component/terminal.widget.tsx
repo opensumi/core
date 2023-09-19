@@ -63,7 +63,7 @@ function renderError(error: ITerminalError, eService: ITerminalErrorService, vie
 }
 
 export default ({ widget, error, show }: IProps) => {
-  const content = React.createRef<HTMLDivElement>();
+  const content = React.useRef<HTMLDivElement | null>(null);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
 

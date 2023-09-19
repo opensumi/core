@@ -1,5 +1,5 @@
 import fuzzy from 'fuzzy';
-import React, { useEffect, createRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { FixedSizeList, VariableSizeList, ListProps } from 'react-window';
 
 import {
@@ -866,7 +866,37 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private renderItem = ({ index, style }): JSX.Element => {
     const { children, overflow = 'ellipsis', supportDynamicHeights } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
-    const wrapRef = createRef<HTMLDivElement>();
+    const wrapRef = useRef<HTMLDivElement | null>(null);
+
+    const setSize = useMemo(
+      () =>
+        supportDynamicHeights
+          ? () => {
+              let size = 0;
+              if (wrapRef.current) {
+                const ref = wrapRef.current;
+                size = Array.from(ref.children).reduce(
+                  (pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height,
+                  0,
+                );
+              }
+              if (size) {
+                this.dynamicSizeMap.set(index, size);
+                this.layoutItem();
+              }
+
+              return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
+            }
+          : () => {},
+      [supportDynamicHeights],
+    );
+
+    useEffect(() => {
+      if (wrapRef.current) {
+        setSize();
+      }
+    }, []);
+
     if (!node) {
       return <></>;
     }
@@ -893,35 +923,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         'aria-posinset': index,
       };
     }
-
-    useEffect(() => {
-      if (wrapRef.current) {
-        setSize();
-      }
-    }, []);
-
-    const setSize = useMemo(
-      () =>
-        supportDynamicHeights
-          ? () => {
-              let size = 0;
-              if (wrapRef.current) {
-                const ref = wrapRef.current;
-                size = Array.from(ref.children).reduce(
-                  (pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height,
-                  0,
-                );
-              }
-              if (size) {
-                this.dynamicSizeMap.set(index, size);
-                this.layoutItem();
-              }
-
-              return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
-            }
-          : () => {},
-      [supportDynamicHeights],
-    );
 
     const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
 

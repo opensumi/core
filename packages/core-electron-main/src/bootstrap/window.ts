@@ -10,7 +10,6 @@ import {
   IpcMainEvent,
   WebPreferences,
 } from 'electron';
-import semver from 'semver';
 import treeKill from 'tree-kill';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -216,26 +215,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   bindEvents() {
-    // 外部打开http
-    if (semver.lt(process.versions.electron, '13.0.0')) {
-      // Deprecated: WebContents new-window event
-      // https://www.electronjs.org/docs/latest/breaking-changes#deprecated-webcontents-new-window-event
-      this.browser.webContents.on('new-window', (event, url) => {
-        if (!event.defaultPrevented) {
-          event.preventDefault();
-          if (url.indexOf('http') === 0) {
-            shell.openExternal(url);
-          }
-        }
-      });
-    } else {
-      this.browser.webContents.setWindowOpenHandler((details) => {
-        if (details.url.indexOf('http') === 0) {
-          shell.openExternal(details.url);
-        }
-        return { action: 'deny' };
-      });
-    }
+    this.browser.webContents.setWindowOpenHandler((details) => {
+      if (details.url.indexOf('http') === 0) {
+        shell.openExternal(details.url);
+      }
+      return { action: 'deny' };
+    });
   }
 
   async clear() {
