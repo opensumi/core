@@ -78,9 +78,6 @@ export class AiRunService {
   }
 
   public getStackName(): EStackName {
-    // 测试
-    return EStackName.NODEJS;
-    // 测试
     // @ts-ignore
     const stackName = window.ideRuntimeConfig?.stackName?.toLowerCase();
 
