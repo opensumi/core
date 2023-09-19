@@ -1,8 +1,6 @@
 const path = require('path');
 
 const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
@@ -40,7 +38,7 @@ module.exports = {
     ],
   },
   externals: [
-    function (context, request, callback) {
+    function ({ context, request }, callback) {
       if (['node-pty', '@parcel/watcher', 'spdlog', 'nsfw', 'electron'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
@@ -51,14 +49,15 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
   plugins: [
-    new CopyPlugin([
-      {
-        from: require.resolve('@opensumi/ide-webview/lib/electron-webview/plain-preload.js'),
-        to: path.join(distDir, 'plain-preload.js'),
-      },
-    ]),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: require.resolve('@opensumi/ide-webview/lib/electron-webview/plain-preload.js'),
+          to: path.join(distDir, 'plain-preload.js'),
+        },
+      ],
+    }),
   ],
 };

@@ -4,6 +4,7 @@ const AssetsPlugin = require('assets-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
@@ -18,14 +19,6 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 
 module.exports = {
   entry: `${dir}/index.ts`,
-  node: {
-    net: 'empty',
-    child_process: 'empty',
-    path: 'empty',
-    url: false,
-    fs: 'empty',
-    process: 'mock',
-  },
   output: {
     filename: 'browser.js',
     path: distDir,
@@ -63,7 +56,7 @@ module.exports = {
       },
       {
         test: /\.png$/,
-        use: 'file-loader',
+        type: 'asset/resource',
       },
       {
         test: /\.css$/,
@@ -99,16 +92,12 @@ module.exports = {
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: require.resolve('file-loader'),
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/',
-              publicPath: 'http://localhost:8080/fonts',
-            },
-          },
-        ],
+        type: 'asset/resource',
+        generator: {
+          filename: '[name].[ext]',
+          outputPath: 'fonts/',
+          publicPath: 'http://localhost:8080/fonts',
+        },
       },
     ],
   },
@@ -116,7 +105,6 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
   optimization: {
     nodeEnv,
@@ -131,15 +119,20 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'main.css',
     }),
-    new CopyPlugin([
-      { from: path.join(dir, 'vendor'), to: distDir },
-      { from: path.join(dir, 'index.html'), to: distDir },
-    ]),
+    new CopyPlugin({
+      patterns: [
+        { from: path.join(dir, 'vendor'), to: distDir },
+        { from: path.join(dir, 'index.html'), to: distDir },
+      ],
+    }),
     new FriendlyErrorsWebpackPlugin({
       compilationSuccessInfo: {
         messages: [`Your application is running here: http://localhost:${port}`],
       },
       clearConsole: true,
+    }),
+    new NodePolyfillPlugin({
+      includeAliases: ['process'],
     }),
   ],
 };

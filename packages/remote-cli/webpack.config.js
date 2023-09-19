@@ -40,6 +40,5 @@ module.exports = {
   resolveLoader: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
 };

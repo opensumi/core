@@ -12,9 +12,6 @@ module.exports = {
     path: distDir,
   },
   target: 'webworker',
-  node: {
-    net: 'empty',
-  },
   devtool: 'none',
   mode: 'production',
   resolve: {
@@ -42,6 +39,5 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
 };

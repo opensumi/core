@@ -88,16 +88,15 @@ export class ExtensionsActivator {
     return this.activatedExtensions.delete(id);
   }
 
-  private async doDeactivate(extensionModule) {
+  private async doDeactivate(extensionModule: any): Promise<void> {
     try {
       const promiseLike = await (extensionModule as Required<IExtensionModule>).deactivate();
       return promiseLike;
     } catch (err) {
       this.logger.error(`
-        [Extension-Host] deactivate extension module error ${err.message} \n\n
-        Stack: ${err.stack && err.stack}
+        [Extension-Host] deactivate extension module error ${(err as Error).message} \n\n
+        Stack: ${(err as Error).stack}
       `);
-      return err;
     }
   }
 

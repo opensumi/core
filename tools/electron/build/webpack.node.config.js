@@ -1,9 +1,5 @@
-// tslint:disable:no-var-requires
 const path = require('path');
 
-const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
@@ -43,7 +39,7 @@ module.exports = {
     ],
   },
   externals: [
-    function (context, request, callback) {
+    function ({ context, request }, callback) {
       if (
         ['node-pty', '@parcel/watcher', 'nsfw', 'spdlog', '@opensumi/vscode-ripgrep', 'vm2', 'keytar', 'vertx'].indexOf(
           request,
@@ -58,6 +54,5 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
 };

@@ -6,6 +6,7 @@ const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const threadLoader = require('thread-loader');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
@@ -36,14 +37,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
   const webpackConfig = merge(
     {
       entry,
-      node: {
-        net: 'empty',
-        child_process: 'empty',
-        path: 'empty',
-        url: false,
-        fs: 'empty',
-        process: 'mock',
-      },
       output: {
         filename: 'bundle.js',
         path: dir + '/dist',
@@ -117,8 +110,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
                 options: {
                   importLoaders: 1,
                   sourceMap: true,
-                  modules: true,
-                  localIdentName: '[local]___[hash:base64:5]',
+                  modules: {
+                    localIdentName: '[local]___[hash:base64:5]',
+                  },
                 },
               },
               {
@@ -153,15 +147,11 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           },
           {
             test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-            use: [
-              {
-                loader: 'file-loader',
-                options: {
-                  name: '[name].[ext]',
-                  outputPath: 'fonts/',
-                },
-              },
-            ],
+            type: 'asset/resource',
+            generator: {
+              filename: '[name].[ext]',
+              outputPath: 'fonts/',
+            },
           },
         ],
       },
@@ -173,7 +163,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         ],
         extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
         mainFields: ['loader', 'main'],
-        moduleExtensions: ['-loader'],
       },
       optimization: {
         nodeEnv: process.env.NODE_ENV,
@@ -182,7 +171,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         new HtmlWebpackPlugin({
           template: __dirname + '/index.html',
         }),
-
+        new NodePolyfillPlugin({
+          includeAliases: ['process'],
+        }),
         new MiniCssExtractPlugin({
           filename: '[name].[chunkhash:8].css',
           chunkFilename: '[id].css',
@@ -264,14 +255,6 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
   const port = 8899;
   return {
     entry,
-    node: {
-      net: 'empty',
-      child_process: 'empty',
-      path: 'empty',
-      url: false,
-      fs: 'empty',
-      process: 'mock',
-    },
     output: {
       filename: 'webview.js',
       path: dir + '/dist',
@@ -310,11 +293,13 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       ],
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
       mainFields: ['loader', 'main'],
-      moduleExtensions: ['-loader'],
     },
     plugins: [
       new HtmlWebpackPlugin({
         template: path.dirname(entry) + '/webview.html',
+      }),
+      new NodePolyfillPlugin({
+        includeAliases: ['process'],
       }),
     ],
     devServer: {

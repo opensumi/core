@@ -39,7 +39,7 @@ module.exports = {
     ],
   },
   externals: [
-    function (context, request, callback) {
+    function ({ context, request }, callback) {
       if (['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1) {
         return callback(null, `commonjs ${request}`);
       }
@@ -50,6 +50,5 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
 };

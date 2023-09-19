@@ -1,6 +1,7 @@
 const path = require('path');
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const { ProgressPlugin } = require('webpack');
@@ -22,15 +23,10 @@ module.exports = {
       filename: 'index.css',
     }),
     !process.env.CI && new ProgressPlugin(),
+    new NodePolyfillPlugin({
+      includeAliases: ['process'],
+    }),
   ].filter(Boolean),
-  node: {
-    net: 'empty',
-    child_process: 'empty',
-    path: 'empty',
-    url: false,
-    fs: 'empty',
-    process: 'mock',
-  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [
@@ -38,6 +34,9 @@ module.exports = {
         configFile: tsConfigPath,
       }),
     ],
+    fallback: {
+      util: false,
+    },
   },
   module: {
     rules: [
@@ -47,15 +46,10 @@ module.exports = {
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/',
-            },
-          },
-        ],
+        type: 'asset/resource',
+        generator: {
+          filename: './fonts/[name].[hash:name][ext]',
+        },
       },
       {
         test: /\.tsx?$/,
@@ -94,7 +88,9 @@ module.exports = {
             options: {
               importLoaders: 1,
               sourceMap: false,
-              localIdentName: '[local]___[hash:base64:5]',
+              modules: {
+                localIdentName: '[local]___[hash:base64:5]',
+              },
             },
           },
           {
