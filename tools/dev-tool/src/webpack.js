@@ -95,7 +95,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           },
           {
             test: /\.png$/,
-            use: 'file-loader',
+            type: 'asset/resource',
           },
           {
             test: /\.css$/,

@@ -39,7 +39,7 @@ module.exports = {
       },
       {
         test: /\.png$/,
-        use: 'file-loader',
+        type: 'asset/resource',
       },
       {
         test: /\.css$/,
@@ -91,15 +91,11 @@ module.exports = {
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/',
-            },
-          },
-        ],
+        type: 'asset/resource',
+        generator: {
+          filename: '[name].[ext]',
+          outputPath: 'fonts/',
+        },
       },
     ],
   },

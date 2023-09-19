@@ -308,7 +308,7 @@ __metadata:
     thread-loader: ^4.0.2
     ts-loader: ^9.4.4
     ts-node: ^10.9.1
-    tsconfig-paths: ^3.8.0
+    tsconfig-paths: ^4.2.0
     tsconfig-paths-webpack-plugin: ^4.1.0
     typescript: 4.9.3
     webpack: ^5.88.2
@@ -331,7 +331,6 @@ __metadata:
     css-loader: ^6.8.1
     electron: ^22.3.21
     electron-builder: ^23.0.3
-    file-loader: ^6.2.0
     friendly-errors-webpack-plugin: ^1.7.0
     fs-extra: ^10.1.0
     glob-to-regexp: 0.4.1
@@ -354,7 +353,7 @@ __metadata:
     style-resources-loader: ^1.5.0
     ts-loader: ^9.4.4
     ts-node: ^10.9.1
-    tsconfig-paths: ^3.8.0
+    tsconfig-paths: ^4.2.0
     tsconfig-paths-webpack-plugin: ^4.1.0
     typescript: 4.9.3
     vscode-oniguruma: 1.6.1
@@ -619,13 +618,6 @@ __metadata:
   version: 7.0.11
   resolution: "@types/json-schema@npm:7.0.11"
   checksum: 527bddfe62db9012fccd7627794bd4c71beb77601861055d87e3ee464f2217c85fca7a4b56ae677478367bbd248dbde13553312b7d4dbc702a2f2bbf60c4018d
-  languageName: node
-  linkType: hard
-
-"@types/json5@npm:^0.0.29":
-  version: 0.0.29
-  resolution: "@types/json5@npm:0.0.29"
-  checksum: e60b153664572116dfea673c5bda7778dbff150498f44f998e34b5886d8afc47f16799280e4b6e241c0472aef1bc36add771c569c68fc5125fc2ae519a3eb9ac
   languageName: node
   linkType: hard
 
@@ -2952,18 +2944,6 @@ __metadata:
   dependencies:
     pend: ~1.2.0
   checksum: c8585fd5713f4476eb8261150900d2cb7f6ff2d87f8feb306ccc8a1122efd152f1783bdb2b8dc891395744583436bfd8081d8e63ece0ec8687eeefea394d4ff2
-  languageName: node
-  linkType: hard
-
-"file-loader@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "file-loader@npm:6.2.0"
-  dependencies:
-    loader-utils: ^2.0.0
-    schema-utils: ^3.0.0
-  peerDependencies:
-    webpack: ^4.0.0 || ^5.0.0
-  checksum: faf43eecf233f4897b0150aaa874eeeac214e4f9de49738a9e0ef734a30b5260059e85b7edadf852b98e415f875bd5f12587768a93fd52aaf2e479ecf95fab20
   languageName: node
   linkType: hard
 
@@ -7028,19 +7008,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsconfig-paths@npm:^3.8.0":
-  version: 3.14.1
-  resolution: "tsconfig-paths@npm:3.14.1"
-  dependencies:
-    "@types/json5": ^0.0.29
-    json5: ^1.0.1
-    minimist: ^1.2.6
-    strip-bom: ^3.0.0
-  checksum: 8afa01c673ebb4782ba53d3a12df97fa837ce524f8ad38ee4e2b2fd57f5ac79abc21c574e9e9eb014d93efe7fe8214001b96233b5c6ea75bd1ea82afe17a4c6d
-  languageName: node
-  linkType: hard
-
-"tsconfig-paths@npm:^4.1.2":
+"tsconfig-paths@npm:^4.1.2, tsconfig-paths@npm:^4.2.0":
   version: 4.2.0
   resolution: "tsconfig-paths@npm:4.2.0"
   dependencies:
