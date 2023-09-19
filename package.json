@@ -144,8 +144,7 @@
   "resolutions": {
     "@types/react": "^16.9.23",
     "@types/react-dom": "^16.9.17",
-    "classnames": "2.3.1",
-    "nx": "15.6.3"
+    "classnames": "2.3.1"
   },
   "packageManager": "yarn@3.2.4"
 }
