@@ -8,13 +8,16 @@ import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
 // 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
 setLocale(defaultLanguage);
 
-import '@opensumi/ide-i18n';
-import '@opensumi/ide-core-browser/lib/style/index.less';
+import {
+  AiChatLayoutConfig,
+  AiTopLayoutConfig,
+} from '@opensumi/ide-ai-native/lib/browser/override/layout/layout-config';
 import { SlotLocation } from '@opensumi/ide-core-browser';
+import '@opensumi/ide-core-browser/lib/style/index.less';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
+import '@opensumi/ide-i18n';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
-import { AiLayoutConfig } from '@opensumi/ide-ai-native/lib/browser/override/layout/layout-config';
 
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
@@ -37,7 +40,8 @@ renderApp({
         modules: ['@opensumi/ide-toolbar-action'],
       },
     },
-    ...AiLayoutConfig
+    ...AiTopLayoutConfig,
+    ...AiChatLayoutConfig,
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,

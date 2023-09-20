@@ -314,8 +314,6 @@ const AISearch = async (input, aiGPTBackService) => {
 
     const { responseText, urlMessage } = result;
 
-    console.log('ai search: >>>> ', result);
-
     const aiMessage = createMessageByAI(
       <ChatMoreActions>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -331,16 +329,12 @@ const AISearch = async (input, aiGPTBackService) => {
     );
 
     return aiMessage;
-  } catch (error) {
-    console.log('/search: error >>>>>', error);
-  }
+  } catch (error) {}
 };
 
 // 带有代码的 AI 回复组件
 const AIChatGPTReply = async (input) => {
   try {
-    console.log('ai chat gpt reply: >>>> ', input);
-
     const aiMessage = createMessageByAI(
       <ChatMoreActions>
         <CodeBlockWrapper text={input} />
@@ -348,15 +342,12 @@ const AIChatGPTReply = async (input) => {
     );
 
     return aiMessage;
-  } catch (error) {
-    console.log('/chat gpt reply: error >>>>>', error);
-  }
+  } catch (error) {}
 };
 
 // run 的 AI 回复组件
 const AIChatRunReply = async (input, aiRunService: AiRunService) => {
   try {
-    console.log('ai chat run reply: >>>> ', input);
     const regex = /"(\S+)"/s;
     const value = regex.exec(input);
     if (!value) {
@@ -384,21 +375,17 @@ ${JSON.stringify(configuration, undefined, 2)}
     const aiMessage = createMessageByAI(
       <ChatMoreActions>
         <CodeBlockWrapper text={launchContent} />
-        <Button onClick={() => aiRunService.addRunConfiguration(configuration)}>添加该配置并再次执行 run</Button>
+        <Button onClick={() => aiRunService.addRunConfiguration(configuration)}>添加该配置</Button>
       </ChatMoreActions>,
     );
 
     return aiMessage;
-  } catch (error) {
-    console.log('/chat run reply: error >>>>>', error);
-  }
+  } catch (error) {}
 };
 
 // 带有命令按钮的 AI 回复
 const AIWithCommandReply = async (command: Command, opener) => {
   try {
-    console.log('ai command reply: >>>> ', command);
-
     if (!command) {
       return createMessageByAI('未找到合适的功能');
     }
@@ -419,7 +406,5 @@ const AIWithCommandReply = async (command: Command, opener) => {
     );
 
     return aiMessage;
-  } catch (error) {
-    console.log('/ai command reply: error >>>>>', error);
-  }
+  } catch (error) {}
 };

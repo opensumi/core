@@ -26,8 +26,8 @@ export const AiMenuBarView = () => {
     /**
      * 这里先这样处理，暂时没找到原因
      */
-    const domID = 'ai_chat_panel';
-    const chatPanel = document.querySelector(`#${domID}`)?.parentElement?.parentElement;
+    const domID = 'div[id*=ai_chat_panel___]';
+    const chatPanel = document.querySelector(domID)?.parentElement?.parentElement;
 
     if (chatPanel) {
       let preWidth: number | string = chatPanel.style.width;

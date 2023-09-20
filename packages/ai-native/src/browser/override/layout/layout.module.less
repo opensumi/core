@@ -1,7 +1,261 @@
 :global {
-  div[class*=box-panel___] {
+  div[class*='box-panel___'] {
     background-image: url('https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*hLI-SqEx-YkAAAAAAAAAAAAADhl8AQ/original');
     background-repeat: no-repeat;
     background-size: cover;
+  }
+}
+
+.ai_native_panel_container {
+  margin-right: 16px;
+  width: initial;
+
+  .ai_native_slot_resize_horizontal {
+    height: 100%;
+    margin: 0 3px;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      height: 25px;
+      width: 2px;
+      background-color: #31363b;
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+    }
+  }
+
+  .ai_native_slot_main {
+    height: 100%;
+    width: 100%;
+    background-color: #151b21;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    overflow: hidden;
+
+    /**
+    * ---------------- 覆盖 editor tab 样式 ---------------------
+    */
+    div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_content___'] {
+      div[class*='kt_editor_tab___'] {
+        border-right: none;
+        border-top: none;
+      }
+
+      div[class*='kt_editor_tab_current___'] {
+        background-color: transparent !important;
+      }
+    }
+
+    /**
+    * ---------------- 覆盖 editor navigation 导航条样式 ---------------------
+    */
+    div[class*='navigation_container___'] {
+      height: 28px;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.ai_left_slot {
+  div[class*='tab_panel___'] {
+    border-right: none;
+  }
+
+  div[class*='file_tree_node___'] {
+    border-radius: 4px;
+  }
+
+  div[class*='icon_tab___'] {
+    height: 32px;
+    width: 32px;
+    border-radius: 8px;
+
+    :global {
+      .activity-icon {
+        font-size: 16px;
+        width: initial;
+        height: initial;
+        color: var(--activityBar-inactiveForeground);
+
+        &.mask-mode {
+          background-color: var(--activityBar-inactiveForeground);
+          -webkit-mask-size: 16px;
+        }
+      }
+    }
+  }
+
+  div[class*='tab_panel___'] {
+    &::before {
+      content: none;
+    }
+  }
+
+  div[class*='tab_panel_hidden___'] {
+    display: none;
+  }
+
+  li[class*='left_tab___'] {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  div[class*='left_tab_bar___'] {
+    border-right: none;
+    border-top: none;
+
+    div[class*='bar_content___'] {
+      width: 100%;
+      overflow-y: auto;
+
+      :global {
+        .active {
+          div[class*='icon_tab___'] {
+            background-color: var(--activityBar-activeBorder);
+
+            &::before {
+              content: none;
+            }
+          }
+        }
+      }
+
+      &::-webkit-scrollbar {
+        display: none !important;
+      }
+    }
+  }
+}
+
+.ai_bottom_slot {
+  /**
+  * ---------------- 覆盖编辑器面板底部 tabbar 样式 ---------------------
+  */
+  div[class*='tab_bar___'] {
+    height: 100%;
+  }
+
+  li[class*='bottom_tab___'] {
+    height: 100%;
+    line-height: 32px;
+  }
+
+  div[class*='bottom_bar_container___'] {
+    width: 100%;
+    height: 32px;
+    min-height: 32px;
+  }
+}
+
+/**
+* -------------------------------------------- 右侧 chat 面板样式 --------------------------------------------
+*/
+#ai_chat_panel {
+  height: 100%;
+
+  :global {
+    .rce-mbox-left-notch,
+    .rce-mbox-right-notch {
+      display: none;
+    }
+
+    .rce-mbox {
+      background-color: #ffffff0a;
+      border-radius: 2px 12px 12px 12px;
+      box-shadow: none;
+      padding: 8px 12px;
+      min-width: initial;
+      margin: 0;
+
+      ::after {
+        content: '';
+      }
+    }
+
+    .rce-mbox-text {
+      font-size: 12px;
+      line-height: 18px;
+      width: inherit;
+    }
+
+    .rce-smsg {
+      background-color: #ffffff0a;
+      box-shadow: none;
+      border-radius: 8px;
+      max-width: initial;
+      border-radius: 2px 12px 12px 12px;
+      width: 100%;
+      flex-direction: initial;
+      justify-content: left;
+      padding: 8px 12px 12px;
+      margin: 0;
+
+      .rce-smsg-text {
+        font-size: 12px;
+        width: 100%;
+        text-align: left;
+      }
+    }
+
+    .rce-container-smsg {
+      width: 100%;
+    }
+
+    .rce-mlist {
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 300;
+    }
+
+    .rce-ai-msg {
+      > .rce-mbox {
+        margin-bottom: 28px;
+        width: 100%;
+      }
+
+      .rce-mbox-body {
+        display: flex;
+        align-items: flex-start;
+        position: initial;
+        width: 100%;
+
+        .rce-mbox-title {
+          position: absolute;
+          left: -40px;
+          top: 0;
+        }
+
+        .rce-avatar-container {
+          &.default {
+            height: 32px;
+            width: 32px;
+          }
+        }
+      }
+    }
+
+    .rce-container-mbox {
+      overflow: hidden;
+      margin: 0 16px 16px 16px;
+      min-width: initial;
+    }
+
+    .rce-user-msg {
+      .rce-mbox-right {
+        border-radius: 12px 12px 2px 12px;
+        background-color: #3c8dff4d;
+        margin-right: 0;
+        margin-left: 0;
+      }
+    }
+
+    blockquote {
+      background: var(--vscode-textBlockQuote-background);
+      border-color: var(--vscode-textBlockQuote-border);
+    }
   }
 }

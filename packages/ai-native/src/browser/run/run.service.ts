@@ -10,9 +10,8 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
-import { AiGPTBackSerivcePath } from '../../common';
+import { AiGPTBackSerivcePath, InstructionEnum } from '../../common';
 import { AiChatService } from '../ai-chat.service';
-
 
 // 暂定的技术栈集合
 enum EStackName {
@@ -25,7 +24,7 @@ enum EStackName {
   rust = 'rust',
   FRONT_END = 'front end',
   EXTENSION = 'ide extension',
-  EMPTY = 'empty'
+  EMPTY = 'empty',
 }
 
 const EStackNameValues = Object.values(EStackName);
@@ -73,7 +72,9 @@ export class AiRunService {
 
   private getLaunchUri(): URI {
     const workspaceFolderUri = this.workspaceVariables.getWorkspaceRootUri();
-    const uri = new URI(workspaceFolderUri!.toString()).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
+    const uri = new URI(workspaceFolderUri!.toString()).resolve(
+      `${this.preferenceConfigurations.getPaths()[0]}/launch.json`,
+    );
     return uri;
   }
 
@@ -85,9 +86,8 @@ export class AiRunService {
       return EStackName.EMPTY;
     }
 
-    for (let i = 0; i < EStackNameValues.length; i++) {
-      const name = EStackNameValues[i];
-      if (stackName.includs(name)) {
+    for (const name of EStackNameValues) {
+      if (stackName.includes(name)) {
         return EStackName[name];
       }
     }
@@ -103,7 +103,6 @@ export class AiRunService {
    * 3. java 技术栈通常都会有 launch.json (java debug 插件生成的)。直接调用第一个命令即可
    */
   public async run() {
-
     // current 就是当前选中的 launch 里的某个配置，如果有值代表就是存在 launch.json 文件，且存在某项配置，直接执行就行
     const isDebugConf = this.debugConfigurationManager.current;
     if (isDebugConf) {
@@ -132,30 +131,37 @@ export class AiRunService {
 
         const parseJson = jsoncparser.parse(fileContent);
 
-        const jsonContent = JSON.stringify({
-          name: parseJson.name || '',
-          version: parseJson.version || '',
-          description: parseJson.description || '',
-          egg: parseJson.egg || '',
-          bin: parseJson.bin || '',
-          scripts: parseJson.scripts,
-        }, undefined, 1);
+        const jsonContent = JSON.stringify(
+          {
+            name: parseJson.name || '',
+            version: parseJson.version || '',
+            description: parseJson.description || '',
+            egg: parseJson.egg || '',
+            bin: parseJson.bin || '',
+            scripts: parseJson.scripts,
+          },
+          undefined,
+          1,
+        );
 
         const prompt = `我会给你一个项目类型和 package.json 文件内容。你需要通过分析里面的 scripts 内容，找到合适的运行命令来启动项目。如果找到合适的命令后直接返回，不需要解释。请参照下面的示例问答的格式返回。
-提问: 这是一个 node.js 项目，package.json 的文件内容是 \`\`\`\n${{ scripts: { dev: 'npm run dev', test: 'npm run test' } }}\n\`\`\`
+提问: 这是一个 node.js 项目，package.json 的文件内容是 \`\`\`\n${{
+          scripts: { dev: 'npm run dev', test: 'npm run test' },
+        }}\n\`\`\`
 回答: "dev"
-提问: 这是一个 front-end 项目，package.json 的文件内容是 \`\`\`\n${{ scripts: { start: 'npm run start', build: 'npm run build' } }}\n\`\`\`
+提问: 这是一个 front-end 项目，package.json 的文件内容是 \`\`\`\n${{
+          scripts: { start: 'npm run start', build: 'npm run build' },
+        }}\n\`\`\`
 回答: "start"
 提问: 这是一个 ${stackName} 项目，package.json 的文件内容是 \`\`\`\n${jsonContent}\n\`\`\`
 `;
         this.aiChatService.launchChatMessage({
-          message: '/run 运行项目',
+          message: `${InstructionEnum} 运行项目`,
           prompt,
         });
       }
     }
   }
-
 
   /**
    * 添加运行配置

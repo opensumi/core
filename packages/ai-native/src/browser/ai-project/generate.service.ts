@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { Injectable, Autowired } from '@opensumi/di';
+import { ILogServiceClient, ILoggerManagerClient, SupportLogNamespace } from '@opensumi/ide-core-common';
 
 import { AiGPTBackSerivcePath } from '../../common';
 
@@ -19,6 +20,15 @@ export interface Requirements {
 export class AiProjectGenerateService {
   @Autowired(AiGPTBackSerivcePath)
   aiBackService: any;
+
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManagerClient: ILoggerManagerClient;
+
+  private logger: ILogServiceClient;
+
+  constructor() {
+    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
+  }
 
   private matchFramework(language: string, framework: string) {
     if (/javascript|typescript/i.test(language)) {
@@ -51,7 +61,7 @@ export class AiProjectGenerateService {
     我的问题: ${input}
     `;
     const res = await this.aiBackService.aiAntGlm(prompt);
-    console.log('gen request res: ', res);
+    this.logger.log('gen request res: ', res);
     const reg =
       /(编程语言)(:|：)?\s?(?<language>.*)\n*\s*(编程框架)(:|：)?\s?(?<framework>.*)\n*\s*(项目需求)(:|：)?\s?(?<requirements>.*)/i;
     const match = reg.exec(res.data);
@@ -175,10 +185,10 @@ export class AiProjectGenerateService {
 我的问题：${requirements}
     `;
     const structure = await this.aiBackService.aiCodeLLama(prompt);
-    console.log('gen structure res: ', structure);
+    this.logger.log('gen structure res: ', structure);
 
     const structureCode = /```\n?(?<code>[\s\S]*?)```/g.exec(structure);
-    console.log('gen structure code: ', structureCode);
+    this.logger.log('gen structure code: ', structureCode);
 
     let flag = false;
     let filePathList: string[] = [];
@@ -419,10 +429,10 @@ The code need generate is: ${filePath}`;
     let code;
     while (!code && times < 5) {
       const content = await this.aiBackService.aiCodeLLama(prompt);
-      console.log('gen file content: ', content);
+      this.logger.log('gen file content: ', content);
       const codeMatch = /```\w*\n(\/\/\s.*\n)?(?<code>[\s\S]*?)```/g.exec(content);
       code = codeMatch && codeMatch.groups?.code ? codeMatch.groups?.code : content;
-      console.log('gen file code: ', code);
+      this.logger.log('gen file code: ', code);
       times++;
     }
 

@@ -3,6 +3,8 @@ import React, { useCallback, useState } from 'react';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Icon, Input } from '@opensumi/ide-core-browser/lib/components/index';
 
+import * as styles from './components.module.less';
+
 export const AiInput = ({ onValueChange }) => {
   const [value, setValue] = useState<string>();
 
@@ -18,13 +20,11 @@ export const AiInput = ({ onValueChange }) => {
 
   return (
     <Input
-      className={'ai_native_input_container'}
+      className={styles.ai_native_input_container}
       placeholder={'可以问我任何问题，或键入主题 "/"'}
       value={value}
       onValueChange={handleChange}
-      addonAfter={
-        <Icon className={getIcon('right')} onClick={() => emitterValueChange()} />
-      }
+      addonAfter={<Icon className={getIcon('right')} onClick={() => emitterValueChange()} />}
     />
   );
 };

@@ -4,13 +4,7 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, AiGPTBackSerivcePath } from '../common';
-
-const aiSearchKey = '/search ';
-const aiSearchCodeKey = '/searchCode ';
-const aiSumiKey = '/sumi ';
-const aiExplainKey = '/explain ';
-const aiRunKey = '/run ';
+import { AISerivceType, AiGPTBackSerivcePath, InstructionEnum } from '../common';
 
 export interface IChatMessageStructure {
   /**
@@ -58,15 +52,15 @@ export class AiChatService {
       return;
     }
 
-    if (input.startsWith(aiSumiKey)) {
+    if (input.startsWith(InstructionEnum.aiSumiKey)) {
       type = AISerivceType.Sumi;
-      message = input.split(aiSumiKey)[1];
+      message = input.split(InstructionEnum.aiSumiKey)[1];
 
       return { type: AISerivceType.Sumi, message };
     }
 
-    if (input.startsWith(aiExplainKey)) {
-      message = input.split(aiExplainKey)[1];
+    if (input.startsWith(InstructionEnum.aiExplainKey)) {
+      message = input.split(InstructionEnum.aiExplainKey)[1];
 
       if (!prompt) {
         prompt = this.explainCodePrompt(message);
@@ -75,16 +69,16 @@ export class AiChatService {
       return { type: AISerivceType.Explain, message: prompt };
     }
 
-    if (input.startsWith(aiRunKey)) {
+    if (input.startsWith(InstructionEnum.aiRunKey)) {
       return { type: AISerivceType.Run, message: prompt };
     }
 
-    if (input.startsWith(aiSearchKey)) {
+    if (input.startsWith(InstructionEnum.aiSearchKey)) {
       type = AISerivceType.Search;
-      message = input.split(aiSearchKey)[1];
-    } else if (input.startsWith(aiSearchCodeKey)) {
+      message = input.split(InstructionEnum.aiSearchKey)[1];
+    } else if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
       type = AISerivceType.SearchCode;
-      message = input.split(aiSearchCodeKey)[1];
+      message = input.split(InstructionEnum.aiSearchCodeKey)[1];
     } else {
       type = AISerivceType.GPT;
       message = input;

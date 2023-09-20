@@ -98,12 +98,21 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
               <span className={styles.v_line}></span>
               <div className={styles.operate}>
                 <div className={styles.left_side}>
-                  <Button size={'small'} onClick={() => {
-                    aiInlineChatService._onAccept.fire();
-                  }}>采纳</Button>
-                  <Button size={'small'} type={'ghost'} onClick={() => {
-                    aiInlineChatService._onDiscard.fire();
-                  }}>
+                  <Button
+                    size={'small'}
+                    onClick={() => {
+                      aiInlineChatService._onAccept.fire();
+                    }}
+                  >
+                    采纳
+                  </Button>
+                  <Button
+                    size={'small'}
+                    type={'ghost'}
+                    onClick={() => {
+                      aiInlineChatService._onDiscard.fire();
+                    }}
+                  >
                     丢弃
                   </Button>
                 </div>
@@ -131,7 +140,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       {renderResult}
       {/* chat */}
       <div className={styles.panel_chat}>
-        <div className={'ai-shortcuts'}>
+        <div className={styles.ai_shortcuts}>
           <AIImprove
             onClick={(title) => {
               props.selectChangeFire.fire(title);

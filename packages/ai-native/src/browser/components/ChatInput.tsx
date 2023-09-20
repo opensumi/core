@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { Icon, Input, getIcon } from '@opensumi/ide-core-browser/lib/components';
 
+import { InstructionEnum } from '../../common';
+
 import * as styles from './components.module.less';
 
 interface IBlockProps {
@@ -22,19 +24,19 @@ const Block = ({ icon, name }: IBlockProps) => (
 const optionsList: IBlockProps[] = [
   {
     icon: getIcon('search'),
-    name: '/search ',
+    name: InstructionEnum.aiSearchKey,
   },
   {
     icon: getExternalIcon('code'),
-    name: '/searchCode ',
+    name: InstructionEnum.aiSearchCodeKey,
   },
   {
     icon: getIcon('edit'),
-    name: '/explain ',
+    name: InstructionEnum.aiExplainKey,
   },
   {
     icon: getIcon('smile'),
-    name: '/sumi ',
+    name: InstructionEnum.aiSumiKey,
   },
 ];
 

@@ -29,14 +29,19 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
-import { Ai_CHAT_CONTAINER_VIEW_ID } from '../common';
+import { Ai_CHAT_CONTAINER_VIEW_ID, InstructionEnum } from '../common';
 import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
-import { AiChatTabRenderer, AiLeftTabRenderer, AiRightTabRenderer } from './override/layout/tabbar.view';
+import {
+  AiBottomTabRenderer,
+  AiChatTabRenderer,
+  AiLeftTabRenderer,
+  AiRightTabRenderer,
+} from './override/layout/tabbar.view';
 import { AiRunService } from './run/run.service';
 
 @Injectable()
@@ -233,7 +238,7 @@ ${getContent}
           const selectionContent = client.getSelection();
 
           this.aiChatService.launchChatMessage({
-            message: '/explain @terminalSelection',
+            message: `${InstructionEnum.aiExplainKey} @terminalSelection`,
             prompt: `请解释一下这一段 ${name} 终端面板里的这部分内容: \`\`\`\n${selectionContent}\n\`\`\` `,
           });
         }
@@ -245,7 +250,7 @@ ${getContent}
         const description = node.description;
         if (description) {
           this.aiChatService.launchChatMessage({
-            message: '/explain @debugSelection',
+            message: `${InstructionEnum.aiExplainKey} @debugSelection`,
             prompt: `我在运行并调试我的项目代码，请解释调试运行过程当中的这段日志: \`\`\`\n${description}\n\`\`\` `,
           });
         }
@@ -289,6 +294,7 @@ ${getContent}
   registerRenderer(registry: SlotRendererRegistry): void {
     registry.registerSlotRenderer(SlotLocation.left, AiLeftTabRenderer);
     registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.bottom, AiBottomTabRenderer);
     registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
   }
 }

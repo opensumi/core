@@ -3,6 +3,17 @@ export const AiGPTBackSerivcePath = 'AiGPTBackSerivcePath';
 
 export const Ai_CHAT_CONTAINER_VIEW_ID = 'ai_chat';
 
+/**
+ * 指令 key
+ */
+export enum InstructionEnum {
+  aiSearchKey = '/search ',
+  aiSearchCodeKey = '/searchCode ',
+  aiSumiKey = '/ide ',
+  aiExplainKey = '/explain ',
+  aiRunKey = '/run ',
+}
+
 export enum ChatCompletionRequestMessageRoleEnum {
   System = 'system',
   User = 'user',

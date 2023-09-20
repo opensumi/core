@@ -5,6 +5,8 @@ import { IChildComponentProps, SplitPanel, getStorageValue } from '@opensumi/ide
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
 
+import * as styles from './layout.module.less';
+
 export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
   const { colors, layout } = getStorageValue();
 
@@ -12,14 +14,14 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
     <SplitPanel
       id='ai-native-main-horizontal-0'
       flex={1}
-      className='ai_native_panel_container'
-      resizeHandleClassName='ai_native_slot_resize_horizontal'
+      className={styles.ai_native_panel_container}
+      resizeHandleClassName={styles.ai_native_slot_resize_horizontal}
     >
       <SplitPanel
         id='ai-native-main-horizontal-1'
         flex={1}
         flexGrow={1}
-        resizeHandleClassName='ai_native_slot_resize_horizontal'
+        resizeHandleClassName={styles.ai_native_slot_resize_horizontal}
       >
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
@@ -34,7 +36,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
           minResize={300}
           flexGrow={1}
           direction='top-to-bottom'
-          className='ai_native_slot_main'
+          className={styles.ai_native_slot_main}
         >
           <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer
