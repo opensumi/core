@@ -8,7 +8,7 @@ import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
 import * as styles from './layout.module.less';
 
 export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
-  const { colors, layout } = getStorageValue();
+  const { layout } = getStorageValue();
 
   return (
     <SplitPanel
@@ -24,7 +24,6 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
         resizeHandleClassName={styles.ai_native_slot_resize_horizontal}
       >
         <SlotRenderer
-          backgroundColor={colors.sideBarBackground}
           slot='left'
           isTabbar={true}
           defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
@@ -38,15 +37,8 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
           direction='top-to-bottom'
           className={styles.ai_native_slot_main}
         >
-          <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
-          <SlotRenderer
-            backgroundColor={colors.panelBackground}
-            flex={1}
-            defaultSize={layout.bottom?.size}
-            minResize={160}
-            slot='bottom'
-            isTabbar={true}
-          />
+          <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
+          <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
         </SplitPanel>
         <SlotRenderer slot='right' isTabbar={true} defaultSize={0} maxResize={480} minResize={280} minSize={0} />
       </SplitPanel>

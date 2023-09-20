@@ -60,7 +60,9 @@ export const AiRightTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => <RightTabRenderer className={className} components={components} tabbarView={() => null} />;
+}) => (
+  <RightTabRenderer className={clsx(className, styles.ai_right_slot)} components={components} tabbarView={() => null} />
+);
 
 // 编辑器 bottom 面板
 export const AiBottomTabRenderer = ({
