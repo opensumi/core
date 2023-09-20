@@ -1,6 +1,7 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
+import { IThemeData } from '../common';
 import { ThemeContributionProvider } from '../common/provider';
 import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
 import { ICSSStyleService } from '../common/style';
@@ -9,11 +10,10 @@ import { ThemeServicePath, IThemeService, IIconService, IThemeStore } from '../c
 import { IconService } from './icon.service';
 import { SemanticTokenRegistryImpl } from './semantic-tokens-registry';
 import { CSSStyleService } from './style.service';
+import { ThemeData } from './theme-data';
+import { ThemeStore } from './theme-store';
 import { ThemeContribution } from './theme.contribution';
 import { WorkbenchThemeService } from './workbench.theme.service';
-import { ThemeData } from './theme-data';
-import { IThemeData } from '../common';
-import { ThemeStore } from './theme-store';
 
 @Injectable()
 export class ThemeModule extends BrowserModule {
@@ -36,11 +36,11 @@ export class ThemeModule extends BrowserModule {
     },
     {
       token: IThemeData,
-      useClass: ThemeData
+      useClass: ThemeData,
     },
     {
       token: IThemeStore,
-      useClass: ThemeStore
+      useClass: ThemeStore,
     },
     ThemeContribution,
   ];

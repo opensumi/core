@@ -50,6 +50,7 @@ import {
   HC_LIGHT_THEME_NAME,
 } from '../common/theme.service';
 import { convertSettings } from '../common/themeCompatibility';
+
 import defaultTheme from './default-theme';
 
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {

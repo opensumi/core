@@ -1,4 +1,5 @@
 import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
+import { AiNativeModule } from '@opensumi/ide-ai-native/lib/browser';
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
 import { ClientCommonModule, BrowserModule, ConstructorOf } from '@opensumi/ide-core-browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
@@ -39,7 +40,6 @@ import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { WebviewModule } from '@opensumi/ide-webview';
 import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
 import { WorkspaceEditModule } from '@opensumi/ide-workspace-edit/lib/browser';
-import { AiNativeModule } from '@opensumi/ide-ai-native/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,

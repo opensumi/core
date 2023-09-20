@@ -47,9 +47,10 @@ export const renderInfoItem = observer((props: ItemProps) => {
     }
   }
 
-  const PANEL_TITLEBAR_HEIGHT = useMemo(() => {
-    return appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT;
-  }, [appConfig])
+  const PANEL_TITLEBAR_HEIGHT = useMemo(
+    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
+    [appConfig],
+  );
 
   return (
     <div

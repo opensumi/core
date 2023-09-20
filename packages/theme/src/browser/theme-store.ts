@@ -1,10 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { URI, getDebugLogger } from '@opensumi/ide-core-common';
 
+import { IThemeStore } from '../common/';
 import { IThemeData, ThemeContribution, getThemeId } from '../common/theme.service';
 
 import { ThemeData } from './theme-data';
-import { IThemeStore } from '../common/';
 
 @Injectable()
 export class ThemeStore implements IThemeStore {

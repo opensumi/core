@@ -40,7 +40,13 @@ import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, Resou
 
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
-import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent, IEditorTabService } from './types';
+import {
+  GridResizeEvent,
+  IEditorActionRegistry,
+  DragOverPosition,
+  EditorGroupFileDropEvent,
+  IEditorTabService,
+} from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -317,44 +323,49 @@ export const Tabs = ({ group }: ITabsProps) => {
     [editorService],
   );
 
-  const EDITOR_TABS_HEIGHT = React.useMemo(() => {
-    return appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT;
-  }, [appConfig])
+  const EDITOR_TABS_HEIGHT = React.useMemo(
+    () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+    [appConfig],
+  );
 
-  const renderEditorTab = React.useCallback((resource: IResource, isCurrent: boolean) => {
-    const decoration = resourceService.getResourceDecoration(resource.uri);
-    const subname = resourceService.getResourceSubname(resource, group.resources);
+  const renderEditorTab = React.useCallback(
+    (resource: IResource, isCurrent: boolean) => {
+      const decoration = resourceService.getResourceDecoration(resource.uri);
+      const subname = resourceService.getResourceSubname(resource, group.resources);
 
-    return editorTabService.renderEditorTab(<>
-      <div
-        className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}
-      >
-        {' '}
-      </div>
-      <div>{resource.name}</div>
-      {subname ? <div className={styles.subname}>{subname}</div> : null}
-      {decoration.readOnly ? (
-        <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
-      ) : null}
-      <div className={styles.tab_right}>
-        <div
-          className={classnames({
-            [styles.kt_hidden]: !decoration.dirty,
-            [styles.dirty]: true,
-          })}
-        ></div>
-        <div
-          className={styles.close_tab}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            group.close(resource.uri);
-          }}
-        >
-          <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
-        </div>
-      </div>
-    </>, isCurrent)
-  }, [editorTabService])
+      return editorTabService.renderEditorTab(
+        <>
+          <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}>
+            {' '}
+          </div>
+          <div>{resource.name}</div>
+          {subname ? <div className={styles.subname}>{subname}</div> : null}
+          {decoration.readOnly ? (
+            <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
+          ) : null}
+          <div className={styles.tab_right}>
+            <div
+              className={classnames({
+                [styles.kt_hidden]: !decoration.dirty,
+                [styles.dirty]: true,
+              })}
+            ></div>
+            <div
+              className={styles.close_tab}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                group.close(resource.uri);
+              }}
+            >
+              <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
+            </div>
+          </div>
+        </>,
+        isCurrent,
+      );
+    },
+    [editorTabService],
+  );
 
   const renderTabContent = () => (
     <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
@@ -509,17 +520,14 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       };
     }, [group]);
 
-    const EDITOR_TABS_HEIGHT = React.useMemo(() => {
-      return appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT;
-    }, [appConfig])
+    const EDITOR_TABS_HEIGHT = React.useMemo(
+      () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+      [appConfig],
+    );
 
     // 第三个参数是当前编辑器的URI（如果有）
     return (
-      <div
-        ref={ref}
-        className={classnames(styles.editor_actions, className)}
-        style={{ height: EDITOR_TABS_HEIGHT }}
-      >
+      <div ref={ref} className={classnames(styles.editor_actions, className)} style={{ height: EDITOR_TABS_HEIGHT }}>
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}
           context={args as any}

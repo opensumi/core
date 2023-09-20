@@ -1,7 +1,9 @@
+import { ReactNode } from 'react';
+
 import { Injectable } from '@opensumi/di';
 import { WithEventBus } from '@opensumi/ide-core-browser';
+
 import { IEditorTabService } from './types';
-import { ReactNode } from 'react';
 
 @Injectable()
 export class EditorTabService extends WithEventBus implements IEditorTabService {

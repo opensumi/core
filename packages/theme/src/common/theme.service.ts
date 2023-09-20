@@ -92,7 +92,7 @@ export interface IThemeData extends IStandaloneThemeData {
 export const IThemeStore = Symbol('IThemeStore');
 
 export interface IThemeStore {
-  getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<IThemeData>
+  getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<IThemeData>;
 }
 
 export interface FontIconDefinition {

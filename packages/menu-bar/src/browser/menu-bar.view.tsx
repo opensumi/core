@@ -108,9 +108,10 @@ export const MenuBar = observer(() => {
 
   const LogoIcon = componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar-logo')?.views[0].component;
 
-  const MENUBAR_HEIGHT = React.useMemo(() => {
-    return appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT;
-  }, [appConfig])
+  const MENUBAR_HEIGHT = React.useMemo(
+    () => appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
+    [appConfig],
+  );
 
   return (
     <ClickOutside

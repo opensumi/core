@@ -272,9 +272,7 @@ const FloatDebugToolbarView = observer(() => {
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
   const { state } = debugToolbarService;
 
-  const layoutSize = React.useMemo(() => {
-    return layoutViewSize || LAYOUT_VIEW_SIZE;
-  }, [layoutViewSize])
+  const layoutSize = React.useMemo(() => layoutViewSize || LAYOUT_VIEW_SIZE, [layoutViewSize]);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -287,8 +285,7 @@ const FloatDebugToolbarView = observer(() => {
         fullScreen
           ? setToolbarOffsetTop(value)
           : setToolbarOffsetTop(
-              value +
-                (isNewMacHeaderBar() ? layoutSize.TITLEBAR_HEIGHT : layoutSize.BIG_SUR_TITLEBAR_HEIGHT),
+              value + (isNewMacHeaderBar() ? layoutSize.TITLEBAR_HEIGHT : layoutSize.BIG_SUR_TITLEBAR_HEIGHT),
             );
       });
       disposableCollection.push(
@@ -297,8 +294,7 @@ const FloatDebugToolbarView = observer(() => {
             fullScreen
               ? setToolbarOffsetTop(value)
               : setToolbarOffsetTop(
-                  value +
-                    (isNewMacHeaderBar() ? layoutSize.TITLEBAR_HEIGHT : layoutSize.BIG_SUR_TITLEBAR_HEIGHT),
+                  value + (isNewMacHeaderBar() ? layoutSize.TITLEBAR_HEIGHT : layoutSize.BIG_SUR_TITLEBAR_HEIGHT),
                 );
           }
         }),

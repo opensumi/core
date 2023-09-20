@@ -12,10 +12,10 @@ import {
 import { URI, getIcon, IMatch, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
+import { MarkerService } from '../markers-service';
 
 import { MarkerGroupNode, MarkerNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
-import { MarkerService } from '../markers-service';
 
 export interface IMarkerNodeProps {
   item: any;
@@ -32,7 +32,9 @@ export type IMarkerNodeRenderedProps = IMarkerNodeProps & INodeRendererProps;
  * @param model model of renderable marker
  */
 const MarkerItemTitleDescription: FC<{ model: IRenderableMarkerModel }> = memo(({ model }) => (
-  <div className={styles.title_description} title={model.longname}>{model.longname}</div>
+  <div className={styles.title_description} title={model.longname}>
+    {model.longname}
+  </div>
 ));
 
 /**
@@ -135,7 +137,6 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   decorations,
   onClick,
 }: IMarkerNodeRenderedProps) => {
-
   const markerService = useInjectable<MarkerService>(IMarkerService);
 
   const handleClick = useCallback(
@@ -158,8 +159,8 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: MarkerGroupNode | MarkerNode) => {
-      return markerService.renderMarkerNodeIcon((
+    (node: MarkerGroupNode | MarkerNode) =>
+      markerService.renderMarkerNodeIcon(
         <div
           className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
           style={{
@@ -167,9 +168,9 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
             lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
             ...(!MarkerGroupNode.is(node) && node.iconStyle),
           }}
-        ></div>
-      ), node);
-    },
+        ></div>,
+        node,
+      ),
     [],
   );
 

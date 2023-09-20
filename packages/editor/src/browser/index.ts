@@ -31,6 +31,7 @@ import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { EditorElectronContribution } from './editor-electron.contribution';
 import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
+import { EditorTabService } from './editor.tab.service';
 import { EditorFeatureRegistryImpl } from './feature';
 import { FileSystemResourceContribution } from './fs-resource';
 import { LanguageStatusContribution } from './language/language-status.contribution';
@@ -66,7 +67,6 @@ import {
   IEditorTabService,
 } from './types';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import { EditorTabService } from './editor.tab.service';
 export * from './preference/schema';
 export * from './types';
 export * from './doc-model/types';

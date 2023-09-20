@@ -7,9 +7,9 @@ import type {
   ExtensionConnectOption,
   UrlProvider,
 } from '@opensumi/ide-core-common';
-import { LAYOUT_VIEW_SIZE } from '../layout/constants';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
+import { LAYOUT_VIEW_SIZE } from '../layout/constants';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {

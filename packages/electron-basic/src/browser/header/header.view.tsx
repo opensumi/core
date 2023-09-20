@@ -176,9 +176,9 @@ export const ElectronHeaderBar = observer(
       if (height) {
         return height;
       }
-      
+
       return defaultHeight(appConfig);
-    }, [appConfig, height])
+    }, [appConfig, height]);
 
     return (
       <div

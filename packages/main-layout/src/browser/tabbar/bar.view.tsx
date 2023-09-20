@@ -41,12 +41,14 @@ export interface ITabbarViewProps {
   // tab上预留的位置，用来控制tab过多的显示效果
   margin?: number;
   canHideTabbar?: boolean;
-  renderOtherVisibleContainers?: React.FC<
-    {
-      props: ITabbarViewProps,
-      renderContainers: (component: ComponentRegistryInfo, handleTabClick, currentContainerId: string) => React.JSX.Element | null
-    }
-  >;
+  renderOtherVisibleContainers?: React.FC<{
+    props: ITabbarViewProps;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      handleTabClick,
+      currentContainerId: string,
+    ) => React.JSX.Element | null;
+  }>;
 }
 
 export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
@@ -93,68 +95,73 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
     tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
   });
 
-  const renderContainers = useCallback((component: ComponentRegistryInfo, handleTabClick: (e: React.MouseEvent<Element, MouseEvent>, forbidCollapse?: boolean | undefined) => void, currentContainerId: string) => {
-    const containerId = component.options?.containerId;
-    if (!containerId) {
-      return null;
-    }
-    tabbarService.updateTabInMoreKey(containerId, false);
-    let ref: HTMLLIElement | null;
-    return (
-      <li
-        draggable={true}
-        onDragStart={(e) => {
-          if (ref) {
-            const dragImage = ref.cloneNode(true) as HTMLLIElement;
-            dragImage.classList.add(styles.dragging);
-            if (tabClassName) {
-              dragImage.classList.add(tabClassName);
+  const renderContainers = useCallback(
+    (
+      component: ComponentRegistryInfo,
+      handleTabClick: (e: React.MouseEvent<Element, MouseEvent>, forbidCollapse?: boolean | undefined) => void,
+      currentContainerId: string,
+    ) => {
+      const containerId = component.options?.containerId;
+      if (!containerId) {
+        return null;
+      }
+      tabbarService.updateTabInMoreKey(containerId, false);
+      let ref: HTMLLIElement | null;
+      return (
+        <li
+          draggable={true}
+          onDragStart={(e) => {
+            if (ref) {
+              const dragImage = ref.cloneNode(true) as HTMLLIElement;
+              dragImage.classList.add(styles.dragging);
+              if (tabClassName) {
+                dragImage.classList.add(tabClassName);
+              }
+              document.body.appendChild(dragImage);
+              e.persist();
+              requestAnimationFrame(() => {
+                e.dataTransfer.setDragImage(dragImage, 0, 0);
+                document.body.removeChild(dragImage);
+              });
             }
-            document.body.appendChild(dragImage);
-            e.persist();
-            requestAnimationFrame(() => {
-              e.dataTransfer.setDragImage(dragImage, 0, 0);
-              document.body.removeChild(dragImage);
-            });
-          }
-          tabbarService.handleDragStart(e, containerId);
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (ref) {
-            ref.classList.add('on-drag-over');
-          }
-        }}
-        onDragLeave={() => {
-          if (ref) {
-            ref.classList.remove('on-drag-over');
-          }
-        }}
-        onDrop={(e) => {
-          if (ref) {
-            ref.classList.remove('on-drag-over');
-          }
-          tabbarService.handleDrop(e, containerId);
-        }}
-        key={containerId}
-        id={containerId}
-        onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
-        // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
-        onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
-        ref={(el) => (ref = el)}
-        className={clsx({ active: currentContainerId === containerId }, tabClassName)}
-      >
-        <TabView component={component} />
-      </li>
-    );
-  }, [])
+            tabbarService.handleDragStart(e, containerId);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (ref) {
+              ref.classList.add('on-drag-over');
+            }
+          }}
+          onDragLeave={() => {
+            if (ref) {
+              ref.classList.remove('on-drag-over');
+            }
+          }}
+          onDrop={(e) => {
+            if (ref) {
+              ref.classList.remove('on-drag-over');
+            }
+            tabbarService.handleDrop(e, containerId);
+          }}
+          key={containerId}
+          id={containerId}
+          onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
+          // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
+          onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
+          ref={(el) => (ref = el)}
+          className={clsx({ active: currentContainerId === containerId }, tabClassName)}
+        >
+          <TabView component={component} />
+        </li>
+      );
+    },
+    [],
+  );
 
   return (
     <div className={clsx([styles.tab_bar, className])}>
       <div className={styles.bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
-        {visibleContainers.map((component) => {
-          return renderContainers(component, handleTabClick, currentContainerId)
-        })}
+        {visibleContainers.map((component) => renderContainers(component, handleTabClick, currentContainerId))}
         {renderOtherVisibleContainers({ props, renderContainers })}
         {hideContainers.length ? (
           <li
@@ -163,7 +170,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
               tabbarService.showMoreMenu(
                 e,
                 visibleContainers[visibleContainers.length - 1] &&
-                visibleContainers[visibleContainers.length - 1].options?.containerId,
+                  visibleContainers[visibleContainers.length - 1].options?.containerId,
               )
             }
             className={tabClassName}
@@ -174,8 +181,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
       </div>
     </div>
   );
-},
-);
+});
 
 export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => {
   const progressService: IProgressService = useInjectable(IProgressService);
@@ -258,12 +264,14 @@ export const RightTabbarRenderer: React.FC = () => {
 };
 
 export const LeftTabbarRenderer: React.FC<{
-  renderOtherVisibleContainers?: React.FC<
-    {
-      props: ITabbarViewProps,
-      renderContainers: (component: ComponentRegistryInfo, handleTabClick, currentContainerId: string) => React.JSX.Element | null
-    }
-  >
+  renderOtherVisibleContainers?: React.FC<{
+    props: ITabbarViewProps;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      handleTabClick,
+      currentContainerId: string,
+    ) => React.JSX.Element | null;
+  }>;
 }> = ({ renderOtherVisibleContainers }) => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);

@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 import {
   MaybePromise,
   IDisposable,
@@ -28,7 +30,6 @@ import {
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { EditorGroup } from './workbench-editor.service';
-import { ReactNode } from 'react';
 
 export * from '../common';
 

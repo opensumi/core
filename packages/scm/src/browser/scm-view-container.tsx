@@ -226,9 +226,10 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
     return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
   }, [hasMultiRepos, repoViewTitle, selectedRepo, repoList]);
 
-  const PANEL_TITLEBAR_HEIGHT = React.useMemo(() => {
-    return appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT;
-  }, [appConfig])
+  const PANEL_TITLEBAR_HEIGHT = React.useMemo(
+    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
+    [appConfig],
+  );
 
   return (
     <div className={styles.view}>

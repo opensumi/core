@@ -3,11 +3,11 @@ import React, { useMemo } from 'react';
 
 import { AppConfig, View, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection, Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';
 import { AccordionSection } from './section.view';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 
 interface AccordionContainerProps {
   alignment?: Layout.alignment;
@@ -40,8 +40,10 @@ export const AccordionContainer = observer(
         return headerSize;
       }
 
-      return appConfig.layoutViewSize ? appConfig.layoutViewSize.ACCORDION_HEADER_SIZE_HEIGHT : LAYOUT_VIEW_SIZE.ACCORDION_HEADER_SIZE_HEIGHT;
-    }, [headerSize])
+      return appConfig.layoutViewSize
+        ? appConfig.layoutViewSize.ACCORDION_HEADER_SIZE_HEIGHT
+        : LAYOUT_VIEW_SIZE.ACCORDION_HEADER_SIZE_HEIGHT;
+    }, [headerSize]);
 
     React.useEffect(() => {
       // 解决视图在渲染前注册的问题
