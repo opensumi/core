@@ -32,6 +32,13 @@ console.log('front port', PORT);
 const styleLoader =
   process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : require.resolve('style-loader');
 
+/**
+ *
+ * @param {*} dir
+ * @param {*} entry
+ * @param {import('webpack').Configuration} extraConfig
+ * @returns
+ */
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
   const webpackConfig = merge(
     {

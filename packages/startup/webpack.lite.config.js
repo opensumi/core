@@ -18,6 +18,7 @@ module.exports = createWebpackConfig(baseDir, path.join(baseDir, 'app.tsx'), {
       bfsGlobal: require.resolve('browserfs'),
     },
   },
+  node: false,
   plugins: [
     // Expose BrowserFS, process, and Buffer globals.
     // NOTE: If you intend to use BrowserFS in a script tag, you do not need

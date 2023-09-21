@@ -10,6 +10,7 @@ const tsConfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.
 
 /** @type { import('webpack').Configuration } */
 module.exports = {
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   entry: path.join(__dirname, './src/index.ts'),
   output: {
     filename: 'index.js',
