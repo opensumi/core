@@ -3,9 +3,11 @@ import { Avatar } from 'react-chat-elements';
 
 import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandService } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
@@ -14,9 +16,12 @@ import * as styles from './menu-bar.module.less';
 
 export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const [latestWidth, setLatestWidth] = React.useState<number>(0);
+
+  const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
 
   const handleRun = () => {
     commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
@@ -47,13 +52,14 @@ export const AiMenuBarView = () => {
     [appConfig],
   );
 
-  // quick-open-overlay
   return (
     <div id={VIEW_CONTAINERS.MENUBAR} className={styles.menu_bar_view} style={{ height: MENUBAR_HEIGHT }}>
-      {/* <span className={styles.menu_bar_logo} /> */}
       <div className={styles.container}>
         <div className={styles.left}>
           <IconMenuBar />
+          <div className={styles.top_menus_bar}>
+            <InlineMenuBar menus={extraTopMenus} className={styles.extra_top_icon} />
+          </div>
         </div>
         <div className={styles.center}>
           <div className={styles.run}>
@@ -73,7 +79,6 @@ export const AiMenuBarView = () => {
             ></Input>
           </div>
           <div className={styles.ai_switch}>
-            {/* <Icon className={getIcon('search')} onClick={handleRightPanel}/> */}
             <div
               style={{
                 cursor: 'pointer',

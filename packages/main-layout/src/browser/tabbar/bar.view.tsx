@@ -272,7 +272,8 @@ export const LeftTabbarRenderer: React.FC<{
       currentContainerId: string,
     ) => React.JSX.Element | null;
   }>;
-}> = ({ renderOtherVisibleContainers }) => {
+  isRenderExtraTopMenus?: boolean;
+}> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true }) => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -286,7 +287,9 @@ export const LeftTabbarRenderer: React.FC<{
       className={styles.left_tab_bar}
       onContextMenu={tabbarService.handleContextMenu}
     >
-      <InlineMenuBar className={clsx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
+      {isRenderExtraTopMenus && (
+        <InlineMenuBar className={clsx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
+      )}
       <TabbarViewBase
         tabSize={48}
         MoreTabView={IconElipses}

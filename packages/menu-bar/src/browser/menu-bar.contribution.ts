@@ -12,9 +12,6 @@ export class MenuBarContribution extends Disposable implements ComponentContribu
   @Autowired(MenubarStore)
   private readonly menubarStore: MenubarStore;
 
-  @Autowired(IMenuRegistry)
-  private readonly menuRegistry: IMenuRegistry;
-
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
@@ -26,7 +23,7 @@ export class MenuBarContribution extends Disposable implements ComponentContribu
         const isCompact = this.preferenceService.getValid<boolean>(MenubarSettingId.CompactMode);
 
         if (isCompact) {
-          this.registerMenusBarByCompact(menubarItems);
+          this.menubarStore.registerMenusBarByCompact(menubarItems);
         }
       }),
     );
@@ -34,40 +31,11 @@ export class MenuBarContribution extends Disposable implements ComponentContribu
     this.addDispose(
       this.preferenceService.onSpecificPreferenceChange(MenubarSettingId.CompactMode, ({ newValue }) => {
         if (newValue) {
-          this.registerMenusBarByCompact();
+          this.menubarStore.registerMenusBarByCompact();
         } else {
-          this.unregisterMenusBarByCompact();
+          this.menubarStore.unregisterMenusBarByCompact();
         }
       }),
-    );
-  }
-
-  private unregisterMenusBarByCompact() {
-    const preMenu = this.menuRegistry.getMenuItems(MenuId.MenubarCompactMenu) as ISubmenuItem[];
-    preMenu.forEach((c) => {
-      this.menuRegistry.unregisterMenuItem(MenuId.MenubarCompactMenu, c.submenu);
-    });
-
-    this.menuRegistry.unregisterMenuItem(MenuId.ActivityBarTopExtra, MenuId.MenubarCompactMenu);
-  }
-
-  private registerMenusBarByCompact(menubarItems: IMenubarItem[] = this.menubarStore.menubarItems) {
-    this.menuRegistry.registerMenuItem(MenuId.ActivityBarTopExtra, {
-      submenu: MenuId.MenubarCompactMenu,
-      iconClass: getExternalIcon('menu'),
-      order: 1,
-      group: 'navigation',
-    });
-
-    this.menuRegistry.registerMenuItems(
-      MenuId.MenubarCompactMenu,
-      menubarItems.map(
-        (item: IMenubarItem) =>
-          ({
-            label: item.label,
-            submenu: item.id,
-          } as ISubmenuItem),
-      ),
     );
   }
 

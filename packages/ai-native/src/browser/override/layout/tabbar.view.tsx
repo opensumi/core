@@ -1,6 +1,8 @@
 import clsx from 'classnames';
 import React, { useCallback } from 'react';
 
+import { InternalMenu } from '@opensumi/ide-components/lib/menu';
+import SubMenu from '@opensumi/ide-components/lib/menu/SubMenu';
 import { ComponentRegistryInfo, SlotLocation, useInjectable } from '@opensumi/ide-core-browser';
 import { LeftTabbarRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
 import { BaseTabPanelView, ContainerView } from '@opensumi/ide-main-layout/lib/browser/tabbar/panel.view';
@@ -16,6 +18,9 @@ import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
 import { HorizontalVertical } from '../../components/lineVertical';
 
 import * as styles from './layout.module.less';
+
+InternalMenu.defaultProps.className = styles.ai_internal_menu;
+SubMenu.defaultProps.className = styles.ai_internal_sub_menu;
 
 // 将注册在 right bar 的组件渲染到 left bar
 const AiLeftTabbarRenderer: React.FC = () => {
@@ -36,7 +41,9 @@ const AiLeftTabbarRenderer: React.FC = () => {
     [tabbarService],
   );
 
-  return <LeftTabbarRenderer renderOtherVisibleContainers={renderOtherVisibleContainers} />;
+  return (
+    <LeftTabbarRenderer renderOtherVisibleContainers={renderOtherVisibleContainers} isRenderExtraTopMenus={false} />
+  );
 };
 
 export const AiLeftTabRenderer = ({

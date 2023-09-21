@@ -11,6 +11,38 @@
     align-items: center;
     padding: 0 16px;
 
+    .left {
+      display: flex;
+      align-items: center;
+
+      .top_menus_bar {
+        margin-left: 16px;
+
+        .extra_top_icon {
+          width: 24px;
+          height: 24px;
+          background-image: radial-gradient(circle at 21% 21%, #00f6ff 0%, #9c03ff 95%);
+          border-radius: 6px;
+
+          span {
+            width: 100%;
+            height: 100%;
+            background-image: url(https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original);
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+
+            &::before {
+              content: initial;
+            }
+
+            &:hover {
+              background-color: transparent;
+            }
+          }
+        }
+      }
+    }
+
     .center {
       .run {
         .btn {

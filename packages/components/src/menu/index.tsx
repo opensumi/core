@@ -71,7 +71,7 @@ export interface MenuState {
   prevProps: InternalMenuProps;
 }
 
-class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
+export class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
   static defaultProps: Partial<MenuProps> = {
     className: '',
     focusable: false,
@@ -301,13 +301,15 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
 
   render() {
     return (
-      <MenuContext.Provider
-        value={{
-          inlineCollapsed: this.getInlineCollapsed() || false,
-        }}
-      >
-        {this.renderMenu()}
-      </MenuContext.Provider>
+      <div className={InternalMenu.defaultProps.className}>
+        <MenuContext.Provider
+          value={{
+            inlineCollapsed: this.getInlineCollapsed() || false,
+          }}
+        >
+          {this.renderMenu()}
+        </MenuContext.Provider>
+      </div>
     );
   }
 }
