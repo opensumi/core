@@ -2127,17 +2127,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
-    "@opensumi/ide-components": "workspace:^"
-    "@opensumi/ide-core-browser": "workspace:^"
+    "@opensumi/ide-components": "workspace:*"
+    "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
-    "@opensumi/ide-core-node": "workspace:^"
-    "@opensumi/ide-debug": "workspace:^"
-    "@opensumi/ide-editor": "workspace:^"
-    "@opensumi/ide-file-service": "workspace:^"
-    "@opensumi/ide-file-tree-next": "workspace:^"
-    "@opensumi/ide-monaco": "workspace:^"
-    "@opensumi/ide-terminal-next": "workspace:^"
-    "@opensumi/ide-workspace": "workspace:^"
+    "@opensumi/ide-core-node": "workspace:*"
+    "@opensumi/ide-debug": "workspace:*"
+    "@opensumi/ide-editor": "workspace:*"
+    "@opensumi/ide-file-service": "workspace:*"
+    "@opensumi/ide-file-tree-next": "workspace:*"
+    "@opensumi/ide-main-layout": "workspace:*"
+    "@opensumi/ide-markers": "workspace:*"
+    "@opensumi/ide-menu-bar": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
+    "@opensumi/ide-terminal-next": "workspace:*"
+    "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-workspace": "workspace:*"
     react-chat-elements: ^12.0.10
   languageName: unknown
   linkType: soft
@@ -2178,7 +2182,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-components@workspace:*, @opensumi/ide-components@workspace:^, @opensumi/ide-components@workspace:packages/components":
+"@opensumi/ide-components@workspace:*, @opensumi/ide-components@workspace:packages/components":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-components@workspace:packages/components"
   dependencies:
@@ -2222,7 +2226,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-core-browser@workspace:*, @opensumi/ide-core-browser@workspace:^, @opensumi/ide-core-browser@workspace:packages/core-browser":
+"@opensumi/ide-core-browser@workspace:*, @opensumi/ide-core-browser@workspace:packages/core-browser":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-browser@workspace:packages/core-browser"
   dependencies:
@@ -2280,7 +2284,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-core-node@workspace:*, @opensumi/ide-core-node@workspace:^, @opensumi/ide-core-node@workspace:packages/core-node":
+"@opensumi/ide-core-node@workspace:*, @opensumi/ide-core-node@workspace:packages/core-node":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-node@workspace:packages/core-node"
   dependencies:
@@ -2291,7 +2295,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-debug@workspace:*, @opensumi/ide-debug@workspace:^, @opensumi/ide-debug@workspace:packages/debug":
+"@opensumi/ide-debug@workspace:*, @opensumi/ide-debug@workspace:packages/debug":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-debug@workspace:packages/debug"
   dependencies:
@@ -2379,7 +2383,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-editor@workspace:*, @opensumi/ide-editor@workspace:^, @opensumi/ide-editor@workspace:packages/editor":
+"@opensumi/ide-editor@workspace:*, @opensumi/ide-editor@workspace:packages/editor":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-editor@workspace:packages/editor"
   dependencies:
@@ -2553,7 +2557,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-file-service@workspace:*, @opensumi/ide-file-service@workspace:^, @opensumi/ide-file-service@workspace:packages/file-service":
+"@opensumi/ide-file-service@workspace:*, @opensumi/ide-file-service@workspace:packages/file-service":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-service@workspace:packages/file-service"
   dependencies:
@@ -2572,7 +2576,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-file-tree-next@workspace:*, @opensumi/ide-file-tree-next@workspace:^, @opensumi/ide-file-tree-next@workspace:packages/file-tree-next":
+"@opensumi/ide-file-tree-next@workspace:*, @opensumi/ide-file-tree-next@workspace:packages/file-tree-next":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-tree-next@workspace:packages/file-tree-next"
   dependencies:
@@ -2696,7 +2700,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-monaco@workspace:*, @opensumi/ide-monaco@workspace:^, @opensumi/ide-monaco@workspace:packages/monaco":
+"@opensumi/ide-monaco@workspace:*, @opensumi/ide-monaco@workspace:packages/monaco":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-monaco@workspace:packages/monaco"
   dependencies:
@@ -2985,7 +2989,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-terminal-next@workspace:*, @opensumi/ide-terminal-next@workspace:^, @opensumi/ide-terminal-next@workspace:packages/terminal-next":
+"@opensumi/ide-terminal-next@workspace:*, @opensumi/ide-terminal-next@workspace:packages/terminal-next":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-terminal-next@workspace:packages/terminal-next"
   dependencies:
@@ -3122,7 +3126,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-workspace@workspace:*, @opensumi/ide-workspace@workspace:^, @opensumi/ide-workspace@workspace:packages/workspace":
+"@opensumi/ide-workspace@workspace:*, @opensumi/ide-workspace@workspace:packages/workspace":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-workspace@workspace:packages/workspace"
   dependencies:
