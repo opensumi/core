@@ -1,6 +1,5 @@
 const path = require('path');
 
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const { ProgressPlugin } = require('webpack');
 
 const tsconfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.extension.json');
@@ -12,10 +11,10 @@ module.exports = {
   output: {
     filename: 'worker-host.js',
     path: path.resolve(__dirname, 'lib/'),
-    // library: `extend-browser-worker-${pkg.name}`,
-    // libraryTarget: 'umd'
   },
   target: 'webworker',
+  devtool: false,
+  node: false,
   optimization: {
     minimize: false,
   },
@@ -23,6 +22,9 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js'],
     fallback: {
       net: false,
+      path: false,
+      os: false,
+      crypto: false,
     },
   },
   module: {
@@ -33,5 +35,5 @@ module.exports = {
       { test: /\.css$/, loader: 'null-loader' },
     ],
   },
-  plugins: [!process.env.CI && new ProgressPlugin(), new NodePolyfillPlugin()].filter(Boolean),
+  plugins: [!process.env.CI && new ProgressPlugin()].filter(Boolean),
 };

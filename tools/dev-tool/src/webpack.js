@@ -251,7 +251,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         hot: true,
       },
     },
-    extraConfig,
+    extraConfig || {},
   );
 
   return webpackConfig;
