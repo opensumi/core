@@ -1,7 +1,20 @@
+import { MaybePromise } from '@opensumi/ide-core-common';
+
 export const AiGPTBackSerivceToken = Symbol('AiGPTBackSerivceToken');
 export const AiGPTBackSerivcePath = 'AiGPTBackSerivcePath';
 
 export const Ai_CHAT_CONTAINER_VIEW_ID = 'ai_chat';
+
+export interface IChatMessageStructure {
+  /**
+   * 用于 chat 面板展示
+   */
+  message: string | React.ReactNode;
+  /**
+   * 实际调用的 prompt
+   */
+  prompt?: string;
+}
 
 /**
  * 指令 key
@@ -47,4 +60,31 @@ export enum AISerivceType {
   GPT,
   Explain,
   Run,
+}
+
+export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
+
+export type AiRunHandler = () => MaybePromise<void>;
+export interface IAiRunAnswerComponentProps { input: string }
+
+export interface IAiRunFeatureRegistry {
+  /**
+   * 注册 run 运行的能力
+   */
+  registerRun(handler: AiRunHandler): void;
+  /**
+   * 返回 answer 时渲染的组件
+   */
+  registerAnswerComponent(component: React.FC<IAiRunAnswerComponentProps>): void;
+
+  getRuns(): AiRunHandler[];
+}
+
+export const AiNativeContribution = Symbol('AiNativeContribution');
+export interface AiNativeContribution {
+  /**
+   * 注册 ai run 的能力
+   * @param registry
+   */
+  registerRunFeature?(registry: IAiRunFeatureRegistry): void;
 }

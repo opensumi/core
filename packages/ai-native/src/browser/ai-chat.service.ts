@@ -4,18 +4,7 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, AiGPTBackSerivcePath, InstructionEnum } from '../common';
-
-export interface IChatMessageStructure {
-  /**
-   * 用于 chat 面板展示
-   */
-  message: string | React.ReactNode;
-  /**
-   * 实际调用的 prompt
-   */
-  prompt?: string;
-}
+import { AISerivceType, AiGPTBackSerivcePath, IChatMessageStructure, InstructionEnum } from '../common';
 
 @Injectable()
 export class AiChatService {

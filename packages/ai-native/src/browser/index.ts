@@ -1,4 +1,4 @@
-import { Provider, Injectable, Injector } from '@opensumi/di';
+import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
@@ -7,17 +7,26 @@ import { Color, IThemeData, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { AiGPTBackSerivcePath, AiGPTBackSerivceToken } from '../common';
+import { AiGPTBackSerivcePath, AiGPTBackSerivceToken, AiNativeContribution, IAiRunFeatureRegistry } from '../common';
 
-import { AiChatContribution } from './ai-chat.contribution';
+import { AiNativeCoreContribution } from './ai-chat.contribution';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
+import { AiRunFeatureRegistry } from './run/run.feature.registry';
 
 @Injectable()
 export class AiNativeModule extends BrowserModule {
-  providers: Provider[] = [AiMenuBarContribution, AiChatContribution];
+  contributionProvider = AiNativeContribution;
+  providers: Provider[] = [
+    AiMenuBarContribution,
+    AiNativeCoreContribution,
+    {
+      token: IAiRunFeatureRegistry,
+      useClass: AiRunFeatureRegistry,
+    },
+  ];
 
   preferences = (injector: Injector) => {
     injector.overrideProviders(
