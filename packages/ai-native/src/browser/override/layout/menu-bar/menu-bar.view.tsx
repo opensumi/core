@@ -96,5 +96,3 @@ export const AiMenuBarView = () => {
     </div>
   );
 };
-
-export const AITest = () => <div>测试一下</div>
