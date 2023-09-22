@@ -17,6 +17,9 @@ const distDir = path.join(__dirname, '../lib/browser');
 const port = 8080;
 const nodeEnv = process.env.NODE_ENV || 'development';
 
+/**
+ * @type {import('webpack').Configuration}
+ */
 module.exports = {
   entry: `${dir}/index.ts`,
   output: {
@@ -33,7 +36,7 @@ module.exports = {
   },
   bail: true,
   mode: nodeEnv,
-  devtool: 'null',
+  devtool: false,
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,

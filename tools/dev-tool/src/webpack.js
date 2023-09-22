@@ -34,10 +34,10 @@ const styleLoader =
 
 /**
  *
- * @param {*} dir
- * @param {*} entry
+ * @param {string} dir
+ * @param {string} entry
  * @param {import('webpack').Configuration} extraConfig
- * @returns
+ * @returns {import('webpack').Configuration}
  */
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
   const webpackConfig = merge(
@@ -57,6 +57,15 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         alias: {
           react: reactPath,
           'react-dom': reactDOMPath,
+        },
+        fallback: {
+          net: false,
+          path: false,
+          os: false,
+          crypto: false,
+          child_process: false,
+          url: false,
+          fs: false,
         },
       },
       bail: true,
@@ -223,10 +232,15 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         }),
       ],
       devServer: {
-        contentBase: dir + '/dist',
-        port: PORT,
-        disableHostCheck: true,
+        static: {
+          directory: dir + '/dist',
+        },
         host: HOST,
+        port: PORT,
+        allowedHosts: 'all',
+        devMiddleware: {
+          stats: 'errors-only',
+        },
         proxy: {
           '/api': {
             target: `http://${HOST}:8000`,
@@ -245,10 +259,11 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             target: `ws://${HOST}:8000`,
           },
         },
-        stats: 'errors-only',
-        overlay: true,
         open: process.env.SUMI_DEV_OPEN_BROWSER ? true : false,
         hot: true,
+        client: {
+          overlay: true,
+        },
       },
     },
     extraConfig || {},
@@ -309,14 +324,17 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       }),
     ],
     devServer: {
-      contentBase: dir + '/public',
-      disableHostCheck: true,
+      static: {
+        directory: dir + '/public',
+      },
+      allowedHosts: 'all',
       port,
       host: HOST,
-      quiet: true,
-      overlay: true,
       open: false,
       hot: true,
+      client: {
+        overlay: true,
+      },
     },
   };
 };

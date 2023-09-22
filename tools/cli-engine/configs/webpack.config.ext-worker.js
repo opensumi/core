@@ -12,8 +12,9 @@ module.exports = {
     path: distDir,
   },
   target: 'webworker',
-  devtool: 'none',
+  devtool: false,
   mode: 'production',
+  node: false,
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [
@@ -21,6 +22,12 @@ module.exports = {
         configFile: tsConfigPath,
       }),
     ],
+    fallback: {
+      net: false,
+      path: false,
+      os: false,
+      crypto: false,
+    },
   },
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728

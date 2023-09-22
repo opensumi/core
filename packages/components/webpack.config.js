@@ -25,7 +25,7 @@ module.exports = {
     }),
     !process.env.CI && new ProgressPlugin(),
     new NodePolyfillPlugin({
-      includeAliases: ['process'],
+      includeAliases: ['process', 'util'],
     }),
   ].filter(Boolean),
   resolve: {
@@ -35,9 +35,6 @@ module.exports = {
         configFile: tsConfigPath,
       }),
     ],
-    fallback: {
-      util: false,
-    },
   },
   module: {
     rules: [

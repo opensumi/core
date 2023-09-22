@@ -14,7 +14,7 @@ module.exports = {
     filename: 'ext.process.js',
     path: distDir,
   },
-  devtool: 'false',
+  devtool: false,
   node: false,
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
