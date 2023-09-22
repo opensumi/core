@@ -15,19 +15,22 @@ export class AiSumiService {
   @Autowired(CommandRegistry)
   protected readonly commandRegistryService: CommandRegistry;
 
-  private taskPrompt(command: string[]) {
+  private taskPrompt(command: Command[]) {
     return `
-在我的系统中有一些 Command，通过这些命令可以实现一些功能。请通过分析我的问题，找到我想要实现的功能，匹配适合的 Command。
-请参照下面的示例问答，按照示例回答的格式返回。如果找不到合适的命令，请返回未找到合适命令。
-以下是系统内的全部 Command: ${command.join('、')}、workbench.action.openGlobalKeybindings、editor.action.setEncoding`;
+In my system, there are some Commands. Through these commands, certain functions can be achieved. Please analyze my question to determine the function I want to implement, and match the appropriate Command.
+Please refer to the example Q&A below and return in the format of the example answer. If no suitable command is found, please return 'No suitable command found.'
+I will provide all the commands in the system and their descriptions in the format of {command}-{description}. When analyzing the question, please refer to both the command and its description.
+Below are all the Commands and their descriptions in the system:
+${command.map(c => `{${c.delegate || c.id}}-{${!!c.labelLocalized?.localized!! || c.label}}`).join('\n')}
+{workbench.action.openGlobalKeybindings}-{Keybindings}
+{editor.action.setEncoding}-{set encoding}`;
   }
 
   public async message(input: string): Promise<Command | undefined> {
-    const commands = this.commandRegistryService.getCommands();
-    const commandIds = commands.filter((c) => !!c.label).map((c) => c.delegate || c.id);
-    const step = 50;
-    const partCommands = Array.from({ length: Math.round(commandIds.length / step) }, (_, index) => index).map((i) =>
-      commandIds.slice(i * step, (i + 1) * step),
+    const commands = this.commandRegistryService.getCommands().filter((c) => !!c.labelLocalized?.localized!! || c.label);
+    const step = 30;
+    const partCommands = Array.from({ length: Math.round(commands.length / step) }, (_, index) => index).map((i) =>
+      commands.slice(i * step, (i + 1) * step),
     );
 
     const res = await Promise.all(partCommands.map((c) => this.requestCommand(c, input)));
@@ -36,13 +39,13 @@ export class AiSumiService {
     let finalCommand = passibleCommands[0];
 
     if (passibleCommands.length > 1) {
-      finalCommand = await this.requestCommand(passibleCommands, input);
+      finalCommand = await this.requestCommand(passibleCommands as Command[], input);
     }
 
-    return commands.find((c) => c.id === finalCommand || c.delegate === finalCommand);
+    return commands.find((c) => c=== finalCommand);
   }
 
-  private async requestCommand(commands: string[], question: string) {
+  private async requestCommand(commands: Command[], question: string) {
     const cotPrompt = `
 ${this.taskPrompt(commands)}
 提问: 打开全局快捷键配置
@@ -53,7 +56,7 @@ ${this.taskPrompt(commands)}
 
     const res = await this.aiBackService.aiAntGlm(cotPrompt);
     const answerCommand = this.matchCommand(res.data);
-    return commands.find((c) => c === answerCommand) || '';
+    return commands.find((c) => (c.delegate || c.id) === answerCommand) || '';
   }
 
   private matchCommand(answer: string): string {
