@@ -17,13 +17,13 @@ export class AiSumiService {
 
   private taskPrompt(command: Command[]) {
     return `
-在我的系统中有一些 Command，通过这些命令可以实现一些功能。请通过分析我的问题，找到我想要实现的功能，匹配适合的 Command。
-请参照下面的示例问答，按照示例回答的格式返回。如果找不到合适的命令，请返回未找到合适命令。
-我会以{command}-{descriptrion} 的形式给出系统内全部的命令以及描述。在对问题进行分析时，请同时参考命令及描述内容
-以下是系统内的全部 Command 及其描述:
+In my system, there are some Commands. Through these commands, certain functions can be achieved. Please analyze my question to determine the function I want to implement, and match the appropriate Command.
+Please refer to the example Q&A below and return in the format of the example answer. If no suitable command is found, please return 'No suitable command found.'
+I will provide all the commands in the system and their descriptions in the format of {command}-{description}. When analyzing the question, please refer to both the command and its description.
+Below are all the Commands and their descriptions in the system:
 ${command.map(c => `{${c.delegate || c.id}}-{${!!c.labelLocalized?.localized!! || c.label}}`).join('\n')}
-{workbench.action.openGlobalKeybindings}-{打开全局快捷键设置}
-{editor.action.setEncoding}-{设置文件编码}`;
+{workbench.action.openGlobalKeybindings}-{Keybindings}
+{editor.action.setEncoding}-{set encoding}`;
   }
 
   public async message(input: string): Promise<Command | undefined> {
