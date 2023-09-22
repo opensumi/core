@@ -13,10 +13,10 @@ import { Command, isMacintosh, URI } from '@opensumi/ide-core-common';
 import { DebugConfiguration } from '@opensumi/ide-debug';
 import 'react-chat-elements/dist/main.css';
 
-import { AiGPTBackSerivcePath, AISerivceType } from '../common';
+import { AiGPTBackSerivcePath, AISerivceType, IChatMessageStructure } from '../common';
 
 import * as styles from './ai-chat.module.less';
-import { AiChatService, IChatMessageStructure } from './ai-chat.service';
+import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService, Requirements } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
@@ -348,34 +348,11 @@ const AIChatGPTReply = async (input) => {
 // run 的 AI 回复组件
 const AIChatRunReply = async (input, aiRunService: AiRunService) => {
   try {
-    const regex = /"(\S+)"/s;
-    const value = regex.exec(input);
-    if (!value) {
-      return createMessageByAI('未找到合适的启动命令，请重试');
-    }
-
-    const [, command] = value;
-    const configuration: DebugConfiguration = {
-      name: `Run Tnpm ${command}`,
-      type: 'node',
-      request: 'launch',
-      runtimeExecutable: 'tnpm',
-      runtimeArgs: ['run', `${command}`],
-      cwd: '${workspaceFolder}',
-      console: 'integratedTerminal',
-    };
-
-    const launchContent = `
-根据您的项目类型，已为您找到合适的项目启动运行命令
-以下是 launch.json 的运行命令配置
-\`\`\`json
-${JSON.stringify(configuration, undefined, 2)}
-\`\`\``;
+    const RenderAnswer = aiRunService.answerComponentRender();
 
     const aiMessage = createMessageByAI(
       <ChatMoreActions>
-        <CodeBlockWrapper text={launchContent} />
-        <Button onClick={() => aiRunService.addRunConfiguration(configuration)}>添加该配置</Button>
+        {RenderAnswer ? <RenderAnswer input={input} /> : <CodeBlockWrapper text={input} />}
       </ChatMoreActions>,
     );
 

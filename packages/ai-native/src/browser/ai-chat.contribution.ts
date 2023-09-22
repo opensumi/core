@@ -13,6 +13,8 @@ import {
   SlotRendererContribution,
   SlotRendererRegistry,
   SlotLocation,
+  ContributionProvider,
+  ClientAppContribution,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
@@ -29,7 +31,7 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
-import { Ai_CHAT_CONTAINER_VIEW_ID, InstructionEnum } from '../common';
+import { AiNativeContribution, Ai_CHAT_CONTAINER_VIEW_ID, IAiRunFeatureRegistry, InstructionEnum } from '../common';
 import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
@@ -46,14 +48,16 @@ import { AiRunService } from './run/run.service';
 
 @Injectable()
 @Domain(
+  ClientAppContribution,
   ComponentContribution,
   BrowserEditorContribution,
   MenuContribution,
   CommandContribution,
   SlotRendererContribution,
 )
-export class AiChatContribution
+export class AiNativeCoreContribution
   implements
+    ClientAppContribution,
     ComponentContribution,
     BrowserEditorContribution,
     MenuContribution,
@@ -76,16 +80,34 @@ export class AiChatContribution
   private readonly editorService: WorkbenchEditorServiceImpl;
 
   @Autowired(AiChatService)
-  protected readonly aiChatService: AiChatService;
+  private readonly aiChatService: AiChatService;
 
   @Autowired(ITerminalGroupViewService)
-  protected readonly view: ITerminalGroupViewService;
+  private readonly view: ITerminalGroupViewService;
 
   @Autowired(ITerminalController)
-  protected readonly terminalController: ITerminalController;
+  private readonly terminalController: ITerminalController;
 
   @Autowired(AiRunService)
-  protected readonly aiRunService: AiRunService;
+  private readonly aiRunService: AiRunService;
+
+  @Autowired(AiNativeContribution)
+  private readonly contributions: ContributionProvider<AiNativeContribution>;
+
+  @Autowired(IAiRunFeatureRegistry)
+  private readonly aiRunFeatureRegistry: IAiRunFeatureRegistry;
+
+  onStart() {
+    this.registerFeature();
+  }
+
+  private registerFeature() {
+    this.contributions.getContributions().forEach((contribution) => {
+      if (contribution.registerRunFeature) {
+        contribution.registerRunFeature(this.aiRunFeatureRegistry);
+      }
+    });
+  }
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register(
