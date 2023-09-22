@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Avatar } from 'react-chat-elements';
 
-import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, getIcon, useInjectable, SlotRenderer } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -69,6 +69,7 @@ export const AiMenuBarView = () => {
           </div>
         </div>
         <div className={styles.right}>
+          <SlotRenderer slot='ai-action' flex={1} overflow={'initial'} />
           <div className={styles.input}>
             <Input
               className={styles.input_wrapper}
@@ -95,3 +96,5 @@ export const AiMenuBarView = () => {
     </div>
   );
 };
+
+export const AITest = () => <div>测试一下</div>
