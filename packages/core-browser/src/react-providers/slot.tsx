@@ -23,6 +23,7 @@ export const SlotLocation = {
   extra: 'extra',
   float: 'float',
   action: 'action',
+  aiAction: 'ai-action',
   // @deprecated ->
   bottomBar: 'bottomBar',
   bottomPanel: 'bottomPanel',
