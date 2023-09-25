@@ -24,9 +24,8 @@ export class AiProjectGenerateService {
   protected codeStructure: string;
 
   @observable
-  private _requirements?: Requirements;
+  protected _requirements?: Requirements;
   
-
   constructor() {
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
