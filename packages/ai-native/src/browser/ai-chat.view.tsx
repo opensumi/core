@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 // @ts-ignore
@@ -18,7 +16,7 @@ import { AiGPTBackSerivcePath, AISerivceType, IChatMessageStructure } from '../c
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
-import { AiProjectGenerateService, Requirements } from './ai-project/generate.service';
+import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
