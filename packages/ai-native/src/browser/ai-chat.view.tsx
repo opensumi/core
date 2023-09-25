@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 // @ts-ignore
 import { Avatar, MessageList, SystemMessage } from 'react-chat-elements';
 
@@ -17,7 +16,7 @@ import { AiGPTBackSerivcePath, AISerivceType, IChatMessageStructure } from '../c
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
-import { AiProjectGenerateService, Requirements } from './ai-project/generate.service';
+import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
@@ -41,7 +40,7 @@ const createMessageByAI = (text: string | React.ReactNode) => createMessage('lef
 const AI_NAME = 'AI 研发助手';
 const ME_NAME = '';
 
-export const AiChatView = () => {
+export const AiChatView = observer(() => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
   const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
@@ -55,16 +54,14 @@ export const AiChatView = () => {
   const [loading, setLoading] = React.useState(false);
 
   const [, updateState] = React.useState<any>();
-
-  const aiGenerateInfo: Requirements =
-    localStorage.getItem('ai-generate') && JSON.parse(localStorage.getItem('ai-generate')!);
-
+  // 项目生成
   const generateProject = React.useCallback(async (messageList) => {
+    const { language, framework } = aiProjectGenerateService.requirements;
     await aiProjectGenerateService.clearWorkspace();
-    const languageReply = `项目语言为：${aiGenerateInfo.language}\n使用框架：${aiGenerateInfo.framework}`;
+    const languageReply = `项目语言为：${language}\n使用框架：${framework}`;
     messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));
     setMessageListData([...messageList]);
-    const filePathList = await aiProjectGenerateService.generateProjectStructure(aiGenerateInfo);
+    const filePathList = await aiProjectGenerateService.generateProjectStructure();
     messageList.splice(
       -1,
       0,
@@ -72,15 +69,34 @@ export const AiChatView = () => {
     );
     setMessageListData([...messageList]);
 
-    await aiProjectGenerateService.generateFile(filePathList, aiGenerateInfo, (file: string) => {
+    await aiProjectGenerateService.generateFile(filePathList, (file: string) => {
       messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
       setMessageListData([...messageList]);
     });
 
     messageList.pop();
-    setMessageListData([...messageList]);
+    const successMessage = createMessageByAI((
+      <div>
+        <span style={{ display: 'block' }}>项目生成中完成！</span>
+      </div>
+    ))
+    setMessageListData([...messageList, successMessage]);
     localStorage.removeItem('ai-generate');
   }, []);
+
+  React.useEffect(() => {
+    if (aiProjectGenerateService.requirements) {
+      const message = createMessageByAI(
+        (
+          <div>
+            <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
+          </div>
+        )
+      )
+      setMessageListData([message])
+      generateProject([message])
+    }
+  }, [aiProjectGenerateService.requirements])
 
   const InitMsgComponent = () => {
     const lists = [
@@ -89,14 +105,6 @@ export const AiChatView = () => {
       // { icon: getIcon('open-changes'), text: '创建合并请求' },
       // { icon: getIcon('scm'), text: '触发流水线' },
     ];
-
-    if (aiGenerateInfo) {
-      return (
-        <div>
-          <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
-        </div>
-      );
-    }
 
     return (
       <div>
@@ -125,11 +133,7 @@ export const AiChatView = () => {
   const firstMsg = React.useMemo(() => createMessageByAI(<InitMsgComponent />), [InitMsgComponent]);
 
   React.useEffect(() => {
-    if (aiGenerateInfo) {
-      generateProject([firstMsg]);
-    } else if (messageListData && messageListData.length === 0) {
-      setMessageListData([firstMsg]);
-    }
+    setMessageListData([firstMsg]);
 
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
@@ -259,7 +263,7 @@ export const AiChatView = () => {
       </div>
     </div>
   );
-};
+});
 
 // AI 回复组件，就是能一个字一个出现的那种效果
 const AiReply = ({ text, endNode = <></>, immediately = false }) => {
