@@ -56,7 +56,7 @@ export const AiChatView = observer(() => {
   const [, updateState] = React.useState<any>();
   // 项目生成
   const generateProject = React.useCallback(async (messageList) => {
-    const { language, framework } = aiProjectGenerateService.requirements;
+    const { language, framework } = aiProjectGenerateService.requirements!;
     await aiProjectGenerateService.clearWorkspace();
     const languageReply = `项目语言为：${language}\n使用框架：${framework}`;
     messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));

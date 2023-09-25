@@ -34,6 +34,7 @@ import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-te
 import { AiNativeContribution, Ai_CHAT_CONTAINER_VIEW_ID, IAiRunFeatureRegistry, InstructionEnum } from '../common';
 import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
+import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
@@ -91,6 +92,9 @@ export class AiNativeCoreContribution
   @Autowired(AiRunService)
   private readonly aiRunService: AiRunService;
 
+  @Autowired(AiProjectGenerateService)
+  private readonly aiProject: AiProjectGenerateService;
+
   @Autowired(AiNativeContribution)
   private readonly contributions: ContributionProvider<AiNativeContribution>;
 
@@ -99,6 +103,7 @@ export class AiNativeCoreContribution
 
   onStart() {
     this.registerFeature();
+    this.aiProject.initRequirements();
   }
 
   private registerFeature() {

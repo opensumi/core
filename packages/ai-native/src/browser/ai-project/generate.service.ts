@@ -19,18 +19,19 @@ export class AiProjectGenerateService {
   @Autowired(ILoggerManagerClient)
   private readonly loggerManagerClient: ILoggerManagerClient;
 
-  private logger: ILogServiceClient;
+  protected logger: ILogServiceClient;
+
+  protected codeStructure: string;
 
   @observable
-  private _requirements: Requirements;
+  private _requirements?: Requirements;
   
-  private codeStructure: string;
 
   constructor() {
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
-  public initRequirements(requirements: Requirements) {
+  public initRequirements(requirements?: Requirements) {
     this._requirements = requirements;
   }
 
