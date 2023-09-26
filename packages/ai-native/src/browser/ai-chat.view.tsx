@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import * as React from 'react';
 // @ts-ignore
 import { Avatar, MessageList, SystemMessage } from 'react-chat-elements';
 
@@ -9,7 +9,6 @@ import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, isMacintosh, URI } from '@opensumi/ide-core-common';
-import { DebugConfiguration } from '@opensumi/ide-debug';
 import 'react-chat-elements/dist/main.css';
 
 import { AiGPTBackSerivcePath, AISerivceType, IChatMessageStructure } from '../common';
@@ -75,11 +74,11 @@ export const AiChatView = observer(() => {
     });
 
     messageList.pop();
-    const successMessage = createMessageByAI((
+    const successMessage = createMessageByAI(
       <div>
-        <span style={{ display: 'block' }}>项目生成中完成！</span>
-      </div>
-    ))
+        <span style={{ display: 'block' }}>项目生成完毕</span>
+      </div>,
+    );
     setMessageListData([...messageList, successMessage]);
     localStorage.removeItem('ai-generate');
   }, []);
@@ -87,16 +86,14 @@ export const AiChatView = observer(() => {
   React.useEffect(() => {
     if (aiProjectGenerateService.requirements) {
       const message = createMessageByAI(
-        (
-          <div>
-            <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
-          </div>
-        )
-      )
-      setMessageListData([message])
-      generateProject([message])
+        <div>
+          <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
+        </div>,
+      );
+      setMessageListData([message]);
+      generateProject([message]);
     }
-  }, [aiProjectGenerateService.requirements])
+  }, [aiProjectGenerateService.requirements]);
 
   const InitMsgComponent = () => {
     const lists = [
