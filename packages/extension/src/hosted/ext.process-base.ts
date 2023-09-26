@@ -14,6 +14,8 @@ import {
   ILogService,
   isPromiseCanceledError,
   locale,
+  DebugLog,
+  SupportLogNamespace,
 } from '@opensumi/ide-core-common';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
@@ -123,24 +125,26 @@ function patchProcess() {
   };
 }
 
-function _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error') {
+function _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error', logger) {
+  const original = globalThis.ORIGINAL_CONSOLE[method];
   // eslint-disable-next-line no-console
-  const original = console[method].bind(console);
-
-  Object.defineProperty(console, method, {
-    set: () => {},
-    get: () =>
-      function (...args) {
-        original(...args);
-      },
-  });
+  console[method] = (...args) => {
+    // eslint-disable-next-line no-console
+    console[method] = original;
+    if (!/\x1B\[\d+m\[log\]\x1B\[0m/.test(args[0])) {
+      logger[method](...args);
+    }
+    _wrapConsoleMethod(method, logger);
+  };
 }
 
-function patchConsole() {
-  _wrapConsoleMethod('info');
-  _wrapConsoleMethod('log');
-  _wrapConsoleMethod('warn');
-  _wrapConsoleMethod('error');
+function patchConsole(injector) {
+  globalThis.ORIGINAL_CONSOLE = { ...console };
+  const logger = new ExtensionLogger2(injector, SupportLogNamespace.Extension);
+  _wrapConsoleMethod('info', logger);
+  _wrapConsoleMethod('log', logger);
+  _wrapConsoleMethod('warn', logger);
+  _wrapConsoleMethod('error', logger);
 }
 
 export async function extProcessInit(config: ExtProcessConfig = {}) {
@@ -162,7 +166,9 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     setLanguageId(locale);
   }
   patchProcess();
-  patchConsole();
+  globalThis.ORIGINAL_CONSOLE = console;
+  // eslint-disable-next-line
+  patchConsole(extInjector);
   const { extProtocol: protocol, logger } = await initRPCProtocol(extInjector);
   try {
     let Preload = require('./ext.host');

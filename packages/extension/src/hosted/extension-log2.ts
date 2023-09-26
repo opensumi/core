@@ -15,13 +15,13 @@ export class ExtensionLogger2 implements IExtensionLogger {
   private logger: ILogService;
   private config: AppConfig;
 
-  constructor(injector: Injector) {
+  constructor(injector: Injector, namespace?: SupportLogNamespace) {
     this.injector = injector;
     this.config = this.injector.get(AppConfig);
     this.injectLogService();
 
     this.loggerManager = this.injector.get(LogServiceManager);
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost, this.config);
+    this.logger = this.loggerManager.getLogger(namespace ?? SupportLogNamespace.ExtensionHost, this.config);
   }
 
   injectLogService() {
