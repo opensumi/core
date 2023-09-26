@@ -1,3 +1,4 @@
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -83,7 +84,7 @@ export default observer((props: IResizeViewProps) => {
               {props.draw(widget)}
               {group.widgets.length > 1 && (
                 <div
-                  className={getIcon('close')}
+                  className={clx(styles.closeBtn, getIcon('close'))}
                   onClick={() => {
                     view.removeWidget(widget.id);
                   }}
