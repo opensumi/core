@@ -1,6 +1,7 @@
 import clx from 'classnames';
 import React from 'react';
 
+import { IAction } from '@opensumi/ide-core-common';
 import { isUndefined } from '@opensumi/ide-utils';
 
 import { Button } from '../button';
@@ -28,7 +29,7 @@ export function open<T = string>(
   type: MessageType,
   closable = true,
   key: string,
-  buttons?: string[],
+  buttons?: Array<string | IAction>,
   description?: string | React.ReactNode,
   duration?: number,
   onClose?: () => void,
@@ -48,20 +49,27 @@ export function open<T = string>(
         resolve(undefined);
       },
       btn: buttons
-        ? buttons.map((button, index) => (
-            <Button
-              className={clx('kt-notification-button')}
-              size='small'
-              ghost={index === 0}
-              onClick={() => {
-                resolve(button as any);
+        ? buttons.map((button, index) => {
+          const isStringButton = typeof button === 'string';
+          const buttonProps = {
+            className: `${clx('kt-notification-button')}${isStringButton ? '' : button.class}`,
+            ghost: isStringButton ? index === 0 : !button.primary,
+            key: isStringButton ? button : button.id,
+            onClick: () => {
+              resolve(button as any);
                 antdNotification.close(key);
-              }}
-              key={button}
-            >
-              {button}
+                if (!isStringButton) {
+                  button.run();
+                }
+            },
+          };
+          const text = isStringButton ? button : button.label;
+          return (
+            <Button size='small' {...buttonProps}>
+              {text}
             </Button>
-          ))
+          );
+        })
         : null,
       message,
       description,

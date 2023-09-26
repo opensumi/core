@@ -27,6 +27,7 @@ import {
   parseLinkedText,
   IDisposable,
   timeout,
+  IAction,
 } from '@opensumi/ide-core-common';
 
 import { open } from '../components';
@@ -305,14 +306,15 @@ export class ProgressService implements IProgressService {
     let isInfinite = false;
 
     const createNotification = (message: string, silent: boolean, increment?: number): string => {
-      const buttons: string[] = [];
+      const buttons: Array<string | IAction> = [];
       const closeable = options.closeable ?? true;
-      if (options.buttons) {
-        // TODO: with progress Notification暂不支持自定义按钮
-      }
 
       if (options.cancellable) {
         buttons.push(localize('ButtonCancel'));
+      }
+
+      if (options.buttons) {
+        buttons.push(...options.buttons);
       }
 
       const notificationKey = Math.random().toString(18).slice(2, 5);

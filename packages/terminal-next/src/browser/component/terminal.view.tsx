@@ -1,3 +1,4 @@
+import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -95,15 +96,17 @@ export default observer(() => {
     >
       {searchService.show && (
         <div className={styles.terminalSearch}>
-          <input
-            autoFocus
-            ref={inputRef}
-            placeholder={localize('common.find')}
-            value={searchService.input}
-            onChange={searchInput}
-            onKeyDown={searchKeyDown}
-          />
-          <div className={getIcon('close')} onClick={() => searchService.close()}></div>
+          <div className='kt-input-box'>
+            <input
+              autoFocus
+              ref={inputRef}
+              placeholder={localize('common.find')}
+              value={searchService.input}
+              onChange={searchInput}
+              onKeyDown={searchKeyDown}
+            />
+          </div>
+          <div className={clx(styles.closeBtn, getIcon('close'))} onClick={() => searchService.close()}></div>
         </div>
       )}
       {groups.map((group, index) => {
