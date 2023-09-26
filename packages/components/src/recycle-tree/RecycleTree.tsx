@@ -802,7 +802,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
             dangerouslySetInnerHTML={{ __html: item.string || '' }}
           ></div>
         ));
-        // 不应包含根节点
+        if (CompositeTreeNode.is(node)) {
+          for (const child of node.children || []) {
+            // 让筛选到的节点目录也展示其首层子节点
+            idSets.add(child.id);
+          }
+        }
+        // 当子节点被筛选时，向上的所有父节点均应该被展示
         while (parent && !CompositeTreeNode.isRoot(parent)) {
           idSets.add(parent.id);
           parent = parent.parent;
