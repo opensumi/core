@@ -83,10 +83,13 @@ const InstructionOptions = ({ onClick, bottom }) => {
 
 export interface IChatInputProps {
   onSend: (value: string) => void;
+  placeholder?: string;
+  enableOptions?: boolean;
 }
 
 // 指令命令激活组件
-export const ChatInput = ({ onSend }: IChatInputProps) => {
+export const ChatInput = (props: IChatInputProps) => {
+  const { onSend, placeholder, enableOptions = false } = props;
   const [value, setValue] = useState('');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
   const [wrapperHeight, setWrapperHeight] = useState<number>(40);
@@ -94,10 +97,12 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (value.length === 1 && value.startsWith('/')) {
-      setIsShowOptions(true);
-    } else {
-      setIsShowOptions(false);
+    if (enableOptions) {
+      if (value.length === 1 && value.startsWith('/')) {
+        setIsShowOptions(true);
+      } else {
+        setIsShowOptions(false);
+      }
     }
 
     // 自适应高度
@@ -121,7 +126,7 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
     } else {
       setSlashWidget('');
     }
-  }, [inputRef, value]);
+  }, [inputRef, value, enableOptions]);
 
   const handleInputChange = useCallback((value: string) => setValue(value), []);
 
@@ -166,7 +171,7 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
       </div> */}
       <Input
         ref={inputRef}
-        placeholder={'可以问我任何问题，或键入主题 "/"'}
+        placeholder={placeholder}
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         value={value}
         type={'textarea'}
@@ -182,7 +187,7 @@ export const ChatInput = ({ onSend }: IChatInputProps) => {
         }
         addonAfter={
           <div className={cls(styles.send_chat_btn, value.length && styles.active)} onClick={() => handleSend()}>
-            <Icon className={getIcon('right')} />
+            <Icon className={getIcon('send')} />
           </div>
         }
       />

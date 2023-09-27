@@ -7,7 +7,7 @@ import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { Emitter } from '@opensumi/ide-core-common';
 
 import { AIImprove } from '../components/AIImprove';
-import { AiInput } from '../components/AIInput';
+import { ChatInput } from '../components/ChatInput';
 
 import * as styles from './ai-inline-chat.module.less';
 import { AiInlineChatService, EChatStatus } from './ai-inline-chat.service';
@@ -140,6 +140,15 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       {renderResult}
       {/* chat */}
       <div className={styles.panel_chat}>
+        <div className={styles.ai_content_widget_input}>
+          <ChatInput
+            onSend={(value) => {
+              props.selectChangeFire.fire(value);
+              setCurrentCheckText(value);
+            }}
+            placeholder={'请描述你的诉求'}
+          />
+        </div>
         <div className={styles.ai_shortcuts}>
           <AIImprove
             onClick={(title) => {
@@ -147,14 +156,6 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
               setCurrentCheckText(title);
             }}
             lists={improveList}
-          />
-        </div>
-        <div className={styles.ai_content_widget_input}>
-          <AiInput
-            onValueChange={(value) => {
-              props.selectChangeFire.fire(value);
-              setCurrentCheckText(value);
-            }}
           />
         </div>
       </div>

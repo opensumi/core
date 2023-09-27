@@ -60,11 +60,15 @@ export const AiChatView = observer(() => {
     const loadingText = createMessageByAI(<div>项目生成中，请稍后....</div>);
     // 项目分析结果
     const { language, framework } = aiProjectGenerateService.requirements!;
-    const languageReply = createMessageByAI(<AiReply text={`项目语言为：${language}\n使用框架：${framework}`} immediately={true} />);
+    const languageReply = createMessageByAI(
+      <AiReply text={`项目语言为：${language}\n使用框架：${framework}`} immediately={true} />,
+    );
     setMessageListData([languageReply, loadingText]);
 
     const filePathList = await aiProjectGenerateService.generateProjectStructure();
-    const structureReply = createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />);
+    const structureReply = createMessageByAI(
+      <AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />,
+    );
     setMessageListData([languageReply, structureReply, loadingText]);
 
     const generatedFilePathList: string[] = [];
@@ -235,7 +239,13 @@ export const AiChatView = observer(() => {
               </div>
             )}
           </div>
-          <ChatInput onSend={(value) => handleSend({ message: value })} />
+          <div className={styles.chat_input_warp}>
+            <ChatInput
+              onSend={(value) => handleSend({ message: value })}
+              placeholder={'可以问我任何问题，或键入主题 "/"'}
+              enableOptions={true}
+            />
+          </div>
         </div>
         <div className={styles.right_bar}>
           <ul className={styles.chat_list}>

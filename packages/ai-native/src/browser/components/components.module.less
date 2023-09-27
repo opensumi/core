@@ -19,14 +19,6 @@
 }
 
 .chat_input_container {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  background-color: #1b232b;
-  box-shadow: 0 -1px 12px 0 rgba(0, 0, 0, 0.12), 0 -1px 3px 0 rgba(0, 0, 0, 0.12);
-  border-radius: 0 0 0 12px;
-
   .block {
     background-color: rgba(255, 255, 255, 0.08);
     border-radius: 6px;
@@ -239,7 +231,7 @@
     height: 16px;
 
     &::after {
-      content: initial;
+      content: initial !important;
     }
 
     .side {

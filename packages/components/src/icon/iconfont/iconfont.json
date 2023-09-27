@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "37481524",
+      "name": "ai-coplit",
+      "font_class": "ai-coplit",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "36977357",
+      "name": "send",
+      "font_class": "fasongxiaoxi",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "33273850",
+      "name": "撤消_icon",
+      "font_class": "chexiao_icon",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "27365328",
+      "name": "ubuntu",
+      "font_class": "ubuntu",
+      "unicode": "ec28",
+      "unicode_decimal": 60456
+    },
+    {
       "icon_id": "33778623",
       "name": "arrow-down",
       "font_class": "arrow-down",
