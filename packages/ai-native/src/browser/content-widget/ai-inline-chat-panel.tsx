@@ -6,8 +6,8 @@ import { Button, Icon } from '@opensumi/ide-core-browser/lib/components/index';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { AIImprove } from '../components/AIImprove';
 import { ChatInput } from '../components/ChatInput';
+import { LineVertical } from '../components/lineVertical';
 
 import * as styles from './ai-inline-chat.module.less';
 import { AiInlineChatService, EChatStatus } from './ai-inline-chat.service';
@@ -47,11 +47,8 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
   const improveList = useMemo(
     () => [
       { title: '解释代码', iconClass: getExternalIcon('git-pull-request') },
-      { title: '｜', iconClass: '' },
       { title: '生成注释', iconClass: getExternalIcon('git-pull-request') },
-      { title: '｜', iconClass: '' },
       { title: '优化代码', iconClass: getExternalIcon('git-pull-request') },
-      { title: '｜', iconClass: '' },
       { title: '生成测试用例', iconClass: getExternalIcon('git-pull-request') },
     ],
     [],
@@ -150,13 +147,24 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
           />
         </div>
         <div className={styles.ai_shortcuts}>
-          <AIImprove
-            onClick={(title) => {
-              props.selectChangeFire.fire(title);
-              setCurrentCheckText(title);
-            }}
-            lists={improveList}
-          />
+          <ul className={styles.item_ul}>
+            {improveList.map(({ title, iconClass }, i) => (
+                <>
+                  {i !== 0 && <LineVertical />}
+                  <li className={styles.item_li}>
+                    {iconClass && <Icon className={iconClass} style={{ marginRight: '6px' }}></Icon>}
+                    <span
+                      onClick={() => {
+                        props.selectChangeFire.fire(title);
+                        setCurrentCheckText(title);
+                      }}
+                    >
+                      {title}
+                    </span>
+                  </li>
+                </>
+              ))}
+          </ul>
         </div>
       </div>
     </div>

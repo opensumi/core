@@ -85,11 +85,12 @@ export interface IChatInputProps {
   onSend: (value: string) => void;
   placeholder?: string;
   enableOptions?: boolean;
+  disabled?: boolean;
 }
 
 // 指令命令激活组件
 export const ChatInput = (props: IChatInputProps) => {
-  const { onSend, placeholder, enableOptions = false } = props;
+  const { onSend, placeholder, enableOptions = false, disabled = false } = props;
   const [value, setValue] = useState('');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
   const [wrapperHeight, setWrapperHeight] = useState<number>(40);
@@ -131,7 +132,7 @@ export const ChatInput = (props: IChatInputProps) => {
   const handleInputChange = useCallback((value: string) => setValue(value), []);
 
   const handleSend = useCallback(() => {
-    if (onSend) {
+    if (value.trim() && onSend) {
       onSend(value);
       setValue('');
     }
@@ -177,6 +178,7 @@ export const ChatInput = (props: IChatInputProps) => {
         type={'textarea'}
         onKeyDown={handleKeyDown}
         onValueChange={handleInputChange}
+        disabled={disabled}
         className={styles.input_wrapper}
         addonBefore={
           slashWidget && (
