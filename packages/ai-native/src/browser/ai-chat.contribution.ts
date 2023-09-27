@@ -34,10 +34,10 @@ import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-te
 import { AiNativeContribution, Ai_CHAT_CONTAINER_VIEW_ID, IAiRunFeatureRegistry, InstructionEnum } from '../common';
 import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
-import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
+import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 import {
   AiBottomTabRenderer,
