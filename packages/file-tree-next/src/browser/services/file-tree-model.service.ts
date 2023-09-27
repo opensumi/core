@@ -1429,7 +1429,9 @@ export class FileTreeModelService {
       }
       // 移除目录下的子节点
       if ((targetNode as Directory).children) {
-        for (const node of (targetNode as Directory).children!) {
+        // deleteAffectedNodeByPath 有副作用，会直接操作 children 数组，因此这里需要用一个新数组轮询
+        const cacheChildren = [...(targetNode as Directory).children!];
+        for (const node of cacheChildren) {
           this.fileTreeService.deleteAffectedNodeByPath(node.path, true);
         }
       }
