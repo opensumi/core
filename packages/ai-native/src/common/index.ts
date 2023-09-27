@@ -21,7 +21,6 @@ export interface IChatMessageStructure {
  */
 export enum InstructionEnum {
   aiSearchKey = '/search ',
-  aiSearchCodeKey = '/searchCode ',
   aiSumiKey = '/ide ',
   aiExplainKey = '/explain ',
   aiRunKey = '/run ',
@@ -55,7 +54,6 @@ export interface ChatCompletionRequestMessage {
 
 export enum AISerivceType {
   Search,
-  SearchCode,
   Sumi,
   GPT,
   Explain,
@@ -65,7 +63,9 @@ export enum AISerivceType {
 export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
 
 export type AiRunHandler = () => MaybePromise<void>;
-export interface IAiRunAnswerComponentProps { input: string }
+export interface IAiRunAnswerComponentProps {
+  input: string;
+}
 
 export interface IAiRunFeatureRegistry {
   /**

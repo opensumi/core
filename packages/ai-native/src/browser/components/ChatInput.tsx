@@ -27,14 +27,6 @@ const optionsList: IBlockProps[] = [
     name: InstructionEnum.aiSearchKey,
   },
   {
-    icon: getExternalIcon('code'),
-    name: InstructionEnum.aiSearchCodeKey,
-  },
-  {
-    icon: getIcon('edit'),
-    name: InstructionEnum.aiExplainKey,
-  },
-  {
     icon: getIcon('smile'),
     name: InstructionEnum.aiSumiKey,
   },

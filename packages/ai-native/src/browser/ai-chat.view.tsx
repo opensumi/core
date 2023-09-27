@@ -160,7 +160,7 @@ export const AiChatView = observer(() => {
 
         const userInput = await aiChatService.switchAIService(preInputValue, prompt);
 
-        if (userInput!.type === AISerivceType.Search || userInput!.type === AISerivceType.SearchCode) {
+        if (userInput!.type === AISerivceType.Search) {
           aiMessage = await AISearch(userInput, aiGPTBackService);
         } else if (userInput!.type === AISerivceType.Sumi) {
           aiMessage = await aiSumiService.message(userInput!.message!);
@@ -308,10 +308,7 @@ const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
 
 const AISearch = async (input, aiGPTBackService) => {
   try {
-    const result = await aiGPTBackService.aiSearchRequest(
-      input.message,
-      input.type === AISerivceType.SearchCode ? 'code' : 'overall',
-    );
+    const result = await aiGPTBackService.aiSearchRequest(input.message, input.type === 'overall');
 
     const { responseText, urlMessage } = result;
 

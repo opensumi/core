@@ -65,9 +65,6 @@ export class AiChatService {
     if (input.startsWith(InstructionEnum.aiSearchKey)) {
       type = AISerivceType.Search;
       message = input.split(InstructionEnum.aiSearchKey)[1];
-    } else if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
-      type = AISerivceType.SearchCode;
-      message = input.split(InstructionEnum.aiSearchCodeKey)[1];
     } else {
       type = AISerivceType.GPT;
       message = input;
