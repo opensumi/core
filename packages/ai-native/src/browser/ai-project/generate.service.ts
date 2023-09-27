@@ -25,7 +25,7 @@ export class AiProjectGenerateService {
 
   @observable
   protected _requirements?: Requirements;
-  
+
   constructor() {
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
@@ -36,16 +36,16 @@ export class AiProjectGenerateService {
 
   @computed
   public get requirements() {
-    return this._requirements
+    return this._requirements;
   }
 
   /**
    * 生成项目目录结构
    * ['src/app/main/demo.java', 'src/app/test/demo.jsva']
-   * @returns 
+   * @returns
    */
   public async generateProjectStructure(): Promise<string[]> {
-    return []
+    return [];
   }
   /**
    * 生成文件

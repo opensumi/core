@@ -54,44 +54,35 @@ export const AiChatView = observer(() => {
 
   const [, updateState] = React.useState<any>();
   // 项目生成
-  const generateProject = React.useCallback(async (messageList) => {
-    const { language, framework } = aiProjectGenerateService.requirements!;
+  const generateProject = React.useCallback(async () => {
     await aiProjectGenerateService.clearWorkspace();
-    const languageReply = `项目语言为：${language}\n使用框架：${framework}`;
-    messageList.unshift(createMessageByAI(<AiReply text={languageReply} immediately={true} />));
-    setMessageListData([...messageList]);
-    const filePathList = await aiProjectGenerateService.generateProjectStructure();
-    messageList.splice(
-      -1,
-      0,
-      createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />),
-    );
-    setMessageListData([...messageList]);
 
+    const loadingText = createMessageByAI(<div>项目生成中，请稍后....</div>);
+    // 项目分析结果
+    const { language, framework } = aiProjectGenerateService.requirements!;
+    const languageReply = createMessageByAI(<AiReply text={`项目语言为：${language}\n使用框架：${framework}`} immediately={true} />);
+    setMessageListData([languageReply, loadingText]);
+
+    const filePathList = await aiProjectGenerateService.generateProjectStructure();
+    const structureReply = createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />);
+    setMessageListData([languageReply, structureReply, loadingText]);
+
+    const generatedFilePathList: string[] = [];
     await aiProjectGenerateService.generateFile(filePathList, (file: string) => {
-      messageList.splice(-1, 0, createMessageByAI(<AiReply text={`正在生成文件:${file}`} />));
-      setMessageListData([...messageList]);
+      const currentFileReply = createMessageByAI(<AiReply text={`正在生成文件:${file}`} />);
+      const generatedReply = createMessageByAI(<AiReply text={`已生成文件:\n${generatedFilePathList.join('\n')}`} />);
+      setMessageListData([languageReply, structureReply, generatedReply, currentFileReply, loadingText]);
+      generatedFilePathList.push(file);
     });
 
-    messageList.pop();
-    const successMessage = createMessageByAI(
-      <div>
-        <span style={{ display: 'block' }}>项目生成完毕</span>
-      </div>,
-    );
-    setMessageListData([...messageList, successMessage]);
+    const successMessage = createMessageByAI(<div>项目生成完毕</div>);
+    setMessageListData([languageReply, structureReply, successMessage]);
     localStorage.removeItem('ai-generate');
   }, []);
 
   React.useEffect(() => {
     if (aiProjectGenerateService.requirements) {
-      const message = createMessageByAI(
-        <div>
-          <span style={{ display: 'block' }}>项目生成中，请稍后....</span>
-        </div>,
-      );
-      setMessageListData([message]);
-      generateProject([message]);
+      generateProject();
     }
   }, [aiProjectGenerateService.requirements]);
 
