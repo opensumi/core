@@ -20,6 +20,14 @@ export class AiChatService {
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
+  private readonly _onChangeSessionId = new Emitter<string>();
+  public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
+
+  private _latestSessionId: string;
+  public get latestSessionId(): string {
+    return this._latestSessionId;
+  }
+
   private get currentEditor() {
     return this.editorService.currentEditor;
   }
@@ -128,5 +136,10 @@ export class AiChatService {
     } else {
       return res.data || '';
     }
+  }
+
+  public setLatestSessionId(id: string): void {
+    this._latestSessionId = id;
+    this._onChangeSessionId.fire(id);
   }
 }

@@ -9,7 +9,7 @@ export const Thumbs = () => {
   const useUUID = useMemo(() => uuid(12), []);
 
   return (
-    <div>
+    <>
       <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
         <Icon className={getExternalIcon('thumbsup')} />
       </Popover>
@@ -17,6 +17,6 @@ export const Thumbs = () => {
       <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
         <Icon className={getExternalIcon('thumbsdown')} />
       </Popover>
-    </div>
+    </>
   );
 };
