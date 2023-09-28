@@ -4,12 +4,13 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
+import { AiChatService } from '../ai-chat.service';
 import { AiSumiService } from '../ai-sumi/sumi.service';
 
 import * as styles from './components.module.less';
 
 export const Thinking = () => {
-  const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
+  const aiSumiService = useInjectable<AiChatService>(AiChatService);
 
   const handlePause = useCallback(() => {
     aiSumiService.cancelAll();

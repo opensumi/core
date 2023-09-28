@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
@@ -9,7 +9,7 @@ import { AISerivceType, AiGPTBackSerivcePath, IChatMessageStructure, Instruction
 @Injectable()
 export class AiChatService {
   @Autowired(AiGPTBackSerivcePath)
-  aiBackService: any;
+  public aiBackService: any;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -34,6 +34,12 @@ export class AiChatService {
 
   public launchChatMessage(data: IChatMessageStructure) {
     this._onChatMessageLaunch.fire(data);
+  }
+
+  public cancelIndicator = new CancellationTokenSource();
+
+  public cancelAll() {
+    this.cancelIndicator.cancel();
   }
 
   public async switchAIService(input: string, prompt = '') {
