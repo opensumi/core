@@ -94,6 +94,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       if (aiInlineChatDisposed) {
         aiInlineChatDisposed.dispose();
       }
+
+      this.aiChatService.cancelAll();
     };
 
     this.disposables.push(
@@ -200,9 +202,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             const prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
 
             this.logger.log('生成测试用例 prompt:>>> ', prompt);
-            const result = await this.aiGPTBackService.aiGPTcompletionRequest(prompt);
+            const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+              prompt,
+              {},
+              this.aiChatService.cancelIndicator.token,
+            );
 
-            if (aiContentWidget.disposed) {
+            if (aiContentWidget.disposed || result.isCancel) {
               return;
             }
 
@@ -271,14 +277,18 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           }
 
           if (value) {
-            const prompt = `这是我的完整代码：\`\`\`${text}\`\`\`。我会问你一些问题，你需要根据我给的代码回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进。我的问题是: ${value}`;
+            const prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。我的问题是: '${value}'。\n 根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进`;
             this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
 
             this.logger.log('输入框 prompt:>>> ', prompt);
 
-            const result = await this.aiGPTBackService.aiGPTcompletionRequest(prompt);
+            const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+              prompt,
+              {},
+              this.aiChatService.cancelIndicator.token,
+            );
 
-            if (aiInlineChatDisposed.disposed) {
+            if (aiInlineChatDisposed.disposed || result.isCancel) {
               return;
             }
 

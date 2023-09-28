@@ -14,6 +14,9 @@ export class AiChatService {
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
 
+  @Autowired(AiChatService)
+  private readonly aiChatService: AiChatService;
+
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
 
@@ -40,6 +43,7 @@ export class AiChatService {
 
   public cancelAll() {
     this.cancelIndicator.cancel();
+    this.cancelIndicator = new CancellationTokenSource();
   }
 
   public async switchAIService(input: string, prompt = '') {
@@ -136,7 +140,12 @@ export class AiChatService {
   }
 
   public async messageWithGPT(input: string) {
-    const res = await this.aiBackService.aiGPTcompletionRequest(input);
+    const res = await this.aiBackService.aiGPTcompletionRequest(input, {}, this.aiChatService.cancelIndicator.token);
+
+    if (res.isCancel) {
+      return null;
+    }
+
     if (res.errorCode !== 0) {
       return res.errorMsg || '';
     } else {

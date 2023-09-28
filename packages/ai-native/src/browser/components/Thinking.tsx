@@ -10,10 +10,10 @@ import { AiSumiService } from '../ai-sumi/sumi.service';
 import * as styles from './components.module.less';
 
 export const Thinking = () => {
-  const aiSumiService = useInjectable<AiChatService>(AiChatService);
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   const handlePause = useCallback(() => {
-    aiSumiService.cancelAll();
+    aiChatService.cancelAll();
   }, []);
 
   return (

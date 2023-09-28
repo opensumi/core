@@ -161,12 +161,19 @@ export const AiChatView = observer(() => {
           aiMessage = await AIWithCommandReply(aiMessage, opener, aiChatService);
         } else if (userInput!.type === AISerivceType.GPT) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+          if (aiMessage) {
+            aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+          }
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+          if (aiMessage) {
+            aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+          }
         } else if (userInput!.type === AISerivceType.Run) {
-          aiMessage = await aiChatService.aiBackService.aiAntGlm(userInput!.message!);
+          aiMessage = await aiChatService.aiBackService.aiAntGlm(
+            userInput!.message!,
+            aiChatService.cancelIndicator.token,
+          );
           aiMessage = await AIChatRunReply(aiMessage.data, aiRunService, aiChatService);
         }
 
@@ -300,9 +307,18 @@ const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
 
 const AISearch = async (input, aiChatService: AiChatService) => {
   try {
-    const result = await aiChatService.aiBackService.aiSearchRequest(input.message, input.type === 'overall');
+    const result = await aiChatService.aiBackService.aiSearchRequest(
+      input.message,
+      input.type === 'overall',
+      aiChatService.cancelIndicator.token,
+    );
 
-    const { responseText, urlMessage } = result;
+    const { responseText, urlMessage, isCancel } = result;
+
+    if (isCancel) {
+      return null;
+    }
+
     const uid = uuid(6);
 
     const aiMessage = createMessageByAI(
