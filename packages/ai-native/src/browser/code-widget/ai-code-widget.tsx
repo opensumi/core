@@ -34,7 +34,7 @@ const diffEditorOptions: IDiffEditorOptions = {
   glyphMargin: false,
 };
 
-const CodeContentProvider = React.memo(((props: { dto: { answerValue } | undefined; onMaxLincCount: (n) => void }) => {
+const CodeContentProvider = React.memo((props: { dto: { answerValue } | undefined; onMaxLincCount: (n) => void }) => {
   const { dto, onMaxLincCount } = props;
   const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
   const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
@@ -50,9 +50,7 @@ const CodeContentProvider = React.memo(((props: { dto: { answerValue } | undefin
     const random = Math.random() * 10;
     const originUri = URI.parse(`AI://origin${random}`);
 
-    Promise.all([
-      documentModelService.createModelReference(originUri),
-    ]).then((data) => {
+    Promise.all([documentModelService.createModelReference(originUri)]).then((data) => {
       const [original] = data;
       if (!original) {
         return;
@@ -75,7 +73,7 @@ const CodeContentProvider = React.memo(((props: { dto: { answerValue } | undefin
       codeEditor.monacoEditor.updateOptions({ readOnly: true });
 
       if (onMaxLincCount) {
-        const { monacoEditor }  = codeEditor;
+        const { monacoEditor } = codeEditor;
 
         const contentHeight = monacoEditor.getContentHeight();
         const lineCount = contentHeight / monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
@@ -91,8 +89,8 @@ const CodeContentProvider = React.memo(((props: { dto: { answerValue } | undefin
     };
   }, [dto]);
 
-  return <div ref={editorRef} style={{ height: 'inherit', width:'100%', border:'1px solid #6666' }}></div>;
-}));
+  return <div ref={editorRef} style={{ height: 'inherit', width: '100%', border: '1px solid #6666' }}></div>;
+});
 
 const styles: CSSProperties = {
   height: '100%',
@@ -120,35 +118,44 @@ export class AiCodeWidget extends ZoneWidget {
 
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
-          <div style={styles}>
-          {
-            this.headUri &&
-            <div className={'ai_code_head'} style={{
-              display: 'flex',
-              alignItems: 'center',
-              width: '100%',
-              whiteSpace: 'nowrap',
-              padding: '3px 16px',
-            }}>
-              <span style={{
-                color: 'white',
-                marginRight: '10px',
-              }}>{this.headUri.displayName}</span>
+        <div style={styles}>
+          {this.headUri && (
+            <div
+              className={'ai_code_head'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                whiteSpace: 'nowrap',
+                padding: '3px 16px',
+              }}
+            >
+              <span
+                style={{
+                  color: 'white',
+                  marginRight: '10px',
+                }}
+              >
+                {this.headUri.displayName}
+              </span>
               <span>{this.headUri.codeUri.fsPath.replace(this.configContext.workspaceDir, '')}</span>
             </div>
-          }
-            <CodeContentProvider dto={{ answerValue: this.answerValue }} onMaxLincCount={(n) => {
+          )}
+          <CodeContentProvider
+            dto={{ answerValue: this.answerValue }}
+            onMaxLincCount={(n) => {
               if (n) {
                 this._relayout(n);
               }
-            }}/>
-          </div>
+            }}
+          />
+        </div>
       </ConfigProvider>,
       container,
     );
   }
 
-  constructor(editor: ICodeEditor, answerValue: string, headUri: string) {
+  constructor(editor: ICodeEditor) {
     // @ts-ignore
     super(editor, {
       showArrow: false,
@@ -158,8 +165,13 @@ export class AiCodeWidget extends ZoneWidget {
       // 这里有个小坑，如果不开启这个配置，那么在调用 show 函数的时候会自动对焦并滚动到对应 range，导致在编辑 result 视图中代码时光标总是滚动在最后一个 widget 上
       keepEditorSelection: true,
     });
+  }
 
+  public setAnswerValue(answerValue: string): void {
     this.answerValue = answerValue;
+  }
+
+  public setHeadUri(headUri: string): void {
     this.headUri = URI.parse(headUri);
   }
 

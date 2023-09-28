@@ -66,8 +66,13 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
             <span>Chat</span>
           </div>
           <div className={styles.right_side}>
-            <Icon className={getIcon('clear')} style={{ marginRight: '8px' }} />
-            <Icon className={getIcon('close')} />
+            {/* <Icon className={getIcon('clear')} style={{ marginRight: '8px' }} /> */}
+            <Icon
+              className={getIcon('close')}
+              onClick={() => {
+                aiInlineChatService._onDiscard.fire();
+              }}
+            />
           </div>
         </div>
         {/* 进度条 */}
@@ -114,10 +119,10 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
                   </Button>
                 </div>
                 <div className={styles.right_side}>
-                  <Button size={'small'}>
+                  {/* <Button size={'small'}>
                     <Icon className={getIcon('layout')} />
                   </Button>
-                  <span>｜</span>
+                  <span>｜</span> */}
                   <Icon className={getExternalIcon('thumbsup')} />
                   <Icon className={getExternalIcon('thumbsdown')} />
                 </div>
@@ -139,6 +144,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       <div className={styles.panel_chat}>
         <div className={styles.ai_content_widget_input}>
           <ChatInput
+            disabled={isLoading}
             onSend={(value) => {
               props.selectChangeFire.fire(value);
               setCurrentCheckText(value);
@@ -149,21 +155,21 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         <div className={styles.ai_shortcuts}>
           <ul className={styles.item_ul}>
             {improveList.map(({ title, iconClass }, i) => (
-                <>
-                  {i !== 0 && <LineVertical />}
-                  <li className={styles.item_li}>
-                    {iconClass && <Icon className={iconClass} style={{ marginRight: '6px' }}></Icon>}
-                    <span
-                      onClick={() => {
-                        props.selectChangeFire.fire(title);
-                        setCurrentCheckText(title);
-                      }}
-                    >
-                      {title}
-                    </span>
-                  </li>
-                </>
-              ))}
+              <>
+                {i !== 0 && <LineVertical />}
+                <li className={styles.item_li}>
+                  {iconClass && <Icon className={iconClass} style={{ marginRight: '6px' }}></Icon>}
+                  <span
+                    onClick={() => {
+                      props.selectChangeFire.fire(title);
+                      setCurrentCheckText(title);
+                    }}
+                  >
+                    {title}
+                  </span>
+                </li>
+              </>
+            ))}
           </ul>
         </div>
       </div>

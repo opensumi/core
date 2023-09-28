@@ -4,9 +4,8 @@ import * as React from 'react';
 import { Avatar, MessageList, SystemMessage } from 'react-chat-elements';
 
 import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, isMacintosh, URI } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
@@ -46,7 +45,6 @@ export const AiChatView = observer(() => {
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const aiRunService = useInjectable<AiRunService>(AiRunService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
@@ -189,15 +187,8 @@ export const AiChatView = observer(() => {
     [messageListData, containerRef],
   );
 
-  const layoutViewSize = React.useMemo(() => appConfig.layoutViewSize || LAYOUT_VIEW_SIZE, [appConfig]);
-
-  const viewHeight = React.useMemo(
-    () => `calc(100vh - ${layoutViewSize.MENUBAR_HEIGHT + layoutViewSize.STATUSBAR_HEIGHT}px)`,
-    [],
-  );
-
   return (
-    <div className={styles.ai_chat_view} style={{ height: viewHeight }}>
+    <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>

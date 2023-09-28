@@ -76,9 +76,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    let aiDiffWidget: AiDiffWidget | undefined;
-    let aiCodeWidget: AiCodeWidget | undefined;
-    let aiContentWidget: AiContentWidget | undefined;
+    let aiDiffWidget: AiDiffWidget;
+    let aiCodeWidget: AiCodeWidget;
+    let aiContentWidget: AiContentWidget;
     const aiInlineChatDisposed = new Disposable();
 
     const disposeAllWidget = () => {
@@ -130,11 +130,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       // 获取指定范围内的文本内容
       const text = monacoEditor.getModel()?.getValueInRange(selection);
 
-      if (!text) {
+      if (!text?.trim()) {
         return;
       }
-
-      disposeAllWidget();
 
       this.logger.log('monacoEditor.onMouseUp: >>> text', text);
 
@@ -146,7 +144,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         selection,
       });
 
-      this.disposables.push(
+      aiInlineChatDisposed.addDispose(
         aiContentWidget.onSelectChange(async (value) => {
           if (aiDiffWidget) {
             aiDiffWidget.dispose();
@@ -196,11 +194,17 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               return;
             }
 
-            const prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的 junit 单元测试用例，不需要解释，只需要返回代码结果`;
+            aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!]);
+            aiContentWidget.addDispose(aiCodeWidget);
+
+            const prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
+
             this.logger.log('生成测试用例 prompt:>>> ', prompt);
-            const result = await this.aiGPTBackService.aiGPTcompletionRequest(
-              `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的 junit 单元测试用例，不需要解释，只需要返回代码结果`,
-            );
+            const result = await this.aiGPTBackService.aiGPTcompletionRequest(prompt);
+
+            if (aiContentWidget.disposed) {
+              return;
+            }
 
             // 说明接口有异常
             if (result.errorCode !== 0) {
@@ -226,7 +230,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               });
 
               this.logger.log(testUri);
-              aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!, answer, testUri]);
+
+              aiCodeWidget.setAnswerValue(answer);
+              aiCodeWidget.setHeadUri(testUri.toString());
               aiCodeWidget.create();
               aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
 
@@ -265,10 +271,16 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           }
 
           if (value) {
+            const prompt = `这是我的完整代码：\`\`\`${text}\`\`\`。我会问你一些问题，你需要根据我给的代码回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进。我的问题是: ${value}`;
             this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
-            const result = await this.aiGPTBackService.aiGPTcompletionRequest(
-              `${value}, 要求只回答代码内容，并保留代码的缩进。不需要给我解释。代码内容是: \n` + text,
-            );
+
+            this.logger.log('输入框 prompt:>>> ', prompt);
+
+            const result = await this.aiGPTBackService.aiGPTcompletionRequest(prompt);
+
+            if (aiInlineChatDisposed.disposed) {
+              return;
+            }
 
             // 说明接口有异常
             if (result.errorCode !== 0) {
