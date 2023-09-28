@@ -3,7 +3,7 @@ import { NodeModule } from '@opensumi/ide-core-node';
 
 import { AiGPTBackSerivcePath, AiGPTBackSerivceToken } from '../common';
 
-import { AiNativeBackService } from './ai-gpt.back.service';
+// import { AiNativeBackService } from './ai-gpt.back.service';
 
 @Injectable()
 export class AiNativeModule extends NodeModule {
