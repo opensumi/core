@@ -50,15 +50,6 @@ export class AiChatService {
     let type: AISerivceType | undefined;
     let message: string | undefined;
 
-    if (!this.currentEditor) {
-      return;
-    }
-
-    const currentUri = this.currentEditor.currentUri;
-    if (!currentUri) {
-      return;
-    }
-
     if (input.startsWith(InstructionEnum.aiSumiKey)) {
       type = AISerivceType.Sumi;
       message = input.split(InstructionEnum.aiSumiKey)[1];
