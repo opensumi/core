@@ -79,17 +79,8 @@ export const AiMenuBarView = () => {
               // onFocus={handleSelectFocus}
             ></Input>
           </div>
-          <div className={styles.ai_switch}>
-            <div
-              style={{
-                cursor: 'pointer',
-              }}
-              onClick={handleRightPanel}
-            >
-              <Avatar
-                src={'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*6Y9PQp_rk7QAAAAAAAAAAAAADhl8AQ/original'}
-              />
-            </div>
+          <div className={styles.ai_switch} onClick={handleRightPanel}>
+            <Icon className={getIcon('magic-wand')} />
           </div>
         </div>
       </div>

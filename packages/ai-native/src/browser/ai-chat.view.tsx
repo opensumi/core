@@ -4,11 +4,10 @@ import * as React from 'react';
 import { Avatar, MessageList, SystemMessage } from 'react-chat-elements';
 
 import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { AppConfig, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import { Command, isMacintosh, URI } from '@opensumi/ide-core-common';
+import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
 
 import { AiGPTBackSerivcePath, AISerivceType, IChatMessageStructure } from '../common';
@@ -46,7 +45,6 @@ export const AiChatView = observer(() => {
   const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const aiRunService = useInjectable<AiRunService>(AiRunService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
@@ -60,11 +58,15 @@ export const AiChatView = observer(() => {
     const loadingText = createMessageByAI(<div>项目生成中，请稍后....</div>);
     // 项目分析结果
     const { language, framework } = aiProjectGenerateService.requirements!;
-    const languageReply = createMessageByAI(<AiReply text={`项目语言为：${language}\n使用框架：${framework}`} immediately={true} />);
+    const languageReply = createMessageByAI(
+      <AiReply text={`项目语言为：${language}\n使用框架：${framework}`} immediately={true} />,
+    );
     setMessageListData([languageReply, loadingText]);
 
     const filePathList = await aiProjectGenerateService.generateProjectStructure();
-    const structureReply = createMessageByAI(<AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />);
+    const structureReply = createMessageByAI(
+      <AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />,
+    );
     setMessageListData([languageReply, structureReply, loadingText]);
 
     const generatedFilePathList: string[] = [];
@@ -152,20 +154,27 @@ export const AiChatView = observer(() => {
         const userInput = await aiChatService.switchAIService(preInputValue, prompt);
 
         if (userInput!.type === AISerivceType.Search) {
-          aiMessage = await AISearch(userInput, aiGPTBackService);
+          aiMessage = await AISearch(userInput, aiChatService);
         } else if (userInput!.type === AISerivceType.Sumi) {
           aiMessage = await aiSumiService.message(userInput!.message!);
 
-          aiMessage = await AIWithCommandReply(aiMessage, opener);
+          aiMessage = await AIWithCommandReply(aiMessage, opener, aiChatService);
         } else if (userInput!.type === AISerivceType.GPT) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          aiMessage = await AIChatGPTReply(aiMessage);
+          if (aiMessage) {
+            aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+          }
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
-          aiMessage = await AIChatGPTReply(aiMessage);
+          if (aiMessage) {
+            aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+          }
         } else if (userInput!.type === AISerivceType.Run) {
-          aiMessage = await aiChatService.aiBackService.aiAntGlm(userInput!.message!);
-          aiMessage = await AIChatRunReply(aiMessage.data, aiRunService);
+          aiMessage = await aiChatService.aiBackService.aiAntGlm(
+            userInput!.message!,
+            aiChatService.cancelIndicator.token,
+          );
+          aiMessage = await AIChatRunReply(aiMessage.data, aiRunService, aiChatService);
         }
 
         if (aiMessage) {
@@ -185,15 +194,8 @@ export const AiChatView = observer(() => {
     [messageListData, containerRef],
   );
 
-  const layoutViewSize = React.useMemo(() => appConfig.layoutViewSize || LAYOUT_VIEW_SIZE, [appConfig]);
-
-  const viewHeight = React.useMemo(
-    () => `calc(100vh - ${layoutViewSize.MENUBAR_HEIGHT + layoutViewSize.STATUSBAR_HEIGHT}px)`,
-    [],
-  );
-
   return (
-    <div className={styles.ai_chat_view} style={{ height: viewHeight }}>
+    <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>
@@ -235,7 +237,13 @@ export const AiChatView = observer(() => {
               </div>
             )}
           </div>
-          <ChatInput onSend={(value) => handleSend({ message: value })} />
+          <div className={styles.chat_input_warp}>
+            <ChatInput
+              onSend={(value) => handleSend({ message: value })}
+              placeholder={'可以问我任何问题，或键入主题 "/"'}
+              enableOptions={true}
+            />
+          </div>
         </div>
         <div className={styles.right_bar}>
           <ul className={styles.chat_list}>
@@ -297,14 +305,24 @@ const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
   }
 })();
 
-const AISearch = async (input, aiGPTBackService) => {
+const AISearch = async (input, aiChatService: AiChatService) => {
   try {
-    const result = await aiGPTBackService.aiSearchRequest(input.message, input.type === 'overall');
+    const result = await aiChatService.aiBackService.aiSearchRequest(
+      input.message,
+      input.type === 'overall',
+      aiChatService.cancelIndicator.token,
+    );
 
-    const { responseText, urlMessage } = result;
+    const { responseText, urlMessage, isCancel } = result;
+
+    if (isCancel) {
+      return null;
+    }
+
+    const uid = uuid(6);
 
     const aiMessage = createMessageByAI(
-      <ChatMoreActions>
+      <ChatMoreActions sessionId={uid}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div>
             <CodeBlockWrapper text={responseText} />
@@ -317,49 +335,57 @@ const AISearch = async (input, aiGPTBackService) => {
       </ChatMoreActions>,
     );
 
+    aiChatService.setLatestSessionId(uid);
     return aiMessage;
   } catch (error) {}
 };
 
 // 带有代码的 AI 回复组件
-const AIChatGPTReply = async (input) => {
+const AIChatGPTReply = async (input, aiChatService: AiChatService) => {
   try {
+    const uid = uuid(6);
+
     const aiMessage = createMessageByAI(
-      <ChatMoreActions>
+      <ChatMoreActions sessionId={uid}>
         <CodeBlockWrapper text={input} />
       </ChatMoreActions>,
     );
 
+    aiChatService.setLatestSessionId(uid);
     return aiMessage;
   } catch (error) {}
 };
 
 // run 的 AI 回复组件
-const AIChatRunReply = async (input, aiRunService: AiRunService) => {
+const AIChatRunReply = async (input, aiRunService: AiRunService, aiChatService: AiChatService) => {
   try {
+    const uid = uuid(6);
+
     const RenderAnswer = aiRunService.answerComponentRender();
 
     const aiMessage = createMessageByAI(
-      <ChatMoreActions>
+      <ChatMoreActions sessionId={uid}>
         {RenderAnswer ? <RenderAnswer input={input} /> : <CodeBlockWrapper text={input} />}
       </ChatMoreActions>,
     );
 
+    aiChatService.setLatestSessionId(uid);
     return aiMessage;
   } catch (error) {}
 };
 
 // 带有命令按钮的 AI 回复
-const AIWithCommandReply = async (command: Command, opener) => {
+const AIWithCommandReply = async (command: Command, opener, aiChatService: AiChatService) => {
   try {
     if (!command) {
       return createMessageByAI('未找到合适的功能');
     }
 
     const { labelLocalized, label, delegate, id } = command;
+    const uid = uuid(6);
 
     const aiMessage = createMessageByAI(
-      <ChatMoreActions>
+      <ChatMoreActions sessionId={uid}>
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
           <ol style={{ margin: '8px 0' }}>
@@ -371,6 +397,7 @@ const AIWithCommandReply = async (command: Command, opener) => {
       </ChatMoreActions>,
     );
 
+    aiChatService.setLatestSessionId(uid);
     return aiMessage;
   } catch (error) {}
 };

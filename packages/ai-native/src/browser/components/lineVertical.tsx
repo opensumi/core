@@ -1,10 +1,10 @@
 import React from 'react';
 
 const lineStyles = {
-  borderLeft: '1px solid #666',
+  backgroundColor: '#666',
   height: '100%',
   width: '1px',
-  display: 'block',
+  minWidth: '1px',
 };
 
 const horizontalStyles = {

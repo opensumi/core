@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
@@ -9,10 +9,13 @@ import { AISerivceType, AiGPTBackSerivcePath, IChatMessageStructure, Instruction
 @Injectable()
 export class AiChatService {
   @Autowired(AiGPTBackSerivcePath)
-  aiBackService: any;
+  public aiBackService: any;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
+
+  @Autowired(AiChatService)
+  private readonly aiChatService: AiChatService;
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
@@ -20,12 +23,27 @@ export class AiChatService {
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
+  private readonly _onChangeSessionId = new Emitter<string>();
+  public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
+
+  private _latestSessionId: string;
+  public get latestSessionId(): string {
+    return this._latestSessionId;
+  }
+
   private get currentEditor() {
     return this.editorService.currentEditor;
   }
 
   public launchChatMessage(data: IChatMessageStructure) {
     this._onChatMessageLaunch.fire(data);
+  }
+
+  public cancelIndicator = new CancellationTokenSource();
+
+  public cancelAll() {
+    this.cancelIndicator.cancel();
+    this.cancelIndicator = new CancellationTokenSource();
   }
 
   public async switchAIService(input: string, prompt = '') {
@@ -122,11 +140,21 @@ export class AiChatService {
   }
 
   public async messageWithGPT(input: string) {
-    const res = await this.aiBackService.aiGPTcompletionRequest(input);
+    const res = await this.aiBackService.aiGPTcompletionRequest(input, {}, this.aiChatService.cancelIndicator.token);
+
+    if (res.isCancel) {
+      return null;
+    }
+
     if (res.errorCode !== 0) {
       return res.errorMsg || '';
     } else {
       return res.data || '';
     }
+  }
+
+  public setLatestSessionId(id: string): void {
+    this._latestSessionId = id;
+    this._onChangeSessionId.fire(id);
   }
 }

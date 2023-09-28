@@ -1,31 +1,51 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { getExternalIcon, uuid } from '@opensumi/ide-core-browser';
-import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import { getExternalIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { Icon } from '@opensumi/ide-core-browser/lib/components';
+
+import { AiChatService } from '../ai-chat.service';
 
 import * as styles from './components.module.less';
-import { LineVertical } from './lineVertical';
+import { Thumbs } from './Thumbs';
 
-export const ChatMoreActions = ({ children }) => {
+export interface IChatMoreActionsProps {
+  children: React.ReactNode;
+  sessionId: string;
+}
 
-  const useUUID = useMemo(() => uuid(12), []);
+export const ChatMoreActions = (props: IChatMoreActionsProps) => {
+  const { children, sessionId } = props;
+  const [latestSessionId, setLatestSessionId] = useState<string>();
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
+
+  useEffect(() => {
+    const dispose = aiChatService.onChangeSessionId((id) => {
+      setLatestSessionId(id);
+    });
+    return () => {
+      dispose.dispose();
+    };
+  }, [sessionId, aiChatService]);
+
+  const canRetry = useMemo(
+    () => sessionId === (latestSessionId || aiChatService.latestSessionId),
+    [latestSessionId, sessionId],
+  );
 
   return (
     <div className={styles.ai_chat_more_actions_container}>
       <div className={styles.ai_chat_message}>{children}</div>
       <div className={styles.more_actions}>
-        <div className={styles.side}>
-          <Icon className={getExternalIcon('history')} />
-          <span>重新生成</span>
+        <div className={styles.left_side}>
+          {/* {canRetry && (
+            <div className={styles.side}>
+              <Icon className={getExternalIcon('history')} />
+              <span>重新生成</span>
+            </div>
+          )} */}
         </div>
         <div className={styles.side}>
-          <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
-            <Icon className={getExternalIcon('thumbsup')} />
-          </Popover>
-          <LineVertical />
-          <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
-            <Icon className={getExternalIcon('thumbsdown')} />
-          </Popover>
+          <Thumbs />
         </div>
       </div>
     </div>

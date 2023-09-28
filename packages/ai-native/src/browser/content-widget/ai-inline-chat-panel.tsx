@@ -6,8 +6,8 @@ import { Button, Icon } from '@opensumi/ide-core-browser/lib/components/index';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { AIImprove } from '../components/AIImprove';
-import { AiInput } from '../components/AIInput';
+import { ChatInput } from '../components/ChatInput';
+import { LineVertical } from '../components/lineVertical';
 
 import * as styles from './ai-inline-chat.module.less';
 import { AiInlineChatService, EChatStatus } from './ai-inline-chat.service';
@@ -47,11 +47,8 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
   const improveList = useMemo(
     () => [
       { title: '解释代码', iconClass: getExternalIcon('git-pull-request') },
-      { title: '｜', iconClass: '' },
       { title: '生成注释', iconClass: getExternalIcon('git-pull-request') },
-      { title: '｜', iconClass: '' },
       { title: '优化代码', iconClass: getExternalIcon('git-pull-request') },
-      { title: '｜', iconClass: '' },
       { title: '生成测试用例', iconClass: getExternalIcon('git-pull-request') },
     ],
     [],
@@ -69,8 +66,13 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
             <span>Chat</span>
           </div>
           <div className={styles.right_side}>
-            <Icon className={getIcon('clear')} style={{ marginRight: '8px' }} />
-            <Icon className={getIcon('close')} />
+            {/* <Icon className={getIcon('clear')} style={{ marginRight: '8px' }} /> */}
+            <Icon
+              className={getIcon('close')}
+              onClick={() => {
+                aiInlineChatService._onDiscard.fire();
+              }}
+            />
           </div>
         </div>
         {/* 进度条 */}
@@ -117,10 +119,10 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
                   </Button>
                 </div>
                 <div className={styles.right_side}>
-                  <Button size={'small'}>
+                  {/* <Button size={'small'}>
                     <Icon className={getIcon('layout')} />
                   </Button>
-                  <span>｜</span>
+                  <span>｜</span> */}
                   <Icon className={getExternalIcon('thumbsup')} />
                   <Icon className={getExternalIcon('thumbsdown')} />
                 </div>
@@ -140,22 +142,35 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       {renderResult}
       {/* chat */}
       <div className={styles.panel_chat}>
-        <div className={styles.ai_shortcuts}>
-          <AIImprove
-            onClick={(title) => {
-              props.selectChangeFire.fire(title);
-              setCurrentCheckText(title);
-            }}
-            lists={improveList}
-          />
-        </div>
         <div className={styles.ai_content_widget_input}>
-          <AiInput
-            onValueChange={(value) => {
+          <ChatInput
+            disabled={isLoading}
+            onSend={(value) => {
               props.selectChangeFire.fire(value);
               setCurrentCheckText(value);
             }}
+            placeholder={'请描述你的诉求'}
           />
+        </div>
+        <div className={styles.ai_shortcuts}>
+          <ul className={styles.item_ul}>
+            {improveList.map(({ title, iconClass }, i) => (
+              <>
+                {i !== 0 && <LineVertical />}
+                <li className={styles.item_li}>
+                  {iconClass && <Icon className={iconClass} style={{ marginRight: '6px' }}></Icon>}
+                  <span
+                    onClick={() => {
+                      props.selectChangeFire.fire(title);
+                      setCurrentCheckText(title);
+                    }}
+                  >
+                    {title}
+                  </span>
+                </li>
+              </>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
