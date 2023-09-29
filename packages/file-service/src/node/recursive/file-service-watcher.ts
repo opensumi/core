@@ -47,6 +47,8 @@ export interface NsfwFileSystemWatcherOption {
 
 @Injectable({ multiple: true })
 export class FileSystemWatcherServer implements IFileSystemWatcherServer {
+  recursive: true;
+
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private WATCHER_HANDLERS = new Map<
@@ -60,7 +62,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
   protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
 
-  // 收集发生改变的文件
+  // 收集发生改变的文件f
   protected changes = new FileChangeCollection();
 
   @Autowired(ILogServiceManager)
@@ -98,16 +100,21 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * @returns
    */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
-    const basePath = FileUri.fsPath(uri);
-    const exist = await fs.pathExists(basePath);
+    // eslint-disable-next-line no-console
+    console.log(uri, 'iiiiiiiiiiiiii');
+    const basePath = FileUri.fsPath(uri); // 转换为操作系统可以识别的路径
+    const exist = await fs.pathExists(basePath); // 判断文件是否存在
 
-    let watcherId = this.checkIsAlreadyWatched(basePath);
+    let watcherId = this.checkIsAlreadyWatched(basePath); // 返回被监听的文件的watcherId
+    // watcherId存在直接返回，函数结束
     if (watcherId) {
       return watcherId;
     }
+
+    // watcherId不存在继续下一步操作
     watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
-    const toDisposeWatcher = new DisposableCollection();
-    let watchPath;
+    const toDisposeWatcher = new DisposableCollection(); // 管理可释放的资源
+    let watchPath; // 监听路径
     if (exist) {
       const stat = await fs.lstatSync(basePath);
       if (stat && stat.isDirectory()) {
@@ -119,12 +126,13 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     } else {
       watchPath = await this.lookup(basePath);
     }
-    this.logger.log('Starting watching:', watchPath, options);
+    this.logger.log('Starting watchingkkkkkkkkkkkkkkkkkkkkkkkkkk:', watchPath, options);
     const handler = (err, events: ParcelWatcher.Event[]) => {
       if (err) {
         this.logger.error(`Watching ${watchPath} error: `, err);
         return;
       }
+      // 这一段需要根据watch的api写非递归监听的逻辑
       events = this.trimChangeEvent(events);
       for (const event of events) {
         if (event.type === 'create') {
@@ -134,7 +142,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
           this.pushDeleted(event.path);
         }
         if (event.type === 'update') {
-          this.pushUpdated(event.path);
+          // this.pushUpdated(event.path);
         }
       }
     };
@@ -144,6 +152,8 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
+    // eslint-disable-next-line no-console
+    console.log(this.WATCHER_HANDLERS, 'WATCHER_HANDLERS');
     toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
     toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
     this.toDispose.push(toDisposeWatcher);
@@ -197,9 +207,10 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   protected async start(
     watcherId: number,
     basePath: string,
-    rawOptions: WatchOptions | undefined,
+    rawOptions: WatchOptions | undefined, // WatchOptions指定哪些项不应该被监视或考虑在内
   ): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
+    // eslint-disable-next-line no-console
     if (!(await fs.pathExists(basePath))) {
       return disposables;
     }
@@ -207,6 +218,8 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
       for (let times = 0; times < maxRetries; times++) {
         try {
+          // eslint-disable-next-line no-console
+          console.log(realPath, 'realPathRealPath');
           return await ParcelWatcher.subscribe(
             realPath,
             (err, events: ParcelWatcher.Event[]) => {
@@ -216,6 +229,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
                 return;
               }
               const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
+
               if (!handlers) {
                 return;
               }

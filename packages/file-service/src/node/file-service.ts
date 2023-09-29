@@ -82,6 +82,7 @@ export class FileService implements IFileService {
   constructor(@Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions) {
     this.initProvider();
   }
+  recursive: boolean;
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
     this.toDisposable.push(this.fileSystemManage.add(scheme, provider));

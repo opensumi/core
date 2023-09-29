@@ -44,6 +44,7 @@ import {
   handleError,
 } from '../common/';
 
+import { NoRecursiveFileSystemWatcher } from './no-recursive/file-node-watcher-lib';
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 
@@ -66,7 +67,8 @@ export interface IWatcher {
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-  private watcherServer: FileSystemWatcherServer;
+  // private watcherServer: FileSystemWatcherServer; // 跟踪文件系统的变化
+  private watcherServer: NoRecursiveFileSystemWatcher; // 新增的一行
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
@@ -128,7 +130,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
     await this.whenReady;
     const _uri = Uri.revive(uri);
-    const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
+    // eslint-disable-next-line no-console
+    console.log(options, 'optionsOptionsOptions');
+    const id = await this.watcherServer.watchFileChanges('d:\\front_many\\firstIssue\\core\\tools\\workspace\\front', {
       excludes: options?.excludes ?? [],
     });
     const disposable = {
@@ -366,7 +370,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       this.watcherServerDisposeCollection.dispose();
     }
     this.watcherServerDisposeCollection = new DisposableCollection();
-    this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
+    this.watcherServer = this.injector.get(NoRecursiveFileSystemWatcher, [excludes]);
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         if (events.changes.length > 0) {
