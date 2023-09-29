@@ -42,7 +42,7 @@ export interface IResizeHandleDelegate {
   getAbsoluteSize(isLatter?: boolean): number;
 }
 
-function preventWebviewCatchMouseEvents() {
+export function preventWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
   for (const webview of webviews as unknown as HTMLElement[]) {
@@ -58,13 +58,13 @@ function preventWebviewCatchMouseEvents() {
   }
 }
 
-function allowWebviewCatchMouseEvents() {
+export function allowWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
   const webviews = document.getElementsByTagName('webview');
-  for (const webview of webviews as any) {
+  for (const webview of webviews as unknown as HTMLElement[]) {
     webview.classList.remove('none-pointer-event');
   }
-  for (const iframe of iframes as any) {
+  for (const iframe of iframes as unknown as HTMLIFrameElement[]) {
     iframe.classList.remove('none-pointer-event');
   }
 
@@ -92,11 +92,11 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     if ((prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))) {
       return;
     }
-    const prevMinResize = prevEle?.dataset.minResize || 0;
-    const nextMinResize = nextEle?.dataset.minResize || 0;
+    const prevMinResize = Number(prevEle?.dataset.minResize || 0);
+    const nextMinResize = Number(nextEle?.dataset.minResize || 0);
 
-    const prevMaxResize = prevEle?.dataset.maxResize || 0;
-    const nextMaxResize = nextEle?.dataset.maxResize || 0;
+    const prevMaxResize = Number(prevEle?.dataset.maxResize || 0);
+    const nextMaxResize = Number(nextEle?.dataset.maxResize || 0);
     if (prevMinResize || nextMinResize) {
       if (prev * parentWidth <= prevMinResize || next * parentWidth <= nextMinResize) {
         return;
@@ -419,8 +419,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     let fixedElement: HTMLElement;
     let flexElement: HTMLElement;
     let targetFixedHeight = 0;
-    const prevMinResize = parseInt(prevEle!.dataset.minResize || '0', 10);
-    const nextMinResize = parseInt(nextEle!.dataset.minResize || '0', 10);
+    const prevMinResize = Number(prevEle?.dataset?.minResize || 0);
+    const nextMinResize = Number(nextEle?.dataset?.minResize || 0);
+
     if (props.flexMode === ResizeFlexMode.Prev) {
       fixedElement = prevEle!;
       flexElement = nextEle!;
@@ -623,9 +624,10 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }
+
     requestFrame.current = window.requestAnimationFrame(() => {
-      const prevMinResize = cachedPrevElement.current!.dataset.minResize || 0;
-      const nextMinResize = cachedNextElement.current!.dataset.minResize || 0;
+      const prevMinResize = Number(cachedPrevElement.current!.dataset.minResize || 0);
+      const nextMinResize = Number(cachedNextElement.current!.dataset.minResize || 0);
       if (prevMinResize || nextMinResize) {
         if (prevHeight <= prevMinResize || nextHeight <= nextMinResize) {
           return;

@@ -103,6 +103,7 @@ import {
   AskSaveResult,
   IMergeEditorResource,
   EditorOpenType,
+  ResoucesOfActiveComponentChangedEvent,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 
@@ -1841,12 +1842,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else {
         this.notifyTabChanged();
       }
-      for (const resources of this.activeComponents.values()) {
-        const i = resources.indexOf(resource);
-        if (i !== -1) {
-          resources.splice(i, 1);
-        }
-      }
+      this.removeResouceFromActiveComponents(resource);
       this.disposeDocumentRef(uri);
     }
     if (this.resources.length === 0) {
@@ -1856,6 +1852,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this.availableOpenTypes = [];
     }
+  }
+
+  private removeResouceFromActiveComponents(resource: IResource) {
+    this.activeComponents.forEach((resources, component) => {
+      const i = resources.indexOf(resource);
+      if (i !== -1) {
+        resources.splice(i, 1);
+        this.eventBus.fire(new ResoucesOfActiveComponentChangedEvent({ component, resources }));
+      }
+    });
   }
 
   private async shouldClose(resource: IResource): Promise<boolean> {
@@ -1973,12 +1979,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         resource,
       }),
     );
-    for (const resources of this.activeComponents.values()) {
-      const i = resources.indexOf(resource);
-      if (i !== -1) {
-        resources.splice(i, 1);
-      }
-    }
+    this.removeResouceFromActiveComponents(resource);
   }
 
   async closeOthers(uri: URI) {

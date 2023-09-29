@@ -21,6 +21,7 @@ import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { ISCMProvider } from '@opensumi/ide-scm';
 
 import { ExampleEditorBottomWidget } from './editor-bottom-example';
+import { ExampleEditorTopWidget } from './editor-top-example';
 import { ExamplePopover } from './exmaple-popover';
 
 @Domain(
@@ -65,7 +66,15 @@ export class StartupContribution
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorSideWidget({
       id: 'example-bottom',
+      side: 'bottom',
       component: ExampleEditorBottomWidget,
+      displaysOnResource: (r) => r.uri.scheme === Schemes.file,
+    });
+
+    registry.registerEditorSideWidget({
+      id: 'example-top',
+      side: 'top',
+      component: ExampleEditorTopWidget,
       displaysOnResource: (r) => r.uri.scheme === Schemes.file,
     });
   }

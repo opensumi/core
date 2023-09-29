@@ -270,7 +270,13 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         .catch((err) => {
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
-      service.onSizeChange(() => debounce(() => this.storeState(service, service.currentContainerId), 200)());
+      const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId), 100);
+      service.onSizeChange(debouncedStoreState);
+      if (location === SlotLocation.bottom) {
+        // use this getter's side effect to set bottomExpanded contextKey
+        const debouncedUpdate = debounce(() => void this.bottomExpanded, 100);
+        service.onSizeChange(() => debouncedUpdate);
+      }
       this.tabbarServices.set(location, service);
     }
     return service;
@@ -302,7 +308,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return handler;
   }
 
-  getConatiner(containerId: string): ComponentRegistryInfo | undefined {
+  getContainer(containerId: string): ComponentRegistryInfo | undefined {
     for (const service of this.tabbarServices.values()) {
       const container = service.getContainer(containerId);
       if (container) {

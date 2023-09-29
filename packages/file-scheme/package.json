@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-file-scheme",
-  "version": "2.26.6",
+  "version": "2.26.8",
   "files": [
     "lib",
     "src"

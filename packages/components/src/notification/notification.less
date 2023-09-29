@@ -243,14 +243,17 @@
       top: 12px;
     }
 
-    &-btn.tile button {
-      flex: 1;
-    }
-
     &-btn button {
       flex: 0 0 auto;
       margin: 0 0 5px 10px;
       word-break: keep-all;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 5px;
+      box-sizing: border-box;
+      display: inline-block;
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-startup",
-  "version": "2.26.6",
+  "version": "2.26.8",
   "files": [
     "lib",
     "src"
@@ -113,7 +113,7 @@
     "@opensumi/ide-dev-tool": "workspace:*",
     "browserfs": "^1.4.3",
     "css-loader": "^2.1.1",
-    "electron": "^18.3.0",
+    "electron": "^22.3.21",
     "file-loader": "^3.0.1",
     "less-loader": "^6.0.0",
     "nodemon": "^2.0.15",

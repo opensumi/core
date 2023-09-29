@@ -91,6 +91,10 @@ export class TerminalCommandContribution implements CommandContribution {
       },
       {
         execute: () => {
+          if (this.search.show) {
+            this.search.close();
+            return;
+          }
           this.search.open();
         },
       },
