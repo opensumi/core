@@ -62,7 +62,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
 
-  private readonly extHostLogger = getDebugLogger(SupportLogNamespace.ExtensionHost);
+  private readonly extHostLogger = console;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -372,9 +372,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       } else {
         // 输出插件进程日志
         if (output.type === OutputType.STDERR) {
-          this.extHostLogger.error(util.format(output.data, ...output.format));
+          this.extHostLogger.error(
+            util.format(
+              output.data
+                .split('\n')
+                .map((data) => (data ? `[Extension Host] ${data}` : ''))
+                .join('\n'),
+              ...output.format,
+            ),
+          );
         } else {
-          this.extHostLogger.log(util.format(output.data, ...output.format));
+          this.extHostLogger.log(
+            util.format(
+              output.data
+                .split('\n')
+                .map((data) => (data ? `[Extension Host] ${data}` : ''))
+                .join('\n'),
+              ...output.format,
+            ),
+          );
         }
       }
     });
