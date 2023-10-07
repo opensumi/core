@@ -30,7 +30,7 @@ export class TerminalKeybindingContribution implements KeybindingContribution {
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.KILL_PROCESS.id,
       keybinding: 'ctrlcmd+c',
-      when: RawContextKey.and(IsTerminalFocused.raw, 'locationProtocol != http'),
+      when: RawContextKey.and(IsTerminalFocused.raw, 'locationProtocol != http', 'isWindows'),
     });
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.PASTE.id,
