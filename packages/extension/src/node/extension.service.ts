@@ -386,7 +386,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
             util.format(
               output.data
                 .split('\n')
-                .map((data) => (data ? `[Extension Host] ${data}` : ''))
+                .map((data) => (data ? `\x1b[32m[Extension Host]\x1b[0m ${data}` : ''))
                 .join('\n'),
               ...output.format,
             ),
