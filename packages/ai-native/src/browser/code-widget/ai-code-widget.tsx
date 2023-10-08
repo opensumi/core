@@ -34,63 +34,66 @@ const diffEditorOptions: IDiffEditorOptions = {
   glyphMargin: false,
 };
 
-const CodeContentProvider = React.memo((props: { dto: { answerValue } | undefined; onMaxLincCount: (n) => void }) => {
-  const { dto, onMaxLincCount } = props;
-  const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
-  const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
-  const editorRef = useRef<HTMLDivElement>(null);
+const CodeContentProvider = React.memo(
+  (props: { dto: { answerValue; languageId } | undefined; onMaxLincCount: (n) => void }) => {
+    const { dto, onMaxLincCount } = props;
+    const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
+    const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
+    const editorRef = useRef<HTMLDivElement>(null);
+    const { answerValue, languageId } = dto!;
 
-  useEffect(() => {
-    if (!dto) {
-      return;
-    }
-
-    let codeEditor: ICodeEditor;
-
-    const random = Math.random() * 10;
-    const originUri = URI.parse(`AI://origin${random}`);
-
-    Promise.all([documentModelService.createModelReference(originUri)]).then((data) => {
-      const [original] = data;
-      if (!original) {
+    useEffect(() => {
+      if (!dto) {
         return;
       }
 
-      const { answerValue } = dto!;
+      let codeEditor: ICodeEditor;
 
-      codeEditor = editorCollectionService.createCodeEditor(editorRef.current!, {
-        ...getSimpleEditorOptions(),
-        ...diffEditorOptions,
+      const random = Math.random() * 10;
+      const originUri = URI.parse(`AI://origin${random}`);
+
+      documentModelService.createModelReference(originUri).then((data) => {
+        const original = data;
+        if (!original) {
+          return;
+        }
+
+        codeEditor = editorCollectionService.createCodeEditor(editorRef.current!, {
+          ...getSimpleEditorOptions(),
+          ...diffEditorOptions,
+        });
+
+        const originalModel = original.instance.getMonacoModel();
+
+        if (languageId) {
+          originalModel.setMode(languageId);
+        }
+
+        originalModel.setValue(answerValue);
+
+        codeEditor.monacoEditor.setModel(originalModel);
+        codeEditor.monacoEditor.updateOptions({ readOnly: true });
+
+        if (onMaxLincCount) {
+          const { monacoEditor } = codeEditor;
+
+          const contentHeight = monacoEditor.getContentHeight();
+          const lineCount = contentHeight / monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+
+          onMaxLincCount(lineCount);
+        }
       });
 
-      const originalModel = original.instance.getMonacoModel();
+      return () => {
+        if (codeEditor) {
+          codeEditor.dispose();
+        }
+      };
+    }, [dto]);
 
-      originalModel.setMode('java');
-
-      originalModel.setValue(answerValue);
-
-      codeEditor.monacoEditor.setModel(originalModel);
-      codeEditor.monacoEditor.updateOptions({ readOnly: true });
-
-      if (onMaxLincCount) {
-        const { monacoEditor } = codeEditor;
-
-        const contentHeight = monacoEditor.getContentHeight();
-        const lineCount = contentHeight / monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
-
-        onMaxLincCount(lineCount);
-      }
-    });
-
-    return () => {
-      if (codeEditor) {
-        codeEditor.dispose();
-      }
-    };
-  }, [dto]);
-
-  return <div ref={editorRef} style={{ height: 'inherit', width: '100%', border: '1px solid #6666' }}></div>;
-});
+    return <div ref={editorRef} style={{ height: 'inherit', width: '100%', border: '1px solid #6666' }}></div>;
+  },
+);
 
 const styles: CSSProperties = {
   height: '100%',
@@ -108,6 +111,7 @@ export class AiCodeWidget extends ZoneWidget {
   private recordLine: number;
 
   private answerValue: string;
+  private languageId: string;
   private headUri: URI;
 
   protected applyClass(): void {}
@@ -142,7 +146,7 @@ export class AiCodeWidget extends ZoneWidget {
             </div>
           )}
           <CodeContentProvider
-            dto={{ answerValue: this.answerValue }}
+            dto={{ answerValue: this.answerValue, languageId: this.languageId }}
             onMaxLincCount={(n) => {
               if (n) {
                 this._relayout(n);
@@ -173,6 +177,10 @@ export class AiCodeWidget extends ZoneWidget {
 
   public setHeadUri(headUri: string): void {
     this.headUri = URI.parse(headUri);
+  }
+
+  public setLanguageId(id: string): void {
+    this.languageId = id;
   }
 
   // 覆写 revealLine 函数，使其在 show 的时候编辑器不会定位到对应位置

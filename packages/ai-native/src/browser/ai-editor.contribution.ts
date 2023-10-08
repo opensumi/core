@@ -245,6 +245,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
               aiCodeWidget.setAnswerValue(answer);
               aiCodeWidget.setHeadUri(testUri.toString());
+              aiCodeWidget.setLanguageId(model.getLanguageId());
               aiCodeWidget.create();
               aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
 
@@ -283,7 +284,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           }
 
           if (value) {
-            const prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。我的问题是: '${value}'。\n 根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进`;
+            const prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。\n 请根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进，我的问题是: ${value}。`;
             this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
 
             this.logger.log('输入框 prompt:>>> ', prompt);
@@ -324,7 +325,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               const spcode = answer.split('\n');
               answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
 
-              aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer]);
+              aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer, model.getLanguageId()]);
               aiDiffWidget.create();
               aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
 
