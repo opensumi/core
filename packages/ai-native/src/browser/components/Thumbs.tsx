@@ -5,6 +5,9 @@ import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 
 import { LineVertical } from './lineVertical';
 
+/**
+ * 点赞和踩组件，目前先不显示
+ */
 export const Thumbs = () => {
   const useUUID = useMemo(() => uuid(12), []);
 

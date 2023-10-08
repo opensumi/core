@@ -1,7 +1,6 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { Icon, Input, getIcon } from '@opensumi/ide-core-browser/lib/components';
 
 import { InstructionEnum } from '../../common';
@@ -39,13 +38,6 @@ const InstructionOptions = ({ onClick, bottom }) => {
 
   useEffect(() => {
     setOptions(optionsList);
-
-    setCommonlyUsed([
-      {
-        icon: getIcon('delete'),
-        name: '聊天',
-      },
-    ]);
   }, []);
 
   const handleClick = useCallback(

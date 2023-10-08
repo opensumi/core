@@ -42,7 +42,6 @@ export const AiChatView = observer(() => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
   const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
-  const aiGPTBackService = useInjectable<any>(AiGPTBackSerivcePath);
   const aiRunService = useInjectable<AiRunService>(AiRunService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -124,13 +123,14 @@ export const AiChatView = observer(() => {
 
   React.useEffect(() => {
     setMessageListData([firstMsg]);
+  }, []);
 
+  React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       await handleSend(message);
     });
-    // aiChatService.removeOldExtension();
     return () => dispose.dispose();
-  }, []);
+  }, [messageListData]);
 
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
@@ -165,7 +165,7 @@ export const AiChatView = observer(() => {
             aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
           }
         } else if (userInput!.type === AISerivceType.Explain) {
-          aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
+          aiMessage = await aiChatService.messageWithGPT(userInput!.message!, { maxTokens: 16000 });
           if (aiMessage) {
             aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
           }
@@ -194,6 +194,10 @@ export const AiChatView = observer(() => {
     [messageListData, containerRef],
   );
 
+  const handleClear = React.useCallback(() => {
+    setMessageListData([firstMsg]);
+  }, [messageListData]);
+
   return (
     <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
@@ -207,7 +211,7 @@ export const AiChatView = observer(() => {
         </div>
         <div className={styles.right}>
           <Popover id={'ai-chat-header-clear'} title='清空'>
-            <Icon className={getIcon('clear')} />
+            <Icon className={getIcon('clear')} onClick={handleClear} />
           </Popover>
           <Popover id={'ai-chat-header-close'} title='关闭'>
             <Icon className={getIcon('close')} />

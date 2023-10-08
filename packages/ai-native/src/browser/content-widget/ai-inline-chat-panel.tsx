@@ -16,6 +16,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
   const aiInlineChatService: AiInlineChatService = useInjectable(AiInlineChatService);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDone, setIsDone] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
   const [currentCheckText, setCurrentCheckText] = useState<string>('优化代码');
 
   useEffect(() => {
@@ -23,12 +24,14 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       if (status === EChatStatus.THINKING) {
         setIsLoading(true);
         setIsDone(false);
+        setIsError(false);
       } else {
         setIsLoading(false);
       }
 
       if (status === EChatStatus.DONE) {
         setIsDone(true);
+        setIsError(false);
       } else {
         setIsDone(false);
       }
@@ -36,6 +39,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
       if (status === EChatStatus.ERROR) {
         setIsLoading(false);
         setIsDone(false);
+        setIsError(true);
       }
     });
 
@@ -84,7 +88,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
   }, [isLoading, isDone]);
 
   const renderResult = useMemo(() => {
-    if (!isLoading && !isDone) {
+    if (!isLoading && !isDone && !isError) {
       return null;
     }
 
@@ -93,7 +97,11 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         <div className={styles.result_container}>
           <div className={styles.title}>
             <Icon />
-            <span>{currentCheckText}</span>
+            {!isLoading && isError ? (
+              <span className={styles.error_text}>生成失败，请重试</span>
+            ) : (
+              <span>{currentCheckText}</span>
+            )}
           </div>
           {isDone && (
             <>
@@ -123,8 +131,8 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
                     <Icon className={getIcon('layout')} />
                   </Button>
                   <span>｜</span> */}
-                  <Icon className={getExternalIcon('thumbsup')} />
-                  <Icon className={getExternalIcon('thumbsdown')} />
+                  {/* <Icon className={getExternalIcon('thumbsup')} />
+                  <Icon className={getExternalIcon('thumbsdown')} /> */}
                 </div>
               </div>
             </>
@@ -132,7 +140,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         </div>
       </div>
     );
-  }, [isLoading, isDone, aiInlineChatService]);
+  }, [isLoading, isDone, isError, aiInlineChatService]);
 
   return (
     <div className={styles.ai_inline_chat_panel}>

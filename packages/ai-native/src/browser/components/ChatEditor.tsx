@@ -1,12 +1,6 @@
 import React, { useMemo } from 'react';
 
-import {
-  Schemes,
-  URI,
-  getIcon,
-  useInjectable,
-  uuid,
-} from '@opensumi/ide-core-browser';
+import { Schemes, URI, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
 import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
@@ -19,7 +13,8 @@ const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const editorCollectionService = useInjectable<EditorCollectionService>(EditorCollectionService);
   const documentService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
-  const textmateTokenizer = useInjectable<TextmateService>(TextmateService);
+  // 这里暂时关闭
+  // const textmateTokenizer = useInjectable<TextmateService>(TextmateService);
 
   const useUUID = useMemo(() => uuid(12), [ref, ref.current]);
 
@@ -56,8 +51,7 @@ const ChatEditor = ({ input, language }) => {
 
   React.useEffect(() => {
     if (ref && ref.current) {
-      textmateTokenizer.activateLanguage(language).then(async () => {
-        const codeEditor = await createEditor(ref.current!);
+      createEditor(ref.current!).then((codeEditor) => {
         if (codeEditor) {
           codeEditor.monacoEditor.setValue(input);
           requestAnimationFrame(() => {
@@ -86,7 +80,7 @@ const ChatEditor = ({ input, language }) => {
 export const CodeBlockWrapper = ({ text }: { text: string }) => {
   const renderText = (content) => {
     const regexInlineCode = /`([^`]+)`/g;
-    const regexBlockCode = /```([^`]+)```/g;
+    const regexBlockCode = /```([^]+?)```/g;
 
     return content.split(regexBlockCode).map((block: string, index) => {
       if (index % 2 === 0) {

@@ -192,19 +192,25 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
             const currentFunc = findRange(selection);
 
+            let prompt: string;
+
             if (!currentFunc) {
-              return;
+              // 说明找不到选中的某个测试方法，则直接使用全文
+              prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成单元测试用例，不需要解释，只需要返回代码结果`;
+            } else {
+              prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
             }
 
             aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!]);
             aiContentWidget.addDispose(aiCodeWidget);
 
-            const prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
-
             this.logger.log('生成测试用例 prompt:>>> ', prompt);
             const result = await this.aiGPTBackService.aiGPTcompletionRequest(
               prompt,
               {},
+              {
+                maxTokens: 16000,
+              },
               this.aiChatService.cancelIndicator.token,
             );
 
@@ -285,6 +291,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             const result = await this.aiGPTBackService.aiGPTcompletionRequest(
               prompt,
               {},
+              {
+                maxTokens: 16000,
+              },
               this.aiChatService.cancelIndicator.token,
             );
 

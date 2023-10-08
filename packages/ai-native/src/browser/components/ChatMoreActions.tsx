@@ -44,9 +44,7 @@ export const ChatMoreActions = (props: IChatMoreActionsProps) => {
             </div>
           )} */}
         </div>
-        <div className={styles.side}>
-          <Thumbs />
-        </div>
+        <div className={styles.side}>{/* <Thumbs /> */}</div>
       </div>
     </div>
   );

@@ -130,8 +130,13 @@ export class AiChatService {
     return messageWithPrompt;
   }
 
-  public async messageWithGPT(input: string) {
-    const res = await this.aiBackService.aiGPTcompletionRequest(input, {}, this.aiChatService.cancelIndicator.token);
+  public async messageWithGPT(input: string, options: any = {}) {
+    const res = await this.aiBackService.aiGPTcompletionRequest(
+      input,
+      undefined,
+      options,
+      this.aiChatService.cancelIndicator.token,
+    );
 
     if (res.isCancel) {
       return null;
