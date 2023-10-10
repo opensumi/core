@@ -100,8 +100,6 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   private async doWatch(basePath: string) {
     try {
-      // eslint-disable-next-line no-console
-      console.log(typeof basePath, 'basePath');
       // 创建监听对象
       const watcher = watch(basePath);
 
@@ -113,8 +111,6 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
       // 判断是否是文件夹目录
       const isDirectory = fs.lstatSync(basePath).isDirectory();
-      // eslint-disable-next-line no-console
-      console.log(isDirectory, '判断是否属于文件夹');
       // 如果是文件夹目录
       if (isDirectory) {
         try {
@@ -341,7 +337,6 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         disposables.push(
           Disposable.create(async () => {
             if (handler) {
-              // eslint-disable-next-line no-console
             }
           }),
         );
