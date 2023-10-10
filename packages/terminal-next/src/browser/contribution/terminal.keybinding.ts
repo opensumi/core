@@ -28,6 +28,11 @@ export class TerminalKeybindingContribution implements KeybindingContribution {
       when: RawContextKey.and(IsTerminalFocused.raw, 'locationProtocol != http'),
     });
     registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.KILL_PROCESS.id,
+      keybinding: 'ctrlcmd+c',
+      when: RawContextKey.and(IsTerminalFocused.raw, 'locationProtocol != http', 'isWindows'),
+    });
+    registry.registerKeybinding({
       command: TERMINAL_COMMANDS.PASTE.id,
       keybinding: isWindows ? 'ctrlcmd+shift+v' : 'ctrlcmd+v',
       // http 协议无法访问 navigator.clipboard，使用 xterm 原生快捷键
