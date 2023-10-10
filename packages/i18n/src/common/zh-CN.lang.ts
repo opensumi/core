@@ -705,6 +705,7 @@ export const localizationBundle = {
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
     'terminal.toggleTerminal': '切换终端面板',
+    'terminal.killProcess': '结束进程',
 
     'view.command.show': '打开 {0}',
 
