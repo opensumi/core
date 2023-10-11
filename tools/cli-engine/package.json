@@ -35,7 +35,7 @@
     "@opensumi/ide-main-layout": "workspace:*",
     "@opensumi/ide-startup": "workspace:*",
     "chalk": "^4.0.0",
-    "ejs": "^2.7.4",
+    "ejs": "^3.1.7",
     "ip": "^1.1.8",
     "koa": "^2.7.0",
     "koa-mount": "^4.0.0",
