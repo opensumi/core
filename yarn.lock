@@ -2524,7 +2524,7 @@ __metadata:
     copy-webpack-plugin: ^5.1.1
     cross-env: ^7.0.3
     css-loader: ^2.1.1
-    ejs: ^2.7.4
+    ejs: ^3.1.7
     eslint: ^6.5.1
     file-loader: ^3.0.1
     friendly-errors-webpack-plugin: ^1.7.0
@@ -8933,7 +8933,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:^2.6.1, ejs@npm:^2.7.4":
+"ejs@npm:^2.6.1":
   version: 2.7.4
   resolution: "ejs@npm:2.7.4"
   checksum: a1d2bfc7d1f0b39e99ae19b20c9469a25aeddba1ffc225db098110b18d566f73772fcdcc740b108cfda7452276f67d7b64eb359f90285414c942f4ae70713371
@@ -8959,15 +8959,15 @@ __metadata:
   linkType: hard
 
 "electron@npm:^22.3.21":
-  version: 22.3.24
-  resolution: "electron@npm:22.3.24"
+  version: 22.3.26
+  resolution: "electron@npm:22.3.26"
   dependencies:
     "@electron/get": ^2.0.0
     "@types/node": ^16.11.26
     extract-zip: ^2.0.1
   bin:
     electron: cli.js
-  checksum: 28f0134e7e66ab8d89ec03059c759d9463ca1a2f5bac99069d1cbe18de78bb71dd4c29a63166456a46a701e62826fbf7533c754533b744965046012c4f220f68
+  checksum: b28a30c84b90b9a4f280c5e090066f4d7b0a2a31eb01ffbb32ce9bd50c6da51edd84f9c251f33b1c1e2ed0f02c221ebab15cdb2cf6c3c8011fce7163009e5f1a
   languageName: node
   linkType: hard
 
