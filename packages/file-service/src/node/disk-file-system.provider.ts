@@ -5,7 +5,7 @@ import * as fse from 'fs-extra';
 import trash from 'trash';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
+import { Injectable, INJECTOR_TOKEN, Autowired, Injector, Optional } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
@@ -67,11 +67,12 @@ export interface IWatcher {
 
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
-  private recursive: boolean;
-
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
 
-  private watcherServer: NoRecursiveFileSystemWatcher | FileSystemWatcherServer; // 新增的一行
+  private watcherServer: NoRecursiveFileSystemWatcher | FileSystemWatcherServer;
+
+  private recursive: boolean;
+
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
@@ -91,7 +92,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private ignoreNextChangesEvent: Set<string> = new Set();
 
-  constructor(recursive = true) {
+  // 不添加注解会报错
+  constructor(@Optional() recursive = true) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.initWatchServer();

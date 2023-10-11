@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/order
 import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
@@ -126,7 +125,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     } else {
       watchPath = await this.lookup(basePath);
     }
-    this.logger.log('Starting watchingkkkkkkkkkkkkkkkkkkkkkkkkkk:', watchPath, options);
+    this.logger.log('Starting watching:', watchPath, options);
     const handler = (err, events: ParcelWatcher.Event[]) => {
       if (err) {
         this.logger.error(`Watching ${watchPath} error: `, err);

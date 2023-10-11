@@ -18,7 +18,6 @@ import {
   isMacintosh,
   parseGlob,
 } from '@opensumi/ide-core-node';
-import { Promises } from '@opensumi/ide-utils/lib/pfs';
 
 import { toDisposable } from '../../../../utils/src/disposable';
 import { join, basename, dirname } from '../../../../utils/src/path';
@@ -147,7 +146,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           if (isDirectory) {
             if (type === 'rename') {
               const timeoutHandle = setTimeout(async () => {
-                if (changeFileName === raw && !(await Promises.exists(basePath))) {
+                if (changeFileName === raw && !(await fs.pathExists(basePath))) {
                   this.toDispose.dispose();
                   return;
                 }
@@ -190,7 +189,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             // TODO:这里的判断有待商榷
             if (type === 'rename' || changeFileName !== raw) {
               const timeoutHandle = setTimeout(async () => {
-                const fileExists = await Promises.exists(changePath);
+                const fileExists = await fs.pathExists(changePath);
 
                 if (fileExists) {
                   this.pushUpdated(changePath);
@@ -360,7 +359,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
    */
   private async existsChildStrictCase(path: string): Promise<boolean> {
     if (isLinux) {
-      return Promises.exists(path);
+      return fs.pathExists(path);
     }
     try {
       const pathBasename = basename(path);
