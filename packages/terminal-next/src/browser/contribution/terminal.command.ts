@@ -331,6 +331,23 @@ export class TerminalCommandContribution implements CommandContribution {
         client?.focus();
       },
     });
+
+    registry.registerCommand(TERMINAL_COMMANDS.KILL_PROCESS, {
+      execute: async () => {
+        const current = this.view.currentWidgetId;
+        const client = this.terminalController.findClientFromWidgetId(current);
+        if (client) {
+          const select = client.getSelection();
+          if (select && select.length > 0) {
+            // 有选择内容则复制到剪贴板
+            await this.clipboardService.writeText(client.getSelection());
+          } else {
+            // 没有选择内容则执行结束进程命令
+            await this.terminalApi.sendText(current, '\x03');
+          }
+        }
+      },
+    });
   }
 
   private getNextOrPrevTerminalClient(kind: 'next' | 'prev'): ITerminalClient | undefined {
