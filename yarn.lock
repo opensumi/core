@@ -2524,7 +2524,7 @@ __metadata:
     copy-webpack-plugin: ^5.1.1
     cross-env: ^7.0.3
     css-loader: ^2.1.1
-    ejs: ^2.7.4
+    ejs: ^3.1.7
     eslint: ^6.5.1
     file-loader: ^3.0.1
     friendly-errors-webpack-plugin: ^1.7.0
@@ -8933,7 +8933,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:^2.6.1, ejs@npm:^2.7.4":
+"ejs@npm:^2.6.1":
   version: 2.7.4
   resolution: "ejs@npm:2.7.4"
   checksum: a1d2bfc7d1f0b39e99ae19b20c9469a25aeddba1ffc225db098110b18d566f73772fcdcc740b108cfda7452276f67d7b64eb359f90285414c942f4ae70713371
