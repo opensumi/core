@@ -331,6 +331,8 @@ export class TreeNode implements ITreeNode {
     if (this._disposed) {
       return;
     }
+
+    TreeNode.removeTreeNode(this.id, this.path);
     this._disposed = true;
     this._watcher.notifyDidDispose(this);
   }
@@ -870,6 +872,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             // 如果存在上一次缓存的节点，则使用缓存节点的 ID
             (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
             this._children[i] = child;
+            TreeNode.setIdByPath(child.path, child.id);
             if (CompositeTreeNode.is(child) && child.expanded) {
               expandedChilds.push(child as CompositeTreeNode);
             }

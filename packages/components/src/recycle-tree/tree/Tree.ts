@@ -15,6 +15,7 @@ export abstract class Tree implements ITree {
 
   dispose(): void {
     this.toDispose.dispose();
+    this._root?.dispose();
   }
 
   get root(): CompositeTreeNode | undefined {
@@ -22,6 +23,11 @@ export abstract class Tree implements ITree {
   }
 
   set root(root: CompositeTreeNode | undefined) {
+    if (root === this._root) {
+      return;
+    }
+
+    this._root?.dispose();
     this._root = root;
   }
 
