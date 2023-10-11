@@ -46,7 +46,7 @@ module.exports = {
       template: path.join(__dirname, '../src/webview/webview-host/webview.html'),
     }),
     new NodePolyfillPlugin({
-      includeAliases: ['process'],
+      includeAliases: ['process', 'Buffer'],
     }),
   ],
 };

@@ -164,7 +164,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
             type: 'asset/resource',
             generator: {
-              filename: '[name].[ext]',
+              filename: '[name][ext]',
               outputPath: 'fonts/',
             },
           },
@@ -187,7 +187,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           template: __dirname + '/index.html',
         }),
         new NodePolyfillPlugin({
-          includeAliases: ['process'],
+          includeAliases: ['process', 'Buffer'],
         }),
         new MiniCssExtractPlugin({
           filename: '[name].[chunkhash:8].css',
@@ -262,7 +262,11 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         open: process.env.SUMI_DEV_OPEN_BROWSER ? true : false,
         hot: true,
         client: {
-          overlay: true,
+          overlay: {
+            errors: true,
+            warnings: false,
+            runtimeErrors: false,
+          },
         },
       },
     },
@@ -271,7 +275,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
 
   return webpackConfig;
 };
-
+/**
+ * @returns {import('webpack').Configuration}
+ */
 exports.createWebviewWebpackConfig = (entry, dir) => {
   const port = 8899;
   return {
@@ -320,7 +326,7 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
         template: path.dirname(entry) + '/webview.html',
       }),
       new NodePolyfillPlugin({
-        includeAliases: ['process'],
+        includeAliases: ['process', 'Buffer'],
       }),
     ],
     devServer: {
@@ -333,7 +339,11 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       open: false,
       hot: true,
       client: {
-        overlay: true,
+        overlay: {
+          errors: true,
+          warnings: false,
+          runtimeErrors: false,
+        },
       },
     },
   };

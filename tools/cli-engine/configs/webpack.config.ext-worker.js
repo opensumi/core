@@ -1,5 +1,6 @@
 const path = require('path');
 
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
@@ -14,7 +15,9 @@ module.exports = {
   target: 'webworker',
   devtool: false,
   mode: 'production',
-  node: false,
+  node: {
+    global: true,
+  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [
@@ -47,4 +50,9 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
   },
+  plugins: [
+    new NodePolyfillPlugin({
+      includeAliases: ['process', 'util'],
+    }),
+  ],
 };

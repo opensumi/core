@@ -9,7 +9,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.utils.json"
+    "build": "../../node_modules/.bin/tsc --build ../../configs/ts/references/tsconfig.utils.json"
   },
   "repository": {
     "type": "git",

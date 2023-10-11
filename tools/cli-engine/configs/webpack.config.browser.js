@@ -97,7 +97,7 @@ module.exports = {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: '[name].[ext]',
+          filename: '[name][ext]',
           outputPath: 'fonts/',
           publicPath: 'http://localhost:8080/fonts',
         },
@@ -135,7 +135,7 @@ module.exports = {
       clearConsole: true,
     }),
     new NodePolyfillPlugin({
-      includeAliases: ['process'],
+      includeAliases: ['process', 'Buffer'],
     }),
   ],
 };

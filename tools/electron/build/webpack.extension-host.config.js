@@ -12,7 +12,9 @@ const nodeTarget = {
     filename: 'index.js',
     path: distDir,
   },
-  node: false,
+  node: {
+    global: true,
+  },
   resolve: {
     mainFields: ['main'],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],

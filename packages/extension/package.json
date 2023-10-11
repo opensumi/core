@@ -11,11 +11,11 @@
   "scripts": {
     "prepublishOnly": "yarn run build",
     "build": "yarn run build:pkg && yarn run build:ext-host && yarn run compile:worker",
-    "build:pkg": "tsc --build ../../configs/ts/references/tsconfig.extension.json",
+    "build:pkg": "../../node_modules/.bin/tsc --build ../../configs/ts/references/tsconfig.extension.json",
     "compile:worker": "../../node_modules/.bin/webpack --config webpack.config.worker.js",
     "watch:worker": "../../node_modules/.bin/webpack -w --config webpack.config.worker.js",
-    "build:ext-host": "tsc -p ../../configs/ts/references/tsconfig.extension.json",
-    "watch:ext-host": "tsc --watch -p ../../configs/ts/references/tsconfig.extension.json"
+    "build:ext-host": "../../node_modules/.bin/tsc -p ../../configs/ts/references/tsconfig.extension.json",
+    "watch:ext-host": "../../node_modules/.bin/tsc --watch -p ../../configs/ts/references/tsconfig.extension.json"
   },
   "repository": {
     "type": "git",
