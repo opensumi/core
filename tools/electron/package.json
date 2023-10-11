@@ -48,7 +48,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
-    "electron": "^22.3.21",
+    "electron": "^22.3.25",
     "electron-builder": "^23.0.3",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "fs-extra": "^10.1.0",

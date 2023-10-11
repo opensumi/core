@@ -329,7 +329,7 @@ __metadata:
     clean-webpack-plugin: ^4.0.0
     copy-webpack-plugin: ^11.0.0
     css-loader: ^6.8.1
-    electron: ^22.3.21
+    electron: ^22.3.25
     electron-builder: ^23.0.3
     friendly-errors-webpack-plugin: ^1.7.0
     fs-extra: ^10.1.0
@@ -796,11 +796,11 @@ __metadata:
   linkType: hard
 
 "@types/yauzl@npm:^2.9.1":
-  version: 2.10.0
-  resolution: "@types/yauzl@npm:2.10.0"
+  version: 2.10.1
+  resolution: "@types/yauzl@npm:2.10.1"
   dependencies:
     "@types/node": "*"
-  checksum: 55d27ae5d346ea260e40121675c24e112ef0247649073848e5d4e03182713ae4ec8142b98f61a1c6cbe7d3b72fa99bbadb65d8b01873e5e605cdc30f1ff70ef2
+  checksum: 3377916a2d493cb2422b167fb7dfff8cb3ea045a9489dab4955858719bf7fe6808e5f6a51ee819904fb7f623f7ac092b87f9d6a857ea1214a45070d19c8b3d7e
   languageName: node
   linkType: hard
 
@@ -2615,16 +2615,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^22.3.21":
-  version: 22.3.24
-  resolution: "electron@npm:22.3.24"
+"electron@npm:^22.3.25":
+  version: 22.3.26
+  resolution: "electron@npm:22.3.26"
   dependencies:
     "@electron/get": ^2.0.0
     "@types/node": ^16.11.26
     extract-zip: ^2.0.1
   bin:
     electron: cli.js
-  checksum: 28f0134e7e66ab8d89ec03059c759d9463ca1a2f5bac99069d1cbe18de78bb71dd4c29a63166456a46a701e62826fbf7533c754533b744965046012c4f220f68
+  checksum: b28a30c84b90b9a4f280c5e090066f4d7b0a2a31eb01ffbb32ce9bd50c6da51edd84f9c251f33b1c1e2ed0f02c221ebab15cdb2cf6c3c8011fce7163009e5f1a
   languageName: node
   linkType: hard
 

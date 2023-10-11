@@ -12,6 +12,7 @@
 [![CLA assistant][cla-image]][cla-url]
 [![License][license-image]][license-url]
 [![Discussions][discussions-image]][discussions-url]
+[![Open in CodeBlitz][codeblitz-image]][codeblitz-url]
 
 [ci-image]: https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg
 [ci-url]: https://github.com/opensumi/core/actions/workflows/ci.yml
@@ -29,6 +30,8 @@
 [cla-url]: https://cla-assistant.io/opensumi/core
 [test-image]: https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957
 [test-url]: https://codecov.io/gh/opensumi/core
+[codeblitz-image]: https://img.shields.io/badge/Ant_Codespaces-Open_in_CodeBlitz-1677ff
+[codeblitz-url]: https://codeblitz.cloud.alipay.com/github/opensumi/core
 
 </div>
 <h1 align="center">OpenSumi</h1>
