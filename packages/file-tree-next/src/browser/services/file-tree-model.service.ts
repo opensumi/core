@@ -1172,34 +1172,46 @@ export class FileTreeModelService {
       if (promptHandle instanceof RenamePromptHandle) {
         const target = promptHandle.target as File | Directory;
         const nameFragments = (promptHandle.target as File).displayName.split(Path.separator);
-        const index = this.activeUri?.displayName ? nameFragments.indexOf(this.activeUri?.displayName) : -1;
+        const isCompactNode = target.name.indexOf(Path.separator) > 0;
+        if (
+          isCompactNode &&
+          this.activeUri &&
+          !(promptHandle.target as File).uri.toString().includes(this.activeUri.toString())
+        ) {
+          // 当为压缩节点重命名，但 activeUri 与传入的文件不一致时，不允许重命名
+          return false;
+        }
+        const index = this.activeUri
+          ? nameFragments.length -
+            (promptHandle.target as File).uri.toString().replace(this.activeUri.toString(), '').split(Path.separator)
+              .length
+          : -1;
         const newNameFragments = index === -1 ? [] : nameFragments.slice(0, index).concat(newName);
         let from = target.uri;
         let to = (target.parent as Directory).uri.resolve(newName);
-        const isCompactNode = target.name.indexOf(Path.separator) > 0;
         // 无变化，直接返回
         if ((isCompactNode && this.activeUri?.displayName === newName) || (!isCompactNode && newName === target.name)) {
           return true;
         }
         promptHandle.addAddonAfter('loading_indicator');
-        if (isCompactNode && newNameFragments.length > 0) {
+        if (isCompactNode && newNameFragments.length > 0 && Directory.is(target.parent)) {
           // 压缩目录情况下，需要计算下标进行重命名路径拼接
-          from = (target.parent as Directory).uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
-          to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
+          from = target.parent.uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
+          to = target.parent.uri.resolve(newNameFragments.concat().join(Path.separator));
         }
-        this.fileTreeService.updateRefreshable(true);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
-        promptHandle.removeAddonAfter();
         if (error) {
           this.validateMessage = {
             type: PROMPT_VALIDATE_TYPE.ERROR,
             message: error,
             value: newName,
           };
-          this.fileTreeService.updateRefreshable(false);
+          this.fileTreeService.updateRefreshable(true);
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
+        this.fileTreeService.updateRefreshable(false);
+        promptHandle.removeAddonAfter();
         if (!isCompactNode && target.parent) {
           // 重命名节点的情况，直接刷新一下父节点即可
           const node = await this.fileTreeService.moveNodeByPath(
@@ -1212,11 +1224,12 @@ export class FileTreeModelService {
           if (node) {
             this.selectFileDecoration(node as File, false);
           }
-        } else {
+          this.fileTreeService.updateRefreshable(true);
+        } else if (Directory.is(target)) {
           // 更新压缩目录展示名称
           // 由于节点移动时默认仅更新节点路径
           // 我们需要自己更新额外的参数，如uri, filestat等
-          (target as Directory).updateMetaData({
+          target.updateMetaData({
             name: newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator),
             uri: to,
             fileStat: {
@@ -1227,15 +1240,18 @@ export class FileTreeModelService {
           });
           this.treeModel.dispatchChange();
           let promise;
-          if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
+          if (
+            Directory.is(target.parent) &&
+            target.parent.children?.find((child) => target.path.indexOf(child.path) >= 0)
+          ) {
             // 当重命名后的压缩节点在父节点中存在子节点时，刷新父节点
             // 如：
             // 压缩节点 001/002 修改为 003/002 时
             // 同时父节点下存在 003 空节点
-            promise = this.fileTreeService.refresh(target.parent as Directory);
+            promise = this.fileTreeService.refresh(target.parent);
           } else {
             // 压缩节点重命名时，刷新文件夹更新子文件路径
-            promise = this.fileTreeService.refresh(target as Directory);
+            promise = this.fileTreeService.refresh(target);
           }
           promise.then(() => {
             selectNodeIfNodeExist(to);

@@ -3,6 +3,10 @@ import { URI } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
 
 export class Directory extends CompositeTreeNode {
+  public static is(node: any): node is Directory {
+    return CompositeTreeNode.is(node);
+  }
+
   constructor(
     tree: ITree,
     parent: ICompositeTreeNode | undefined,
@@ -50,6 +54,10 @@ export class Directory extends CompositeTreeNode {
 }
 
 export class File extends TreeNode {
+  public static is(node: any): node is File {
+    return TreeNode.is(node);
+  }
+
   constructor(
     tree: ITree,
     parent: CompositeTreeNode | undefined,

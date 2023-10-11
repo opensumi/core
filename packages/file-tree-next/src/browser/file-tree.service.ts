@@ -446,7 +446,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
   }
 
-  // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
+  // 软链接目录下，文件节点路径不能通过 uri 去获取，存在偏差
   public async moveNodeByPath(
     from: Directory,
     to: Directory,
@@ -459,8 +459,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (oldPath && newPath && newPath !== oldPath) {
       const movedNode = from.moveNode(oldPath, newPath);
       // 更新节点除了 name 以外的其他属性，如 fileStat，tooltip 等，否则节点数据可能会异常
-      if (movedNode) {
-        (movedNode as File).updateMetaData({
+      if (movedNode && File.is(movedNode)) {
+        movedNode.updateMetaData({
           uri: to.uri.resolve(newName),
           fileStat: {
             ...to.filestat,
@@ -469,8 +469,35 @@ export class FileTreeService extends Tree implements IFileTreeService {
           },
           tooltip: this.fileTreeAPI.getReadableTooltip(to.uri.resolve(newName)),
         });
+        if (Directory.is(movedNode)) {
+          this.updateChildren(movedNode);
+        }
       }
       return movedNode;
+    }
+  }
+
+  private async updateChildren(parent: Directory) {
+    const children = parent.children;
+    if (!children || children.length === 0) {
+      return;
+    }
+    for (const child of children) {
+      if (File.is(child)) {
+        const newUri = parent.uri.resolve(child.uri.displayName);
+        child.updateMetaData({
+          uri: newUri,
+          fileStat: {
+            ...child.filestat,
+            uri: newUri.toString(),
+            isDirectory: Directory.is(child) ? true : false,
+          },
+          tooltip: this.fileTreeAPI.getReadableTooltip(newUri),
+        });
+        if (Directory.is(child)) {
+          this.updateChildren(child);
+        }
+      }
     }
   }
 
@@ -527,8 +554,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const nodes: File[] = [];
     for (const uri of uris) {
       const node = this.getNodeByPathOrUri(uri);
-      if (node) {
-        nodes.push(node as File);
+      if (node && File.is(node)) {
+        nodes.push(node);
       }
     }
     for (const node of nodes) {
@@ -660,12 +687,14 @@ export class FileTreeService extends Tree implements IFileTreeService {
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: Directory = this.root as Directory) {
+  async refresh(node: Directory | File = this.root as Directory) {
     if (!node) {
       return;
     }
-    if (!Directory.is(node) && node.parent) {
-      node = node.parent as Directory;
+    if (!Directory.is(node)) {
+      if (File.is(node) && node.parent) {
+        node = node.parent as Directory;
+      }
     }
 
     // 队列化刷新动作减少更新成本
