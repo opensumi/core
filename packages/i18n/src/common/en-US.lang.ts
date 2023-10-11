@@ -1032,6 +1032,7 @@ export const localizationBundle = {
     'terminal.openFolder': 'Open folder in new window',
     'terminal.relaunch': 'Relaunch Terminal',
     'terminal.toggleTerminal': 'Toggle Terminal',
+    'terminal.killProcess': 'Kill Process',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',

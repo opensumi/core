@@ -19,7 +19,7 @@ import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { TreeModel } from './tree/model/TreeModel';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
-import { TreeNodeType, TreeNodeEvent } from './types';
+import { TreeNodeType, TreeNodeEvent, ICompositeTreeNode } from './types';
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 
@@ -787,6 +787,18 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         fuzzyLists = fuzzy.filter(filter, nodes, RecycleTree.FILTER_FUZZY_OPTIONS);
       }
 
+      const showAllExpandedChild = (node: ICompositeTreeNode) => {
+        const children = node.children || [];
+        if (children.length > 0) {
+          for (const child of children) {
+            idSets.add(child.id);
+            if (CompositeTreeNode.is(child) && child.expanded) {
+              showAllExpandedChild(child);
+            }
+          }
+        }
+      };
+
       fuzzyLists.forEach((item) => {
         const node = (item as any).original as TreeNode;
         idSets.add(node.id);
@@ -802,7 +814,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
             dangerouslySetInnerHTML={{ __html: item.string || '' }}
           ></div>
         ));
-        // 不应包含根节点
+        if (CompositeTreeNode.is(node)) {
+          // 让筛选到的节点目录也展示其子节点
+          showAllExpandedChild(node);
+        }
+        // 当子节点被筛选时，向上的所有父节点均应该被展示
         while (parent && !CompositeTreeNode.isRoot(parent)) {
           idSets.add(parent.id);
           parent = parent.parent;
