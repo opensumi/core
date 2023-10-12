@@ -13,13 +13,13 @@ import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
 
 import * as styles from './menu-bar.module.less';
+import { AiMenubarService } from './menu-bar.service';
 
 export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
-
-  const [latestWidth, setLatestWidth] = React.useState<number>(0);
 
   const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
 
@@ -28,23 +28,7 @@ export const AiMenuBarView = () => {
   };
 
   const handleRightPanel = () => {
-    /**
-     * 这里先这样处理，暂时没找到原因
-     */
-    const domID = 'div[id*=ai_chat_panel___]';
-    const chatPanel = document.querySelector(domID)?.parentElement?.parentElement;
-
-    if (chatPanel) {
-      let preWidth: number | string = chatPanel.style.width;
-      preWidth = parseInt(preWidth, 10);
-      setLatestWidth(preWidth);
-
-      if (preWidth !== 0) {
-        chatPanel.style.width = '0px';
-      } else {
-        chatPanel.style.width = latestWidth + 'px';
-      }
-    }
+    aiMenubarService.toggleRightPanel();
   };
 
   const MENUBAR_HEIGHT = React.useMemo(

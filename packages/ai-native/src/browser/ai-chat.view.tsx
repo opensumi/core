@@ -21,6 +21,7 @@ import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { LineVertical } from './components/lineVertical';
 import { Thinking } from './components/Thinking';
+import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
 
 const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
@@ -43,6 +44,7 @@ export const AiChatView = observer(() => {
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
   const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
   const aiRunService = useInjectable<AiRunService>(AiRunService);
+  const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -160,7 +162,8 @@ export const AiChatView = observer(() => {
 
           aiMessage = await AIWithCommandReply(aiMessage, opener, aiChatService);
         } else if (userInput!.type === AISerivceType.GPT) {
-          aiMessage = await aiChatService.messageWithGPT(userInput!.message!);
+          const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
+          aiMessage = await aiChatService.messageWithGPT(withPrompt);
           if (aiMessage) {
             aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
           }
@@ -198,6 +201,10 @@ export const AiChatView = observer(() => {
     setMessageListData([firstMsg]);
   }, [messageListData]);
 
+  const handleClose = React.useCallback(() => {
+    aiMenubarService.toggleRightPanel();
+  }, [aiMenubarService]);
+
   return (
     <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
@@ -214,7 +221,7 @@ export const AiChatView = observer(() => {
             <Icon className={getIcon('clear')} onClick={handleClear} />
           </Popover>
           <Popover id={'ai-chat-header-close'} title='关闭'>
-            <Icon className={getIcon('close')} />
+            <Icon className={getIcon('close')} onClick={handleClose} />
           </Popover>
         </div>
       </div>
