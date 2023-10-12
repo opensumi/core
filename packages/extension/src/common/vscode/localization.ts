@@ -1,6 +1,6 @@
 import type { Uri } from '@opensumi/ide-core-common';
 
-import type { IExtensionDescription } from '../../../src/common/vscode';
+import type { IExtensionDescription } from '../../common/vscode';
 
 import { UriComponents } from './ext-types';
 
