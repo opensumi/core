@@ -967,6 +967,12 @@ export namespace TERMINAL_COMMANDS {
     label: '%terminal.toggleTerminal%',
     category: CATEGORY,
   };
+
+  export const KILL_PROCESS = {
+    id: 'terminal.killProcess',
+    label: '%terminal.killProcess%',
+    category: CATEGORY,
+  };
 }
 
 export namespace LAYOUT_COMMANDS {
