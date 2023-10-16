@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
 
-import { InternalMenu } from '@opensumi/ide-components/lib/menu';
-import SubMenu from '@opensumi/ide-components/lib/menu/SubMenu';
 import { SlotRenderer } from '@opensumi/ide-core-browser';
 import { IChildComponentProps, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 
@@ -13,8 +11,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
   const { layout } = getStorageValue();
 
   useEffect(() => {
-    InternalMenu.defaultProps.className = styles.ai_internal_menu;
-    SubMenu.defaultProps.className = styles.ai_internal_sub_menu;
+    import('./override.less');
   }, []);
 
   return (

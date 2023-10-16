@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { SubMenu as RcSubMenu, SubMenuProps as RCSubMenuProps } from 'rc-menu';
 import React from 'react';
@@ -23,10 +22,6 @@ export interface SubMenuProps extends RCSubMenuProps {
 }
 
 class SubMenu extends React.Component<SubMenuProps, any> {
-  static defaultProps: Partial<SubMenuProps> = {
-    className: '',
-  };
-
   static contextTypes = {
     antdMenuTheme: PropTypes.string,
   };
@@ -36,7 +31,7 @@ class SubMenu extends React.Component<SubMenuProps, any> {
 
   render() {
     const { popupClassName } = this.props;
-    return <RcSubMenu {...this.props} popupClassName={classnames(SubMenu.defaultProps.className, popupClassName)} />;
+    return <RcSubMenu {...this.props} popupClassName={popupClassName} />;
   }
 }
 
