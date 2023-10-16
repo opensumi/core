@@ -7,6 +7,57 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## v2.27.0
+
+### What's New Features
+
+- feat: add activate keybinding for explorer and search view by @erha19 in https://github.com/opensumi/core/pull/2930
+- feat: support vscode.l10n api by @erha19 in https://github.com/opensumi/core/pull/3002
+- feat: ws reconnect report connection info by @pipiiiiii in https://github.com/opensumi/core/pull/3030
+- feat: add editor top side bar support by @MilkWangStudio in https://github.com/opensumi/core/pull/3026
+- feat: change createRef to useRef by @winjo in https://github.com/opensumi/core/pull/2932
+- feat: drop electron 13 support by @bytemain in https://github.com/opensumi/core/pull/3050
+- feat: notification support button by @pipiiiiii in https://github.com/opensumi/core/pull/3073
+- style: open editor displays the delete button in its selected state by @wangxiaojuan in https://github.com/opensumi/core/pull/3103
+
+### Refactor
+
+- refactor(ext): improve code and log message by @bytemain in https://github.com/opensumi/core/pull/2948
+
+### Patch Changes
+
+- chore(deps-dev): bump electron from 22.3.23 to 22.3.24 by @dependabot in https://github.com/opensumi/core/pull/3069
+- chore(deps-dev): bump electron from 18.3.15 to 22.3.25 in /tools/electron by @dependabot in https://github.com/opensumi/core/pull/3098
+
+### Other Changes
+
+- fix: invalid breakpoints line number error by @erha19 in https://github.com/opensumi/core/pull/3037
+- fix: filetree rename file correctly by @erha19 in https://github.com/opensumi/core/pull/3108
+- doc: add codeblitz badge by @hacke2 in https://github.com/opensumi/core/pull/3088
+- chore(deps): bump word-wrap from 1.2.3 to 1.2.4 by @dependabot in https://github.com/opensumi/core/pull/2911
+- fix: scm support double click to openfile by @pipiiiiii in https://github.com/opensumi/core/pull/2937
+- fix: terminal search box supports toggle switching by @wangxiaojuan in https://github.com/opensumi/core/pull/3041
+- fix: custom components are not destroyed after being closed by @xkaede in https://github.com/opensumi/core/pull/3036
+- ci: use nodejs 16.x by @bytemain in https://github.com/opensumi/core/pull/3063
+- fix: toolbar width should change when props change by @bytemain in https://github.com/opensumi/core/pull/3065
+- fix: search box placeholder color by @wangxiaojuan in https://github.com/opensumi/core/pull/3039
+- chore(deps-dev): bump electron from 22.3.24 to 22.3.25 by @dependabot in https://github.com/opensumi/core/pull/3099
+- fix: terminal shortcut kill process in windows by @shilin8805 in https://github.com/opensumi/core/pull/3100
+- fix: register sumi api in worker by @AhkunTa in https://github.com/opensumi/core/pull/3072
+- chore(deps): bump ejs from 2.7.4 to 3.1.7 by @dependabot in https://github.com/opensumi/core/pull/3107
+- fix: show first level child when folder tree node is filtered by @erha19 in https://github.com/opensumi/core/pull/3086
+- fix: fix electron ide build error by @shilin8805 in https://github.com/opensumi/core/pull/3113
+- chore: add retry for extension download by @hacke2 in https://github.com/opensumi/core/pull/3117
+- fix: error color by @nonzzz in https://github.com/opensumi/core/pull/3118
+
+## New Contributors
+
+- @MilkWangStudio made their first contribution in https://github.com/opensumi/core/pull/3026
+- @xkaede made their first contribution in https://github.com/opensumi/core/pull/3036
+- @nonzzz made their first contribution in https://github.com/opensumi/core/pull/3118
+
+**Full Changelog**: https://github.com/opensumi/core/compare/v2.26.8...v2.27.0
+
 ## v2.26.0
 
 ### What's New Features
