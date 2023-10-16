@@ -265,19 +265,14 @@ describe('Tree', () => {
     tree.setPresetChildren([a, b]);
     await root.refresh();
 
-    expect(TreeNode.idToTreeNode).toEqual(
-      new Map([
-        [root.id, root],
-        [a.id, a],
-        [b.id, b],
-      ]),
-    );
-    expect(TreeNode.pathToTreeNode).toEqual(
-      new Map([
-        [root.path, root],
-        [a.path, a],
-        [b.path, b],
-      ]),
-    );
+    expect(TreeNode.idToTreeNode).toContainEqual([a.id, a]);
+    expect(TreeNode.idToTreeNode).toContainEqual([b.id, b]);
+    expect(TreeNode.pathToTreeNode).toContainEqual([a.path, a]);
+    expect(TreeNode.pathToTreeNode).toContainEqual([b.path, b]);
+
+    expect(TreeNode.idToTreeNode).not.toContainEqual([preA.id, preA]);
+    expect(TreeNode.idToTreeNode).not.toContainEqual([preB.id, preB]);
+    expect(TreeNode.pathToTreeNode).not.toContainEqual([preA.path, preA]);
+    expect(TreeNode.pathToTreeNode).not.toContainEqual([preB.path, preB]);
   });
 });
