@@ -338,4 +338,38 @@ describe('workspace edit tests', () => {
 
     expect(mockedPreviewFn).toBeCalled();
   });
+
+  it('monaco bulk edit metadata needsConfirmation test', async () => {
+    const mockedPreviewFn = jest.fn(
+      (edits: ResourceEdit[], options?: IBulkEditOptions): Promise<ResourceEdit[]> => Promise.resolve(edits),
+    );
+    const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
+    monacoBulkEditService.setPreviewHandler(mockedPreviewFn);
+
+    await monacoBulkEditService.apply([
+      {
+        resource: Uri.parse('file:///monaco-test-3.ts'),
+        textEdit: {
+          range: {
+            startColumn: 1,
+            endColumn: 1,
+            startLineNumber: 1,
+            endLineNumber: 1,
+          },
+          text: 'test1',
+        },
+        metadata: {
+          needsConfirmation: true,
+        },
+      },
+    ] as unknown as ResourceEdit[]);
+
+    const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-3.ts'))!;
+    expect(model.pushEditOperations).toBeCalled();
+    expect(model.pushStackElement).toBeCalled();
+
+    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
+
+    expect(mockedPreviewFn).toBeCalled();
+  });
 });

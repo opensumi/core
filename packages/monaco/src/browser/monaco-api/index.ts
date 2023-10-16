@@ -7,4 +7,7 @@ export const monaco = Object.freeze({
 });
 
 export { URI } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
-export { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+export {
+  ResourceEdit,
+  IBulkEditResult,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
