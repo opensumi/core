@@ -21,17 +21,15 @@
     height: 100%;
     overflow: hidden;
     padding: 8px 20px 0 10px;
-    :global {
-      .kticon-close {
-        display: none;
-        position: absolute;
-        right: 5px;
-        top: 10px;
-        cursor: pointer;
-        &:hover {
-          background-color: var(--kt-icon-hoverBackground);
-          transform: scale(1.1);
-        }
+    .closeBtn {
+      display: none;
+      position: absolute;
+      right: 5px;
+      top: 10px;
+      cursor: pointer;
+      &:hover {
+        background-color: var(--kt-icon-hoverBackground);
+        transform: scale(1.1);
       }
     }
     &:hover {
