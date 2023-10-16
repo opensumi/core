@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-browser",
-  "version": "2.26.8",
+  "version": "2.27.0",
   "description": "@opensumi/ide-core-browser",
   "files": [
     "lib",
