@@ -2,6 +2,8 @@ import cls from 'classnames';
 import React, { ReactNode } from 'react';
 
 import { Injectable } from '@opensumi/di';
+import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import { uuid } from '@opensumi/ide-core-common';
 import { EditorTabService } from '@opensumi/ide-editor/lib/browser/editor.tab.service';
 
 import * as styles from './override.module.less';
@@ -18,6 +20,14 @@ export class AiEditorTabService extends EditorTabService {
       >
         {component}
       </div>
+    );
+  }
+
+  override renderTabCloseComponent(component: ReactNode): ReactNode {
+    return (
+      <Popover id={'editor-tab-close-' + uuid(6)} title='关闭'>
+        {component}
+      </Popover>
     );
   }
 }

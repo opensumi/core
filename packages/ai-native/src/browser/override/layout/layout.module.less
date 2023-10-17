@@ -30,10 +30,21 @@
     /**
     * ---------------- 覆盖 editor tab 样式 ---------------------
     */
+    div[class*='kt_editor_tabs_content___'] {
+      padding: 0 4px;
+    }
+
     div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_content___'] {
       div[class*='kt_editor_tab___'] {
         border-right: none;
         border-top: none;
+        padding: 0 4px;
+        min-width: initial;
+        padding-bottom: 1px;
+
+        &:hover {
+          color: var(--tab-inactiveForeground);
+        }
       }
 
       div[class*='kt_editor_tab_current___'] {

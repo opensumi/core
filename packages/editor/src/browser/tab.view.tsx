@@ -357,7 +357,9 @@ export const Tabs = ({ group }: ITabsProps) => {
                 group.close(resource.uri);
               }}
             >
-              <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
+              {editorTabService.renderTabCloseComponent(
+                <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />,
+              )}
             </div>
           </div>
         </>,

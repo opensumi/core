@@ -47,12 +47,18 @@
       display: flex;
       align-items: center;
 
-      span {
+      .icon {
         color: #666;
+        border-radius: 4px;
+        padding: 4px;
+
+        &:hover {
+          background-color: var(--kt-icon-hoverBackground);
+        }
       }
 
       div:first-child {
-        margin-right: 10px;
+        margin-right: 2px;
       }
     }
   }

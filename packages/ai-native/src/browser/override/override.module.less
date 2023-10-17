@@ -15,18 +15,48 @@
   height: 28px;
   border-radius: 8px;
   padding: 0 8px;
-  
-  &.active {
+  margin-right: 0 !important;
+
+  &:hover {
+    outline: 1px solid var(--activityBar-activeBorder);
     background-color: var(--tab-activeBackground);
+    color: var(--tab-activeForeground);
+
+    div:first-child {
+      &::before {
+        filter: grayscale(0);
+      }
+    }
   }
 
   div:first-child {
-    margin-right: 5px;
+    margin-right: 4px !important;
     flex-shrink: 0;
     flex-grow: 0;
+
     &::before {
       background-size: 14px;
       background-position: 2px;
+      filter: grayscale(1);
+      color: rgba(255, 255, 255, 0.25);
+    }
+  }
+
+  &.active {
+    background-color: var(--tab-activeBackground);
+    color: var(--tab-activeForeground);
+
+    div:first-child {
+      &::before {
+        filter: grayscale(0);
+      }
+    }
+  }
+
+  div[class*='tab_right___'] {
+    &:hover {
+      background-color: initial !important;
+      transform: scale(1) !important;
     }
   }
 }
