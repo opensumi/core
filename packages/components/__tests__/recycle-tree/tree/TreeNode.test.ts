@@ -274,5 +274,9 @@ describe('Tree', () => {
     expect(TreeNode.idToTreeNode).not.toContainEqual([preB.id, preB]);
     expect(TreeNode.pathToTreeNode).not.toContainEqual([preA.path, preA]);
     expect(TreeNode.pathToTreeNode).not.toContainEqual([preB.path, preB]);
+
+    // same path node should have the same id
+    expect(preA.id).toEqual(a.id);
+    expect(preB.id).toEqual(b.id);
   });
 });
