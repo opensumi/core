@@ -178,7 +178,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
           roots[0],
           this.fileTreeAPI.getReadableTooltip(newRootUri),
         );
-        this._root = newRoot;
+        this.root = newRoot;
         this.onWorkspaceChangeEmitter.fire(newRoot);
         this.refresh();
       }),
@@ -192,6 +192,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
     this.toDispose.push(
       Disposable.create(() => {
+        this._root?.dispose();
         this._roots = null;
       }),
     );
