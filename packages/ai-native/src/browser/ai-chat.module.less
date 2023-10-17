@@ -47,14 +47,8 @@
       display: flex;
       align-items: center;
 
-      .icon {
+      span {
         color: #666;
-        border-radius: 4px;
-        padding: 4px;
-
-        &:hover {
-          background-color: var(--kt-icon-hoverBackground);
-        }
       }
 
       div:first-child {
@@ -98,6 +92,16 @@
           .rce-mbox-left-notch,
           .rce-mbox-right-notch {
             display: none;
+          }
+        }
+
+        .chat_with_more_actions {
+          // padding-bottom: 22px !important;
+
+          &:hover {
+            div[class*='chat_msg_more_actions___'] {
+              display: flex;
+            }
           }
         }
       }

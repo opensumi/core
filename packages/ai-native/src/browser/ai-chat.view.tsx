@@ -20,6 +20,7 @@ import { AiSumiService } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
+import { EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
 import { Thinking } from './components/Thinking';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
@@ -27,15 +28,16 @@ import { AiRunService } from './run/run.service';
 
 const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
 
-const createMessage = (position: string, title: string, text: string | React.ReactNode) => ({
+const createMessage = (position: string, title: string, text: string | React.ReactNode, className?: string) => ({
   position,
   type: 'text',
   title,
   text,
-  className: position === 'left' ? 'rce-ai-msg' : 'rce-user-msg',
+  className: `${position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${className ? className : ''}`,
 });
 
-const createMessageByAI = (text: string | React.ReactNode) => createMessage('left', '', text);
+const createMessageByAI = (text: string | React.ReactNode, className?: string) =>
+  createMessage('left', '', text, className);
 
 const AI_NAME = 'AI 研发助手';
 const ME_NAME = '';
@@ -219,10 +221,10 @@ export const AiChatView = observer(() => {
         </div>
         <div className={styles.right}>
           <Popover id={'ai-chat-header-clear'} title='清空'>
-            <Icon className={cls(getIcon('clear'), styles.icon)} onClick={handleClear} />
+            <EnhanceIcon className={getIcon('clear')} onClick={handleClear} />
           </Popover>
           <Popover id={'ai-chat-header-close'} title='关闭'>
-            <Icon className={cls(getIcon('close'), styles.icon)} onClick={handleClose} />
+            <EnhanceIcon className={getIcon('close')} onClick={handleClose} />
           </Popover>
         </div>
       </div>
@@ -345,6 +347,7 @@ const AISearch = async (input, aiChatService: AiChatService) => {
           </div>
         </div>
       </ChatMoreActions>,
+      styles.chat_with_more_actions,
     );
 
     aiChatService.setLatestSessionId(uid);
@@ -361,6 +364,7 @@ const AIChatGPTReply = async (input, aiChatService: AiChatService) => {
       <ChatMoreActions sessionId={uid}>
         <CodeBlockWrapper text={input} />
       </ChatMoreActions>,
+      styles.chat_with_more_actions,
     );
 
     aiChatService.setLatestSessionId(uid);
@@ -379,6 +383,7 @@ const AIChatRunReply = async (input, aiRunService: AiRunService, aiChatService: 
       <ChatMoreActions sessionId={uid}>
         {RenderAnswer ? <RenderAnswer input={input} /> : <CodeBlockWrapper text={input} />}
       </ChatMoreActions>,
+      styles.chat_with_more_actions,
     );
 
     aiChatService.setLatestSessionId(uid);
@@ -407,6 +412,7 @@ const AIWithCommandReply = async (command: Command, opener, aiChatService: AiCha
           <Button onClick={() => opener.open(URI.parse(`command:${delegate || id}`))}>点击执行命令</Button>
         </div>
       </ChatMoreActions>,
+      styles.chat_with_more_actions,
     );
 
     aiChatService.setLatestSessionId(uid);

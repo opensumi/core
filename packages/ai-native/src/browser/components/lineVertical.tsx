@@ -14,6 +14,8 @@ const horizontalStyles = {
   minHeight: '1px',
 };
 
-export const LineVertical = () => <span style={lineStyles}></span>;
+export const LineVertical = (style?: React.CSSProperties) => <span style={{ ...lineStyles, ...style }}></span>;
 
-export const HorizontalVertical = () => <span style={horizontalStyles}></span>;
+export const HorizontalVertical = (style?: React.CSSProperties) => (
+  <span style={{ ...horizontalStyles, ...style }}></span>
+);

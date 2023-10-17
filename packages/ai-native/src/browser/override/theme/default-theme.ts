@@ -734,7 +734,7 @@ export default {
     'panelTitle.activeBorder': '#167CDB',
     'panelTitle.activeForeground': '#FFFFFF',
     'panelTitle.hoverForeground': '#FFFFFF',
-    'panelTitle.inactiveForeground': '#D7DBDE',
+    'panelTitle.inactiveForeground': '#ffffff73',
     'selectDropdown.descriptionForeground': '#868C91',
     'selectDropdown.teamForeground': '#868C91',
     'sideBar.background': '#00000000',

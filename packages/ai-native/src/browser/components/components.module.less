@@ -114,9 +114,11 @@
 
     textarea {
       resize: none;
+
       &::-webkit-scrollbar {
         width: 4px;
       }
+
       &::-webkit-scrollbar-thumb {
         border-radius: 2px;
       }
@@ -148,6 +150,7 @@
 
       &.active {
         background-color: rgba(60, 141, 255, 1);
+
         span {
           color: #ffffff;
         }
@@ -155,6 +158,7 @@
 
       &:hover {
         background-color: rgba(95, 101, 107, 0.25);
+
         span {
           color: rgba(60, 141, 255, 1);
         }
@@ -236,15 +240,16 @@
 .ai_chat_more_actions_container {
   position: relative;
 
-  .more_actions {
+  .chat_msg_more_actions {
     position: absolute;
     z-index: 1000;
     bottom: -36px;
-    display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     height: 16px;
+    padding: 0 4px;
+    display: none;
 
     &::after {
       content: initial !important;
@@ -256,8 +261,7 @@
       justify-items: right;
       height: inherit;
 
-      span {
-        margin-right: 6px;
+      .ai_enhance_icon {
         cursor: pointer;
       }
     }
@@ -266,4 +270,18 @@
 
 .ai_native_input_container {
   height: 32px;
+}
+
+/**
+* icon
+*/
+.ai_enhance_icon {
+  .icon {
+    border-radius: 4px;
+    padding: 4px;
+
+    &:hover {
+      background-color: var(--kt-icon-hoverBackground);
+    }
+  }
 }
