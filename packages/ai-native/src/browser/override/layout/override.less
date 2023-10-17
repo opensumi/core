@@ -53,3 +53,29 @@ div[class*='box-panel___'] {
     border-top-color: var(--kt-popover-border);
   }
 }
+
+/**
+* 覆盖进度条样式
+*/
+.ai-native-progress-wrapper {
+  height: 3.5px;
+  div[class*='progress___'] {
+    background-color: transparent;
+    background-image: linear-gradient(270deg, #1677ff 26%, #16eeff 100%);
+    border-radius: 4px;
+    animation-name: ai-progress;
+    animation-duration: 6s;
+  }
+}
+
+@keyframes ai-progress {
+  from {
+    transform: translateX(0%) scaleX(1);
+  }
+  50% {
+    transform: translateX(200%) scaleX(3);
+  }
+  to {
+    transform: translateX(400%) scaleX(1);
+  }
+}

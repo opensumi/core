@@ -6,23 +6,30 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "4114124",
+      "name": "circle-pause",
+      "font_class": "circle-pause",
+      "unicode": "e6a3",
+      "unicode_decimal": 59043
+    },
+    {
       "icon_id": "37481524",
       "name": "ai-coplit",
-      "font_class": "ai-coplit",
+      "font_class": "magic-wand",
       "unicode": "e60e",
       "unicode_decimal": 58894
     },
     {
       "icon_id": "36977357",
       "name": "send",
-      "font_class": "fasongxiaoxi",
+      "font_class": "send",
       "unicode": "e609",
       "unicode_decimal": 58889
     },
     {
       "icon_id": "33273850",
       "name": "撤消_icon",
-      "font_class": "chexiao_icon",
+      "font_class": "revoke-white",
       "unicode": "e607",
       "unicode_decimal": 58887
     },

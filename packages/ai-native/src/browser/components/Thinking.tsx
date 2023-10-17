@@ -5,7 +5,6 @@ import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import { AiChatService } from '../ai-chat.service';
-import { AiSumiService } from '../ai-sumi/sumi.service';
 
 import * as styles from './components.module.less';
 
@@ -23,10 +22,10 @@ export const Thinking = () => {
       </div>
       <div className={styles.stop}>
         <span className={styles.progress_bar}>
-          <Progress loading={true} />
+          <Progress loading={true} style={{ width: '25%' }} wrapperClassName='ai-native-progress-wrapper' />
         </span>
         <div className={styles.block} onClick={handlePause}>
-          <Icon className={getIcon('pause')}></Icon>
+          <Icon className={getIcon('circle-pause')}></Icon>
           <span>停止</span>
         </div>
       </div>

@@ -164,4 +164,5 @@ export const defaultIconfont = {
   'window': 'window',
   'window-maximize': 'window-maximize',
   'zsh': 'zsh',
+  'circle-pause': 'circle-pause',
 };

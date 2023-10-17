@@ -81,7 +81,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         </div>
         {/* 进度条 */}
         <span className={styles.progress_bar}>
-          <Progress loading={!isDone} />
+          <Progress loading={!isDone} style={{ width: '25%' }} wrapperClassName='ai-native-progress-wrapper' />
         </span>
       </div>
     );

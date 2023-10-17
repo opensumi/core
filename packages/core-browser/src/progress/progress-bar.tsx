@@ -22,13 +22,15 @@ export const ProgressBar: React.FC<{ progressModel: IProgressModel; className?: 
 
 export const Progress: React.FC<{
   loading: boolean;
-}> = React.memo(({ loading }) => {
+  wrapperClassName?: string;
+  style?: React.CSSProperties;
+}> = React.memo(({ loading, style, wrapperClassName }) => {
   if (!loading) {
     return null;
   }
   return (
-    <div className={styles.progressBar}>
-      <div className={clsx(styles.progress, styles.infinite)} style={{ width: '2%' }} />
+    <div className={clsx(styles.progressBar, wrapperClassName)}>
+      <div className={clsx(styles.progress, styles.infinite)} style={{ width: '2%', ...style }} />
     </div>
   );
 });

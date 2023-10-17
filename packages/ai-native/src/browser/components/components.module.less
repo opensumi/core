@@ -14,6 +14,14 @@
       font-size: 12px;
       color: rgba(255, 255, 255, 0.65);
       cursor: pointer;
+
+      span {
+        color: #949da6;
+      }
+
+      :first-child {
+        margin-right: 4px;
+      }
     }
   }
 }
@@ -106,6 +114,12 @@
 
     textarea {
       resize: none;
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        border-radius: 2px;
+      }
     }
 
     .slash_widget_block {
@@ -221,9 +235,6 @@
 
 .ai_chat_more_actions_container {
   position: relative;
-
-  .ai_chat_message {
-  }
 
   .more_actions {
     position: absolute;
