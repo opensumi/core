@@ -30,7 +30,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
         <SlotRenderer
           slot='left'
           isTabbar={true}
-          defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
+          defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 16}
           minResize={280}
           maxResize={480}
         />

@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 // @ts-ignore
@@ -10,7 +11,7 @@ import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-ope
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
 
-import { AiGPTBackSerivcePath, AISerivceType, IChatMessageStructure } from '../common';
+import { AISerivceType, IChatMessageStructure } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -218,10 +219,10 @@ export const AiChatView = observer(() => {
         </div>
         <div className={styles.right}>
           <Popover id={'ai-chat-header-clear'} title='清空'>
-            <Icon className={getIcon('clear')} onClick={handleClear} />
+            <Icon className={cls(getIcon('clear'), styles.icon)} onClick={handleClear} />
           </Popover>
           <Popover id={'ai-chat-header-close'} title='关闭'>
-            <Icon className={getIcon('close')} onClick={handleClose} />
+            <Icon className={cls(getIcon('close'), styles.icon)} onClick={handleClose} />
           </Popover>
         </div>
       </div>

@@ -25,3 +25,31 @@ div[class*='box-panel___'] {
   box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
   border-radius: 8px !important;
 }
+
+/**
+* 覆盖 popover 样式
+*/
+.kt-popover-content {
+  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
+  padding: 5px 8px;
+  border: 1px solid var(--kt-popover-border);
+  border-radius: 6px;
+
+  .kt-popover-title {
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+
+  &.kt-popover-top::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    margin-left: -9px;
+    width: 0;
+    height: 0;
+    border: 9px solid transparent;
+    top: 100%;
+    border-bottom-width: 0;
+    border-top-color: var(--kt-popover-border);
+  }
+}
