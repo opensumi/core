@@ -44,7 +44,7 @@ import {
   handleError,
 } from '../common/';
 
-import { NoRecursiveFileSystemWatcher } from './no-recursive/file-node-watcher-lib';
+import { UnRecursiveFileSystemWatcher } from './no-recursive/file-node-watcher-lib';
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
 // import { this } from '../../../components/src/utils/raf';
@@ -69,7 +69,7 @@ export interface IWatcher {
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
 
-  private watcherServer: NoRecursiveFileSystemWatcher | FileSystemWatcherServer;
+  private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
 
   private recursive: boolean;
 
@@ -93,7 +93,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private ignoreNextChangesEvent: Set<string> = new Set();
 
   // 不添加注解会报错
-  constructor(@Optional() recursive = true) {
+  constructor(@Optional() recursive = false) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.initWatchServer();
@@ -377,7 +377,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     if (this.recursive) {
       this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
     } else {
-      this.watcherServer = this.injector.get(NoRecursiveFileSystemWatcher, [excludes]);
+      this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
     }
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {

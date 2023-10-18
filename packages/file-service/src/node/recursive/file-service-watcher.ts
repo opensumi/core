@@ -99,8 +99,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * @returns
    */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
-    // eslint-disable-next-line no-console
-    console.log(uri, 'iiiiiiiiiiiiii');
     const basePath = FileUri.fsPath(uri); // 转换为操作系统可以识别的路径
     const exist = await fs.pathExists(basePath); // 判断文件是否存在
 
@@ -151,8 +149,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
-    // eslint-disable-next-line no-console
-    console.log(this.WATCHER_HANDLERS, 'WATCHER_HANDLERS');
     toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
     toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
     this.toDispose.push(toDisposeWatcher);
@@ -209,7 +205,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     rawOptions: WatchOptions | undefined, // WatchOptions指定哪些项不应该被监视或考虑在内
   ): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
-    // eslint-disable-next-line no-console
     if (!(await fs.pathExists(basePath))) {
       return disposables;
     }
@@ -217,8 +212,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
       for (let times = 0; times < maxRetries; times++) {
         try {
-          // eslint-disable-next-line no-console
-          console.log(realPath, 'realPathRealPath');
           return await ParcelWatcher.subscribe(
             realPath,
             (err, events: ParcelWatcher.Event[]) => {
@@ -270,8 +263,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         {
           errorCallback: (error: any) => {
             // see https://github.com/atom/github/issues/342
-            // eslint-disable-next-line no-console
-            console.warn(`Failed to watch "${basePath}":`, error);
             this.unwatchFileChanges(watcherId);
           },
         },

@@ -3,7 +3,7 @@ import paths from 'path';
 import fs, { watch } from 'fs-extra';
 import debounce from 'lodash/debounce';
 
-import { Injectable, Optional } from '@opensumi/di';
+import { Injectable, Optional, Autowired } from '@opensumi/di';
 import {
   FileUri,
   ParsedPattern,
@@ -31,12 +31,12 @@ import {
 } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 
-export interface NoRecursiveEvent {
+export interface UnRecursiveEvent {
   path: string;
   type: 'added' | 'updated' | 'deleted';
 }
 
-export type NoRecursiveCallback = (err: Error | null, events: Event[]) => unknown;
+export type UnRecursiveCallback = (err: Error | null, events: Event[]) => unknown;
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[]; // 函数，返回布尔值
@@ -44,10 +44,8 @@ export interface WatcherOptions {
 }
 
 @Injectable({ multiple: true })
-export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
+export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   recursive: false;
-
-  private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private WATCHER_HANDLERS = new Map<
     number,
@@ -64,10 +62,10 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 100;
 
+  @Autowired(ILogServiceManager)
+
   // 一个symbol关键字，内容是ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
-
-  private logger: ILogService;
 
   // 收集发生改变的文件
   protected changes = new FileChangeCollection();
@@ -76,8 +74,10 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected client: FileSystemWatcherClient | undefined;
 
+  private logger: ILogService;
+
   constructor(@Optional() private readonly excludes: string[] = []) {
-    // this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   dispose(): void {
@@ -102,11 +102,13 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       // 创建监听对象
       const watcher = watch(basePath);
 
-      // eslint-disable-next-line no-console
-      console.log('start watching', basePath);
+      this.logger.log('start watching', basePath);
 
       // 文件夹的子目录
       const folderChildren = new Set<string>();
+
+      // 用来辅助判断文件/文件夹被删除后如何判断被删除文件的类型
+      const docChildren = new Set<string>();
 
       // 判断是否是文件夹目录
       const isDirectory = fs.lstatSync(basePath).isDirectory();
@@ -115,16 +117,18 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         try {
           for (const child of fs.readdirSync(basePath)) {
             folderChildren.add(child);
+            const base = join(basePath, String(child));
+            if (!fs.lstatSync(base).isDirectory()) {
+              docChildren.add(child); // 将目录下的文件放入此中
+            }
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
+          this.logger.error(error);
         }
 
         // 开始走监听流程
         watcher.on('error', (code: number, signal: string) => {
-          // eslint-disable-next-line no-console
-          console.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
+          this.logger.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
           watcher.close();
         });
 
@@ -140,13 +144,15 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             }
           }
 
-          if (!changeFileName || (type !== 'change' && type !== 'rename')) {
+          if (!raw || (type !== 'change' && type !== 'rename')) {
             return;
           }
-          if (isDirectory) {
+
+          // 如果是文件夹
+          if (!docChildren.has(changeFileName)) {
             if (type === 'rename') {
               const timeoutHandle = setTimeout(async () => {
-                if (changeFileName === raw && !(await fs.pathExists(basePath))) {
+                if (changeFileName === basename(basePath) && !(await fs.pathExists(basePath))) {
                   this.toDispose.dispose();
                   return;
                 }
@@ -160,17 +166,20 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
                     folderChildren.add(changeFileName);
                     type = FileChangeType.ADDED;
                     this.pushAdded(changePath);
+                    if (!fs.lstatSync(changePath).isDirectory()) {
+                      docChildren.add(changeFileName);
+                    }
                   }
                 } else {
                   folderChildren.delete(changeFileName);
                   type = FileChangeType.DELETED;
                   this.pushDeleted(changePath);
                 }
-              }, NoRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
+              }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
               timeoutHandle;
             }
 
-            // 文件子目录发生改变
+            // 当前文件夹下的文件
             else {
               let type: FileChangeType;
               if (folderChildren.has(changeFileName)) {
@@ -184,19 +193,19 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             }
           }
 
-          // 文件
+          // 当前目录下的文件
           else {
-            // TODO:这里的判断有待商榷
             if (type === 'rename' || changeFileName !== raw) {
               const timeoutHandle = setTimeout(async () => {
                 const fileExists = await fs.pathExists(changePath);
-
                 if (fileExists) {
                   this.pushUpdated(changePath);
                 } else {
+                  folderChildren.delete(changeFileName);
+                  docChildren.delete(changeFileName);
                   this.pushDeleted(changePath);
                 }
-              }, NoRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
+              }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
               timeoutHandle;
             } else {
               this.pushUpdated(changePath);
@@ -206,8 +215,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       }
     } catch (error) {
       if (await fs.pathExists(basePath)) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
+        this.logger.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
       }
     }
   }
@@ -226,7 +234,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       return watcherId;
     }
 
-    watcherId = NoRecursiveFileSystemWatcher.WATCHER_SEQUENCE++;
+    watcherId = UnRecursiveFileSystemWatcher.WATCHER_SEQUENCE++;
 
     const disposables = new DisposableCollection(); // 管理可释放的资源
 
@@ -237,12 +245,10 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       if (stat && stat.isDirectory()) {
         watchPath = basePath;
       } else {
-        // eslint-disable-next-line no-console
-        console.log('此路径不存在，请重新开始');
+        this.logger.warn('此路径不存在，请重新开始');
       }
     } else {
-      // eslint-disable-next-line no-console
-      console.log('此路径不存在，请重新开始');
+      this.logger.warn('此路径不存在，请重新开始');
     }
     disposables.push(await this.start(watcherId, watchPath, options));
     this.toDispose.push(disposables);
@@ -253,8 +259,8 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
    * 过滤 `write-file-atomic` 写入生成的临时文件
    * @param events
    */
-  protected trimChangeEvent(events: NoRecursiveEvent[]): NoRecursiveEvent[] {
-    events = events.filter((event: NoRecursiveEvent) => {
+  protected trimChangeEvent(events: UnRecursiveEvent[]): UnRecursiveEvent[] {
+    events = events.filter((event: UnRecursiveEvent) => {
       if (event.path) {
         if (/\.\d{7}\d+$/.test(event.path)) {
           // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
@@ -293,9 +299,6 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           });
         }
       }
-
-      // eslint-disable-next-line no-console
-      console.error(`watcher finally failed after ${maxRetries} times`);
       return undefined;
     };
 
@@ -306,8 +309,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
         {
           errorCallback: (error: any) => {
-            // eslint-disable-next-line no-console
-            console.warn(`Failed to watch "${basePath}":`, error);
+            this.logger.warn(`Failed to watch "${basePath}":`, error);
             this.unwatchFileChanges(watcherId);
           },
         },
@@ -370,8 +372,7 @@ export class NoRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       /**
        * 输出日志
        */
-      // eslint-disable-next-line no-console
-      console.trace(error);
+      this.logger.error(error);
       return false;
     }
   }
