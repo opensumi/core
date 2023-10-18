@@ -1,18 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import { Schemes, URI, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import {
+  IClipboardService,
+  Schemes,
+  URI,
+  getExternalIcon,
+  getIcon,
+  useInjectable,
+  uuid,
+} from '@opensumi/ide-core-browser';
 import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
+import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
+import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 
 import * as styles from './components.module.less';
+
 
 const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const editorCollectionService = useInjectable<EditorCollectionService>(EditorCollectionService);
   const documentService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
+  const clipboardService = useInjectable<IClipboardService>(IClipboardService);
+  const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
+  // 用于在复制代码的时候切换 popover 的标题
+  const [isCoping, setIsCoping] = useState<boolean>(false);
+
   // 这里暂时关闭
   // const textmateTokenizer = useInjectable<TextmateService>(TextmateService);
 
@@ -62,14 +78,32 @@ const ChatEditor = ({ input, language }) => {
     }
   }, [ref.current]);
 
+  const handleCopy = useCallback(async () => {
+    setIsCoping(true);
+    await clipboardService.writeText(input);
+    setTimeout(() => {
+      setIsCoping(false);
+    }, 1000);
+  }, [clipboardService, input]);
+
+  const handleInsert = useCallback(() => {
+    const editor = monacoCommandRegistry.getActiveCodeEditor();
+    if (editor) {
+      const selection = editor.getSelection();
+      if (selection) {
+        insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
+      }
+    }
+  }, [monacoCommandRegistry]);
+
   return (
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
         <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
-          <Icon className={getIcon('openfile')} />
+          <Icon className={getExternalIcon('insert')} onClick={handleInsert} />
         </Popover>
-        <Popover id={`ai-chat-copy-${useUUID}`} title='复制代码'>
-          <Icon className={getIcon('file-copy')} />
+        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功！' : '复制代码'}>
+          <Icon className={getIcon('file-copy')} onClick={handleCopy} />
         </Popover>
       </div>
       <div ref={ref} className={styles.editor}></div>

@@ -1,3 +1,4 @@
+import clsx from 'classnames';
 import * as React from 'react';
 import { Avatar } from 'react-chat-elements';
 
@@ -22,6 +23,7 @@ export const AiMenuBarView = () => {
   const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
+  const [isOpen, setIsOpen] = React.useState<boolean>(true);
 
   const handleRun = () => {
     commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
@@ -30,6 +32,17 @@ export const AiMenuBarView = () => {
   const handleRightPanel = () => {
     aiMenubarService.toggleRightPanel();
   };
+
+  React.useEffect(() => {
+    const dispose = aiMenubarService.onDidChangeDispatcher.on('latestWidth')((data: number) => {
+      if (!data) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
+    });
+    return () => dispose.dispose();
+  }, [aiMenubarService]);
 
   const MENUBAR_HEIGHT = React.useMemo(
     () => appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
@@ -54,16 +67,15 @@ export const AiMenuBarView = () => {
         </div>
         <div className={styles.right}>
           <SlotRenderer slot='ai-action' flex={1} overflow={'initial'} />
-          <div className={styles.input}>
+          {/* <div className={styles.input}>
             <Input
               className={styles.input_wrapper}
               width={'100%'}
               addonBefore={<Icon style={{ color: '#ffffff1f' }} className={getIcon('search')} />}
               placeholder='请搜索并选择指令'
-              // onFocus={handleSelectFocus}
             ></Input>
-          </div>
-          <div className={styles.ai_switch} onClick={handleRightPanel}>
+          </div> */}
+          <div className={clsx(styles.ai_switch, isOpen ? styles.opened : '')} onClick={handleRightPanel}>
             <Icon className={getIcon('magic-wand')} />
           </div>
         </div>

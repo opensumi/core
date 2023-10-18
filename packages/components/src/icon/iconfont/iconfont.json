@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "37732828",
+      "name": "icon-kfckfc",
+      "font_class": "insert",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "37732827",
+      "name": "复制 icon",
+      "font_class": "copy",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
       "icon_id": "4114124",
       "name": "circle-pause",
       "font_class": "circle-pause",

@@ -21,8 +21,6 @@
         .extra_top_icon {
           width: 24px;
           height: 24px;
-          // background-image: radial-gradient(circle at 21% 21%, #00f6ff 0%, #9c03ff 95%);
-          // border-radius: 6px;
 
           span {
             width: 100%;
@@ -75,6 +73,7 @@
         width: 24px;
         min-width: 24px;
         background-image: radial-gradient(circle at 21% 21%, #00f6ff 0%, #9c03ff 95%);
+        background-color: initial;
         border-radius: 12px;
         cursor: pointer;
         display: flex;
@@ -83,6 +82,10 @@
 
         span {
           font-size: 12px;
+        }
+
+        &.opened {
+          filter: grayscale(1);
         }
       }
     }

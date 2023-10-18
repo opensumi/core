@@ -125,10 +125,19 @@ export const AiChatView = observer(() => {
   };
 
   const firstMsg = React.useMemo(() => createMessageByAI(<InitMsgComponent />), [InitMsgComponent]);
+  const scrollToBottom = React.useCallback(() => {
+    if (containerRef && containerRef.current) {
+      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+    }
+  }, [containerRef]);
 
   React.useEffect(() => {
     setMessageListData([firstMsg]);
   }, []);
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [loading]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
@@ -143,10 +152,6 @@ export const AiChatView = observer(() => {
 
       const preMessagelist = messageListData;
       const preInputValue = message;
-
-      if (containerRef && containerRef.current) {
-        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-      }
 
       setLoading(true);
 
@@ -254,6 +259,7 @@ export const AiChatView = observer(() => {
           <div className={styles.chat_input_warp}>
             <ChatInput
               onSend={(value) => handleSend({ message: value })}
+              disabled={loading}
               placeholder={'可以问我任何问题，或键入主题 "/"'}
               enableOptions={true}
             />

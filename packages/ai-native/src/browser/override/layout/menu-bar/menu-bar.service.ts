@@ -1,8 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { BasicEvent, Dispatcher, Disposable } from '@opensumi/ide-core-common';
 
 @Injectable()
-export class AiMenubarService {
+export class AiMenubarService extends Disposable {
   private latestWidth = 0;
+  public onDidChangeDispatcher: Dispatcher<number, 'latestWidth'> = this.registerDispose(new Dispatcher());
 
   /**
    * 这里先这样处理，暂时没找到原因
@@ -22,6 +24,7 @@ export class AiMenubarService {
       }
 
       this.latestWidth = preWidth;
+      this.onDidChangeDispatcher.dispatch('latestWidth', preWidth);
     }
   }
 }
