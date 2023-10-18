@@ -58,6 +58,8 @@ import {
 
 import { TerminalContextKey } from './terminal.context-key';
 import { TerminalGroupViewService } from './terminal.view';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
+import { CodeTerminalSettingId } from '../common/preference';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -135,6 +137,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ICtxMenuRenderer)
   private ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
@@ -556,15 +561,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       wGroup.widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
-        if (!client) {
-          return;
-        }
+        const disablePersistence =
+          !this.preferenceService.get(CodeTerminalSettingId.EnablePersistentSessions) ||
+          client?.launchConfig?.disablePersistence;
 
-        if (client.launchConfig?.isExtensionOwnedTerminal || client.launchConfig?.disablePersistence) {
-          return;
-        }
-
-        if (client.isTaskExecutor) {
+        if (!client || disablePersistence || client?.isTaskExecutor) {
           return;
         }
 

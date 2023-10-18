@@ -481,6 +481,7 @@ export const localizationBundle = {
     'preference.terminal.integrated.xtermRenderType': 'Xterm Render Type',
     'preference.terminal.integrated.xtermRenderTypeDesc':
       'Choose Xterm render type, Webgl for better performance, Canvas better compatibility',
+    'preference.terminal.integrated.enablePersistentSessionDesc': 'Persist terminal sessions/history for the workspace across window reloads.',
     'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
