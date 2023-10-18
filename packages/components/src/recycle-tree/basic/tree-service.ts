@@ -202,6 +202,7 @@ export class BasicTreeService extends Tree {
   };
 
   dispose() {
+    super.dispose();
     this.disposableCollection.dispose();
     this.decorationDisposableCollection.dispose();
   }

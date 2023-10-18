@@ -10,7 +10,7 @@ import { KT_PROCESS_SOCK_OPTION_KEY } from '../src/common';
 export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService(extCenter);
-  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
+  const extConnection = net.createConnection('/tmp/test.sock');
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
