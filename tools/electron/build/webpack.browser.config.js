@@ -93,7 +93,7 @@ module.exports = {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: '[name][ext]',
+          filename: './fonts/[name][ext]',
           outputPath: 'fonts/',
         },
       },
