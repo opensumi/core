@@ -42,7 +42,7 @@ const nodeTarget = {
     ],
   },
   externals: [
-    function ({ context, request }, callback) {
+    function ({ request }, callback) {
       if (['node-pty', '@parcel/watcher', 'spdlog'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
@@ -60,6 +60,8 @@ const workerTarget = {
   entry: path.join(__dirname, '../src/extension/index.worker'),
   target: 'webworker',
   output: {
+    // disable automatic publicPath
+    publicPath: '',
     filename: 'index.worker.js',
     path: distDir,
   },
@@ -89,7 +91,7 @@ const workerTarget = {
     ],
   },
   externals: [
-    function ({ context, request }, callback) {
+    function ({ request }, callback) {
       if (['node-pty', '@parcel/watcher', 'spdlog', 'nfsw'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }

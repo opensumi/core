@@ -9,6 +9,8 @@ const distDir = path.join(__dirname, '../lib/browser');
 module.exports = {
   entry: require.resolve('@opensumi/ide-extension/lib/hosted/worker.host-preload.js'),
   output: {
+    // disable automatic publicPath
+    publicPath: '',
     filename: 'worker-host.js',
     path: distDir,
   },

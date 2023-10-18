@@ -10,6 +10,8 @@ module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   entry: path.join(__dirname, './src/hosted/worker.host-preload.ts'),
   output: {
+    // disable automatic publicPath
+    publicPath: '',
     filename: 'worker-host.js',
     path: path.resolve(__dirname, 'lib/'),
   },

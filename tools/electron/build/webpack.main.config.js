@@ -49,7 +49,7 @@ module.exports = {
     mainFields: ['loader', 'main'],
   },
   externals: [
-    ({ context, request }, callback) => {
+    ({ request }, callback) => {
       if (['node-pty', '@parcel/watcher', 'spdlog', 'nsfw', 'electron'].includes(request)) {
         return callback(null, 'commonjs ' + request);
       }

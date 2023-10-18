@@ -39,7 +39,7 @@ module.exports = {
     ],
   },
   externals: [
-    function ({ context, request }, callback) {
+    function ({ request }, callback) {
       if (
         ['node-pty', '@parcel/watcher', 'nsfw', 'spdlog', '@opensumi/vscode-ripgrep', 'vm2', 'keytar', 'vertx'].indexOf(
           request,
