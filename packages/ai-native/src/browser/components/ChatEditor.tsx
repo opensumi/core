@@ -19,7 +19,6 @@ import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib
 
 import * as styles from './components.module.less';
 
-
 const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const editorCollectionService = useInjectable<EditorCollectionService>(EditorCollectionService);
@@ -100,10 +99,10 @@ const ChatEditor = ({ input, language }) => {
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
         <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
-          <Icon className={getExternalIcon('insert')} onClick={handleInsert} />
+          <Icon className={getIcon('insert')} onClick={handleInsert} />
         </Popover>
         <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功！' : '复制代码'}>
-          <Icon className={getIcon('file-copy')} onClick={handleCopy} />
+          <Icon className={getIcon('copy')} onClick={handleCopy} />
         </Popover>
       </div>
       <div ref={ref} className={styles.editor}></div>

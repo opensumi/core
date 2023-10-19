@@ -56,6 +56,7 @@ export const AiMenuBarView = () => {
           <IconMenuBar />
           <div className={styles.top_menus_bar}>
             <InlineMenuBar menus={extraTopMenus} className={styles.extra_top_icon} />
+            <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
           </div>
         </div>
         <div className={styles.center}>

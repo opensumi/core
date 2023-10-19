@@ -14,9 +14,18 @@
     .left {
       display: flex;
       align-items: center;
+      z-index: 2;
 
       .top_menus_bar {
         margin-left: 16px;
+        display: flex;
+        align-items: center;
+
+        .caret_icon {
+          transform: rotate(90deg);
+          font-size: 12px;
+          margin-left: 6px;
+        }
 
         .extra_top_icon {
           width: 24px;
@@ -42,6 +51,12 @@
     }
 
     .center {
+      text-align: center;
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 1;
+
       .run {
         .btn {
           background-color: rgba(4, 74, 16, 0.6);
@@ -54,6 +69,7 @@
     .right {
       display: flex;
       align-items: center;
+      z-index: 2;
 
       .input {
         margin-right: 16px;
