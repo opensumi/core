@@ -7,6 +7,7 @@ import { uuid } from '@opensumi/ide-core-common';
 import { InstructionEnum } from '../../common';
 
 import * as styles from './components.module.less';
+import { EnhanceIcon } from './Icon';
 
 interface IBlockProps {
   icon: string;
@@ -15,7 +16,7 @@ interface IBlockProps {
 
 const Block = ({ icon, name }: IBlockProps) => (
   <div className={styles.block}>
-    <Icon className={icon} />
+    <EnhanceIcon className={icon} />
     {name && <span className={styles.name}>{name}</span>}
   </div>
 );
@@ -27,7 +28,7 @@ const optionsList: IBlockProps[] = [
     name: InstructionEnum.aiSearchKey,
   },
   {
-    icon: getIcon('smile'),
+    icon: getIcon('code'),
     name: InstructionEnum.aiSumiKey,
   },
 ];

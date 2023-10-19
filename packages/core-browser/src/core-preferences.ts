@@ -291,6 +291,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    'inlineChat.auto.visible': {
+      type: 'boolean',
+      default: true,
+    },
   },
 };
 

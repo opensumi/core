@@ -1,4 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IDisposable,
@@ -20,7 +21,7 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiGPTBackSerivcePath, InstructionEnum } from '../common/index';
+import { AiGPTBackSerivcePath, AiNativeSettingSectionsId, InstructionEnum } from '../common/index';
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
@@ -55,6 +56,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(ILoggerManagerClient)
   private readonly loggerManagerClient: ILoggerManagerClient;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   private logger: ILogServiceClient;
 
   constructor() {
@@ -68,7 +72,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    this.registerSuggestJavaDoc(editor);
+    // javadoc 的功能暂时不开放，需要调整下策略
+    // this.registerSuggestJavaDoc(editor);
     this.registerCompletion(editor);
 
     const { monacoEditor, currentUri } = editor;
@@ -110,6 +115,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       100,
     )((e) => {
       disposeAllWidget();
+      if (!this.preferenceService.getValid(AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
+        return;
+      }
 
       const { monacoEditor, currentUri } = editor;
 
