@@ -15,6 +15,8 @@ import {
   SlotLocation,
   ContributionProvider,
   ClientAppContribution,
+  ISettingSection,
+  ISettingGroup,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
@@ -29,9 +31,17 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
+import { PreferenceSettingId, SettingContribution } from '@opensumi/ide-preferences';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
-import { AiNativeContribution, Ai_CHAT_CONTAINER_VIEW_ID, IAiRunFeatureRegistry, InstructionEnum } from '../common';
+import {
+  AI_NATIVE_SETTING_GROUP_ID,
+  AiNativeContribution,
+  AiNativeSettingSectionsId,
+  Ai_CHAT_CONTAINER_VIEW_ID,
+  IAiRunFeatureRegistry,
+  InstructionEnum,
+} from '../common';
 import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
@@ -55,6 +65,7 @@ import { AiRunService } from './run/run.service';
   MenuContribution,
   CommandContribution,
   SlotRendererContribution,
+  SettingContribution,
 )
 export class AiNativeCoreContribution
   implements
@@ -63,7 +74,8 @@ export class AiNativeCoreContribution
     BrowserEditorContribution,
     MenuContribution,
     CommandContribution,
-    SlotRendererContribution
+    SlotRendererContribution,
+    SettingContribution
 {
   @Autowired()
   private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
@@ -112,6 +124,34 @@ export class AiNativeCoreContribution
         contribution.registerRunFeature(this.aiRunFeatureRegistry);
       }
     });
+  }
+
+  handleSettingGroup(settingGroup: ISettingGroup[]) {
+    return [
+      ...settingGroup,
+      {
+        id: AI_NATIVE_SETTING_GROUP_ID,
+        title: AI_NATIVE_SETTING_GROUP_ID,
+        iconClass: getIcon('magic-wand'),
+      },
+    ];
+  }
+
+  handleSettingSections(settingSections: { [key: string]: ISettingSection[] }) {
+    return {
+      ...settingSections,
+      [AI_NATIVE_SETTING_GROUP_ID]: [
+        {
+          title: 'Inline Chat',
+          preferences: [
+            {
+              id: AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+              localized: 'preference.aiNative.inlineChat.auto.visible',
+            },
+          ],
+        },
+      ],
+    };
   }
 
   registerComponent(registry: ComponentRegistry): void {
