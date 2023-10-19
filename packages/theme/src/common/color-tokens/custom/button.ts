@@ -8,7 +8,6 @@ import {
   buttonForeground,
   buttonHoverBackground,
   buttonSecondaryBackground,
-  buttonSecondaryHoverBackground,
   buttonSecondaryForeground,
   buttonBorder,
 } from '../button';

@@ -51,6 +51,8 @@ import {
 } from '../common/theme.service';
 import { convertSettings } from '../common/themeCompatibility';
 
+import defaultTheme from './default-theme';
+
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
   const ruleScope = rule.scope;
   if (!ruleScope || !rule.settings) {
@@ -145,6 +147,10 @@ export class ThemeData implements IThemeData {
       default:
         return ColorScheme.DARK;
     }
+  }
+
+  public getDefaultTheme(): any {
+    return defaultTheme;
   }
 
   public async initializeThemeData(id: string, name: string, base: string, themeLocation: URI) {

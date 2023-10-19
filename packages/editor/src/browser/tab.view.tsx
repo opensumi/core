@@ -28,6 +28,7 @@ import {
   DisposableCollection,
   Event,
   getExternalIcon,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -39,7 +40,13 @@ import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, Resou
 
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
-import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
+import {
+  GridResizeEvent,
+  IEditorActionRegistry,
+  DragOverPosition,
+  EditorGroupFileDropEvent,
+  IEditorTabService,
+} from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -62,6 +69,8 @@ export const Tabs = ({ group }: ITabsProps) => {
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
+  const editorTabService = useInjectable<IEditorTabService>(IEditorTabService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
   const [wrapMode, setWrapMode] = useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
@@ -314,12 +323,56 @@ export const Tabs = ({ group }: ITabsProps) => {
     [editorService],
   );
 
+  const EDITOR_TABS_HEIGHT = React.useMemo(
+    () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+    [appConfig],
+  );
+
+  const renderEditorTab = React.useCallback(
+    (resource: IResource, isCurrent: boolean) => {
+      const decoration = resourceService.getResourceDecoration(resource.uri);
+      const subname = resourceService.getResourceSubname(resource, group.resources);
+
+      return editorTabService.renderEditorTab(
+        <>
+          <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}>
+            {' '}
+          </div>
+          <div>{resource.name}</div>
+          {subname ? <div className={styles.subname}>{subname}</div> : null}
+          {decoration.readOnly ? (
+            <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
+          ) : null}
+          <div className={styles.tab_right}>
+            <div
+              className={classnames({
+                [styles.kt_hidden]: !decoration.dirty,
+                [styles.dirty]: true,
+              })}
+            ></div>
+            <div
+              className={styles.close_tab}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                group.close(resource.uri);
+              }}
+            >
+              {editorTabService.renderTabCloseComponent(
+                <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />,
+              )}
+            </div>
+          </div>
+        </>,
+        isCurrent,
+      );
+    },
+    [editorTabService],
+  );
+
   const renderTabContent = () => (
     <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
       {group.resources.map((resource, i) => {
         let ref: HTMLDivElement | null;
-        const decoration = resourceService.getResourceDecoration(resource.uri);
-        const subname = resourceService.getResourceSubname(resource, group.resources);
         return (
           <div
             draggable={true}
@@ -332,13 +385,8 @@ export const Tabs = ({ group }: ITabsProps) => {
             })}
             style={
               wrapMode && i === group.resources.length - 1
-                ? { marginRight: lastMarginRight, height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
-                : {
-                    height:
-                      group.currentResource === resource
-                        ? LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT + 1
-                        : LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
-                  }
+                ? { marginRight: lastMarginRight, height: EDITOR_TABS_HEIGHT }
+                : { height: EDITOR_TABS_HEIGHT }
             }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
@@ -387,31 +435,7 @@ export const Tabs = ({ group }: ITabsProps) => {
               e.dataTransfer.setData('uri-source-group', group.name);
             }}
           >
-            <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}>
-              {' '}
-            </div>
-            <div>{resource.name}</div>
-            {subname ? <div className={styles.subname}>{subname}</div> : null}
-            {decoration.readOnly ? (
-              <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
-            ) : null}
-            <div className={styles.tab_right}>
-              <div
-                className={classnames({
-                  [styles.kt_hidden]: !decoration.dirty,
-                  [styles.dirty]: true,
-                })}
-              ></div>
-              <div
-                className={styles.close_tab}
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  group.close(resource.uri);
-                }}
-              >
-                <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
-              </div>
-            </div>
+            {renderEditorTab(resource, group.currentResource === resource)}
           </div>
         );
       })}
@@ -471,6 +495,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
 
     const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
+    const appConfig = useInjectable<AppConfig>(AppConfig);
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
@@ -497,13 +522,14 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       };
     }, [group]);
 
+    const EDITOR_TABS_HEIGHT = React.useMemo(
+      () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
+      [appConfig],
+    );
+
     // 第三个参数是当前编辑器的URI（如果有）
     return (
-      <div
-        ref={ref}
-        className={classnames(styles.editor_actions, className)}
-        style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
-      >
+      <div ref={ref} className={classnames(styles.editor_actions, className)} style={{ height: EDITOR_TABS_HEIGHT }}>
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}
           context={args as any}

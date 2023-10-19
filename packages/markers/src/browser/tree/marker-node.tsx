@@ -9,9 +9,10 @@ import {
   TreeNodeType,
   Badge,
 } from '@opensumi/ide-components';
-import { URI, getIcon, IMatch } from '@opensumi/ide-core-browser';
+import { URI, getIcon, IMatch, useInjectable } from '@opensumi/ide-core-browser';
 
-import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
+import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
+import { MarkerService } from '../markers-service';
 
 import { MarkerGroupNode, MarkerNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -31,7 +32,9 @@ export type IMarkerNodeRenderedProps = IMarkerNodeProps & INodeRendererProps;
  * @param model model of renderable marker
  */
 const MarkerItemTitleDescription: FC<{ model: IRenderableMarkerModel }> = memo(({ model }) => (
-  <div className={styles.title_description}>{model.longname}</div>
+  <div className={styles.title_description} title={model.longname}>
+    {model.longname}
+  </div>
 ));
 
 /**
@@ -134,6 +137,8 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   decorations,
   onClick,
 }: IMarkerNodeRenderedProps) => {
+  const markerService = useInjectable<MarkerService>(IMarkerService);
+
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       ev.stopPropagation();
@@ -154,16 +159,18 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: MarkerGroupNode | MarkerNode) => (
-      <div
-        className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
-        style={{
-          height: MARKER_TREE_NODE_HEIGHT,
-          lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
-          ...(!MarkerGroupNode.is(node) && node.iconStyle),
-        }}
-      ></div>
-    ),
+    (node: MarkerGroupNode | MarkerNode) =>
+      markerService.renderMarkerNodeIcon(
+        <div
+          className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
+          style={{
+            height: MARKER_TREE_NODE_HEIGHT,
+            lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
+            ...(!MarkerGroupNode.is(node) && node.iconStyle),
+          }}
+        ></div>,
+        node,
+      ),
     [],
   );
 

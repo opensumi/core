@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState, FC, useCallback, memo } from 'react';
 
-import { ViewState } from '@opensumi/ide-core-browser';
+import { AppConfig, ViewState } from '@opensumi/ide-core-browser';
 import { IContextKeyService, View, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -157,6 +157,7 @@ SCMProvidersView.displayName = 'SCMProvidersView';
 
 export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
   const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
 
   const [repoList, setRepoList] = useState<ISCMRepository[]>([]);
@@ -225,10 +226,16 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
     return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
   }, [hasMultiRepos, repoViewTitle, selectedRepo, repoList]);
 
+  const PANEL_TITLEBAR_HEIGHT = React.useMemo(
+    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
+    [appConfig],
+  );
+
   return (
     <div className={styles.view}>
       <TitleBar
         title={panelTitle}
+        height={PANEL_TITLEBAR_HEIGHT}
         menubar={
           !hasMultiRepos && titleMenu ? (
             <InlineMenuBar
@@ -242,7 +249,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
       <AccordionContainer
         views={views}
         containerId={scmContainerId}
-        style={{ height: `calc(100% - ${LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT}px)` }}
+        style={{ height: `calc(100% - ${PANEL_TITLEBAR_HEIGHT}px)` }}
       />
     </div>
   );

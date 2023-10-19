@@ -66,6 +66,10 @@ export class MarkerService extends Themable implements IMarkerService {
     this.onResourceCloseEmitter.fire(resource);
   }
 
+  public renderMarkerNodeIcon(component: React.ReactNode, node: MarkerGroupNode | MarkerNode): React.ReactNode {
+    return component;
+  }
+
   public resolveChildren(parent?: MarkerGroupNode | undefined) {
     if (!parent) {
       return [new MarkerRoot(this)];

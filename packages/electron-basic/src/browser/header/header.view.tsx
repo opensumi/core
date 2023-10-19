@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 import {
   useInjectable,
@@ -10,6 +10,7 @@ import {
   electronEnv,
   IWindowService,
   useEventEffect,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { isMacintosh, Disposable } from '@opensumi/ide-core-browser';
@@ -68,13 +69,15 @@ const useMaximize = () => {
   };
 };
 
-const defaultHeight = () => {
+const defaultHeight = (appConfig: AppConfig) => {
+  const layoutViewSize = appConfig.layoutViewSize || LAYOUT_VIEW_SIZE;
+
   if (isMacintosh) {
     // Big Sur increases title bar height
     const isNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
-    return isNewMacHeaderBar ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT;
+    return isNewMacHeaderBar ? layoutViewSize.BIG_SUR_TITLEBAR_HEIGHT : layoutViewSize.TITLEBAR_HEIGHT;
   }
-  return LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT;
+  return layoutViewSize.MENUBAR_HEIGHT;
 };
 
 export const HeaderBarLeftComponent = () => {
@@ -101,6 +104,7 @@ export const HeaderBarLeftComponent = () => {
 export const HeaderBarRightComponent = () => {
   const { maximized } = useMaximize();
   const windowService: IWindowService = useInjectable(IWindowService);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   if (isMacintosh) {
     return null;
@@ -110,7 +114,7 @@ export const HeaderBarRightComponent = () => {
     <div
       className={styles.windowActions}
       style={{
-        height: defaultHeight(),
+        height: defaultHeight(appConfig),
       }}
     >
       <div className={cls(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
@@ -142,9 +146,10 @@ export const ElectronHeaderBar = observer(
     RightComponent,
     TitleComponent,
     autoHide = true,
-    height = defaultHeight(),
+    height,
   }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
+    const appConfig = useInjectable<AppConfig>(AppConfig);
 
     const { isFullScreen } = useFullScreen();
     const { getMaximized } = useMaximize();
@@ -167,10 +172,18 @@ export const ElectronHeaderBar = observer(
       );
     }
 
+    const safeHeight = useMemo(() => {
+      if (height) {
+        return height;
+      }
+
+      return defaultHeight(appConfig);
+    }, [appConfig, height]);
+
     return (
       <div
         className={styles.header}
-        style={{ height }}
+        style={{ height: safeHeight }}
         onDoubleClick={async () => {
           if (await getMaximized()) {
             windowService.unmaximize();

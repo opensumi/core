@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { AiMainSlotRenderer } from '@opensumi/ide-ai-native/lib/browser/override/layout/main-slot-renderer';
 import { SlotRenderer } from '@opensumi/ide-core-browser';
 import { BoxPanel, getStorageValue, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 
@@ -8,7 +9,8 @@ export function DefaultLayout() {
   return (
     <BoxPanel direction='top-to-bottom'>
       <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={35} slot='top' z-index={2} />
-      <SplitPanel id='main-horizontal' flex={1}>
+      <AiMainSlotRenderer id={'ai-main-slot'} overflow={'hidden'} flex={1} />
+      {/* <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
           slot='left'
@@ -37,7 +39,7 @@ export function DefaultLayout() {
           minResize={280}
           minSize={0}
         />
-      </SplitPanel>
+      </SplitPanel> */}
       <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );

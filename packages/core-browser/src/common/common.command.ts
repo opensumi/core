@@ -820,7 +820,7 @@ export namespace DIALOG_COMMANDS {
 }
 
 export namespace TERMINAL_COMMANDS {
-  const CATEGORY = '%terminal.name%';
+  export const CATEGORY = '%terminal.name%';
 
   export const FOCUS_NEXT_TERMINAL = {
     id: 'workbench.action.terminal.focusNextPane',

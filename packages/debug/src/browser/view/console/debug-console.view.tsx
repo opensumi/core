@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useRef } from 'react';
+import React from 'react';
 
 import {
   RecycleTree,

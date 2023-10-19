@@ -15,6 +15,7 @@
   .title_description {
     display: inline;
     color: var(--descriptionForeground);
+    overflow: hidden;
   }
 
   .detail_name {
@@ -85,6 +86,19 @@
     match {
       background-color: var(--editor-findMatchHighlightBackground);
     }
+
+    &:hover {
+      :global {
+        div[class*=ai_marker_node_icon_container] {
+          :first-child {
+            display: inline-block !important;
+          }
+          :last-child {
+            display: none !important;
+          }
+        }
+      }
+    }
   }
 
   .status {
@@ -125,6 +139,7 @@
     color: var(--foreground);
     flex-direction: row;
     width: 0;
+    white-space: nowrap;
   }
 
   .flex_wrap {

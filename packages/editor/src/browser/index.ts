@@ -31,6 +31,7 @@ import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { EditorElectronContribution } from './editor-electron.contribution';
 import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
+import { EditorTabService } from './editor.tab.service';
 import { EditorFeatureRegistryImpl } from './feature';
 import { FileSystemResourceContribution } from './fs-resource';
 import { LanguageStatusContribution } from './language/language-status.contribution';
@@ -63,6 +64,7 @@ import {
   IBreadCrumbService,
   IEditorFeatureRegistry,
   ILanguageStatusService,
+  IEditorTabService,
 } from './types';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 export * from './preference/schema';
@@ -162,6 +164,10 @@ export class EditorModule extends BrowserModule {
     {
       token: ILanguageStatusService,
       useClass: LanguageStatusService,
+    },
+    {
+      token: IEditorTabService,
+      useClass: EditorTabService,
     },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,

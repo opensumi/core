@@ -581,6 +581,10 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
+    // AI Native
+    'preference.aiNative.inlineChat.auto.visible':
+      'Does Inline Chat automatically appear when code snippets are selected ?',
+
     // Editor Configurations
     'editor.configuration.formatOnSaveTimeout':
       'Control the timeout time of formatting (ms). Effective Only when `#editor.formatOnSave#` enables.',
