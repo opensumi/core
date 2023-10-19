@@ -1,7 +1,8 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Icon, Input, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { uuid } from '@opensumi/ide-core-common';
 
 import { InstructionEnum } from '../../common';
 
@@ -75,19 +76,29 @@ const InstructionOptions = ({ onClick, bottom }) => {
 
 export interface IChatInputProps {
   onSend: (value: string) => void;
+  onValueChange?: (value: string) => void;
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  sendBtnClassName?: string;
+  defaultHeight?: number;
+  value?: string;
 }
 
 // 指令命令激活组件
 export const ChatInput = (props: IChatInputProps) => {
-  const { onSend, placeholder, enableOptions = false, disabled = false } = props;
-  const [value, setValue] = useState('');
+  const { onSend, onValueChange, placeholder, enableOptions = false, disabled = false, defaultHeight = 40 } = props;
+  const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
-  const [wrapperHeight, setWrapperHeight] = useState<number>(40);
+  const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);
   const [slashWidget, setSlashWidget] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (props.value !== value) {
+      setValue(props.value || '');
+    }
+  }, [props.value]);
 
   useEffect(() => {
     if (enableOptions) {
@@ -105,7 +116,7 @@ export const ChatInput = (props: IChatInputProps) => {
       const scrollHeight = inputRef.current.scrollHeight;
       inputRef.current.style.height = Math.min(scrollHeight, 140) + 'px';
 
-      setWrapperHeight(scrollHeight + 20);
+      setWrapperHeight(scrollHeight + (defaultHeight - 20));
     }
 
     // 设置 slash widget 块
@@ -121,12 +132,17 @@ export const ChatInput = (props: IChatInputProps) => {
     }
   }, [inputRef, value, enableOptions]);
 
-  const handleInputChange = useCallback((value: string) => setValue(value), []);
+  const handleInputChange = useCallback((value: string) => {
+    setValue(value);
+    if (onValueChange) {
+      onValueChange(value);
+    }
+  }, []);
 
   const handleSend = useCallback(() => {
     if (value.trim() && onSend) {
-      onSend(value);
       setValue('');
+      onSend(value);
     }
   }, [onSend, value]);
 
@@ -180,8 +196,18 @@ export const ChatInput = (props: IChatInputProps) => {
           )
         }
         addonAfter={
-          <div className={cls(styles.send_chat_btn, value.length && styles.active)} onClick={() => handleSend()}>
-            <Icon className={getIcon('send')} />
+          <div
+            className={cls(
+              styles.send_chat_btn,
+              value.length && styles.active,
+              disabled && styles.disabled,
+              props.sendBtnClassName,
+            )}
+            onClick={() => handleSend()}
+          >
+            <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
+              <Icon className={getIcon('send')} />
+            </Popover>
           </div>
         }
       />

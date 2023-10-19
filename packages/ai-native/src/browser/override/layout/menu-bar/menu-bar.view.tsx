@@ -1,6 +1,5 @@
 import clsx from 'classnames';
 import * as React from 'react';
-import { Avatar } from 'react-chat-elements';
 
 import { AppConfig, getIcon, useInjectable, SlotRenderer } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
@@ -9,9 +8,9 @@ import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constant
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IconMenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
+import { EnhanceIcon } from '../../../components/Icon';
 
 import * as styles from './menu-bar.module.less';
 import { AiMenubarService } from './menu-bar.service';
@@ -49,11 +48,15 @@ export const AiMenuBarView = () => {
     [appConfig],
   );
 
+  const handleLeftMenuVisiable = React.useCallback(() => {
+    commandService.executeCommand('main-layout.left-panel.toggle');
+  }, []);
+
   return (
     <div id={VIEW_CONTAINERS.MENUBAR} className={styles.menu_bar_view} style={{ height: MENUBAR_HEIGHT }}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <IconMenuBar />
+          <EnhanceIcon icon={'left-nav-open'} onClick={handleLeftMenuVisiable} />
           <div className={styles.top_menus_bar}>
             <InlineMenuBar menus={extraTopMenus} className={styles.extra_top_icon} />
             <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />

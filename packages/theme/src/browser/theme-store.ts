@@ -28,7 +28,7 @@ export class ThemeStore implements IThemeStore {
   }
 
   private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: URI) {
-    let themeData = this.themes[id];
+    let themeData = this.getTheme(id);
     if (!themeData) {
       themeData = this.injector.get(IThemeData);
       await themeData.initializeThemeData(id, themeName, themeBase, themeLocation);
@@ -43,7 +43,7 @@ export class ThemeStore implements IThemeStore {
     return theme;
   }
 
-  private async tryLoadLatestTheme() {
+  public async tryLoadLatestTheme() {
     // 尝试使用最近一次缓存的主题信息进行加载
     const themeData = this.getLatestThemeData();
     if (themeData) {
@@ -73,13 +73,17 @@ export class ThemeStore implements IThemeStore {
     }
   }
 
+  public getTheme(id: string): ThemeData {
+    return this.themes[id];
+  }
+
   public async getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<IThemeData> {
     // 测试情况下传入的contribution为空，尝试加载上次缓存的最新主题
     if (!contribution || !basePath) {
       return await this.tryLoadLatestTheme();
     }
     const id = getThemeId(contribution);
-    if (!this.themes[id]) {
+    if (!this.getTheme(id)) {
       const theme = await this.initTheme(contribution, basePath);
       if (theme) {
         // 正常加载主题
@@ -90,6 +94,6 @@ export class ThemeStore implements IThemeStore {
       return this.loadDefaultTheme();
     }
     // 主题有缓存
-    return this.themes[id];
+    return this.getTheme(id);
   }
 }

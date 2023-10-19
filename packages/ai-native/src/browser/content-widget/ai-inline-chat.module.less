@@ -1,18 +1,18 @@
 .ai_inline_chat_panel {
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  background-color: #1b232b;
+  border: 1px solid rgba(42, 51, 68, 0.9);
+  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.5), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
   border-radius: 10px;
-  padding: 12px 16px;
-  background-color: rgba(23, 28, 37, 1);
-  border: 1px solid rgba(54, 57, 64, 1);
+
+  max-width: 540px;
+  min-width: 385px;
 
   .ai_shortcuts {
-    margin-top: 12px;
+    margin-top: 4px;
   }
 
   .panel_header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    margin: 0 -16px 12px -16px;
-
     .progress_bar {
       position: relative;
       height: 1px;
@@ -34,13 +34,10 @@
   }
 
   .panel_result {
-    margin-bottom: 16px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(233, 233, 233, 0.08);
 
     .result_container {
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.04);
-      padding: 12px;
-
       .title {
         .error_text {
           color: var(--editorError-foreground);
@@ -56,23 +53,17 @@
         display: block;
         width: 100%;
         background-color: rgba(233, 233, 233, 0.08);
-        margin: 12px 0 12px 0;
-      }
-
-      .line {
-        width: 1px;
-        display: block;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.12);
+        margin: 16px -15px 16px -15px;
       }
 
       .operate {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        height: 24px;
 
         .left_side {
-          button:first-child {
+          button {
             margin-right: 8px;
           }
         }
@@ -80,12 +71,23 @@
         .right_side {
           display: flex;
           align-items: center;
+          height: 12px;
         }
       }
     }
   }
 
   .panel_chat {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+
+    .ai_content_widget_input {
+      .send_btn {
+        background-color: initial;
+      }
+    }
+
     .ai_shortcuts {
       .item_ul {
         display: flex;
@@ -101,7 +103,16 @@
         .item_li {
           display: flex;
           align-items: center;
+          font-size: 14px;
           cursor: pointer;
+
+          .action_icon {
+            padding: 2px;
+            margin-right: 6px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            font-size: 12px;
+          }
         }
       }
     }

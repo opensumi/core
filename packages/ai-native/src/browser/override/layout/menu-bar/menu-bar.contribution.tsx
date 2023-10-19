@@ -6,16 +6,15 @@ import {
   Domain,
   MenubarSettingId,
   PreferenceService,
-  getExternalIcon,
 } from '@opensumi/ide-core-browser';
-import { IMenuRegistry, IMenubarItem, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
 
 import { AiMenuBarView } from './menu-bar.view';
 
 @Injectable()
-@Domain(ComponentContribution, MenuContribution)
-export class AiMenuBarContribution extends Disposable implements ComponentContribution, MenuContribution {
+@Domain(ComponentContribution)
+export class AiMenuBarContribution extends Disposable implements ComponentContribution {
   static AiMenuBarContainer = 'ai-menubar';
 
   @Autowired(MenubarStore)
@@ -43,14 +42,5 @@ export class AiMenuBarContribution extends Disposable implements ComponentContri
       component: AiMenuBarView,
       id: AiMenuBarContribution.AiMenuBarContainer,
     });
-  }
-
-  registerMenus(menus: IMenuRegistry): void {
-    menus.registerMenuItems(MenuId.IconMenubarContext, [
-      {
-        command: 'main-layout.left-panel.toggle',
-        iconClass: getExternalIcon('layout-sidebar-left-off'),
-      },
-    ]);
   }
 }

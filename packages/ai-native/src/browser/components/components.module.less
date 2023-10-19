@@ -95,7 +95,6 @@
   }
 
   .input_wrapper {
-    min-height: 40px;
     max-height: 160px;
     border-radius: 8px;
     padding: 9px 12px;
@@ -104,7 +103,7 @@
 
     :global {
       .kt-input-addon-after {
-        align-items: flex-end;
+        // align-items: flex-end;
       }
 
       .kt-input-addon-before {
@@ -136,7 +135,7 @@
 
     .send_chat_btn {
       border-radius: 2px;
-      background-color: rgba(95, 101, 107, 0.25);
+      background-color: var(--kt-hintBackground);
       width: 24px;
       height: 22px;
       display: flex;
@@ -149,7 +148,7 @@
       }
 
       &.active {
-        background-color: rgba(60, 141, 255, 1);
+        background-color: rgba(60, 141, 255, 1) !important;
 
         span {
           color: #ffffff;
@@ -157,10 +156,19 @@
       }
 
       &:hover {
-        background-color: rgba(95, 101, 107, 0.25);
+        background-color: var(--kt-hintBackground) !important;
 
         span {
           color: rgba(60, 141, 255, 1);
+        }
+      }
+
+      &.disabled {
+        background-color: transparent !important;
+        cursor: not-allowed;
+        span {
+          color: var(--kt-defaultButton-disableForeground);
+          pointer-events: none;
         }
       }
     }
@@ -276,12 +284,13 @@
 * icon
 */
 .ai_enhance_icon {
-  .icon {
-    border-radius: 4px;
-    padding: 4px;
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 
-    &:hover {
-      background-color: var(--kt-icon-hoverBackground);
-    }
+  &:hover {
+    background-color: var(--kt-icon-hoverBackground);
   }
 }

@@ -21,15 +21,6 @@
     border-color: var(--focusBorder);
   }
 
-  &-disabled {
-    color: var(--kt-input-disableForeground);
-    background-color: var(--kt-input-disableBackground);
-
-    input {
-      cursor: not-allowed;
-    }
-  }
-
   &-box {
     flex: 1;
     height: 100%;
@@ -54,6 +45,17 @@
       &::selection {
         background-color: var(--kt-input-selectionBackground);
       }
+    }
+  }
+
+  &-disabled {
+    color: var(--kt-input-disableForeground);
+    background-color: var(--kt-input-disableBackground);
+
+    input,
+    textarea {
+      color: var(--kt-input-disableForeground);
+      cursor: not-allowed;
     }
   }
 

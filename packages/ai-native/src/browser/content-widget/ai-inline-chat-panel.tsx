@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import clsx from 'classnames';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
@@ -7,7 +8,9 @@ import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { Emitter } from '@opensumi/ide-core-common';
 
 import { ChatInput } from '../components/ChatInput';
+import { EnhanceIcon } from '../components/Icon';
 import { LineVertical } from '../components/lineVertical';
+import { Thumbs } from '../components/Thumbs';
 
 import * as styles from './ai-inline-chat.module.less';
 import { AiInlineChatService, EChatStatus } from './ai-inline-chat.service';
@@ -17,6 +20,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDone, setIsDone] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>('');
   const [currentCheckText, setCurrentCheckText] = useState<string>('优化代码');
 
   useEffect(() => {
@@ -65,20 +69,6 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
 
     return (
       <div className={styles.panel_header}>
-        <div className={styles.header_container}>
-          <div className={styles.left_side}>
-            <span>Chat</span>
-          </div>
-          <div className={styles.right_side}>
-            {/* <Icon className={getIcon('clear')} style={{ marginRight: '8px' }} /> */}
-            <Icon
-              className={getIcon('close')}
-              onClick={() => {
-                aiInlineChatService._onDiscard.fire();
-              }}
-            />
-          </div>
-        </div>
         {/* 进度条 */}
         <span className={styles.progress_bar}>
           <Progress loading={!isDone} style={{ width: '25%' }} wrapperClassName='ai-native-progress-wrapper' />
@@ -88,24 +78,26 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
   }, [isLoading, isDone]);
 
   const renderResult = useMemo(() => {
-    if (!isLoading && !isDone && !isError) {
+    if (!isDone && !isError) {
+      return null;
+    }
+
+    if (isLoading) {
       return null;
     }
 
     return (
       <div className={styles.panel_result}>
         <div className={styles.result_container}>
-          <div className={styles.title}>
-            <Icon />
+          {/* <div className={styles.title}>
             {!isLoading && isError ? (
               <span className={styles.error_text}>生成失败，请重试</span>
             ) : (
               <span>{currentCheckText}</span>
             )}
-          </div>
+          </div> */}
           {isDone && (
             <>
-              <span className={styles.v_line}></span>
               <div className={styles.operate}>
                 <div className={styles.left_side}>
                   <Button
@@ -125,22 +117,28 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
                   >
                     丢弃
                   </Button>
+                  <Button size={'small'} type={'ghost'}>
+                    重新生成
+                  </Button>
                 </div>
                 <div className={styles.right_side}>
-                  {/* <Button size={'small'}>
-                    <Icon className={getIcon('layout')} />
-                  </Button>
-                  <span>｜</span> */}
-                  {/* <Icon className={getExternalIcon('thumbsup')} />
-                  <Icon className={getExternalIcon('thumbsdown')} /> */}
+                  <Thumbs />
                 </div>
               </div>
+              {/* <span className={styles.v_line}></span> */}
             </>
           )}
         </div>
       </div>
     );
   }, [isLoading, isDone, isError, aiInlineChatService]);
+
+  const handleShortcutsClick = useCallback(
+    (text: string) => {
+      setInputValue(text);
+    },
+    [inputValue],
+  );
 
   return (
     <div className={styles.ai_inline_chat_panel}>
@@ -156,7 +154,14 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
             onSend={(value) => {
               props.selectChangeFire.fire(value);
               setCurrentCheckText(value);
+              setInputValue(value);
             }}
+            onValueChange={(value) => {
+              setInputValue(value);
+            }}
+            sendBtnClassName={styles.send_btn}
+            defaultHeight={32}
+            value={inputValue}
             placeholder={'请描述你的诉求'}
           />
         </div>
@@ -166,15 +171,15 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
               <>
                 {i !== 0 && <LineVertical />}
                 <li className={styles.item_li}>
-                  {iconClass && <Icon className={iconClass} style={{ marginRight: '6px' }}></Icon>}
-                  <span
-                    onClick={() => {
-                      props.selectChangeFire.fire(title);
-                      setCurrentCheckText(title);
-                    }}
-                  >
-                    {title}
-                  </span>
+                  {iconClass && (
+                    <EnhanceIcon
+                      className={clsx(iconClass, styles.action_icon)}
+                      wrapperStyle={{ padding: 6 }}
+                      onClick={() => handleShortcutsClick(title)}
+                    >
+                      <span>{title}</span>
+                    </EnhanceIcon>
+                  )}
                 </li>
               </>
             ))}
