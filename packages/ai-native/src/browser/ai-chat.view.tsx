@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 // @ts-ignore
@@ -57,33 +56,12 @@ export const AiChatView = observer(() => {
   const [, updateState] = React.useState<any>();
   // 项目生成
   const generateProject = React.useCallback(async () => {
-    await aiProjectGenerateService.clearWorkspace();
-
-    const loadingText = createMessageByAI(<div>项目生成中，请稍后....</div>);
-    // 项目分析结果
-    const { language, framework } = aiProjectGenerateService.requirements!;
-    const languageReply = createMessageByAI(
-      <AiReply text={`项目语言为：${language}\n使用框架：${framework}`} immediately={true} />,
-    );
-    setMessageListData([languageReply, loadingText]);
-
-    const filePathList = await aiProjectGenerateService.generateProjectStructure();
-    const structureReply = createMessageByAI(
-      <AiReply text={`项目结构为:\n${filePathList.join('\n')}`} immediately={true} />,
-    );
-    setMessageListData([languageReply, structureReply, loadingText]);
-
-    const generatedFilePathList: string[] = [];
-    await aiProjectGenerateService.generateFile(filePathList, (file: string) => {
-      const currentFileReply = createMessageByAI(<AiReply text={`正在生成文件:${file}`} />);
-      const generatedReply = createMessageByAI(<AiReply text={`已生成文件:\n${generatedFilePathList.join('\n')}`} />);
-      setMessageListData([languageReply, structureReply, generatedReply, currentFileReply, loadingText]);
-      generatedFilePathList.push(file);
+    aiProjectGenerateService.start((messageList) => {
+      const aiMessageList = messageList.map(({ message, immediately }) => createMessageByAI(
+        <AiReply text={message} immediately={immediately} />,
+      ));
+      setMessageListData([...aiMessageList]);
     });
-
-    const successMessage = createMessageByAI(<div>项目生成完毕</div>);
-    setMessageListData([languageReply, structureReply, successMessage]);
-    localStorage.removeItem('ai-generate');
   }, []);
 
   React.useEffect(() => {
