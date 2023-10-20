@@ -39,22 +39,7 @@ export class AiProjectGenerateService {
     return this._requirements;
   }
 
-  /**
-   * 生成项目目录结构
-   * ['src/app/main/demo.java', 'src/app/test/demo.jsva']
-   * @returns
-   */
-  public async generateProjectStructure(): Promise<string[]> {
-    return [];
-  }
-  /**
-   * 生成文件
-   * @param filePathList 文件列表，完整路径
-   * @param callback 回调函数，用来触发聊天输出
-   */
-  public async generateFile(filePathList: string[], callback: (path: string) => void) {}
-
-  public async clearWorkspace() {
-    await this.aiBackService.clearWorkspace();
+  public async start(callback: (messageList: Array<{ message: string; immediately?: boolean }>) => void) {
+    callback([]);
   }
 }
