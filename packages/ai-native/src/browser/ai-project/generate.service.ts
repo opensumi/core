@@ -5,12 +5,6 @@ import { ILogServiceClient, ILoggerManagerClient, SupportLogNamespace } from '@o
 
 import { AiGPTBackSerivcePath } from '../../common';
 
-export interface Requirements {
-  language: string;
-  framework: string;
-  requirements: string;
-}
-
 @Injectable()
 export class AiProjectGenerateService {
   @Autowired(AiGPTBackSerivcePath)
@@ -24,13 +18,13 @@ export class AiProjectGenerateService {
   protected codeStructure: string;
 
   @observable
-  protected _requirements?: Requirements;
+  protected _requirements?: Record<string, any>;
 
   constructor() {
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
-  public initRequirements(requirements?: Requirements) {
+  public initRequirements(requirements?: Record<string, any>) {
     this._requirements = requirements;
   }
 
