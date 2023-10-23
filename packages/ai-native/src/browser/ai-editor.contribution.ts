@@ -67,6 +67,28 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
+  private aiDiffWidget: AiDiffWidget;
+  private aiCodeWidget: AiCodeWidget;
+  private aiContentWidget: AiContentWidget;
+  private aiInlineChatDisposed: Disposable = new Disposable();
+
+  private disposeAllWidget() {
+    if (this.aiDiffWidget) {
+      this.aiDiffWidget.dispose();
+    }
+    if (this.aiCodeWidget) {
+      this.aiCodeWidget.dispose();
+    }
+    if (this.aiContentWidget) {
+      this.aiContentWidget.dispose();
+    }
+    if (this.aiInlineChatDisposed) {
+      this.aiInlineChatDisposed.dispose();
+    }
+
+    this.aiChatService.cancelAll();
+  }
+
   contribute(editor: IEditor): IDisposable {
     if (!editor) {
       return this;
@@ -81,309 +103,39 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    let aiDiffWidget: AiDiffWidget;
-    let aiCodeWidget: AiCodeWidget;
-    let aiContentWidget: AiContentWidget;
-    const aiInlineChatDisposed = new Disposable();
-
-    const disposeAllWidget = () => {
-      if (aiDiffWidget) {
-        aiDiffWidget.dispose();
-      }
-      if (aiCodeWidget) {
-        aiCodeWidget.dispose();
-      }
-      if (aiContentWidget) {
-        aiContentWidget.dispose();
-      }
-      if (aiInlineChatDisposed) {
-        aiInlineChatDisposed.dispose();
-      }
-
-      this.aiChatService.cancelAll();
-    };
-
     this.disposables.push(
       monacoEditor.onDidChangeModel(() => {
-        disposeAllWidget();
+        this.disposeAllWidget();
+      }),
+    );
+
+    this.disposables.push(
+      this.aiChatService.onInlineChatVisible((value: boolean) => {
+        if (value) {
+          this.registerInlineChat(editor);
+        } else {
+          this.disposeAllWidget();
+        }
       }),
     );
 
     Event.debounce(
-      Event.any(monacoEditor.onDidChangeCursorSelection),
+      Event.any<any>(monacoEditor.onDidChangeCursorSelection),
       (_, e) => e,
       100,
-    )((e) => {
-      disposeAllWidget();
+    )(() => {
       if (!this.preferenceService.getValid(AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
         return;
       }
 
-      const { monacoEditor, currentUri } = editor;
-
-      if (!currentUri) {
-        return;
-      }
-
-      if (currentUri && currentUri.codeUri.scheme !== 'file') {
-        return;
-      }
-
-      const selection = monacoEditor.getSelection();
-
-      if (!selection) {
-        disposeAllWidget();
-        return;
-      }
-
-      const { startLineNumber, endLineNumber } = selection;
-      // 获取指定范围内的文本内容
-      const text = monacoEditor.getModel()?.getValueInRange(selection);
-
-      if (!text?.trim()) {
-        return;
-      }
-
-      this.logger.log('monacoEditor.onMouseUp: >>> text', text);
-
-      this.aiInlineChatService.launchChatMessage(EChatStatus.READY);
-
-      aiContentWidget = this.injector.get(AiContentWidget, [monacoEditor]);
-
-      aiContentWidget.show({
-        selection,
-      });
-
-      aiInlineChatDisposed.addDispose(
-        aiContentWidget.onSelectChange(async (value) => {
-          if (aiDiffWidget) {
-            aiDiffWidget.dispose();
-          }
-
-          const model = monacoEditor.getModel();
-          if (!model) {
-            return;
-          }
-
-          if (value === '解释代码') {
-            this.aiChatService.launchChatMessage({
-              message: InstructionEnum.aiExplainKey,
-              prompt: this.aiChatService.explainCodePrompt(),
-            });
-            return;
-          }
-
-          if (value === '生成测试用例') {
-            this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
-
-            // @ts-ignore
-            const symbols = this.documentSymbolStore.getDocumentSymbol(model.uri!);
-
-            const findRange = (range: { startLineNumber: number; endLineNumber: number }) => {
-              if (!symbols) {
-                return;
-              }
-
-              return symbols
-                .map((obj) =>
-                  // (range.startLineNumber >= obj.range.startLineNumber && range.endLineNumber <= obj.range.endLineNumber ? obj : null)
-                  (obj.children || []).find(
-                    (child) =>
-                      range.startLineNumber >= child.range.startLineNumber &&
-                      range.endLineNumber <= child.range.endLineNumber,
-                  ),
-                )
-                .filter(Boolean)[0];
-            };
-
-            const fullCode = monacoEditor.getValue();
-
-            const currentFunc = findRange(selection);
-
-            let prompt: string;
-
-            if (!currentFunc) {
-              // 说明找不到选中的某个测试方法，则直接使用全文
-              prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成单元测试用例，不需要解释，只需要返回代码结果`;
-            } else {
-              prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
-            }
-
-            aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!]);
-            aiContentWidget.addDispose(aiCodeWidget);
-
-            this.logger.log('生成测试用例 prompt:>>> ', prompt);
-            const result = await this.aiGPTBackService.aiGPTcompletionRequest(
-              prompt,
-              {},
-              {
-                maxTokens: 16000,
-              },
-              this.aiChatService.cancelIndicator.token,
-            );
-
-            if (aiContentWidget.disposed || result.isCancel) {
-              return;
-            }
-
-            // 说明接口有异常
-            if (result.errorCode !== 0) {
-              this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR);
-            } else {
-              this.aiInlineChatService.launchChatMessage(EChatStatus.DONE);
-            }
-
-            let answer = result && result.data;
-
-            // 提取代码内容
-            const regex = /```\w*\s*([\s\S]+?)\s*```/;
-            const regExec = regex.exec(answer);
-            answer = (regExec && regExec[1]) || answer;
-
-            this.logger.log('生成测试用例 answer:>>> ', result);
-
-            if (answer) {
-              // 文件后缀名
-              const ext = URI.from(model.uri).path.ext;
-              const testUri = model.uri.with({
-                path: model.uri.path.replace(ext, `.test${ext}`),
-              });
-
-              this.logger.log(testUri);
-
-              aiCodeWidget.setAnswerValue(answer);
-              aiCodeWidget.setHeadUri(testUri.toString());
-              aiCodeWidget.setLanguageId(model.getLanguageId());
-              aiCodeWidget.create();
-              aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
-
-              // 调整 aiContentWidget 位置
-              aiContentWidget?.setOptions({
-                position: {
-                  lineNumber: endLineNumber + 1,
-                  column: selection.startColumn,
-                },
-              });
-              aiContentWidget?.layoutContentWidget();
-
-              aiInlineChatDisposed.addDispose(
-                this.aiInlineChatService.onAccept(async (value) => {
-                  // 采纳后在同级目录下新建测试文件
-                  if (testUri) {
-                    await this.fileTreeAPI.createFile(URI.parse(testUri.path), answer);
-                  }
-
-                  setTimeout(() => {
-                    disposeAllWidget();
-                  }, 110);
-                }),
-              );
-
-              aiInlineChatDisposed.addDispose(
-                this.aiInlineChatService.onDiscard((value) => {
-                  setTimeout(() => {
-                    disposeAllWidget();
-                  }, 110);
-                }),
-              );
-            }
-
-            return;
-          }
-
-          if (value) {
-            const prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。\n 请根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进，我的问题是: ${value}。`;
-            this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
-
-            this.logger.log('输入框 prompt:>>> ', prompt);
-
-            const result = await this.aiGPTBackService.aiGPTcompletionRequest(
-              prompt,
-              {},
-              {
-                maxTokens: 16000,
-              },
-              this.aiChatService.cancelIndicator.token,
-            );
-
-            if (aiInlineChatDisposed.disposed || result.isCancel) {
-              return;
-            }
-
-            // 说明接口有异常
-            if (result.errorCode !== 0) {
-              this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR);
-            } else {
-              this.aiInlineChatService.launchChatMessage(EChatStatus.DONE);
-            }
-
-            this.logger.log('aiGPTcompletionRequest:>>> ', result);
-
-            let answer = result && result.data;
-
-            // 提取代码内容
-            const regex = /```\w*\s*([\s\S]+?)\s*```/;
-            const regExec = regex.exec(answer);
-            answer = (regExec && regExec[1]) || answer;
-
-            this.logger.log('aiGPTcompletionRequest:>>> refresh answer', answer);
-            if (answer) {
-              // 控制缩进
-              const indents = ' '.repeat(4);
-              const spcode = answer.split('\n');
-              answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
-
-              aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer, model.getLanguageId()]);
-              aiDiffWidget.create();
-              aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
-
-              // 调整 aiContentWidget 位置
-              aiContentWidget?.setOptions({
-                position: {
-                  lineNumber: endLineNumber + 1,
-                  column: selection.startColumn,
-                },
-              });
-              aiContentWidget?.layoutContentWidget();
-
-              aiInlineChatDisposed.addDispose(
-                this.aiInlineChatService.onAccept((value) => {
-                  // monacoEditor.getModel()?.pushStackElement();
-                  monacoEditor.getModel()?.pushEditOperations(
-                    null,
-                    [
-                      {
-                        range: selection,
-                        text: answer,
-                      },
-                    ],
-                    () => null,
-                  );
-                  // monacoEditor.getModel()?.pushStackElement();
-
-                  setTimeout(() => {
-                    disposeAllWidget();
-                  }, 110);
-                }),
-              );
-
-              aiInlineChatDisposed.addDispose(
-                this.aiInlineChatService.onDiscard((value) => {
-                  setTimeout(() => {
-                    disposeAllWidget();
-                  }, 110);
-                }),
-              );
-            }
-          }
-        }),
-      );
+      this.registerInlineChat(editor);
     });
 
     this.logger.log('AiEditorContribution:>>>', editor, monacoEditor);
 
     return this;
   }
+
   provideEditorOptionsForUri?(uri: URI): MaybePromise<Partial<MonacoEditor.IEditorOptions>> {
     throw new Error('Method not implemented.');
   }
@@ -598,6 +350,273 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},
         });
         this.disposables.push(dispose);
+      }),
+    );
+  }
+
+  /**
+   * 弹出 inlineChat
+   */
+  private async registerInlineChat(editor: IEditor): Promise<void> {
+    this.disposeAllWidget();
+
+    const { monacoEditor, currentUri } = editor;
+
+    if (!currentUri) {
+      return;
+    }
+
+    if (currentUri && currentUri.codeUri.scheme !== 'file') {
+      return;
+    }
+
+    const selection = monacoEditor.getSelection();
+
+    if (!selection) {
+      this.disposeAllWidget();
+      return;
+    }
+
+    const { startLineNumber, endLineNumber } = selection;
+    // 获取指定范围内的文本内容
+    const text = monacoEditor.getModel()?.getValueInRange(selection);
+
+    if (!text?.trim()) {
+      return;
+    }
+
+    this.logger.log('monacoEditor.onMouseUp: >>> text', text);
+
+    this.aiInlineChatService.launchChatMessage(EChatStatus.READY);
+
+    this.aiContentWidget = this.injector.get(AiContentWidget, [monacoEditor]);
+
+    this.aiContentWidget.show({
+      selection,
+    });
+
+    this.aiInlineChatDisposed.addDispose(
+      this.aiContentWidget.onSelectChange(async (value) => {
+        if (this.aiDiffWidget) {
+          this.aiDiffWidget.dispose();
+        }
+
+        const model = monacoEditor.getModel();
+        if (!model) {
+          return;
+        }
+
+        if (value === '解释代码') {
+          this.aiChatService.launchChatMessage({
+            message: InstructionEnum.aiExplainKey,
+            prompt: this.aiChatService.explainCodePrompt(),
+          });
+          return;
+        }
+
+        if (value === '生成测试用例') {
+          this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
+
+          // @ts-ignore
+          const symbols = this.documentSymbolStore.getDocumentSymbol(model.uri!);
+
+          const findRange = (range: { startLineNumber: number; endLineNumber: number }) => {
+            if (!symbols) {
+              return;
+            }
+
+            return symbols
+              .map((obj) =>
+                // (range.startLineNumber >= obj.range.startLineNumber && range.endLineNumber <= obj.range.endLineNumber ? obj : null)
+                (obj.children || []).find(
+                  (child) =>
+                    range.startLineNumber >= child.range.startLineNumber &&
+                    range.endLineNumber <= child.range.endLineNumber,
+                ),
+              )
+              .filter(Boolean)[0];
+          };
+
+          const fullCode = monacoEditor.getValue();
+
+          const currentFunc = findRange(selection);
+
+          let prompt: string;
+
+          if (!currentFunc) {
+            // 说明找不到选中的某个测试方法，则直接使用全文
+            prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成单元测试用例，不需要解释，只需要返回代码结果`;
+          } else {
+            prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
+          }
+
+          this.aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!]);
+          this.aiContentWidget.addDispose(this.aiCodeWidget);
+
+          this.logger.log('生成测试用例 prompt:>>> ', prompt);
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+            prompt,
+            {},
+            {
+              maxTokens: 16000,
+            },
+            this.aiChatService.cancelIndicator.token,
+          );
+
+          if (this.aiContentWidget.disposed || result.isCancel) {
+            return;
+          }
+
+          // 说明接口有异常
+          if (result.errorCode !== 0) {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR);
+          } else {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.DONE);
+          }
+
+          let answer = result && result.data;
+
+          // 提取代码内容
+          const regex = /```\w*\s*([\s\S]+?)\s*```/;
+          const regExec = regex.exec(answer);
+          answer = (regExec && regExec[1]) || answer;
+
+          this.logger.log('生成测试用例 answer:>>> ', result);
+
+          if (answer) {
+            // 文件后缀名
+            const ext = URI.from(model.uri).path.ext;
+            const testUri = model.uri.with({
+              path: model.uri.path.replace(ext, `.test${ext}`),
+            });
+
+            this.logger.log(testUri);
+
+            this.aiCodeWidget.setAnswerValue(answer);
+            this.aiCodeWidget.setHeadUri(testUri.toString());
+            this.aiCodeWidget.setLanguageId(model.getLanguageId());
+            this.aiCodeWidget.create();
+            this.aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
+
+            // 调整 aiContentWidget 位置
+            this.aiContentWidget?.setOptions({
+              position: {
+                lineNumber: endLineNumber + 1,
+                column: selection.startColumn,
+              },
+            });
+            this.aiContentWidget?.layoutContentWidget();
+
+            this.aiInlineChatDisposed.addDispose(
+              this.aiInlineChatService.onAccept(async (value) => {
+                // 采纳后在同级目录下新建测试文件
+                if (testUri) {
+                  await this.fileTreeAPI.createFile(URI.parse(testUri.path), answer);
+                }
+
+                setTimeout(() => {
+                  this.disposeAllWidget();
+                }, 110);
+              }),
+            );
+
+            this.aiInlineChatDisposed.addDispose(
+              this.aiInlineChatService.onDiscard((value) => {
+                setTimeout(() => {
+                  this.disposeAllWidget();
+                }, 110);
+              }),
+            );
+          }
+
+          return;
+        }
+
+        if (value) {
+          const prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。\n 请根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进，我的问题是: ${value}。`;
+          this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
+
+          this.logger.log('输入框 prompt:>>> ', prompt);
+
+          const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+            prompt,
+            {},
+            {
+              maxTokens: 16000,
+            },
+            this.aiChatService.cancelIndicator.token,
+          );
+
+          if (this.aiInlineChatDisposed.disposed || result.isCancel) {
+            return;
+          }
+
+          // 说明接口有异常
+          if (result.errorCode !== 0) {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR);
+          } else {
+            this.aiInlineChatService.launchChatMessage(EChatStatus.DONE);
+          }
+
+          this.logger.log('aiGPTcompletionRequest:>>> ', result);
+
+          let answer = result && result.data;
+
+          // 提取代码内容
+          const regex = /```\w*\s*([\s\S]+?)\s*```/;
+          const regExec = regex.exec(answer);
+          answer = (regExec && regExec[1]) || answer;
+
+          this.logger.log('aiGPTcompletionRequest:>>> refresh answer', answer);
+          if (answer) {
+            // 控制缩进
+            const indents = ' '.repeat(4);
+            const spcode = answer.split('\n');
+            answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
+
+            this.aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, text, answer, model.getLanguageId()]);
+            this.aiDiffWidget.create();
+            this.aiDiffWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
+
+            // 调整 aiContentWidget 位置
+            this.aiContentWidget?.setOptions({
+              position: {
+                lineNumber: endLineNumber + 1,
+                column: selection.startColumn,
+              },
+            });
+            this.aiContentWidget?.layoutContentWidget();
+
+            this.aiInlineChatDisposed.addDispose(
+              this.aiInlineChatService.onAccept((value) => {
+                // monacoEditor.getModel()?.pushStackElement();
+                monacoEditor.getModel()?.pushEditOperations(
+                  null,
+                  [
+                    {
+                      range: selection,
+                      text: answer,
+                    },
+                  ],
+                  () => null,
+                );
+                // monacoEditor.getModel()?.pushStackElement();
+
+                setTimeout(() => {
+                  this.disposeAllWidget();
+                }, 110);
+              }),
+            );
+
+            this.aiInlineChatDisposed.addDispose(
+              this.aiInlineChatService.onDiscard((value) => {
+                setTimeout(() => {
+                  this.disposeAllWidget();
+                }, 110);
+              }),
+            );
+          }
+        }
       }),
     );
   }

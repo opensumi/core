@@ -26,6 +26,9 @@ export class AiChatService {
   private readonly _onChangeSessionId = new Emitter<string>();
   public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
 
+  private readonly _onInlineChatVisible = new Emitter<boolean>();
+  public readonly onInlineChatVisible: Event<boolean> = this._onInlineChatVisible.event;
+
   private _latestSessionId: string;
   public get latestSessionId(): string {
     return this._latestSessionId;
@@ -37,6 +40,10 @@ export class AiChatService {
 
   public launchChatMessage(data: IChatMessageStructure) {
     this._onChatMessageLaunch.fire(data);
+  }
+
+  public launchInlineChatVisible(value: boolean) {
+    this._onInlineChatVisible.fire(value);
   }
 
   public cancelIndicator = new CancellationTokenSource();
