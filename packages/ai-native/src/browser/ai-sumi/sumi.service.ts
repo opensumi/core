@@ -58,7 +58,7 @@ ${this.taskPrompt(commands)}
 回答: 通过分析需求「增加字体大小」，可以获取到一些关键词：font、zoomIn、zoomOut。通过这些关键词，无法在 Command 列表中找到合适的命令。
 提问: ${question}`;
 
-    const res = await this.aiBackService.aiAntGlm(cotPrompt, this.aiChatService.cancelIndicator.token);
+    const res = await this.aiBackService.aiAntGlm(cotPrompt, this.aiChatService.cancelIndicatorChatView.token);
     const answerCommand = this.matchCommand(res.data);
     return commands.find((c) => (c.delegate || c.id) === answerCommand) || '';
   }

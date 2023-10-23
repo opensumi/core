@@ -86,7 +86,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiInlineChatDisposed.dispose();
     }
 
-    this.aiChatService.cancelAll();
+    this.aiChatService.cancelToken();
   }
 
   contribute(editor: IEditor): IDisposable {

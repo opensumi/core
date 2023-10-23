@@ -13,7 +13,7 @@ import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
+import { IEditorDocumentModelService, ILanguageService } from '@opensumi/ide-editor/lib/browser/index';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 
@@ -25,6 +25,7 @@ const ChatEditor = ({ input, language }) => {
   const documentService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
+  const languageService = useInjectable<ILanguageService>(ILanguageService);
   // 用于在复制代码的时候切换 popover 的标题
   const [isCoping, setIsCoping] = useState<boolean>(false);
 
@@ -59,7 +60,10 @@ const ChatEditor = ({ input, language }) => {
     const model = docModel.instance.getMonacoModel();
     model.updateOptions({ tabSize: 2 });
     codeEditor.monacoEditor.setModel(model);
-    codeEditor.monacoEditor.getModel()?.setMode(language);
+
+    if (language && languageService.getLanguage(language)) {
+      codeEditor.monacoEditor.getModel()?.setMode(language);
+    }
 
     return codeEditor;
   };

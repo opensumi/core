@@ -12,7 +12,7 @@ export const Thinking = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   const handlePause = useCallback(() => {
-    aiChatService.cancelAll();
+    aiChatService.cancelChatViewToken();
   }, []);
 
   return (

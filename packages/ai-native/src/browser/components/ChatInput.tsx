@@ -84,11 +84,20 @@ export interface IChatInputProps {
   sendBtnClassName?: string;
   defaultHeight?: number;
   value?: string;
+  autoFocus?: boolean;
 }
 
 // 指令命令激活组件
 export const ChatInput = (props: IChatInputProps) => {
-  const { onSend, onValueChange, placeholder, enableOptions = false, disabled = false, defaultHeight = 40 } = props;
+  const {
+    onSend,
+    onValueChange,
+    placeholder,
+    enableOptions = false,
+    disabled = false,
+    defaultHeight = 40,
+    autoFocus,
+  } = props;
   const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
   const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);
@@ -100,6 +109,12 @@ export const ChatInput = (props: IChatInputProps) => {
       setValue(props.value || '');
     }
   }, [props.value]);
+
+  useEffect(() => {
+    if (inputRef && autoFocus) {
+      inputRef.current?.focus();
+    }
+  }, [inputRef, autoFocus, props.value]);
 
   useEffect(() => {
     if (enableOptions) {

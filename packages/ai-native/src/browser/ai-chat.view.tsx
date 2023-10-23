@@ -57,9 +57,9 @@ export const AiChatView = observer(() => {
   // 项目生成
   const generateProject = React.useCallback(async () => {
     aiProjectGenerateService.start((messageList) => {
-      const aiMessageList = messageList.map(({ message, immediately }) => createMessageByAI(
-        <AiReply text={message} immediately={immediately} />,
-      ));
+      const aiMessageList = messageList.map(({ message, immediately }) =>
+        createMessageByAI(<AiReply text={message} immediately={immediately} />),
+      );
       setMessageListData([...aiMessageList]);
     });
   }, []);
@@ -161,7 +161,7 @@ export const AiChatView = observer(() => {
         } else if (userInput!.type === AISerivceType.Run) {
           aiMessage = await aiChatService.aiBackService.aiAntGlm(
             userInput!.message!,
-            aiChatService.cancelIndicator.token,
+            aiChatService.cancelIndicatorChatView.token,
           );
           aiMessage = await AIChatRunReply(aiMessage.data, aiRunService, aiChatService);
         }
@@ -308,7 +308,7 @@ const AISearch = async (input, aiChatService: AiChatService) => {
     const result = await aiChatService.aiBackService.aiSearchRequest(
       input.message,
       input.type === 'overall',
-      aiChatService.cancelIndicator.token,
+      aiChatService.cancelIndicatorChatView.token,
     );
 
     const { responseText, urlMessage, isCancel } = result;

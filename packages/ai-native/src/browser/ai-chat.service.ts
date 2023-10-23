@@ -47,10 +47,16 @@ export class AiChatService {
   }
 
   public cancelIndicator = new CancellationTokenSource();
+  public cancelIndicatorChatView = new CancellationTokenSource();
 
-  public cancelAll() {
+  public cancelToken() {
     this.cancelIndicator.cancel();
     this.cancelIndicator = new CancellationTokenSource();
+  }
+
+  public cancelChatViewToken() {
+    this.cancelIndicatorChatView.cancel();
+    this.cancelIndicatorChatView = new CancellationTokenSource();
   }
 
   public async switchAIService(input: string, prompt = '') {
@@ -149,7 +155,7 @@ export class AiChatService {
       input,
       undefined,
       options,
-      this.aiChatService.cancelIndicator.token,
+      this.aiChatService.cancelIndicatorChatView.token,
     );
 
     if (res.isCancel) {

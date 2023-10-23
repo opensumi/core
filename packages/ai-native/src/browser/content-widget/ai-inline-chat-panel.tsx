@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
@@ -135,7 +135,10 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
 
   const handleShortcutsClick = useCallback(
     (text: string) => {
-      setInputValue(text);
+      // setInputValue(text);
+      props.selectChangeFire.fire(text);
+      setCurrentCheckText(text);
+      setInputValue('');
     },
     [inputValue],
   );
@@ -151,10 +154,11 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         <div className={styles.ai_content_widget_input}>
           <ChatInput
             disabled={isLoading}
+            autoFocus={true}
             onSend={(value) => {
               props.selectChangeFire.fire(value);
               setCurrentCheckText(value);
-              setInputValue(value);
+              setInputValue('');
             }}
             onValueChange={(value) => {
               setInputValue(value);
@@ -170,7 +174,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
             {improveList.map(({ title, iconClass }, i) => (
               <>
                 {i !== 0 && <LineVertical />}
-                <li className={styles.item_li}>
+                <li className={styles.item_li} key={i}>
                   {iconClass && (
                     <EnhanceIcon
                       className={clsx(iconClass, styles.action_icon)}
