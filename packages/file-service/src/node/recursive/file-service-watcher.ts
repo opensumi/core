@@ -29,9 +29,8 @@ import {
 } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 
-// 作用是?
 export interface WatcherOptions {
-  excludesPattern: ParsedPattern[]; // 函数，返回布尔值
+  excludesPattern: ParsedPattern[];
   excludes: string[];
 }
 
@@ -61,12 +60,11 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
   protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
 
-  // 收集发生改变的文件f
   protected changes = new FileChangeCollection();
 
   @Autowired(ILogServiceManager)
 
-  // 一个symbol关键字，内容是ILogServiceManager
+  // 一个 symbol 关键字，内容是 ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
 
   private logger: ILogService;
@@ -102,7 +100,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     const basePath = FileUri.fsPath(uri); // 转换为操作系统可以识别的路径
     const exist = await fs.pathExists(basePath); // 判断文件是否存在
 
-    let watcherId = this.checkIsAlreadyWatched(basePath); // 返回被监听的文件的watcherId
+    let watcherId = this.checkIsAlreadyWatched(basePath); // 返回被监听的文件的 watcherId
     // watcherId存在直接返回，函数结束
     if (watcherId) {
       return watcherId;
@@ -129,7 +127,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         this.logger.error(`Watching ${watchPath} error: `, err);
         return;
       }
-      // 这一段需要根据watch的api写非递归监听的逻辑
       events = this.trimChangeEvent(events);
       for (const event of events) {
         if (event.type === 'create') {
@@ -139,7 +136,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
           this.pushDeleted(event.path);
         }
         if (event.type === 'update') {
-          // this.pushUpdated(event.path);
+          this.pushUpdated(event.path);
         }
       }
     };

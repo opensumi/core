@@ -44,10 +44,9 @@ import {
   handleError,
 } from '../common/';
 
-import { UnRecursiveFileSystemWatcher } from './no-recursive/file-node-watcher-lib';
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
-// import { this } from '../../../components/src/utils/raf';
+import { UnRecursiveFileSystemWatcher } from './un-recursive/file-node-watcher-lib';
 
 const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -93,7 +92,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private ignoreNextChangesEvent: Set<string> = new Set();
 
   // 不添加注解会报错
-  constructor(@Optional() recursive = false) {
+  constructor(@Optional() recursive = true) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.initWatchServer();

@@ -6,10 +6,9 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
-
 import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
-import { FileSystemWatcherServer } from '../packages/file-service/lib/node/recursive/file-service-watcher';
+import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
 describe('FileServiceClient should be work', () => {
   const injector = createBrowserInjector([FileServiceClientModule]);

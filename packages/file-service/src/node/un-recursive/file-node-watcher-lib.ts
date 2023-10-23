@@ -14,12 +14,12 @@ import {
   Disposable,
   DisposableCollection,
   isLinux,
-  isWindows,
+  // isWindows,
   isMacintosh,
   parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { toDisposable } from '../../../../utils/src/disposable';
+// import { toDisposable } from '../../../../utils/src/disposable';
 import { join, basename, dirname } from '../../../../utils/src/path';
 // 文件监听类型(更新、添加、删除)；文件监听下的文件修改时触发事件；启动和注销文件监听
 import {
@@ -64,7 +64,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   @Autowired(ILogServiceManager)
 
-  // 一个symbol关键字，内容是ILogServiceManager
+  // 一个 symbol 关键字，内容是 ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
 
   // 收集发生改变的文件
@@ -357,7 +357,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   }
 
   /**
-   * 返回的boolean值
+   * 返回的 boolean 值
    */
   private async existsChildStrictCase(path: string): Promise<boolean> {
     if (isLinux) {
