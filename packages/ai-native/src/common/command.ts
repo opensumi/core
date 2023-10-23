@@ -19,3 +19,7 @@ export const AI_RUN_DEBUG_COMMANDS = {
 export const AI_CHAT_PANEL_TOGGLE_VISIBLE = {
   id: 'ai.chat.panel.toggle.visible',
 };
+
+export const AI_INLINE_CHAT_VISIBLE = {
+  id: 'ai.inline.chat.visible',
+};

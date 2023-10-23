@@ -17,6 +17,9 @@ import {
   ClientAppContribution,
   ISettingSection,
   ISettingGroup,
+  KeybindingContribution,
+  KeybindingRegistry,
+  KeybindingScope,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
@@ -42,7 +45,12 @@ import {
   IAiRunFeatureRegistry,
   InstructionEnum,
 } from '../common';
-import { AI_EXPLAIN_DEBUG_COMMANDS, AI_EXPLAIN_TERMINAL_COMMANDS, AI_RUN_DEBUG_COMMANDS } from '../common/command';
+import {
+  AI_EXPLAIN_DEBUG_COMMANDS,
+  AI_EXPLAIN_TERMINAL_COMMANDS,
+  AI_INLINE_CHAT_VISIBLE,
+  AI_RUN_DEBUG_COMMANDS,
+} from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
@@ -66,6 +74,7 @@ import { AiRunService } from './run/run.service';
   CommandContribution,
   SlotRendererContribution,
   SettingContribution,
+  KeybindingContribution,
 )
 export class AiNativeCoreContribution
   implements
@@ -75,7 +84,8 @@ export class AiNativeCoreContribution
     MenuContribution,
     CommandContribution,
     SlotRendererContribution,
-    SettingContribution
+    SettingContribution,
+    KeybindingContribution
 {
   @Autowired()
   private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
@@ -329,6 +339,12 @@ ${getContent}
         this.aiRunService.run();
       },
     });
+
+    commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
+      execute: (value) => {
+        this.aiChatService.launchInlineChatVisible(value);
+      },
+    });
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
@@ -363,5 +379,24 @@ ${getContent}
     registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
     registry.registerSlotRenderer(SlotLocation.bottom, AiBottomTabRenderer);
     registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding(
+      {
+        command: AI_INLINE_CHAT_VISIBLE.id,
+        keybinding: 'ctrlcmd+i',
+        when: 'editorTextFocus',
+        args: true,
+        priority: 0,
+      },
+      KeybindingScope.USER,
+    );
+
+    keybindings.registerKeybinding({
+      command: AI_INLINE_CHAT_VISIBLE.id,
+      keybinding: 'esc',
+      args: false,
+    });
   }
 }
