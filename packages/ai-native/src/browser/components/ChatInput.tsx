@@ -12,10 +12,11 @@ import { EnhanceIcon } from './Icon';
 interface IBlockProps {
   icon: string;
   name?: string;
+  onClick?: () => void;
 }
 
-const Block = ({ icon, name }: IBlockProps) => (
-  <div className={styles.block}>
+const Block = ({ icon, name, onClick }: IBlockProps) => (
+  <div className={styles.block} onClick={onClick}>
     <EnhanceIcon className={icon} />
     {name && <span className={styles.name}>{name}</span>}
   </div>
@@ -190,10 +191,6 @@ export const ChatInput = (props: IChatInputProps) => {
   return (
     <div className={styles.chat_input_container}>
       {isShowOptions && <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />}
-      {/* <div className={styles.header_operate}>
-        <Block icon={getIcon('add-comments')} name={'新对话'} />
-        <Icon className={getExternalIcon('history')} />
-      </div> */}
       <Input
         ref={inputRef}
         placeholder={placeholder}

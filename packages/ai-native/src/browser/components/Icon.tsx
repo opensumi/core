@@ -8,6 +8,6 @@ import * as styles from './components.module.less';
 export const EnhanceIcon = (props: IconProps & { wrapperStyle?: React.CSSProperties }) => (
   <div className={styles.ai_enhance_icon} style={props.wrapperStyle} onClick={props.onClick}>
     <Icon {...props} className={cls(props.className, styles.icon)} children={null} onClick={() => null} />
-    {props.children}
+    {props.children && <span className={styles.children_wrap}>{props.children}</span>}
   </div>
 );

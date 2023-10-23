@@ -184,6 +184,7 @@ export const AiChatView = observer(() => {
   );
 
   const handleClear = React.useCallback(() => {
+    aiChatService.cancelChatViewToken();
     setMessageListData([firstMsg]);
   }, [messageListData]);
 
@@ -235,6 +236,12 @@ export const AiChatView = observer(() => {
             )}
           </div>
           <div className={styles.chat_input_warp}>
+            <div className={styles.header_operate}>
+              <EnhanceIcon icon={'add-comments'} onClick={handleClear}>
+                新对话
+              </EnhanceIcon>
+              {/* <Icon className={getExternalIcon('history')} /> */}
+            </div>
             <ChatInput
               onSend={(value) => handleSend({ message: value })}
               disabled={loading}
