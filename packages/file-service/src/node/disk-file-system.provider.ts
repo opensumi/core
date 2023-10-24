@@ -70,8 +70,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
 
-  private recursive: boolean;
-
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
@@ -91,11 +89,13 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private ignoreNextChangesEvent: Set<string> = new Set();
 
-  // 不添加注解会报错
+  private recursive: boolean;
+
   constructor(@Optional() recursive = true) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.initWatchServer();
+    this.logger.log(recursive, 'startStartStart');
     this.recursive = recursive;
   }
 
@@ -374,8 +374,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
     this.watcherServerDisposeCollection = new DisposableCollection();
     if (this.recursive) {
+      this.logger.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
       this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
     } else {
+      this.logger.log(this.recursive, 'lllllllllllll');
+      this.logger.log('bbbbbbbbbbbbbbbbbbbbbbb');
       this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
     }
     this.watcherServer.setClient({

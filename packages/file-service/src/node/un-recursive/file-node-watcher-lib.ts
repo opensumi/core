@@ -19,7 +19,6 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-node';
 
-// import { toDisposable } from '../../../../utils/src/disposable';
 import { join, basename, dirname } from '../../../../utils/src/path';
 // 文件监听类型(更新、添加、删除)；文件监听下的文件修改时触发事件；启动和注销文件监听
 import {
@@ -51,7 +50,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     number,
     {
       path: string;
-      handlers: any; // 暂时不确定
+      handlers: any;
       disposable: IDisposable;
     }
   >();
@@ -60,7 +59,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected watcherOptions = new Map<number, WatcherOptions>();
 
-  private static readonly FILE_DELETE_HANDLER_DELAY = 100;
+  private static readonly FILE_DELETE_HANDLER_DELAY = 1000;
 
   @Autowired(ILogServiceManager)
 
@@ -104,28 +103,24 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
       this.logger.log('start watching', basePath);
 
-      // 文件夹的子目录
-      const folderChildren = new Set<string>();
-
-      // 用来辅助判断文件/文件夹被删除后如何判断被删除文件的类型
+      // 目录下面的所有文件
       const docChildren = new Set<string>();
+
+      try {
+        for (const child of fs.readdirSync(basePath)) {
+          const base = join(basePath, String(child));
+          if (!fs.lstatSync(base).isDirectory()) {
+            docChildren.add(child); // 将目录下的文件放入此中
+          }
+        }
+      } catch (error) {
+        this.logger.error(error);
+      }
 
       // 判断是否是文件夹目录
       const isDirectory = fs.lstatSync(basePath).isDirectory();
       // 如果是文件夹目录
       if (isDirectory) {
-        try {
-          for (const child of fs.readdirSync(basePath)) {
-            folderChildren.add(child);
-            const base = join(basePath, String(child));
-            if (!fs.lstatSync(base).isDirectory()) {
-              docChildren.add(child); // 将目录下的文件放入此中
-            }
-          }
-        } catch (error) {
-          this.logger.error(error);
-        }
-
         // 开始走监听流程
         watcher.on('error', (code: number, signal: string) => {
           this.logger.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
@@ -134,81 +129,38 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
         // 监听到文件改变时候的回调函数
         watcher.on('change', (type, raw) => {
-          const changePath = join(basePath, raw as string);
-
           let changeFileName = '';
           if (raw) {
-            changeFileName = raw.toString();
+            changeFileName = this.deleteFileNumberSuffix(raw as string);
             if (isMacintosh) {
               changeFileName = fs.realpathSync.native(changeFileName);
             }
           }
 
+          const changePath = join(basePath, changeFileName);
+
           if (!raw || (type !== 'change' && type !== 'rename')) {
             return;
           }
 
-          // 如果是文件夹
-          if (!docChildren.has(changeFileName)) {
-            if (type === 'rename') {
-              const timeoutHandle = setTimeout(async () => {
-                if (changeFileName === basename(basePath) && !(await fs.pathExists(basePath))) {
-                  this.toDispose.dispose();
-                  return;
-                }
-                const fileExists = await this.existsChildStrictCase(changePath);
-                let type: FileChangeType;
-                if (fileExists) {
-                  if (folderChildren.has(changeFileName)) {
-                    type = FileChangeType.UPDATED;
-                    this.pushUpdated(changePath);
-                  } else {
-                    folderChildren.add(changeFileName);
-                    type = FileChangeType.ADDED;
-                    this.pushAdded(changePath);
-                    if (!fs.lstatSync(changePath).isDirectory()) {
-                      docChildren.add(changeFileName);
-                    }
-                  }
-                } else {
-                  folderChildren.delete(changeFileName);
-                  type = FileChangeType.DELETED;
-                  this.pushDeleted(changePath);
-                }
-              }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
-              timeoutHandle;
-            }
-
-            // 当前文件夹下的文件
-            else {
-              let type: FileChangeType;
-              if (folderChildren.has(changeFileName)) {
-                type = FileChangeType.UPDATED;
-                this.pushUpdated(changePath);
-              } else {
-                folderChildren.add(changeFileName);
-                type = FileChangeType.ADDED;
-                this.pushAdded(changePath);
-              }
-            }
-          }
-
           // 当前目录下的文件
-          else {
-            if (type === 'rename' || changeFileName !== raw) {
+          if (docChildren.has(changeFileName)) {
+            if (type === 'rename') {
               const timeoutHandle = setTimeout(async () => {
                 const fileExists = await fs.pathExists(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
                 } else {
-                  folderChildren.delete(changeFileName);
                   docChildren.delete(changeFileName);
                   this.pushDeleted(changePath);
                 }
               }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
               timeoutHandle;
-            } else {
-              this.pushUpdated(changePath);
+            }
+          } else {
+            if (!fs.lstatSync(changePath).isDirectory()) {
+              this.pushAdded(changePath);
+              docChildren.add(changeFileName);
             }
           }
         });
@@ -289,15 +241,13 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     }
 
     const realPath = await fs.realpath(basePath);
-    const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
-      for (let times = 0; times < maxRetries; times++) {
-        try {
-          this.doWatch(realPath);
-        } catch (error) {
-          await new Promise((resolve) => {
-            setTimeout(resolve, retryDelay);
-          });
-        }
+    const tryWatchDir = async (retryDelay = 1000) => {
+      try {
+        this.doWatch(realPath);
+      } catch (error) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, retryDelay);
+        });
       }
       return undefined;
     };
@@ -333,7 +283,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     } else {
       const handler = await tryWatchDir();
 
-      // 但是这里始终为undefined
+      // 但是这里始终为 undefined
       if (handler) {
         disposables.push(
           Disposable.create(async () => {
@@ -499,5 +449,9 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       }
     }
     return path;
+  }
+  protected deleteFileNumberSuffix(fileName: string): string {
+    const cleanFileName = fileName.replace(/\.\d+$/, '');
+    return cleanFileName;
   }
 }
