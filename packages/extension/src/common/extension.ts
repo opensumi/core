@@ -21,6 +21,7 @@ import {
   LinkedText,
   URI,
   createLocalizedStr,
+  Throttler,
 } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
@@ -276,7 +277,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 
   protected readonly iconService?: IIconService;
 
-  abstract contribute(): void | Promise<void>;
+  abstract contribute(from?: any): void | Promise<void>;
 
   register(extensionId: string, contributes: T) {
     this.contributesMap.push({ extensionId, contributes });
@@ -327,6 +328,8 @@ export abstract class ExtensionContributesService extends WithEventBus {
   private injector: Injector;
 
   private contributedSet = new Set();
+  private contributeQueue = new Throttler();
+  private lifecycles: LifeCyclePhase[] = [];
 
   private getContributionCls(contributesName: string): typeof VSCodeContributePoint | undefined {
     const Constructor = this.ContributionPoints.find((Constructor) => {
@@ -359,7 +362,6 @@ export abstract class ExtensionContributesService extends WithEventBus {
       }
       return false;
     });
-
     await Promise.all(
       Contributes.map(async (Constructor: typeof VSCodeContributePoint) => {
         try {
@@ -369,7 +371,7 @@ export abstract class ExtensionContributesService extends WithEventBus {
 
           if (contributePoint.hasUncontributedPoint()) {
             const now = Date.now();
-            await contributePoint.contribute();
+            await contributePoint.contribute(this);
             contributePoint.afterContribute();
 
             this.extensionsSchemaService.registerExtensionPoint({
@@ -389,7 +391,8 @@ export abstract class ExtensionContributesService extends WithEventBus {
   }
 
   public async initialize() {
-    const runContributes = async (phase = this.lifecycleService.phase) => {
+    const doRunContributes = async () => {
+      const phase = this.lifecycles.unshift();
       if (!phase) {
         return;
       }
@@ -399,13 +402,17 @@ export abstract class ExtensionContributesService extends WithEventBus {
       if (phase === LifeCyclePhase.Ready) {
         this.contributedSet.clear();
       }
-
       await this.runContributesByPhase(phase);
+    };
+
+    const runContributes = async (phase = this.lifecycleService.phase) => {
+      this.lifecycles.push(phase);
+      await doRunContributes();
     };
 
     this.addDispose(
       this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
-        runContributes(newPhase);
+        this.contributeQueue.queue(() => runContributes(newPhase));
       }),
     );
     await runContributes();
