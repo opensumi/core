@@ -83,23 +83,20 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     { leading: true, trailing: true },
   );
 
-  public unregisterMenusBarByCompact() {
-    const preMenu = this.menuRegistry.getMenuItems(MenuId.MenubarCompactMenu) as ISubmenuItem[];
-    preMenu.forEach((c) => {
-      this.menuRegistry.unregisterMenuItem(MenuId.MenubarCompactMenu, c.submenu);
-    });
-
-    this.menuRegistry.unregisterMenuItem(MenuId.ActivityBarTopExtra, MenuId.MenubarCompactMenu);
+  public unregisterMenusBarByCompact(menuId: MenuId = MenuId.ActivityBarTopExtra) {
+    this.menuRegistry.unregisterMenuItem(menuId, MenuId.MenubarCompactMenu);
   }
 
-  public registerMenusBarByCompact(menubarItems: IMenubarItem[] = this.menubarItems) {
-    this.menuRegistry.registerMenuItem(MenuId.ActivityBarTopExtra, {
+  public registerMenuItemByCompactMenu(menuId: MenuId = MenuId.ActivityBarTopExtra) {
+    this.menuRegistry.registerMenuItem(menuId, {
       submenu: MenuId.MenubarCompactMenu,
       iconClass: getExternalIcon('menu'),
       order: 1,
       group: 'navigation',
     });
+  }
 
+  public registerMenusBarByCompact(menubarItems: IMenubarItem[] = this.menubarItems) {
     this.menuRegistry.registerMenuItems(
       MenuId.MenubarCompactMenu,
       menubarItems.map(

@@ -20,18 +20,14 @@ export class MenuBarContribution extends Disposable implements ComponentContribu
 
     this.addDispose(
       this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
-        const isCompact = this.preferenceService.getValid<boolean>(MenubarSettingId.CompactMode);
-
-        if (isCompact) {
-          this.menubarStore.registerMenusBarByCompact(menubarItems);
-        }
+        this.menubarStore.registerMenusBarByCompact(menubarItems);
       }),
     );
 
     this.addDispose(
       this.preferenceService.onSpecificPreferenceChange(MenubarSettingId.CompactMode, ({ newValue }) => {
         if (newValue) {
-          this.menubarStore.registerMenusBarByCompact();
+          this.menubarStore.registerMenuItemByCompactMenu();
         } else {
           this.menubarStore.unregisterMenusBarByCompact();
         }

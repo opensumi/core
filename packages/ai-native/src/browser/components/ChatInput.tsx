@@ -58,8 +58,7 @@ const InstructionOptions = ({ onClick, bottom }) => {
         <ul>
           {options.map(({ icon, name }) => (
             <li key={name} onClick={() => handleClick(name)}>
-              <Block icon={icon} />
-              <span>{name}</span>
+              <Block icon={icon} name={name} />
             </li>
           ))}
         </ul>

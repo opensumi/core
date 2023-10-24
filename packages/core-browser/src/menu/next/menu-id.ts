@@ -37,6 +37,7 @@ export enum MenuId {
   MenubarTerminalMenu = 'menubar/terminal',
   MenubarViewMenu = 'menubar/view',
   MenubarCompactMenu = 'menubar/compact/mode',
+  AiMenuBarTopExtra = 'ai/menubar/top/extra',
   TerminalInstanceContext = 'terminal/instance/context',
   TerminalNewDropdownContext = 'terminal/newDropdown/context',
   TerminalTabContext = 'terminal/tab/context',

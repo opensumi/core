@@ -10,7 +10,7 @@ import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-ope
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
 
-import { AISerivceType, IChatMessageStructure } from '../common';
+import { AISerivceType, IChatMessageStructure, InstructionEnum } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -72,10 +72,8 @@ export const AiChatView = observer(() => {
 
   const InitMsgComponent = () => {
     const lists = [
-      // { icon: getIcon('plus'), text: '生成 Java 快排算法' },
-      // { icon: getIcon('branches'), text: '提交代码' },
-      // { icon: getIcon('open-changes'), text: '创建合并请求' },
-      // { icon: getIcon('scm'), text: '触发流水线' },
+      { icon: getIcon('send'), text: '生成 Java 快速排序算法', prompt: '生成 Java 快速排序算法' },
+      { icon: getIcon('branches'), text: '提交代码', prompt: `${InstructionEnum.aiSumiKey}提交代码` },
     ];
 
     return (
@@ -90,7 +88,7 @@ export const AiChatView = observer(() => {
               href='javascript:void(0)'
               style={{ marginBottom: '8px' }}
               onClick={() => {
-                aiChatService.launchChatMessage({ message: data.text });
+                aiChatService.launchChatMessage({ message: data.prompt });
               }}
             >
               <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} />
@@ -119,10 +117,13 @@ export const AiChatView = observer(() => {
 
   React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
+      if (loading) {
+        return;
+      }
       await handleSend(message);
     });
     return () => dispose.dispose();
-  }, [messageListData]);
+  }, [messageListData, loading]);
 
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
@@ -180,7 +181,7 @@ export const AiChatView = observer(() => {
         return;
       }
     },
-    [messageListData, containerRef],
+    [messageListData, containerRef, loading],
   );
 
   const handleClear = React.useCallback(() => {

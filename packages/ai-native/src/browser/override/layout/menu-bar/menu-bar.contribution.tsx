@@ -7,7 +7,7 @@ import {
   MenubarSettingId,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenubarItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
 
 import { AiMenuBarView } from './menu-bar.view';
@@ -27,12 +27,8 @@ export class AiMenuBarContribution extends Disposable implements ComponentContri
     super();
 
     this.addDispose(
-      this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
-        const isCompact = this.preferenceService.getValid<boolean>(MenubarSettingId.CompactMode);
-
-        if (!isCompact) {
-          this.menubarStore.registerMenusBarByCompact(menubarItems);
-        }
+      this.menubarStore.onDidMenuBarChange(() => {
+        this.menubarStore.registerMenuItemByCompactMenu(MenuId.AiMenuBarTopExtra);
       }),
     );
   }
