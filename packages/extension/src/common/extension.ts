@@ -277,7 +277,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 
   protected readonly iconService?: IIconService;
 
-  abstract contribute(from?: any): void | Promise<void>;
+  abstract contribute(): void | Promise<void>;
 
   register(extensionId: string, contributes: T) {
     this.contributesMap.push({ extensionId, contributes });
@@ -371,7 +371,7 @@ export abstract class ExtensionContributesService extends WithEventBus {
 
           if (contributePoint.hasUncontributedPoint()) {
             const now = Date.now();
-            await contributePoint.contribute(this);
+            await contributePoint.contribute();
             contributePoint.afterContribute();
 
             this.extensionsSchemaService.registerExtensionPoint({
@@ -390,32 +390,40 @@ export abstract class ExtensionContributesService extends WithEventBus {
     );
   }
 
-  public async initialize() {
-    const doRunContributes = async () => {
-      const phase = this.lifecycles.unshift();
-      if (!phase) {
-        return;
-      }
+  public initialize() {
+    return new Promise<void>((resolve) => {
+      const doRunContributes = async () => {
+        const phases = this.lifecycles.slice(0);
+        this.lifecycles = [];
+        if (phases.length === 0) {
+          return;
+        }
+        for (const phase of phases) {
+          // 所有 contributionPoint 运行完后清空
+          // 确保后续安装/启用插件后可以正常激活
+          if (phase === LifeCyclePhase.Ready) {
+            this.contributedSet.clear();
+          }
+          await this.runContributesByPhase(phase);
+          if (phase === LifeCyclePhase.Initialize) {
+            // 返回 Promise，说明此时初始化已完成
+            resolve();
+          }
+        }
+      };
 
-      // 所有 contributionPoint 运行完后清空
-      // 确保后续安装/启用插件后可以正常激活
-      if (phase === LifeCyclePhase.Ready) {
-        this.contributedSet.clear();
-      }
-      await this.runContributesByPhase(phase);
-    };
+      const runContributes = async (phase = this.lifecycleService.phase) => {
+        this.lifecycles.push(phase);
+        this.contributeQueue.queue(doRunContributes);
+      };
 
-    const runContributes = async (phase = this.lifecycleService.phase) => {
-      this.lifecycles.push(phase);
-      await doRunContributes();
-    };
-
-    this.addDispose(
-      this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
-        this.contributeQueue.queue(() => runContributes(newPhase));
-      }),
-    );
-    await runContributes();
+      this.addDispose(
+        this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+          runContributes(newPhase);
+        }),
+      );
+      runContributes();
+    });
   }
 }
 
