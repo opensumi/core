@@ -18,7 +18,6 @@ import { Event, Emitter } from './event';
 
 export class DisposableStore implements IDisposable {
   private toDispose = new Set<IDisposable>();
-  // 标记该对象是否已经被释放
   private _isDisposed = false;
 
   /**
@@ -31,7 +30,6 @@ export class DisposableStore implements IDisposable {
       return;
     }
 
-    // 调用markTracked函数来标记对象正在被处理
     markTracked(this);
     this._isDisposed = true;
     this.clear();
@@ -108,7 +106,6 @@ export function combinedDisposable(disposables: IDisposable[]): IDisposable {
   return trackDisposable({ dispose: () => dispose(disposables) });
 }
 
-// 将一个无参无返回值的函数包装成一个具有dispose方法的对象，以便在需要时可以方便地执行函数并释放相关资源
 export function toDisposable(fn: () => void): IDisposable {
   return {
     dispose() {
@@ -117,16 +114,10 @@ export function toDisposable(fn: () => void): IDisposable {
   };
 }
 
-/**
- * 需要管理单个资源或对象，使用Disposable类
- * 需要管理多个相关的资源，使用DisposableCollection类来进行管理和释放，例如清理一组打开的文件、网络连接或其他资源
- */
 export class Disposable implements IDisposable {
   protected readonly disposables: IDisposable[] = [];
-  // 事件发射器，用于在对象被释放时触发事件
   protected readonly onDisposeEmitter = new Emitter<void>();
 
-  // 接收一个可变参数列表，这些参数是可释放的对象
   constructor(...toDispose: IDisposable[]) {
     toDispose.forEach((d) => this.addDispose(d));
   }
@@ -137,13 +128,10 @@ export class Disposable implements IDisposable {
     };
   }
 
-  // 定义了一个静态常量，是一个空的可释放对象
   static NULL = Disposable.create(() => {});
 
-  // 也是一个空的可释放对象，但是使用freeze冻结了这个对象，使其不可修改
   static None = Object.freeze<IDisposable>({ dispose() {} });
 
-  // 返回了一个事件，用于监听对象被释放时的事件
   get onDispose(): Event<void> {
     return this.onDisposeEmitter.event;
   }
@@ -158,10 +146,8 @@ export class Disposable implements IDisposable {
     return this.disposables.length === 0;
   }
 
-  // 用于标识是否正在释放对象
   private disposingElements = false;
 
-  // 用于释放对象的方法
   dispose(): void {
     if (this.disposed || this.disposingElements) {
       return;
@@ -199,7 +185,6 @@ export class Disposable implements IDisposable {
     return disposable;
   }
 
-  // 用于将可释放的对象添加到disposables数组中，并设置对象的dispose方法，以便在释放时自动从数组中移除
   private add(disposable: IDisposable): IDisposable {
     const disposables = this.disposables;
     disposables.push(disposable);
@@ -219,11 +204,8 @@ export class Disposable implements IDisposable {
   }
 }
 
-/**
- * 管理可释放的资源，以便在不再需要时进行释放，以避免内存泄漏
- */
 export class DisposableCollection implements IDisposable {
-  protected readonly disposables: IDisposable[] = []; // 一个数组，用来存储可释放的对象
+  protected readonly disposables: IDisposable[] = [];
   protected readonly onDisposeEmitter = new Emitter<void>();
 
   constructor(...toDispose: IDisposable[]) {
@@ -240,13 +222,11 @@ export class DisposableCollection implements IDisposable {
     }
   }
 
-  // 用于检查是否所有资源都已被释放
   get disposed(): boolean {
     return this.disposables.length === 0;
   }
 
   private disposingElements = false;
-  // 释放资源的方法
   dispose(): void {
     if (this.disposed || this.disposingElements) {
       return;
@@ -269,7 +249,6 @@ export class DisposableCollection implements IDisposable {
     return Promise.all(toPromise) as unknown as MaybePromise<void> as void;
   }
 
-  // 用于将一个资源对象添加到disposables数组中，并返回一个可释放的对象，以便稍后可以将其从数组中移除，通过重写资源对象的dispose来实现自动移除
   push(disposable: IDisposable): IDisposable {
     const disposables = this.disposables;
     disposables.push(disposable);

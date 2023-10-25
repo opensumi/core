@@ -17,7 +17,6 @@ export interface IFileSystemWatcherServer {
    * @memberof FileSystemWatcherServer
    */
   unwatchFileChanges(watcher: number): Promise<void>;
-  recursive: boolean;
 }
 
 export interface FileSystemWatcherClient {
@@ -27,9 +26,6 @@ export interface FileSystemWatcherClient {
   onDidFilesChanged(event: DidFilesChangedParams): void;
 }
 
-/**
- * 指定哪些项不应该被监视或考虑在内
- */
 export interface WatchOptions {
   excludes: string[];
 }

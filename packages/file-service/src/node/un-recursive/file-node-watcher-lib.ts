@@ -44,8 +44,6 @@ export interface WatcherOptions {
 
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
-  recursive: false;
-
   private WATCHER_HANDLERS = new Map<
     number,
     {

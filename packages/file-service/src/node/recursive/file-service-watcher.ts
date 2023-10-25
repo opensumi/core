@@ -45,8 +45,6 @@ export interface NsfwFileSystemWatcherOption {
 
 @Injectable({ multiple: true })
 export class FileSystemWatcherServer implements IFileSystemWatcherServer {
-  recursive: true;
-
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private WATCHER_HANDLERS = new Map<
@@ -63,8 +61,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   protected changes = new FileChangeCollection();
 
   @Autowired(ILogServiceManager)
-
-  // 一个 symbol 关键字，内容是 ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
 
   private logger: ILogService;
@@ -97,25 +93,22 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * @returns
    */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
-    const basePath = FileUri.fsPath(uri); // 转换为操作系统可以识别的路径
-    const exist = await fs.pathExists(basePath); // 判断文件是否存在
+    const basePath = FileUri.fsPath(uri);
+    const exist = await fs.pathExists(basePath);
 
-    let watcherId = this.checkIsAlreadyWatched(basePath); // 返回被监听的文件的 watcherId
-    // watcherId存在直接返回，函数结束
+    let watcherId = this.checkIsAlreadyWatched(basePath);
     if (watcherId) {
       return watcherId;
     }
 
-    // watcherId不存在继续下一步操作
     watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
-    const toDisposeWatcher = new DisposableCollection(); // 管理可释放的资源
-    let watchPath; // 监听路径
+    const toDisposeWatcher = new DisposableCollection();
+    let watchPath;
     if (exist) {
       const stat = await fs.lstatSync(basePath);
       if (stat && stat.isDirectory()) {
         watchPath = basePath;
       } else {
-        // lookup, 向上查找存在的目录
         watchPath = await this.lookup(basePath);
       }
     } else {
@@ -199,7 +192,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   protected async start(
     watcherId: number,
     basePath: string,
-    rawOptions: WatchOptions | undefined, // WatchOptions指定哪些项不应该被监视或考虑在内
+    rawOptions: WatchOptions | undefined,
   ): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
     if (!(await fs.pathExists(basePath))) {
@@ -298,7 +291,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     return disposables;
   }
 
-  // 根据watchId注销对应的文件监听
   unwatchFileChanges(watcherId: number): Promise<void> {
     const watcher = this.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
