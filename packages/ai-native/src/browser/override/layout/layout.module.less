@@ -84,6 +84,10 @@
     width: 32px;
     border-radius: 8px;
 
+    &:hover {
+      background-color: var(--activityBar-activeBorder);
+    }
+
     :global {
       .activity-icon {
         font-size: 16px;
@@ -118,6 +122,7 @@
   div[class*='left_tab_bar___'] {
     border-right: none;
     border-top: none;
+    width: 48px;
 
     div[class*='bar_content___'] {
       width: 100%;
@@ -137,6 +142,20 @@
 
       &::-webkit-scrollbar {
         display: none !important;
+      }
+    }
+  }
+
+  // 底部菜单样式
+  div[class*='titleActions___'] {
+    span[class*='iconAction___'] {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+      border-radius: 8px;
+
+      &:hover {
+        background-color: var(--activityBar-activeBorder);
       }
     }
   }
