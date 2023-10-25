@@ -17,7 +17,7 @@ import {
   isMacintosh,
 } from '@opensumi/ide-core-node';
 
-import { join } from '../../../../utils/src/path';
+import { join, basename } from '../../../../utils/src/path';
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 
@@ -91,10 +91,14 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
       this.logger.log('start watching', basePath);
 
+      const isDirectory = fs.lstatSync(basePath).isDirectory();
+
       // 目录下面的所有文件
       const docChildren = new Set<string>();
 
-      if (fs.lstatSync(basePath).isDirectory()) {
+      let signalDoc = '';
+
+      if (isDirectory) {
         try {
           for (const child of fs.readdirSync(basePath)) {
             const base = join(basePath, String(child));
@@ -105,6 +109,8 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         } catch (error) {
           this.logger.error(error);
         }
+      } else {
+        signalDoc = basename(basePath);
       }
 
       // 开始走监听流程
@@ -128,7 +134,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         }
 
         const changePath = join(basePath, changeFileName);
-        const isDirectory = fs.lstatSync(basePath).isDirectory();
         if (isDirectory) {
           // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
           if (docChildren.has(changeFileName)) {
@@ -151,13 +156,24 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             }
           }
         } else {
-          this.pushUpdated(changePath);
+          this.logger.log(changeFileName, signalDoc);
+          if (changeFileName === signalDoc) {
+            if (fs.pathExistsSync(basePath)) {
+              this.pushUpdated(basePath);
+            } else {
+              this.pushDeleted(basePath);
+              signalDoc = '';
+            }
+          } else {
+            if (basename(basePath) === changeFileName) {
+              this.pushAdded(basePath);
+              signalDoc = changeFileName;
+            }
+          }
         }
       });
     } catch (error) {
-      if (await fs.pathExists(basePath)) {
-        this.logger.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
-      }
+      this.logger.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
     }
   }
 
@@ -234,16 +250,16 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       }
       return undefined;
     };
-    const handler = await tryWatchDir();
+    await tryWatchDir();
 
-    if (handler) {
-      disposables.push(
-        Disposable.create(async () => {
-          if (handler) {
-          }
-        }),
-      );
-    }
+    // if (handler) {
+    //   disposables.push(
+    //     Disposable.create(async () => {
+    //       if (handler) {
+    //       }
+    //     }),
+    //   );
+    // }
     return disposables;
   }
   unwatchFileChanges(watcherId: number): Promise<void> {
