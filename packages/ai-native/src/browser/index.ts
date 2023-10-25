@@ -1,9 +1,9 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
-import { BrowserModule } from '@opensumi/ide-core-browser';
+import { BrowserModule, URI } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { Color, IThemeData, IThemeStore } from '@opensumi/ide-theme';
+import { Color, IThemeData, IThemeStore, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
@@ -43,34 +43,27 @@ export class AiNativeModule extends BrowserModule {
         isDefault: true,
       },
       {
-        token: IThemeData,
-        useClass: class extends ThemeData {
-          override getDefaultTheme() {
-            return defaultTheme;
-          }
-        },
-        override: true,
-        isDefault: true,
-      },
-      {
         // AI Native 模式下默认使用该主题
         token: IThemeStore,
         useClass: class extends ThemeStore {
-          override async getThemeData() {
-            const theme = this.loadDefaultTheme();
+          override async getThemeData(contribution?: ThemeContribution, basePath?: URI) {
+            const newTheme = await super.getThemeData(contribution, basePath);
+
+            const theme = this.injector.get(IThemeData);
+            theme.initializeFromData(defaultTheme);
+
             const colors = theme.colors;
             if (colors) {
               for (const colorId in colors) {
                 if (Object.prototype.hasOwnProperty.call(colors, colorId)) {
                   const colorHex = colors[colorId];
                   if (typeof colorHex === 'string') {
-                    theme.colorMap[colorId] = Color.fromHex(colors[colorId]);
+                    newTheme.colorMap[colorId] = Color.fromHex(colors[colorId]);
                   }
                 }
               }
             }
-
-            return theme;
+            return newTheme;
           }
         },
         override: true,
