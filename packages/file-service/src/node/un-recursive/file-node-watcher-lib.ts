@@ -14,20 +14,12 @@ import {
   Disposable,
   DisposableCollection,
   isLinux,
-  // isWindows,
   isMacintosh,
-  parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { join, basename, dirname } from '../../../../utils/src/path';
+import { join } from '../../../../utils/src/path';
 // 文件监听类型(更新、添加、删除)；文件监听下的文件修改时触发事件；启动和注销文件监听
-import {
-  FileChangeType,
-  FileSystemWatcherClient,
-  IFileSystemWatcherServer,
-  INsfw,
-  WatchOptions,
-} from '../../common/index';
+import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 
 export interface UnRecursiveEvent {
@@ -96,7 +88,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   private async doWatch(basePath: string) {
     try {
-      // 创建监听对象
       const watcher = watch(basePath);
 
       this.logger.log('start watching', basePath);
@@ -104,44 +95,43 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       // 目录下面的所有文件
       const docChildren = new Set<string>();
 
-      try {
-        for (const child of fs.readdirSync(basePath)) {
-          const base = join(basePath, String(child));
-          if (!fs.lstatSync(base).isDirectory()) {
-            docChildren.add(child); // 将目录下的文件放入此中
-          }
-        }
-      } catch (error) {
-        this.logger.error(error);
-      }
-
-      // 判断是否是文件夹目录
-      const isDirectory = fs.lstatSync(basePath).isDirectory();
-      // 如果是文件夹目录
-      if (isDirectory) {
-        // 开始走监听流程
-        watcher.on('error', (code: number, signal: string) => {
-          this.logger.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
-          watcher.close();
-        });
-
-        // 监听到文件改变时候的回调函数
-        watcher.on('change', (type, raw) => {
-          let changeFileName = '';
-          if (raw) {
-            changeFileName = this.deleteFileNumberSuffix(raw as string);
-            if (isMacintosh) {
-              changeFileName = fs.realpathSync.native(changeFileName);
+      if (fs.lstatSync(basePath).isDirectory()) {
+        try {
+          for (const child of fs.readdirSync(basePath)) {
+            const base = join(basePath, String(child));
+            if (!fs.lstatSync(base).isDirectory()) {
+              docChildren.add(child);
             }
           }
+        } catch (error) {
+          this.logger.error(error);
+        }
+      }
 
-          const changePath = join(basePath, changeFileName);
+      // 开始走监听流程
+      watcher.on('error', (code: number, signal: string) => {
+        this.logger.error(`Failed to watch ${basePath} for changes using fs.watch() (${code}, ${signal})`);
+        watcher.close();
+      });
 
-          if (!raw || (type !== 'change' && type !== 'rename')) {
-            return;
+      watcher.on('change', (type, raw) => {
+        // 对传入的raw做一个统一处理
+        let changeFileName = '';
+        if (raw) {
+          changeFileName = this.deleteFileNumberSuffix(raw as string);
+          if (isMacintosh) {
+            changeFileName = this.deleteFileNumberSuffix(fs.realpathSync.native(changeFileName));
           }
+        }
 
-          // 当前目录下的文件
+        if (!raw || (type !== 'change' && type !== 'rename')) {
+          return;
+        }
+
+        const changePath = join(basePath, changeFileName);
+        const isDirectory = fs.lstatSync(basePath).isDirectory();
+        if (isDirectory) {
+          // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
           if (docChildren.has(changeFileName)) {
             if (type === 'rename') {
               const timeoutHandle = setTimeout(async () => {
@@ -161,8 +151,10 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
               docChildren.add(changeFileName);
             }
           }
-        });
-      }
+        } else {
+          this.pushUpdated(changePath);
+        }
+      });
     } catch (error) {
       if (await fs.pathExists(basePath)) {
         this.logger.error(`Failed to watch ${basePath} for change using fs.watch() (${error.toString()})`);
@@ -174,7 +166,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
    * @param uri
    * @param options
    */
-  async watchFileChanges(uri: string, options?: WatchOptions) {
+  async watchFileChanges(uri: string) {
     const basePath = FileUri.fsPath(uri);
     const exist = await fs.pathExists(basePath);
 
@@ -192,15 +184,13 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
     if (exist) {
       const stat = await fs.lstatSync(basePath);
-      if (stat && stat.isDirectory()) {
+      if (stat) {
         watchPath = basePath;
-      } else {
-        this.logger.warn('此路径不存在，请重新开始');
       }
     } else {
       this.logger.warn('此路径不存在，请重新开始');
     }
-    disposables.push(await this.start(watcherId, watchPath, options));
+    disposables.push(await this.start(watchPath));
     this.toDispose.push(disposables);
     return watcherId;
   }
@@ -229,9 +219,9 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   }
 
   protected async start(
-    watcherId: number,
+    // watcherId: number,
     basePath: string,
-    rawOptions: WatchOptions | undefined, // WatchOptions指定哪些项不应该被监视或考虑在内
+    // rawOptions: WatchOptions | undefined, // WatchOptions指定哪些项不应该被监视或考虑在内
   ): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
     if (!(await fs.pathExists(basePath))) {
@@ -249,52 +239,18 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       }
       return undefined;
     };
+    const handler = await tryWatchDir();
 
-    if (this.isEnableNSFW()) {
-      const nsfw = await this.withNSFWModule();
-      const watcher: INsfw.NSFW = await nsfw(
-        realPath,
-        (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
-        {
-          errorCallback: (error: any) => {
-            this.logger.warn(`Failed to watch "${basePath}":`, error);
-            this.unwatchFileChanges(watcherId);
-          },
-        },
-      );
-
-      await watcher.start();
-
+    if (handler) {
       disposables.push(
         Disposable.create(async () => {
-          this.watcherOptions.delete(watcherId);
-          await watcher.stop();
+          if (handler) {
+          }
         }),
       );
-
-      const excludes = this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude());
-
-      this.watcherOptions.set(watcherId, {
-        excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
-        excludes,
-      });
-    } else {
-      const handler = await tryWatchDir();
-
-      // 但是这里始终为 undefined
-      if (handler) {
-        disposables.push(
-          Disposable.create(async () => {
-            if (handler) {
-            }
-          }),
-        );
-      }
     }
-
     return disposables;
   }
-
   unwatchFileChanges(watcherId: number): Promise<void> {
     const watcher = this.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
@@ -302,31 +258,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       watcher.disposable.dispose();
     }
     return Promise.resolve();
-  }
-
-  /**
-   * 返回的 boolean 值
-   */
-  private async existsChildStrictCase(path: string): Promise<boolean> {
-    if (isLinux) {
-      return fs.pathExists(path);
-    }
-    try {
-      const pathBasename = basename(path);
-      const children = fs.readdirSync(dirname(path));
-
-      return children.some((child) => child === pathBasename);
-    } catch (error) {
-      /**
-       * 输出日志
-       */
-      this.logger.error(error);
-      return false;
-    }
-  }
-
-  private async withNSFWModule(): Promise<typeof import('nsfw')> {
-    return require('nsfw');
   }
 
   protected pushAdded(path: string): void {
@@ -344,7 +275,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   protected pushFileChange(path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
     this.changes.push({ uri, type });
-
     this.fireDidFilesChanged();
   }
 
@@ -368,66 +298,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       return;
     }
     this.client = client;
-  }
-
-  private isEnableNSFW(): boolean {
-    return isLinux;
-  }
-
-  private async handleNSFWEvents(events: INsfw.ChangeEvent[], watcherId: number): Promise<void> {
-    const isIgnored = (watcherId: number, path: string): boolean => {
-      const options = this.watcherOptions.get(watcherId);
-      if (!options || !options.excludes || options.excludes.length < 1) {
-        return false;
-      }
-      return options.excludesPattern.some((match) => match(path));
-    };
-
-    if (events.length > 5000) {
-      return;
-    }
-
-    for (const event of events) {
-      if (event.action === INsfw.actions.RENAMED) {
-        const deletedPath = this.resolvePath(event.directory, event.oldFile!);
-        if (isIgnored(watcherId, deletedPath)) {
-          continue;
-        }
-
-        this.pushDeleted(deletedPath);
-
-        if (event.newDirectory) {
-          const path = this.resolvePath(event.newDirectory, event.newFile!);
-          if (isIgnored(watcherId, path)) {
-            continue;
-          }
-
-          this.pushAdded(path);
-        } else {
-          const path = this.resolvePath(event.directory, event.newFile!);
-          if (isIgnored(watcherId, path)) {
-            continue;
-          }
-
-          this.pushAdded(path);
-        }
-      } else {
-        const path = this.resolvePath(event.directory, event.file!);
-        if (isIgnored(watcherId, path)) {
-          continue;
-        }
-
-        if (event.action === INsfw.actions.CREATED) {
-          this.pushAdded(path);
-        }
-        if (event.action === INsfw.actions.DELETED) {
-          this.pushDeleted(path);
-        }
-        if (event.action === INsfw.actions.MODIFIED) {
-          this.pushUpdated(path);
-        }
-      }
-    }
   }
 
   protected resolvePath(directory: string, file: string): string {

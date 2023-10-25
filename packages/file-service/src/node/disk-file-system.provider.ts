@@ -142,6 +142,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         this.watcherServer.unwatchFileChanges(id);
       },
     };
+    this.logger.log(_uri.toString(), '_uri_toString');
     this.watcherCollection.set(_uri.toString(), { id, options, disposable });
     return id;
   }
