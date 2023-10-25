@@ -18,7 +18,6 @@ import {
 } from '@opensumi/ide-core-node';
 
 import { join } from '../../../../utils/src/path';
-// 文件监听类型(更新、添加、删除)；文件监听下的文件修改时触发事件；启动和注销文件监听
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 
@@ -30,7 +29,7 @@ export interface UnRecursiveEvent {
 export type UnRecursiveCallback = (err: Error | null, events: Event[]) => unknown;
 
 export interface WatcherOptions {
-  excludesPattern: ParsedPattern[]; // 函数，返回布尔值
+  excludesPattern: ParsedPattern[];
   excludes: string[];
 }
 
@@ -218,11 +217,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*', '**/.hg/store/**'];
   }
 
-  protected async start(
-    // watcherId: number,
-    basePath: string,
-    // rawOptions: WatchOptions | undefined, // WatchOptions指定哪些项不应该被监视或考虑在内
-  ): Promise<DisposableCollection> {
+  protected async start(basePath: string): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
     if (!(await fs.pathExists(basePath))) {
       return disposables;
