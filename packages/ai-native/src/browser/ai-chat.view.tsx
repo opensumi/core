@@ -57,8 +57,10 @@ export const AiChatView = observer(() => {
   // 项目生成
   const generateProject = React.useCallback(async () => {
     aiProjectGenerateService.start((messageList) => {
-      const aiMessageList = messageList.map(({ message, immediately }) =>
-        createMessageByAI(<AiReply text={message} immediately={immediately} />),
+      const aiMessageList = messageList.map(({ message, immediately, type = 'message' }) =>
+      type === 'message'
+        ? createMessageByAI(<AiReply text={message} immediately={immediately} />)
+        : AICodeReply(message, aiChatService)
       );
       setMessageListData([...aiMessageList]);
     });
@@ -152,12 +154,12 @@ export const AiChatView = observer(() => {
           const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
           aiMessage = await aiChatService.messageWithGPT(withPrompt);
           if (aiMessage) {
-            aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+            aiMessage = await AICodeReply(aiMessage, aiChatService);
           }
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await aiChatService.messageWithGPT(userInput!.message!, { maxTokens: 16000 });
           if (aiMessage) {
-            aiMessage = await AIChatGPTReply(aiMessage, aiChatService);
+            aiMessage = await AICodeReply(aiMessage, aiChatService);
           }
         } else if (userInput!.type === AISerivceType.Run) {
           aiMessage = await aiChatService.aiBackService.aiAntGlm(
@@ -335,7 +337,7 @@ const AISearch = async (input, aiChatService: AiChatService) => {
           </div>
           <div style={{ whiteSpace: 'pre-wrap' }}>
             <Markdown value={urlMessage} renderer={codeSearchMarkedRender}></Markdown>
-            {/* {AIChatGPTReply(urlMessage)} */}
+            {/* {AICodeReply(urlMessage)} */}
           </div>
         </div>
       </ChatMoreActions>,
@@ -348,7 +350,7 @@ const AISearch = async (input, aiChatService: AiChatService) => {
 };
 
 // 带有代码的 AI 回复组件
-const AIChatGPTReply = async (input, aiChatService: AiChatService) => {
+const AICodeReply = (input, aiChatService: AiChatService) => {
   try {
     const uid = uuid(6);
 
