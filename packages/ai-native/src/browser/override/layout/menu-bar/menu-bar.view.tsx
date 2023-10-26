@@ -3,10 +3,9 @@ import * as React from 'react';
 
 import { AppConfig, getIcon, useInjectable, SlotRenderer, useContextMenus } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
-import { InlineActionWidget, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import { AbstractContextMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
@@ -17,6 +16,8 @@ import { AiMenubarService } from './menu-bar.service';
 
 const AiMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+
   const iconRef = React.useRef<HTMLDivElement | null>(null);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
 
@@ -44,24 +45,29 @@ const AiMenuBarRender = () => {
 
   const aiMenu = React.useMemo(() => navMenu[0] || moreMenu[0], [navMenu, moreMenu]);
 
+  const handleClick = React.useCallback(() => {
+    if (!anchor) {
+      return;
+    }
+
+    const menuNodes = extraTopMenus.getMergedMenuNodes();
+    extraTopMenus.dispose();
+
+    ctxMenuRenderer.show({
+      anchor,
+      menuNodes: menuNodes[0].children,
+    });
+  }, [anchor, extraTopMenus]);
+
   if (!aiMenu) {
     return null;
   }
 
   return (
     <>
-      <InlineActionWidget
-        id={aiMenu.id}
-        key={aiMenu.id}
-        type={'icon'}
-        data={aiMenu}
-        ctxMenuAnchor={anchor}
-        iconRender={
-          <EnhanceIcon className={styles.extra_top_icon} ref={iconRef}>
-            <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
-          </EnhanceIcon>
-        }
-      />
+      <EnhanceIcon className={styles.extra_top_icon} ref={iconRef} onClick={handleClick}>
+        <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
+      </EnhanceIcon>
     </>
   );
 };
