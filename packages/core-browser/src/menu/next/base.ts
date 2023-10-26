@@ -18,7 +18,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-
 import { MenuId } from './menu-id';
 
 export const MenuContribution = Symbol('MenuContribution');
@@ -133,6 +132,7 @@ export interface ISubmenuItem extends IBaseMenuItem {
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
   label?: string;
+  iconClass?: string;
 }
 
 export type ICommandsMap = Map<string, Command>;
@@ -166,6 +166,7 @@ export interface IMenubarItem {
   label: string;
   order?: number;
   nativeRole?: string; // electron menu 使用
+  iconClass?: string;
 }
 
 @Injectable()

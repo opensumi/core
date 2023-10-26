@@ -49,6 +49,7 @@ export const defaultIconfont = {
   'debug': 'debug',
   'debug-alt-small': 'debug-alt-small',
   'debug-restart-frame': 'debug-restart-frame',
+  'default-menu-icon': 'default-menu-icon',
   'delete': 'delete',
   'deploy': 'deploy',
   'detail': 'detail',

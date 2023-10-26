@@ -64,3 +64,70 @@
     }
   }
 }
+
+.ai_sub_menu_action_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  user-select: none;
+  padding-left: 16px;
+  padding-right: 4px;
+
+  .icon {
+    filter: grayscale(1);
+
+    span {
+      margin-right: 8px;
+    }
+  }
+
+  .icon,
+  .submenuIcon {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    :global(.kt-icon) {
+      color: var(--menu-foreground);
+    }
+  }
+
+  .label {
+    flex: 1;
+  }
+
+  &.disabled {
+    .shortcut {
+      color: var(--kt-menu-disableForeground);
+    }
+  }
+
+  &:not(.disabled):hover {
+    .shortcut {
+      color: var(--menu-selectionForeground);
+    }
+  }
+
+  &:focus {
+    .shortcut {
+      color: var(--menu-selectionForeground);
+    }
+  }
+
+  .label {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    // stop Flexbox removing trailing whitespace
+    // see https://www.mattstobbs.com/flexbox-removing-trailing-whitespace/
+    white-space: pre-wrap;
+  }
+
+  .submenuIcon {
+    span {
+      font-size: 12px;
+    }
+  }
+}
