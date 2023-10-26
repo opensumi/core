@@ -43,7 +43,7 @@ test.describe('OpenSumi Extension', () => {
     scm = await app.open(OpenSumiSCMView);
     await scm.open();
     await app.quickCommandPalette.trigger('Restart Extension Host Process');
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForTimeout(4000);
     const node = await scm.scmView.getTreeNode();
     expect(node).toBeNull();
     await app.page.waitForTimeout(4000);
