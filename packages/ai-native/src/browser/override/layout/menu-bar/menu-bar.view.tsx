@@ -41,8 +41,6 @@ const AiMenuBarRender = () => {
     [contextmenuService],
   );
 
-  const [navMenu, moreMenu] = useContextMenus(extraTopMenus);
-
   const handleClick = React.useCallback(() => {
     if (!anchor) {
       return;

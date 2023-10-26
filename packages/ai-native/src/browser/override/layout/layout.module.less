@@ -147,12 +147,19 @@
   }
 
   // 底部菜单样式
-  div[class*='titleActions___'] {
-    span[class*='iconAction___'] {
+  .extra_bottom_icon {
+    &:hover {
+      background-color: transparent !important;
+    }
+
+    span {
       width: 32px;
       height: 32px;
       font-size: 16px;
       border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
       &:hover {
         background-color: var(--activityBar-activeBorder);
