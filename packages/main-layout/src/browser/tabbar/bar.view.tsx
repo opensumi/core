@@ -273,7 +273,8 @@ export const LeftTabbarRenderer: React.FC<{
     ) => React.JSX.Element | null;
   }>;
   isRenderExtraTopMenus?: boolean;
-}> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true }) => {
+  renderExtraMenus?: React.ReactNode;
+}> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true, renderExtraMenus }) => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -301,7 +302,7 @@ export const LeftTabbarRenderer: React.FC<{
         panelBorderSize={1}
         renderOtherVisibleContainers={renderOtherVisibleContainers}
       />
-      <InlineMenuBar className={styles.vertical_icons} menus={extraMenus} />
+      {renderExtraMenus || <InlineMenuBar className={styles.vertical_icons} menus={extraMenus} />}
     </div>
   );
 };

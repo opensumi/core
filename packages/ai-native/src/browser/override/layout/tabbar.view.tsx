@@ -1,7 +1,9 @@
 import clsx from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
-import { ComponentRegistryInfo, SlotLocation, useInjectable } from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
+import { ICtxMenuRenderer, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LeftTabbarRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
 import { BaseTabPanelView, ContainerView } from '@opensumi/ide-main-layout/lib/browser/tabbar/panel.view';
 import {
@@ -13,13 +15,58 @@ import {
 import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
+import { EnhanceIcon } from '../../components/Icon';
 import { HorizontalVertical } from '../../components/lineVertical';
 
 import * as styles from './layout.module.less';
 
+const RenderExtraMenus = (props: { iconClass?: string; menuNodes: MenuNode[] }) => {
+  const { iconClass, menuNodes } = props;
+
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+  const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
+  const iconRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      const { x, y, width, height } = rect;
+
+      setAnchor({
+        x: x + width - 8,
+        y: y + height,
+      });
+    }
+  }, [iconRef.current]);
+
+  const handleClick = React.useCallback(() => {
+    if (!anchor) {
+      return;
+    }
+
+    ctxMenuRenderer.show({
+      anchor,
+      menuNodes,
+    });
+  }, [menuNodes, anchor]);
+
+  return (
+    <EnhanceIcon
+      iconClass={iconClass}
+      wrapperClassName={styles.extra_bottom_icon}
+      ref={iconRef}
+      onClick={handleClick}
+    ></EnhanceIcon>
+  );
+};
+
 // 将注册在 right bar 的组件渲染到 left bar
 const AiLeftTabbarRenderer: React.FC = () => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+
+  const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
+  const [navMenu] = useContextMenus(extraMenus);
 
   const renderOtherVisibleContainers = useCallback(
     ({ props, renderContainers }) => {
@@ -37,7 +84,13 @@ const AiLeftTabbarRenderer: React.FC = () => {
   );
 
   return (
-    <LeftTabbarRenderer renderOtherVisibleContainers={renderOtherVisibleContainers} isRenderExtraTopMenus={false} />
+    <LeftTabbarRenderer
+      renderOtherVisibleContainers={renderOtherVisibleContainers}
+      isRenderExtraTopMenus={false}
+      renderExtraMenus={
+        navMenu.length === 0 ? null : <RenderExtraMenus iconClass={navMenu[0].icon} menuNodes={navMenu[0].children} />
+      }
+    />
   );
 };
 
