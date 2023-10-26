@@ -17,6 +17,21 @@ import { AiMenubarService } from './menu-bar.service';
 
 const AiMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
+  const iconRef = React.useRef<HTMLDivElement | null>(null);
+  const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      const { x, y, height } = rect;
+
+      setAnchor({
+        x,
+        y: y + height + 4,
+      });
+    }
+  }, [iconRef.current]);
+
   const extraTopMenus = React.useMemo(
     () =>
       contextmenuService.createMenu({
@@ -34,19 +49,20 @@ const AiMenuBarRender = () => {
   }
 
   return (
-    <div>
+    <>
       <InlineActionWidget
         id={aiMenu.id}
         key={aiMenu.id}
         type={'icon'}
         data={aiMenu}
+        ctxMenuAnchor={anchor}
         iconRender={
-          <EnhanceIcon className={styles.extra_top_icon}>
+          <EnhanceIcon className={styles.extra_top_icon} ref={iconRef}>
             <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
           </EnhanceIcon>
         }
       />
-    </div>
+    </>
   );
 };
 

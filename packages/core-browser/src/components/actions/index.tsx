@@ -209,9 +209,20 @@ export const InlineActionWidget: React.FC<
     afterClick?: () => void;
     iconService?: IMenubarIconService;
     iconRender?: React.ReactNode;
+    ctxMenuAnchor?: MouseEvent | { x: number; y: number };
   } & React.HTMLAttributes<HTMLElement>
 > = React.memo(
-  ({ iconService, type = 'icon', data, context = [], className, afterClick, iconRender, ...restProps }) => {
+  ({
+    iconService,
+    type = 'icon',
+    data,
+    context = [],
+    className,
+    afterClick,
+    iconRender,
+    ctxMenuAnchor,
+    ...restProps
+  }) => {
     const [loading, setLoading] = useState(false);
     const handleClick = React.useCallback(
       async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
@@ -224,7 +235,7 @@ export const InlineActionWidget: React.FC<
         }
         setLoading(true);
         if (data.id === SubmenuItemNode.ID && event) {
-          const anchor = { x: event.clientX, y: event.clientY };
+          const anchor = ctxMenuAnchor || { x: event.clientX, y: event.clientY };
           await data.execute([anchor, ...context]);
         } else if (typeof data.execute === 'function') {
           await data.execute([...context, ...extraArgs]);
@@ -234,7 +245,7 @@ export const InlineActionWidget: React.FC<
           afterClick();
         }
       },
-      [data, context],
+      [data, context, ctxMenuAnchor],
     );
 
     const [title, label] = React.useMemo(() => {
