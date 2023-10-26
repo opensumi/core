@@ -201,111 +201,100 @@ const EllipsisWidget: React.FC<{
 
 EllipsisWidget.displayName = 'EllipsisWidget';
 
-export const InlineActionWidget: React.FC<
+const InlineActionWidget: React.FC<
   {
     data: MenuNode;
     context?: any[];
     type?: ActionListType;
     afterClick?: () => void;
     iconService?: IMenubarIconService;
-    iconRender?: React.ReactNode;
   } & React.HTMLAttributes<HTMLElement>
-> = React.memo(
-  ({ iconService, type = 'icon', data, context = [], className, afterClick, iconRender, ...restProps }) => {
-    const [loading, setLoading] = useState(false);
-    const handleClick = React.useCallback(
-      async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        if (loading) {
-          return;
-        }
-        setLoading(true);
-        if (data.id === SubmenuItemNode.ID && event) {
-          const anchor = { x: event.clientX, y: event.clientY };
-          await data.execute([anchor, ...context]);
-        } else if (typeof data.execute === 'function') {
-          await data.execute([...context, ...extraArgs]);
-        }
-        setLoading(false);
-        if (typeof afterClick === 'function') {
-          afterClick();
-        }
-      },
-      [data, context],
-    );
-
-    const [title, label] = React.useMemo(() => {
-      let title = data.tooltip || data.label;
-      const label = data.label;
-      if (data.keybinding) {
-        title = `${title} (${data.keybinding})`;
+> = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+  const [loading, setLoading] = useState(false);
+  const handleClick = React.useCallback(
+    async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
       }
-      return [title, label];
-    }, [data]);
-
-    const isSubmenuNode = data.id === SubmenuItemNode.ID;
-
-    // Button 类型需要额外处理来自 MenuNode 上的类型
-    if (type === 'icon' && !data.type) {
-      if (iconRender) {
-        return (
-          <div className={className} title={title} onClick={handleClick}>
-            {iconRender}
-          </div>
-        );
+      if (loading) {
+        return;
       }
+      setLoading(true);
+      if (data.id === SubmenuItemNode.ID && event) {
+        const anchor = { x: event.clientX, y: event.clientY };
+        await data.execute([anchor, ...context]);
+      } else if (typeof data.execute === 'function') {
+        await data.execute([...context, ...extraArgs]);
+      }
+      setLoading(false);
+      if (typeof afterClick === 'function') {
+        afterClick();
+      }
+    },
+    [data, context],
+  );
 
-      return (
-        <Button
-          type={data.icon ? 'icon' : 'link'}
-          className={clsx(styles.iconAction, className, {
-            [styles.disabled]: data.disabled,
-            [styles.submenuIconAction]: isSubmenuNode,
-          })}
-          title={title}
-          iconClass={data.icon}
-          onClick={handleClick}
-          {...restProps}
-        >
-          {!data.icon && label /* 没有 icon 时渲染 label */}
-        </Button>
-      );
+  const [title, label] = React.useMemo(() => {
+    let title = data.tooltip || data.label;
+    const label = data.label;
+    if (data.keybinding) {
+      title = `${title} (${data.keybinding})`;
     }
+    return [title, label];
+  }, [data]);
 
-    if (data.type === 'checkbox') {
-      return (
-        <CheckBox
-          className={clsx(className, styles.btnAction)}
-          disabled={data.disabled}
-          label={data.label}
-          title={title}
-          checked={data.checked}
-          onChange={(e) => handleClick(undefined, (e.target as HTMLInputElement).checked)}
-          {...restProps}
-        />
-      );
-    }
+  const isSubmenuNode = data.id === SubmenuItemNode.ID;
 
+  // Button 类型需要额外处理来自 MenuNode 上的类型
+  if (type === 'icon' && !data.type) {
     return (
       <Button
-        loading={loading}
-        className={clsx(className, styles.btnAction)}
-        disabled={data.disabled}
-        onClick={handleClick}
-        size='small'
-        type={data.type}
+        type={data.icon ? 'icon' : 'link'}
+        className={clsx(styles.iconAction, className, {
+          [styles.disabled]: data.disabled,
+          [styles.submenuIconAction]: isSubmenuNode,
+        })}
         title={title}
+        iconClass={data.icon}
+        onClick={handleClick}
         {...restProps}
       >
-        {transformLabelWithCodicon(label, { margin: '0 3px' }, iconService?.fromString.bind(iconService))}
-        {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
+        {!data.icon && label /* 没有 icon 时渲染 label */}
       </Button>
     );
-  },
-);
+  }
+
+  if (data.type === 'checkbox') {
+    return (
+      <CheckBox
+        className={clsx(className, styles.btnAction)}
+        disabled={data.disabled}
+        label={data.label}
+        title={title}
+        checked={data.checked}
+        onChange={(e) => handleClick(undefined, (e.target as HTMLInputElement).checked)}
+        {...restProps}
+      />
+    );
+  }
+
+  return (
+    <Button
+      loading={loading}
+      className={clsx(className, styles.btnAction)}
+      disabled={data.disabled}
+      onClick={handleClick}
+      size='small'
+      type={data.type}
+      title={title}
+      {...restProps}
+    >
+      {transformLabelWithCodicon(label, { margin: '0 3px' }, iconService?.fromString.bind(iconService))}
+      {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
+    </Button>
+  );
+});
 
 InlineActionWidget.displayName = 'InlineAction';
 
