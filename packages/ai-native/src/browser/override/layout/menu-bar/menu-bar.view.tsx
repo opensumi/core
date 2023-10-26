@@ -2,7 +2,7 @@ import clsx from 'classnames';
 import * as React from 'react';
 
 import { AppConfig, getIcon, useInjectable, SlotRenderer, useContextMenus } from '@opensumi/ide-core-browser';
-import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -43,8 +43,6 @@ const AiMenuBarRender = () => {
 
   const [navMenu, moreMenu] = useContextMenus(extraTopMenus);
 
-  const aiMenu = React.useMemo(() => navMenu[0] || moreMenu[0], [navMenu, moreMenu]);
-
   const handleClick = React.useCallback(() => {
     if (!anchor) {
       return;
@@ -58,10 +56,6 @@ const AiMenuBarRender = () => {
       menuNodes: menuNodes[0].children,
     });
   }, [anchor, extraTopMenus]);
-
-  if (!aiMenu) {
-    return null;
-  }
 
   return (
     <>
