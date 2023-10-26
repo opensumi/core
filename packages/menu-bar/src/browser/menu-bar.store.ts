@@ -104,6 +104,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
           ({
             label: item.label,
             submenu: item.id,
+            iconClass: item.iconClass,
           } as ISubmenuItem),
       ),
     );

@@ -63,7 +63,8 @@ export const MenuActionList: React.FC<{
   context?: any[];
   style?: React.CSSProperties;
   iconService?: IMenubarIconService;
-}> = ({ data = [], context = [], afterClick, style, iconService }) => {
+  renderSubMenuTitle?: (data: MenuNode) => React.ReactNode | undefined | null;
+}> = ({ data = [], context = [], afterClick, style, iconService, renderSubMenuTitle }) => {
   if (!data.length) {
     return null;
   }
@@ -94,6 +95,20 @@ export const MenuActionList: React.FC<{
     [data, context],
   );
 
+  const subMenuTitle = React.useCallback(
+    (menuNode: MenuNode) => {
+      if (renderSubMenuTitle) {
+        const SubMenu = renderSubMenuTitle(menuNode);
+        if (SubMenu) {
+          return SubMenu;
+        }
+      }
+
+      return <MenuAction hasSubmenu data={menuNode} iconService={iconService} />;
+    },
+    [renderSubMenuTitle],
+  );
+
   const recursiveRender = React.useCallback(
     (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
@@ -113,7 +128,7 @@ export const MenuActionList: React.FC<{
                 key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}
                 className={styles.submenuItem}
                 popupClassName='kt-menu'
-                title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
+                title={subMenuTitle(menuNode)}
               >
                 {recursiveRender(menuNode.children, menuNode.label)}
               </Menu.SubMenu>
@@ -186,100 +201,111 @@ const EllipsisWidget: React.FC<{
 
 EllipsisWidget.displayName = 'EllipsisWidget';
 
-const InlineActionWidget: React.FC<
+export const InlineActionWidget: React.FC<
   {
     data: MenuNode;
     context?: any[];
     type?: ActionListType;
     afterClick?: () => void;
     iconService?: IMenubarIconService;
+    iconRender?: React.ReactNode;
   } & React.HTMLAttributes<HTMLElement>
-> = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
-  const [loading, setLoading] = useState(false);
-  const handleClick = React.useCallback(
-    async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      if (loading) {
-        return;
-      }
-      setLoading(true);
-      if (data.id === SubmenuItemNode.ID && event) {
-        const anchor = { x: event.clientX, y: event.clientY };
-        await data.execute([anchor, ...context]);
-      } else if (typeof data.execute === 'function') {
-        await data.execute([...context, ...extraArgs]);
-      }
-      setLoading(false);
-      if (typeof afterClick === 'function') {
-        afterClick();
-      }
-    },
-    [data, context],
-  );
+> = React.memo(
+  ({ iconService, type = 'icon', data, context = [], className, afterClick, iconRender, ...restProps }) => {
+    const [loading, setLoading] = useState(false);
+    const handleClick = React.useCallback(
+      async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        if (loading) {
+          return;
+        }
+        setLoading(true);
+        if (data.id === SubmenuItemNode.ID && event) {
+          const anchor = { x: event.clientX, y: event.clientY };
+          await data.execute([anchor, ...context]);
+        } else if (typeof data.execute === 'function') {
+          await data.execute([...context, ...extraArgs]);
+        }
+        setLoading(false);
+        if (typeof afterClick === 'function') {
+          afterClick();
+        }
+      },
+      [data, context],
+    );
 
-  const [title, label] = React.useMemo(() => {
-    let title = data.tooltip || data.label;
-    const label = data.label;
-    if (data.keybinding) {
-      title = `${title} (${data.keybinding})`;
+    const [title, label] = React.useMemo(() => {
+      let title = data.tooltip || data.label;
+      const label = data.label;
+      if (data.keybinding) {
+        title = `${title} (${data.keybinding})`;
+      }
+      return [title, label];
+    }, [data]);
+
+    const isSubmenuNode = data.id === SubmenuItemNode.ID;
+
+    // Button 类型需要额外处理来自 MenuNode 上的类型
+    if (type === 'icon' && !data.type) {
+      if (iconRender) {
+        return (
+          <div className={className} title={title} onClick={handleClick}>
+            {iconRender}
+          </div>
+        );
+      }
+
+      return (
+        <Button
+          type={data.icon ? 'icon' : 'link'}
+          className={clsx(styles.iconAction, className, {
+            [styles.disabled]: data.disabled,
+            [styles.submenuIconAction]: isSubmenuNode,
+          })}
+          title={title}
+          iconClass={data.icon}
+          onClick={handleClick}
+          {...restProps}
+        >
+          {!data.icon && label /* 没有 icon 时渲染 label */}
+        </Button>
+      );
     }
-    return [title, label];
-  }, [data]);
 
-  const isSubmenuNode = data.id === SubmenuItemNode.ID;
+    if (data.type === 'checkbox') {
+      return (
+        <CheckBox
+          className={clsx(className, styles.btnAction)}
+          disabled={data.disabled}
+          label={data.label}
+          title={title}
+          checked={data.checked}
+          onChange={(e) => handleClick(undefined, (e.target as HTMLInputElement).checked)}
+          {...restProps}
+        />
+      );
+    }
 
-  // Button 类型需要额外处理来自 MenuNode 上的类型
-  if (type === 'icon' && !data.type) {
     return (
       <Button
-        type={data.icon ? 'icon' : 'link'}
-        className={clsx(styles.iconAction, className, {
-          [styles.disabled]: data.disabled,
-          [styles.submenuIconAction]: isSubmenuNode,
-        })}
-        title={title}
-        iconClass={data.icon}
-        onClick={handleClick}
-        {...restProps}
-      >
-        {!data.icon && label /* 没有 icon 时渲染 label */}
-      </Button>
-    );
-  }
-
-  if (data.type === 'checkbox') {
-    return (
-      <CheckBox
+        loading={loading}
         className={clsx(className, styles.btnAction)}
         disabled={data.disabled}
-        label={data.label}
+        onClick={handleClick}
+        size='small'
+        type={data.type}
         title={title}
-        checked={data.checked}
-        onChange={(e) => handleClick(undefined, (e.target as HTMLInputElement).checked)}
         {...restProps}
-      />
+      >
+        {transformLabelWithCodicon(label, { margin: '0 3px' }, iconService?.fromString.bind(iconService))}
+        {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
+      </Button>
     );
-  }
-
-  return (
-    <Button
-      loading={loading}
-      className={clsx(className, styles.btnAction)}
-      disabled={data.disabled}
-      onClick={handleClick}
-      size='small'
-      type={data.type}
-      title={title}
-      {...restProps}
-    >
-      {transformLabelWithCodicon(label, { margin: '0 3px' }, iconService?.fromString.bind(iconService))}
-      {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
-    </Button>
-  );
-});
+  },
+);
 
 InlineActionWidget.displayName = 'InlineAction';
 

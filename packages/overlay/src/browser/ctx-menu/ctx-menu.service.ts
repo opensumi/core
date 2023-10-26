@@ -50,4 +50,8 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
   private reset() {
     this.visible = false;
   }
+
+  renderSubMenuTitle(node: MenuNode): React.ReactNode | undefined | null {
+    return null;
+  }
 }

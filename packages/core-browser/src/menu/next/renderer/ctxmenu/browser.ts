@@ -17,6 +17,7 @@ export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   context: any;
   menuNodes: MenuNode[];
   abstract hide(canceled: boolean): void;
+  renderSubMenuTitle?: (node: MenuNode) => React.ReactNode | undefined | null;
 }
 
 @Injectable()

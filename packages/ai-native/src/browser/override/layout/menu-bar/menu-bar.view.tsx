@@ -1,9 +1,9 @@
 import clsx from 'classnames';
 import * as React from 'react';
 
-import { AppConfig, getIcon, useInjectable, SlotRenderer } from '@opensumi/ide-core-browser';
+import { AppConfig, getIcon, useInjectable, SlotRenderer, useContextMenus } from '@opensumi/ide-core-browser';
 import { Button, Icon, Input } from '@opensumi/ide-core-browser/lib/components';
-import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { InlineActionWidget, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -15,15 +15,46 @@ import { EnhanceIcon } from '../../../components/Icon';
 import * as styles from './menu-bar.module.less';
 import { AiMenubarService } from './menu-bar.service';
 
+const AiMenuBarRender = () => {
+  const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
+  const extraTopMenus = React.useMemo(
+    () =>
+      contextmenuService.createMenu({
+        id: MenuId.AiMenuBarTopExtra,
+      }),
+    [contextmenuService],
+  );
+
+  const [navMenu, moreMenu] = useContextMenus(extraTopMenus);
+
+  const aiMenu = React.useMemo(() => navMenu[0] || moreMenu[0], [navMenu, moreMenu]);
+
+  if (!aiMenu) {
+    return null;
+  }
+
+  return (
+    <div>
+      <InlineActionWidget
+        id={aiMenu.id}
+        key={aiMenu.id}
+        type={'icon'}
+        data={aiMenu}
+        iconRender={
+          <EnhanceIcon className={styles.extra_top_icon}>
+            <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
+          </EnhanceIcon>
+        }
+      />
+    </div>
+  );
+};
+
 export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
-  const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
 
-  const extraTopMenus = React.useMemo(() => contextmenuService.createMenu({
-      id: MenuId.AiMenuBarTopExtra,
-    }), [contextmenuService]);
   const [isOpen, setIsOpen] = React.useState<boolean>(true);
 
   const handleRun = () => {
@@ -60,8 +91,7 @@ export const AiMenuBarView = () => {
         <div className={styles.left}>
           <EnhanceIcon icon={'left-nav-open'} onClick={handleLeftMenuVisiable} />
           <div className={styles.top_menus_bar}>
-            <InlineMenuBar menus={extraTopMenus} className={styles.extra_top_icon} />
-            <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
+            <AiMenuBarRender />
           </div>
         </div>
         <div className={styles.center}>
