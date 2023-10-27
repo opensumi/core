@@ -1,23 +1,41 @@
 import clsx from 'classnames';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Icon } from '@opensumi/ide-components';
 import { strings, transformLabelWithCodicon, useInjectable } from '@opensumi/ide-core-browser';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRenderProps } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { BrowserCtxMenuService } from '@opensumi/ide-overlay/lib/browser/ctx-menu/ctx-menu.service';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 import * as styles from './override.module.less';
 
-const SubMenuComponent = (props: { node: MenuNode }) => {
+const MenuComponent = (props: { node: MenuNode } & IMenuRenderProps) => {
   const iconService = useInjectable<IconService>(IIconService);
-  const { node } = props;
+  const { node, disabled, hasSubmenu } = props;
+
+  const renderIcon = useMemo(() => {
+    if (node.checked) {
+      return <Icon icon='check' />;
+    }
+
+    if (node.icon) {
+      return <Icon iconClass={node.icon} />;
+    }
+
+    return null;
+  }, [node]);
 
   return (
-    <div className={styles.ai_sub_menu_action_container}>
-      <div className={styles.icon}>{node.icon ? <Icon iconClass={node.icon} /> : null}</div>
+    <div
+      className={clsx(styles.ai_sub_menu_action_container, {
+        [styles.disabled]: disabled,
+        [styles.checked]: node.checked,
+      })}
+    >
+      <div className={styles.icon}>{renderIcon}</div>
       <div className={styles.label}>
         {node.label
           ? transformLabelWithCodicon(
@@ -29,10 +47,12 @@ const SubMenuComponent = (props: { node: MenuNode }) => {
       </div>
       <div className={styles.tip}>
         {node.keybinding ? <div className={styles.shortcut}>{node.keybinding}</div> : null}
-        <div className={styles.submenuIcon}>
-          <Icon icon='caret-right' />
-        </div>
-        <div className={styles.extraDesc}>{node.extraDesc}</div>
+        {hasSubmenu ? (
+          <div className={styles.submenuIcon}>
+            <Icon icon='caret-right' />
+          </div>
+        ) : null}
+        {!node.keybinding && !hasSubmenu && node.extraDesc && <div className={styles.extraDesc}>{node.extraDesc}</div>}
       </div>
     </div>
   );
@@ -40,7 +60,11 @@ const SubMenuComponent = (props: { node: MenuNode }) => {
 
 @Injectable()
 export class AiBrowserCtxMenuService extends BrowserCtxMenuService {
-  override renderSubMenuTitle(node: MenuNode): ReactNode | undefined | null {
-    return <SubMenuComponent node={node} />;
+  renderSubMenuTitle(node: MenuNode, props: IMenuRenderProps): ReactNode | undefined | null {
+    return <MenuComponent node={node} {...props} />;
+  }
+
+  renderMenuItem(node: MenuNode, props: IMenuRenderProps): ReactNode | undefined | null {
+    return <MenuComponent node={node} {...props} />;
   }
 }

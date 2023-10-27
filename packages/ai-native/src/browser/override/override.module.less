@@ -71,7 +71,7 @@
   align-items: center;
   width: 100%;
   user-select: none;
-  padding-left: 16px;
+  padding-left: 12px;
   padding-right: 4px;
 
   .icon {
@@ -80,6 +80,13 @@
     span {
       margin-right: 8px;
     }
+  }
+
+  .extraDesc,
+  .shortcut {
+    justify-content: right;
+    text-align: center;
+    color: var(--kt-menu-descriptionForeground);
   }
 
   .icon,
@@ -96,6 +103,7 @@
 
   .label {
     flex: 1;
+    padding-right: 16px;
   }
 
   &.disabled {

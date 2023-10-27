@@ -7,6 +7,11 @@ import { AbstractContextMenuService } from '../../menu.interface';
 
 import { ICtxMenuRenderer, CtxMenuRenderParams } from './base';
 
+export interface IMenuRenderProps {
+  disabled?: boolean;
+  hasSubmenu?: boolean;
+}
+
 export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   visible: boolean;
   onHide: ((canceled: boolean) => void) | undefined;
@@ -17,7 +22,8 @@ export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   context: any;
   menuNodes: MenuNode[];
   abstract hide(canceled: boolean): void;
-  renderSubMenuTitle?: (node: MenuNode) => React.ReactNode | undefined | null;
+  renderSubMenuTitle?: (node: MenuNode, props: IMenuRenderProps) => React.ReactNode | undefined | null;
+  renderMenuItem?: (node: MenuNode, props: IMenuRenderProps) => React.ReactNode | undefined | null;
 }
 
 @Injectable()
