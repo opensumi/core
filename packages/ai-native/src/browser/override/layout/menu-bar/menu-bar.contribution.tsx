@@ -7,7 +7,7 @@ import {
   MenubarSettingId,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { IMenubarItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, IMenubarItem, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
 
 import { AiMenuBarView } from './menu-bar.view';
@@ -20,15 +20,29 @@ export class AiMenuBarContribution extends Disposable implements ComponentContri
   @Autowired(MenubarStore)
   private readonly menubarStore: MenubarStore;
 
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
+  @Autowired(IMenuRegistry)
+  private readonly menuRegistry: IMenuRegistry;
 
   constructor() {
     super();
 
+    this.menubarStore.unregisterMenusBarByCompact(MenuId.AiMenuBarTopExtra);
+
     this.addDispose(
-      this.menubarStore.onDidMenuBarChange(() => {
-        this.menubarStore.registerMenuItemByCompactMenu(MenuId.AiMenuBarTopExtra);
+      this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
+        this.menuRegistry.registerMenuItems(
+          MenuId.AiMenuBarTopExtra,
+          menubarItems.map(
+            (item: IMenubarItem) =>
+              ({
+                label: item.label,
+                submenu: item.id,
+                iconClass: item.iconClass,
+                group: '1_navigation',
+                order: 100,
+              } as ISubmenuItem),
+          ),
+        );
       }),
     );
   }

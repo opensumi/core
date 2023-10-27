@@ -10,6 +10,7 @@ import {
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 
+import { getIcon } from '../../../components';
 import { IContextKeyService, IContextKey } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
@@ -52,7 +53,9 @@ export class ClientCommonContribution
     const overridePropertiesDefault = {
       'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
       'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
-      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 0 : (this.appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT),
+      'debug.toolbar.top': this.appConfig.isElectronRenderer
+        ? 0
+        : this.appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
     };
     const keys = Object.keys(this.schema.properties);
     for (const key of keys) {
@@ -103,13 +106,41 @@ export class ClientCommonContribution
   }
 
   registerMenus(menus: IMenuRegistry): void {
-    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
-    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
-    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
-    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
-    menus.registerMenubarItem(MenuId.MenubarGoMenu, { label: localize('menu-bar.title.go'), order: 5 });
-    menus.registerMenubarItem(MenuId.MenubarTerminalMenu, { label: localize('menu-bar.title.terminal'), order: 5 });
-    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
+    menus.registerMenubarItem(MenuId.MenubarFileMenu, {
+      label: localize('menu-bar.title.file'),
+      order: 1,
+      iconClass: getIcon('menubar-file'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarEditMenu, {
+      label: localize('menu-bar.title.edit'),
+      order: 2,
+      iconClass: getIcon('menubar-edit'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, {
+      label: localize('menu-bar.title.selection'),
+      order: 3,
+      iconClass: getIcon('menubar-selection'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarViewMenu, {
+      label: localize('menu-bar.title.view'),
+      order: 4,
+      iconClass: getIcon('menubar-view'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarGoMenu, {
+      label: localize('menu-bar.title.go'),
+      order: 5,
+      iconClass: getIcon('menubar-go'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarTerminalMenu, {
+      label: localize('menu-bar.title.terminal'),
+      order: 5,
+      iconClass: getIcon('zsh'),
+    });
+    menus.registerMenubarItem(MenuId.MenubarHelpMenu, {
+      label: localize('menu-bar.title.help'),
+      order: 999,
+      iconClass: getIcon('question-circle'),
+    });
 
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [

@@ -50,6 +50,7 @@ export const CtxMenu = observer(() => {
             context={ctxMenuService.context}
             iconService={iconService}
             renderSubMenuTitle={ctxMenuService.renderSubMenuTitle}
+            renderMenuItem={ctxMenuService.renderMenuItem}
           />
         </ClickOutside>
       }

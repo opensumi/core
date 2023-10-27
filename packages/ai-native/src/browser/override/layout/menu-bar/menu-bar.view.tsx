@@ -5,7 +5,13 @@ import { AppConfig, getIcon, useInjectable, SlotRenderer, useContextMenus } from
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractContextMenuService,
+  ICtxMenuRenderer,
+  MenuId,
+  MenuNode,
+  SubmenuItemNode,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
@@ -51,7 +57,7 @@ const AiMenuBarRender = () => {
 
     ctxMenuRenderer.show({
       anchor,
-      menuNodes: menuNodes[0].children,
+      menuNodes,
     });
   }, [anchor, extraTopMenus]);
 
