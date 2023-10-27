@@ -12,47 +12,47 @@ import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 import * as styles from './override.module.less';
 
-const MenuComponent = (props: { node: MenuNode } & IMenuRenderProps) => {
+const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
   const iconService = useInjectable<IconService>(IIconService);
-  const { node, disabled, hasSubmenu } = props;
+  const { data, disabled, hasSubmenu } = props;
 
   const renderIcon = useMemo(() => {
-    if (node.checked) {
+    if (data.checked) {
       return <Icon icon='check' />;
     }
 
-    if (node.icon) {
-      return <Icon iconClass={node.icon} />;
+    if (data.icon) {
+      return <Icon iconClass={data.icon} />;
     }
 
     return null;
-  }, [node]);
+  }, [data]);
 
   return (
     <div
       className={clsx(styles.ai_sub_menu_action_container, {
         [styles.disabled]: disabled,
-        [styles.checked]: node.checked,
+        [styles.checked]: data.checked,
       })}
     >
       <div className={styles.icon}>{renderIcon}</div>
       <div className={styles.label}>
-        {node.label
+        {data.label
           ? transformLabelWithCodicon(
-              strings.mnemonicButtonLabel(node.label, true),
+              strings.mnemonicButtonLabel(data.label, true),
               { margin: '0 3px' },
               iconService?.fromString.bind(iconService),
             )
           : ''}
       </div>
       <div className={styles.tip}>
-        {node.keybinding ? <div className={styles.shortcut}>{node.keybinding}</div> : null}
+        {data.keybinding ? <div className={styles.shortcut}>{data.keybinding}</div> : null}
         {hasSubmenu ? (
           <div className={styles.submenuIcon}>
             <Icon icon='caret-right' />
           </div>
         ) : null}
-        {!node.keybinding && !hasSubmenu && node.extraDesc && <div className={styles.extraDesc}>{node.extraDesc}</div>}
+        {!data.keybinding && !hasSubmenu && data.extraDesc && <div className={styles.extraDesc}>{data.extraDesc}</div>}
       </div>
     </div>
   );
@@ -61,10 +61,10 @@ const MenuComponent = (props: { node: MenuNode } & IMenuRenderProps) => {
 @Injectable()
 export class AiBrowserCtxMenuService extends BrowserCtxMenuService {
   renderSubMenuTitle(node: MenuNode, props: IMenuRenderProps): ReactNode | undefined | null {
-    return <MenuComponent node={node} {...props} />;
+    return <MenuComponent data={node} {...props} />;
   }
 
   renderMenuItem(node: MenuNode, props: IMenuRenderProps): ReactNode | undefined | null {
-    return <MenuComponent node={node} {...props} />;
+    return <MenuComponent data={node} {...props} />;
   }
 }
