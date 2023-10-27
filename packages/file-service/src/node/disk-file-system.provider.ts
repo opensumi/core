@@ -134,7 +134,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
     await this.whenReady;
     const _uri = Uri.revive(uri);
-    const id = await this.watcherServer.watchFileChanges(_uri.toString() + '/name.js', {
+    const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
       excludes: options?.excludes ?? [],
     });
     const disposable = {
@@ -142,8 +142,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         this.watcherServer.unwatchFileChanges(id);
       },
     };
-    this.logger.log(_uri.toString(), '_uri_toString');
-    this.watcherCollection.set(_uri.toString() + '/name.js', { id, options, disposable });
+    this.watcherCollection.set(_uri.toString(), { id, options, disposable });
     return id;
   }
 

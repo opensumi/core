@@ -156,7 +156,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
             }
           }
         } else {
-          this.logger.log(changeFileName, signalDoc);
           if (changeFileName === signalDoc) {
             if (fs.pathExistsSync(basePath)) {
               this.pushUpdated(basePath);
@@ -251,15 +250,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       return undefined;
     };
     await tryWatchDir();
-
-    // if (handler) {
-    //   disposables.push(
-    //     Disposable.create(async () => {
-    //       if (handler) {
-    //       }
-    //     }),
-    //   );
-    // }
     return disposables;
   }
   unwatchFileChanges(watcherId: number): Promise<void> {
