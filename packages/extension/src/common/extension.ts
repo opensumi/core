@@ -412,7 +412,7 @@ export abstract class ExtensionContributesService extends WithEventBus {
         }
       };
 
-      const runContributes = async (phase = this.lifecycleService.phase) => {
+      const runContributes = async (phase: LifeCyclePhase = this.lifecycleService.phase) => {
         this.lifecycles.push(phase);
         this.contributeQueue.queue(doRunContributes);
       };
@@ -422,7 +422,18 @@ export abstract class ExtensionContributesService extends WithEventBus {
           runContributes(newPhase);
         }),
       );
-      runContributes();
+      // 由于渲染上是异步调用，故 Browser 层可能比 Node 层更快的执行到后续生命周期
+      // 同时，重启流程触发时也需要完整执行所有生命周期贡献点
+      if (this.lifecycleService.phase === LifeCyclePhase.Ready) {
+        runContributes(LifeCyclePhase.Initialize);
+        runContributes(LifeCyclePhase.Starting);
+        runContributes(LifeCyclePhase.Ready);
+      } else if (this.lifecycleService.phase === LifeCyclePhase.Starting) {
+        runContributes(LifeCyclePhase.Initialize);
+        runContributes(LifeCyclePhase.Starting);
+      } else {
+        runContributes();
+      }
     });
   }
 }
