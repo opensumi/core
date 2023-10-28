@@ -48,7 +48,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected watcherOptions = new Map<number, WatcherOptions>();
 
-  private static readonly FILE_DELETE_HANDLER_DELAY = 1000;
+  private static readonly FILE_DELETE_HANDLER_DELAY = 10;
 
   @Autowired(ILogServiceManager)
 
@@ -135,10 +135,10 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
         const changePath = join(basePath, changeFileName);
         if (isDirectory) {
-          // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
-          if (docChildren.has(changeFileName)) {
-            if (type === 'rename') {
-              const timeoutHandle = setTimeout(async () => {
+          const timeoutHandle = setTimeout(async () => {
+            // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
+            if (docChildren.has(changeFileName)) {
+              if (type === 'rename') {
                 const fileExists = await fs.pathExists(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
@@ -146,29 +146,32 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
                   docChildren.delete(changeFileName);
                   this.pushDeleted(changePath);
                 }
-              }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
-              timeoutHandle;
+              }
+            } else if (fs.pathExistsSync(changePath)) {
+              if (!fs.lstatSync(changePath).isDirectory()) {
+                this.pushAdded(changePath);
+                docChildren.add(changeFileName);
+              }
             }
-          } else {
-            if (!fs.lstatSync(changePath).isDirectory()) {
-              this.pushAdded(changePath);
-              docChildren.add(changeFileName);
-            }
-          }
+          }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
+          timeoutHandle;
         } else {
-          if (changeFileName === signalDoc) {
-            if (fs.pathExistsSync(basePath)) {
-              this.pushUpdated(basePath);
+          const timeOutHandle = setTimeout(async () => {
+            if (changeFileName === signalDoc) {
+              if (fs.pathExistsSync(basePath)) {
+                this.pushUpdated(basePath);
+              } else {
+                this.pushDeleted(basePath);
+                signalDoc = '';
+              }
             } else {
-              this.pushDeleted(basePath);
-              signalDoc = '';
+              if (basename(basePath) === changeFileName) {
+                this.pushAdded(basePath);
+                signalDoc = changeFileName;
+              }
             }
-          } else {
-            if (basename(basePath) === changeFileName) {
-              this.pushAdded(basePath);
-              signalDoc = changeFileName;
-            }
-          }
+          }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
+          timeOutHandle;
         }
       });
     } catch (error) {
@@ -226,10 +229,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     });
 
     return events;
-  }
-
-  private getDefaultWatchExclude() {
-    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*', '**/.hg/store/**'];
   }
 
   protected async start(basePath: string): Promise<DisposableCollection> {
