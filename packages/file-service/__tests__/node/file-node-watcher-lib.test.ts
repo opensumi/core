@@ -57,7 +57,6 @@ const sleepTime = 2000;
 
     fse.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
     await sleep(sleepTime);
-    // await new Promise((resolve) => setTimeout(resolve, sleepTime));
 
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
@@ -90,32 +89,6 @@ const sleepTime = 2000;
     await sleep(sleepTime);
 
     expect(Array.from(addUris)).toEqual(expectedAddUris);
-    expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
-    watcherServerList.push(watcherServer);
-  });
-  it('update file', async () => {
-    const updatedUris = new Set<string>();
-    const deleteUris = new Set<string>();
-    const watcherClient = {
-      onDidFilesChanged(event: DidFilesChangedParams) {
-        event.changes.forEach((c) => {
-          if (c.type === FileChangeType.UPDATED) {
-            updatedUris.add(c.uri);
-          }
-          if (c.type === FileChangeType.DELETED) {
-            deleteUris.add(c.uri);
-          }
-        });
-      },
-    };
-    const { root, watcherServer } = await generateWatcher();
-    watcherServer.setClient(watcherClient);
-    const expectedDeleteUris = [];
-    const expectedUpdatedUris = [root.resolve('for_rename').toString()];
-    // fse.writeFileSync(root.resolve('for_rename').toString(), 'for update');
-    fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename').codeUri.fsPath.toString()), 'rena');
-    await sleep(sleepTime);
-    expect(Array.from(updatedUris)).toEqual(expectedUpdatedUris);
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
   });

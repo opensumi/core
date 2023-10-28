@@ -88,16 +88,12 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private async doWatch(basePath: string) {
     try {
       const watcher = watch(basePath);
-
       this.logger.log('start watching', basePath);
-
       const isDirectory = fs.lstatSync(basePath).isDirectory();
 
       // 目录下面的所有文件
       const docChildren = new Set<string>();
-
       let signalDoc = '';
-
       if (isDirectory) {
         try {
           for (const child of fs.readdirSync(basePath)) {
