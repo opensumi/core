@@ -48,7 +48,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
 
   protected watcherOptions = new Map<number, WatcherOptions>();
 
-  private static readonly FILE_DELETE_HANDLER_DELAY = 10;
+  private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
   @Autowired(ILogServiceManager)
 
@@ -134,8 +134,8 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           const timeoutHandle = setTimeout(async () => {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
-              if (type === 'rename') {
-                const fileExists = await fs.pathExists(changePath);
+              if ((type === 'rename' || type === 'change') && changeFileName === raw) {
+                const fileExists = fs.existsSync(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
                 } else {
