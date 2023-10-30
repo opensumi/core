@@ -91,11 +91,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private recursive: boolean;
 
-  constructor(@Optional() recursive = true) {
+  constructor(@Optional() recursive = false) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
-    this.initWatchServer();
     this.recursive = recursive;
+    this.initWatchServer();
   }
 
   get whenReady() {

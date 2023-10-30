@@ -1,37 +1,21 @@
-import paths from 'path';
-
 import fs, { watch } from 'fs-extra';
 import debounce from 'lodash/debounce';
 
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import {
   FileUri,
-  ParsedPattern,
   ILogService,
   ILogServiceManager,
   SupportLogNamespace,
   IDisposable,
   Disposable,
   DisposableCollection,
-  isLinux,
   isMacintosh,
 } from '@opensumi/ide-core-node';
-import { join, basename } from '@opensumi/ide-utils/lib/path';
+import { join, basename, normalize } from '@opensumi/ide-utils/lib/path';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
-
-export interface UnRecursiveEvent {
-  path: string;
-  type: 'added' | 'updated' | 'deleted';
-}
-
-export type UnRecursiveCallback = (err: Error | null, events: Event[]) => unknown;
-
-export interface WatcherOptions {
-  excludesPattern: ParsedPattern[];
-  excludes: string[];
-}
 
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
@@ -45,8 +29,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   >();
 
   private static WATCHER_SEQUENCE = 1;
-
-  protected watcherOptions = new Map<number, WatcherOptions>();
 
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
@@ -116,22 +98,25 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       });
 
       watcher.on('change', (type, raw) => {
+        if (this.isTemporaryFile(raw as string)) {
+          return;
+        }
+
         // 对传入的raw做一个统一处理
         let changeFileName = '';
         if (raw) {
-          changeFileName = this.deleteFileNumberSuffix(raw as string);
+          changeFileName = raw as string;
           if (isMacintosh) {
-            changeFileName = this.deleteFileNumberSuffix(fs.realpathSync.native(changeFileName));
+            changeFileName = normalize(changeFileName);
           }
         }
-
         if (!raw || (type !== 'change' && type !== 'rename')) {
           return;
         }
 
         const changePath = join(basePath, changeFileName);
         if (isDirectory) {
-          const timeoutHandle = setTimeout(async () => {
+          setTimeout(async () => {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
               if ((type === 'rename' || type === 'change') && changeFileName === raw) {
@@ -150,9 +135,8 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
               }
             }
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
-          timeoutHandle;
         } else {
-          const timeOutHandle = setTimeout(async () => {
+          setTimeout(async () => {
             if (changeFileName === signalDoc) {
               if (fs.pathExistsSync(basePath)) {
                 this.pushUpdated(basePath);
@@ -167,7 +151,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
               }
             }
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
-          timeOutHandle;
         }
       });
     } catch (error) {
@@ -206,25 +189,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     disposables.push(await this.start(watchPath));
     this.toDispose.push(disposables);
     return watcherId;
-  }
-
-  /**
-   * 过滤 `write-file-atomic` 写入生成的临时文件
-   * @param events
-   */
-  protected trimChangeEvent(events: UnRecursiveEvent[]): UnRecursiveEvent[] {
-    events = events.filter((event: UnRecursiveEvent) => {
-      if (event.path) {
-        if (/\.\d{7}\d+$/.test(event.path)) {
-          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
-          // 这类文件的更新应当完全隐藏掉
-          return false;
-        }
-      }
-      return true;
-    });
-
-    return events;
   }
 
   protected async start(basePath: string): Promise<DisposableCollection> {
@@ -296,26 +260,14 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     this.client = client;
   }
 
-  protected resolvePath(directory: string, file: string): string {
-    const path = paths.join(directory, file);
-    // 如果是 linux 则获取一下真实 path，以防返回的是软连路径被过滤
-    if (isLinux) {
-      try {
-        return fs.realpathSync.native(path);
-      } catch (_e) {
-        try {
-          // file does not exist try to resolve directory
-          return paths.join(fs.realpathSync.native(directory), file);
-        } catch (_e) {
-          // directory does not exist fall back to symlink
-          return path;
-        }
+  protected isTemporaryFile(path: string): boolean {
+    if (path) {
+      if (/\.\d{7}\d+$/.test(path)) {
+        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
+        // 这类文件的更新应当完全隐藏掉
+        return true;
       }
     }
-    return path;
-  }
-  protected deleteFileNumberSuffix(fileName: string): string {
-    const cleanFileName = fileName.replace(/\.\d+$/, '');
-    return cleanFileName;
+    return false;
   }
 }
