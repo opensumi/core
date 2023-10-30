@@ -16,8 +16,9 @@ import {
   isLinux,
   isMacintosh,
 } from '@opensumi/ide-core-node';
+// import { join, basename } from '../../../../utils/src/path';
+import { join, basename } from '@opensumi/ide-utils/lib/path';
 
-import { join, basename } from '../../../../utils/src/path';
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 
