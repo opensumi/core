@@ -137,6 +137,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         } else {
           setTimeout(async () => {
+            this.logger.log(raw, type);
             if (changeFileName === signalDoc) {
               if (fs.pathExistsSync(basePath)) {
                 this.pushUpdated(basePath);

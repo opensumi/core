@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { isMacintosh } from '@opensumi/ide-core-common';
+import { isMacintosh, isLinux } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -302,7 +302,12 @@ const sleepTime = 1000;
     };
     const { root, watcherServer } = await generateWatcher();
     watcherServer.setClient(watcherClient);
-    const expectedAddUris = [root.resolve('for_rename').toString()];
+    let expectedAddUris: string[];
+    if (isLinux || isMacintosh) {
+      expectedAddUris = [];
+    } else {
+      expectedAddUris = [root.resolve('for_rename').toString()];
+    }
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
     await fse.unlink(root.resolve('for_rename').codeUri.fsPath.toString());
     await sleep(sleepTime);

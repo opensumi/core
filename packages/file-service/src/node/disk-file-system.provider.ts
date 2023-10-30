@@ -91,7 +91,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private recursive: boolean;
 
-  constructor(@Optional() recursive = false) {
+  constructor(@Optional() recursive = true) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
     this.recursive = recursive;
