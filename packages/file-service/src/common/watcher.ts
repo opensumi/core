@@ -1,6 +1,5 @@
 import { URI, Event, FileChange } from '@opensumi/ide-core-common';
-
-import { IRelativePattern } from '../../../utils/lib/glob';
+import { IRelativePattern } from '@opensumi/ide-core-common';
 
 import { IFileServiceClient } from './file-service-client';
 

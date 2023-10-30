@@ -12,11 +12,11 @@ import {
   DisposableCollection,
   isMacintosh,
 } from '@opensumi/ide-core-node';
-import { join, basename, normalize } from '@opensumi/ide-utils/lib/path';
+import { path } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
-
+const { join, basename, normalize } = path;
 @Injectable({ multiple: true })
 export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private WATCHER_HANDLERS = new Map<
@@ -33,7 +33,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
   private static readonly FILE_DELETE_HANDLER_DELAY = 500;
 
   @Autowired(ILogServiceManager)
-
   // 一个 symbol 关键字，内容是 ILogServiceManager
   private readonly loggerManager: ILogServiceManager;
 
@@ -73,7 +72,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
       this.logger.log('start watching', basePath);
       const isDirectory = fs.lstatSync(basePath).isDirectory();
 
-      // 目录下面的所有文件
       const docChildren = new Set<string>();
       let signalDoc = '';
       if (isDirectory) {
@@ -97,20 +95,20 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         watcher.close();
       });
 
-      watcher.on('change', (type, raw) => {
-        if (this.isTemporaryFile(raw as string)) {
+      watcher.on('change', (type: string, filename: string | Buffer) => {
+        if (this.isTemporaryFile(filename as string)) {
           return;
         }
 
         // 对传入的raw做一个统一处理
         let changeFileName = '';
-        if (raw) {
-          changeFileName = raw as string;
+        if (filename) {
+          changeFileName = filename as string;
           if (isMacintosh) {
             changeFileName = normalize(changeFileName);
           }
         }
-        if (!raw || (type !== 'change' && type !== 'rename')) {
+        if (!filename || (type !== 'change' && type !== 'rename')) {
           return;
         }
 
@@ -119,7 +117,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
           setTimeout(async () => {
             // 监听的目录如果是文件夹，那么只对其下面的文件改动做出响应
             if (docChildren.has(changeFileName)) {
-              if ((type === 'rename' || type === 'change') && changeFileName === raw) {
+              if ((type === 'rename' || type === 'change') && changeFileName === filename) {
                 const fileExists = fs.existsSync(changePath);
                 if (fileExists) {
                   this.pushUpdated(changePath);
@@ -153,10 +151,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
     }
   }
 
-  /**
-   * @param uri
-   * @param options
-   */
   async watchFileChanges(uri: string) {
     const basePath = FileUri.fsPath(uri);
     const exist = await fs.pathExists(basePath);
@@ -179,7 +173,7 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
         watchPath = basePath;
       }
     } else {
-      this.logger.warn('此路径不存在，请重新开始');
+      this.logger.warn('This path does not exist. Please try again');
     }
     disposables.push(await this.start(watchPath));
     this.toDispose.push(disposables);

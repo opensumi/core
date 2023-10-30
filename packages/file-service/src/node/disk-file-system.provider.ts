@@ -46,7 +46,7 @@ import {
 
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
-import { UnRecursiveFileSystemWatcher } from './un-recursive/file-node-watcher-lib';
+import { UnRecursiveFileSystemWatcher } from './un-recursive/file-node-watcher';
 
 const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';

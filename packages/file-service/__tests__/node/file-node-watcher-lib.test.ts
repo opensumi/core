@@ -1,12 +1,12 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { isMacintosh, isLinux } from '@opensumi/ide-core-common';
+import { isMacintosh } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-node-watcher-lib';
+import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-node-watcher';
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -18,7 +18,6 @@ const sleepTime = 1000;
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-test')));
-    // injector.mock(UnRecursiveFileSystemWatcher, 'watchFileChanges', () => false);
     const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
