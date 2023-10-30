@@ -144,11 +144,6 @@ export class UnRecursiveFileSystemWatcher implements IFileSystemWatcherServer {
                 this.pushDeleted(basePath);
                 signalDoc = '';
               }
-            } else {
-              if (basename(basePath) === changeFileName) {
-                this.pushAdded(basePath);
-                signalDoc = changeFileName;
-              }
             }
           }, UnRecursiveFileSystemWatcher.FILE_DELETE_HANDLER_DELAY);
         }
