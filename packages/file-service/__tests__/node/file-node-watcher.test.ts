@@ -1,11 +1,10 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { isMacintosh } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { DidFilesChangedParams, FileChangeType } from '../../src/common';
+import { DidFilesChangedParams, FileChangeType } from '../../src/common/index';
 import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-node-watcher';
 
 function sleep(time: number) {
@@ -13,7 +12,7 @@ function sleep(time: number) {
 }
 const sleepTime = 1000;
 
-(isMacintosh ? describe.skip : describe)('watch directory delete/add/update', () => {
+describe('watch directory delete/add/update', () => {
   const track = temp.track();
   async function generateWatcher() {
     const injector = createNodeInjector([]);
@@ -56,8 +55,6 @@ const sleepTime = 1000;
 
     fse.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
     await sleep(sleepTime);
-    // await new Promise((resolve) => setTimeout(resolve, sleepTime));
-
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
@@ -235,7 +232,7 @@ const sleepTime = 1000;
   });
 });
 
-(isMacintosh ? describe.skip : describe)('watch document delete/update/deleteAndAdd', () => {
+describe('watch document delete/update/deleteAndAdd', () => {
   const track = temp.track();
   async function generateWatcher() {
     const injector = createNodeInjector([]);
