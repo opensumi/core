@@ -12,7 +12,7 @@ function sleep(time: number) {
 }
 const sleepTime = 1000;
 
-describe('watch directory delete/add/update', () => {
+describe('unRecursively watch for folder additions, deletions, rename,and updates', () => {
   const track = temp.track();
   async function generateWatcher() {
     const injector = createNodeInjector([]);
@@ -30,7 +30,7 @@ describe('watch directory delete/add/update', () => {
       watcherServer.dispose();
     });
   });
-  it('Rename file', async () => {
+  it('Rename the files under the folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -59,7 +59,7 @@ describe('watch directory delete/add/update', () => {
     expect([...deleteUris]).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
   });
-  it('add file', async () => {
+  it('Add the files under the folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -89,7 +89,7 @@ describe('watch directory delete/add/update', () => {
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
   });
-  it('update file', async () => {
+  it('Update the files under the folder', async () => {
     const updatedUris = new Set<string>();
     const deleteUris = new Set<string>();
     const watcherClient = {
@@ -114,7 +114,7 @@ describe('watch directory delete/add/update', () => {
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
   });
-  it('delete file', async () => {
+  it('Delete the files under the folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -141,7 +141,7 @@ describe('watch directory delete/add/update', () => {
     expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
   });
-  it('Rename folder', async () => {
+  it('Rename the watched folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -173,7 +173,7 @@ describe('watch directory delete/add/update', () => {
     expect([...deleteUris]).toEqual(expectedDeleteUris);
     watcherServerList.push(watcherServer);
   });
-  it('Add folder', async () => {
+  it('Add the watched folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
     const watcherClient = {
@@ -203,7 +203,7 @@ describe('watch directory delete/add/update', () => {
     watcherServerList.push(watcherServer);
   });
 
-  it('Delete folder', async () => {
+  it('Delete the watched folder', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -232,12 +232,11 @@ describe('watch directory delete/add/update', () => {
   });
 });
 
-describe('watch document delete/update/deleteAndAdd', () => {
+describe('Delete and update monitored files', () => {
   const track = temp.track();
   async function generateWatcher() {
     const injector = createNodeInjector([]);
     const root = FileUri.create(fse.realpathSync(await temp.mkdir('unRecursive-test')));
-    // injector.mock(UnRecursiveFileSystemWatcher, 'watchFileChanges', () => false);
     const watcherServer = injector.get(UnRecursiveFileSystemWatcher);
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     await watcherServer.watchFileChanges(root.toString() + '/for_rename');
@@ -251,7 +250,7 @@ describe('watch document delete/update/deleteAndAdd', () => {
     });
   });
 
-  it('deleted file', async () => {
+  it('Delete watched files', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -280,7 +279,7 @@ describe('watch document delete/update/deleteAndAdd', () => {
     watcherServerList.push(watcherServer);
   });
 
-  it('updated file', async () => {
+  it('Update watched files', async () => {
     const updatedUris = new Set<string>();
     const deleteUris = new Set<string>();
 
