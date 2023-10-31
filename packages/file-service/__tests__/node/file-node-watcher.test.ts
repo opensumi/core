@@ -232,7 +232,7 @@ describe('unRecursively watch for folder additions, deletions, rename,and update
   });
 });
 
-describe('Delete or update monitored files', () => {
+describe('Delete and update monitored files', () => {
   const track = temp.track();
   async function generateWatcher() {
     const injector = createNodeInjector([]);
