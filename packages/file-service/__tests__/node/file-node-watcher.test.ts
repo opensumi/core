@@ -5,7 +5,7 @@ import { FileUri } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common/index';
-import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-node-watcher';
+import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-service-watcher';
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
