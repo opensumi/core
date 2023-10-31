@@ -29,8 +29,10 @@ import {
   ICryptoService,
   ICredentialsService,
   Emitter,
+  AppLifeCycleServiceToken,
 } from '@opensumi/ide-core-browser';
 import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
+import { AppLifeCycleService } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -407,6 +409,10 @@ export function setupExtensionServiceInjector() {
     {
       token: WorkbenchEditorService,
       useClass: MockWorkbenchEditorService,
+    },
+    {
+      token: AppLifeCycleServiceToken,
+      useClass: AppLifeCycleService,
     },
     {
       token: IWebviewService,

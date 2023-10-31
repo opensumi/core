@@ -9,7 +9,7 @@ import {
   path,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
-import { asPromise, LifeCyclePhase } from '@opensumi/ide-core-common';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -63,6 +63,8 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionManageService: AbstractExtInstanceManagementService;
 
+  private storagePath: string;
+
   private safeParseJSON(content) {
     let json;
     try {
@@ -87,28 +89,31 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
           if (languageId !== getLanguageId()) {
             return;
           }
-          localization.translations.map((translate) => {
-            if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
-              return;
-            }
-            promises.push(
-              asPromise(async () => {
-                const contents = await this.registerLanguage(translate, extension!.path);
-                registerLocalizationBundle(
-                  {
-                    languageId,
-                    languageName: localization.languageName,
-                    localizedLanguageName: localization.localizedLanguageName,
-                    contents,
-                  },
-                  translate.id,
-                );
-              }),
-            );
-          });
+          promises.push(
+            ...localization.translations.map(async (translate) => {
+              if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
+                return;
+              }
+              const contents = await this.registerLanguage(translate, extension!.path);
+              registerLocalizationBundle(
+                {
+                  languageId,
+                  languageName: localization.languageName,
+                  localizedLanguageName: localization.localizedLanguageName,
+                  contents,
+                },
+                translate.id,
+              );
+            }),
+          );
 
-          const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
-          promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
+          if (!this.storagePath) {
+            this.storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
+          }
+
+          promises.push(
+            this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, this.storagePath),
+          );
         }
       }
     }
@@ -118,8 +123,8 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
 
   async registerLanguage(translate: TranslationFormat, extensionPath: string) {
     const bundlePath = new Path(extensionPath).join(translate.path.replace(/^\.\//, '')).toString();
-    const { content } = await this.fileServiceClient.resolveContent(URI.file(bundlePath).toString());
-    const json = this.safeParseJSON(content);
+    const { content } = await this.fileServiceClient.readFile(URI.file(bundlePath).toString());
+    const json = this.safeParseJSON(content.toString());
 
     const contents = {};
     if (json.contents) {

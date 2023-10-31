@@ -21,6 +21,7 @@ import {
   LinkedText,
   URI,
   createLocalizedStr,
+  Throttler,
 } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
@@ -327,6 +328,8 @@ export abstract class ExtensionContributesService extends WithEventBus {
   private injector: Injector;
 
   private contributedSet = new Set();
+  private contributeQueue = new Throttler();
+  private lifecycles: LifeCyclePhase[] = [];
 
   private getContributionCls(contributesName: string): typeof VSCodeContributePoint | undefined {
     const Constructor = this.ContributionPoints.find((Constructor) => {
@@ -359,7 +362,6 @@ export abstract class ExtensionContributesService extends WithEventBus {
       }
       return false;
     });
-
     await Promise.all(
       Contributes.map(async (Constructor: typeof VSCodeContributePoint) => {
         try {
@@ -388,27 +390,51 @@ export abstract class ExtensionContributesService extends WithEventBus {
     );
   }
 
-  public async initialize() {
-    const runContributes = async (phase = this.lifecycleService.phase) => {
-      if (!phase) {
-        return;
+  public initialize() {
+    return new Promise<void>((resolve) => {
+      const doRunContributes = async () => {
+        const phases = this.lifecycles.slice(0);
+        this.lifecycles = [];
+        if (phases.length === 0) {
+          return;
+        }
+        for (const phase of phases) {
+          // 所有 contributionPoint 运行完后清空
+          // 确保后续安装/启用插件后可以正常激活
+          if (phase === LifeCyclePhase.Ready) {
+            this.contributedSet.clear();
+          }
+          await this.runContributesByPhase(phase);
+          if (phase === LifeCyclePhase.Initialize) {
+            // 返回 Promise，说明此时初始化已完成
+            resolve();
+          }
+        }
+      };
+
+      const runContributes = async (phase: LifeCyclePhase = this.lifecycleService.phase) => {
+        this.lifecycles.push(phase);
+        this.contributeQueue.queue(doRunContributes);
+      };
+
+      this.addDispose(
+        this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+          runContributes(newPhase);
+        }),
+      );
+      // 由于渲染上是异步调用，故 Browser 层可能比 Node 层更快的执行到后续生命周期
+      // 同时，重启流程触发时也需要完整执行所有生命周期贡献点
+      if (this.lifecycleService.phase === LifeCyclePhase.Ready) {
+        runContributes(LifeCyclePhase.Initialize);
+        runContributes(LifeCyclePhase.Starting);
+        runContributes(LifeCyclePhase.Ready);
+      } else if (this.lifecycleService.phase === LifeCyclePhase.Starting) {
+        runContributes(LifeCyclePhase.Initialize);
+        runContributes(LifeCyclePhase.Starting);
+      } else {
+        runContributes();
       }
-
-      // 所有 contributionPoint 运行完后清空
-      // 确保后续安装/启用插件后可以正常激活
-      if (phase === LifeCyclePhase.Ready) {
-        this.contributedSet.clear();
-      }
-
-      await this.runContributesByPhase(phase);
-    };
-
-    this.addDispose(
-      this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
-        runContributes(newPhase);
-      }),
-    );
-    await runContributes();
+    });
   }
 }
 
