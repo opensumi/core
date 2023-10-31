@@ -147,6 +147,7 @@ export class Disposable implements IDisposable {
   }
 
   private disposingElements = false;
+
   dispose(): void {
     if (this.disposed || this.disposingElements) {
       return;

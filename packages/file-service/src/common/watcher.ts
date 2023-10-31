@@ -1,4 +1,5 @@
 import { URI, Event, FileChange } from '@opensumi/ide-core-common';
+import { IRelativePattern } from '@opensumi/ide-core-common';
 
 import { IFileServiceClient } from './file-service-client';
 
@@ -12,6 +13,12 @@ export interface IFileServiceWatcher {
   watchId: number;
   onFilesChanged: Event<FileChange[]>;
   dispose(): Promise<void>;
+}
+
+export interface IRecursiveWatchRequest {
+  path: string;
+  recursive: boolean;
+  excludes?: Array<string | IRelativePattern>;
 }
 
 export type INsfwFunction = (

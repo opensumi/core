@@ -151,11 +151,14 @@ const installExtension = async (namespace, name, version) => {
 
   if (downloadUrl) {
     // 下载解压插件容易出错，因此这里加一个重试逻辑
-    await retry(async () => {
-      const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
-      await unzipFile(targetDir, targetDirName, tmpZipFile);
-      rimraf.sync(tmpZipFile);
-    }, { retries: 5 });
+    await retry(
+      async () => {
+        const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
+        await unzipFile(targetDir, targetDirName, tmpZipFile);
+        rimraf.sync(tmpZipFile);
+      },
+      { retries: 5 },
+    );
   }
 };
 

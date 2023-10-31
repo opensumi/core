@@ -5,10 +5,10 @@ import { FileUri, UTF8 } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
-import { FileSystemWatcherServer } from '@opensumi/ide-file-service/lib/node/file-service-watcher';
 
 import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
+import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
 describe('FileServiceClient should be work', () => {
   const injector = createBrowserInjector([FileServiceClientModule]);

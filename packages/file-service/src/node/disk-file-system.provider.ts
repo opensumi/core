@@ -5,7 +5,7 @@ import * as fse from 'fs-extra';
 import trash from 'trash';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
+import { Injectable, INJECTOR_TOKEN, Autowired, Injector, Optional } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
@@ -44,8 +44,9 @@ import {
   handleError,
 } from '../common/';
 
-import { FileSystemWatcherServer } from './file-service-watcher';
+import { FileSystemWatcherServer } from './recursive/file-service-watcher';
 import { getFileType } from './shared/file-type';
+import { UnRecursiveFileSystemWatcher } from './un-recursive/file-service-watcher';
 
 const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -66,7 +67,9 @@ export interface IWatcher {
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-  private watcherServer: FileSystemWatcherServer;
+
+  private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
+
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
@@ -86,9 +89,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private ignoreNextChangesEvent: Set<string> = new Set();
 
-  constructor() {
+  private recursive: boolean;
+
+  constructor(@Optional() recursive = true) {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
+    this.recursive = recursive;
     this.initWatchServer();
   }
 
@@ -366,9 +372,14 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       this.watcherServerDisposeCollection.dispose();
     }
     this.watcherServerDisposeCollection = new DisposableCollection();
-    this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
+    if (this.recursive) {
+      this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
+    } else {
+      this.watcherServer = this.injector.get(UnRecursiveFileSystemWatcher, [excludes]);
+    }
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
+        this.logger.log(events.changes, 'events.change');
         if (events.changes.length > 0) {
           const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
           this.fileChangeEmitter.fire(changes);
