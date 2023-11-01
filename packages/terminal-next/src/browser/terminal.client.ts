@@ -128,10 +128,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   protected readonly applicationService: IApplicationService;
 
   @Autowired(ITerminalProfileInternalService)
-  terminalProfileInternalService: ITerminalProfileInternalService;
+  public readonly terminalProfileInternalService: ITerminalProfileInternalService;
 
   @Autowired(IVariableResolverService)
-  variableResolver: IVariableResolverService;
+  public readonly variableResolver: IVariableResolverService;
 
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
@@ -160,7 +160,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   constructor() {
     super();
+    this.init();
+  }
 
+  private async init() {
     this.xterm = this.injector.get(XTerm, [
       {
         xtermOptions: {

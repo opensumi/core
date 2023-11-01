@@ -11,7 +11,7 @@ import {
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
 import { NextToolbarRegistryImpl } from '@opensumi/ide-core-browser/src/toolbar/toolbar.registry';
-import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { AppLifeCycleServiceToken, IAppLifeCycleService, IEventBus, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IActivationEventService, ExtensionBeforeActivateEvent } from '@opensumi/ide-extension/lib/browser/types';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
@@ -43,12 +43,16 @@ describe('Extension service', () => {
   let injector: MockInjector;
   let codeContributes: VSCodeContributesService;
   let sumiContributes: VSCodeContributesService;
+  let eventBus: IEventBus;
+  let lifecycleService: IAppLifeCycleService;
 
   beforeAll(async () => {
     injector = setupExtensionServiceInjector();
     injector.get(IMainLayoutService).viewReady.resolve();
     extensionService = injector.get(ExtensionService);
     extCommandManagement = injector.get(IExtCommandManagement);
+    lifecycleService = injector.get<IAppLifeCycleService>(AppLifeCycleServiceToken);
+    eventBus = injector.get(IEventBus);
     extInstanceManagementService = injector.get(AbstractExtInstanceManagementService);
     extensionManagementService = injector.get(AbstractExtensionManagementService);
     // @ts-ignore
@@ -60,17 +64,18 @@ describe('Extension service', () => {
       codeContributes.register(e.id, e.contributes);
       sumiContributes.register(e.id, e.contributes);
     }
+    lifecycleService.phase = LifeCyclePhase.Initialize;
     await extensionService.activate();
-    await codeContributes['runContributesByPhase'](LifeCyclePhase.Ready);
-    await sumiContributes['runContributesByPhase'](LifeCyclePhase.Ready);
+    lifecycleService.phase = LifeCyclePhase.Starting;
+    lifecycleService.phase = LifeCyclePhase.Ready;
   });
 
   describe('activate', () => {
     it('emit event before activate', (done) => {
       // @ts-ignore
-      const disposable = extensionService.eventBus.on(ExtensionBeforeActivateEvent, () => {
-        done();
+      const disposable = eventBus.on(ExtensionBeforeActivateEvent, () => {
         disposable.dispose();
+        done();
       });
 
       // @ts-ignore
@@ -243,9 +248,6 @@ describe('Extension service', () => {
 
   describe('extension process restart', () => {
     it('restart ext process when visibility change', async () => {
-      // 开始进行 visibilitychange 事件监听
-      await extensionService.activate();
-
       /**
        * 如果页面不可见，那么不会执行插件进程重启操作
        */

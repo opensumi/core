@@ -652,11 +652,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         }
       }),
     );
-
-    this.contributesService.initialize();
-    this.sumiContributesService.initialize();
-
     activatedViewExtensionMap.clear();
+
+    await Promise.all([this.contributesService.initialize(), this.sumiContributesService.initialize()]);
   }
 
   async disposeExtProcess() {
