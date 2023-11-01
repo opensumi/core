@@ -6,6 +6,7 @@ import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/con
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import {
   WithEventBus,
   Emitter,
@@ -55,6 +56,7 @@ import {
   TerminalCliterFilter,
   TerminalLocation,
 } from '../common';
+import { CodeTerminalSettingId } from '../common/preference';
 
 import { TerminalContextKey } from './terminal.context-key';
 import { TerminalGroupViewService } from './terminal.view';
@@ -135,6 +137,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ICtxMenuRenderer)
   private ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
@@ -556,15 +561,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       wGroup.widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
-        if (!client) {
-          return;
-        }
+        const disablePersistence =
+          !this.preferenceService.get(CodeTerminalSettingId.EnablePersistentSessions) ||
+          client?.launchConfig?.disablePersistence;
 
-        if (client.launchConfig?.isExtensionOwnedTerminal || client.launchConfig?.disablePersistence) {
-          return;
-        }
-
-        if (client.isTaskExecutor) {
+        if (!client || disablePersistence || client?.isTaskExecutor) {
           return;
         }
 
