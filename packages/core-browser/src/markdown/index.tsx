@@ -5,7 +5,11 @@ import { createMarkedRenderer, toMarkdownHtml as toHtml, IMarkedOptions } from '
 
 import { IOpenerService } from '../opener';
 
-export const toMarkdown = (message: string | React.ReactNode, opener?: IOpenerService, options?: IMarkedOptions): React.ReactNode =>
+export const toMarkdown = (
+  message: string | React.ReactNode,
+  opener?: IOpenerService,
+  options?: IMarkedOptions,
+): React.ReactNode =>
   typeof message === 'string' ? (
     <RenderWrapper opener={opener} html={toMarkdownHtml(message, options)}></RenderWrapper>
   ) : (

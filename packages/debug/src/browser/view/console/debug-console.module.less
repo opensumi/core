@@ -46,6 +46,7 @@
     flex-shrink: 0;
     justify-content: center;
     font-weight: 600;
+
     :global(.kaitian-icon) {
       font-size: 14px;
       line-height: @debug-console-default-height;
@@ -82,6 +83,7 @@
     top: 0;
     z-index: 1;
     pointer-events: none;
+
     & .block {
       position: absolute;
       background-color: rgba(225, 255, 255, 0.25);
@@ -91,12 +93,14 @@
   a {
     color: currentColor !important;
     cursor: text;
+
     &.link {
       // 这里 a 标签的父元素的 dispaly 如果是 inline-block 的话，text-decoration 属性会失效，采用 border-bottom 代替
       // text-decoration: underline;
       border-bottom: 1px solid currentColor;
       word-break: break-all;
     }
+
     &.pointer {
       cursor: pointer;
     }
@@ -132,6 +136,7 @@
   &.mod_selected {
     color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
+
     .expansion_toggle {
       color: var(--kt-tree-inactiveSelectionForeground) !important;
     }
@@ -140,6 +145,7 @@
   &.mod_focused {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
+
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;
     }
@@ -148,6 +154,7 @@
   &.mod_actived {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
+
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;
     }
@@ -164,6 +171,7 @@
   align-items: center;
   width: 100%;
   user-select: text;
+
   match {
     background-color: var(--editor-findMatchHighlightBackground);
   }
@@ -185,6 +193,7 @@
 .debug_console_node_displayname {
   display: inline;
   white-space: inherit;
+
   &.info {
     color: var(--debugConsole-infoForeground);
   }
@@ -215,6 +224,7 @@
   color: var(--foreground);
   position: absolute;
   left: -20px;
+
   &.mod_collapsed {
     &:before {
       display: block;
@@ -244,6 +254,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   overflow: visible;
+
   &.name {
     color: var(--debugTokenExpression-name);
   }
@@ -288,6 +299,7 @@
 .debug_console_output {
   flex: 1;
   background-color: var(--kt-panelTitle-background);
+
   :global(.kt-recycle-tree) {
     width: 100% !important;
   }
@@ -295,75 +307,94 @@
   .code-bold {
     font-weight: bold;
   }
+
   .code-italic {
     font-style: italic;
   }
+
   .code-underline {
     text-decoration: underline;
     text-decoration-style: solid;
   }
+
   .code-double-underline {
     text-decoration: underline;
     text-decoration-style: double;
   }
+
   .code-strike-through {
     text-decoration: line-through;
     text-decoration-style: solid;
   }
+
   .code-overline {
     text-decoration: overline;
     text-decoration-style: solid;
   }
+
   .code-overline.code-underline.code-strike-through {
     text-decoration: overline underline line-through;
     text-decoration-style: solid;
   }
+
   .code-overline.code-underline {
     text-decoration: overline underline;
     text-decoration-style: solid;
   }
+
   .code-overline.code-strike-through {
     text-decoration: overline line-through;
     text-decoration-style: solid;
   }
+
   .code-underline.code-strike-through {
     text-decoration: underline line-through;
     text-decoration-style: solid;
   }
+
   .code-overline.code-double-underline.code-strike-through {
     text-decoration: overline underline line-through;
     text-decoration-style: double;
   }
+
   .code-overline.code-double-underline {
     text-decoration: overline underline;
     text-decoration-style: double;
   }
+
   .code-double-underline.code-strike-through {
     text-decoration: underline line-through;
     text-decoration-style: double;
   }
+
   .code-dim {
     opacity: 0.4;
   }
+
   .code-hidden {
     opacity: 0;
   }
+
   .code-blink {
     animation: code-blink-key 1s cubic-bezier(1, 0, 0, 1) infinite alternate;
   }
+
   .code-rapid-blink {
     animation: code-blink-key 0.3s cubic-bezier(1, 0, 0, 1) infinite alternate;
   }
+
   @keyframes code-blink-key {
     to {
       opacity: 0.4;
     }
   }
+
   .code-subscript {
     vertical-align: sub;
     font-size: smaller;
     line-height: normal;
   }
+
   .code-superscript {
     vertical-align: super;
     font-size: smaller;

@@ -150,12 +150,15 @@ const installExtension = async (namespace, name, version) => {
   }
 
   if (downloadUrl) {
-    const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
-
-    // 解压插件，使用 opentrs 插件时解压缩容易出错，因此这里加一个重试逻辑
-    await retry(() => unzipFile(targetDir, targetDirName, tmpZipFile), { retries: 5 });
-
-    rimraf.sync(tmpZipFile);
+    // 下载解压插件容易出错，因此这里加一个重试逻辑
+    await retry(
+      async () => {
+        const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
+        await unzipFile(targetDir, targetDirName, tmpZipFile);
+        rimraf.sync(tmpZipFile);
+      },
+      { retries: 5 },
+    );
   }
 };
 

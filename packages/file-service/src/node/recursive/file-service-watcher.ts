@@ -19,9 +19,8 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../common';
-
-import { FileChangeCollection } from './file-change-collection';
+import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
+import { FileChangeCollection } from '../file-change-collection';
 
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
@@ -94,6 +93,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     if (watcherId) {
       return watcherId;
     }
+
     watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
     const toDisposeWatcher = new DisposableCollection();
     let watchPath;
@@ -204,6 +204,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
                 return;
               }
               const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
+
               if (!handlers) {
                 return;
               }
@@ -245,8 +246,6 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         {
           errorCallback: (error: any) => {
             // see https://github.com/atom/github/issues/342
-            // eslint-disable-next-line no-console
-            console.warn(`Failed to watch "${basePath}":`, error);
             this.unwatchFileChanges(watcherId);
           },
         },
