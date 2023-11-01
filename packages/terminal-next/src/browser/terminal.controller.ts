@@ -6,6 +6,7 @@ import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/con
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import {
   WithEventBus,
   Emitter,
@@ -55,11 +56,10 @@ import {
   TerminalCliterFilter,
   TerminalLocation,
 } from '../common';
+import { CodeTerminalSettingId } from '../common/preference';
 
 import { TerminalContextKey } from './terminal.context-key';
 import { TerminalGroupViewService } from './terminal.view';
-import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
-import { CodeTerminalSettingId } from '../common/preference';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
