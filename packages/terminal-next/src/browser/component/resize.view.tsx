@@ -36,6 +36,10 @@ export default observer((props: IResizeViewProps) => {
     }
   });
 
+  const handleRemoveWidget = React.useCallback((widgetId: string) => {
+    view.removeWidget(widgetId);
+  }, []);
+
   return (
     <div className={styles.resizeWrapper} ref={whole}>
       <div
@@ -86,7 +90,7 @@ export default observer((props: IResizeViewProps) => {
                 <div
                   className={clx(styles.closeBtn, getIcon('close'))}
                   onClick={() => {
-                    view.removeWidget(widget.id);
+                    handleRemoveWidget(widget.id);
                   }}
                 />
               )}
