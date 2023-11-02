@@ -119,12 +119,27 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }),
     );
 
+    let isMouseDown = false;
+
+    this.disposables.push(
+      monacoEditor.onMouseDown(() => {
+        isMouseDown = true;
+      }),
+      monacoEditor.onMouseUp(() => {
+        isMouseDown = false;
+      }),
+    );
+
     Event.debounce(
-      Event.any<any>(monacoEditor.onDidChangeCursorSelection),
+      Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp),
       (_, e) => e,
       100,
-    )(() => {
+    )((e) => {
       if (!this.preferenceService.getValid(AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
+        return;
+      }
+
+      if (isMouseDown) {
         return;
       }
 
@@ -384,8 +399,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     if (!text?.trim()) {
       return;
     }
-
-    this.logger.log('monacoEditor.onMouseUp: >>> text', text);
 
     this.aiInlineChatService.launchChatMessage(EChatStatus.READY);
 

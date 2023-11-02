@@ -534,6 +534,7 @@ export default {
     'activityBarBadge.foreground': '#FFFFFF',
     'badge.background': '#FFFFFF40',
     'badge.foreground': '#D7DBDE',
+    'breadcrumb.background': '#242526',
     'checkbox.background': '#00000040',
     'checkbox.border': '#00000000',
     descriptionForeground: '#868C91',

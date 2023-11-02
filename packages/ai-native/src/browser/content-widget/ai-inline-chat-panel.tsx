@@ -154,7 +154,7 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
         <div className={styles.ai_content_widget_input}>
           <ChatInput
             disabled={isLoading}
-            autoFocus={true}
+            // autoFocus={true}
             onSend={(value) => {
               props.selectChangeFire.fire(value);
               setCurrentCheckText(value);
