@@ -21,7 +21,7 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiGPTBackSerivcePath, AiNativeSettingSectionsId, InstructionEnum } from '../common/index';
+import { AiGPTBackSerivcePath, AiInlineChatContentWidget, AiNativeSettingSectionsId, InstructionEnum } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
@@ -119,14 +119,20 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }),
     );
 
-    let isMouseDown = false;
+    let isShowInlineChat = false;
 
     this.disposables.push(
       monacoEditor.onMouseDown(() => {
-        isMouseDown = true;
+        isShowInlineChat = false;
       }),
-      monacoEditor.onMouseUp(() => {
-        isMouseDown = false;
+      monacoEditor.onMouseUp((event) => {
+        const type = event.target.type;
+        if (
+          type === monaco.editor.MouseTargetType.CONTENT_TEXT ||
+          type === monaco.editor.MouseTargetType.CONTENT_EMPTY
+        ) {
+          isShowInlineChat = true;
+        }
       }),
     );
 
@@ -139,7 +145,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         return;
       }
 
-      if (isMouseDown) {
+      if (!isShowInlineChat) {
         return;
       }
 
@@ -392,7 +398,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return;
     }
 
-    const { startLineNumber, endLineNumber } = selection;
+    const { endLineNumber } = selection;
     // 获取指定范围内的文本内容
     const text = monacoEditor.getModel()?.getValueInRange(selection);
 
@@ -424,6 +430,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             message: InstructionEnum.aiExplainKey,
             prompt: this.aiChatService.explainCodePrompt(),
           });
+          this.disposeAllWidget();
           return;
         }
 
@@ -458,95 +465,109 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
           if (!currentFunc) {
             // 说明找不到选中的某个测试方法，则直接使用全文
-            prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成单元测试用例，不需要解释，只需要返回代码结果`;
+            prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成单元测试用例`;
           } else {
-            prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例，不需要解释，只需要返回代码结果`;
+            prompt = `这是我的完整代码。\`\`\`${fullCode}\`\`\`。请帮我生成 ${currentFunc.name} 方法的单元测试用例`;
           }
 
-          this.aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!]);
-          this.aiContentWidget.addDispose(this.aiCodeWidget);
-
-          this.logger.log('生成测试用例 prompt:>>> ', prompt);
-          const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+          this.aiChatService.launchChatMessage({
+            message: value,
             prompt,
-            {},
-            {
-              maxTokens: 16000,
-            },
-            this.aiChatService.cancelIndicator.token,
-          );
-
-          if (this.aiContentWidget.disposed || result.isCancel) {
-            return;
-          }
-
-          // 说明接口有异常
-          if (result.errorCode !== 0) {
-            this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR);
-          } else {
-            this.aiInlineChatService.launchChatMessage(EChatStatus.DONE);
-          }
-
-          let answer = result && result.data;
-
-          // 提取代码内容
-          const regex = /```\w*\s*([\s\S]+?)\s*```/;
-          const regExec = regex.exec(answer);
-          answer = (regExec && regExec[1]) || answer;
-
-          this.logger.log('生成测试用例 answer:>>> ', result);
-
-          if (answer) {
-            // 文件后缀名
-            const ext = URI.from(model.uri).path.ext;
-            const testUri = model.uri.with({
-              path: model.uri.path.replace(ext, `.test${ext}`),
-            });
-
-            this.logger.log(testUri);
-
-            this.aiCodeWidget.setAnswerValue(answer);
-            this.aiCodeWidget.setHeadUri(testUri.toString());
-            this.aiCodeWidget.setLanguageId(model.getLanguageId());
-            this.aiCodeWidget.create();
-            this.aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
-
-            // 调整 aiContentWidget 位置
-            this.aiContentWidget?.setOptions({
-              position: {
-                lineNumber: endLineNumber + 1,
-                column: selection.startColumn,
-              },
-            });
-            this.aiContentWidget?.layoutContentWidget();
-
-            this.aiInlineChatDisposed.addDispose(
-              this.aiInlineChatService.onAccept(async (value) => {
-                // 采纳后在同级目录下新建测试文件
-                if (testUri) {
-                  await this.fileTreeAPI.createFile(URI.parse(testUri.path), answer);
-                }
-
-                setTimeout(() => {
-                  this.disposeAllWidget();
-                }, 110);
-              }),
-            );
-
-            this.aiInlineChatDisposed.addDispose(
-              this.aiInlineChatService.onDiscard((value) => {
-                setTimeout(() => {
-                  this.disposeAllWidget();
-                }, 110);
-              }),
-            );
-          }
-
+          });
+          this.disposeAllWidget();
           return;
+
+          // this.aiCodeWidget = this.injector.get(AiCodeWidget, [monacoEditor!]);
+          // this.aiContentWidget.addDispose(this.aiCodeWidget);
+
+          // this.logger.log('生成测试用例 prompt:>>> ', prompt);
+          // const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+          //   prompt,
+          //   {},
+          //   {
+          //     maxTokens: 16000,
+          //   },
+          //   this.aiChatService.cancelIndicator.token,
+          // );
+
+          // if (this.aiContentWidget.disposed || result.isCancel) {
+          //   return;
+          // }
+
+          // // 说明接口有异常
+          // if (result.errorCode !== 0) {
+          //   this.aiInlineChatService.launchChatMessage(EChatStatus.ERROR);
+          // } else {
+          //   this.aiInlineChatService.launchChatMessage(EChatStatus.DONE);
+          // }
+
+          // let answer = result && result.data;
+
+          // // 提取代码内容
+          // const regex = /```\w*\s*([\s\S]+?)\s*```/;
+          // const regExec = regex.exec(answer);
+          // answer = (regExec && regExec[1]) || answer;
+
+          // this.logger.log('生成测试用例 answer:>>> ', result);
+
+          // if (answer) {
+          //   // 文件后缀名
+          //   const ext = URI.from(model.uri).path.ext;
+          //   const testUri = model.uri.with({
+          //     path: model.uri.path.replace(ext, `.test${ext}`),
+          //   });
+
+          //   this.logger.log(testUri);
+
+          //   this.aiCodeWidget.setAnswerValue(answer);
+          //   this.aiCodeWidget.setHeadUri(testUri.toString());
+          //   this.aiCodeWidget.setLanguageId(model.getLanguageId());
+          //   this.aiCodeWidget.create();
+          //   this.aiCodeWidget.showByLine(endLineNumber, selection.endLineNumber - selection.startLineNumber + 2);
+
+          //   // 调整 aiContentWidget 位置
+          //   this.aiContentWidget?.setOptions({
+          //     position: {
+          //       lineNumber: endLineNumber + 1,
+          //       column: selection.startColumn,
+          //     },
+          //   });
+          //   this.aiContentWidget?.layoutContentWidget();
+
+          //   this.aiInlineChatDisposed.addDispose(
+          //     this.aiInlineChatService.onAccept(async (value) => {
+          //       // 采纳后在同级目录下新建测试文件
+          //       if (testUri) {
+          //         await this.fileTreeAPI.createFile(URI.parse(testUri.path), answer);
+          //       }
+
+          //       setTimeout(() => {
+          //         this.disposeAllWidget();
+          //       }, 110);
+          //     }),
+          //   );
+
+          //   this.aiInlineChatDisposed.addDispose(
+          //     this.aiInlineChatService.onDiscard((value) => {
+          //       setTimeout(() => {
+          //         this.disposeAllWidget();
+          //       }, 110);
+          //     }),
+          //   );
+          // }
+
+          // return;
         }
 
         if (value) {
-          const prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。\n 请根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进，我的问题是: ${value}。`;
+          let prompt = '';
+
+          if (value === '生成注释') {
+            prompt = `为以下代码添加注释: \`\`\`\n ${text}\`\`\`。要求只返回代码结果，并保留代码的缩进，不需要解释`;
+          } else {
+            prompt = `这是我选中的代码内容：\`\`\`${text}\`\`\`。\n 请根据我给的代码内容回答我的问题，不需要解释，只需要返回代码结果，并保留代码的缩进，我的问题是: ${value}。`;
+          }
+
           this.aiInlineChatService.launchChatMessage(EChatStatus.THINKING);
 
           this.logger.log('输入框 prompt:>>> ', prompt);

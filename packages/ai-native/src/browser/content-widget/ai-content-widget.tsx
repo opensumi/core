@@ -7,6 +7,8 @@ import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { AiInlineChatContentWidget } from '../../common';
+
 import { AIInlineChatPanel } from './ai-inline-chat-panel';
 
 export interface IAiContentWidget extends monaco.editor.IContentWidget {
@@ -28,7 +30,6 @@ export interface ShowAiContentOptions {
 
 @Injectable({ multiple: true })
 export class AiContentWidget extends Disposable implements IAiContentWidget {
-
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
@@ -87,7 +88,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
   };
 
   getId(): string {
-    return 'AI-Content-Widget';
+    return AiInlineChatContentWidget;
   }
 
   layoutContentWidget(): void {
@@ -112,9 +113,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
     if (position) {
       return {
         position,
-        preference: [
-          monaco.editor.ContentWidgetPositionPreference.BELOW,
-        ],
+        preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
       };
     }
 
@@ -123,9 +122,7 @@ export class AiContentWidget extends Disposable implements IAiContentWidget {
       ? {
           // @ts-ignore
           position: new monaco.Position(endPosition.lineNumber, this.options?.selection.startColumn),
-          preference: [
-            monaco.editor.ContentWidgetPositionPreference.BELOW,
-          ],
+          preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
         }
       : null;
   }

@@ -117,13 +117,11 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
                   >
                     丢弃
                   </Button>
-                  <Button size={'small'} type={'ghost'}>
+                  {/* <Button size={'small'} type={'ghost'}>
                     重新生成
-                  </Button>
+                  </Button> */}
                 </div>
-                <div className={styles.right_side}>
-                  <Thumbs />
-                </div>
+                <div className={styles.right_side}>{/* <Thumbs /> */}</div>
               </div>
               {/* <span className={styles.v_line}></span> */}
             </>
@@ -135,10 +133,10 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
 
   const handleShortcutsClick = useCallback(
     (text: string) => {
-      // setInputValue(text);
+      setInputValue(text);
       props.selectChangeFire.fire(text);
       setCurrentCheckText(text);
-      setInputValue('');
+      // setInputValue('');
     },
     [inputValue],
   );
@@ -158,7 +156,6 @@ export const AIInlineChatPanel = (props: { selectChangeFire: Emitter<string> }) 
             onSend={(value) => {
               props.selectChangeFire.fire(value);
               setCurrentCheckText(value);
-              setInputValue('');
             }}
             onValueChange={(value) => {
               setInputValue(value);
