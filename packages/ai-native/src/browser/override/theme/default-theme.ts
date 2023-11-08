@@ -519,9 +519,6 @@ export default {
     },
   ],
   colors: {
-    'editor.foreground': '#00000000',
-    'editor.background': '#00000000',
-    'editor.findMatchHighlightBackground': '#00000000',
     'activityBar.activeBorder': '#ffffff1f',
     'activityBar.activeForeground': '#FFFFFF',
     'activityBar.background': '#00000000',

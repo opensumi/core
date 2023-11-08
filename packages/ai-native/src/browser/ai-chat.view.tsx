@@ -21,6 +21,7 @@ import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
+import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
@@ -58,9 +59,9 @@ export const AiChatView = observer(() => {
   const generateProject = React.useCallback(async () => {
     aiProjectGenerateService.start((messageList) => {
       const aiMessageList = messageList.map(({ message, immediately, type = 'message' }) =>
-      type === 'message'
-        ? createMessageByAI(<AiReply text={message} immediately={immediately} />)
-        : AICodeReply(message, aiChatService)
+        type === 'message'
+          ? createMessageByAI(<AiReply text={message} immediately={immediately} />)
+          : AICodeReply(message, aiChatService),
       );
       setMessageListData([...aiMessageList]);
     });
@@ -152,15 +153,9 @@ export const AiChatView = observer(() => {
           aiMessage = await AIWithCommandReply(aiMessage, opener, aiChatService);
         } else if (userInput!.type === AISerivceType.GPT) {
           const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
-          aiMessage = await aiChatService.messageWithGPT(withPrompt);
-          if (aiMessage) {
-            aiMessage = await AICodeReply(aiMessage, aiChatService);
-          }
+          aiMessage = await AIStreamReply(withPrompt, aiChatService);
         } else if (userInput!.type === AISerivceType.Explain) {
-          aiMessage = await aiChatService.messageWithGPT(userInput!.message!, { maxTokens: 16000 });
-          if (aiMessage) {
-            aiMessage = await AICodeReply(aiMessage, aiChatService);
-          }
+          aiMessage = await AIStreamReply(userInput!.message!, aiChatService);
         } else if (userInput!.type === AISerivceType.Run) {
           aiMessage = await aiChatService.aiBackService.aiAntGlm(
             userInput!.message!,
@@ -341,6 +336,22 @@ const AISearch = async (input, aiChatService: AiChatService) => {
           </div>
         </div>
       </ChatMoreActions>,
+      styles.chat_with_more_actions,
+    );
+
+    aiChatService.setLatestSessionId(uid);
+    return aiMessage;
+  } catch (error) {}
+};
+
+// 流式输出渲染组件
+const AIStreamReply = async (prompt: string, aiChatService: AiChatService) => {
+  try {
+    const uid = uuid(6);
+    await aiChatService.messageWithStream(prompt, {}, uid);
+
+    const aiMessage = createMessageByAI(
+      <StreamMsgWrapper sessionId={uid}></StreamMsgWrapper>,
       styles.chat_with_more_actions,
     );
 

@@ -7,9 +7,16 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { AiGPTBackSerivcePath, AiGPTBackSerivceToken, AiNativeContribution, IAiRunFeatureRegistry } from '../common';
+import {
+  AiGPTBackSerivcePath,
+  AiGPTBackSerivceToken,
+  AiNativeContribution,
+  IAiChatService,
+  IAiRunFeatureRegistry,
+} from '../common';
 
 import { AiNativeCoreContribution } from './ai-chat.contribution';
+import { AiChatService } from './ai-chat.service';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
@@ -26,6 +33,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IAiRunFeatureRegistry,
       useClass: AiRunFeatureRegistry,
+    },
+    {
+      token: IAiChatService,
+      useClass: AiChatService,
     },
   ];
 
@@ -91,6 +102,7 @@ export class AiNativeModule extends BrowserModule {
     {
       servicePath: AiGPTBackSerivcePath,
       token: AiGPTBackSerivceToken,
+      clientToken: IAiChatService,
     },
   ];
 }
