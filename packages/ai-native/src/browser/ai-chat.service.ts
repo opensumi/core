@@ -1,24 +1,26 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
 import { AISerivceType, AiGPTBackSerivcePath, IChatMessageStructure, InstructionEnum } from '../common';
 
+import { MsgStreamManager } from './model/msg-stream-manager';
+
 @Injectable()
-export class AiChatService {
+export class AiChatService extends Disposable {
   @Autowired(AiGPTBackSerivcePath)
   public aiBackService: any;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
 
-  @Autowired(AiChatService)
-  private readonly aiChatService: AiChatService;
-
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(MsgStreamManager)
+  private readonly msgStreamManager: MsgStreamManager;
 
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
@@ -126,16 +128,16 @@ export class AiChatService {
     }
 
     if (!selectionContent) {
-      messageWithPrompt = `这是 ${displayName} 文件, 位置是在 ${fsPath}, 代码内容是 \`\`\`\n${content}\n\`\`\`。向我解释这个代码内容的意思`;
+      messageWithPrompt = `这是 ${displayName} 文件, 位置是在 ${fsPath}, 代码内容是 \`\`\`\n${content}\n\`\`\`。向我解释这个代码内容的意图`;
     }
 
     if (selectionContent) {
-      messageWithPrompt = `这是 ${displayName} 文件, 位置是在 ${fsPath}, 代码内容是 \`\`\`\n${content}\n\`\`\`。我会给你一段代码片段，你需要给我解释这段代码片段的意思。我的代码片段是: \`\`\`\n${selectionContent}\n\`\`\` `;
+      messageWithPrompt = `这是 ${displayName} 文件, 位置是在 ${fsPath}, 解释一下这段代码的意图: \`\`\`${selectionContent} \`\`\``;
     }
 
     if (message.trim()) {
       if (selectionContent) {
-        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。我会提供给你其中的某个代码片段以及我的问题, 你需要根据我给的代码片段来解释我的问题。我提供的代码片段是: \`\`\`\n${selectionContent}\n\`\`\`，我的问题是: "${message}" `;
+        messageWithPrompt = `这是 ${displayName} 文件，我会提供给你代码片段以及我的问题, 你需要根据我给的代码片段来解释我的问题。我提供的代码片段是: \`\`\`\n${selectionContent}\n\`\`\`，我的问题是: "${message}" `;
       } else {
         messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。根据我提供的代码内容来回答我的问题，我的问题是: "${message}" `;
       }
@@ -148,12 +150,32 @@ export class AiChatService {
     return withPrompt;
   }
 
+  /**
+   * by backend service
+   * @param message
+   */
+  public onMessage(message: string) {
+    try {
+      const msgObj = JSON.parse(message);
+      const { id, choices } = msgObj;
+      this.msgStreamManager.recordMessage(id, choices[0]);
+    } catch (error) {
+      new Error(`onMessage error: ${error}`);
+    }
+  }
+
+  public async messageWithStream(input: string, options: any = {}, sessionId: string): Promise<void> {
+    this.msgStreamManager.setCurrentSessionId(sessionId);
+
+    await this.aiBackService.aiGPTcompletionRequestStream(input, options, this.cancelIndicatorChatView.token);
+  }
+
   public async messageWithGPT(input: string, options: any = {}) {
     const res = await this.aiBackService.aiGPTcompletionRequest(
       input,
       undefined,
       options,
-      this.aiChatService.cancelIndicatorChatView.token,
+      this.cancelIndicatorChatView.token,
     );
 
     if (res.isCancel) {

@@ -61,12 +61,12 @@ export enum AISerivceType {
   Run,
 }
 
-export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
-
 export type AiRunHandler = () => MaybePromise<void>;
 export interface IAiRunAnswerComponentProps {
   input: string;
 }
+
+export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
 
 export interface IAiRunFeatureRegistry {
   /**
@@ -100,3 +100,5 @@ export interface PromptOption {
   language?: string;
   useCot?: boolean;
 }
+
+export const IAiChatService = Symbol('IAiChatService');

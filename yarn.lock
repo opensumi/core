@@ -2144,6 +2144,7 @@ __metadata:
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
     react-chat-elements: ^12.0.10
+    react-highlight: ^0.15.0
   languageName: unknown
   linkType: soft
 
@@ -11361,6 +11362,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"highlight.js@npm:^10.5.0":
+  version: 10.7.3
+  resolution: "highlight.js@npm:10.7.3"
+  checksum: defeafcd546b535d710d8efb8e650af9e3b369ef53e28c3dc7893eacfe263200bba4c5fcf43524ae66d5c0c296b1af0870523ceae3e3104d24b7abf6374a4fea
+  languageName: node
+  linkType: hard
+
 "hmac-drbg@npm:^1.0.1":
   version: 1.0.1
   resolution: "hmac-drbg@npm:1.0.1"
@@ -18928,6 +18936,15 @@ __metadata:
   peerDependencies:
     react: ^16.14.0
   checksum: 5a5c49da0f106b2655a69f96c622c347febcd10532db391c262b26aec225b235357d9da1834103457683482ab1b229af7a50f6927a6b70e53150275e31785544
+  languageName: node
+  linkType: hard
+
+"react-highlight@npm:^0.15.0":
+  version: 0.15.0
+  resolution: "react-highlight@npm:0.15.0"
+  dependencies:
+    highlight.js: ^10.5.0
+  checksum: 8a0e3f2d9db0a5332b8b33eef8d6c58eb4c6f0a9426b0cedc5331fb4a777cff1895138b54368261d4e2a22338b11aa6b93adb1e3db496524072613255540a911
   languageName: node
   linkType: hard
 
