@@ -8,7 +8,7 @@ import { AiChatService } from '../ai-chat.service';
 
 import * as styles from './components.module.less';
 
-export const Thinking = () => {
+export const Thinking = ({ children }: { children?: React.ReactNode }) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   const handlePause = useCallback(() => {
@@ -17,9 +17,7 @@ export const Thinking = () => {
 
   return (
     <div className={styles.thinking_container}>
-      <div className={styles.content}>
-        <span>Thinking...</span>
-      </div>
+      <div className={styles.content}>{children ?? <span>Thinking...</span>}</div>
       <div className={styles.stop}>
         <span className={styles.progress_bar}>
           <Progress loading={true} style={{ width: '25%' }} wrapperClassName='ai-native-progress-wrapper' />
