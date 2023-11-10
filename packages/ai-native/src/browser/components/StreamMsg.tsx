@@ -1,39 +1,64 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import hljs from 'highlight.js';
+import React, { useCallback, useEffect } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 
-import { IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
+import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
+import { CodeBlockWrapper } from './ChatEditor';
 import * as styles from './components.module.less';
+import { Thinking } from './Thinking';
 
-interface IStreamMsgProps {
-  sessionId: string;
-}
-
-export const StreamMsgWrapper = (props: IStreamMsgProps) => {
+export const StreamMsgWrapper = (props: { sessionId: string }) => {
   const { sessionId } = props;
-  const [msgText, setMsgText] = React.useState('');
   const [chunk, setChunk] = React.useState('');
+  const [content, setContent] = React.useState<string>('');
+  const [status, setStatus] = React.useState(EMsgStreamStatus.READY);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   useEffect(() => {
-    const disposer = msgStreamManager.onMsgListChange(sessionId)((msg: IMsgStreamChoices) => {
-      const { delta } = msg;
-      setChunk(delta.content);
-    });
+    const disposableCollection = new DisposableCollection();
 
-    return () => disposer.dispose();
+    disposableCollection.push(
+      msgStreamManager.onMsgListChange(sessionId)((msg: IMsgStreamChoices) => {
+        const { delta } = msg;
+        setChunk(delta.content);
+      }),
+    );
+
+    disposableCollection.push(
+      msgStreamManager.onMsgStatus((status) => {
+        setStatus(status);
+      }),
+    );
+
+    hljs.highlightAll();
+
+    return () => disposableCollection.dispose();
   }, [sessionId]);
 
   useEffect(() => {
-    if (chunk) {
-      setMsgText(msgText + chunk);
+    if (!chunk) {
+      return;
     }
+
+    setContent(content + chunk);
   }, [chunk]);
 
-  return (
-    <div className={styles.ai_chat_code_wrapper}>
-      <div className={styles.render_text}>{msgText}</div>
-    </div>
+  const renderMsgList = useCallback(
+    () => (
+      <div className={styles.ai_chat_code_wrapper}>
+        <div className={styles.render_text}>
+          <CodeBlockWrapper text={content} />
+        </div>
+      </div>
+    ),
+    [content],
+  );
+
+  return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
+    <Thinking>{renderMsgList()}</Thinking>
+  ) : (
+    renderMsgList()
   );
 };

@@ -67,8 +67,6 @@ export class MsgStreamManager extends Disposable {
       answerList.push(msg);
     }
 
-    this.onDidMsgListChangeDispatcher.dispatch(this._currentSessionId, msg);
-
     const { finish_reason } = msg;
     if (!finish_reason) {
       this.status = EMsgStreamStatus.THINKING;
@@ -77,5 +75,7 @@ export class MsgStreamManager extends Disposable {
     } else {
       this.status = EMsgStreamStatus.ERROR;
     }
+
+    this.onDidMsgListChangeDispatcher.dispatch(this._currentSessionId, msg);
   }
 }

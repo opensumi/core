@@ -23,6 +23,7 @@ import { EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
+import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
 
@@ -49,6 +50,7 @@ export const AiChatView = observer(() => {
   const aiRunService = useInjectable<AiRunService>(AiRunService);
   const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const opener = useInjectable<CommandOpener>(CommandOpener);
+  const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
@@ -117,6 +119,15 @@ export const AiChatView = observer(() => {
   React.useEffect(() => {
     scrollToBottom();
   }, [loading]);
+
+  React.useEffect(() => {
+    const dispose = msgStreamManager.onMsgStatus(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
+    return () => dispose.dispose();
+  }, [msgStreamManager.onMsgStatus]);
 
   React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
