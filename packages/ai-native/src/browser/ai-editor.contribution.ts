@@ -223,6 +223,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             prompt = `优化以下代码: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
           }
 
+          this.logger.log('aiGPTcompletionRequest:>>> prompt', prompt);
+
           this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
 
           const result = await this.aiGPTBackService.aiGPTcompletionRequest(
@@ -249,7 +251,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           let answer = result && result.data;
 
           // 提取代码内容
-          const regex = /```([\s\S]+?)```/;
+          const regex = /```\w*([\s\S]+?)\s*```/;
           const regExec = regex.exec(answer);
           answer = (regExec && regExec[1]) || answer;
 
