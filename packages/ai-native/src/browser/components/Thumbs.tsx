@@ -14,7 +14,6 @@ export const Thumbs = () => {
       <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
         <EnhanceIcon className={getExternalIcon('thumbsup')} />
       </Popover>
-      <LineVertical marginRight={6} marginLeft={6} />
       <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
         <EnhanceIcon className={getExternalIcon('thumbsdown')} />
       </Popover>

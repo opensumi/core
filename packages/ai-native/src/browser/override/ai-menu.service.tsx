@@ -1,11 +1,11 @@
 import clsx from 'classnames';
 import React, { ReactNode, useMemo } from 'react';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import { Icon } from '@opensumi/ide-components';
 import { strings, transformLabelWithCodicon, useInjectable } from '@opensumi/ide-core-browser';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IMenuRenderProps } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { IBrowserCtxMenu, IMenuRenderProps } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { BrowserCtxMenuService } from '@opensumi/ide-overlay/lib/browser/ctx-menu/ctx-menu.service';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
@@ -30,10 +30,14 @@ const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
 
   return (
     <div
-      className={clsx(styles.ai_sub_menu_action_container, {
-        [styles.disabled]: disabled,
-        [styles.checked]: data.checked,
-      })}
+      className={clsx(
+        styles.ai_sub_menu_action_container,
+        {
+          [styles.disabled]: disabled,
+          [styles.checked]: data.checked,
+        },
+        data.className,
+      )}
     >
       <div className={styles.icon}>{renderIcon}</div>
       <div className={styles.label}>
@@ -59,7 +63,7 @@ const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
 };
 
 @Injectable()
-export class AiBrowserCtxMenuService extends BrowserCtxMenuService {
+export class AiBrowserCtxMenuService extends BrowserCtxMenuService implements IBrowserCtxMenu {
   renderSubMenuTitle(node: MenuNode, props: IMenuRenderProps): ReactNode | undefined | null {
     return <MenuComponent data={node} {...props} />;
   }
