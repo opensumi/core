@@ -4,7 +4,7 @@ import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constant
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { Color, IThemeData, IThemeStore, ThemeContribution } from '@opensumi/ide-theme';
+import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import {
@@ -75,6 +75,23 @@ export class AiNativeModule extends BrowserModule {
                 }
               }
             }
+
+            const defaultRemoveColor = new Color(new RGBA(217, 108, 108, 0.2));
+            registerColor(
+              'diffEditor.removedLineBackground',
+              { dark: defaultRemoveColor, light: defaultRemoveColor, hcDark: null, hcLight: null },
+              '',
+              true,
+            );
+
+            const defaultInsertColor = new Color(new RGBA(108, 217, 126, 0.2));
+            registerColor(
+              'diffEditor.insertedLineBackground',
+              { dark: defaultInsertColor, light: defaultInsertColor, hcDark: null, hcLight: null },
+              '',
+              true,
+            );
+
             return newTheme;
           }
         },
