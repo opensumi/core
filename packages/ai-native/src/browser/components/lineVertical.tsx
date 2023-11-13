@@ -1,7 +1,7 @@
 import React from 'react';
 
 const lineStyles = {
-  backgroundColor: '#666',
+  backgroundColor: '#363940',
   height: '100%',
   width: '1px',
   minWidth: '1px',

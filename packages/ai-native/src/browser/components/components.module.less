@@ -278,17 +278,50 @@
 * icon
 */
 .ai_enhance_icon {
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 4px;
   display: flex;
   align-items: center;
   cursor: pointer;
+  font-size: 12px;
 
   &:hover {
     background-color: var(--kt-icon-hoverBackground);
   }
+}
 
-  .children_wrap {
-    margin-left: 5px;
+/**
+* loading
+*/
+.loading_indicator {
+  background: linear-gradient(to right, #9c03ff, #00f6ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: spin 1.5s infinite linear;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.ai_logo_avatar_container {
+  .avatar_icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+    background-image: url(https://mdn.alipayobjects.com/huamei_5nm5zc/afts/img/A*6ZoQRIRuFkcAAAAAAAAAAAAADlrAAQ/original);
+    font-size: 12px !important;
+
+    &::before {
+      transform: scale(0.7);
+    }
   }
 }
