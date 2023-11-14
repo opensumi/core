@@ -1,7 +1,7 @@
 import differenceWith from 'lodash/differenceWith';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { CommandService, CommandRegistry, Command } from '@opensumi/ide-core-common';
+import { CommandService, CommandRegistry, Command, ILogServiceClient, ILoggerManagerClient, SupportLogNamespace } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { AiGPTBackSerivcePath } from '../../common';
@@ -44,6 +44,15 @@ export class AiSumiService {
 
   @Autowired(SumiCommandPromptManager)
   protected promptManager: SumiCommandPromptManager;
+
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManagerClient: ILoggerManagerClient;
+
+  protected logger: ILogServiceClient;
+
+  constructor() {
+    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
+  }
 
   async requestToModel(prompt: string, model?: string): Promise<string> {
     return '';
@@ -111,8 +120,12 @@ export class AiSumiService {
       commands.slice(i * this.commandRequestStep, (i + 1) * this.commandRequestStep),
     );
 
-    const command = await Promise.any(partCommands.map((c) => this.requestCommand(c, input)));
-    return commands.find((c) => c.id === command);
+    try {
+      const command = await Promise.any(partCommands.map((c) => this.requestCommand(c, input)));
+      return commands.find((c) => c.id === command);
+    } catch (e) {
+      this.logger.error('Find command failed: ', e.message);
+    }
   }
 
   private async requestCommand(commands: Command[], question: string) {
