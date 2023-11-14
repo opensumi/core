@@ -1,7 +1,35 @@
-import { MaybePromise } from '@opensumi/ide-core-common';
+import { MaybePromise, CancellationToken } from '@opensumi/ide-core-common';
 
-export const AiGPTBackSerivceToken = Symbol('AiGPTBackSerivceToken');
-export const AiGPTBackSerivcePath = 'AiGPTBackSerivcePath';
+export const AiBackSerivceToken = Symbol('AiBackSerivceToken');
+export const AiBackSerivcePath = 'AiBackSerivcePath';
+
+export interface IAiBackServiceOption {
+  type?: string;
+  model?: string;
+  cancelToken?: CancellationToken;
+}
+
+export interface IAiCompletionOption {
+  prompt: string;
+  suffix?: string;
+  language?: string;
+  fileUrl?: string;
+}
+
+export interface IAiBackServiceResponse<T = string> {
+  errorCode?: number;
+  errorMsg?: string;
+  isCancel?: boolean;
+  data?: T;
+}
+
+export interface IAiBackService {
+  request<T extends IAiBackServiceResponse, O extends IAiBackServiceOption>(input: string, options?: O): Promise<T>;
+  requestStream<T extends IAiBackServiceResponse, O extends IAiBackServiceOption>(input: string, options?: O): Promise<T>;
+  requestCompletion<I extends IAiCompletionOption>(input: I): Promise<string[]>;
+}
+
+
 export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
 
 export const Ai_CHAT_CONTAINER_VIEW_ID = 'ai_chat';

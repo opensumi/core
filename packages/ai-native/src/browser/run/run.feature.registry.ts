@@ -1,11 +1,12 @@
 import { Injectable } from '@opensumi/di';
 
-import { AiRunHandler, IAiRunAnswerComponentProps, IAiRunFeatureRegistry } from '../../common';
+import { AiRunHandler, IAiRunAnswerComponentProps, IAiRunFeatureRegistry, IAiBackService } from '../../common';
 
 @Injectable()
 export class AiRunFeatureRegistry implements IAiRunFeatureRegistry {
   private runs: AiRunHandler[] = [];
   private answerComponent?: React.FC<IAiRunAnswerComponentProps>;
+  private request: IAiBackService['request'] | IAiBackService['requestStream'];
 
   registerRun(handler: AiRunHandler): void {
     this.runs.push(handler);
@@ -21,5 +22,9 @@ export class AiRunFeatureRegistry implements IAiRunFeatureRegistry {
 
   getAnswerComponent(): React.FC<IAiRunAnswerComponentProps> | undefined {
     return this.answerComponent;
+  }
+
+  getRequest(): IAiBackService['request'] | IAiBackService['requestStream'] {
+    return this.request;
   }
 }
