@@ -95,3 +95,8 @@ export enum AiNativeSettingSectionsId {
 }
 
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
+
+export interface PromptOption {
+  language?: string;
+  useCot?: boolean;
+}

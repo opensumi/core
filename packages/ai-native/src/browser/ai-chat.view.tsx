@@ -147,8 +147,7 @@ export const AiChatView = observer(() => {
         if (userInput!.type === AISerivceType.Search) {
           aiMessage = await AISearch(userInput, aiChatService);
         } else if (userInput!.type === AISerivceType.Sumi) {
-          aiMessage = await aiSumiService.message(userInput!.message!);
-
+          aiMessage = await aiSumiService.searchCommand(userInput!.message!);
           aiMessage = await AIWithCommandReply(aiMessage, opener, aiChatService);
         } else if (userInput!.type === AISerivceType.GPT) {
           const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
