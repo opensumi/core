@@ -8,7 +8,6 @@ import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../components
 import { LineVertical } from '../components/lineVertical';
 import { Loading } from '../components/Loading';
 import { EnhancePopover } from '../components/Popover';
-import { Thumbs } from '../components/Thumbs';
 
 import * as styles from './inline-chat.module.less';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
@@ -124,9 +123,9 @@ const AiInlineResult = () => {
           <span>重新生成</span>
         </EnhanceIcon>
       </div>
-      <div className={styles.side}>
+      {/* <div className={styles.side}>
         <Thumbs />
-      </div>
+      </div> */}
     </div>
   );
 };
