@@ -102,3 +102,8 @@ export interface PromptOption {
 }
 
 export const IAiChatService = Symbol('IAiChatService');
+
+export interface PromptOption {
+  language?: string;
+  useCot?: boolean;
+}
