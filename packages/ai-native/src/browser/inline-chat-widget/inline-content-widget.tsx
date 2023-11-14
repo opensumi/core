@@ -21,7 +21,7 @@ export interface ShowAiContentOptions {
   /**
    * 选中区域
    */
-  selection?: monaco.Range;
+  selection?: monaco.Selection;
 
   /**
    * 行列
@@ -104,6 +104,8 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     if (!this.domNode) {
       this.domNode = document.createElement('div');
       this.domNode.classList.add(this.getId());
+
+      this.domNode.style.padding = '6px';
     }
     return this.domNode;
   }
@@ -122,13 +124,120 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
       };
     }
 
-    const endPosition = selection && selection.getEndPosition();
-    return endPosition
-      ? {
-          // @ts-ignore
-          position: new monaco.Position(endPosition.lineNumber, this.options?.selection.startColumn),
-          preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
+    return selection ? this.computerPosition(selection) : null;
+  }
+
+  private safeGetLineLastNonWhitespaceColumn(line: number) {
+    const model = this.editor.getModel();
+    return model!.getLineLastNonWhitespaceColumn(Math.min(Math.max(1, line), model!.getLineCount()));
+  }
+
+  private toAbovePosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
+    return {
+      position: new monaco.Position(lineNumber, column),
+      preference: [monaco.editor.ContentWidgetPositionPreference.ABOVE],
+    };
+  }
+
+  private toBelowPosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
+    return {
+      position: new monaco.Position(lineNumber, column),
+      preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
+    };
+  }
+
+  private isProtrudeAbove(line: number) {
+    const currentLastNonWhitespace = this.safeGetLineLastNonWhitespaceColumn(line);
+    return (
+      currentLastNonWhitespace >= this.safeGetLineLastNonWhitespaceColumn(line - 1) &&
+      currentLastNonWhitespace >= this.safeGetLineLastNonWhitespaceColumn(line - 2)
+    );
+  }
+
+  private isProtrudeBelow(line: number) {
+    const currentLastNonWhitespace = this.safeGetLineLastNonWhitespaceColumn(line);
+    return (
+      currentLastNonWhitespace >= this.safeGetLineLastNonWhitespaceColumn(line + 1) &&
+      currentLastNonWhitespace >= this.safeGetLineLastNonWhitespaceColumn(line + 2)
+    );
+  }
+
+  /**
+   * 动态计算要显示的位置
+   * 1. 以选区里的光标作为顶点
+   * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
+   * 3. 显示的区域方向在右侧，左侧不考虑
+   */
+  private computerPosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
+    const startPosition = selection.getStartPosition();
+    const endPosition = selection.getEndPosition();
+    const model = this.editor.getModel();
+
+    if (!model) {
+      return null;
+    }
+
+    const cursorPosition = selection.getPosition();
+    const getCursorLastNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber);
+
+    let targetLine: number | null = null;
+    let direction: 'above' | 'below' | null = null;
+
+    if (cursorPosition.equals(startPosition)) {
+      const getMaxLastWhitespaceColumn = Math.max(
+        this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 1),
+        this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 2),
+      );
+
+      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn) {
+        return this.toAbovePosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
+      }
+
+      for (let i = startPosition.lineNumber; i <= endPosition.lineNumber; i++) {
+        if (this.isProtrudeAbove(i)) {
+          targetLine = i;
+          direction = 'above';
+          break;
         }
-      : null;
+        if (this.isProtrudeBelow(i)) {
+          targetLine = i;
+          direction = 'below';
+          break;
+        }
+      }
+    } else if (cursorPosition.equals(endPosition)) {
+      const getMaxLastWhitespaceColumn = Math.max(
+        this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber + 1),
+        this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber + 2),
+      );
+
+      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn) {
+        return this.toBelowPosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
+      }
+
+      for (let i = endPosition.lineNumber; i >= startPosition.lineNumber; i--) {
+        if (this.isProtrudeBelow(i)) {
+          targetLine = i;
+          direction = 'below';
+          break;
+        }
+        if (this.isProtrudeAbove(i)) {
+          targetLine = i;
+          direction = 'above';
+          break;
+        }
+      }
+    }
+
+    if (targetLine && direction) {
+      const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) + 1;
+
+      if (direction === 'below') {
+        return this.toBelowPosition(targetLine, column);
+      }
+      return this.toAbovePosition(targetLine, column);
+    }
+
+    return this.toBelowPosition(endPosition.lineNumber, startPosition.column);
   }
 }
