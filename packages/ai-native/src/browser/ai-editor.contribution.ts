@@ -21,7 +21,6 @@ import { AiGPTBackSerivcePath, AiNativeSettingSectionsId, InstructionEnum } from
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
-import { AiContentWidget } from './content-widget/ai-content-widget';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
@@ -58,7 +57,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   private aiDiffWidget: AiDiffWidget;
   private aiCodeWidget: AiCodeWidget;
-  private aiContentWidget: AiContentWidget;
   private aiInlineContentWidget: AiInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
@@ -69,9 +67,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
     if (this.aiCodeWidget) {
       this.aiCodeWidget.dispose();
-    }
-    if (this.aiContentWidget) {
-      this.aiContentWidget.dispose();
     }
     if (this.aiInlineContentWidget) {
       this.aiInlineContentWidget.dispose();
@@ -124,7 +119,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         const type = event.target.type;
         if (
           type === monaco.editor.MouseTargetType.CONTENT_TEXT ||
-          type === monaco.editor.MouseTargetType.CONTENT_EMPTY
+          type === monaco.editor.MouseTargetType.CONTENT_EMPTY ||
+          type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS ||
+          type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN
         ) {
           isShowInlineChat = true;
         }
@@ -195,11 +192,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       selection,
     });
 
-    const handleDiffEditorResult = async (
-      prompt: string,
-      crossSelection: monaco.Selection,
-      enableGptCache = true,
-    ) => {
+    const handleDiffEditorResult = async (prompt: string, crossSelection: monaco.Selection, enableGptCache = true) => {
       const model = monacoEditor.getModel();
       if (!model) {
         return;
@@ -262,7 +255,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         this.aiInlineContentWidget?.setOptions({
           position: {
             lineNumber: crossSelection.endLineNumber + 1,
-            column: 0,
+            column: 1,
           },
         });
         this.aiInlineContentWidget?.layoutContentWidget();
