@@ -10,20 +10,34 @@ import * as styles from './components.module.less';
 import { EnhanceIcon } from './Icon';
 
 interface IBlockProps {
-  icon: string;
-  name?: string;
+  icon?: string;
+  name: string;
+  text?: string;
   onClick?: () => void;
 }
 
-const Block = ({ icon, name, onClick }: IBlockProps) => (
+const Block = ({ icon, name, onClick, text }: IBlockProps) => (
   <div className={styles.block} onClick={onClick}>
-    <EnhanceIcon className={icon} />
+    {icon && <EnhanceIcon className={icon} />}
     {name && <span className={styles.name}>{name}</span>}
+    {text && <span className={styles.text}>{text}</span>}
   </div>
 );
 
 // 指令列表
 const optionsList: IBlockProps[] = [
+  {
+    name: InstructionEnum.aiExplainKey,
+    text: '解释代码',
+  },
+  {
+    name: InstructionEnum.aiTestKey,
+    text: '生成测试',
+  },
+  {
+    name: InstructionEnum.aiOptimzeKey,
+    text: '优化代码',
+  },
   {
     icon: getIcon('search'),
     name: InstructionEnum.aiSearchKey,
@@ -56,9 +70,9 @@ const InstructionOptions = ({ onClick, bottom }) => {
     <div className={styles.instruction_options_container} style={{ bottom: bottom + 'px' }}>
       <div className={styles.options}>
         <ul>
-          {options.map(({ icon, name }) => (
+          {options.map(({ icon, name, text }) => (
             <li key={name} onClick={() => handleClick(name)}>
-              <Block icon={icon} name={name} />
+              <Block icon={icon} name={name} text={text} />
             </li>
           ))}
         </ul>
@@ -75,9 +89,17 @@ const InstructionOptions = ({ onClick, bottom }) => {
   );
 };
 
+const ThemeWidget = ({ themeBlock, text }) => (
+  <div className={styles.theme_container}>
+    <div className={styles.theme_block}>{themeBlock}</div>
+    {text && <div className={styles.theme_content}>{text}:</div>}
+  </div>
+);
+
 export interface IChatInputProps {
   onSend: (value: string) => void;
   onValueChange?: (value: string) => void;
+  onExpand?: (value: boolean) => void;
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
@@ -85,6 +107,7 @@ export interface IChatInputProps {
   defaultHeight?: number;
   value?: string;
   autoFocus?: boolean;
+  theme?: string | null;
 }
 
 // 指令命令激活组件
@@ -92,10 +115,11 @@ export const ChatInput = (props: IChatInputProps) => {
   const {
     onSend,
     onValueChange,
+    onExpand,
     placeholder,
     enableOptions = false,
     disabled = false,
-    defaultHeight = 40,
+    defaultHeight = 32,
     autoFocus,
   } = props;
   const [value, setValue] = useState(props.value || '');
@@ -103,12 +127,19 @@ export const ChatInput = (props: IChatInputProps) => {
   const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);
   const [slashWidget, setSlashWidget] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [focus, setFocus] = useState(false);
+  const [showExpand, setShowExpand] = useState(false);
+  const [isExpand, setIsExpand] = useState(false);
 
   useEffect(() => {
     if (props.value !== value) {
       setValue(props.value || '');
     }
   }, [props.value]);
+
+  useEffect(() => {
+    acquireOptionsCheck(props.theme || '');
+  }, [props.theme]);
 
   useEffect(() => {
     if (inputRef && autoFocus) {
@@ -126,25 +157,17 @@ export const ChatInput = (props: IChatInputProps) => {
     }
 
     // 自适应高度
-    if (inputRef && inputRef.current) {
+    if (inputRef && inputRef.current && !isExpand) {
       inputRef.current.style.height = 0 + 'px';
-
       const scrollHeight = inputRef.current.scrollHeight;
-      inputRef.current.style.height = Math.min(scrollHeight, 140) + 'px';
-
-      setWrapperHeight(scrollHeight + (defaultHeight - 20));
-    }
-
-    // 设置 slash widget 块
-    const regex = /\/(\w+)\s/;
-    const match = value.match(regex);
-    if (match) {
-      const keyword = match[0];
-      if (optionsList.find(({ name }) => name === keyword)) {
-        setSlashWidget(keyword);
+      inputRef.current.style.height = Math.min(scrollHeight, 160) + 'px';
+      const wapperHeight = Math.min(scrollHeight + (defaultHeight - 20), 160);
+      setWrapperHeight(wapperHeight);
+      if (wapperHeight > 68) {
+        setShowExpand(true);
+      } else {
+        setShowExpand(false);
       }
-    } else {
-      setSlashWidget('');
     }
   }, [inputRef, value, enableOptions]);
 
@@ -156,20 +179,43 @@ export const ChatInput = (props: IChatInputProps) => {
   }, []);
 
   const handleSend = useCallback(() => {
-    if (value.trim() && onSend) {
+    let preText = '';
+    if (slashWidget) {
+      const text = optionsList.find(({ name }) => name === slashWidget)?.text;
+      preText = slashWidget + text || '' + '\n';
+    }
+
+    if (value.trim() && onSend && !disabled) {
       setValue('');
-      onSend(value);
+      const val = slashWidget ? ` \`\`\`\n ${value} \`\`\`\n ` : value;
+      onSend(preText + val);
+      isExpand ? resetStatus() : resetStatus(true);
     }
   }, [onSend, value]);
 
   const acquireOptionsCheck = useCallback(
-    (value: string) => {
-      if (value) {
-        setValue(value);
+    (themeValue: string) => {
+      if (themeValue) {
         setIsShowOptions(false);
+
+        // 设置 slash widget 块
+        const regex = /\/\s(\w+)\s/;
+        const match = themeValue.match(regex);
+        if (match) {
+          const keyword = match[0];
+          if (optionsList.find(({ name }) => name === keyword)) {
+            setSlashWidget(keyword);
+          }
+        } else {
+          setSlashWidget('');
+        }
 
         if (inputRef && inputRef.current) {
           inputRef.current.focus();
+          const inputValue = inputRef.current.value;
+          if (inputValue.length === 1 && inputValue.startsWith('/')) {
+            setValue('');
+          }
         }
       }
     },
@@ -187,39 +233,80 @@ export const ChatInput = (props: IChatInputProps) => {
     }
   };
 
+  const handleFocus = () => {
+    setFocus(true);
+  };
+  const handleBlur = () => {
+    setFocus(false);
+  };
+
+  const handleExpandClick = useCallback(() => {
+    const expand = isExpand;
+    setIsExpand(!expand);
+    if (!expand) {
+      const ele = document.querySelector('#ai_chat_left_container');
+      // ai_chat_left_container - (padding + header_operate + border ) - theme_container - padding
+      const maxHeight = ele!.clientHeight - 68 - (slashWidget ? 32 : 0) - 16;
+      setWrapperHeight(maxHeight);
+    } else {
+      setWrapperHeight(defaultHeight);
+      setShowExpand(false);
+    }
+  }, [isExpand]);
+
+  const resetStatus = (clearExpand?: boolean) => {
+    setWrapperHeight(defaultHeight);
+    if (clearExpand) {
+      setShowExpand(false);
+    }
+    setIsExpand(false);
+    setSlashWidget('');
+  };
+
   return (
     <div className={styles.chat_input_container}>
       {isShowOptions && <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />}
+      {slashWidget && (
+        <ThemeWidget themeBlock={slashWidget} text={optionsList.find(({ name }) => name === slashWidget)?.text} />
+      )}
+      {showExpand && (
+        <div className={styles.expand_icon} onClick={() => handleExpandClick()}>
+          <Popover id={'ai_chat_input_expand'} title={isExpand ? '收起' : '展开全屏'}>
+            <Icon className={cls(isExpand ? getIcon('shrink') : getIcon('expand'))}></Icon>
+          </Popover>
+        </div>
+      )}
       <Input
         ref={inputRef}
         placeholder={placeholder}
         wrapperStyle={{ height: wrapperHeight + 'px' }}
+        style={{
+          height: wrapperHeight - 16 + 'px',
+          // maxHeight: wrapperHeight-16 + 'px',
+          // minHeight: wrapperHeight-16 + 'px',
+        }}
         value={value}
         type={'textarea'}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         onValueChange={handleInputChange}
         disabled={disabled}
         className={styles.input_wrapper}
-        addonBefore={
-          slashWidget && (
-            <div className={styles.slash_widget_block}>
-              <span>{slashWidget}</span>
-            </div>
-          )
-        }
         addonAfter={
-          <div
-            className={cls(
-              styles.send_chat_btn,
-              value.length && styles.active,
-              disabled && styles.disabled,
-              props.sendBtnClassName,
-            )}
-            onClick={() => handleSend()}
-          >
-            <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
-              <Icon className={getIcon('send')} />
-            </Popover>
+          <div className={styles.input_icon_container}>
+            <div
+              className={cls(
+                styles.send_chat_btn,
+                focus && styles.active,
+                disabled && styles.disabled,
+                props.sendBtnClassName,
+              )}
+            >
+              <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
+                <Icon className={cls(getIcon('send'), styles.send_icon)} onClick={() => handleSend()} />
+              </Popover>
+            </div>
           </div>
         }
       />

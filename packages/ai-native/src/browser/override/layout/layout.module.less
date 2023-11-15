@@ -15,7 +15,7 @@
       background-color: #31363b;
       border-radius: 1px;
       top: 50%;
-      left: 50%;
+      left: 1px;
     }
   }
 
@@ -76,6 +76,9 @@
   }
 
   div[class*='file_tree_node___'] {
+    border-radius: 4px;
+  }
+  div[class*='opened_editor_node___'] {
     border-radius: 4px;
   }
 
@@ -168,11 +171,14 @@
   }
 
   // 搜索输入框样式
-  div[class*='search_field___'],
-  div[class*='replace_field___'] > div:first-child {
-    background-color: #ffffff14;
-    border-radius: 8px;
-    color: #ffffff40;
+  :global {
+    div[class*='search_container___'] {
+      .kt-input-default {
+        background-color: #ffffff14;
+        border-radius: 8px;
+        color: #ffffff40;
+      }
+    }
   }
 }
 
@@ -198,6 +204,28 @@
   div[class*='bottom_bar_container___'] {
     width: 100%;
     height: 32px;
+  }
+  /* 过度方案 */
+  div[class*='tab_bar___'] {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  li[class*='bottom_tab___'] {
+    background-color: transparent;
+  }
+  div[class*='panel_title_bar___'] {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  div[class*='panel_title_bar___']::before {
+    content: none;
+  }
+  div[class*='bottom_bar_container___'] {
+    border-top: none;
+  }
+  div[class*='item_selected___'] {
+    background-color: rgba(21, 27, 33, 1);
+  }
+  div[class*='tab_contents___'] {
+    height: 35px;
   }
 }
 
@@ -267,6 +295,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      padding-bottom: 15px;
     }
 
     .rce-ai-msg {
@@ -298,7 +327,8 @@
 
     .rce-container-mbox {
       overflow: initial;
-      margin: 0 16px 16px 16px;
+      // TODO
+      margin: 16px 16px 16px 16px;
       min-width: initial;
     }
 

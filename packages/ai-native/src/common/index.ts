@@ -21,10 +21,13 @@ export interface IChatMessageStructure {
  * 指令 key
  */
 export enum InstructionEnum {
-  aiSearchKey = '/search ',
-  aiSumiKey = '/ide ',
-  aiExplainKey = '/explain ',
-  aiRunKey = '/run ',
+  aiExplainKey = '/ Explain ',
+  aiOptimzeKey = '/ Optimize ',
+  aiCommentsKey = '/ Comments ',
+  aiTestKey = '/ Test ',
+  aiSearchKey = '/ search ',
+  aiSumiKey = '/ ide ',
+  aiRunKey = '/ run ',
 }
 
 export enum ChatCompletionRequestMessageRoleEnum {
@@ -59,6 +62,8 @@ export enum AISerivceType {
   GPT,
   Explain,
   Run,
+  Test,
+  Optimize,
 }
 
 export type AiRunHandler = () => MaybePromise<void>;

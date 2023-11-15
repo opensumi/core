@@ -47,7 +47,7 @@ export interface ITabbarViewProps {
       component: ComponentRegistryInfo,
       handleTabClick,
       currentContainerId: string,
-    ) => React.JSX.Element | null;
+    ) => JSX.Element | null;
   }>;
 }
 
@@ -270,7 +270,7 @@ export const LeftTabbarRenderer: React.FC<{
       component: ComponentRegistryInfo,
       handleTabClick,
       currentContainerId: string,
-    ) => React.JSX.Element | null;
+    ) => JSX.Element | null;
   }>;
   isRenderExtraTopMenus?: boolean;
   renderExtraMenus?: React.ReactNode;

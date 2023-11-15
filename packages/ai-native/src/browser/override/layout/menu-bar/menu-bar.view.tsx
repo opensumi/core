@@ -131,7 +131,7 @@ export const AiMenuBarView = () => {
               placeholder='请搜索并选择指令'
             ></Input>
           </div> */}
-          <div className={clsx(styles.ai_switch, isOpen ? styles.opened : '')} onClick={handleRightPanel}>
+          <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
             <Icon className={getIcon('magic-wand')} />
           </div>
         </div>

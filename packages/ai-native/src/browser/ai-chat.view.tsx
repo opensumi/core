@@ -1,3 +1,4 @@
+/* eslint-disable import/order */
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 // @ts-ignore
@@ -26,6 +27,7 @@ import { Thinking } from './components/Thinking';
 import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
+import cls from 'classnames';
 
 const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
 
@@ -55,6 +57,7 @@ export const AiChatView = observer(() => {
 
   const [messageListData, setMessageListData] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [theme, setTheme] = React.useState<string | null>(null);
 
   const [, updateState] = React.useState<any>();
   // 项目生成
@@ -142,7 +145,6 @@ export const AiChatView = observer(() => {
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, prompt } = value;
-
       const preMessagelist = messageListData;
       const preInputValue = message;
 
@@ -201,6 +203,14 @@ export const AiChatView = observer(() => {
     aiMenubarService.toggleRightPanel();
   }, [aiMenubarService]);
 
+  const handleUnresolved = () => {
+    window.alert('功能待实现');
+  };
+
+  const handleThemeClick = (value) => {
+    setTheme(value);
+  };
+
   return (
     <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
@@ -209,10 +219,13 @@ export const AiChatView = observer(() => {
             <Avatar src={AI_AVATAR} className={styles.ai_chat_avatar_icon} />
           </div>
           <span className={styles.title}>{AI_NAME}</span>
-          <LineVertical />
+          <LineVertical height='200%' transform='scale(0.5)' />
           <span className={styles.des}>Chat</span>
         </div>
         <div className={styles.right}>
+          <Popover id={'ai-chat-header-setting'} title='设置'>
+            <EnhanceIcon className={getIcon('setting')} onClick={handleUnresolved} />
+          </Popover>
           <Popover id={'ai-chat-header-clear'} title='清空'>
             <EnhanceIcon className={getIcon('clear')} onClick={handleClear} />
           </Popover>
@@ -222,7 +235,7 @@ export const AiChatView = observer(() => {
         </div>
       </div>
       <div className={styles.body_container}>
-        <div className={styles.left_bar}>
+        <div className={styles.left_bar} id='ai_chat_left_container'>
           <div className={styles.chat_container} ref={containerRef}>
             {/* @ts-ignore */}
             <MessageList
@@ -246,16 +259,38 @@ export const AiChatView = observer(() => {
           </div>
           <div className={styles.chat_input_warp}>
             <div className={styles.header_operate}>
-              <EnhanceIcon icon={'add-comments'} onClick={handleClear}>
-                新对话
-              </EnhanceIcon>
-              {/* <Icon className={getExternalIcon('history')} /> */}
+              <div className={styles.header_operate_left}>
+                <Popover id={'ai-chat-header-explain'} title='解释代码'>
+                  <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiExplainKey)}>
+                    Explain
+                  </div>
+                </Popover>
+                <Popover id={'ai-chat-header-test'} title='添加单测'>
+                  <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiTestKey)}>
+                    Test
+                  </div>
+                </Popover>
+                <Popover id={'ai-chat-header-optimize'} title='优化代码'>
+                  <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiOptimzeKey)}>
+                    Optimize
+                  </div>
+                </Popover>
+              </div>
+              <div className={styles.header_operate_right}>
+                {/* <Popover id={'ai-chat-header-message'} title='新对话'>
+                  <Icon className={styles.tag} icon={'message'} onClick={handleClear} />
+                </Popover>
+                <Popover id={'ai-chat-header-history'} title='历史记录'>
+                  <Icon className={styles.tag} icon={'time-circle'} onClick={handleUnresolved} />
+                </Popover> */}
+              </div>
             </div>
             <ChatInput
               onSend={(value) => handleSend({ message: value })}
               disabled={loading}
               placeholder={'可以问我任何问题，或键入主题 "/"'}
               enableOptions={true}
+              theme={theme}
             />
           </div>
         </div>
@@ -265,7 +300,7 @@ export const AiChatView = observer(() => {
               {/* <Icon className={getExternalIcon('comment-discussion')} /> */}
               <Avatar
                 src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*CfffRK50dpQAAAAAAAAAAAAADhl8AQ/original'
-                className={styles.ai_chat_avatar_icon}
+                className={styles.ai_chat_bar_icon}
               />
             </li>
           </ul>
