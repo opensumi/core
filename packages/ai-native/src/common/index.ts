@@ -24,8 +24,8 @@ export interface IAiBackServiceResponse<T = string> {
 }
 
 export interface IAiBackService<
-  BaseResponse extends IAiBackServiceResponse,
-  StreamResponse extends NodeJS.ReadableStream,
+  BaseResponse extends IAiBackServiceResponse = IAiBackServiceResponse,
+  StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
   CompletionResponse = string[]
 > {
   request<O extends IAiBackServiceOption>(input: string, options?: O): Promise<BaseResponse>;

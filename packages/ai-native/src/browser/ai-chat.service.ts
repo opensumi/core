@@ -4,14 +4,19 @@ import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/i
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, AiBackSerivcePath, IAiBackService, IAiBackServiceOption, IChatMessageStructure, InstructionEnum } from '../common';
+import { AISerivceType, AiBackSerivcePath, IAiBackService, IAiBackServiceResponse, IAiBackServiceOption, IChatMessageStructure, InstructionEnum } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
+
+export interface IAiSearchResponse extends IAiBackServiceResponse {
+  responseText: string;
+  urlMessage: string;
+}
 
 @Injectable()
 export class AiChatService extends Disposable {
   @Autowired(AiBackSerivcePath)
-  public aiBackService: IAiBackService;
+  public aiBackService: IAiBackService<IAiSearchResponse>;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -191,7 +196,7 @@ export class AiChatService extends Disposable {
   }
 
   public async search(input: string, options: IAiBackServiceOption = {}) {
-    return this.aiBackService.request<{ responseText: string; urlMessage: string; isCancel: boolean }, IAiBackServiceOption>(input, {
+    return this.aiBackService.request(input, {
       ...options,
       cancelToken: this.cancelIndicatorChatView.token,
     });
