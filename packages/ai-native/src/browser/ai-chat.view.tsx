@@ -169,11 +169,11 @@ export const AiChatView = observer(() => {
         } else if (userInput!.type === AISerivceType.Explain) {
           aiMessage = await AIStreamReply(userInput!.message!, aiChatService);
         } else if (userInput!.type === AISerivceType.Run) {
-          aiMessage = await aiChatService.aiBackService.aiAntGlm(
+          aiMessage = await aiRunService.requestBackService(
             userInput!.message!,
             aiChatService.cancelIndicatorChatView.token,
           );
-          aiMessage = await AIChatRunReply(aiMessage.data, aiRunService, aiChatService);
+          aiMessage = await AIChatRunReply(aiMessage, aiRunService, aiChatService);
         }
 
         if (aiMessage) {
@@ -355,10 +355,11 @@ const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
 
 const AISearch = async (input, aiChatService: AiChatService) => {
   try {
-    const result = await aiChatService.aiBackService.aiSearchRequest(
+    const result = await aiChatService.search(
       input.message,
-      input.type === 'overall',
-      aiChatService.cancelIndicatorChatView.token,
+      {
+        type: input.type,
+      }
     );
 
     const { responseText, urlMessage, isCancel } = result;

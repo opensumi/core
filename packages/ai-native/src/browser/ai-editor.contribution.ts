@@ -17,7 +17,7 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiGPTBackSerivcePath, AiNativeSettingSectionsId, InstructionEnum } from '../common';
+import { AiBackSerivcePath, IAiBackService, AiNativeSettingSectionsId, InstructionEnum } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
@@ -33,8 +33,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(AiGPTBackSerivcePath)
-  private readonly aiGPTBackService: any;
+  @Autowired(AiBackSerivcePath)
+  private readonly aiBackService: IAiBackService;
 
   @Autowired(AiInlineChatService)
   private readonly aiInlineChatService: AiInlineChatService;
@@ -219,11 +219,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
 
-      const result = await this.aiGPTBackService.aiGPTcompletionRequest(
+      const result = await this.aiBackService.request(
         prompt,
-        {},
         { enableGptCache },
-        this.aiChatService.cancelIndicator.token,
+        this.aiChatService.cancelIndicator.token
       );
 
       if (this.aiInlineChatDisposed.disposed || result.isCancel) {
@@ -245,7 +244,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       // 提取代码内容
       const regex = /```\w*([\s\S]+?)\s*```/;
-      const regExec = regex.exec(answer);
+      const regExec = regex.exec(answer!);
       answer = (regExec && regExec[1]) || answer;
 
       this.logger.log('aiGPTcompletionRequest:>>> refresh answer', answer);
@@ -274,7 +273,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               [
                 {
                   range: crossSelection,
-                  text: answer,
+                  text: answer!,
                 },
               ],
               () => null,
@@ -445,7 +444,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             reqStack.addReq({
               sendRequest: async () => {
                 isCancelFlag = false;
-                const completionResult = await this.aiGPTBackService.aiCompletionRequest({
+                const completionResult = await this.aiBackService.requestCompletion({
                   prompt,
                   suffix,
                   sessionId: uid,
@@ -453,11 +452,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
                   fileUrl: model.uri.toString().split('/').pop(),
                 });
 
-                const items = completionResult.data.codeModelList;
                 this.logger.log('onDidChangeModelContent:>>> ai 补全返回结果', completionResult);
                 return {
-                  items: items.map((data) => ({
-                    insertText: data.content,
+                  items: completionResult.map((data) => ({
+                    insertText: data,
                   })),
                 };
               },

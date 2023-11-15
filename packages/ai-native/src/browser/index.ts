@@ -8,8 +8,8 @@ import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution 
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import {
-  AiGPTBackSerivcePath,
-  AiGPTBackSerivceToken,
+  AiBackSerivcePath,
+  AiBackSerivceToken,
   AiNativeContribution,
   IAiChatService,
   IAiRunFeatureRegistry,
@@ -117,8 +117,8 @@ export class AiNativeModule extends BrowserModule {
 
   backServices = [
     {
-      servicePath: AiGPTBackSerivcePath,
-      token: AiGPTBackSerivceToken,
+      servicePath: AiBackSerivcePath,
+      token: AiBackSerivceToken,
       clientToken: IAiChatService,
     },
   ];

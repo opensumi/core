@@ -9,7 +9,6 @@ import {
   Position,
   URI,
   getIcon,
-  IRange,
   SlotRendererContribution,
   SlotRendererRegistry,
   SlotLocation,
@@ -195,74 +194,6 @@ export class AiNativeCoreContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(
-      {
-        id: 'ai.suggest.documentation',
-      },
-      {
-        execute: async (range: IRange) => {
-          const currentEditor = this.editorService.currentEditor;
-          if (!currentEditor || !range) {
-            return;
-          }
-
-          const getContent = currentEditor.monacoEditor.getModel()!.getValueInRange(range);
-
-          if (getContent) {
-            const messageWithPrompt = `基于提供的代码，需要按照以下这种格式为这段代码添加 javadoc。
-格式要求是:
-/**
- * $\{关于这段代码的注释\}
- * 
- * 如果有参数，则添加 @param $\{参数信息\}。如果没有参数，则不需要添加 @param
- * @return $\{返回类型\}
- */
-
-代码内容是:
-${getContent}
-`;
-
-            const aiResult = await this.aiChatService.aiBackService.aiMFTCompletion(messageWithPrompt);
-            const resultContent = aiResult.data;
-
-            // 提取 markdown 里的代码
-            const regex = /```java\s*([\s\S]+?)\s*```/;
-            let code = regex.exec(resultContent)![1];
-
-            if (!code) {
-              return;
-            }
-
-            const monacoEditor = currentEditor.monacoEditor;
-
-            if (monacoEditor) {
-              const model = monacoEditor.getModel()!;
-
-              const indents = ' '.repeat(4);
-
-              const spcode = code.split('\n');
-              code = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
-
-              model.pushStackElement();
-              model.pushEditOperations(
-                null,
-                [
-                  {
-                    range,
-                    text: code,
-                  },
-                ],
-                () => null,
-              );
-              model.pushStackElement();
-
-              monacoEditor.focus();
-            }
-          }
-        },
-      },
-    );
-
     commands.registerCommand(
       {
         id: 'ai.chat.createNewFile',

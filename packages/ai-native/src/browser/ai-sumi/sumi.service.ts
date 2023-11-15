@@ -4,7 +4,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { CommandService, CommandRegistry, Command, ILogServiceClient, ILoggerManagerClient, SupportLogNamespace } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { AiGPTBackSerivcePath } from '../../common';
+import { AiBackSerivcePath, IAiBackService } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { SumiCommandPromptManager } from '../prompts/sumi.command';
 
@@ -27,8 +27,8 @@ export class AiSumiService {
   // for split command, too much will out of prompt tokens
   protected commandRequestStep = 50;
 
-  @Autowired(AiGPTBackSerivcePath)
-  aiBackService: any;
+  @Autowired(AiBackSerivcePath)
+  aiBackService: IAiBackService;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
@@ -68,7 +68,9 @@ export class AiSumiService {
         unGroupCommands.slice(i * this.commandRequestStep, (i + 1) * this.commandRequestStep),
       );
 
-      await Promise.all(partCommands.map(async (commands) => this.requestForClassifyCommand(commands)));
+      for (const commands of partCommands) {
+        await this.requestForClassifyCommand(commands);
+      }
     }
   }
 

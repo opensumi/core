@@ -4,14 +4,19 @@ import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/i
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, AiGPTBackSerivcePath, IChatMessageStructure, InstructionEnum } from '../common';
+import { AISerivceType, AiBackSerivcePath, IAiBackService, IAiBackServiceResponse, IAiBackServiceOption, IChatMessageStructure, InstructionEnum } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
 
+export interface IAiSearchResponse extends IAiBackServiceResponse {
+  responseText?: string;
+  urlMessage?: string;
+}
+
 @Injectable()
 export class AiChatService extends Disposable {
-  @Autowired(AiGPTBackSerivcePath)
-  public aiBackService: any;
+  @Autowired(AiBackSerivcePath)
+  public aiBackService: IAiBackService<IAiSearchResponse>;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -169,19 +174,14 @@ export class AiChatService extends Disposable {
     }
   }
 
-  public async messageWithStream(input: string, options: any = {}, sessionId: string): Promise<void> {
+  public async messageWithStream(input: string, options: IAiBackServiceOption = {}, sessionId: string): Promise<void> {
     this.msgStreamManager.setCurrentSessionId(sessionId);
 
-    await this.aiBackService.aiGPTcompletionRequestStream(input, options, this.cancelIndicatorChatView.token);
+    await this.aiBackService.requestStream(input, options, this.cancelIndicatorChatView.token);
   }
 
-  public async messageWithGPT(input: string, options: any = {}) {
-    const res = await this.aiBackService.aiGPTcompletionRequest(
-      input,
-      undefined,
-      options,
-      this.cancelIndicatorChatView.token,
-    );
+  public async message(input: string, options: IAiBackServiceOption = {}) {
+    const res = await this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
 
     if (res.isCancel) {
       return null;
@@ -192,6 +192,10 @@ export class AiChatService extends Disposable {
     } else {
       return res.data || '';
     }
+  }
+
+  public async search(input: string, options: IAiBackServiceOption = {}) {
+    return this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
   }
 
   public setLatestSessionId(id: string): void {
