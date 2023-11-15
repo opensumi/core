@@ -52,12 +52,20 @@ export class MsgStreamManager extends Disposable {
     return this.onDidMsgListChangeDispatcher.on(sessionId);
   }
 
+  public sendError(): void {
+    this.status = EMsgStreamStatus.ERROR;
+  }
+
   public recordMessage(answerId: string, msg: IMsgStreamChoices): void {
     if (!this._currentSessionId) {
       new Error('currentSessionId is null');
     }
 
     this.sessionIdToAnswerIdMap.set(this.currentSessionId, answerId);
+
+    if (!(answerId && msg)) {
+      new Error('answerId/msg is null');
+    }
 
     const answerList = this.answerIdToMsgStreamMap.get(answerId);
 
@@ -74,6 +82,7 @@ export class MsgStreamManager extends Disposable {
       this.status = EMsgStreamStatus.DONE;
     } else {
       this.status = EMsgStreamStatus.ERROR;
+      return;
     }
 
     this.onDidMsgListChangeDispatcher.dispatch(this._currentSessionId, msg);
