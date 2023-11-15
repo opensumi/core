@@ -25,10 +25,12 @@ export interface IAiBackServiceResponse<T = string> {
 
 export interface IAiBackService {
   request<T extends IAiBackServiceResponse, O extends IAiBackServiceOption>(input: string, options?: O): Promise<T>;
-  requestStream<T extends IAiBackServiceResponse, O extends IAiBackServiceOption>(input: string, options?: O): Promise<T>;
-  requestCompletion<I extends IAiCompletionOption>(input: I): Promise<string[]>;
+  requestStream<T extends NodeJS.ReadableStream, O extends IAiBackServiceOption>(
+    input: string,
+    options?: O,
+  ): Promise<T>;
+  requestCompletion<I extends IAiCompletionOption, T = string[]>(input: I): Promise<T>;
 }
-
 
 export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
 
