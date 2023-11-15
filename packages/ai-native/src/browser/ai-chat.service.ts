@@ -157,8 +157,13 @@ export class AiChatService extends Disposable {
   public onMessage(message: string) {
     try {
       const msgObj = JSON.parse(message);
-      const { id, choices } = msgObj;
-      this.msgStreamManager.recordMessage(id, choices[0]);
+
+      if (msgObj.id && msgObj.choices) {
+        const { id, choices } = msgObj;
+        this.msgStreamManager.recordMessage(id, choices[0]);
+      } else {
+        this.msgStreamManager.sendError();
+      }
     } catch (error) {
       new Error(`onMessage error: ${error}`);
     }
