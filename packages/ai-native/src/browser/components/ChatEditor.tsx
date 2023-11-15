@@ -174,6 +174,7 @@ const CodeBlock = ({ content }: { content: string }) => {
     content = content.trim();
     return (
       <div className={styles.code_block}>
+        <div className={styles.code_language}>{language}</div>
         <CodeEditorWithHighlight input={content} language={language} />
       </div>
     );
