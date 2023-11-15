@@ -34,7 +34,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
-import { PreferenceSettingId, SettingContribution } from '@opensumi/ide-preferences';
+import { SettingContribution } from '@opensumi/ide-preferences';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
 import {
@@ -56,6 +56,7 @@ import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiProjectGenerateService } from './ai-project/generate.service';
+import { AiSumiService } from './ai-sumi/sumi.service';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 import {
   AiBottomTabRenderer,
@@ -117,6 +118,9 @@ export class AiNativeCoreContribution
   @Autowired(AiProjectGenerateService)
   private readonly aiProject: AiProjectGenerateService;
 
+  @Autowired(AiSumiService)
+  private readonly aiSumi: AiSumiService;
+
   @Autowired(AiNativeContribution)
   private readonly contributions: ContributionProvider<AiNativeContribution>;
 
@@ -126,6 +130,10 @@ export class AiNativeCoreContribution
   onStart() {
     this.registerFeature();
     this.aiProject.initRequirements();
+  }
+
+  onDidStart() {
+    this.aiSumi.classifyCommand();
   }
 
   private registerFeature() {
