@@ -9,8 +9,8 @@ import { AISerivceType, AiBackSerivcePath, IAiBackService, IAiBackServiceRespons
 import { MsgStreamManager } from './model/msg-stream-manager';
 
 export interface IAiSearchResponse extends IAiBackServiceResponse {
-  responseText: string;
-  urlMessage: string;
+  responseText?: string;
+  urlMessage?: string;
 }
 
 @Injectable()

@@ -112,7 +112,17 @@ export interface IAiRunFeatureRegistry {
    */
   registerAnswerComponent(component: React.FC<IAiRunAnswerComponentProps>): void;
 
+  registerRequest(request: IAiBackService['request']): void;
+
+  registerStreamRequest(streamRequest: IAiBackService['requestStream']): void;
+
   getRuns(): AiRunHandler[];
+
+  getAnswerComponent(): React.FC<IAiRunAnswerComponentProps> | undefined;
+
+  getRequest(): IAiBackService['request'];
+
+  getStreamRequest(): IAiBackService['requestStream'];
 }
 
 export const AiNativeContribution = Symbol('AiNativeContribution');

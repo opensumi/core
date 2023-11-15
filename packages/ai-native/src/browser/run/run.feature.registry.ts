@@ -17,6 +17,14 @@ export class AiRunFeatureRegistry implements IAiRunFeatureRegistry {
     this.answerComponent = component;
   }
 
+  registerRequest(request: IAiBackService['request']) {
+    this.request = request;
+  }
+
+  registerStreamRequest(streamRequest: IAiBackService['requestStream']) {
+    this.streamRequest = streamRequest;
+  }
+
   getRuns(): AiRunHandler[] {
     return this.runs;
   }
