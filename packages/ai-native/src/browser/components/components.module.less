@@ -32,14 +32,14 @@
   border-radius: 8px;
   border: 1px solid #ffffff40;
   .theme_container {
-    padding: 8px 16px;
+    padding: 8px 12px;
     display: flex;
     align-items: center;
     .theme_block {
       background-color: #34414b;
       color: #40a6ff;
-      border-radius: 3px;
-      padding: 1px 2px;
+      border-radius: 6px;
+      padding: 2px 8px;
       z-index: 1;
     }
     .theme_content {
@@ -225,14 +225,9 @@
 
     .code_block {
       position: relative;
+      min-width: 100px;
       .monaco_wrapper {
         position: relative;
-
-        &:hover {
-          .action_toolbar {
-            display: flex;
-          }
-        }
 
         code {
           padding-top: 20px;
@@ -245,16 +240,14 @@
         }
 
         .action_toolbar {
-          display: none;
+          display: flex;
           position: absolute;
           right: 0;
-          top: 0;
+          top: 1px;
           background-color: #151b21;
           border-radius: 6px 6px 0 6px;
           z-index: 100;
-          top: -15px;
-          height: 30px;
-          border: 1px solid #ffffff1a;
+          height: 22px;
           align-items: center;
           overflow: hidden;
 
@@ -265,14 +258,14 @@
           }
 
           span {
-            width: 30px;
+            width: 22px;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-
+            font-size: 12px;
             &:hover {
-              background-color: rgba(255, 255, 255, 0.08);
+              color: #3b89fa;
             }
           }
         }
@@ -293,6 +286,14 @@
         background-color: #020203;
         border-radius: 8px 0 8px 0;
       }
+    }
+    .tag {
+      color: #669ced;
+      border-radius: 6px;
+      padding: 2px 8px;
+      background-color: #243753;
+      display: inline-block;
+      margin-bottom: 4px;
     }
   }
 }
@@ -375,9 +376,9 @@
 
     width: 16px;
     height: 16px;
-    background-image: url(https://mdn.alipayobjects.com/huamei_5nm5zc/afts/img/A*6ZoQRIRuFkcAAAAAAAAAAAAADlrAAQ/original);
     font-size: 12px !important;
-
+    background: url(https://mdn.alipayobjects.com/huamei_5nm5zc/afts/img/A*6ZoQRIRuFkcAAAAAAAAAAAAADlrAAQ/original)
+      center / 100% no-repeat;
     &::before {
       transform: scale(0.7);
     }

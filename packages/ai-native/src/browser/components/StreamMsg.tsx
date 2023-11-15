@@ -56,8 +56,6 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
     [content],
   );
 
-  // return  <Thinking>{renderMsgList()}</Thinking>;
-
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
     <Thinking>{renderMsgList()}</Thinking>
   ) : (

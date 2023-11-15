@@ -9,6 +9,8 @@ import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/
 import { IEditorDocumentModelService, ILanguageService } from '@opensumi/ide-editor/lib/browser/index';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
+import { highLightLanguageSupport, InstructionEnum } from '../../common/index';
+
 import * as styles from './components.module.less';
 import 'highlight.js/styles/a11y-dark.css';
 
@@ -169,12 +171,14 @@ const CodeBlock = ({ content }: { content: string }) => {
   const rgBlockCodeBefore = /```([^]+)?/g;
 
   const renderCodeEditor = (content: string) => {
-    const language = content.split('\n')[0] || 'plaintext';
+    const language = content.split('\n')[0].trim().toLowerCase();
+    const heighLightLang = highLightLanguageSupport.find((lang) => lang === language) || 'plaintext';
+
     content = content.replace(/.*?\n/, '');
     content = content.trim();
     return (
       <div className={styles.code_block}>
-        <div className={styles.code_language}>{language}</div>
+        <div className={styles.code_language}>{heighLightLang}</div>
         <CodeEditorWithHighlight input={content} language={language} />
       </div>
     );
@@ -217,10 +221,26 @@ const CodeBlock = ({ content }: { content: string }) => {
   return <>{render}</>;
 };
 
-export const CodeBlockWrapper = ({ text }: { text: string }) => (
-  <div className={styles.ai_chat_code_wrapper}>
-    <div className={styles.render_text}>
-      <CodeBlock content={text} />
+export const CodeBlockWrapper = ({ text }: { text: string }) => {
+  const [tag, setTag] = useState<string>('');
+  const [txt, setTxt] = useState<string>(text);
+
+  React.useEffect(() => {
+    Object.values(InstructionEnum).find((str: string) => {
+      if (txt.startsWith(str)) {
+        setTag(str);
+        setTxt(txt.slice(str.length));
+        return;
+      }
+    });
+  }, [text]);
+
+  return (
+    <div className={styles.ai_chat_code_wrapper}>
+      <div className={styles.render_text}>
+        {tag && <div className={styles.tag}>{tag}</div>}
+        <CodeBlock content={txt} />
+      </div>
     </div>
-  </div>
-);
+  );
+};

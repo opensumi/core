@@ -9,19 +9,6 @@
 
   user-select: text;
 
-  // ai 助手头像
-  .ai_chat_avatar_icon {
-    width: 24px;
-    height: 24px;
-    background-image: radial-gradient(circle at 21% 21%, #00f6ff 0%, #9c03ff 95%);
-    border-radius: 12px;
-
-    img {
-      width: 12px;
-      height: 12px;
-    }
-  }
-
   .ai_chat_hexagon_box {
     width: 20px;
     height: 10px;
@@ -97,7 +84,8 @@
     .left_bar {
       display: flex;
       flex-direction: column;
-      width: calc(100% - 24px);
+      // width: calc(100% - 24px);
+      width: 100%;
 
       // chat loading
       .chat_loading_msg_box {
@@ -136,6 +124,9 @@
               display: flex;
             }
           }
+        }
+        .chat_message_code {
+          max-width: 100%;
         }
       }
 
