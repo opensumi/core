@@ -23,13 +23,17 @@ export interface IAiBackServiceResponse<T = string> {
   data?: T;
 }
 
-export interface IAiBackService {
-  request<T extends IAiBackServiceResponse, O extends IAiBackServiceOption>(input: string, options?: O): Promise<T>;
-  requestStream<T extends NodeJS.ReadableStream, O extends IAiBackServiceOption>(
+export interface IAiBackService<
+  BaseResponse extends IAiBackServiceResponse,
+  StreamResponse extends NodeJS.ReadableStream,
+  CompletionResponse = string[]
+> {
+  request<O extends IAiBackServiceOption>(input: string, options?: O): Promise<BaseResponse>;
+  requestStream<O extends IAiBackServiceOption>(
     input: string,
     options?: O,
-  ): Promise<T>;
-  requestCompletion<I extends IAiCompletionOption, T = string[]>(input: I): Promise<T>;
+  ): Promise<StreamResponse>;
+  requestCompletion<I extends IAiCompletionOption>(input: I): Promise<CompletionResponse>;
 }
 
 export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
