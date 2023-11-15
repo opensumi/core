@@ -172,17 +172,11 @@ export class AiChatService extends Disposable {
   public async messageWithStream(input: string, options: IAiBackServiceOption = {}, sessionId: string): Promise<void> {
     this.msgStreamManager.setCurrentSessionId(sessionId);
 
-    await this.aiBackService.requestStream(input, {
-      ...options,
-      cancelToken: this.cancelIndicatorChatView.token,
-    });
+    await this.aiBackService.requestStream(input, options, this.cancelIndicatorChatView.token);
   }
 
   public async message(input: string, options: IAiBackServiceOption = {}) {
-    const res = await this.aiBackService.request(input, {
-      ...options,
-      cancelToken: this.cancelIndicatorChatView.token,
-    });
+    const res = await this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
 
     if (res.isCancel) {
       return null;
@@ -196,10 +190,7 @@ export class AiChatService extends Disposable {
   }
 
   public async search(input: string, options: IAiBackServiceOption = {}) {
-    return this.aiBackService.request(input, {
-      ...options,
-      cancelToken: this.cancelIndicatorChatView.token,
-    });
+    return this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
   }
 
   public setLatestSessionId(id: string): void {

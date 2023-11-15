@@ -23,11 +23,11 @@ export class AiRunService {
 
   public async requestBackService(input: string, cancelToken: CancellationToken) {
     const request = this.aiRunFeatureRegistry.getRequest();
-    return request(input, { cancelToken });
+    return request(input, {}, cancelToken);
   }
 
   public async requestStreamBackService(input: string, cancelToken: CancellationToken) {
     const request = this.aiRunFeatureRegistry.getStreamRequest();
-    return request(input, { cancelToken });
+    return request(input, {}, cancelToken);
   }
 }

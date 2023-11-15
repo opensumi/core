@@ -324,7 +324,6 @@ const AISearch = async (input, aiChatService: AiChatService) => {
       input.message,
       {
         type: input.type,
-        cancelToken: aiChatService.cancelIndicatorChatView.token,
       }
     );
 

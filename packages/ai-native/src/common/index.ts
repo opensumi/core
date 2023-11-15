@@ -6,7 +6,7 @@ export const AiBackSerivcePath = 'AiBackSerivcePath';
 export interface IAiBackServiceOption {
   type?: string;
   model?: string;
-  cancelToken?: CancellationToken;
+  enableGptCache?: boolean;
 }
 
 export interface IAiCompletionOption {
@@ -28,11 +28,8 @@ export interface IAiBackService<
   StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
   CompletionResponse = string[]
 > {
-  request<O extends IAiBackServiceOption>(input: string, options?: O): Promise<BaseResponse>;
-  requestStream<O extends IAiBackServiceOption>(
-    input: string,
-    options?: O,
-  ): Promise<StreamResponse>;
+  request<O extends IAiBackServiceOption>(input: string, options: O, cancelToken?: CancellationToken): Promise<BaseResponse>;
+  requestStream<O extends IAiBackServiceOption>(input: string, options: O, cancelToken?: CancellationToken): Promise<StreamResponse>;
   requestCompletion<I extends IAiCompletionOption>(input: I): Promise<CompletionResponse>;
 }
 

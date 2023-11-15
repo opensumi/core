@@ -221,7 +221,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       const result = await this.aiBackService.request(
         prompt,
-        { cancelToken: this.aiChatService.cancelIndicator.token, enableGptCache },
+        { enableGptCache },
+        this.aiChatService.cancelIndicator.token
       );
 
       if (this.aiInlineChatDisposed.disposed || result.isCancel) {
