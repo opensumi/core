@@ -68,7 +68,9 @@ export class AiSumiService {
         unGroupCommands.slice(i * this.commandRequestStep, (i + 1) * this.commandRequestStep),
       );
 
-      await Promise.all(partCommands.map(async (commands) => this.requestForClassifyCommand(commands)));
+      for (const commands of partCommands) {
+        await this.requestForClassifyCommand(commands);
+      }
     }
   }
 
