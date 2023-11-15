@@ -11,7 +11,7 @@ export class AiBackService implements IAiBackService {
     return void 0 as T;
   }
 
-  async requestCompletion() {
-    return [];
+  async requestCompletion<T>() {
+    return void 0 as T;
   }
 }
