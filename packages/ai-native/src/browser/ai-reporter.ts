@@ -24,7 +24,7 @@ export class AIReporter implements IAIReporter {
   start(msg: AISerivceType, data: ReportInfo): string {
     const relationId = this.getRelationId();
 
-    this.report(relationId, { ...data, msgType: msg });
+    this.report(relationId, { ...data, msgType: msg, isStart: true });
 
     // 这里做个兜底，如果 60s 模型还没有返回结果，上报失败
     const cancleHanddler = setTimeout(() => {
@@ -41,7 +41,7 @@ export class AIReporter implements IAIReporter {
       clearTimeout(cancleHanddler);
     }
 
-    this.report(relationId, { ...data, success: true });
+    this.report(relationId, { ...data, success: true, isStart: false });
   }
 
   private report(relationId: string, data: ReportInfo) {

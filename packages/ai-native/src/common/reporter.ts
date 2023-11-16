@@ -7,6 +7,7 @@ export interface CommonLogInfo {
   success: boolean;
   msgType: AISerivceType;
   message: string;
+  isStart: boolean;
 }
 
 export interface QuestionInfo extends Partial<CommonLogInfo> {
