@@ -1,5 +1,5 @@
 import clx from 'classnames';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import './styles.less';
 import { Button } from '../button';
@@ -37,6 +37,7 @@ export interface IPopoverProps {
   action?: string;
   disable?: boolean;
   onClickAction?: (args: any) => void;
+  onDisplayChange?: (display: boolean) => void;
 }
 
 export const Popover: React.FC<IPopoverProps> = ({
@@ -53,6 +54,7 @@ export const Popover: React.FC<IPopoverProps> = ({
   titleClassName,
   action,
   onClickAction,
+  onDisplayChange,
   disable,
   ...restProps
 }) => {
@@ -126,6 +128,9 @@ export const Popover: React.FC<IPopoverProps> = ({
     }
     clearTimeout(hideContentTimer);
     contentEl.current.style.display = 'block';
+    if (onDisplayChange) {
+      onDisplayChange(true);
+    }
     window.requestAnimationFrame(() => {
       if (!childEl.current || !contentEl.current) {
         return;
@@ -150,6 +155,9 @@ export const Popover: React.FC<IPopoverProps> = ({
       }
       contentEl.current.style.display = 'none';
       contentEl.current.style.visibility = 'hidden';
+      if (onDisplayChange) {
+        onDisplayChange(false);
+      }
     }, delay);
   }
 

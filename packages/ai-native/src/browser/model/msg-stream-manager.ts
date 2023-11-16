@@ -52,8 +52,16 @@ export class MsgStreamManager extends Disposable {
     return this.onDidMsgListChangeDispatcher.on(sessionId);
   }
 
-  public sendError(): void {
+  public sendErrorStatue(): void {
     this.status = EMsgStreamStatus.ERROR;
+  }
+
+  public sendDoneStatue(): void {
+    this.status = EMsgStreamStatus.DONE;
+  }
+
+  public sendThinkingStatue(): void {
+    this.status = EMsgStreamStatus.THINKING;
   }
 
   public recordMessage(answerId: string, msg: IMsgStreamChoices): void {
@@ -77,11 +85,11 @@ export class MsgStreamManager extends Disposable {
 
     const { finish_reason } = msg;
     if (!finish_reason) {
-      this.status = EMsgStreamStatus.THINKING;
+      this.sendThinkingStatue();
     } else if (finish_reason === 'stop') {
-      this.status = EMsgStreamStatus.DONE;
+      this.sendDoneStatue();
     } else {
-      this.status = EMsgStreamStatus.ERROR;
+      this.sendErrorStatue();
       return;
     }
 
