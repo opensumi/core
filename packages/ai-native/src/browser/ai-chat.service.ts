@@ -4,7 +4,15 @@ import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/i
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, AiBackSerivcePath, IAiBackService, IAiBackServiceResponse, IAiBackServiceOption, IChatMessageStructure, InstructionEnum } from '../common';
+import {
+  AISerivceType,
+  AiBackSerivcePath,
+  IAiBackService,
+  IAiBackServiceResponse,
+  IAiBackServiceOption,
+  IChatMessageStructure,
+  InstructionEnum,
+} from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
 

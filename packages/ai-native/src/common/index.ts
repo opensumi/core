@@ -26,10 +26,18 @@ export interface IAiBackServiceResponse<T = string> {
 export interface IAiBackService<
   BaseResponse extends IAiBackServiceResponse = IAiBackServiceResponse,
   StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
-  CompletionResponse = string[]
+  CompletionResponse = string[],
 > {
-  request<O extends IAiBackServiceOption>(input: string, options: O, cancelToken?: CancellationToken): Promise<BaseResponse>;
-  requestStream<O extends IAiBackServiceOption>(input: string, options: O, cancelToken?: CancellationToken): Promise<StreamResponse>;
+  request<O extends IAiBackServiceOption>(
+    input: string,
+    options: O,
+    cancelToken?: CancellationToken,
+  ): Promise<BaseResponse>;
+  requestStream<O extends IAiBackServiceOption>(
+    input: string,
+    options: O,
+    cancelToken?: CancellationToken,
+  ): Promise<StreamResponse>;
   requestCompletion<I extends IAiCompletionOption>(input: I): Promise<CompletionResponse>;
 }
 

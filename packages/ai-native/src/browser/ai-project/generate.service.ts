@@ -33,7 +33,9 @@ export class AiProjectGenerateService {
     return this._requirements;
   }
 
-  public async start(callback: (messageList: Array<{ message: string; immediately?: boolean; type?: string }>) => void) {
+  public async start(
+    callback: (messageList: Array<{ message: string; immediately?: boolean; type?: string }>) => void,
+  ) {
     callback([]);
   }
 }

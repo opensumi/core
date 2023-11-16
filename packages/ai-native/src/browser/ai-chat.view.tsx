@@ -355,12 +355,9 @@ const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
 
 const AISearch = async (input, aiChatService: AiChatService) => {
   try {
-    const result = await aiChatService.search(
-      input.message,
-      {
-        type: input.type,
-      }
-    );
+    const result = await aiChatService.search(input.message, {
+      type: input.type,
+    });
 
     const { responseText, urlMessage, isCancel } = result;
 
