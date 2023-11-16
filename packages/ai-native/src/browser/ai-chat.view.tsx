@@ -508,7 +508,7 @@ const AIWithCommandReply = async (command: Command, opener: CommandOpener, param
     replytime: +new Date() - startTime,
     success: true,
     msgType: AISerivceType.Sumi,
-    message: command.id,
+    message: command?.id,
   });
 
   if (!command) {
