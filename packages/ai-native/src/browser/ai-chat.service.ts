@@ -81,6 +81,7 @@ export class AiChatService extends Disposable {
   public async destroyStreamRequest(sessionId: string) {
     if (this.aiBackService.destroyStreamRequest) {
       await this.aiBackService.destroyStreamRequest(sessionId);
+      this.msgStreamManager.sendDoneStatue();
     }
   }
 

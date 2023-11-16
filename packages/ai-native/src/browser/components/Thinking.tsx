@@ -5,23 +5,25 @@ import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import { AiChatService } from '../ai-chat.service';
+import { MsgStreamManager } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
 
 interface ITinkingProps {
   children?: React.ReactNode;
-  onPause?: () => void;
 }
 
-export const Thinking = ({ children, onPause }: ITinkingProps) => {
+export const Thinking = ({ children }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
-  const handlePause = useCallback(() => {
+  const handlePause = useCallback(async () => {
     aiChatService.cancelChatViewToken();
-    if (onPause) {
-      onPause();
+    const { currentSessionId } = msgStreamManager;
+    if (currentSessionId) {
+      await aiChatService.destroyStreamRequest(currentSessionId);
     }
-  }, []);
+  }, [msgStreamManager]);
 
   return (
     <div className={styles.thinking_container}>

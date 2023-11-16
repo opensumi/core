@@ -15,9 +15,9 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
   const [chunk, setChunk] = React.useState('');
   const [content, setContent] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
+  const [isDone, setIsDone] = React.useState<boolean>(false);
   const [status, setStatus] = React.useState(EMsgStreamStatus.READY);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -37,6 +37,7 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
 
         if (msgStreamManager.currentSessionId === sessionId) {
           setIsError(status === EMsgStreamStatus.ERROR);
+          setIsDone(status === EMsgStreamStatus.DONE);
         }
       }),
     );
@@ -54,29 +55,30 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
     setContent(content + chunk);
   }, [chunk]);
 
-  const renderMsgList = useCallback(
-    () => (
+  const renderMsgList = useCallback(() => {
+    if (
+      (status === EMsgStreamStatus.THINKING || status === EMsgStreamStatus.READY) &&
+      msgStreamManager.currentSessionId === sessionId
+    ) {
+      return <Thinking></Thinking>;
+    }
+
+    const renderContent =
+      isDone && !content.trim() ? <span>我先不想了，有需要可以随时问我</span> : <CodeBlockWrapper text={content} />;
+
+    return (
       <div className={styles.ai_chat_code_wrapper}>
         <div className={styles.render_text}>
-          {isError ? (
-            <span>当前与我互动的人太多，请稍后再试，感谢您的理解与支持</span>
-          ) : (
-            <CodeBlockWrapper text={content} />
-          )}
+          {isError ? <span>当前与我互动的人太多，请稍后再试，感谢您的理解与支持</span> : renderContent}
         </div>
       </div>
-    ),
-    [content, isError],
-  );
+    );
+  }, [content, isError, isDone, status, sessionId]);
 
-  const handlePause = useCallback(async () => {
-    await aiChatService.destroyStreamRequest(sessionId);
-    msgStreamManager.sendDoneStatue();
-  }, [sessionId]);
-
-  return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <Thinking onPause={handlePause}>{renderMsgList()}</Thinking>
-  ) : (
-    renderMsgList()
-  );
+  return renderMsgList();
+  // return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
+  //   <Thinking>{renderMsgList()}</Thinking>
+  // ) : (
+  //   renderMsgList()
+  // );
 };
