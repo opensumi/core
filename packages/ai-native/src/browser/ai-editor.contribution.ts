@@ -17,7 +17,7 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiBackSerivcePath, IAiBackService, AiNativeSettingSectionsId, InstructionEnum } from '../common';
+import { AiBackSerivcePath, IAiBackService, AiNativeSettingSectionsId, InstructionEnum, IAIReporter } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
@@ -46,6 +46,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   private logger: ILogServiceClient;
 
@@ -192,7 +195,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       selection,
     });
 
-    const handleDiffEditorResult = async (prompt: string, crossSelection: monaco.Selection, enableGptCache = true) => {
+    const handleDiffEditorResult = async (prompt: string, crossSelection: monaco.Selection, enableGptCache = true, relationId: string) => {
       const model = monacoEditor.getModel();
       if (!model) {
         return;
@@ -261,6 +264,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineChatOperationDisposed.addDispose(
           this.aiInlineChatService.onAccept(() => {
+            this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
             monacoEditor.getModel()?.pushEditOperations(
               null,
               [
@@ -277,6 +281,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           }),
         );
       }
+
+      return answer;
     };
 
     const handleOperation = async (value: EInlineOperation, selection: monaco.Selection) => {
@@ -303,10 +309,16 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           prompt = `优化以下代码: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
         }
 
-        await handleDiffEditorResult(prompt, crossSelection, true);
+        const relationId = this.aiReporter.start(value, { message: prompt });
+        const startTime = +new Date();
+
+        const result = await handleDiffEditorResult(prompt, crossSelection, true, relationId);
+
+        this.aiReporter.end(relationId, { message: result, success: !!result, replytime: +new Date() - startTime });
 
         this.aiInlineChatDisposed.addDispose(
           this.aiInlineChatService.onDiscard(() => {
+            this.aiReporter.end(relationId, { message: result, success: !!result, isDrop: true });
             setTimeout(() => {
               this.disposeAllWidget();
             }, 110);
@@ -315,7 +327,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineChatDisposed.addDispose(
           this.aiInlineChatService.onRegenerate(async () => {
-            await handleDiffEditorResult(prompt, crossSelection, false);
+            const retryStartTime = +new Date();
+            const retryResult = await handleDiffEditorResult(prompt, crossSelection, false, relationId);
+            this.aiReporter.end(relationId, { message: retryResult, success: !!result, replytime: +new Date() - retryStartTime, isRetry: true });
           }),
         );
 
