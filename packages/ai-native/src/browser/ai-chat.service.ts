@@ -12,6 +12,7 @@ import {
   IAiBackServiceOption,
   IChatMessageStructure,
   InstructionEnum,
+  IAIReporter,
 } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
@@ -38,6 +39,9 @@ export class AiChatService extends Disposable {
 
   @Autowired(MsgStreamManager)
   private readonly msgStreamManager: MsgStreamManager;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
