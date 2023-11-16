@@ -1,24 +1,24 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
-import { AiGPTBackSerivcePath, AiGPTBackSerivceToken, IAiChatService } from '../common';
+import { AiBackSerivcePath, AiBackSerivceToken } from '../common';
 
-// import { AiNativeBackService } from './ai-gpt.back.service';
+import { AiBackService } from './ai.service';
+// import { AiBackService } from './ai-gpt.back.service';
 
 @Injectable()
 export class AiNativeModule extends NodeModule {
   providers: Provider[] = [
     {
-      token: AiGPTBackSerivceToken,
-      // useClass: AiNativeBackService,
-      useClass: class {},
+      token: AiBackSerivceToken,
+      useClass: AiBackService,
     },
   ];
 
   backServices = [
     {
-      servicePath: AiGPTBackSerivcePath,
-      token: AiGPTBackSerivceToken,
+      servicePath: AiBackSerivcePath,
+      token: AiBackSerivceToken,
     },
   ];
 }

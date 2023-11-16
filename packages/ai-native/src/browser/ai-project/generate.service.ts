@@ -3,12 +3,12 @@ import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { ILogServiceClient, ILoggerManagerClient, SupportLogNamespace } from '@opensumi/ide-core-common';
 
-import { AiGPTBackSerivcePath } from '../../common';
+import { AiBackSerivcePath, IAiBackService } from '../../common';
 
 @Injectable()
 export class AiProjectGenerateService {
-  @Autowired(AiGPTBackSerivcePath)
-  aiBackService: any;
+  @Autowired(AiBackSerivcePath)
+  aiBackService: IAiBackService;
 
   @Autowired(ILoggerManagerClient)
   private readonly loggerManagerClient: ILoggerManagerClient;
@@ -33,7 +33,9 @@ export class AiProjectGenerateService {
     return this._requirements;
   }
 
-  public async start(callback: (messageList: Array<{ message: string; immediately?: boolean; type?: string }>) => void) {
+  public async start(
+    callback: (messageList: Array<{ message: string; immediately?: boolean; type?: string }>) => void,
+  ) {
     callback([]);
   }
 }

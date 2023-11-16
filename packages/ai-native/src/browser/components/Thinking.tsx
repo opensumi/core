@@ -9,11 +9,20 @@ import { EMsgStreamStatus } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
 
-export const Thinking = ({ children, status }: { children?: React.ReactNode; status?: EMsgStreamStatus }) => {
+interface ITinkingProps {
+  children?: React.ReactNode;
+  onPause?: () => void;
+  status?: EMsgStreamStatus;
+}
+
+export const Thinking = ({ children, onPause, status }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   const handlePause = useCallback(() => {
     aiChatService.cancelChatViewToken();
+    if (onPause) {
+      onPause();
+    }
   }, []);
 
   return (

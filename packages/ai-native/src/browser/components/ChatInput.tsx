@@ -100,6 +100,7 @@ const ThemeWidget = ({ themeBlock }) => (
 export interface IChatInputProps {
   onSend: (value: string) => void;
   onValueChange?: (value: string) => void;
+  onExpand?: (value: boolean) => void;
   placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
@@ -116,6 +117,7 @@ export const ChatInput = (props: IChatInputProps) => {
   const {
     onSend,
     onValueChange,
+    onExpand,
     placeholder,
     enableOptions = false,
     disabled = false,

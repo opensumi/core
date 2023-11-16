@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { IPopoverProps, Popover } from '@opensumi/ide-components';
 import { uuid } from '@opensumi/ide-core-common';
@@ -19,8 +19,12 @@ export const EnhancePopover = (props: IPopoverProps) => {
     [onClick],
   );
 
+  const onDisplayChange = useCallback((d: boolean) => {
+    setDisplay(d);
+  }, []);
+
   return (
-    <Popover id={uid} title={title} onClick={handleClick} display={display}>
+    <Popover id={uid} title={title} onClick={handleClick} display={display} onDisplayChange={onDisplayChange}>
       {children}
     </Popover>
   );

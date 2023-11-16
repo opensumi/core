@@ -4,14 +4,31 @@ import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/i
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, AiGPTBackSerivcePath, IChatMessageStructure, InstructionEnum } from '../common';
+import {
+  AISerivceType,
+  AiBackSerivcePath,
+  IAiBackService,
+  IAiBackServiceResponse,
+  IAiBackServiceOption,
+  IChatMessageStructure,
+  InstructionEnum,
+} from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
 
+export interface IAiSearchResponse extends IAiBackServiceResponse {
+  responseText?: string;
+  urlMessage?: string;
+}
+
+export interface IAiStreamMessageService<T extends IAiBackServiceResponse<string>> extends IAiBackService<T> {
+  destroyStreamRequest?: (sessionId: string) => Promise<void>;
+}
+
 @Injectable()
 export class AiChatService extends Disposable {
-  @Autowired(AiGPTBackSerivcePath)
-  public aiBackService: any;
+  @Autowired(AiBackSerivcePath)
+  private aiBackService: IAiStreamMessageService<IAiSearchResponse>;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -59,6 +76,12 @@ export class AiChatService extends Disposable {
   public cancelChatViewToken() {
     this.cancelIndicatorChatView.cancel();
     this.cancelIndicatorChatView = new CancellationTokenSource();
+  }
+
+  public async destroyStreamRequest(sessionId: string) {
+    if (this.aiBackService.destroyStreamRequest) {
+      await this.aiBackService.destroyStreamRequest(sessionId);
+    }
   }
 
   public async switchAIService(input: string, prompt = '') {
@@ -157,26 +180,33 @@ export class AiChatService extends Disposable {
   public onMessage(message: string) {
     try {
       const msgObj = JSON.parse(message);
-      const { id, choices } = msgObj;
-      this.msgStreamManager.recordMessage(id, choices[0]);
+
+      if (msgObj.id && msgObj.choices) {
+        const { id, choices } = msgObj;
+        this.msgStreamManager.recordMessage(id, choices[0]);
+      } else {
+        this.msgStreamManager.sendErrorStatue();
+      }
     } catch (error) {
       new Error(`onMessage error: ${error}`);
     }
   }
 
-  public async messageWithStream(input: string, options: any = {}, sessionId: string): Promise<void> {
+  public async messageWithStream(input: string, options: IAiBackServiceOption = {}, sessionId: string): Promise<void> {
     this.msgStreamManager.setCurrentSessionId(sessionId);
 
-    await this.aiBackService.aiGPTcompletionRequestStream(input, options, this.cancelIndicatorChatView.token);
-  }
-
-  public async messageWithGPT(input: string, options: any = {}) {
-    const res = await this.aiBackService.aiGPTcompletionRequest(
+    await this.aiBackService.requestStream(
       input,
-      undefined,
-      options,
+      {
+        ...options,
+        sessionId,
+      },
       this.cancelIndicatorChatView.token,
     );
+  }
+
+  public async message(input: string, options: IAiBackServiceOption = {}) {
+    const res = await this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
 
     if (res.isCancel) {
       return null;
@@ -187,6 +217,10 @@ export class AiChatService extends Disposable {
     } else {
       return res.data || '';
     }
+  }
+
+  public async search(input: string, options: IAiBackServiceOption = {}) {
+    return this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
   }
 
   public setLatestSessionId(id: string): void {

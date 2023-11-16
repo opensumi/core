@@ -55,12 +55,28 @@ export class MsgStreamManager extends Disposable {
     return this.onDidMsgListChangeDispatcher.on(sessionId);
   }
 
+  public sendErrorStatue(): void {
+    this.status = EMsgStreamStatus.ERROR;
+  }
+
+  public sendDoneStatue(): void {
+    this.status = EMsgStreamStatus.DONE;
+  }
+
+  public sendThinkingStatue(): void {
+    this.status = EMsgStreamStatus.THINKING;
+  }
+
   public recordMessage(answerId: string, msg: IMsgStreamChoices): void {
     if (!this._currentSessionId) {
       new Error('currentSessionId is null');
     }
 
     this.sessionIdToAnswerIdMap.set(this.currentSessionId, answerId);
+
+    if (!(answerId && msg)) {
+      new Error('answerId/msg is null');
+    }
 
     const answerList = this.answerIdToMsgStreamMap.get(answerId);
 
@@ -72,11 +88,12 @@ export class MsgStreamManager extends Disposable {
 
     const { finish_reason } = msg;
     if (!finish_reason) {
-      this.status = EMsgStreamStatus.THINKING;
+      this.sendThinkingStatue();
     } else if (finish_reason === 'stop') {
-      this.status = EMsgStreamStatus.DONE;
+      this.sendDoneStatue();
     } else {
-      this.status = EMsgStreamStatus.ERROR;
+      this.sendErrorStatue();
+      return;
     }
 
     this.onDidMsgListChangeDispatcher.dispatch(this._currentSessionId, msg);
