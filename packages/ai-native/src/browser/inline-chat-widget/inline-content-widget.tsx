@@ -37,8 +37,8 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   @Autowired(AiInlineChatService)
   private aiInlineChatService: AiInlineChatService;
 
-  allowEditorOverflow?: boolean | undefined = false;
-  suppressMouseDown?: boolean | undefined = false;
+  allowEditorOverflow?: boolean | undefined = true;
+  suppressMouseDown?: boolean | undefined = true;
 
   private domNode: HTMLElement;
   protected options: ShowAiContentOptions | undefined;
@@ -106,6 +106,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
       this.domNode.classList.add(this.getId());
 
       this.domNode.style.padding = '6px';
+      this.domNode.style.zIndex = '999';
     }
     return this.domNode;
   }
@@ -152,21 +153,20 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     };
   }
 
-  private recheckPosition(widgetPosition: monaco.editor.IContentWidgetPosition): monaco.editor.IContentWidgetPosition {
-    const { position, preference } = widgetPosition;
-    const { lineNumber, column } = position!;
-
+  private recheckPosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
     const preNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber - 1);
     const curNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber);
     const nextNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber + 1);
 
-    let newPreference = preference;
+    let newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
     let newLineNumber = lineNumber;
     let newColumn = column;
 
     if (curNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-      newPreference = [monaco.editor.ContentWidgetPositionPreference.EXACT];
+      this.domNode.style.marginTop = '-18px';
+      newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
     } else if (curNonWhitespaceColumn >= preNonWhitespaceColumn) {
+      this.domNode.style.marginTop = '18px';
       newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
     } else {
       newColumn = Math.min(preNonWhitespaceColumn, nextNonWhitespaceColumn);
@@ -223,19 +223,26 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     let targetLine: number | null = null;
     let direction: 'above' | 'below' | null = null;
 
+    if (startPosition.lineNumber === endPosition.lineNumber) {
+      return this.recheckPosition(
+        cursorPosition.lineNumber,
+        this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber),
+      );
+    }
+
     if (cursorPosition.equals(startPosition)) {
       const getMaxLastWhitespaceColumn = Math.max(
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 1),
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 2),
       );
 
-      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn && startPosition.lineNumber > 2) {
+      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn) {
         return this.toAbovePosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
       }
 
       for (let i = startPosition.lineNumber; i <= endPosition.lineNumber; i++) {
         // 最上面两行不考虑向上展示，会被挡到
-        if (this.isProtrudeAbove(i) && startPosition.lineNumber > 2) {
+        if (this.isProtrudeAbove(i)) {
           targetLine = i;
           direction = 'above';
           break;
@@ -262,7 +269,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
           direction = 'below';
           break;
         }
-        if (this.isProtrudeAbove(i) && endPosition.lineNumber > 2) {
+        if (this.isProtrudeAbove(i)) {
           targetLine = i;
           direction = 'above';
           break;
@@ -279,6 +286,9 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
       return this.toAbovePosition(targetLine, column);
     }
 
-    return this.recheckPosition(this.toBelowPosition(endPosition.lineNumber, endPosition.column));
+    return this.recheckPosition(
+      cursorPosition.lineNumber,
+      this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber),
+    );
   }
 }
