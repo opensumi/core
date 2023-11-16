@@ -52,7 +52,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     return () => disposableCollection.dispose();
   }, [sessionId]);
 
-  const clear = useCallback(() => {
+  const reset = useCallback(() => {
     setChunk('');
     setContent('');
     setIsError(false);
@@ -69,7 +69,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   }, [chunk]);
 
   const handleRegenerate = useCallback(() => {
-    clear();
+    reset();
     aiChatService.messageWithStream(prompt, {}, sessionId);
   }, [prompt]);
 
