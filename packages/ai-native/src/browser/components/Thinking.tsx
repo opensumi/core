@@ -9,7 +9,6 @@ import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager'
 
 import * as styles from './components.module.less';
 import { EnhanceIcon } from './Icon';
-import { Thumbs } from './Thumbs';
 
 interface ITinkingProps {
   children?: React.ReactNode;
@@ -17,9 +16,10 @@ interface ITinkingProps {
   message?: string;
   onRegenerate?: () => void;
   sessionId?: string;
+  onStop?: () => void;
 }
 
-export const Thinking = ({ children, status, message }: ITinkingProps) => {
+export const Thinking = ({ children, status, message, onStop }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
@@ -29,6 +29,7 @@ export const Thinking = ({ children, status, message }: ITinkingProps) => {
     if (currentSessionId) {
       await aiChatService.destroyStreamRequest(currentSessionId);
     }
+    onStop && onStop();
   }, [msgStreamManager]);
 
   const renderContent = useCallback(() => {

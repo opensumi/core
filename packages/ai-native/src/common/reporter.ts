@@ -7,7 +7,6 @@ export interface CommonLogInfo {
   success: boolean;
   msgType: AISerivceType;
   message: string;
-  relationId: string;
 }
 
 export interface QuestionInfo extends Partial<CommonLogInfo> {
@@ -32,7 +31,6 @@ export interface CommandInfo extends Partial<CommonLogInfo> {
 }
 
 export interface RunInfo extends Partial<CommonLogInfo> {
-  generateFile: boolean;
   runSuccess: boolean;
 }
 

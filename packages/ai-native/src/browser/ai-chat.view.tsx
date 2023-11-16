@@ -398,7 +398,6 @@ const AISearch = async (input, params: ReplayComponentParam) => {
       success: !result.errorCode,
       isStop: isCancel,
       msgType: AISerivceType.Search,
-      relationId,
     });
 
     if (isCancel) {
@@ -435,12 +434,12 @@ const AISearch = async (input, params: ReplayComponentParam) => {
 const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
   try {
     const { aiChatService, relationId } = params;
-    await aiChatService.messageWithStream(prompt, {}, relationId);
+    aiChatService.messageWithStream(prompt, {}, relationId);
 
     const aiMessage = createMessageByAI({
       id: uuid(6),
       relationId,
-      text: <StreamMsgWrapper sessionId={relationId} />,
+      text: <StreamMsgWrapper sessionId={relationId} prompt={prompt} />,
       className: styles.chat_with_more_actions,
     });
 
@@ -470,12 +469,13 @@ const AICodeReply = (input, aiChatService: AiChatService, relationId: string) =>
 
 // run 的 AI 回复组件
 const AIChatRunReply = async (input, params: ReplayComponentParam) => {
+  const { aiRunService, aiReporter, relationId, aiChatService, startTime } = params;
+  let aiMessage: AIMessageData | undefined;
+  let success = true;
   try {
-    const { aiRunService, relationId, aiChatService } = params;
-
     const RenderAnswer = aiRunService.answerComponentRender();
 
-    const aiMessage = createMessageByAI({
+    aiMessage = createMessageByAI({
       id: uuid(6),
       relationId,
       text: (
@@ -487,8 +487,17 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
     });
 
     aiChatService.setLatestSessionId(relationId);
-    return aiMessage;
-  } catch (error) {}
+  } catch (error) {
+    success = false;
+  }
+
+  aiReporter.end(relationId, {
+    replytime: +new Date() - startTime,
+    success,
+    message: input,
+  });
+
+  return aiMessage;
 };
 
 // 带有命令按钮的 AI 回复
@@ -500,7 +509,6 @@ const AIWithCommandReply = async (command: Command, opener: CommandOpener, param
     success: true,
     msgType: AISerivceType.Sumi,
     message: command.id,
-    relationId,
   });
 
   if (!command) {
@@ -527,7 +535,6 @@ const AIWithCommandReply = async (command: Command, opener: CommandOpener, param
       success: true,
       msgType: AISerivceType.Sumi,
       message: command.id,
-      relationId,
       useCommand: true,
       useCommandSuccess: success,
     });
