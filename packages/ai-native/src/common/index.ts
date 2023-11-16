@@ -1,7 +1,46 @@
-import { MaybePromise } from '@opensumi/ide-core-common';
+import { MaybePromise, CancellationToken } from '@opensumi/ide-core-common';
 
-export const AiGPTBackSerivceToken = Symbol('AiGPTBackSerivceToken');
-export const AiGPTBackSerivcePath = 'AiGPTBackSerivcePath';
+export const AiBackSerivceToken = Symbol('AiBackSerivceToken');
+export const AiBackSerivcePath = 'AiBackSerivcePath';
+
+export interface IAiBackServiceOption {
+  type?: string;
+  model?: string;
+  enableGptCache?: boolean;
+}
+
+export interface IAiCompletionOption {
+  prompt: string;
+  suffix?: string;
+  language?: string;
+  fileUrl?: string;
+}
+
+export interface IAiBackServiceResponse<T = string> {
+  errorCode?: number;
+  errorMsg?: string;
+  isCancel?: boolean;
+  data?: T;
+}
+
+export interface IAiBackService<
+  BaseResponse extends IAiBackServiceResponse = IAiBackServiceResponse,
+  StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
+  CompletionResponse = string[],
+> {
+  request<O extends IAiBackServiceOption>(
+    input: string,
+    options: O,
+    cancelToken?: CancellationToken,
+  ): Promise<BaseResponse>;
+  requestStream<O extends IAiBackServiceOption>(
+    input: string,
+    options: O,
+    cancelToken?: CancellationToken,
+  ): Promise<StreamResponse>;
+  requestCompletion<I extends IAiCompletionOption>(input: I): Promise<CompletionResponse>;
+}
+
 export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
 
 export const Ai_CHAT_CONTAINER_VIEW_ID = 'ai_chat';
@@ -83,7 +122,17 @@ export interface IAiRunFeatureRegistry {
    */
   registerAnswerComponent(component: React.FC<IAiRunAnswerComponentProps>): void;
 
+  registerRequest(request: IAiBackService['request']): void;
+
+  registerStreamRequest(streamRequest: IAiBackService['requestStream']): void;
+
   getRuns(): AiRunHandler[];
+
+  getAnswerComponent(): React.FC<IAiRunAnswerComponentProps> | undefined;
+
+  getRequest(): IAiBackService['request'];
+
+  getStreamRequest(): IAiBackService['requestStream'];
 }
 
 export const AiNativeContribution = Symbol('AiNativeContribution');

@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { CancellationToken } from '@opensumi/ide-core-common';
 
 import { IAiRunAnswerComponentProps, IAiRunFeatureRegistry } from '../../common';
 
@@ -18,5 +19,15 @@ export class AiRunService {
 
   public answerComponentRender(): React.FC<IAiRunAnswerComponentProps> | undefined {
     return this.aiRunFeatureRegistry.getAnswerComponent();
+  }
+
+  public async requestBackService(input: string, cancelToken: CancellationToken) {
+    const request = this.aiRunFeatureRegistry.getRequest();
+    return request(input, { type: 'run' }, cancelToken);
+  }
+
+  public async requestStreamBackService(input: string, cancelToken: CancellationToken) {
+    const request = this.aiRunFeatureRegistry.getStreamRequest();
+    return request(input, { type: 'run' }, cancelToken);
   }
 }

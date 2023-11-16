@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
 
-import { AiGPTBackSerivcePath } from '../../common/index';
+import { AiBackSerivcePath, IAiBackService } from '../../common/index';
 
 export const enum EInlineChatStatus {
   READY,
@@ -13,8 +13,8 @@ export const enum EInlineChatStatus {
 
 @Injectable({ multiple: false })
 export class AiInlineChatService {
-  @Autowired(AiGPTBackSerivcePath)
-  aiBackService: any;
+  @Autowired(AiBackSerivcePath)
+  aiBackService: IAiBackService;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;

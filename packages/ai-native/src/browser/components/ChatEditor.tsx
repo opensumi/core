@@ -163,7 +163,7 @@ const CodeEditorWithHighlight = ({ input, language }) => {
   );
 };
 
-const CodeBlock = ({ content }: { content: string }) => {
+const CodeBlock = ({ content = '' }: { content?: string }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
@@ -217,7 +217,7 @@ const CodeBlock = ({ content }: { content: string }) => {
   return <>{render}</>;
 };
 
-export const CodeBlockWrapper = ({ text }: { text: string }) => (
+export const CodeBlockWrapper = ({ text }: { text?: string }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
       <CodeBlock content={text} />
