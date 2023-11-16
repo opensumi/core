@@ -49,6 +49,6 @@ export const IAIReporter = Symbol('IAIReporter');
 export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
   // 返回关联 ID
-  start(msg: AISerivceType, data: ReportInfo): string;
+  start(msg: string, data: ReportInfo): string;
   end(relationId: string, data: ReportInfo);
 }
