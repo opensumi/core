@@ -15,7 +15,7 @@ import {
 import { CommandService } from '@opensumi/ide-core-common';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
-import { EnhanceIcon } from '../../../components/Icon';
+import { AILogoAvatar, EnhanceIcon } from '../../../components/Icon';
 
 import * as styles from './menu-bar.module.less';
 import { AiMenubarService } from './menu-bar.service';
@@ -116,7 +116,7 @@ export const AiMenuBarView = () => {
         </div>
         <div className={styles.center}>
           <div className={styles.run}>
-            <Button size={'large'} onClick={handleRun} className={styles.btn}>
+            <Button size={'default'} onClick={handleRun} className={styles.btn}>
               <Icon className={getIcon('caret-right')} /> 运行
             </Button>
           </div>
@@ -132,7 +132,7 @@ export const AiMenuBarView = () => {
             ></Input>
           </div> */}
           <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
-            <Icon className={getIcon('magic-wand')} />
+            <AILogoAvatar className={styles.avatar_icon_large} />
           </div>
         </div>
       </div>

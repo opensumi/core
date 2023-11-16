@@ -27,6 +27,9 @@ export class MsgStreamManager extends Disposable {
   private _currentSessionId: string;
   private _status: EMsgStreamStatus;
 
+  // 返回内容 与输入内容对应
+  private answerIdToMessage = new Map<string, string>();
+
   private readonly _onMsgStatus = new Emitter<EMsgStreamStatus>();
   public readonly onMsgStatus: Event<EMsgStreamStatus> = this._onMsgStatus.event;
 

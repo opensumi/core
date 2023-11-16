@@ -8,7 +8,7 @@ import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/
 
 import { CodeBlockWrapper } from './ChatEditor';
 import * as styles from './components.module.less';
-import { Thinking } from './Thinking';
+import { Thinking, ThinkingResult } from './Thinking';
 
 export const StreamMsgWrapper = (props: { sessionId: string }) => {
   const { sessionId } = props;
@@ -75,8 +75,10 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
   }, [sessionId]);
 
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <Thinking onPause={handlePause}>{renderMsgList()}</Thinking>
+    <Thinking status={status} onPause={handlePause}>
+      {renderMsgList()}
+    </Thinking>
   ) : (
-    renderMsgList()
+    <ThinkingResult message={content}>{renderMsgList()}</ThinkingResult>
   );
 };
