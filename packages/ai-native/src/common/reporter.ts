@@ -1,15 +1,16 @@
 export const AI_REPORTER_NAME = 'AI';
 
-export enum AI_REPORTER_MSG {
-  CHAT_QUESTION = 'chat_question',
-  CHAT_ANSWER = 'chat_answer'
+export enum AIReporterMsg {
+  generateProject = 'generateProject',
+  chatQuestion = 'chatQuestion',
+  chatAnswer = 'chatAnswer'
 };
 
 export interface CommonLogInfo {
   replytime: number;
   success: boolean;
   scenarioName: string;
-  msg: AI_REPORTER_MSG;
+  msg: AIReporterMsg;
   model: string;
   prompt: string;
   answer: string;
@@ -49,6 +50,6 @@ export const IAIReporter = Symbol('IAIReporter');
 export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
   // 返回关联 ID
-  start(data: ReportInfo): string;
+  start(msg: AIReporterMsg, data: ReportInfo): string;
   end(relationId: string, data: ReportInfo);
 }

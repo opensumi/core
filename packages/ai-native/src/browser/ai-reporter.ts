@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IReporterService, uuid } from '@opensumi/ide-core-common';
 
-import { ReportInfo, IAIReporter, AI_REPORTER_NAME } from '../common';
+import { ReportInfo, IAIReporter, AI_REPORTER_NAME, AIReporterMsg } from '../common';
 
 @Injectable()
 export class AIReporter implements IAIReporter {
@@ -21,10 +21,10 @@ export class AIReporter implements IAIReporter {
   }
 
   // 返回关联 ID
-  start(data: ReportInfo): string {
+  start(msg: AIReporterMsg, data: ReportInfo): string {
     const relationId = this.getRelationId();
 
-    this.report(relationId, { ...data, relationId });
+    this.report(relationId, { ...data, msg, relationId });
 
     // 这里做个兜底，如果 60s 模型还没有返回结果，上报失败
     const cancleHanddler = setTimeout(() => {
