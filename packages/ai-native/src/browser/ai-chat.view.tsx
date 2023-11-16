@@ -163,8 +163,10 @@ export const AiChatView = observer(() => {
 
         const userInput = await aiChatService.switchAIService(preInputValue, prompt);
 
-        if (userInput!.type === AISerivceType.Search) {
-          aiMessage = await AISearch(userInput, aiChatService);
+        if (userInput!.type === AISerivceType.SearchDoc) {
+          aiMessage = await AISearch(userInput.message, userInput.type, aiChatService);
+        } else if (userInput!.type === AISerivceType.SearchCode) {
+          aiMessage = await AISearch(userInput.message, userInput.type, aiChatService);
         } else if (userInput!.type === AISerivceType.Sumi) {
           aiMessage = await aiSumiService.searchCommand(userInput!.message!);
           aiMessage = await AIWithCommandReply(aiMessage, opener, aiChatService);
@@ -348,38 +350,54 @@ const AiReply = ({ text, endNode = <></>, immediately = false }) => {
   );
 };
 
-const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
+const renderSearchLinkBlock = new (class extends DefaultMarkedRenderer {
   link(href: string | null, title: string | null, text: string): string {
-    return `<a rel="noopener" target="_blank" href="${href}" target="${href}" title="${title ?? href}">${text}</a>`;
+    return `<a class="${styles.link_block}" rel="noopener" target="_blank" href="${href}" target="${href}" title="${
+      title ?? href
+    }">${text}</a>`;
   }
 })();
 
-const AISearch = async (input, aiChatService: AiChatService) => {
+const renderMarkdown = (content: string) => <Markdown value={content} renderer={renderSearchLinkBlock}></Markdown>;
+
+const AISearch = async (
+  input: string,
+  type: AISerivceType.SearchDoc | AISerivceType.SearchCode,
+  aiChatService: AiChatService,
+) => {
   try {
-    const result = await aiChatService.search(input.message, {
-      type: input.type,
-    });
-
-    const { responseText, urlMessage, isCancel } = result;
-
-    if (isCancel) {
-      return null;
-    }
-
     const uid = uuid(6);
 
+    const send = () => {
+      if (type === AISerivceType.SearchDoc) {
+        aiChatService.searchDoc(input, uid);
+      } else {
+        aiChatService.searchCode(input, uid);
+      }
+    };
+
+    send();
+
     const aiMessage = createMessageByAI(
-      <ChatMoreActions sessionId={uid}>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div>
-            <CodeBlockWrapper text={responseText} />
-          </div>
-          <div style={{ whiteSpace: 'pre-wrap' }}>
-            <Markdown value={urlMessage} renderer={codeSearchMarkedRender}></Markdown>
-            {/* {AICodeReply(urlMessage)} */}
-          </div>
-        </div>
-      </ChatMoreActions>,
+      <StreamMsgWrapper
+        sessionId={uid}
+        prompt={input}
+        onRegenerate={() => send()}
+        renderContent={(content) => (
+            <div className={styles.ai_chat_search_container}>
+              <div className={styles.ai_response_text}>
+                {type === AISerivceType.SearchDoc ? (
+                  renderMarkdown(content)
+                ) : (
+                  <CodeBlockWrapper
+                    text={content}
+                    renderText={(text) => renderMarkdown(text)}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+      ></StreamMsgWrapper>,
       styles.chat_with_more_actions,
     );
 
@@ -392,10 +410,19 @@ const AISearch = async (input, aiChatService: AiChatService) => {
 const AIStreamReply = async (prompt: string, aiChatService: AiChatService) => {
   try {
     const uid = uuid(6);
-    aiChatService.messageWithStream(prompt, {}, uid);
+    const send = () => {
+      aiChatService.messageWithStream(prompt, {}, uid);
+    };
+
+    send();
 
     const aiMessage = createMessageByAI(
-      <StreamMsgWrapper sessionId={uid} prompt={prompt}></StreamMsgWrapper>,
+      <StreamMsgWrapper
+        sessionId={uid}
+        prompt={prompt}
+        onRegenerate={() => send()}
+        renderContent={(content) => <CodeBlockWrapper text={content} />}
+      ></StreamMsgWrapper>,
       styles.chat_with_more_actions,
     );
 

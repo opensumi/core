@@ -32,7 +32,7 @@ export const Thinking = ({ children, status, message }: ITinkingProps) => {
   }, [msgStreamManager]);
 
   const renderContent = useCallback(() => {
-    if (status === EMsgStreamStatus.THINKING && !message?.trim()) {
+    if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
       return <span>Thinking...</span>;
     }
 
@@ -45,7 +45,7 @@ export const Thinking = ({ children, status, message }: ITinkingProps) => {
       <div className={styles.stop}>
         <span className={styles.progress_bar}>
           {/* 保持动画效果一致 */}
-          {status && (
+          {(status || !children) && (
             <Progress
               loading={true}
               wrapperClassName={`ai-native-progress-wrapper ${

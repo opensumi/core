@@ -85,6 +85,7 @@
       align-items: center;
       height: 16px;
       color: #fff;
+
       .title {
         font-weight: bold;
       }
@@ -101,6 +102,7 @@
       .kt-popover {
         margin-right: 6px;
       }
+
       span {
         color: #fff;
         font-size: 12px;
@@ -156,6 +158,7 @@
             }
           }
         }
+
         .chat_message_code {
           max-width: 100%;
         }
@@ -175,22 +178,27 @@
           align-items: center;
           margin-bottom: 12px;
           justify-content: space-between;
+
           .header_operate_left {
             display: flex;
             align-items: center;
           }
+
           .header_operate_right {
             display: flex;
             align-items: center;
+
             .tag {
               margin-left: 8px;
               margin-right: 0;
               padding-right: 6px;
             }
           }
+
           .block {
             margin-right: 8px;
           }
+
           .tag {
             background: #ffffff0a;
             height: 22px;
@@ -267,15 +275,39 @@
           display: flex;
           align-items: center;
           justify-content: center;
+
           .ai_chat_bar_icon {
             width: 12px;
             color: #666666;
           }
+
           &.active_chat_bar {
             background-color: #ffffff14;
             border-radius: 6px;
           }
         }
+      }
+    }
+  }
+
+  // 文档搜索样式
+  .ai_chat_search_container {
+    display: flex;
+    flex-direction: column;
+    white-space: pre-wrap;
+
+    p {
+      margin-bottom: 0;
+    }
+
+    sup {
+      top: 0;
+
+      .link_block {
+        color: #669ced;
+        border-radius: 4px;
+        background-color: #243753;
+        margin: 0 2px;
       }
     }
   }
