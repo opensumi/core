@@ -185,6 +185,7 @@ export const AiChatView = observer(() => {
 
       preMessagelist.push(codeSendMessage);
       setMessageListData(preMessagelist);
+      updateState({});
 
       const replayCommandProps = {
         aiChatService,
