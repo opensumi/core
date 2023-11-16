@@ -40,7 +40,7 @@ export class AiProjectGenerateService {
   }
 
   public async start(
-    callback: (messageList: Array<{ message: string; immediately?: boolean; type?: string }>) => void,
+    callback: (messageList: Array<{ message: string; relationId: string; immediately?: boolean; type?: string }>) => void,
   ) {
     callback([]);
   }

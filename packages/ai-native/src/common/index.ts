@@ -50,7 +50,7 @@ export interface IChatMessageStructure {
   /**
    * 用于 chat 面板展示
    */
-  message: string | React.ReactNode;
+  message: string;
   /**
    * 实际调用的 prompt
    */
@@ -97,13 +97,14 @@ export interface ChatCompletionRequestMessage {
 }
 
 export enum AISerivceType {
-  Search,
-  Sumi,
-  GPT,
-  Explain,
-  Run,
-  Test,
-  Optimize,
+  Search = 'search',
+  Sumi = 'sumi',
+  GPT = 'chat',
+  Explain = 'explain',
+  Run = 'run',
+  Test = 'test',
+  Optimize = 'optimize',
+  Generate = 'generate'
 }
 
 export type AiRunHandler = () => MaybePromise<void>;

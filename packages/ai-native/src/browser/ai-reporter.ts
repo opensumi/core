@@ -1,16 +1,16 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IReporterService, uuid } from '@opensumi/ide-core-common';
 
-import { ReportInfo, IAIReporter, AI_REPORTER_NAME, AIReporterMsg } from '../common';
+import { ReportInfo, IAIReporter, AI_REPORTER_NAME, AISerivceType } from '../common';
 
 @Injectable()
 export class AIReporter implements IAIReporter {
   @Autowired(IReporterService)
   readonly reporter: IReporterService;
 
-  private reportInfoCache: Map<string, ReportInfo>;
+  private reportInfoCache: Map<string, ReportInfo> = new Map();
 
-  private reporterCancelHandler: Map<string, ReturnType<typeof setTimeout>>;
+  private reporterCancelHandler: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   private getRelationId() {
     return uuid();
@@ -21,10 +21,10 @@ export class AIReporter implements IAIReporter {
   }
 
   // 返回关联 ID
-  start(msg: AIReporterMsg, data: ReportInfo): string {
+  start(msg: AISerivceType, data: ReportInfo): string {
     const relationId = this.getRelationId();
 
-    this.report(relationId, { ...data, msg, relationId });
+    this.report(relationId, { ...data, msgType: msg, relationId });
 
     // 这里做个兜底，如果 60s 模型还没有返回结果，上报失败
     const cancleHanddler = setTimeout(() => {
@@ -32,7 +32,6 @@ export class AIReporter implements IAIReporter {
     }, 60 * 1000);
 
     this.reporterCancelHandler.set(relationId, cancleHanddler);
-
     return relationId;
   }
   end(relationId: string, data: ReportInfo) {
@@ -41,7 +40,7 @@ export class AIReporter implements IAIReporter {
       clearTimeout(cancleHanddler);
     }
 
-    this.report(relationId, { ...data, success: true });
+    this.report(relationId, { ...data, relationId, success: true });
   }
 
   private report(relationId: string, data: ReportInfo) {
@@ -54,6 +53,6 @@ export class AIReporter implements IAIReporter {
     };
 
     this.reportInfoCache.set(relationId, reportInfo);
-    this.reporter.point(AI_REPORTER_NAME, data.msg, reportInfo);
+    this.reporter.point(AI_REPORTER_NAME, data.msgType, reportInfo);
   }
 }

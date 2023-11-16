@@ -1,5 +1,5 @@
 import hljs from 'highlight.js';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 

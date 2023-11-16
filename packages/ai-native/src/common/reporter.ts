@@ -1,55 +1,56 @@
-export const AI_REPORTER_NAME = 'AI';
+import { AISerivceType } from '../index';
 
-export enum AIReporterMsg {
-  generateProject = 'generateProject',
-  chatQuestion = 'chatQuestion',
-  chatAnswer = 'chatAnswer'
-};
+export const AI_REPORTER_NAME = 'AI';
 
 export interface CommonLogInfo {
   replytime: number;
   success: boolean;
-  scenarioName: string;
-  msg: AIReporterMsg;
-  model: string;
-  prompt: string;
-  answer: string;
+  msgType: AISerivceType;
+  message: string;
   relationId: string;
 }
 
-export interface QuestionInfo extends CommonLogInfo {
+export interface QuestionInfo extends Partial<CommonLogInfo> {
   isLike: boolean;
   isRetry: boolean;
   isStop: boolean;
 }
 
-export interface CodeInfo extends CommonLogInfo {
+export interface CodeInfo extends Partial<CommonLogInfo> {
   isReceive: boolean;
   isDrop: boolean;
 }
 
-export interface GenerateInfo extends CommonLogInfo {
+export interface GenerateInfo extends Partial<CommonLogInfo> {
   fileCount: number;
   requirment: string;
 }
 
-export interface CommandInfo extends CommonLogInfo {
+export interface CommandInfo extends Partial<CommonLogInfo> {
   useCommand: boolean;
   useCommandSuccess: boolean;
 }
 
-export interface RunInfo extends CommonLogInfo {
+export interface RunInfo extends Partial<CommonLogInfo> {
   generateFile: boolean;
   runSuccess: boolean;
 }
 
-export type ReportInfo = Partial<QuestionInfo> | Partial<CodeInfo> | Partial<GenerateInfo> | Partial<CommandInfo> | Partial<RunInfo>;
+export type ReportInfo = Partial<CommonLogInfo>
+  | ({ type: AISerivceType.GPT } & QuestionInfo)
+  | ({ type: AISerivceType.Explain } & QuestionInfo)
+  | ({ type: AISerivceType.Search } & QuestionInfo)
+  | ({ type: AISerivceType.Test } & QuestionInfo)
+  | ({ type: AISerivceType.Optimize } & CodeInfo)
+  | ({ type: AISerivceType.Generate } & GenerateInfo)
+  | ({ type: AISerivceType.Sumi } & CommandInfo)
+  | ({ type: AISerivceType.Run } & RunInfo);
 
 export const IAIReporter = Symbol('IAIReporter');
 
 export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
   // 返回关联 ID
-  start(msg: AIReporterMsg, data: ReportInfo): string;
+  start(msg: AISerivceType, data: ReportInfo): string;
   end(relationId: string, data: ReportInfo);
 }
