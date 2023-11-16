@@ -16,11 +16,12 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      include:
-        - os: ubuntu-latest
-          node-version: 16.x
-        - os: macos-latest
-          node-version: 14.x
+      matrix:
+        os: [mac-latest, ubuntu-latest]
+        node: [14]
+        include:
+          - os: ubuntu-latest
+            node: 16
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +37,7 @@ jobs:
         id: yarn_cache
         with:
           path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: install
@@ -66,7 +67,7 @@ jobs:
         id: yarn_cache
         with:
           path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Build
