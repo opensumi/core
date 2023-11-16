@@ -8,7 +8,7 @@ import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/
 
 import { CodeBlockWrapper } from './ChatEditor';
 import * as styles from './components.module.less';
-import { Thinking } from './Thinking';
+import { Thinking, ThinkingResult } from './Thinking';
 
 export const StreamMsgWrapper = (props: { sessionId: string }) => {
   const { sessionId } = props;
@@ -16,7 +16,7 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
   const [content, setContent] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [isDone, setIsDone] = React.useState<boolean>(false);
-  const [status, setStatus] = React.useState(EMsgStreamStatus.READY);
+  const [status, setStatus] = React.useState(EMsgStreamStatus.THINKING);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
 
     disposableCollection.push(
       msgStreamManager.onMsgListChange(sessionId)((msg: IMsgStreamChoices) => {
-        if (msg) {
+        if (msg && msgStreamManager.currentSessionId === sessionId) {
           const { delta } = msg;
           setChunk(delta.content);
         }
@@ -33,9 +33,8 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
 
     disposableCollection.push(
       msgStreamManager.onMsgStatus((status) => {
-        setStatus(status);
-
         if (msgStreamManager.currentSessionId === sessionId) {
+          setStatus(status);
           setIsError(status === EMsgStreamStatus.ERROR);
           setIsDone(status === EMsgStreamStatus.DONE);
         }
@@ -55,30 +54,25 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
     setContent(content + chunk);
   }, [chunk]);
 
-  const renderMsgList = useCallback(() => {
-    if (
-      (status === EMsgStreamStatus.THINKING || status === EMsgStreamStatus.READY) &&
-      msgStreamManager.currentSessionId === sessionId
-    ) {
-      return <Thinking></Thinking>;
-    }
-
-    const renderContent =
-      isDone && !content.trim() ? <span>我先不想了，有需要可以随时问我</span> : <CodeBlockWrapper text={content} />;
-
-    return (
+  const renderMsgList = useCallback(() => (
       <div className={styles.ai_chat_code_wrapper}>
         <div className={styles.render_text}>
-          {isError ? <span>当前与我互动的人太多，请稍后再试，感谢您的理解与支持</span> : renderContent}
+          {isError ? (
+            <span>当前与我互动的人太多，请稍后再试，感谢您的理解与支持</span>
+          ) : (
+            <CodeBlockWrapper text={content} />
+          )}
         </div>
       </div>
-    );
-  }, [content, isError, isDone, status, sessionId]);
+    ), [content, isError, isDone, status, sessionId]);
 
-  return renderMsgList();
-  // return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-  //   <Thinking>{renderMsgList()}</Thinking>
-  // ) : (
-  //   renderMsgList()
-  // );
+  return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
+    <Thinking status={status} message={content}>
+      {renderMsgList()}
+    </Thinking>
+  ) : (
+    <ThinkingResult status={status} message={content}>
+      {renderMsgList()}
+    </ThinkingResult>
+  );
 };

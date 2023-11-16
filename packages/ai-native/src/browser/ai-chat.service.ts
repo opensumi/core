@@ -195,6 +195,7 @@ export class AiChatService extends Disposable {
 
   public async messageWithStream(input: string, options: IAiBackServiceOption = {}, sessionId: string): Promise<void> {
     this.msgStreamManager.setCurrentSessionId(sessionId);
+    this.msgStreamManager.sendThinkingStatue();
 
     await this.aiBackService.requestStream(
       input,

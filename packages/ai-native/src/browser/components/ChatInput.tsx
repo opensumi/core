@@ -39,12 +39,14 @@ const optionsList: IBlockProps[] = [
     text: '优化代码',
   },
   {
-    icon: getIcon('search'),
+    // icon: getIcon('search'),
     name: InstructionEnum.aiSearchKey,
+    text: '搜索问题',
   },
   {
-    icon: getIcon('code'),
+    // icon: getIcon('code'),
     name: InstructionEnum.aiSumiKey,
+    text: 'IDE功能',
   },
 ];
 
@@ -89,10 +91,9 @@ const InstructionOptions = ({ onClick, bottom }) => {
   );
 };
 
-const ThemeWidget = ({ themeBlock, text }) => (
+const ThemeWidget = ({ themeBlock }) => (
   <div className={styles.theme_container}>
     <div className={styles.theme_block}>{themeBlock}</div>
-    {text && <div className={styles.theme_content}>{text}:</div>}
   </div>
 );
 
@@ -108,6 +109,7 @@ export interface IChatInputProps {
   value?: string;
   autoFocus?: boolean;
   theme?: string | null;
+  setTheme: (theme: string | null) => void;
 }
 
 // 指令命令激活组件
@@ -121,11 +123,13 @@ export const ChatInput = (props: IChatInputProps) => {
     disabled = false,
     defaultHeight = 32,
     autoFocus,
+    setTheme,
+    theme,
   } = props;
   const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
   const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);
-  const [slashWidget, setSlashWidget] = useState('');
+  // const [slashWidget, setSlashWidget] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [focus, setFocus] = useState(false);
   const [showExpand, setShowExpand] = useState(false);
@@ -136,6 +140,10 @@ export const ChatInput = (props: IChatInputProps) => {
       setValue(props.value || '');
     }
   }, [props.value]);
+
+  useEffect(() => {
+    setTheme(props.theme || '');
+  }, [props.theme]);
 
   useEffect(() => {
     acquireOptionsCheck(props.theme || '');
@@ -180,15 +188,13 @@ export const ChatInput = (props: IChatInputProps) => {
 
   const handleSend = useCallback(() => {
     let preText = '';
-    if (slashWidget) {
-      const text = optionsList.find(({ name }) => name === slashWidget)?.text;
-      preText = slashWidget + text || '' + '\n';
+    if (theme) {
+      preText = theme;
     }
 
     if (value.trim() && onSend && !disabled) {
       setValue('');
-      const val = slashWidget ? ` \`\`\`\n ${value} \`\`\`\n ` : value;
-      onSend(preText + val);
+      onSend(preText + value);
       isExpand ? resetStatus() : resetStatus(true);
     }
   }, [onSend, value]);
@@ -204,10 +210,10 @@ export const ChatInput = (props: IChatInputProps) => {
         if (match) {
           const keyword = match[0];
           if (optionsList.find(({ name }) => name === keyword)) {
-            setSlashWidget(keyword);
+            setTheme(keyword);
           }
         } else {
-          setSlashWidget('');
+          setTheme('');
         }
 
         if (inputRef && inputRef.current) {
@@ -230,6 +236,10 @@ export const ChatInput = (props: IChatInputProps) => {
         event.preventDefault();
         handleSend();
       }
+    } else if (event.key === 'Backspace') {
+      if (inputRef.current?.selectionEnd === 0 && inputRef.current?.selectionStart === 0) {
+        setTheme('');
+      }
     }
   };
 
@@ -246,7 +256,7 @@ export const ChatInput = (props: IChatInputProps) => {
     if (!expand) {
       const ele = document.querySelector('#ai_chat_left_container');
       // ai_chat_left_container - (padding + header_operate + border ) - theme_container - padding
-      const maxHeight = ele!.clientHeight - 68 - (slashWidget ? 32 : 0) - 16;
+      const maxHeight = ele!.clientHeight - 68 - (theme ? 32 : 0) - 16;
       setWrapperHeight(maxHeight);
     } else {
       setWrapperHeight(defaultHeight);
@@ -260,15 +270,13 @@ export const ChatInput = (props: IChatInputProps) => {
       setShowExpand(false);
     }
     setIsExpand(false);
-    setSlashWidget('');
+    setTheme('');
   };
 
   return (
     <div className={styles.chat_input_container}>
       {isShowOptions && <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />}
-      {slashWidget && (
-        <ThemeWidget themeBlock={slashWidget} text={optionsList.find(({ name }) => name === slashWidget)?.text} />
-      )}
+      {theme && <ThemeWidget themeBlock={theme} />}
       {showExpand && (
         <div className={styles.expand_icon} onClick={() => handleExpandClick()}>
           <Popover id={'ai_chat_input_expand'} title={isExpand ? '收起' : '展开全屏'}>

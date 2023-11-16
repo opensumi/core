@@ -17,10 +17,10 @@ import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
-import { CodeBlockWrapper } from './components/ChatEditor';
+import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
-import { EnhanceIcon } from './components/Icon';
+import { AILogoAvatar, EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
@@ -28,8 +28,6 @@ import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
 import cls from 'classnames';
-
-const AI_AVATAR = 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*wv3HTok2c58AAAAAAAAAAAAADhl8AQ/original';
 
 const createMessage = (position: string, title: string, text: string | React.ReactNode, className?: string) => ({
   position,
@@ -149,9 +147,16 @@ export const AiChatView = observer(() => {
       const preInputValue = message;
 
       setLoading(true);
+      const codeSendMessage = createMessage(
+        'right',
+        ME_NAME,
+        <CodeBlockWrapperInput text={preInputValue as string} />,
+        styles.chat_message_code,
+      );
 
-      preMessagelist.push(createMessage('right', ME_NAME, preInputValue));
+      preMessagelist.push(codeSendMessage);
       setMessageListData(preMessagelist);
+
       // 检查前缀 aiSearchKey
       if (typeof preInputValue === 'string') {
         let aiMessage;
@@ -186,7 +191,6 @@ export const AiChatView = observer(() => {
         }
 
         setLoading(false);
-
         return;
       }
     },
@@ -202,10 +206,6 @@ export const AiChatView = observer(() => {
     aiMenubarService.toggleRightPanel();
   }, [aiMenubarService]);
 
-  const handleUnresolved = () => {
-    window.alert('功能待实现');
-  };
-
   const handleThemeClick = (value) => {
     setTheme(value);
   };
@@ -215,16 +215,16 @@ export const AiChatView = observer(() => {
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>
-            <Avatar src={AI_AVATAR} className={styles.ai_chat_avatar_icon} />
+            <AILogoAvatar />
           </div>
           <span className={styles.title}>{AI_NAME}</span>
           <LineVertical height='200%' transform='scale(0.5)' />
           <span className={styles.des}>Chat</span>
         </div>
         <div className={styles.right}>
-          <Popover id={'ai-chat-header-setting'} title='设置'>
+          {/* <Popover id={'ai-chat-header-setting'} title='设置'>
             <EnhanceIcon className={getIcon('setting')} onClick={handleUnresolved} />
-          </Popover>
+          </Popover> */}
           <Popover id={'ai-chat-header-clear'} title='清空'>
             <EnhanceIcon className={getIcon('clear')} onClick={handleClear} />
           </Popover>
@@ -287,23 +287,23 @@ export const AiChatView = observer(() => {
             <ChatInput
               onSend={(value) => handleSend({ message: value })}
               disabled={loading}
-              placeholder={'可以问我任何问题，或键入主题 "/"'}
+              placeholder={'请输入或者粘贴代码'}
               enableOptions={true}
               theme={theme}
+              setTheme={setTheme}
             />
           </div>
         </div>
-        <div className={styles.right_bar}>
+        {/* <div className={styles.right_bar}>
           <ul className={styles.chat_list}>
             <li className={styles.active_chat_bar}>
-              {/* <Icon className={getExternalIcon('comment-discussion')} /> */}
               <Avatar
                 src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*CfffRK50dpQAAAAAAAAAAAAADhl8AQ/original'
                 className={styles.ai_chat_bar_icon}
               />
             </li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -391,7 +391,7 @@ const AISearch = async (input, aiChatService: AiChatService) => {
 const AIStreamReply = async (prompt: string, aiChatService: AiChatService) => {
   try {
     const uid = uuid(6);
-    await aiChatService.messageWithStream(prompt, {}, uid);
+    aiChatService.messageWithStream(prompt, {}, uid);
 
     const aiMessage = createMessageByAI(
       <StreamMsgWrapper sessionId={uid}></StreamMsgWrapper>,
