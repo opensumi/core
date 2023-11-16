@@ -15,6 +15,7 @@ export const enum EMsgStreamStatus {
   THINKING,
   DONE,
   ERROR,
+  PAUSE,
 }
 
 @Injectable({ multiple: false })
@@ -62,6 +63,10 @@ export class MsgStreamManager extends Disposable {
 
   public sendThinkingStatue(): void {
     this.status = EMsgStreamStatus.THINKING;
+  }
+
+  public sendPauseStatue(): void {
+    this.status = EMsgStreamStatus.PAUSE;
   }
 
   public recordMessage(answerId: string, msg: IMsgStreamChoices): void {

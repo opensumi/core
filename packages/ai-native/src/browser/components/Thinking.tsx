@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
@@ -8,11 +8,15 @@ import { AiChatService } from '../ai-chat.service';
 import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
+import { EnhanceIcon } from './Icon';
+import { Thumbs } from './Thumbs';
 
 interface ITinkingProps {
   children?: React.ReactNode;
   status?: EMsgStreamStatus;
   message?: string;
+  onRegenerate?: () => void;
+  sessionId?: string;
 }
 
 export const Thinking = ({ children, status, message }: ITinkingProps) => {
@@ -61,14 +65,23 @@ export const Thinking = ({ children, status, message }: ITinkingProps) => {
   );
 };
 
-export const ThinkingResult = ({ children, message, status }: ITinkingProps) => {
+export const ThinkingResult = ({ children, message, status, onRegenerate, sessionId }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
-  const handleReset = useCallback(() => {
-    // aiChatService.launchChatMessage({
-    //   message,
-    // });
-  }, []);
+  useEffect(() => {
+    const dispose = aiChatService.onChangeSessionId((sid) => {
+      setLatestSessionId(sid);
+    });
+
+    return () => dispose.dispose();
+  }, [aiChatService]);
+
+  const handleRegenerate = useCallback(() => {
+    if (onRegenerate) {
+      onRegenerate();
+    }
+  }, [onRegenerate]);
 
   const renderContent = useCallback(() => {
     if ((status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && !message?.trim()) {
@@ -78,18 +91,21 @@ export const ThinkingResult = ({ children, message, status }: ITinkingProps) => 
     return children;
   }, [status, message, children]);
 
+  const isRenderRegenerate = useMemo(() => aiChatService.latestSessionId === sessionId, [sessionId, latestSessionId]);
+
   return (
     <div className={styles.thinking_container}>
       <div className={styles.content}>{renderContent()}</div>
-      <div className={styles.bottom_container}>
-        <div className={styles.reset} onClick={handleReset}>
-          <Icon className={`${getIcon('refresh')} ${styles.transform}`}></Icon>
-          <span>重新生成</span>
+      {isRenderRegenerate ? (
+        <div className={styles.bottom_container}>
+          <div className={styles.reset}>
+            <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={handleRegenerate}>
+              <span>重新生成</span>
+            </EnhanceIcon>
+          </div>
+          <div className={styles.thumbs}>{/* <Thumbs /> */}</div>
         </div>
-        {/* <div className={styles.thumbs}>
-          <Thumbs/>
-        </div> */}
-      </div>
+      ) : null}
     </div>
   );
 };

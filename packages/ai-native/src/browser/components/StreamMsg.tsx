@@ -10,14 +10,20 @@ import { CodeBlockWrapper } from './ChatEditor';
 import * as styles from './components.module.less';
 import { Thinking, ThinkingResult } from './Thinking';
 
-export const StreamMsgWrapper = (props: { sessionId: string }) => {
-  const { sessionId } = props;
+interface IStreamMsgWrapperProps {
+  sessionId: string;
+  prompt: string;
+}
+
+export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
+  const { sessionId, prompt } = props;
   const [chunk, setChunk] = React.useState('');
   const [content, setContent] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [isDone, setIsDone] = React.useState<boolean>(false);
   const [status, setStatus] = React.useState(EMsgStreamStatus.THINKING);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -46,6 +52,14 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
     return () => disposableCollection.dispose();
   }, [sessionId]);
 
+  const clear = useCallback(() => {
+    setChunk('');
+    setContent('');
+    setIsError(false);
+    setIsDone(false);
+    setStatus(EMsgStreamStatus.THINKING);
+  }, []);
+
   useEffect(() => {
     if (!chunk) {
       return;
@@ -54,7 +68,13 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
     setContent(content + chunk);
   }, [chunk]);
 
-  const renderMsgList = useCallback(() => (
+  const handleRegenerate = useCallback(() => {
+    clear();
+    aiChatService.messageWithStream(prompt, {}, sessionId);
+  }, [prompt]);
+
+  const renderMsgList = useCallback(
+    () => (
       <div className={styles.ai_chat_code_wrapper}>
         <div className={styles.render_text}>
           {isError ? (
@@ -64,14 +84,16 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
           )}
         </div>
       </div>
-    ), [content, isError, isDone, status, sessionId]);
+    ),
+    [content, isError, isDone, status, sessionId],
+  );
 
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
     <Thinking status={status} message={content}>
       {renderMsgList()}
     </Thinking>
   ) : (
-    <ThinkingResult status={status} message={content}>
+    <ThinkingResult status={status} message={content} onRegenerate={handleRegenerate} sessionId={sessionId}>
       {renderMsgList()}
     </ThinkingResult>
   );
