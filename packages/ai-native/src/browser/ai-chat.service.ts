@@ -21,10 +21,14 @@ export interface IAiSearchResponse extends IAiBackServiceResponse {
   urlMessage?: string;
 }
 
+export interface IAiStreamMessageService<T extends IAiBackServiceResponse<string>> extends IAiBackService<T> {
+  destroyStreamRequest?: (sessionId: string) => Promise<void>;
+}
+
 @Injectable()
 export class AiChatService extends Disposable {
   @Autowired(AiBackSerivcePath)
-  public aiBackService: IAiBackService<IAiSearchResponse>;
+  private aiBackService: IAiStreamMessageService<IAiSearchResponse>;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -72,6 +76,12 @@ export class AiChatService extends Disposable {
   public cancelChatViewToken() {
     this.cancelIndicatorChatView.cancel();
     this.cancelIndicatorChatView = new CancellationTokenSource();
+  }
+
+  public async destroyStreamRequest(sessionId: string) {
+    if (this.aiBackService.destroyStreamRequest) {
+      await this.aiBackService.destroyStreamRequest(sessionId);
+    }
   }
 
   public async switchAIService(input: string, prompt = '') {
@@ -175,7 +185,7 @@ export class AiChatService extends Disposable {
         const { id, choices } = msgObj;
         this.msgStreamManager.recordMessage(id, choices[0]);
       } else {
-        this.msgStreamManager.sendError();
+        this.msgStreamManager.sendErrorStatue();
       }
     } catch (error) {
       new Error(`onMessage error: ${error}`);
@@ -185,7 +195,14 @@ export class AiChatService extends Disposable {
   public async messageWithStream(input: string, options: IAiBackServiceOption = {}, sessionId: string): Promise<void> {
     this.msgStreamManager.setCurrentSessionId(sessionId);
 
-    await this.aiBackService.requestStream(input, options, this.cancelIndicatorChatView.token);
+    await this.aiBackService.requestStream(
+      input,
+      {
+        ...options,
+        sessionId,
+      },
+      this.cancelIndicatorChatView.token,
+    );
   }
 
   public async message(input: string, options: IAiBackServiceOption = {}) {

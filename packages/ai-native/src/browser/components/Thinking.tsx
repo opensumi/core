@@ -8,11 +8,19 @@ import { AiChatService } from '../ai-chat.service';
 
 import * as styles from './components.module.less';
 
-export const Thinking = ({ children }: { children?: React.ReactNode }) => {
+interface ITinkingProps {
+  children?: React.ReactNode;
+  onPause?: () => void;
+}
+
+export const Thinking = ({ children, onPause }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   const handlePause = useCallback(() => {
     aiChatService.cancelChatViewToken();
+    if (onPause) {
+      onPause();
+    }
   }, []);
 
   return (

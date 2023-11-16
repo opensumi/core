@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 
+import { AiChatService } from '../ai-chat.service';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
 import { CodeBlockWrapper } from './ChatEditor';
@@ -16,6 +17,7 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
   const [isError, setIsError] = React.useState<boolean>(false);
   const [status, setStatus] = React.useState(EMsgStreamStatus.READY);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -67,10 +69,13 @@ export const StreamMsgWrapper = (props: { sessionId: string }) => {
     [content, isError],
   );
 
-  // return  <Thinking>{renderMsgList()}</Thinking>;
+  const handlePause = useCallback(async () => {
+    await aiChatService.destroyStreamRequest(sessionId);
+    msgStreamManager.sendDoneStatue();
+  }, [sessionId]);
 
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <Thinking>{renderMsgList()}</Thinking>
+    <Thinking onPause={handlePause}>{renderMsgList()}</Thinking>
   ) : (
     renderMsgList()
   );
