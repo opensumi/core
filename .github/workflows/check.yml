@@ -16,9 +16,11 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-        node-version: [16.x]
+      include:
+        - os: ubuntu-latest
+          node-version: 16.x
+        - os: macos-latest
+          node-version: 14.x
 
     steps:
       - uses: actions/checkout@v4
