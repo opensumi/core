@@ -199,6 +199,7 @@ export const AiChatView = observer(() => {
 
   const handleClear = React.useCallback(() => {
     aiChatService.cancelChatViewToken();
+    aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
     setMessageListData([firstMsg]);
   }, [messageListData]);
 
@@ -391,10 +392,10 @@ const AISearch = async (input, aiChatService: AiChatService) => {
 const AIStreamReply = async (prompt: string, aiChatService: AiChatService) => {
   try {
     const uid = uuid(6);
-    await aiChatService.messageWithStream(prompt, {}, uid);
+    aiChatService.messageWithStream(prompt, {}, uid);
 
     const aiMessage = createMessageByAI(
-      <StreamMsgWrapper sessionId={uid}></StreamMsgWrapper>,
+      <StreamMsgWrapper sessionId={uid} prompt={prompt}></StreamMsgWrapper>,
       styles.chat_with_more_actions,
     );
 
