@@ -221,7 +221,15 @@ const CodeBlock = ({ content }: { content: string }) => {
   return <>{render}</>;
 };
 
-export const CodeBlockWrapper = ({ text }: { text: string }) => {
+export const CodeBlockWrapper = ({ text }: { text: string }) => (
+  <div className={styles.ai_chat_code_wrapper}>
+    <div className={styles.render_text}>
+      <CodeBlock content={text} />
+    </div>
+  </div>
+);
+
+export const CodeBlockWrapperInput = ({ text }: { text: string }) => {
   const [tag, setTag] = useState<string>('');
   const [txt, setTxt] = useState<string>(text);
 

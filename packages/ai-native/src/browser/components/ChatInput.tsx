@@ -39,12 +39,14 @@ const optionsList: IBlockProps[] = [
     text: '优化代码',
   },
   {
-    icon: getIcon('search'),
+    // icon: getIcon('search'),
     name: InstructionEnum.aiSearchKey,
+    text: '搜索问题',
   },
   {
-    icon: getIcon('code'),
+    // icon: getIcon('code'),
     name: InstructionEnum.aiSumiKey,
+    text: 'IDE功能',
   },
 ];
 

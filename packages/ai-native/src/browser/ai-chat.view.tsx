@@ -17,7 +17,7 @@ import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
-import { CodeBlockWrapper } from './components/ChatEditor';
+import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { AILogoAvatar, EnhanceIcon } from './components/Icon';
@@ -149,7 +149,7 @@ export const AiChatView = observer(() => {
       const codeSendMessage = createMessage(
         'right',
         ME_NAME,
-        <CodeBlockWrapper text={preInputValue as string} />,
+        <CodeBlockWrapperInput text={preInputValue as string} />,
         styles.chat_message_code,
       );
 
