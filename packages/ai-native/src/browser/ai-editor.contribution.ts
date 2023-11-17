@@ -262,7 +262,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         });
         this.aiInlineContentWidget?.layoutContentWidget();
 
-        this.aiInlineChatOperationDisposed.addDispose(
+        this.aiInlineChatOperationDisposed.addDispose([
           this.aiInlineChatService.onAccept(() => {
             this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
             monacoEditor.getModel()?.pushEditOperations(
@@ -279,7 +279,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               this.disposeAllWidget();
             }, 110);
           }),
-        );
+          this.aiInlineChatService.onThumbs((isLike: boolean) => {
+            this.aiReporter.end(relationId, { isLike });
+          }),
+        ]);
       }
 
       return answer;

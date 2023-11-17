@@ -10,10 +10,11 @@ import { EnhanceIcon } from './Icon';
 interface ThumbsProps {
   relationId?: string;
   aiReporterService?: IAIReporter;
+  onClick?: (isLike?: boolean) => void;
 }
 
 export const Thumbs = (props: ThumbsProps) => {
-  const { relationId, aiReporterService } = props;
+  const { relationId, aiReporterService, onClick } = props;
 
   const [thumbsupIcon, setThumbsupIcon] = useState('thumbs');
   const [thumbsdownIcon, setThumbsdownIcon] = useState('thumbsdown');
@@ -21,6 +22,9 @@ export const Thumbs = (props: ThumbsProps) => {
   const report = useCallback((isLike: boolean) => {
     if (relationId && aiReporterService) {
       aiReporterService.end(relationId, { isLike });
+    }
+    if (onClick) {
+      onClick(isLike);
     }
   }, [relationId, aiReporterService]);
 
