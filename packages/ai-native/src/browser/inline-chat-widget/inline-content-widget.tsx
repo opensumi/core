@@ -37,7 +37,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   @Autowired(AiInlineChatService)
   private aiInlineChatService: AiInlineChatService;
 
-  allowEditorOverflow?: boolean | undefined = true;
+  allowEditorOverflow?: boolean | undefined = false;
   suppressMouseDown?: boolean | undefined = true;
 
   private domNode: HTMLElement;
@@ -51,12 +51,34 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
 
     this.hide();
     this.renderView();
+
+    this.addDispose(
+      this.editor.onDidLayoutChange(() => {
+        if (this.isOutOfArea()) {
+          this.dispose();
+        }
+      }),
+    );
   }
 
   override dispose(): void {
     this.hide();
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
     super.dispose();
+  }
+
+  /**
+   * 如果编辑器区域宽度小于 270px，则不显示
+   * 不包括左侧 content width 和右侧的 minimap width
+   */
+  private isOutOfArea(): boolean {
+    const visibleWidth = 270;
+    const contentLeftWith = this.editor.getOption(monaco.editor.EditorOption.layoutInfo).contentLeft;
+    const minimapWith = this.editor.getOption(monaco.editor.EditorOption.layoutInfo).minimap.minimapWidth;
+    if (this.editor.getLayoutInfo().width - contentLeftWith - minimapWith < visibleWidth) {
+      return true;
+    }
+    return false;
   }
 
   private renderView(): void {
@@ -107,12 +129,17 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
 
       this.domNode.style.padding = '6px';
       this.domNode.style.zIndex = '999';
+      this.domNode.style.paddingRight = '50px';
     }
     return this.domNode;
   }
 
   getPosition(): monaco.editor.IContentWidgetPosition | null {
     if (!this.options) {
+      return null;
+    }
+
+    if (this.isOutOfArea()) {
       return null;
     }
 
@@ -163,10 +190,10 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     let newColumn = column;
 
     if (curNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-      this.domNode.style.marginTop = '-18px';
+      // this.domNode.style.marginTop = '-18px';
       newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
     } else if (curNonWhitespaceColumn >= preNonWhitespaceColumn) {
-      this.domNode.style.marginTop = '18px';
+      // this.domNode.style.marginTop = '18px';
       newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
     } else {
       newColumn = Math.min(preNonWhitespaceColumn, nextNonWhitespaceColumn);
@@ -178,6 +205,10 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
         newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
         newLineNumber = lineNumber + 1;
       }
+    }
+
+    if (lineNumber === 1 || lineNumber === 2) {
+      newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
     }
 
     return {
@@ -226,7 +257,8 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     if (startPosition.lineNumber === endPosition.lineNumber) {
       return this.recheckPosition(
         cursorPosition.lineNumber,
-        this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber),
+        // this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber),
+        cursorPosition.column,
       );
     }
 
@@ -236,12 +268,11 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 2),
       );
 
-      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn) {
+      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn + 10) {
         return this.toAbovePosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
       }
 
       for (let i = startPosition.lineNumber; i <= endPosition.lineNumber; i++) {
-        // 最上面两行不考虑向上展示，会被挡到
         if (this.isProtrudeAbove(i)) {
           targetLine = i;
           direction = 'above';
@@ -259,7 +290,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber + 2),
       );
 
-      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn) {
+      if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn + 10) {
         return this.toBelowPosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
       }
 

@@ -48,6 +48,7 @@ import {
   AI_EXPLAIN_DEBUG_COMMANDS,
   AI_EXPLAIN_TERMINAL_COMMANDS,
   AI_INLINE_CHAT_VISIBLE,
+  AI_INLINE_COMPLETION_REPORTET,
   AI_RUN_DEBUG_COMMANDS,
 } from '../common/command';
 
@@ -282,6 +283,13 @@ export class AiNativeCoreContribution
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value) => {
         this.aiChatService.launchInlineChatVisible(value);
+      },
+    });
+
+    commands.registerCommand(AI_INLINE_COMPLETION_REPORTET, {
+      execute: (value) => {
+        // 补全埋点统计
+        // console.log('AI_INLINE_COMPLETION_REPORTET', value)
       },
     });
   }
