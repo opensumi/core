@@ -161,11 +161,13 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
 
   private currentLookFor = '';
 
-  open(prefix: string): void {
+  open(prefix: string, defaultInput?: string): void {
     const handler = this.handlers.getHandlerOrDefault(prefix);
     // 恢复同一 tab 上次的输入，连续输入相同的快捷键也可以保留历史输入
     let shouldSelect = false;
-    if (
+    if (defaultInput) {
+      prefix += defaultInput;
+    } else if (
       this.corePreferences['workbench.quickOpen.preserveInput'] &&
       handler &&
       handler === this.currentHandler &&

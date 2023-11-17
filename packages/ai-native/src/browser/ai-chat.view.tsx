@@ -3,7 +3,7 @@ import * as React from 'react';
 import { MessageList, SystemMessage, ITextMessageProps } from 'react-chat-elements';
 
 import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown/index';
-import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, QUICK_OPEN_COMMANDS } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
@@ -15,7 +15,7 @@ import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
-import { ERROR_RESPONSE, NOTFOUND_COMMAND } from './common-reponse';
+import { NOTFOUND_COMMAND } from './common-reponse';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
@@ -218,7 +218,7 @@ export const AiChatView = observer(() => {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput!.type === AISerivceType.Sumi) {
         aiMessage = await aiSumiService.searchCommand(userInput!.message!);
-        aiMessage = await AIWithCommandReply(aiMessage, opener, replayCommandProps, async () => handleCommonRetry(userInput, replayCommandProps));
+        aiMessage = await AIWithCommandReply(userInput.message, aiMessage, opener, replayCommandProps, async () => handleCommonRetry(userInput, replayCommandProps));
       } else if (userInput!.type === AISerivceType.GPT) {
         const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
         aiMessage = await AIStreamReply(withPrompt, replayCommandProps);
@@ -546,6 +546,7 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
 
 // 带有命令按钮的 AI 回复
 const AIWithCommandReply = async (
+  userInput: string,
   commandRes: IAiBackServiceResponse<Command>,
   opener: CommandOpener,
   params: ReplayComponentParam,
@@ -563,7 +564,18 @@ const AIWithCommandReply = async (
     return createMessageByAI({
       id: uuid(6),
       relationId,
-      text: (<ChatMoreActions sessionId={relationId} onRetry={onRetry}>{failedText}</ChatMoreActions>),
+      text: (
+        <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
+          {
+            failedText === NOTFOUND_COMMAND ? (
+              <div>
+                <p>{failedText}</p>
+                <Button onClick={() => opener.open(URI.from({ scheme: 'command', path: QUICK_OPEN_COMMANDS.OPEN.id, query: JSON.stringify([userInput]) }))}>打开命令面板</Button>
+              </div>
+            ) : failedText
+          }
+        </ChatMoreActions>
+      ),
     });
   }
 
