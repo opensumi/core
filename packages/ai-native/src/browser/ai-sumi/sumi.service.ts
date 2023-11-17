@@ -1222,6 +1222,8 @@ export class AiSumiService {
   private readonly loggerManagerClient: ILoggerManagerClient;
 
   protected logger: ILogServiceClient;
+  // 用来记录查找失败的，因为用 any，在 catch 里不好处理，加个变量记录下
+  private findCommandRequestErrorCode = 0;
 
   constructor() {
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
@@ -1277,7 +1279,12 @@ export class AiSumiService {
   }
 
   public async searchCommand(input: string): Promise<IAiBackServiceResponse<Command>> {
-    return this.searchGroup(input);
+    this.findCommandRequestErrorCode = 0;
+    try {
+      return this.searchGroup(input);
+    } catch {
+      return { errorCode: 1 };
+    }
   }
 
   public async searchGroup(input: string) {
@@ -1285,7 +1292,7 @@ export class AiSumiService {
 
     const groupReply = await this.requestToModel(enPrompt);
 
-    if (groupReply.errorCode) {
+    if (groupReply?.errorCode) {
       return { errorCode: groupReply.errorCode, errorMsg: groupReply.errorMsg };
     }
 
@@ -1319,7 +1326,7 @@ export class AiSumiService {
       return { data: commands.find((c) => c.id === command?.data) };
     } catch (e) {
       this.logger.error('Find command failed: ', e.message);
-      return { errorCode: 1 };
+      return { errorCode: this.findCommandRequestErrorCode };
     }
   }
 
@@ -1332,6 +1339,11 @@ export class AiSumiService {
     });
 
     const commandReply = await this.requestToModel(prompt);
+
+    if (commandReply.errorCode) {
+      this.findCommandRequestErrorCode = commandReply.errorCode;
+    }
+
     const answerCommand = this.matchCommand(commandReply.data || '');
 
     if (answerCommand && commands.find((c) => c.id === answerCommand)) {
