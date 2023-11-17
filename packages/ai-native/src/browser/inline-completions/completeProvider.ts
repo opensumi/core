@@ -6,13 +6,15 @@ import { ICodeEditor, IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { IAIReporter } from '../../common';
+import { AI_INLINE_COMPLETION_REPORTET } from '../../common/command';
+
 import { CompletionRequestBean, CompletionResultModel, CodeModel, InlayList } from './model/competionModel';
 import { InlineCompletionItem } from './model/competionModel';
 import promptCache from './promptCache';
 import { prePromptHandler, preSuffixHandler } from './provider';
 import { AiCompletionsService } from './service/ai-completions.service';
 import { MESSAGE_SHOW_TIME, getPromptMessageText, getMoreStr } from './utils/message';
-
 
 let lastRequestId: any;
 let timer: any;
@@ -41,7 +43,7 @@ class RequestImp {
     this.isCancelFlag = false;
   }
   // 发送请求
-  async sendRequest(codefuseService: AiCompletionsService) {
+  async sendRequest(codefuseService: AiCompletionsService, aiReporter: IAIReporter) {
     const { editor } = this;
     let beginRequestTime = Date.now();
     if (!editor) {
@@ -106,7 +108,9 @@ class RequestImp {
     } else {
       // 不存在缓存发起请求
       try {
+        // aiReporter.start();
         rs = await codefuseService.complete(completionRequestBean);
+        // aiReporter.start();
         status = 0;
       } catch (err: any) {
         return { items: [] };
@@ -130,19 +134,21 @@ class RequestImp {
     if (this.isCancelFlag) {
       return [];
     }
-    return this.pushResultAndRegist(rs, cursorPosition);
+    return this.pushResultAndRegist(rs, aiReporter);
   }
   /**
    * 将补全结果推给用户并注册{@link COMMAND_ACCEPT} 事件
    * @param codeModelList
    */
-  pushResultAndRegist(rs: CompletionResultModel, cursorPosition: monaco.Position): Array<InlineCompletionItem> {
+  pushResultAndRegist(rs: CompletionResultModel, aiReporter: IAIReporter): Array<InlineCompletionItem> {
     let result = new Array<InlineCompletionItem>();
     for (const codeModel of rs.codeModelList) {
       let contentText = codeModel.content;
 
       while (true) {
-        if (!contentText.endsWith('\n') || contentText.length < 1) {break;}
+        if (!contentText.endsWith('\n') || contentText.length < 1) {
+          break;
+        }
         contentText = contentText.slice(0, -1);
       }
 
@@ -169,7 +175,14 @@ class RequestImp {
         //   cursorPosition
         // ),
         sessionId: rs.sessionId,
+        command: {
+          id: AI_INLINE_COMPLETION_REPORTET.id,
+          title: '',
+          arguments: ['123123123'],
+        },
       });
+
+      // aiReporter.end();
     }
     lastRequestId = rs.sessionId;
     // if (rs.codeModelList.length) setPromptMessage(completionType, content)
@@ -182,7 +195,7 @@ class RequestImp {
 
 class ReqStack {
   queue: any[];
-  constructor(private readonly aiCompletionsService) {
+  constructor(private readonly aiCompletionsService, private readonly aiReporter) {
     this.queue = [];
   }
   addReq(reqRequest: RequestImp) {
@@ -193,7 +206,7 @@ class ReqStack {
       return;
     }
     const fn = this.queue.pop();
-    return fn.sendRequest(this.aiCompletionsService);
+    return fn.sendRequest(this.aiCompletionsService, this.aiReporter);
   }
   cancleRqe() {
     if (this.queue.length === 0) {
@@ -224,6 +237,9 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
   @Autowired(AiCompletionsService)
   private aiCompletionsService: AiCompletionsService;
 
+  @Autowired(IAIReporter)
+  private aiReporter: IAIReporter;
+
   isManual: boolean;
   isDelEvent: boolean;
   reqStack: ReqStack;
@@ -233,7 +249,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
 
     this.isManual = false;
     this.isDelEvent = false;
-    this.reqStack = new ReqStack(this.aiCompletionsService);
+    this.reqStack = new ReqStack(this.aiCompletionsService, this.aiReporter);
 
     const { monacoEditor } = editor;
 
