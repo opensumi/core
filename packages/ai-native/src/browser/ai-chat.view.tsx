@@ -9,12 +9,13 @@ import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-ope
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum, IAIReporter } from '../common';
+import { AISerivceType, IChatMessageStructure, InstructionEnum, IAIReporter, IAiBackServiceResponse } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
+import { ERROR_RESPONSE, NOTFOUND_COMMAND } from './common-reponse';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
@@ -22,10 +23,9 @@ import { AILogoAvatar, EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
-import { MsgStreamManager } from './model/msg-stream-manager';
+import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
-
 interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
   role: 'user' | 'ai';
   relationId: string;
@@ -292,7 +292,7 @@ export const AiChatView = observer(() => {
                   title={AI_NAME}
                   className={styles.smsg}
                   // @ts-ignore
-                  text={<Thinking />}
+                  text={<Thinking status={EMsgStreamStatus.THINKING} />}
                 ></SystemMessage>
               </div>
             )}
@@ -529,26 +529,28 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
 };
 
 // 带有命令按钮的 AI 回复
-const AIWithCommandReply = async (command: Command, opener: CommandOpener, params: ReplayComponentParam) => {
+const AIWithCommandReply = async (
+  commandRes: IAiBackServiceResponse<Command>,
+  opener: CommandOpener,
+  params: ReplayComponentParam,
+) => {
   const { aiChatService, aiReporter, relationId, startTime } = params;
 
-  aiReporter.end(relationId, {
-    replytime: +new Date() - startTime,
-    success: true,
-    msgType: AISerivceType.Sumi,
-    message: command?.id,
-  });
-
-  if (!command) {
+  const failedText = commandRes.errorCode ? ERROR_RESPONSE : !commandRes.data ? NOTFOUND_COMMAND : '';
+  if (failedText) {
+    aiReporter.end(relationId, {
+      replytime: +new Date() - startTime,
+      success: false,
+      msgType: AISerivceType.Sumi,
+    });
     return createMessageByAI({
       id: uuid(6),
       relationId,
-      text: '未找到合适的功能',
+      text: failedText,
     });
   }
 
-  const { labelLocalized, label, delegate, id } = command;
-  const uid = uuid(6);
+  const { labelLocalized, label, delegate, id } = commandRes.data as Command;
 
   function excuteCommand() {
     let success = true;
@@ -562,14 +564,14 @@ const AIWithCommandReply = async (command: Command, opener: CommandOpener, param
       replytime: +new Date() - startTime,
       success: true,
       msgType: AISerivceType.Sumi,
-      message: command.id,
+      message: id,
       useCommand: true,
       useCommandSuccess: success,
     });
   }
 
   const aiMessage = createMessageByAI({
-    id: uid,
+    id: uuid(6),
     relationId,
     text: (
       <ChatMoreActions sessionId={relationId}>
