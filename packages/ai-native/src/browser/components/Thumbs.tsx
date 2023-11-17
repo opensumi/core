@@ -16,8 +16,8 @@ interface ThumbsProps {
 export const Thumbs = (props: ThumbsProps) => {
   const { relationId, aiReporterService, onClick } = props;
 
-  const [thumbsupIcon, setThumbsupIcon] = useState('thumbs');
-  const [thumbsdownIcon, setThumbsdownIcon] = useState('thumbsdown');
+  const [thumbsupIcon, setThumbsupIcon] = useState<boolean | string>('thumbs');
+  const [thumbsdownIcon, setThumbsdownIcon] = useState<boolean | string>('thumbsdown');
 
   const report = useCallback((isLike: boolean) => {
     if (relationId && aiReporterService) {
@@ -32,11 +32,13 @@ export const Thumbs = (props: ThumbsProps) => {
     // only click once
     if (type === 'up' && thumbsupIcon === 'thumbs') {
       setThumbsupIcon('thumbs-fill');
+      setThumbsdownIcon(false);
       report(true);
     }
 
     if (type === 'down' && thumbsdownIcon === 'thumbsdown') {
       setThumbsdownIcon('thumbsdown-fill');
+      setThumbsupIcon(false);
       report(false);
     }
   }, [ thumbsupIcon, thumbsdownIcon]);
@@ -45,12 +47,20 @@ export const Thumbs = (props: ThumbsProps) => {
 
   return (
     <>
-      <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
-        <EnhanceIcon onClick={() => handleClick('up')} className={getExternalIcon(thumbsupIcon, KTICON_OWNER)} />
-      </Popover>
-      <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
-        <EnhanceIcon onClick={() => handleClick('down')} className={getExternalIcon(thumbsdownIcon, KTICON_OWNER)} />
-      </Popover>
+      {
+        typeof thumbsupIcon === 'string' && (
+          <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
+            <EnhanceIcon onClick={() => handleClick('up')} className={getExternalIcon(thumbsupIcon, KTICON_OWNER)} />
+          </Popover>
+        )
+      }
+      {
+        typeof thumbsdownIcon === 'string' && (
+          <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
+            <EnhanceIcon onClick={() => handleClick('down')} className={getExternalIcon(thumbsdownIcon, KTICON_OWNER)} />
+          </Popover>
+        )
+      }
     </>
   );
 };
