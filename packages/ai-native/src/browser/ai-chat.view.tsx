@@ -41,6 +41,7 @@ interface ReplayComponentParam {
   aiReporter: IAIReporter;
   relationId: string;
   startTime: number;
+  isRetry?: boolean;
 }
 
 const createMessage = (message: MessageData) => ({
@@ -194,15 +195,6 @@ export const AiChatView = observer(() => {
       setMessageListData(preMessagelist);
       updateState({});
 
-      await handleReply(userInput, relationId, startTime);
-    },
-    [messageListData, containerRef, loading],
-  );
-
-  const handleReply = React.useCallback(
-    async (userInput: { type: AISerivceType; message: string }, relationId, startTime) => {
-      let aiMessage;
-
       const replayCommandProps = {
         aiChatService,
         aiReporter,
@@ -211,13 +203,22 @@ export const AiChatView = observer(() => {
         startTime,
       };
 
+      await handleReply(userInput, replayCommandProps);
+    },
+    [messageListData, containerRef, loading],
+  );
+
+  const handleReply = React.useCallback(
+    async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
+      let aiMessage;
+
       if (userInput!.type === AISerivceType.SearchDoc) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput!.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput!.type === AISerivceType.Sumi) {
         aiMessage = await aiSumiService.searchCommand(userInput!.message!);
-        aiMessage = await AIWithCommandReply(aiMessage, opener, replayCommandProps, async () => handleCommonRetry(userInput, relationId, startTime));
+        aiMessage = await AIWithCommandReply(aiMessage, opener, replayCommandProps, async () => handleCommonRetry(userInput, replayCommandProps));
       } else if (userInput!.type === AISerivceType.GPT) {
         const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
         aiMessage = await AIStreamReply(withPrompt, replayCommandProps);
@@ -243,12 +244,13 @@ export const AiChatView = observer(() => {
       setLoading(false);
     }, [messageListData]);
 
-  const handleCommonRetry = React.useCallback(async (userInput: { type: AISerivceType; message: string }, relationId, startTime) => {
+  const handleCommonRetry = React.useCallback(async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
     setLoading(true);
     messageListData.pop();
     setMessageListData([...messageListData]);
 
-    await handleReply(userInput, relationId, startTime);
+    const startTime = +new Date();
+    await handleReply(userInput, { ...replayCommandProps, startTime, isRetry: true });
   }, [messageListData]);
 
   const handleClear = React.useCallback(() => {
@@ -549,17 +551,15 @@ const AIWithCommandReply = async (
   params: ReplayComponentParam,
   onRetry: () => Promise<void>
 ) => {
-  const { aiChatService, aiReporter, relationId, startTime } = params;
+  const { aiChatService, aiReporter, relationId, startTime, isRetry } = params;
 
   aiChatService.setLatestSessionId(relationId);
 
   const failedText = commandRes.errorCode ? ERROR_RESPONSE : !commandRes.data ? NOTFOUND_COMMAND : '';
+
+  aiReporter.end(relationId, { replytime: +new Date() - startTime, success: !!failedText, msgType: AISerivceType.Sumi, isRetry });
+
   if (failedText) {
-    aiReporter.end(relationId, {
-      replytime: +new Date() - startTime,
-      success: false,
-      msgType: AISerivceType.Sumi,
-    });
     return createMessageByAI({
       id: uuid(6),
       relationId,
@@ -584,6 +584,7 @@ const AIWithCommandReply = async (
       message: id,
       useCommand: true,
       useCommandSuccess: success,
+      isRetry,
     });
   }
 
