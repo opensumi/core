@@ -43,6 +43,10 @@ export class AiInlineChatService {
   public readonly _onRegenerate = new Emitter<void>();
   public readonly onRegenerate: Event<void> = this._onRegenerate.event;
 
+  // 点赞点踩
+  public readonly _onThumbs = new Emitter<boolean>();
+  public readonly onThumbs: Event<boolean> = this._onThumbs.event;
+
   public isLoading(): boolean {
     return this._status === EInlineChatStatus.THINKING;
   }

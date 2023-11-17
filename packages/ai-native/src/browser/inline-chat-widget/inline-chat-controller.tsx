@@ -8,6 +8,7 @@ import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../components
 import { LineVertical } from '../components/lineVertical';
 import { Loading } from '../components/Loading';
 import { EnhancePopover } from '../components/Popover';
+import { Thumbs } from '../components/Thumbs';
 
 import * as styles from './inline-chat.module.less';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
@@ -110,6 +111,10 @@ const AiInlineResult = () => {
     aiInlineChatService._onRegenerate.fire();
   }, []);
 
+  const handleThumbs = useCallback((islike: boolean) => {
+    aiInlineChatService._onThumbs.fire(islike);
+  }, []);
+
   return (
     <div className={styles.ai_inline_result_panel}>
       <div className={styles.side} style={{ marginRight: 128 }}>
@@ -123,9 +128,9 @@ const AiInlineResult = () => {
           <span>重新生成</span>
         </EnhanceIcon>
       </div>
-      {/* <div className={styles.side}>
-        <Thumbs />
-      </div> */}
+      <div className={styles.side}>
+        <Thumbs onClick={handleThumbs} />
+      </div>
     </div>
   );
 };

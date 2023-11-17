@@ -1,38 +1,56 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
-import { getExternalIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable } from '@opensumi/ide-core-browser';
 
-import { MsgStreamManager } from '../model/msg-stream-manager';
+import { IAIReporter } from '../../common';
+import { AiChatService } from '../ai-chat.service';
 
 import * as styles from './components.module.less';
 import { EnhanceIcon } from './Icon';
+import { Thumbs } from './Thumbs';
 
 export interface IChatMoreActionsProps {
   children: React.ReactNode;
   sessionId: string;
+  onRetry?: () => void;
 }
 
 export const ChatMoreActions = (props: IChatMoreActionsProps) => {
-  const { children, sessionId } = props;
-  const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+  const { children, sessionId, onRetry } = props;
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
-  const canRetry = useMemo(() => sessionId === msgStreamManager.currentSessionId, [sessionId]);
+  const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const dispose = aiChatService.onChangeSessionId((sid) => {
+      setLatestSessionId(sid);
+    });
+
+    return () => dispose.dispose();
+  }, [aiChatService]);
+
+  const showOperate = useMemo(() => sessionId === aiChatService.latestSessionId, [sessionId, latestSessionId]);
 
   return (
     <div className={styles.ai_chat_more_actions_container}>
       <div className={styles.ai_chat_message}>{children}</div>
-      <div className={styles.chat_msg_more_actions}>
-        <div className={styles.left_side}>
-          {canRetry && (
-            <div className={styles.side}>
-              <EnhanceIcon className={getExternalIcon('refresh')}>
-                <span style={{ marginLeft: 5, fontSize: 12 }}>重新生成</span>
-              </EnhanceIcon>
+      {
+        showOperate ? (
+          <div className={styles.bottom_container}>
+            <div className={styles.reset}>
+              {
+                onRetry && (
+                  <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={onRetry}>
+                    <span>重新生成</span>
+                  </EnhanceIcon>
+                )
+              }
             </div>
-          )}
-        </div>
-        {/* <div className={styles.side}><Thumbs /></div> */}
-      </div>
+            <div className={styles.thumbs}><Thumbs relationId={sessionId} aiReporterService={aiReporter} /></div>
+          </div>
+        ) : null
+      }
     </div>
   );
 };

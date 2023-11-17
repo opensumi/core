@@ -1,21 +1,16 @@
 import clsx from 'classnames';
 import * as React from 'react';
 
-import { AppConfig, getIcon, useInjectable, SlotRenderer, useContextMenus } from '@opensumi/ide-core-browser';
+import { AppConfig, getIcon, useInjectable, SlotRenderer } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import {
-  AbstractContextMenuService,
-  ICtxMenuRenderer,
-  MenuId,
-  MenuNode,
-  SubmenuItemNode,
-} from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
 import { AILogoAvatar, EnhanceIcon } from '../../../components/Icon';
+import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
 import * as styles from './menu-bar.module.less';
 import { AiMenubarService } from './menu-bar.service';
@@ -113,6 +108,7 @@ export const AiMenuBarView = () => {
           <div className={styles.top_menus_bar}>
             <AiMenuBarRender />
           </div>
+          <SlotRenderer slot={AI_MENU_BAR_LEFT} flex={1} overflow={'initial'} />
         </div>
         <div className={styles.center}>
           <div className={styles.run}>
@@ -122,7 +118,7 @@ export const AiMenuBarView = () => {
           </div>
         </div>
         <div className={styles.right}>
-          <SlotRenderer slot='ai-action' flex={1} overflow={'initial'} />
+          <SlotRenderer slot={AI_MENU_BAR_RIGHT} flex={1} overflow={'initial'} />
           {/* <div className={styles.input}>
             <Input
               className={styles.input_wrapper}
