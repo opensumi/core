@@ -107,6 +107,7 @@ export enum AISerivceType {
   Test = 'test',
   Optimize = 'optimize',
   Generate = 'generate',
+  Completion = 'completion'
 }
 
 export type AiRunHandler = () => MaybePromise<void>;
