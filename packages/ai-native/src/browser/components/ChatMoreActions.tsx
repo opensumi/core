@@ -41,7 +41,7 @@ export const ChatMoreActions = (props: IChatMoreActionsProps) => {
             <div className={styles.reset}>
               {
                 onRetry && (
-                  <EnhanceIcon icon={'refresh'} className={styles.transform}>
+                  <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={onRetry}>
                     <span>重新生成</span>
                   </EnhanceIcon>
                 )
