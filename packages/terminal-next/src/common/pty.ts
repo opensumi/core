@@ -78,13 +78,6 @@ export interface IPtyProxyRPCService {
   $onExit(callId: number, pid: number): void;
 
   /**
-   * pty数据on回调代理
-   * @param callId 指定callId的方法回调注册
-   * @param pid pty进程的pid，用于辨识pty进程
-   */
-  $on(callId: number, pid: number, event: any): void;
-
-  /**
    * resize方法RPC转发
    * @param pid pty进程的pid，用于辨识pty进程
    * @param columns 列数
@@ -119,6 +112,12 @@ export interface IPtyProxyRPCService {
    * @param pid pty进程的pid，用于辨识pty进程
    */
   $resume(pid: number): void;
+
+  /**
+   * 清理 pty
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $clear(pid: number): void;
 
   /**
    * 实时性通过Pid获取ProcessName

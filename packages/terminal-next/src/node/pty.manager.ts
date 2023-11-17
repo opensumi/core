@@ -25,13 +25,11 @@ export interface IPtyServiceManager {
   // 因为 PtyServiceManage 是 PtyClient 端统筹所有 Pty 的管理类，因此每一个具体方法的调用都需要传入 pid 来对指定 pid 做某些操作
   onData(pid: number, listener: (e: string) => any): pty.IDisposable;
   onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any): pty.IDisposable;
-  on(pid: number, event: 'data', listener: (data: string) => void): void;
-  on(pid: number, event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
-  on(pid: number, event: any, listener: (data: any) => void): void;
   resize(pid: number, columns: number, rows: number): void;
   write(pid: number, data: string): void;
   pause(pid: number): void;
   resume(pid: number): void;
+  clear(pid: number): void;
   kill(pid: number, signal?: string): void;
   getProcess(pid: number): Promise<string>;
   getCwd(pid: number): Promise<string | undefined>;
@@ -127,21 +125,19 @@ export class PtyServiceManager implements IPtyServiceManager {
     this.ptyServiceProxy.$onData(callId, pid);
     return disposable;
   }
+
   onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any): pty.IDisposable {
     const { callId, disposable } = this.addNewCallback(pid, listener);
     this.ptyServiceProxy.$onExit(callId, pid);
     return disposable;
   }
 
-  on(pid: number, event: 'data', listener: (data: string) => void): void;
-  on(pid: number, event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
-  on(pid: number, event: any, listener: (data: any) => void): void {
-    const { callId } = this.addNewCallback(pid, listener);
-    this.ptyServiceProxy.$on(callId, pid, event);
-  }
-
   resize(pid: number, columns: number, rows: number): void {
     this.ptyServiceProxy.$resize(pid, columns, rows);
+  }
+
+  clear(pid: number) {
+    this.ptyServiceProxy.$clear(pid);
   }
 
   write(pid: number, data: string): void {
@@ -220,12 +216,6 @@ class PtyProcessProxy implements IPtyProcessProxy {
   onData: pty.IEvent<string>;
   onExit: pty.IEvent<{ exitCode: number; signal?: number }>;
 
-  // 将 pid 维护到对象内部，对外暴露 NodePty 的标准 api，因此在调用的时候不需要显式传入 pid
-  on(event: 'data', listener: (data: string) => void): void;
-  on(event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
-  on(event: any, listener: any): void {
-    this.ptyServiceManager.on(this.pid, event, listener);
-  }
   resize(columns: number, rows: number): void {
     this.ptyServiceManager.resize(this.pid, columns, rows);
   }
@@ -240,5 +230,8 @@ class PtyProcessProxy implements IPtyProcessProxy {
   }
   resume(): void {
     this.ptyServiceManager.resume(this.pid);
+  }
+  clear(): void {
+    this.ptyServiceManager.clear(this.pid);
   }
 }
