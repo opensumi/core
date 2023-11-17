@@ -5,6 +5,7 @@ import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser'
 
 import { IAIReporter } from '../../common';
 import { AiChatService } from '../ai-chat.service';
+import { ERROR_RESPONSE } from '../common-reponse';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
 import { CodeBlockWrapper } from './ChatEditor';
@@ -96,7 +97,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
       <div className={styles.ai_chat_code_wrapper}>
         <div className={styles.render_text}>
           {isError ? (
-            <span>当前与我互动的人太多，请稍后再试，感谢您的理解与支持</span>
+            <span>{ERROR_RESPONSE}</span>
           ) : (
             <CodeBlockWrapper text={content} />
           )}
