@@ -5,6 +5,7 @@ import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import { AiChatService } from '../ai-chat.service';
+import { STOP_IMMEDIATELY } from '../common-reponse';
 import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
@@ -86,7 +87,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
 
   const renderContent = useCallback(() => {
     if ((status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && !message?.trim()) {
-      return <span>我先不想了，有需要可以随时问我</span>;
+      return <span>{STOP_IMMEDIATELY}</span>;
     }
 
     return children;

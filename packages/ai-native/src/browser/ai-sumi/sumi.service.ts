@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { AiBackSerivcePath, IAiBackService } from '../../common';
+import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { SumiCommandPromptManager } from '../prompts/sumi.command';
 
@@ -1227,8 +1227,8 @@ export class AiSumiService {
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
-  async requestToModel(prompt: string, model?: string): Promise<string> {
-    return '';
+  async requestToModel(prompt: string, model?: string) {
+    return this.aiBackService.request(prompt, { model });
   }
 
   async classifyCommand() {
@@ -1263,7 +1263,7 @@ export class AiSumiService {
       `\\[(?<groupName>${Object.keys(this.commandGroups).join('|')})\\]:\\s?(?<commandList>.*)`,
     );
 
-    const groupArray = groupReply.split('\n');
+    const groupArray = groupReply.data?.split('\n') || [];
     groupArray.forEach((groupLine) => {
       const match = groupReg.exec(groupLine);
       if (match && match.groups?.commandList) {
@@ -1276,7 +1276,7 @@ export class AiSumiService {
     });
   }
 
-  public async searchCommand(input: string) {
+  public async searchCommand(input: string): Promise<IAiBackServiceResponse<Command>> {
     return this.searchGroup(input);
   }
 
@@ -1284,23 +1284,24 @@ export class AiSumiService {
     const enPrompt = this.promptManager.searchGroup(input, { useCot: true });
 
     const groupReply = await this.requestToModel(enPrompt);
+
+    if (groupReply.errorCode) {
+      return { errorCode: groupReply.errorCode, errorMsg: groupReply.errorMsg };
+    }
+
     const groups = Object.keys(this.commandGroups);
     const groupReg = new RegExp(`(?<group>${groups.join('|')})`);
-    const match = groupReg.exec(groupReply);
+    const match = groupReg.exec(groupReply.data || '');
     const group = match && match.groups?.group;
-
-    if (!group) {
-      return false;
-    }
 
     return this.findCommand(input, group);
   }
 
-  public async findCommand(input: string, group: string): Promise<Command | undefined> {
-    const commandsInGroup = this.commandGroups[group];
+  public async findCommand(input: string, group?: string | null): Promise<IAiBackServiceResponse<Command>> {
+    const commandsInGroup = this.commandGroups[group || ''];
 
     if (!commandsInGroup) {
-      return undefined;
+      return { errorCode: 0 };
     }
 
     const commands = this.commandRegistryService
@@ -1314,9 +1315,11 @@ export class AiSumiService {
 
     try {
       const command = await Promise.any(partCommands.map((c) => this.requestCommand(c, input)));
-      return commands.find((c) => c.id === command);
+
+      return { data: commands.find((c) => c.id === command?.data) };
     } catch (e) {
       this.logger.error('Find command failed: ', e.message);
+      return { errorCode: 1 };
     }
   }
 
@@ -1328,11 +1331,11 @@ export class AiSumiService {
       question,
     });
 
-    const res = await this.requestToModel(prompt);
-    const answerCommand = this.matchCommand(res);
+    const commandReply = await this.requestToModel(prompt);
+    const answerCommand = this.matchCommand(commandReply.data || '');
 
     if (answerCommand && commands.find((c) => c.id === answerCommand)) {
-      return answerCommand;
+      return { data: answerCommand };
     }
 
     await Promise.reject('Command not found');
@@ -1342,6 +1345,6 @@ export class AiSumiService {
     const commandReg = /`(?<command>\S+)`/;
     const command = commandReg.exec(answer);
 
-    return command ? command.groups?.command || '' : '';
+    return command?.groups?.command || '';
   }
 }
