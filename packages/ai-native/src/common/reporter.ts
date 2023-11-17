@@ -35,6 +35,10 @@ export interface RunInfo extends Partial<CommonLogInfo> {
   runSuccess: boolean;
 }
 
+export interface Completion extends Partial<CommonLogInfo> {
+  isReceive: boolean;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
   | ({ type: AISerivceType.GPT } & QuestionInfo)
@@ -45,7 +49,8 @@ export type ReportInfo =
   | ({ type: AISerivceType.Optimize } & CodeInfo)
   | ({ type: AISerivceType.Generate } & GenerateInfo)
   | ({ type: AISerivceType.Sumi } & CommandInfo)
-  | ({ type: AISerivceType.Run } & RunInfo);
+  | ({ type: AISerivceType.Run } & RunInfo)
+  | ({ type: AISerivceType.Completion } & Completion);
 
 export const IAIReporter = Symbol('IAIReporter');
 

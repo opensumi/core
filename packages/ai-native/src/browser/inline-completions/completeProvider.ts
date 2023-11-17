@@ -1,27 +1,27 @@
 import { debounce } from 'lodash';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, WithEventBus, uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor, IEditor } from '@opensumi/ide-editor';
+import { WithEventBus, uuid } from '@opensumi/ide-core-common';
+import { IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IAIReporter } from '../../common';
+import { IAIReporter, AISerivceType } from '../../common';
 import { AI_INLINE_COMPLETION_REPORTET } from '../../common/command';
 
-import { CompletionRequestBean, CompletionResultModel, CodeModel, InlayList } from './model/competionModel';
+import { CompletionRequestBean, CompletionResultModel, InlayList } from './model/competionModel';
 import { InlineCompletionItem } from './model/competionModel';
 import promptCache from './promptCache';
 import { prePromptHandler, preSuffixHandler } from './provider';
 import { AiCompletionsService } from './service/ai-completions.service';
-import { MESSAGE_SHOW_TIME, getPromptMessageText, getMoreStr } from './utils/message';
+import { getPromptMessageText } from './utils/message';
 
 let lastRequestId: any;
 let timer: any;
 let accept = 0;
 
 // 用来缓存最近一次的补全结果
-let lastInLayList: InlayList = {
+const lastInLayList: InlayList = {
   line: -1,
   column: -1,
   lastResult: null,
@@ -45,13 +45,13 @@ class RequestImp {
   // 发送请求
   async sendRequest(codefuseService: AiCompletionsService, aiReporter: IAIReporter) {
     const { editor } = this;
-    let beginRequestTime = Date.now();
+    const beginRequestTime = Date.now();
     if (!editor) {
       return [];
     }
 
     const model = this.editor.monacoEditor.getModel()!;
-    let selection = this.editor.monacoEditor.getSelection();
+    const selection = this.editor.monacoEditor.getSelection();
     const cursorPosition = selection?.getPosition()!;
 
     const startRange = selection?.setStartPosition(0, 0);
@@ -85,7 +85,7 @@ class RequestImp {
     suffix = preSuffixHandler(suffix);
 
     // 组装请求参数,向远程发起请求
-    let completionRequestBean: CompletionRequestBean = {
+    const completionRequestBean: CompletionRequestBean = {
       prompt,
       suffix,
       sessionId: uuid(6),
@@ -93,7 +93,7 @@ class RequestImp {
       fileUrl: model.uri.toString().split('/').pop()!,
     };
 
-    let beginAlgTime = new Date().getTime();
+    const beginAlgTime = +new Date();
     let status = 0; // 0: 远程请求的结果 1: 网络缓存中的结果
     if (this.isCancelFlag) {
       return [];
@@ -101,6 +101,7 @@ class RequestImp {
     let rs;
     const cacheData = promptCache.getCache(prompt);
 
+    const relationId = aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
     // 如果存在缓存
     if (cacheData) {
       rs = cacheData;
@@ -108,19 +109,20 @@ class RequestImp {
     } else {
       // 不存在缓存发起请求
       try {
-        // aiReporter.start();
         rs = await codefuseService.complete(completionRequestBean);
-        // aiReporter.start();
         status = 0;
       } catch (err: any) {
+        aiReporter.end(relationId, { success: false, replytime: + new Date() - beginAlgTime });
         return { items: [] };
       }
     }
     if (rs === null || rs.sessionId === null) {
+      aiReporter.end(relationId, { success: false, replytime: + new Date() - beginAlgTime });
       return { items: [] };
     }
     if (rs && rs.codeModelList !== null && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
+      aiReporter.end(relationId, { success: true, replytime: + new Date() - beginAlgTime });
     }
     let codeModelSize = 0;
     if (rs.codeModelList !== null) {
@@ -132,16 +134,17 @@ class RequestImp {
     }
     // 如果是取消直接返回
     if (this.isCancelFlag) {
+      aiReporter.end(relationId, { success: false, replytime: + new Date() - beginAlgTime, isStop: true });
       return [];
     }
-    return this.pushResultAndRegist(rs, aiReporter);
+    return this.pushResultAndRegist(rs, relationId);
   }
   /**
    * 将补全结果推给用户并注册{@link COMMAND_ACCEPT} 事件
    * @param codeModelList
    */
-  pushResultAndRegist(rs: CompletionResultModel, aiReporter: IAIReporter): Array<InlineCompletionItem> {
-    let result = new Array<InlineCompletionItem>();
+  pushResultAndRegist(rs: CompletionResultModel, relationId: string): Array<InlineCompletionItem> {
+    const result = new Array<InlineCompletionItem>();
     for (const codeModel of rs.codeModelList) {
       let contentText = codeModel.content;
 
@@ -162,7 +165,7 @@ class RequestImp {
       if (arr[arr.length - 1].length === 0) {
         contentText = contentText.slice(0, -1);
       }
-      let insertText = contentText;
+      const insertText = contentText;
 
       // if (MESSAGE_SHOW_TIME < 2) {
       //   insertText = codeModel.completionType === 1 && list.length > 1 ? `${insertText}\n\n${getMoreStr(spaceL, ' ')}${note}` : `${insertText}${getMoreStr(10, ' ')}${note}`.replace(/[\r|\n]/g, '')
@@ -178,11 +181,9 @@ class RequestImp {
         command: {
           id: AI_INLINE_COMPLETION_REPORTET.id,
           title: '',
-          arguments: ['123123123'],
+          arguments: [relationId],
         },
       });
-
-      // aiReporter.end();
     }
     lastRequestId = rs.sessionId;
     // if (rs.codeModelList.length) setPromptMessage(completionType, content)

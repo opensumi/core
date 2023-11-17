@@ -43,6 +43,7 @@ import {
   Ai_CHAT_CONTAINER_VIEW_ID,
   IAiRunFeatureRegistry,
   InstructionEnum,
+  IAIReporter,
 } from '../common';
 import {
   AI_EXPLAIN_DEBUG_COMMANDS,
@@ -126,6 +127,9 @@ export class AiNativeCoreContribution
 
   @Autowired(IAiRunFeatureRegistry)
   private readonly aiRunFeatureRegistry: IAiRunFeatureRegistry;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   onStart() {
     this.registerFeature();
@@ -287,9 +291,9 @@ export class AiNativeCoreContribution
     });
 
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTET, {
-      execute: (value) => {
+      execute: (relationId: string) => {
         // 补全埋点统计
-        // console.log('AI_INLINE_COMPLETION_REPORTET', value)
+        this.aiReporter.end(relationId, { success: true, isReceive: true });
       },
     });
   }
