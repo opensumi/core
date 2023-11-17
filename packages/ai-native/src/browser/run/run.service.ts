@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken } from '@opensumi/ide-core-common';
 
-import { IAiRunAnswerComponentProps, IAiRunFeatureRegistry } from '../../common';
+import { IAiRunAnswerComponentProps, IAiRunFeatureRegistry, IAIReporter, AISerivceType } from '../../common';
 
 import { AiRunFeatureRegistry } from './run.feature.registry';
 
@@ -10,11 +10,27 @@ export class AiRunService {
   @Autowired(IAiRunFeatureRegistry)
   private readonly aiRunFeatureRegistry: AiRunFeatureRegistry;
 
+  @Autowired(IAIReporter)
+  private readonly aiRepoter: IAIReporter;
+
   public async run() {
     const runs = this.aiRunFeatureRegistry.getRuns();
-    for (const run of runs) {
-      await run();
+    let success = true;
+    const startTime = +new Date();
+    const relationId = this.aiRepoter.start(AISerivceType.Run, { message: 'Start run' });
+    try {
+      for (const run of runs) {
+        await run();
+      }
+    } catch {
+      success = false;
     }
+    this.aiRepoter.end(relationId, {
+      replytime: +new Date() - startTime,
+      success,
+      message: 'Finished run',
+      runSuccess: success,
+    });
   }
 
   public answerComponentRender(): React.FC<IAiRunAnswerComponentProps> | undefined {

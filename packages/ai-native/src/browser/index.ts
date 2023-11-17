@@ -13,10 +13,12 @@ import {
   AiNativeContribution,
   IAiChatService,
   IAiRunFeatureRegistry,
+  IAIReporter,
 } from '../common';
 
 import { AiNativeCoreContribution } from './ai-chat.contribution';
 import { AiChatService } from './ai-chat.service';
+import { AIReporter } from './ai-reporter';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
@@ -37,6 +39,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IAiChatService,
       useClass: AiChatService,
+    },
+    {
+      token: IAIReporter,
+      useClass: AIReporter,
     },
   ];
 

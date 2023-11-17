@@ -1,8 +1,9 @@
 import hljs from 'highlight.js';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 
+import { IAIReporter } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
@@ -14,16 +15,18 @@ interface IStreamMsgWrapperProps {
   prompt: string;
   renderContent: (content: string) => React.ReactNode;
   onRegenerate?: () => void;
+  startTime?: number;
 }
 
 export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
-  const { sessionId, prompt, onRegenerate, renderContent } = props;
+  const { sessionId, prompt, startTime = 0, onRegenerate, renderContent } = props;
   const [chunk, setChunk] = React.useState('');
   const [content, setContent] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [isDone, setIsDone] = React.useState<boolean>(false);
   const [status, setStatus] = React.useState(EMsgStreamStatus.THINKING);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+  const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
@@ -68,6 +71,24 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     setContent(content + chunk);
   }, [chunk]);
 
+  const report = useCallback(
+    (success: boolean, stop: boolean) => {
+      aiReporter.end(sessionId, {
+        message: content,
+        replytime: +new Date() - startTime,
+        success,
+        isStop: stop,
+      });
+    },
+    [content],
+  );
+
+  useEffect(() => {
+    if (status === EMsgStreamStatus.DONE) {
+      report(true, false);
+    }
+  }, [status]);
+
   const handleRegenerate = useCallback(() => {
     reset();
     if (onRegenerate) {
@@ -86,8 +107,12 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     [content, isError, isDone, status, sessionId, renderContent],
   );
 
+  const onStop = () => {
+    report(false, true);
+  };
+
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <Thinking status={status} message={content}>
+    <Thinking status={status} message={content} onStop={onStop}>
       {renderMsgList()}
     </Thinking>
   ) : (
