@@ -15,7 +15,7 @@ import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
-import { NOTFOUND_COMMAND } from './common-reponse';
+import { NOTFOUND_COMMAND, ERROR_RESPONSE, NOTFOUND_COMMAND_TIP } from './common-reponse';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMoreActions } from './components/ChatMoreActions';
@@ -26,6 +26,7 @@ import { Thinking } from './components/Thinking';
 import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
+
 interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
   role: 'user' | 'ai';
   relationId: string;
@@ -570,6 +571,7 @@ const AIWithCommandReply = async (
             failedText === NOTFOUND_COMMAND ? (
               <div>
                 <p>{failedText}</p>
+                <p>{NOTFOUND_COMMAND_TIP}</p>
                 <Button onClick={() => opener.open(URI.from({ scheme: 'command', path: QUICK_OPEN_COMMANDS.OPEN.id, query: JSON.stringify([userInput]) }))}>打开命令面板</Button>
               </div>
             ) : failedText
