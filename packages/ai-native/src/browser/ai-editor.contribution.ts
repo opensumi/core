@@ -25,6 +25,7 @@ import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
+import { TypeScriptCompletionsProvider } from './inline-completions/completeProvider';
 import { prePromptHandler, preSuffixHandler, ReqStack } from './inline-completions/provider';
 
 @Injectable()
@@ -394,28 +395,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     let dispose: IDisposable | undefined;
-
-    const cancelRequest = () => {
-      if (reqStack) {
-        reqStack.cancleRqe();
-      }
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-
-    this.disposables.push(
-      monacoEditor.onDidChangeModel(() => {
-        if (dispose) {
-          dispose.dispose();
-        }
-      }),
-    );
-
-    const reqStack = new ReqStack();
-    let timer: any;
-
-    let isCancelFlag = false;
+    const inlineCompleteProvider = this.injector.get(TypeScriptCompletionsProvider, [editor]);
 
     this.disposables.push(
       Event.debounce(
@@ -438,69 +418,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           return;
         }
 
-        cancelRequest();
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
-          provideInlineCompletions: async (model, position, context, token) => {
-            // 补全上文
-            const startRange = new monaco.Range(0, 0, position.lineNumber, position.column);
-            let prompt = model.getValueInRange(startRange);
-
-            // 补全下文
-            const endRange = new monaco.Range(
-              position.lineNumber,
-              position.column,
-              model.getLineCount(),
-              Number.MAX_SAFE_INTEGER,
-            );
-            let suffix = model.getValueInRange(endRange);
-
-            prompt = prePromptHandler(prompt);
-            suffix = preSuffixHandler(suffix);
-
-            const uid = uuid();
-
-            const language = model.getLanguageId();
-
-            reqStack.addReq({
-              sendRequest: async () => {
-                isCancelFlag = false;
-                const completionResult = await this.aiBackService.requestCompletion({
-                  prompt,
-                  suffix,
-                  sessionId: uid,
-                  language,
-                  fileUrl: model.uri.toString().split('/').pop(),
-                });
-
-                this.logger.log('onDidChangeModelContent:>>> ai 补全返回结果', completionResult);
-                return {
-                  items: completionResult.map((data) => ({
-                    insertText: data,
-                  })),
-                };
-              },
-              cancelRequest: () => {
-                isCancelFlag = true;
-              },
-            });
-
-            await new Promise((f) => {
-              timer = setTimeout(f, 300);
-            });
-
-            this.logger.log('onDidChangeModelContent:>>> 参数', {
-              prompt,
-              suffix,
-              uid,
-              language,
-            });
-
-            return reqStack.runReq() || [];
-          },
+          provideInlineCompletions: async (model, position, context, token) => inlineCompleteProvider.provideInlineCompletionItems(model, position, context, token),
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},
         });
         this.disposables.push(dispose);
       }),
     );
+    return;
   }
 }
