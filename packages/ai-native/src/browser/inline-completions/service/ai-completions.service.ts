@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-ai-native';
 import { Disposable } from '@opensumi/ide-core-common';
 
+import { AiBackSerivcePath, IAiBackService } from '../../../common';
 import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()
