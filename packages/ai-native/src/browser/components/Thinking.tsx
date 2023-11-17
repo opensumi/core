@@ -47,7 +47,7 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
       <div className={styles.stop}>
         <span className={styles.progress_bar}>
           {/* 保持动画效果一致 */}
-          {status && (
+          {!!status && (
             <Progress
               loading={true}
               wrapperClassName={`ai-native-progress-wrapper ${
