@@ -360,6 +360,7 @@ const codIconId = [
   'three-bars',
   'thumbsdown',
   'thumbsup',
+  'thumbs',
   'tools',
   'triangle-down',
   'triangle-left',

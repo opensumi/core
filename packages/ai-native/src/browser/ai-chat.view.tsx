@@ -546,7 +546,7 @@ const AIWithCommandReply = async (
     return createMessageByAI({
       id: uuid(6),
       relationId,
-      text: failedText,
+      text: (<ChatMoreActions sessionId={relationId}>{failedText}</ChatMoreActions>),
     });
   }
 

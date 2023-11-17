@@ -4,12 +4,14 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
+import { IAIReporter } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { STOP_IMMEDIATELY } from '../common-reponse';
 import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
 import { EnhanceIcon } from './Icon';
+import { Thumbs } from './Thumbs';
 
 interface ITinkingProps {
   children?: React.ReactNode;
@@ -69,6 +71,7 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
 
 export const ThinkingResult = ({ children, message, status, onRegenerate, sessionId }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -105,7 +108,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
               <span>重新生成</span>
             </EnhanceIcon>
           </div>
-          <div className={styles.thumbs}>{/* <Thumbs /> */}</div>
+          <div className={styles.thumbs}><Thumbs relationId={sessionId} aiReporterService={aiReporter} /></div>
         </div>
       ) : null}
     </div>

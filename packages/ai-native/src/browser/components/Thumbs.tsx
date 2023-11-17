@@ -1,21 +1,55 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 
-import { getExternalIcon, uuid } from '@opensumi/ide-core-browser';
-import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import { getExternalIcon, uuid, KTICON_OWNER } from '@opensumi/ide-core-browser';
+import { Popover } from '@opensumi/ide-core-browser/lib/components';
+
+import { IAIReporter } from '../../common';
 
 import { EnhanceIcon } from './Icon';
-import { LineVertical } from './lineVertical';
 
-export const Thumbs = () => {
-  const useUUID = useMemo(() => uuid(12), []);
+interface ThumbsProps {
+  relationId?: string;
+  aiReporterService?: IAIReporter;
+  onClick?: (isLike?: boolean) => void;
+}
+
+export const Thumbs = (props: ThumbsProps) => {
+  const { relationId, aiReporterService, onClick } = props;
+
+  const [thumbsupIcon, setThumbsupIcon] = useState('thumbs');
+  const [thumbsdownIcon, setThumbsdownIcon] = useState('thumbsdown');
+
+  const report = useCallback((isLike: boolean) => {
+    if (relationId && aiReporterService) {
+      aiReporterService.end(relationId, { isLike });
+    }
+    if (onClick) {
+      onClick(isLike);
+    }
+  }, [relationId, aiReporterService]);
+
+  const handleClick = useCallback((type: 'up' | 'down') => {
+    // only click once
+    if (type === 'up' && thumbsupIcon === 'thumbs') {
+      setThumbsupIcon('thumbs-fill');
+      report(true);
+    }
+
+    if (type === 'down' && thumbsdownIcon === 'thumbsdown') {
+      setThumbsdownIcon('thumbsdown-fill');
+      report(false);
+    }
+  }, [ thumbsupIcon, thumbsdownIcon]);
+
+  const useUUID = useMemo(() => uuid(6), []);
 
   return (
     <>
       <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
-        <EnhanceIcon className={getExternalIcon('thumbsup')} />
+        <EnhanceIcon onClick={() => handleClick('up')} className={getExternalIcon(thumbsupIcon, KTICON_OWNER)} />
       </Popover>
       <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
-        <EnhanceIcon className={getExternalIcon('thumbsdown')} />
+        <EnhanceIcon onClick={() => handleClick('down')} className={getExternalIcon(thumbsdownIcon, KTICON_OWNER)} />
       </Popover>
     </>
   );

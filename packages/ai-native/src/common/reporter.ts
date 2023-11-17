@@ -8,10 +8,10 @@ export interface CommonLogInfo {
   msgType: AISerivceType;
   message: string;
   isStart: boolean;
+  isLike: boolean;
 }
 
 export interface QuestionInfo extends Partial<CommonLogInfo> {
-  isLike: boolean;
   isRetry: boolean;
   isStop: boolean;
 }
