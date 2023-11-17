@@ -4,6 +4,7 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
 
+import { ERROR_RESPONSE } from '../common-reponse';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../components/Icon';
 import { LineVertical } from '../components/lineVertical';
 import { Loading } from '../components/Loading';
@@ -179,7 +180,7 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     if (isError) {
       return (
         <div className={styles.ai_inline_error_result_panel}>
-          <span>当前与我互动的人太多请稍后再试，感谢您的理解与支持</span>
+          <span>{ERROR_RESPONSE}</span>
         </div>
       );
     }
