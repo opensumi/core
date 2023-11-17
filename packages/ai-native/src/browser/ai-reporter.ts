@@ -55,6 +55,6 @@ export class AIReporter implements IAIReporter {
     };
 
     this.reportInfoCache.set(relationId, reportInfo);
-    this.reporter.point(AI_REPORTER_NAME, data.msgType, reportInfo);
+    this.reporter.point(AI_REPORTER_NAME, data.msgType || reportInfo.msgType, reportInfo);
   }
 }

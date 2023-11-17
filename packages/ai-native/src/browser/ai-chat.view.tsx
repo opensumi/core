@@ -41,6 +41,7 @@ interface ReplayComponentParam {
   aiReporter: IAIReporter;
   relationId: string;
   startTime: number;
+  isRetry?: boolean;
 }
 
 const createMessage = (message: MessageData) => ({
@@ -172,7 +173,6 @@ export const AiChatView = observer(() => {
 
       setLoading(true);
 
-      let aiMessage;
       const userInput = await aiChatService.switchAIService(message as string, prompt);
 
       const startTime = +new Date();
@@ -203,13 +203,22 @@ export const AiChatView = observer(() => {
         startTime,
       };
 
+      await handleReply(userInput, replayCommandProps);
+    },
+    [messageListData, containerRef, loading],
+  );
+
+  const handleReply = React.useCallback(
+    async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
+      let aiMessage;
+
       if (userInput!.type === AISerivceType.SearchDoc) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput!.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput!.type === AISerivceType.Sumi) {
         aiMessage = await aiSumiService.searchCommand(userInput!.message!);
-        aiMessage = await AIWithCommandReply(aiMessage, opener, replayCommandProps);
+        aiMessage = await AIWithCommandReply(aiMessage, opener, replayCommandProps, async () => handleCommonRetry(userInput, replayCommandProps));
       } else if (userInput!.type === AISerivceType.GPT) {
         const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
         aiMessage = await AIStreamReply(withPrompt, replayCommandProps);
@@ -224,8 +233,8 @@ export const AiChatView = observer(() => {
       }
 
       if (aiMessage) {
-        preMessagelist.push(aiMessage);
-        setMessageListData(preMessagelist);
+        messageListData.push(aiMessage);
+        setMessageListData([...messageListData]);
         updateState({});
         if (containerRef && containerRef.current) {
           containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
@@ -233,9 +242,16 @@ export const AiChatView = observer(() => {
       }
 
       setLoading(false);
-    },
-    [messageListData, containerRef, loading],
-  );
+    }, [messageListData]);
+
+  const handleCommonRetry = React.useCallback(async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
+    setLoading(true);
+    messageListData.pop();
+    setMessageListData([...messageListData]);
+
+    const startTime = +new Date();
+    await handleReply(userInput, { ...replayCommandProps, startTime, isRetry: true });
+  }, [messageListData]);
 
   const handleClear = React.useCallback(() => {
     aiChatService.cancelChatViewToken();
@@ -533,20 +549,21 @@ const AIWithCommandReply = async (
   commandRes: IAiBackServiceResponse<Command>,
   opener: CommandOpener,
   params: ReplayComponentParam,
+  onRetry: () => Promise<void>
 ) => {
-  const { aiChatService, aiReporter, relationId, startTime } = params;
+  const { aiChatService, aiReporter, relationId, startTime, isRetry } = params;
+
+  aiChatService.setLatestSessionId(relationId);
 
   const failedText = commandRes.errorCode ? ERROR_RESPONSE : !commandRes.data ? NOTFOUND_COMMAND : '';
+
+  aiReporter.end(relationId, { replytime: +new Date() - startTime, success: !!failedText, msgType: AISerivceType.Sumi, isRetry });
+
   if (failedText) {
-    aiReporter.end(relationId, {
-      replytime: +new Date() - startTime,
-      success: false,
-      msgType: AISerivceType.Sumi,
-    });
     return createMessageByAI({
       id: uuid(6),
       relationId,
-      text: (<ChatMoreActions sessionId={relationId}>{failedText}</ChatMoreActions>),
+      text: (<ChatMoreActions sessionId={relationId} onRetry={onRetry}>{failedText}</ChatMoreActions>),
     });
   }
 
@@ -567,6 +584,7 @@ const AIWithCommandReply = async (
       message: id,
       useCommand: true,
       useCommandSuccess: success,
+      isRetry,
     });
   }
 
@@ -574,7 +592,7 @@ const AIWithCommandReply = async (
     id: uuid(6),
     relationId,
     text: (
-      <ChatMoreActions sessionId={relationId}>
+      <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
           <ol style={{ margin: '8px 0' }}>
@@ -588,6 +606,5 @@ const AIWithCommandReply = async (
     className: styles.chat_with_more_actions,
   });
 
-  aiChatService.setLatestSessionId(relationId);
   return aiMessage;
 };
