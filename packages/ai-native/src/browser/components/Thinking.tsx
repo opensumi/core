@@ -10,6 +10,7 @@ import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager'
 
 import * as styles from './components.module.less';
 import { EnhanceIcon } from './Icon';
+import { Thumbs } from './Thumbs';
 
 interface ITinkingProps {
   children?: React.ReactNode;
@@ -105,7 +106,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
               <span>重新生成</span>
             </EnhanceIcon>
           </div>
-          <div className={styles.thumbs}>{/* <Thumbs /> */}</div>
+          <div className={styles.thumbs}><Thumbs /></div>
         </div>
       ) : null}
     </div>
