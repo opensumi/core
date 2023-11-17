@@ -23,7 +23,7 @@ import { AILogoAvatar, EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
-import { MsgStreamManager } from './model/msg-stream-manager';
+import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
 interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
@@ -282,7 +282,7 @@ export const AiChatView = observer(() => {
                   title={AI_NAME}
                   className={styles.smsg}
                   // @ts-ignore
-                  text={<Thinking />}
+                  text={<Thinking status={EMsgStreamStatus.THINKING} />}
                 ></SystemMessage>
               </div>
             )}
