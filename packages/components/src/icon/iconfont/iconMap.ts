@@ -31,7 +31,6 @@ export const defaultIconfont = {
   'check-square-o': 'check-square-o',
   'circle-pause': 'circle-pause',
   'clear': 'clear',
-  'clear1': 'clear1',
   'close': 'close',
   'close-all': 'close-all',
   'close-circle': 'close-circle',
