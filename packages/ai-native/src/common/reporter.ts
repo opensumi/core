@@ -35,10 +35,12 @@ export interface RunInfo extends Partial<CommonLogInfo> {
   runSuccess: boolean;
 }
 
-export type ReportInfo = Partial<CommonLogInfo>
+export type ReportInfo =
+  | Partial<CommonLogInfo>
   | ({ type: AISerivceType.GPT } & QuestionInfo)
   | ({ type: AISerivceType.Explain } & QuestionInfo)
-  | ({ type: AISerivceType.Search } & QuestionInfo)
+  | ({ type: AISerivceType.SearchCode } & QuestionInfo)
+  | ({ type: AISerivceType.SearchDoc } & QuestionInfo)
   | ({ type: AISerivceType.Test } & QuestionInfo)
   | ({ type: AISerivceType.Optimize } & CodeInfo)
   | ({ type: AISerivceType.Generate } & GenerateInfo)

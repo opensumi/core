@@ -195,7 +195,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       selection,
     });
 
-    const handleDiffEditorResult = async (prompt: string, crossSelection: monaco.Selection, enableGptCache = true, relationId: string) => {
+    const handleDiffEditorResult = async (
+      prompt: string,
+      crossSelection: monaco.Selection,
+      enableGptCache = true,
+      relationId: string,
+    ) => {
       const model = monacoEditor.getModel();
       if (!model) {
         return;
@@ -329,7 +334,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           this.aiInlineChatService.onRegenerate(async () => {
             const retryStartTime = +new Date();
             const retryResult = await handleDiffEditorResult(prompt, crossSelection, false, relationId);
-            this.aiReporter.end(relationId, { message: retryResult, success: !!result, replytime: +new Date() - retryStartTime, isRetry: true });
+            this.aiReporter.end(relationId, {
+              message: retryResult,
+              success: !!result,
+              replytime: +new Date() - retryStartTime,
+              isRetry: true,
+            });
           }),
         );
 

@@ -165,7 +165,7 @@ const CodeEditorWithHighlight = ({ input, language }) => {
   );
 };
 
-const CodeBlock = ({ content = '' }: { content?: string }) => {
+const CodeBlock = ({ content = '', renderText }: { content?: string; renderText?: (t: string) => React.ReactNode }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
@@ -201,7 +201,11 @@ const CodeBlock = ({ content = '' }: { content?: string }) => {
               }
             }
 
-            renderedContent.push(text);
+            if (renderText) {
+              renderedContent.push(renderText(text));
+            } else {
+              renderedContent.push(text);
+            }
           } else {
             renderedContent.push(
               <span className={styles.code_inline} key={index}>
@@ -216,15 +220,21 @@ const CodeBlock = ({ content = '' }: { content?: string }) => {
     });
 
     return renderedContent;
-  }, [content]);
+  }, [content, renderText]);
 
   return <>{render}</>;
 };
 
-export const CodeBlockWrapper = ({ text }: { text?: string }) => (
+export const CodeBlockWrapper = ({
+  text,
+  renderText,
+}: {
+  text?: string;
+  renderText?: (t: string) => React.ReactNode;
+}) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
-      <CodeBlock content={text} />
+      <CodeBlock content={text} renderText={renderText} />
     </div>
   </div>
 );

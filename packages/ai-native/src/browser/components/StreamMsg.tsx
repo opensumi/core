@@ -8,25 +8,25 @@ import { AiChatService } from '../ai-chat.service';
 import { ERROR_RESPONSE } from '../common-reponse';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
-import { CodeBlockWrapper } from './ChatEditor';
 import * as styles from './components.module.less';
 import { Thinking, ThinkingResult } from './Thinking';
 
 interface IStreamMsgWrapperProps {
   sessionId: string;
   prompt: string;
+  renderContent: (content: string) => React.ReactNode;
+  onRegenerate?: () => void;
   startTime?: number;
 }
 
 export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
-  const { sessionId, prompt, startTime = 0 } = props;
+  const { sessionId, prompt, startTime = 0, onRegenerate, renderContent } = props;
   const [chunk, setChunk] = React.useState('');
   const [content, setContent] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [isDone, setIsDone] = React.useState<boolean>(false);
   const [status, setStatus] = React.useState(EMsgStreamStatus.THINKING);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
   useEffect(() => {
@@ -72,14 +72,17 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     setContent(content + chunk);
   }, [chunk]);
 
-  const report = useCallback((success: boolean, stop: boolean) => {
-    aiReporter.end(sessionId, {
-      message: content,
-      replytime: +new Date() - startTime,
-      success,
-      isStop: stop,
-    });
-  }, [content]);
+  const report = useCallback(
+    (success: boolean, stop: boolean) => {
+      aiReporter.end(sessionId, {
+        message: content,
+        replytime: +new Date() - startTime,
+        success,
+        isStop: stop,
+      });
+    },
+    [content],
+  );
 
   useEffect(() => {
     if (status === EMsgStreamStatus.DONE) {
@@ -89,22 +92,18 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
 
   const handleRegenerate = useCallback(() => {
     reset();
-    aiChatService.messageWithStream(prompt, {}, sessionId);
-  }, [prompt]);
+    if (onRegenerate) {
+      onRegenerate();
+    }
+  }, [prompt, onRegenerate]);
 
   const renderMsgList = useCallback(
     () => (
       <div className={styles.ai_chat_code_wrapper}>
-        <div className={styles.render_text}>
-          {isError ? (
-            <span>{ERROR_RESPONSE}</span>
-          ) : (
-            <CodeBlockWrapper text={content} />
-          )}
-        </div>
+        <div className={styles.render_text}>{isError ? <span>{ERROR_RESPONSE}</span> : renderContent(content)}</div>
       </div>
     ),
-    [content, isError, isDone, status, sessionId],
+    [content, isError, isDone, status, sessionId, renderContent],
   );
 
   const onStop = () => {

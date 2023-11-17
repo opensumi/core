@@ -65,9 +65,10 @@ export enum InstructionEnum {
   aiOptimzeKey = '/ Optimize ',
   aiCommentsKey = '/ Comments ',
   aiTestKey = '/ Test ',
-  aiSearchKey = '/ search ',
-  aiSumiKey = '/ ide ',
-  aiRunKey = '/ run ',
+  aiSearchDocKey = '/ SearchDoc ',
+  aiSearchCodeKey = '/ SearchCode ',
+  aiSumiKey = '/ IDE ',
+  aiRunKey = '/ RUN ',
 }
 
 export enum ChatCompletionRequestMessageRoleEnum {
@@ -97,14 +98,15 @@ export interface ChatCompletionRequestMessage {
 }
 
 export enum AISerivceType {
-  Search = 'search',
+  SearchDoc = 'searchDoc',
+  SearchCode = 'searchCode',
   Sumi = 'sumi',
   GPT = 'chat',
   Explain = 'explain',
   Run = 'run',
   Test = 'test',
   Optimize = 'optimize',
-  Generate = 'generate'
+  Generate = 'generate',
 }
 
 export type AiRunHandler = () => MaybePromise<void>;

@@ -18,8 +18,7 @@ import {
 import { MsgStreamManager } from './model/msg-stream-manager';
 
 export interface IAiSearchResponse extends IAiBackServiceResponse {
-  responseText?: string;
-  urlMessage?: string;
+  answer?: string;
 }
 
 export interface IAiStreamMessageService<T extends IAiBackServiceResponse<string>> extends IAiBackService<T> {
@@ -29,7 +28,7 @@ export interface IAiStreamMessageService<T extends IAiBackServiceResponse<string
 @Injectable()
 export class AiChatService extends Disposable {
   @Autowired(AiBackSerivcePath)
-  private aiBackService: IAiStreamMessageService<IAiSearchResponse>;
+  public aiBackService: IAiStreamMessageService<IAiSearchResponse>;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
@@ -90,36 +89,43 @@ export class AiChatService extends Disposable {
   }
 
   public async switchAIService(input: string, prompt = '') {
-    let type: AISerivceType | undefined;
-    let message: string | undefined;
+    let type: AISerivceType | undefined = AISerivceType.GPT;
+    let message: string | undefined = prompt || input;
 
     if (input.startsWith(InstructionEnum.aiSumiKey)) {
       type = AISerivceType.Sumi;
       message = input.split(InstructionEnum.aiSumiKey)[1];
 
-      return { type: AISerivceType.Sumi, message };
+      return { type, message };
     }
 
     if (input.startsWith(InstructionEnum.aiExplainKey)) {
+      type = AISerivceType.Explain;
       message = input.split(InstructionEnum.aiExplainKey)[1];
 
       if (!prompt) {
         prompt = this.explainCodePrompt(message);
       }
 
-      return { type: AISerivceType.Explain, message: prompt };
+      return { type, message: prompt };
     }
 
     if (input.startsWith(InstructionEnum.aiRunKey)) {
       return { type: AISerivceType.Run, message: prompt };
     }
 
-    if (input.startsWith(InstructionEnum.aiSearchKey)) {
-      type = AISerivceType.Search;
-      message = input.split(InstructionEnum.aiSearchKey)[1];
-    } else {
-      type = AISerivceType.GPT;
-      message = prompt || input;
+    if (input.startsWith(InstructionEnum.aiSearchDocKey)) {
+      type = AISerivceType.SearchDoc;
+      message = input.split(InstructionEnum.aiSearchDocKey)[1];
+
+      return { type, message };
+    }
+
+    if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
+      type = AISerivceType.SearchCode;
+      message = input.split(InstructionEnum.aiSearchCodeKey)[1];
+
+      return { type, message };
     }
 
     return { type, message };
@@ -225,8 +231,12 @@ export class AiChatService extends Disposable {
     }
   }
 
-  public async search(input: string, options: IAiBackServiceOption = {}) {
-    return this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
+  public async searchDoc(input: string, sessionId: string) {
+    return this.messageWithStream(input, { type: 'searchDoc' }, sessionId);
+  }
+
+  public async searchCode(input: string, sessionId: string) {
+    return this.messageWithStream(input, { type: 'searchCode' }, sessionId);
   }
 
   public setLatestSessionId(id: string): void {

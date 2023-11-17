@@ -46,7 +46,9 @@ interface ReplayComponentParam {
 const createMessage = (message: MessageData) => ({
   ...message,
   type: 'text',
-  className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${message.className ? message.className : ''}`,
+  className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${
+    message.className ? message.className : ''
+  }`,
 });
 
 const createMessageByAI = (message: AIMessageData, className?: string) =>
@@ -74,11 +76,13 @@ export const AiChatView = observer(() => {
   // 项目生成
   const generateProject = React.useCallback(async () => {
     aiProjectGenerateService.start((messageList) => {
-      const aiMessageList = messageList.map(({ message, immediately, type = 'message', relationId }) =>
-        type === 'message'
-          ? createMessageByAI({ text: <AiReply text={message} immediately={immediately} />, id: uuid(6), relationId })
-          : AICodeReply(message, aiChatService, relationId),
-      ).filter((m) => !!m) as MessageData[];
+      const aiMessageList = messageList
+        .map(({ message, immediately, type = 'message', relationId }) =>
+          type === 'message'
+            ? createMessageByAI({ text: <AiReply text={message} immediately={immediately} />, id: uuid(6), relationId })
+            : AICodeReply(message, aiChatService, relationId),
+        )
+        .filter((m) => !!m) as MessageData[];
       setMessageListData([...aiMessageList]);
     });
   }, []);
@@ -119,11 +123,15 @@ export const AiChatView = observer(() => {
     );
   };
 
-  const firstMsg = React.useMemo(() => createMessageByAI({
-    id: uuid(6),
-    relationId: '',
-    text: <InitMsgComponent />,
-  }), [InitMsgComponent]);
+  const firstMsg = React.useMemo(
+    () =>
+      createMessageByAI({
+        id: uuid(6),
+        relationId: '',
+        text: <InitMsgComponent />,
+      }),
+    [InitMsgComponent],
+  );
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
       containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
@@ -179,7 +187,7 @@ export const AiChatView = observer(() => {
         position: 'right',
         title: ME_NAME,
         text: <CodeBlockWrapperInput text={message} />,
-        className:styles.chat_message_code,
+        className: styles.chat_message_code,
         role: 'user',
       });
 
@@ -195,19 +203,21 @@ export const AiChatView = observer(() => {
         startTime,
       };
 
-      if (userInput.type === AISerivceType.Search) {
-        aiMessage = await AISearch(userInput, replayCommandProps);
-      } else if (userInput.type === AISerivceType.Sumi) {
-        aiMessage = await aiSumiService.searchCommand(userInput.message!);
+      if (userInput!.type === AISerivceType.SearchDoc) {
+        aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
+      } else if (userInput!.type === AISerivceType.SearchCode) {
+        aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
+      } else if (userInput!.type === AISerivceType.Sumi) {
+        aiMessage = await aiSumiService.searchCommand(userInput!.message!);
         aiMessage = await AIWithCommandReply(aiMessage, opener, replayCommandProps);
-      } else if (userInput.type === AISerivceType.GPT) {
-        const withPrompt = aiChatService.opensumiRolePrompt(userInput.message!);
+      } else if (userInput!.type === AISerivceType.GPT) {
+        const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
         aiMessage = await AIStreamReply(withPrompt, replayCommandProps);
-      } else if (userInput.type === AISerivceType.Explain) {
-        aiMessage = await AIStreamReply(userInput.message, replayCommandProps);
-      } else if (userInput.type === AISerivceType.Run) {
+      } else if (userInput!.type === AISerivceType.Explain) {
+        aiMessage = await AIStreamReply(userInput!.message!, replayCommandProps);
+      } else if (userInput!.type === AISerivceType.Run) {
         aiMessage = await aiRunService.requestBackService(
-          userInput.message!,
+          userInput!.message!,
           aiChatService.cancelIndicatorChatView.token,
         );
         aiMessage = await AIChatRunReply(aiMessage, replayCommandProps);
@@ -378,55 +388,61 @@ const AiReply = ({ text, endNode = <></>, immediately = false }) => {
   );
 };
 
-const codeSearchMarkedRender = new (class extends DefaultMarkedRenderer {
+const renderSearchLinkBlock = new (class extends DefaultMarkedRenderer {
   link(href: string | null, title: string | null, text: string): string {
-    return `<a rel="noopener" target="_blank" href="${href}" target="${href}" title="${title ?? href}">${text}</a>`;
+    return `<a class="${styles.link_block}" rel="noopener" target="_blank" href="${href}" target="${href}" title="${
+      title ?? href
+    }">${text}</a>`;
   }
 })();
 
-const AISearch = async (input, params: ReplayComponentParam) => {
+const renderMarkdown = (content: string) => <Markdown value={content} renderer={renderSearchLinkBlock}></Markdown>;
+
+const AISearch = async (
+  input: string,
+  type: AISerivceType.SearchDoc | AISerivceType.SearchCode,
+  params: ReplayComponentParam,
+) => {
   try {
-    const { aiChatService, aiReporter, relationId, startTime } = params;
-    const result = await aiChatService.search(input.message, {
-      type: input.type,
-    });
-
-    const { responseText, urlMessage, isCancel } = result;
-
-    aiReporter.end(relationId, {
-      message: `${responseText}\\n${urlMessage}`,
-      replytime: +new Date() - startTime,
-      success: !result.errorCode,
-      isStop: isCancel,
-      msgType: AISerivceType.Search,
-    });
-
-    if (isCancel) {
-      return null;
-    }
+    const { aiChatService, relationId } = params;
 
     const uid = uuid(6);
+
+    const send = () => {
+      if (type === AISerivceType.SearchDoc) {
+        aiChatService.searchDoc(input, relationId);
+      } else {
+        aiChatService.searchCode(input, relationId);
+      }
+    };
+
+    send();
 
     const aiMessage = createMessageByAI({
       id: uid,
       relationId,
       text: (
-        <ChatMoreActions sessionId={uid}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div>
-              <CodeBlockWrapper text={responseText} />
+        <StreamMsgWrapper
+          sessionId={relationId}
+          prompt={input}
+          onRegenerate={() => send()}
+          renderContent={(content) => (
+            <div className={styles.ai_chat_search_container}>
+              <div className={styles.ai_response_text}>
+                {type === AISerivceType.SearchDoc ? (
+                  renderMarkdown(content)
+                ) : (
+                  <CodeBlockWrapper text={content} renderText={(text) => renderMarkdown(text)} />
+                )}
+              </div>
             </div>
-            <div style={{ whiteSpace: 'pre-wrap' }}>
-              <Markdown value={urlMessage} renderer={codeSearchMarkedRender}></Markdown>
-              {/* {AICodeReply(urlMessage)} */}
-            </div>
-          </div>
-        </ChatMoreActions>
+          )}
+        ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,
     });
 
-    aiChatService.setLatestSessionId(uid);
+    aiChatService.setLatestSessionId(relationId);
     return aiMessage;
   } catch (error) {}
 };
@@ -435,12 +451,23 @@ const AISearch = async (input, params: ReplayComponentParam) => {
 const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
   try {
     const { aiChatService, relationId } = params;
-    aiChatService.messageWithStream(prompt, {}, relationId);
+    const send = () => {
+      aiChatService.messageWithStream(prompt, {}, relationId);
+    };
+
+    send();
 
     const aiMessage = createMessageByAI({
       id: uuid(6),
       relationId,
-      text: <StreamMsgWrapper sessionId={relationId} prompt={prompt} />,
+      text: (
+        <StreamMsgWrapper
+          sessionId={relationId}
+          prompt={prompt}
+          onRegenerate={() => send()}
+          renderContent={(content) => <CodeBlockWrapper text={content} />}
+        ></StreamMsgWrapper>
+      ),
       className: styles.chat_with_more_actions,
     });
 
@@ -502,12 +529,14 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
 };
 
 // 带有命令按钮的 AI 回复
-const AIWithCommandReply = async (commandRes: IAiBackServiceResponse<Command>, opener: CommandOpener, params: ReplayComponentParam) => {
+const AIWithCommandReply = async (
+  commandRes: IAiBackServiceResponse<Command>,
+  opener: CommandOpener,
+  params: ReplayComponentParam,
+) => {
   const { aiChatService, aiReporter, relationId, startTime } = params;
 
-  const failedText = commandRes.errorCode
-                      ? ERROR_RESPONSE
-                      : !commandRes.data ? NOTFOUND_COMMAND : '';
+  const failedText = commandRes.errorCode ? ERROR_RESPONSE : !commandRes.data ? NOTFOUND_COMMAND : '';
   if (failedText) {
     aiReporter.end(relationId, {
       replytime: +new Date() - startTime,

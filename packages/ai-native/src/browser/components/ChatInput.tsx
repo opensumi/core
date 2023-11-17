@@ -32,21 +32,23 @@ const optionsList: IBlockProps[] = [
   },
   {
     name: InstructionEnum.aiTestKey,
-    text: '生成测试',
+    text: '生成单测',
   },
   {
     name: InstructionEnum.aiOptimzeKey,
     text: '优化代码',
   },
   {
-    // icon: getIcon('search'),
-    name: InstructionEnum.aiSearchKey,
-    text: '搜索问题',
+    name: InstructionEnum.aiSumiKey,
+    text: '执行 IDE 相关命令',
   },
   {
-    // icon: getIcon('code'),
-    name: InstructionEnum.aiSumiKey,
-    text: 'IDE功能',
+    name: InstructionEnum.aiSearchDocKey,
+    text: '搜索文档内容',
+  },
+  {
+    name: InstructionEnum.aiSearchCodeKey,
+    text: '搜索代码仓库中的内容',
   },
 ];
 
