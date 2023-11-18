@@ -55,13 +55,13 @@ export class QuickOpenFeatureContribution
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN, {
-      execute: () => this.prefixQuickOpenService.open('>'),
+      execute: (defaultInput?: string) => this.prefixQuickOpenService.open('>', defaultInput),
     });
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN_OUTLINE, {
-      execute: () => this.prefixQuickOpenService.open('@'),
+      execute: (defaultInput?: string) => this.prefixQuickOpenService.open('@', defaultInput),
     });
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN_VIEW, {
-      execute: () => this.prefixQuickOpenService.open('view '),
+      execute: (defaultInput?: string) => this.prefixQuickOpenService.open('view ', defaultInput),
     });
   }
 
