@@ -62,7 +62,6 @@
   background-color: #272d32;
   position: relative;
   border-radius: 8px;
-  border: 1px solid #ffffff40;
 
   .theme_container {
     padding: 8px 12px;
@@ -121,10 +120,10 @@
 
   .instruction_options_container {
     position: absolute;
-    width: calc(100% - 32px);
+    width: 100%;
     background-color: #171c25;
     border: 1px solid #363940;
-    bottom: 61px;
+    bottom: 40px;
     z-index: 1000;
     background-color: #171c25;
     border-radius: 8px;
@@ -150,8 +149,6 @@
 
           .block {
             margin: 0 8px;
-            font-size: 12px;
-
             .ai_enhance_icon {
               background-color: var(--kt-icon-hoverBackground);
             }
@@ -170,7 +167,7 @@
 
   .input_wrapper {
     border-radius: 8px;
-    padding: 8px 4px 8px 12px;
+    padding: 6px 4px 6px 12px;
     font-size: 14px;
     position: relative;
     background-color: #272d32;
@@ -188,7 +185,6 @@
 
     textarea {
       resize: none;
-
       &::-webkit-scrollbar {
         width: 4px;
       }
@@ -236,15 +232,15 @@
         }
       }
 
-      &.disabled {
-        background-color: transparent !important;
-        cursor: not-allowed;
+      // &.disabled {
+      //   background-color: transparent !important;
+      //   cursor: not-allowed;
 
-        span {
-          color: var(--kt-defaultButton-disableForeground);
-          pointer-events: none;
-        }
-      }
+      //   span {
+      //     color: var(--kt-defaultButton-disableForeground);
+      //     pointer-events: none;
+      //   }
+      // }
 
       .send_icon {
         color: #315c99;
@@ -257,7 +253,7 @@
 .ai_chat_code_wrapper {
   position: relative;
   width: 100%;
-
+  font-size: 14px;
   .render_text {
     white-space: pre-wrap;
 
@@ -289,6 +285,7 @@
           border-radius: 8px;
           border: 1px solid #ffffff1a;
           // overflow: hidden;
+          font-size: 12px;
         }
 
         .action_toolbar {
@@ -315,7 +312,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
 
             &:hover {
               color: #3b89fa;
@@ -372,7 +369,6 @@
   align-items: center;
   cursor: pointer;
   text-wrap: nowrap;
-  font-size: 12px;
 
   &:hover {
     background-color: var(--kt-icon-hoverBackground);

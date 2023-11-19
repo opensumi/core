@@ -21,9 +21,7 @@ import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { AILogoAvatar, EnhanceIcon } from './components/Icon';
-import { LineVertical } from './components/lineVertical';
 import { StreamMsgWrapper } from './components/StreamMsg';
-import { Thinking } from './components/Thinking';
 import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
@@ -76,6 +74,18 @@ export const AiChatView = observer(() => {
   const [theme, setTheme] = React.useState<string | null>(null);
 
   const [, updateState] = React.useState<any>();
+
+  React.useEffect(() => {
+    msgStreamManager.onMsgStatus((event) => {
+      if (event === EMsgStreamStatus.DONE || event === EMsgStreamStatus.ERROR) {
+        setLoading(false);
+      }
+    });
+    return () => {
+      msgStreamManager.dispose();
+    };
+  }, []);
+
   // 项目生成
   const generateProject = React.useCallback(async () => {
     aiProjectGenerateService.start((messageList) => {
@@ -246,8 +256,6 @@ export const AiChatView = observer(() => {
           containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
         }
       }
-
-      setLoading(false);
     },
     [messageListData],
   );
@@ -283,20 +291,18 @@ export const AiChatView = observer(() => {
       <div className={styles.header_container}>
         <div className={styles.left}>
           <div className={styles.ai_avatar_icon}>
-            <AILogoAvatar />
+            <AILogoAvatar iconClassName={styles.avatar_icon_normal} />
           </div>
           <span className={styles.title}>{AI_NAME}</span>
-          <LineVertical height='200%' transform='scale(0.5)' />
-          <span className={styles.des}>Chat</span>
         </div>
         <div className={styles.right}>
           {/* <Popover id={'ai-chat-header-setting'} title='设置'>
             <EnhanceIcon className={getIcon('setting')} onClick={handleUnresolved} />
           </Popover> */}
-          <Popover id={'ai-chat-header-clear'} title='清空'>
+          <Popover insertClass={styles.popover_icon} id={'ai-chat-header-clear'} title='清空'>
             <EnhanceIcon className={getIcon('clear')} onClick={handleClear} />
           </Popover>
-          <Popover id={'ai-chat-header-close'} title='关闭'>
+          <Popover insertClass={styles.popover_icon} id={'ai-chat-header-close'} title='关闭'>
             <EnhanceIcon className={getIcon('close')} onClick={handleClose} />
           </Popover>
         </div>
@@ -312,17 +318,6 @@ export const AiChatView = observer(() => {
               // @ts-ignore
               dataSource={messageListData}
             />
-            {loading && (
-              <div className={styles.chat_loading_msg_box}>
-                {/* @ts-ignore */}
-                <SystemMessage
-                  title={AI_NAME}
-                  className={styles.smsg}
-                  // @ts-ignore
-                  text={<Thinking status={EMsgStreamStatus.THINKING} />}
-                ></SystemMessage>
-              </div>
-            )}
           </div>
           <div className={styles.chat_input_warp}>
             <div className={styles.header_operate}>
@@ -332,7 +327,7 @@ export const AiChatView = observer(() => {
                     Explain
                   </div>
                 </Popover>
-                <Popover id={'ai-chat-header-test'} title='添加单测'>
+                <Popover id={'ai-chat-header-test'} title='生成单测'>
                   <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiTestKey)}>
                     Test
                   </div>
@@ -355,7 +350,6 @@ export const AiChatView = observer(() => {
             <ChatInput
               onSend={(value) => handleSend({ message: value })}
               disabled={loading}
-              placeholder={'请输入或者粘贴代码'}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
@@ -464,11 +458,11 @@ const AISearch = async (
 const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
   try {
     const { aiChatService, relationId } = params;
-    const send = () => {
+    const send = async () => {
       aiChatService.messageWithStream(prompt, {}, relationId);
     };
 
-    send();
+    await send();
 
     const aiMessage = createMessageByAI({
       id: uuid(6),

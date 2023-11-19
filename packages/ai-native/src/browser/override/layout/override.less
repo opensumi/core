@@ -4,6 +4,15 @@ div[class*='box-panel___'] {
   background-size: cover;
 }
 
+#opensumi-left-tabbar {
+  span[class*='tab_badge___'] {
+    top: 20px;
+    right: -5px;
+    height: 14px;
+    font-size: 10px;
+  }
+}
+
 /**
 * 覆盖菜单样式
 */
@@ -56,7 +65,8 @@ div[class*='box-panel___'] {
   padding: 5px 8px;
   border: 1px solid var(--kt-popover-border);
   border-radius: 6px;
-
+  color: rgba(255, 255, 255, 0.85);
+  background: rgb(255 255 255 / 12%);
   .kt-popover-title {
     margin-bottom: 0;
     font-size: 12px;
@@ -72,7 +82,7 @@ div[class*='box-panel___'] {
     border: 9px solid transparent;
     top: 100%;
     border-bottom-width: 0;
-    border-top-color: var(--kt-popover-border);
+    border-top-color: transparent;
   }
 }
 
