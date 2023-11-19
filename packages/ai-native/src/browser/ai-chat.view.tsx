@@ -18,6 +18,7 @@ import { AiSumiService } from './ai-sumi/sumi.service';
 import { NOTFOUND_COMMAND, ERROR_RESPONSE, NOTFOUND_COMMAND_TIP } from './common-reponse';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
+import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { AILogoAvatar, EnhanceIcon } from './components/Icon';
 import { LineVertical } from './components/lineVertical';
@@ -213,21 +214,25 @@ export const AiChatView = observer(() => {
     async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
       let aiMessage;
 
-      if (userInput!.type === AISerivceType.SearchDoc) {
+      if (userInput.type === AISerivceType.SearchDoc) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
-      } else if (userInput!.type === AISerivceType.SearchCode) {
+      } else if (userInput.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
-      } else if (userInput!.type === AISerivceType.Sumi) {
-        aiMessage = await aiSumiService.searchCommand(userInput!.message!);
-        aiMessage = await AIWithCommandReply(userInput.message, aiMessage, opener, replayCommandProps, async () => handleCommonRetry(userInput, replayCommandProps));
-      } else if (userInput!.type === AISerivceType.GPT) {
-        const withPrompt = aiChatService.opensumiRolePrompt(userInput!.message!);
-        aiMessage = await AIStreamReply(withPrompt, replayCommandProps);
-      } else if (userInput!.type === AISerivceType.Explain) {
-        aiMessage = await AIStreamReply(userInput!.message!, replayCommandProps);
-      } else if (userInput!.type === AISerivceType.Run) {
+      } else if (userInput.type === AISerivceType.Sumi) {
+        aiMessage = await aiSumiService.searchCommand(userInput.message);
+        aiMessage = await AIWithCommandReply(userInput.message, aiMessage, opener, replayCommandProps, async () =>
+          handleCommonRetry(userInput, replayCommandProps),
+        );
+      } else if (
+        userInput.type === AISerivceType.GPT ||
+        userInput.type === AISerivceType.Explain ||
+        userInput.type === AISerivceType.Optimize ||
+        userInput.type === AISerivceType.Test
+      ) {
+        aiMessage = await AIStreamReply(userInput.message, replayCommandProps);
+      } else if (userInput.type === AISerivceType.Run) {
         aiMessage = await aiRunService.requestBackService(
-          userInput!.message!,
+          userInput.message,
           aiChatService.cancelIndicatorChatView.token,
         );
         aiMessage = await AIChatRunReply(aiMessage, replayCommandProps);
@@ -243,16 +248,21 @@ export const AiChatView = observer(() => {
       }
 
       setLoading(false);
-    }, [messageListData]);
+    },
+    [messageListData],
+  );
 
-  const handleCommonRetry = React.useCallback(async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
-    setLoading(true);
-    messageListData.pop();
-    setMessageListData([...messageListData]);
+  const handleCommonRetry = React.useCallback(
+    async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
+      setLoading(true);
+      messageListData.pop();
+      setMessageListData([...messageListData]);
 
-    const startTime = +new Date();
-    await handleReply(userInput, { ...replayCommandProps, startTime, isRetry: true });
-  }, [messageListData]);
+      const startTime = +new Date();
+      await handleReply(userInput, { ...replayCommandProps, startTime, isRetry: true });
+    },
+    [messageListData],
+  );
 
   const handleClear = React.useCallback(() => {
     aiChatService.cancelChatViewToken();
@@ -405,16 +415,6 @@ const AiReply = ({ text, endNode = <></>, immediately = false }) => {
   );
 };
 
-const renderSearchLinkBlock = new (class extends DefaultMarkedRenderer {
-  link(href: string | null, title: string | null, text: string): string {
-    return `<a class="${styles.link_block}" rel="noopener" target="_blank" href="${href}" target="${href}" title="${
-      title ?? href
-    }">${text}</a>`;
-  }
-})();
-
-const renderMarkdown = (content: string) => <Markdown value={content} renderer={renderSearchLinkBlock}></Markdown>;
-
 const AISearch = async (
   input: string,
   type: AISerivceType.SearchDoc | AISerivceType.SearchCode,
@@ -446,11 +446,7 @@ const AISearch = async (
           renderContent={(content) => (
             <div className={styles.ai_chat_search_container}>
               <div className={styles.ai_response_text}>
-                {type === AISerivceType.SearchDoc ? (
-                  renderMarkdown(content)
-                ) : (
-                  <CodeBlockWrapper text={content} renderText={(text) => renderMarkdown(text)} />
-                )}
+                <CodeBlockWrapper text={content} renderText={(text) => <ChatMarkdown content={text} />} />
               </div>
             </div>
           )}
@@ -551,7 +547,7 @@ const AIWithCommandReply = async (
   commandRes: IAiBackServiceResponse<Command>,
   opener: CommandOpener,
   params: ReplayComponentParam,
-  onRetry: () => Promise<void>
+  onRetry: () => Promise<void>,
 ) => {
   const { aiChatService, aiReporter, relationId, startTime, isRetry } = params;
 
@@ -559,7 +555,12 @@ const AIWithCommandReply = async (
 
   const failedText = commandRes.errorCode ? ERROR_RESPONSE : !commandRes.data ? NOTFOUND_COMMAND : '';
 
-  aiReporter.end(relationId, { replytime: +new Date() - startTime, success: !!failedText, msgType: AISerivceType.Sumi, isRetry });
+  aiReporter.end(relationId, {
+    replytime: +new Date() - startTime,
+    success: !!failedText,
+    msgType: AISerivceType.Sumi,
+    isRetry,
+  });
 
   if (failedText) {
     return createMessageByAI({
@@ -567,15 +568,27 @@ const AIWithCommandReply = async (
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
-          {
-            failedText === NOTFOUND_COMMAND ? (
-              <div>
-                <p>{failedText}</p>
-                <p>{NOTFOUND_COMMAND_TIP}</p>
-                <Button onClick={() => opener.open(URI.from({ scheme: 'command', path: QUICK_OPEN_COMMANDS.OPEN.id, query: JSON.stringify([userInput]) }))}>打开命令面板</Button>
-              </div>
-            ) : failedText
-          }
+          {failedText === NOTFOUND_COMMAND ? (
+            <div>
+              <p>{failedText}</p>
+              <p>{NOTFOUND_COMMAND_TIP}</p>
+              <Button
+                onClick={() =>
+                  opener.open(
+                    URI.from({
+                      scheme: 'command',
+                      path: QUICK_OPEN_COMMANDS.OPEN.id,
+                      query: JSON.stringify([userInput]),
+                    }),
+                  )
+                }
+              >
+                打开命令面板
+              </Button>
+            </div>
+          ) : (
+            failedText
+          )}
         </ChatMoreActions>
       ),
     });
