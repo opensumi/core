@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { WithEventBus, uuid } from '@opensumi/ide-core-common';
+import { CommandService, WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -43,7 +43,7 @@ class RequestImp {
     this.isCancelFlag = false;
   }
   // 发送请求
-  async sendRequest(codefuseService: AiCompletionsService, aiReporter: IAIReporter) {
+  async sendRequest(aiCompletionsService: AiCompletionsService, aiReporter: IAIReporter) {
     const { editor } = this;
     const beginRequestTime = Date.now();
     if (!editor) {
@@ -93,6 +93,7 @@ class RequestImp {
       fileUrl: model.uri.toString().split('/').pop()!,
     };
 
+    aiCompletionsService.updateStatusBarItem('running', true);
     const beginAlgTime = +new Date();
     let status = 0; // 0: 远程请求的结果 1: 网络缓存中的结果
     if (this.isCancelFlag) {
@@ -109,20 +110,23 @@ class RequestImp {
     } else {
       // 不存在缓存发起请求
       try {
-        rs = await codefuseService.complete(completionRequestBean);
+        rs = await aiCompletionsService.complete(completionRequestBean);
         status = 0;
       } catch (err: any) {
-        aiReporter.end(relationId, { success: false, replytime: + new Date() - beginAlgTime });
+        aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
+        const errTxt = err?.message === 'canceled' ? '补全已取消' : 'completion error';
+        aiCompletionsService.updateStatusBarItem(errTxt, false);
         return { items: [] };
       }
     }
     if (rs === null || rs.sessionId === null) {
-      aiReporter.end(relationId, { success: false, replytime: + new Date() - beginAlgTime });
+      aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
+      aiCompletionsService.hideStatusBarItem();
       return { items: [] };
     }
     if (rs && rs.codeModelList !== null && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
-      aiReporter.end(relationId, { success: true, replytime: + new Date() - beginAlgTime });
+      aiReporter.end(relationId, { success: true, replytime: +new Date() - beginAlgTime });
     }
     let codeModelSize = 0;
     if (rs.codeModelList !== null) {
@@ -130,11 +134,13 @@ class RequestImp {
     }
     // 返回补全结果为空直接返回
     if (rs.codeModelList.length === 0) {
+      aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
     }
+    aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
     // 如果是取消直接返回
     if (this.isCancelFlag) {
-      aiReporter.end(relationId, { success: false, replytime: + new Date() - beginAlgTime, isStop: true });
+      aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime, isStop: true });
       return [];
     }
     return this.pushResultAndRegist(rs, relationId);
@@ -158,9 +164,6 @@ class RequestImp {
       const list = contentText.split('\n');
 
       const lastLine = list[list.length - 1];
-      const spaceL = lastLine.length - lastLine.replace(/[ ]/g, '').length;
-      const note = getPromptMessageText();
-
       const arr = contentText.split(contentText[contentText.length - 1]);
       if (arr[arr.length - 1].length === 0) {
         contentText = contentText.slice(0, -1);
@@ -171,12 +174,16 @@ class RequestImp {
       //   insertText = codeModel.completionType === 1 && list.length > 1 ? `${insertText}\n\n${getMoreStr(spaceL, ' ')}${note}` : `${insertText}${getMoreStr(10, ' ')}${note}`.replace(/[\r|\n]/g, '')
       // }
 
+      const cursorPosition = this.editor.monacoEditor.getPosition()!;
+
       result.push({
         insertText,
-        // range: new monaco.Range(
-        //   cursorPosition.translate(0, insertText.length),
-        //   cursorPosition
-        // ),
+        range: new monaco.Range(
+          cursorPosition.lineNumber,
+          cursorPosition.column,
+          cursorPosition.lineNumber,
+          cursorPosition.column + insertText.length,
+        ),
         sessionId: rs.sessionId,
         command: {
           id: AI_INLINE_COMPLETION_REPORTET.id,
@@ -186,7 +193,6 @@ class RequestImp {
       });
     }
     lastRequestId = rs.sessionId;
-    // if (rs.codeModelList.length) setPromptMessage(completionType, content)
     return result;
   }
   cancelRequest() {
@@ -232,11 +238,11 @@ interface ProviderType extends monaco.languages.InlineCompletionsProvider {
 
 @Injectable({ multiple: true })
 export class TypeScriptCompletionsProvider extends WithEventBus implements ProviderType {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(AiCompletionsService)
   private aiCompletionsService: AiCompletionsService;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   @Autowired(IAIReporter)
   private aiReporter: IAIReporter;
@@ -251,8 +257,6 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
     this.isManual = false;
     this.isDelEvent = false;
     this.reqStack = new ReqStack(this.aiCompletionsService, this.aiReporter);
-
-    const { monacoEditor } = editor;
 
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
     const selectionChange = () => {
@@ -285,6 +289,20 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
         }
       }),
     );
+
+    this.addDispose(
+      this.editor.monacoEditor.onDidChangeModelContent((e) => {
+        const changes = e.changes;
+        for (const change of changes) {
+          if (change.text === '') {
+            this.isDelEvent = true;
+            this.cancelRequest();
+          } else {
+            this.isDelEvent = false;
+          }
+        }
+      }),
+    );
   }
   provideInlineCompletions(
     model: monaco.editor.ITextModel,
@@ -306,9 +324,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
 
   // 取消请求
   cancelRequest() {
-    // if (this.aiCompletionsService.getCancelSignal()) {
-    //   this.aiCompletionsService.cancelRequest();
-    // }
+    this.aiCompletionsService.cancelRequest();
     if (this.reqStack) {
       this.reqStack.cancleRqe();
     }
@@ -344,6 +360,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
       }
     }
     this.cancelRequest();
+    this.aiCompletionsService.hideStatusBarItem();
 
     // step 1 判断生成开关,如果关闭不进行后续操作
     const _isManual = this.isManual;
@@ -354,6 +371,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
     this.udateIsManualVal(false);
     // 如果用户已取消
     if (token?.isCancellationRequested) {
+      this.aiCompletionsService.updateStatusBarItem('completion not avaliable ', false);
       return;
     }
     // 放入队列

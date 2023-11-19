@@ -399,7 +399,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       Event.debounce(
-        monacoEditor.onDidChangeModelContent,
+        monacoEditor.onDidChangeModel,
         (_, e) => e,
         300,
       )(async (event) => {
@@ -419,8 +419,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
-          provideInlineCompletions: async (model, position, context, token) =>
-            inlineCompleteProvider.provideInlineCompletionItems(model, position, context, token),
+          provideInlineCompletions: async (model, position, context, token) => {
+            const list = await inlineCompleteProvider.provideInlineCompletionItems(model, position, context, token);
+            return list;
+          },
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},
         });
         this.disposables.push(dispose);
