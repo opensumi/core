@@ -29,7 +29,7 @@
     }
   }
 
-  div:first-child {
+  > div:first-child {
     margin-right: 4px !important;
     flex-shrink: 0;
     flex-grow: 0;
@@ -46,10 +46,6 @@
     background-color: var(--tab-activeBackground);
     color: var(--tab-activeForeground);
 
-    div[class*='close_tab___'] {
-      display: none !important;
-    }
-
     div:first-child {
       &::before {
         filter: grayscale(0);
@@ -61,6 +57,14 @@
     &:hover {
       background-color: initial !important;
       transform: scale(1) !important;
+    }
+
+    div[class*='close_tab___'] {
+      color: rgba(255, 255, 255, 0.25);
+
+      &:hover {
+        color: rgba(255, 255, 255, 0.65);
+      }
     }
   }
 }

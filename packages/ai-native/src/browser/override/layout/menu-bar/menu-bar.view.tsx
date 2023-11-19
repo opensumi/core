@@ -1,12 +1,13 @@
 import clsx from 'classnames';
 import * as React from 'react';
 
-import { AppConfig, getIcon, useInjectable, SlotRenderer } from '@opensumi/ide-core-browser';
+import { AppConfig, getIcon, useInjectable, SlotRenderer, SlotLocation } from '@opensumi/ide-core-browser';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
 import { AILogoAvatar, EnhanceIcon } from '../../../components/Icon';
@@ -68,7 +69,9 @@ const AiMenuBarRender = () => {
 export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
+  const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
 
   const [isOpen, setIsOpen] = React.useState<boolean>(true);
 
@@ -91,6 +94,17 @@ export const AiMenuBarView = () => {
     return () => dispose.dispose();
   }, [aiMenubarService]);
 
+  const isVisiable = React.useCallback(() => {
+    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
+    return !!tabbarService.currentContainerId;
+  }, [mainLayoutService]);
+
+  React.useEffect(() => {
+    requestAnimationFrame(() => {
+      setIsVisiablePanel(isVisiable());
+    });
+  }, []);
+
   const MENUBAR_HEIGHT = React.useMemo(
     () => appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
     [appConfig],
@@ -98,13 +112,16 @@ export const AiMenuBarView = () => {
 
   const handleLeftMenuVisiable = React.useCallback(() => {
     commandService.executeCommand('main-layout.left-panel.toggle');
+    requestAnimationFrame(() => {
+      setIsVisiablePanel(isVisiable());
+    });
   }, []);
 
   return (
     <div id={VIEW_CONTAINERS.MENUBAR} className={styles.menu_bar_view} style={{ height: MENUBAR_HEIGHT }}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <EnhanceIcon icon={'left-nav-open'} onClick={handleLeftMenuVisiable} />
+          <EnhanceIcon icon={isVisiablePanel ? 'left-nav-open' : 'left-nav-close'} onClick={handleLeftMenuVisiable} />
           <div className={styles.top_menus_bar}>
             <AiMenuBarRender />
           </div>

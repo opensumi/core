@@ -771,6 +771,7 @@ export default {
     'list.focusOutline': '#00000000',
     'editorInlayHint.parameterBackground': '#00000000',
     'button.background': '#ffffff14',
+    'scrollbarSlider.background': '#35393D',
   },
   semanticHighlighting: true,
   semanticTokenColors: {

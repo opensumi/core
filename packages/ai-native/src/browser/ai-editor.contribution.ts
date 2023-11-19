@@ -305,12 +305,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }
 
       const crossSelection = selection
-        .setStartPosition(selection.startLineNumber, 0)
+        .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-      if (value === EInlineOperation.Comments || value === EInlineOperation.Optimize) {
-        const crossCode = model.getValueInRange(crossSelection);
+      const crossCode = model.getValueInRange(crossSelection);
 
+      if (value === EInlineOperation.Comments || value === EInlineOperation.Optimize) {
         let prompt = '';
         if (value === EInlineOperation.Comments) {
           prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
@@ -352,7 +352,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       if (value === EInlineOperation.Explain) {
         this.aiChatService.launchChatMessage({
-          message: InstructionEnum.aiExplainKey,
+          message: `${InstructionEnum.aiExplainKey}\n\`\`\`${model.getLanguageId()}\n${crossCode}\n\`\`\``,
           prompt: this.aiChatService.explainCodePrompt(),
         });
         this.disposeAllWidget();
