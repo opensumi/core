@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { message } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
@@ -156,6 +157,15 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (status === EInlineChatStatus.ERROR) {
+      message.info(ERROR_RESPONSE);
+      if (onClose) {
+        onClose();
+      }
+    }
+  }, [status, onClose]);
+
   const isLoading = useMemo(() => status === EInlineChatStatus.THINKING, [status]);
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
@@ -178,11 +188,7 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
 
   const renderContent = useCallback(() => {
     if (isError) {
-      return (
-        <div className={styles.ai_inline_error_result_panel}>
-          <span>{ERROR_RESPONSE}</span>
-        </div>
-      );
+      return null;
     }
 
     if (isDone) {
@@ -190,7 +196,11 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     }
 
     if (isLoading) {
-      return <Loading className={styles.ai_inline_chat_loading} />;
+      return (
+        <EnhancePopover id={'inline_chat_loading'} title={'按 ESC 取消'}>
+          <Loading className={styles.ai_inline_chat_loading} />
+        </EnhancePopover>
+      );
     }
 
     return <AiInlineOperation hanldeOperate={handleClickOperation} onClose={onClose} />;
