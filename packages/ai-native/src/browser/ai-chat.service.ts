@@ -99,6 +99,28 @@ export class AiChatService extends Disposable {
       return { type, message };
     }
 
+    if (input.startsWith(InstructionEnum.aiTestKey)) {
+      type = AISerivceType.Test;
+      message = input.split(InstructionEnum.aiTestKey)[1];
+
+      if (!prompt) {
+        prompt = this.generateTestCodePrompt(message);
+      }
+
+      return { type, message: prompt };
+    }
+
+    if (input.startsWith(InstructionEnum.aiOptimzeKey)) {
+      type = AISerivceType.Optimize;
+      message = input.split(InstructionEnum.aiOptimzeKey)[1];
+
+      if (!prompt) {
+        prompt = this.optimzeCodePrompt(message);
+      }
+
+      return { type, message: prompt };
+    }
+
     if (input.startsWith(InstructionEnum.aiExplainKey)) {
       type = AISerivceType.Explain;
       message = input.split(InstructionEnum.aiExplainKey)[1];
@@ -129,6 +151,14 @@ export class AiChatService extends Disposable {
     }
 
     return { type, message };
+  }
+
+  public generateTestCodePrompt(message = ''): string {
+    return `为以下代码写单测：\n\`\`\`\n ${message}\n\`\`\``;
+  }
+
+  public optimzeCodePrompt(message = ''): string {
+    return `优化以下代码：\n\`\`\`\n ${message}\`\`\``;
   }
 
   // 解释当前文件的代码或者选中的某个代码片段的 prompt，也可以用于对选中的代码加上用户的描述进行解释
@@ -177,11 +207,6 @@ export class AiChatService extends Disposable {
       }
     }
     return messageWithPrompt;
-  }
-
-  public opensumiRolePrompt(message: string): string {
-    const withPrompt = message;
-    return withPrompt;
   }
 
   /**

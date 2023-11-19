@@ -315,7 +315,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         if (value === EInlineOperation.Comments) {
           prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
         } else if (value === EInlineOperation.Optimize) {
-          prompt = `优化以下代码: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
+          prompt = this.aiChatService.optimzeCodePrompt(crossCode);
         }
 
         const relationId = this.aiReporter.start(value, { message: prompt });
@@ -362,7 +362,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       if (value === EInlineOperation.Test) {
         const selectionValue = model.getValueInRange(crossSelection);
 
-        const prompt = `为以下代码写单测：\n\`\`\`${model.getLanguageId()}\n${selectionValue}\n\`\`\``;
+        const prompt = this.aiChatService.generateTestCodePrompt(selectionValue);
 
         this.aiChatService.launchChatMessage({
           message: prompt,
@@ -419,7 +419,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
-          provideInlineCompletions: async (model, position, context, token) => inlineCompleteProvider.provideInlineCompletionItems(model, position, context, token),
+          provideInlineCompletions: async (model, position, context, token) =>
+            inlineCompleteProvider.provideInlineCompletionItems(model, position, context, token),
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},
         });
         this.disposables.push(dispose);
