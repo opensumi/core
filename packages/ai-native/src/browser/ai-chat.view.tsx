@@ -108,21 +108,21 @@ export const AiChatView = observer(() => {
 
   const InitMsgComponent = () => {
     const lists = [
-      { icon: getIcon('send'), text: '生成 Java 快速排序算法', prompt: '生成 Java 快速排序算法' },
+      { icon: getIcon('send2'), text: '生成 Java 快速排序算法', prompt: '生成 Java 快速排序算法' },
       { icon: getIcon('branches'), text: '提交代码', prompt: `${InstructionEnum.aiSumiKey}提交代码` },
     ];
 
     return (
       <div>
-        <span style={{ display: 'block' }}>嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！</span>
-        <br />
-        <span style={{ display: 'block' }}>您可以提问我一些关于代码的问题</span>
-        <br />
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <span className={styles.chat_container_content}>
+          嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
+        </span>
+        <span className={styles.chat_container_content}>您可以提问我一些关于代码的问题</span>
+        <div className={styles.chat_container_content} style={{ display: 'flex', flexDirection: 'column' }}>
           {lists.map((data: any) => (
             <a
               href='javascript:void(0)'
-              style={{ marginBottom: '8px' }}
+              style={{ marginBottom: '4px' }}
               onClick={() => {
                 aiChatService.launchChatMessage({ message: data.prompt });
               }}
