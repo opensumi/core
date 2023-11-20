@@ -75,7 +75,7 @@ export const AiChatView = observer(() => {
 
   const [theme, setTheme] = React.useState<string | null>(null);
 
-  const [, updateState] = React.useState<any>();
+  const [state, updateState] = React.useState<any>();
 
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
@@ -161,7 +161,7 @@ export const AiChatView = observer(() => {
 
   React.useEffect(() => {
     scrollToBottom();
-  }, [loading, loading2, messageListData]);
+  }, [loading, loading2, state]);
 
   React.useEffect(() => {
     const dispose = msgStreamManager.onMsgStatus(() => {
