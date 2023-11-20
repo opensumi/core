@@ -152,16 +152,18 @@ class RequestImp {
   pushResultAndRegist(rs: CompletionResultModel, relationId: string): Array<InlineCompletionItem> {
     const result = new Array<InlineCompletionItem>();
     for (const codeModel of rs.codeModelList) {
-      let contentText = codeModel.content;
+      const contentText = codeModel.content;
 
+      let str = contentText;
       while (true) {
-        if (!contentText.endsWith('\n') || contentText.length < 1) {
+        if (!str.endsWith('\n')) {
           break;
         }
-        contentText = contentText.slice(0, -1);
+        str = str.slice(0, -1);
       }
 
-      const insertText = contentText;
+      let insertText = str;
+
       const cursorPosition = this.editor.monacoEditor.getPosition()!;
 
       result.push({
@@ -290,6 +292,12 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
             this.isDelEvent = false;
           }
         }
+      }),
+    );
+
+    this.addDispose(
+      this.editor.monacoEditor.onDidChangeModel(() => {
+        this.aiCompletionsService.hideStatusBarItem();
       }),
     );
   }
