@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { MessageList, ITextMessageProps } from 'react-chat-elements';
+import { MessageList, ITextMessageProps, SystemMessage } from 'react-chat-elements';
 
 import { getIcon, useInjectable, QUICK_OPEN_COMMANDS } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
@@ -21,6 +21,7 @@ import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { AILogoAvatar, EnhanceIcon } from './components/Icon';
 import { StreamMsgWrapper } from './components/StreamMsg';
+import { Thinking } from './components/Thinking';
 import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
@@ -70,6 +71,8 @@ export const AiChatView = observer(() => {
 
   const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [loading2, setLoading2] = React.useState(false);
+
   const [theme, setTheme] = React.useState<string | null>(null);
 
   const [, updateState] = React.useState<any>();
@@ -77,9 +80,9 @@ export const AiChatView = observer(() => {
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
       if (event === EMsgStreamStatus.DONE || event === EMsgStreamStatus.ERROR) {
-        setLoading(false);
+        setLoading2(false);
       } else if (event === EMsgStreamStatus.THINKING) {
-        setLoading(true);
+        setLoading2(true);
       }
     });
     return () => {
@@ -158,7 +161,7 @@ export const AiChatView = observer(() => {
 
   React.useEffect(() => {
     scrollToBottom();
-  }, [loading]);
+  }, [loading, loading2, messageListData]);
 
   React.useEffect(() => {
     const dispose = msgStreamManager.onMsgStatus(() => {
@@ -320,6 +323,17 @@ export const AiChatView = observer(() => {
               // @ts-ignore
               dataSource={messageListData}
             />
+            {loading && (
+              <div className={styles.chat_loading_msg_box}>
+                {/* @ts-ignore */}
+                <SystemMessage
+                  title={AI_NAME}
+                  className={styles.smsg}
+                  // @ts-ignore
+                  text={<Thinking status={EMsgStreamStatus.THINKING} />}
+                />
+              </div>
+            )}
           </div>
           <div className={styles.chat_input_warp}>
             <div className={styles.header_operate}>
@@ -351,7 +365,7 @@ export const AiChatView = observer(() => {
             </div>
             <ChatInput
               onSend={(value) => handleSend({ message: value })}
-              disabled={loading}
+              disabled={loading || loading2}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
@@ -569,6 +583,7 @@ const AIWithCommandReply = async (
               <p>{failedText}</p>
               <p>{NOTFOUND_COMMAND_TIP}</p>
               <Button
+                style={{ width: '100%' }}
                 onClick={() =>
                   opener.open(
                     URI.from({

@@ -57,6 +57,9 @@
 
       div[class*='kt_editor_tab_current___'] {
         background-color: transparent !important;
+        div[class*='close_tab___'] {
+          display: block !important;
+        }
       }
     }
 
@@ -172,13 +175,13 @@
 
   // 搜索输入框样式
   :global {
-    div[class*='search_container___'] {
-      .kt-input-default {
-        background-color: #ffffff14;
-        border-radius: 8px;
-        color: #ffffff40;
-      }
+    // div[class*='search_container___'] {
+    .kt-input-default {
+      background-color: #ffffff14;
+      border-radius: 8px;
+      color: #ffffff40;
     }
+    // }
   }
 }
 
@@ -293,7 +296,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding-bottom: 40px;
+      padding-bottom: 32px;
     }
 
     .rce-ai-msg {
@@ -325,15 +328,10 @@
 
     .rce-container-mbox {
       overflow: initial;
-      margin: 8px 16px;
+      // margin: 8px 16px;
       min-width: initial;
     }
-    div[class*='chat_message_code'] {
-      margin-top: 30px;
-    }
-    div[class*='chat_message_code']:first-child {
-      margin-top: 8px;
-    }
+
     .rce-user-msg {
       .rce-mbox-right {
         border-radius: 12px 12px 2px 12px;
@@ -348,6 +346,16 @@
       background: var(--vscode-textBlockQuote-background);
       border-color: var(--vscode-textBlockQuote-border);
     }
+  }
+}
+
+:global {
+  .rce-container-mbox {
+    margin: 8px 16px;
+  }
+  // TODO
+  .rce-container-mbox:nth-child(2) {
+    margin-top: 8px !important;
   }
 }
 
