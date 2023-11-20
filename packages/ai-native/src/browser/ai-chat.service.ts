@@ -143,12 +143,12 @@ export class AiChatService extends Disposable {
       return { type, message };
     }
 
-    if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
-      type = AISerivceType.SearchCode;
-      message = input.split(InstructionEnum.aiSearchCodeKey)[1];
+    // if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
+    //   type = AISerivceType.SearchCode;
+    //   message = input.split(InstructionEnum.aiSearchCodeKey)[1];
 
-      return { type, message };
-    }
+    //   return { type, message };
+    // }
 
     return { type, message };
   }
