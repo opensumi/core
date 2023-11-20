@@ -16,7 +16,14 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiBackSerivcePath, IAiBackService, AiNativeSettingSectionsId, InstructionEnum, IAIReporter } from '../common';
+import {
+  AiBackSerivcePath,
+  IAiBackService,
+  AiNativeSettingSectionsId,
+  InstructionEnum,
+  IAIReporter,
+  AiInlineChatContentWidget,
+} from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
@@ -118,7 +125,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         isShowInlineChat = false;
       }),
       monacoEditor.onMouseUp((event) => {
-        isShowInlineChat = true;
+        const target = event.target;
+        const detail = (target as any).detail;
+        if (detail && typeof detail === 'string' && detail === AiInlineChatContentWidget) {
+          isShowInlineChat = false;
+        } else {
+          isShowInlineChat = true;
+        }
       }),
     );
 
