@@ -69,7 +69,7 @@ export enum InstructionEnum {
   aiCommentsKey = '/ Comments ',
   aiTestKey = '/ Test ',
   aiSearchDocKey = '/ SearchDoc ',
-  aiSearchCodeKey = '/ SearchCode ',
+  // aiSearchCodeKey = '/ SearchCode ',
   aiSumiKey = '/ IDE ',
   aiRunKey = '/ RUN ',
 }

@@ -35,22 +35,18 @@ export const ChatMoreActions = (props: IChatMoreActionsProps) => {
   return (
     <div className={styles.ai_chat_more_actions_container}>
       <div className={styles.ai_chat_message}>{children}</div>
-      {
-        showOperate ? (
-          <div className={styles.bottom_container}>
-            <div className={styles.reset}>
-              {
-                onRetry && (
-                  <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={onRetry}>
-                    <span>重新生成</span>
-                  </EnhanceIcon>
-                )
-              }
-            </div>
-            <div className={styles.thumbs}><Thumbs relationId={sessionId} aiReporterService={aiReporter} /></div>
-          </div>
-        ) : null
-      }
+      <div className={styles.bottom_container}>
+        <div className={styles.reset}>
+          {showOperate && onRetry ? (
+            <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={onRetry}>
+              <span>重新生成</span>
+            </EnhanceIcon>
+          ) : null}
+        </div>
+        <div className={styles.thumbs}>
+          <Thumbs relationId={sessionId} aiReporterService={aiReporter} />
+        </div>
+      </div>
     </div>
   );
 };

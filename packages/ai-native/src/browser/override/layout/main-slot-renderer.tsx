@@ -30,9 +30,9 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
         <SlotRenderer
           slot='left'
           isTabbar={true}
-          defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 16}
-          minResize={280}
-          maxResize={480}
+          defaultSize={layout.left?.currentId ? layout.left?.size || 256 : 16}
+          minResize={200}
+          maxResize={350}
         />
         <SplitPanel
           id='main-vertical'
@@ -44,7 +44,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
           <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
         </SplitPanel>
-        <SlotRenderer slot='right' isTabbar={true} defaultSize={0} maxResize={480} minResize={280} minSize={0} />
+        <SlotRenderer slot='right' isTabbar={true} defaultSize={0} maxResize={360} minResize={280} minSize={0} />
       </SplitPanel>
       <SlotRenderer
         slot={Ai_CHAT_CONTAINER_VIEW_ID}
