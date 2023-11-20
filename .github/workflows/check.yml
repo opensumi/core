@@ -18,12 +18,12 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
-        node-version: [16.x]
+        node-version: [14.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -34,7 +34,7 @@ jobs:
         id: yarn_cache
         with:
           path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: install
@@ -52,11 +52,11 @@ jobs:
   build-windows:
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 14.x
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $Env:GITHUB_OUTPUT
@@ -64,7 +64,7 @@ jobs:
         id: yarn_cache
         with:
           path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Build
