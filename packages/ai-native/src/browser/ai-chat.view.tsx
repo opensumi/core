@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { MessageList, SystemMessage, ITextMessageProps } from 'react-chat-elements';
+import { MessageList, ITextMessageProps } from 'react-chat-elements';
 
-import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import { getIcon, useInjectable, QUICK_OPEN_COMMANDS } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
@@ -554,7 +553,7 @@ const AIWithCommandReply = async (
 
   aiReporter.end(relationId, {
     replytime: +new Date() - startTime,
-    success: !!failedText,
+    success: !failedText,
     msgType: AISerivceType.Sumi,
     isRetry,
   });
