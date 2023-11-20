@@ -365,14 +365,18 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
     // step 1 判断生成开关,如果关闭不进行后续操作
     const _isManual = this.isManual;
     if (this.isDelEvent && !_isManual) {
-      return [];
+      return {
+        items: [],
+      };
     }
     // 重置防止不触发自动补全事件
     this.udateIsManualVal(false);
     // 如果用户已取消
     if (token?.isCancellationRequested) {
       this.aiCompletionsService.updateStatusBarItem('completion not avaliable ', false);
-      return;
+      return {
+        items: [],
+      };
     }
     // 放入队列
     const requestImp = new RequestImp(this.editor, _isManual);
@@ -388,7 +392,9 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
       lastInLayList.column = position.column;
       lastInLayList.line = position.lineNumber;
     }
-    lastInLayList.lastResult = list || [];
+    lastInLayList.lastResult = {
+      items: list || [],
+    };
     return {
       items: list || [],
     };
