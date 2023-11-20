@@ -1,5 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   IDisposable,
   URI,
@@ -32,6 +33,7 @@ import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { TypeScriptCompletionsProvider } from './inline-completions/completeProvider';
+import { AiBrowserCtxMenuService } from './override/ai-menu.service';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 
 @Injectable()
@@ -56,6 +58,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiMenubarService)
   private readonly aiMenubarService: AiMenubarService;
+
+  @Autowired(IBrowserCtxMenu)
+  private readonly ctxMenuRenderer: AiBrowserCtxMenuService;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -109,6 +114,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposables.push(
       monacoEditor.onDidChangeModel(() => {
         this.disposeAllWidget();
+      }),
+    );
+
+    this.disposables.push(
+      monacoEditor.onDidScrollChange(() => {
+        this.ctxMenuRenderer.hide(true);
       }),
     );
 

@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, IconProps } from '@opensumi/ide-core-browser/lib/components';
@@ -51,33 +51,46 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
   const iconRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    requestAnimationFrame(() => {
-      if (iconRef.current) {
-        const rect = iconRef.current.getBoundingClientRect();
-        const { x, y, width, height } = rect;
-        const _anchor = {
-          x: x + width,
-          y: y + height,
-        };
-
-        if (skew) {
-          _anchor.x += skew.x;
-          _anchor.y += skew.y;
-        }
-
-        setAnchor(_anchor);
-      }
-    });
+    handleRefRect();
   }, [iconRef.current, skew]);
+
+  const handleRefRect = useCallback(
+    (cb?: (_anchor) => void) => {
+      requestAnimationFrame(() => {
+        if (iconRef.current) {
+          const rect = iconRef.current.getBoundingClientRect();
+          const { x, y, width, height } = rect;
+          const _anchor = {
+            x: x + width,
+            y: y + height,
+          };
+
+          if (skew) {
+            _anchor.x += skew.x;
+            _anchor.y += skew.y;
+          }
+
+          setAnchor(_anchor);
+
+          if (cb) {
+            cb(_anchor);
+          }
+        }
+      });
+    },
+    [iconRef.current, skew],
+  );
 
   const handleClick = React.useCallback(() => {
     if (!anchor) {
       return;
     }
 
-    ctxMenuRenderer.show({
-      anchor,
-      menuNodes,
+    handleRefRect((_anchor) => {
+      ctxMenuRenderer.show({
+        anchor: _anchor,
+        menuNodes,
+      });
     });
   }, [iconRef.current, menuNodes, anchor]);
 
