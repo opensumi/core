@@ -44,28 +44,30 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
   }, [status, message, children]);
 
   return (
-    <div className={styles.thinking_container}>
+    <>
       <div className={styles.content}>{renderContent()}</div>
-      <div className={styles.stop}>
-        <span className={styles.progress_bar}>
-          {/* 保持动画效果一致 */}
-          {(!!status || !children) && (
-            <Progress
-              loading={true}
-              wrapperClassName={`ai-native-progress-wrapper ${
-                status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.ERROR
-                  ? 'ai-native-progress-wrapper-stop'
-                  : ''
-              }`}
-            />
-          )}
-        </span>
-        <div className={styles.block} onClick={handlePause}>
-          <Icon className={getIcon('circle-pause')}></Icon>
-          <span>停止</span>
+      <div className={styles.thinking_container}>
+        <div className={styles.stop}>
+          <span className={styles.progress_bar}>
+            {/* 保持动画效果一致 */}
+            {(!!status || !children) && (
+              <Progress
+                loading={true}
+                wrapperClassName={`ai-native-progress-wrapper ${
+                  status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.ERROR
+                    ? 'ai-native-progress-wrapper-stop'
+                    : ''
+                }`}
+              />
+            )}
+          </span>
+          <div className={styles.block} onClick={handlePause}>
+            <Icon className={getIcon('circle-pause')}></Icon>
+            <span>停止</span>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
