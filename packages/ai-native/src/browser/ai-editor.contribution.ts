@@ -118,15 +118,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         isShowInlineChat = false;
       }),
       monacoEditor.onMouseUp((event) => {
-        const type = event.target.type;
-        if (
-          type === monaco.editor.MouseTargetType.CONTENT_TEXT ||
-          type === monaco.editor.MouseTargetType.CONTENT_EMPTY ||
-          type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS ||
-          type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN
-        ) {
-          isShowInlineChat = true;
-        }
+        isShowInlineChat = true;
       }),
     );
 

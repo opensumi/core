@@ -38,7 +38,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   private aiInlineChatService: AiInlineChatService;
 
   allowEditorOverflow?: boolean | undefined = false;
-  suppressMouseDown?: boolean | undefined = true;
+  suppressMouseDown?: boolean | undefined = false;
 
   private domNode: HTMLElement;
   protected options: ShowAiContentOptions | undefined;
