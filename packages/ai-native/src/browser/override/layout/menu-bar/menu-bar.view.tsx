@@ -128,7 +128,7 @@ export const AiMenuBarView = () => {
             ></Input>
           </div> */}
           <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
-            <AILogoAvatar className={styles.avatar_icon_large} />
+            <AILogoAvatar iconClassName={styles.avatar_icon_large} />
           </div>
         </div>
       </div>
