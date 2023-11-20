@@ -397,7 +397,7 @@ export const ChatInput = (props: IChatInputProps) => {
             >
               <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
                 <Icon
-                  className={cls(disabled ? getIcon('more') : getIcon('send'), styles.send_icon)}
+                  className={cls(disabled ? getIcon('more') : getIcon('send1'), styles.send_icon)}
                   onClick={() => handleSend()}
                 />
               </Popover>
