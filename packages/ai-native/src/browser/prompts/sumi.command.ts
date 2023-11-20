@@ -133,8 +133,6 @@ export class SumiCommandPromptManager extends PromptManager {
   private findCommandCotPrompt = `
     提问: 打开全局快捷键配置
     回答: 通过分析需求「打开全局快捷键配置」, 可以获取到一些关键词： open、keybinding、global。通过这些关键词可以在 Command 的列表内匹配到相关的命令是： \`workbench.action.openGlobalKeybindings\`
-    提问: 增加字体大小
-    回答: 通过分析需求「增加字体大小」，可以获取到一些关键词：font、zoomIn、zoomOut。通过这些关键词，无法在 Command 列表中找到合适的命令。
     提问: 提交代码
     回答: 通过分析需求「提交代码」，可以获取到一些关键词：git、commit。通过这些关键词可以在 Command 的列表内匹配到相关的命令是： \`git.commit\`
   `;
