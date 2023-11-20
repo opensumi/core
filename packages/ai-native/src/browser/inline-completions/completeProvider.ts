@@ -266,6 +266,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
         return;
       }
       // clearPromptMessage();
+      this.aiCompletionsService.hideStatusBarItem();
       const selection = editor.monacoEditor.getSelection()!;
       // 判断是否选中区域
       if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
