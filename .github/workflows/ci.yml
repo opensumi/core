@@ -46,6 +46,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: |
+          yarn cache clear
           yarn install --immutable
 
       - name: CI

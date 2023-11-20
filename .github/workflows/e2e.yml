@@ -41,6 +41,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Install
         run: |
+          yarn cache clear
           yarn install --immutable
 
       - name: Init

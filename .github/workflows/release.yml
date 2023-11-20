@@ -80,6 +80,7 @@ jobs:
       - name: Install dependencies & Build
         if: steps.checkTag.outputs.exists == 'false'
         run: |
+          yarn cache clear
           yarn install --immutable
           yarn run init
           yarn run build:cli-engine
