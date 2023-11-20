@@ -6,6 +6,10 @@ export class AiMenubarService extends Disposable {
   private latestWidth = 0;
   public onDidChangeDispatcher: Dispatcher<number, 'latestWidth'> = this.registerDispose(new Dispatcher());
 
+  public getLatestWidth(): number {
+    return this.latestWidth;
+  }
+
   /**
    * 这里先这样处理，暂时没找到原因
    */

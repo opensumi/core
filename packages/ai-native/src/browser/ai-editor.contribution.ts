@@ -32,6 +32,7 @@ import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { TypeScriptCompletionsProvider } from './inline-completions/completeProvider';
+import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 
 @Injectable()
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -52,6 +53,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(AiMenubarService)
+  private readonly aiMenubarService: AiMenubarService;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -379,6 +383,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.aiInlineChatDisposed.addDispose(
       this.aiInlineContentWidget.onClickOperation(async (value) => {
         handleOperation(value, selection);
+
+        if (this.aiMenubarService.getLatestWidth() !== 0) {
+          this.aiMenubarService.toggleRightPanel();
+        }
       }),
     );
   }

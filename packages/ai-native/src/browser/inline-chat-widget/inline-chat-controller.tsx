@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { message } from '@opensumi/ide-components';
@@ -142,6 +143,10 @@ export interface IAiInlineChatControllerProps {
   onClose?: () => void;
 }
 
+const debounceMessage = debounce(() => {
+  message.info(ERROR_RESPONSE);
+}, 1000);
+
 export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
   const { onClickOperation, onClose } = props;
   const aiInlineChatService: AiInlineChatService = useInjectable(AiInlineChatService);
@@ -159,7 +164,7 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
 
   useEffect(() => {
     if (status === EInlineChatStatus.ERROR) {
-      message.info(ERROR_RESPONSE);
+      debounceMessage();
       if (onClose) {
         onClose();
       }
