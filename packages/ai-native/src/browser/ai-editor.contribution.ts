@@ -6,7 +6,6 @@ import {
   MaybePromise,
   Disposable,
   Event,
-  uuid,
   ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
@@ -26,7 +25,6 @@ import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { TypeScriptCompletionsProvider } from './inline-completions/completeProvider';
-import { prePromptHandler, preSuffixHandler, ReqStack } from './inline-completions/provider';
 
 @Injectable()
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
