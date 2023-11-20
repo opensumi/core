@@ -56,10 +56,10 @@ const optionsList: IBlockProps[] = [
     name: InstructionEnum.aiSumiKey,
     text: '执行 IDE 相关命令',
   },
-  {
-    name: InstructionEnum.aiSearchDocKey,
-    text: '搜索文档内容',
-  },
+  // {
+  //   name: InstructionEnum.aiSearchDocKey,
+  //   text: '搜索文档内容',
+  // },
   // {
   //   name: InstructionEnum.aiSearchCodeKey,
   //   text: '搜索代码仓库中的内容',

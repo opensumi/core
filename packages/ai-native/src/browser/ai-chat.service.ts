@@ -136,12 +136,12 @@ export class AiChatService extends Disposable {
       return { type: AISerivceType.Run, message: prompt };
     }
 
-    if (input.startsWith(InstructionEnum.aiSearchDocKey)) {
-      type = AISerivceType.SearchDoc;
-      message = input.split(InstructionEnum.aiSearchDocKey)[1];
+    // if (input.startsWith(InstructionEnum.aiSearchDocKey)) {
+    //   type = AISerivceType.SearchDoc;
+    //   message = input.split(InstructionEnum.aiSearchDocKey)[1];
 
-      return { type, message };
-    }
+    //   return { type, message };
+    // }
 
     // if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
     //   type = AISerivceType.SearchCode;
