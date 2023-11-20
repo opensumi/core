@@ -79,6 +79,8 @@ export const AiChatView = observer(() => {
     msgStreamManager.onMsgStatus((event) => {
       if (event === EMsgStreamStatus.DONE || event === EMsgStreamStatus.ERROR) {
         setLoading(false);
+      } else if (event === EMsgStreamStatus.THINKING) {
+        setLoading(true);
       }
     });
     return () => {
@@ -256,6 +258,7 @@ export const AiChatView = observer(() => {
           containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
         }
       }
+      setLoading(false);
     },
     [messageListData],
   );
