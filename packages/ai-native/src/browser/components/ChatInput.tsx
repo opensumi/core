@@ -268,6 +268,10 @@ export const ChatInput = (props: IChatInputProps) => {
 
     // 报错提示
     if (theme && !value.trim() && !selectCode) {
+      if (theme === InstructionEnum.aiSumiKey) {
+        message.info('很抱歉，您并未输入任何命令，可以试试这么问：/IDE 设置主题');
+        return;
+      }
       message.info('很抱歉，您并未选中或输入任何代码，请先选中或输入代码');
     }
   }, [onSend, value]);
@@ -345,12 +349,12 @@ export const ChatInput = (props: IChatInputProps) => {
   }, [isExpand]);
 
   const resetStatus = (clearExpand?: boolean) => {
-    setWrapperHeight(defaultHeight);
     if (clearExpand) {
       setShowExpand(false);
     }
     setIsExpand(false);
     setTheme('');
+    setWrapperHeight(defaultHeight);
   };
 
   return (
