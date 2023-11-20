@@ -119,12 +119,12 @@ class RequestImp {
         return [];
       }
     }
-    if (rs === null || rs.sessionId === null) {
+    if (!(rs && rs.sessionId)) {
       aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
       aiCompletionsService.hideStatusBarItem();
       return [];
     }
-    if (rs && rs.codeModelList !== null && rs.codeModelList.length > 0) {
+    if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
       aiReporter.end(relationId, { success: true, replytime: +new Date() - beginAlgTime });
     }
@@ -161,19 +161,7 @@ class RequestImp {
         contentText = contentText.slice(0, -1);
       }
 
-      const list = contentText.split('\n');
-
-      const lastLine = list[list.length - 1];
-      const arr = contentText.split(contentText[contentText.length - 1]);
-      if (arr[arr.length - 1].length === 0) {
-        contentText = contentText.slice(0, -1);
-      }
       const insertText = contentText;
-
-      // if (MESSAGE_SHOW_TIME < 2) {
-      //   insertText = codeModel.completionType === 1 && list.length > 1 ? `${insertText}\n\n${getMoreStr(spaceL, ' ')}${note}` : `${insertText}${getMoreStr(10, ' ')}${note}`.replace(/[\r|\n]/g, '')
-      // }
-
       const cursorPosition = this.editor.monacoEditor.getPosition()!;
 
       result.push({
