@@ -116,13 +116,13 @@ class RequestImp {
         aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
         const errTxt = err?.message === 'canceled' ? '补全已取消' : 'completion error';
         aiCompletionsService.updateStatusBarItem(errTxt, false);
-        return { items: [] };
+        return [];
       }
     }
     if (rs === null || rs.sessionId === null) {
       aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
       aiCompletionsService.hideStatusBarItem();
-      return { items: [] };
+      return [];
     }
     if (rs && rs.codeModelList !== null && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
