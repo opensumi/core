@@ -25,13 +25,13 @@ jobs:
       matrix:
         # os: [macos-latest, ubuntu-latest, windows-2019]
         os: [macos-latest, ubuntu-latest]
-        node-version: [16.x]
+        node-version: [14.x]
         ci-project: [node, jsdom]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - name: Get yarn cache directory path
@@ -52,7 +52,7 @@ jobs:
         run: |
           yarn run ci --selectProjects ${{ matrix.ci-project }}
 
-      - if: ${{ matrix.node-version == '16.x' && matrix.os == 'ubuntu-latest' }}
+      - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
