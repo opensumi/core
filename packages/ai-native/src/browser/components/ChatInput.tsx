@@ -21,7 +21,7 @@ const PLACEHOLDER = {
   CODE: '请输入或者粘贴代码',
 };
 
-const VALUE_START_WITH_THEME = /\/(\s?)(ide|explain|comments|test|searchcode|searchdoc|run|optimize)\s/i;
+const VALUE_START_WITH_THEME = /\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
 
 interface IBlockProps {
   icon?: string;
@@ -60,10 +60,10 @@ const optionsList: IBlockProps[] = [
     name: InstructionEnum.aiSearchDocKey,
     text: '搜索文档内容',
   },
-  {
-    name: InstructionEnum.aiSearchCodeKey,
-    text: '搜索代码仓库中的内容',
-  },
+  // {
+  //   name: InstructionEnum.aiSearchCodeKey,
+  //   text: '搜索代码仓库中的内容',
+  // },
 ];
 
 // 指令命令激活组件
@@ -262,6 +262,7 @@ export const ChatInput = (props: IChatInputProps) => {
         return;
       }
       onSend(preText + ` \`\`\`\n ${selectCode} \n\`\`\``);
+      isExpand ? resetStatus() : resetStatus(true);
       return;
     }
 
