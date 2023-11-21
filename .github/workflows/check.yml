@@ -39,7 +39,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: |
-          yarn install --immutable
+          yarn install
 
       - name: Build
         run: |
@@ -70,7 +70,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Build
         run: |
-          yarn install --immutable
+          yarn install
           yarn run init
           yarn run bundle:lite
 
