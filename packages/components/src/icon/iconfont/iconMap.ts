@@ -57,6 +57,7 @@ export const defaultIconfont = {
   'deploy': 'deploy',
   'detail': 'detail',
   'disconnect': 'disconnect',
+  'diuqi': 'diuqi',
   'dock-down': 'dock-down',
   'dock-right': 'dock-right',
   'doubleleft': 'doubleleft',
@@ -195,5 +196,6 @@ export const defaultIconfont = {
   'window': 'window',
   'window-close': 'window-close',
   'window-maximize': 'window-maximize',
+  'zhongxin': 'zhongxin',
   'zsh': 'zsh',
 };

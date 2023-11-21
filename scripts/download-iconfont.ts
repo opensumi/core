@@ -90,7 +90,7 @@ async function diagnosis() {
 }
 
 async function bootstrap() {
-  await ensureGitClean();
+  // await ensureGitClean();
 
   await download({
     cssUrl: IDE_ICONFONT_CN_CSS,

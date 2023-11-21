@@ -124,10 +124,10 @@ const AiInlineResult = () => {
         <EnhanceIcon icon={'check'} onClick={handleAdopt}>
           <span>采纳</span>
         </EnhanceIcon>
-        <EnhanceIcon icon={'revoke'} onClick={handleDiscard}>
+        <EnhanceIcon icon={'diuqi'} onClick={handleDiscard}>
           <span>丢弃</span>
         </EnhanceIcon>
-        <EnhanceIcon icon={'refresh'} onClick={handleRefresh}>
+        <EnhanceIcon icon={'zhongxin'} onClick={handleRefresh}>
           <span>重新生成</span>
         </EnhanceIcon>
       </div>
