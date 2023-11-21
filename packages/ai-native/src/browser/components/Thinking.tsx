@@ -101,20 +101,22 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
   const isRenderRegenerate = useMemo(() => aiChatService.latestSessionId === sessionId, [sessionId, latestSessionId]);
 
   return (
-    <div className={styles.thinking_container}>
+    <>
       <div className={styles.content}>{renderContent()}</div>
-      <div className={styles.bottom_container}>
-        <div className={styles.reset}>
-          {isRenderRegenerate ? (
-            <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={handleRegenerate}>
-              <span>重新生成</span>
-            </EnhanceIcon>
-          ) : null}
-        </div>
-        <div className={styles.thumbs}>
-          <Thumbs relationId={sessionId} aiReporterService={aiReporter} />
+      <div className={styles.thinking_container}>
+        <div className={styles.bottom_container}>
+          <div className={styles.reset}>
+            {isRenderRegenerate ? (
+              <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={handleRegenerate}>
+                <span>重新生成</span>
+              </EnhanceIcon>
+            ) : null}
+          </div>
+          <div className={styles.thumbs}>
+            <Thumbs relationId={sessionId} aiReporterService={aiReporter} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

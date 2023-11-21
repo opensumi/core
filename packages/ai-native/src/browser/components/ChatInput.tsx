@@ -377,7 +377,7 @@ export const ChatInput = (props: IChatInputProps) => {
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         style={{
           // 2px 额外宽度 否则会有滚动条
-          height: wrapperHeight - 12 + 'px',
+          height: wrapperHeight - 12 + 2 + 'px',
           // maxHeight: wrapperHeight-16 + 'px',
           // minHeight: wrapperHeight-16 + 'px',
         }}
