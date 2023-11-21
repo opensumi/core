@@ -58,7 +58,12 @@
       div[class*='kt_editor_tab_current___'] {
         background-color: transparent !important;
         div[class*='close_tab___'] {
-          display: block !important;
+          display: block;
+        }
+      }
+      div[class*='kt_editor_tab_dirty___'] {
+        div[class*='close_tab___'] {
+          display: none;
         }
       }
     }

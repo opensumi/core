@@ -21,7 +21,7 @@ const PLACEHOLDER = {
   CODE: '请输入或者粘贴代码',
 };
 
-const VALUE_START_WITH_THEME = /\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
+const VALUE_START_WITH_THEME = /^\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
 
 interface IBlockProps {
   icon?: string;
@@ -358,7 +358,7 @@ export const ChatInput = (props: IChatInputProps) => {
   };
 
   return (
-    <div className={styles.chat_input_container}>
+    <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
         <div ref={instructionRef}>
           <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />
@@ -401,10 +401,19 @@ export const ChatInput = (props: IChatInputProps) => {
               )}
             >
               <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
-                <Icon
-                  className={cls(disabled ? getIcon('more') : getIcon('send1'), styles.send_icon)}
-                  onClick={() => handleSend()}
-                />
+                {disabled ? (
+                  <div className={styles.ai_loading}>
+                    {' '}
+                    <div className={styles.lds_ellipsis}>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                  </div>
+                ) : (
+                  <Icon className={cls(getIcon('send1'), styles.send_icon)} onClick={() => handleSend()} />
+                )}
               </Popover>
             </div>
           </div>
