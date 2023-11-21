@@ -11,6 +11,7 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   Schemes,
+  CommandService,
 } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
@@ -61,6 +62,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(IBrowserCtxMenu)
   private readonly ctxMenuRenderer: AiBrowserCtxMenuService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -269,6 +273,16 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       this.logger.log('aiGPTcompletionRequest:>>> refresh answer', answer);
       if (answer) {
+        const regex = /^\s*/;
+        const matches = crossCode.match(regex);
+        let spaceCount = 4;
+        if (matches) {
+          spaceCount = matches[0].length;
+        }
+        const indents = ' '.repeat(spaceCount);
+        const spcode = answer.split('\n');
+        answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
+
         editor.monacoEditor.setHiddenAreas([crossSelection], AiDiffWidget._hideId);
 
         this.aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, crossCode, answer, model.getLanguageId()]);
@@ -299,6 +313,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               ],
               () => null,
             );
+            this.commandService.executeCommand('editor.action.formatDocument');
             setTimeout(() => {
               this.disposeAllWidget();
             }, 110);
@@ -327,11 +342,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
       const crossCode = model.getValueInRange(crossSelection);
-
       if (value === EInlineOperation.Comments || value === EInlineOperation.Optimize) {
         let prompt = '';
         if (value === EInlineOperation.Comments) {
-          prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
+          prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释，并保留缩进`;
         } else if (value === EInlineOperation.Optimize) {
           prompt = this.aiChatService.optimzeCodePrompt(crossCode);
         }
@@ -417,7 +431,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     let dispose: IDisposable | undefined;
-    const inlineCompleteProvider = this.injector.get(TypeScriptCompletionsProvider, [editor]);
 
     this.disposables.push(
       Event.debounce(
@@ -427,6 +440,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       )(async (event) => {
         if (dispose) {
           dispose.dispose();
+        }
+
+        const { monacoEditor, currentUri } = editor;
+        if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+          return this;
         }
 
         const model = monacoEditor.getModel();
@@ -440,9 +458,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           return;
         }
 
+        const inlineCompleteProvider = this.injector.get(TypeScriptCompletionsProvider, [editor]);
+
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
-            const list = await inlineCompleteProvider.provideInlineCompletionItems(model, position, context, token);
+            const list = await inlineCompleteProvider.provideInlineCompletionItems(editor, position, context, token);
             return list;
           },
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},

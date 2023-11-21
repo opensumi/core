@@ -137,12 +137,13 @@ class RequestImp {
       aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
     }
-    aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
     // 如果是取消直接返回
     if (this.isCancelFlag) {
       aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime, isStop: true });
       return [];
     }
+
+    aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
     return this.pushResultAndRegist(rs, relationId);
   }
   /**
@@ -300,6 +301,12 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
         this.aiCompletionsService.hideStatusBarItem();
       }),
     );
+
+    this.addDispose(
+      this.editor.monacoEditor.onDidBlurEditorText(() => {
+        this.aiCompletionsService.hideStatusBarItem();
+      }),
+    );
   }
   provideInlineCompletions(
     model: monaco.editor.ITextModel,
@@ -339,7 +346,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
    * @returns
    */
   async provideInlineCompletionItems(
-    model: monaco.editor.ITextModel,
+    editor: IEditor,
     position: monaco.Position,
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
@@ -376,7 +383,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
       };
     }
     // 放入队列
-    const requestImp = new RequestImp(this.editor, _isManual);
+    const requestImp = new RequestImp(editor, _isManual);
     this.reqStack.addReq(requestImp);
     // 如果是自动补全等待300ms
     if (!_isManual) {
