@@ -588,7 +588,7 @@ const AIWithCommandReply = async (
                   opener.open(
                     URI.from({
                       scheme: 'command',
-                      path: QUICK_OPEN_COMMANDS.OPEN.id,
+                      path: QUICK_OPEN_COMMANDS.OPEN_WITH_COMMAND.id,
                       query: JSON.stringify([userInput]),
                     }),
                   )
