@@ -39,7 +39,6 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: |
-          yarn cache clear
           yarn install --immutable
 
       - name: Build
@@ -71,7 +70,6 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Build
         run: |
-          yarn cache clear
           yarn install --immutable
           yarn run init
           yarn run bundle:lite

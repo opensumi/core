@@ -57,7 +57,6 @@ jobs:
       # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
-          yarn cache clear
           yarn install --immutable
           yarn run init
           yarn run build:cli-engine || echo "Skip build:cli-engine"
