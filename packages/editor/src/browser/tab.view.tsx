@@ -373,6 +373,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
       {group.resources.map((resource, i) => {
         let ref: HTMLDivElement | null;
+        const decoration = resourceService.getResourceDecoration(resource.uri);
         return (
           <div
             draggable={true}
@@ -382,6 +383,7 @@ export const Tabs = ({ group }: ITabsProps) => {
               [styles.last_in_row]: tabMap.get(i),
               [styles.kt_editor_tab_current]: group.currentResource === resource,
               [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
+              [styles.kt_editor_tab_dirty]: decoration.dirty,
             })}
             style={
               wrapMode && i === group.resources.length - 1

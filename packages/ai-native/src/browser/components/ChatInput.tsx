@@ -21,7 +21,7 @@ const PLACEHOLDER = {
   CODE: '请输入或者粘贴代码',
 };
 
-const VALUE_START_WITH_THEME = /\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
+const VALUE_START_WITH_THEME = /^\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
 
 interface IBlockProps {
   icon?: string;
@@ -251,7 +251,7 @@ export const ChatInput = (props: IChatInputProps) => {
     if (value.trim() && onSend) {
       setValue('');
       onSend(preText + value);
-      isExpand ? resetStatus() : resetStatus(true);
+      resetStatus();
       return;
     }
 
@@ -262,7 +262,7 @@ export const ChatInput = (props: IChatInputProps) => {
         return;
       }
       onSend(preText + ` \`\`\`\n ${selectCode} \n\`\`\``);
-      isExpand ? resetStatus() : resetStatus(true);
+      resetStatus();
       return;
     }
 
@@ -348,17 +348,17 @@ export const ChatInput = (props: IChatInputProps) => {
     }
   }, [isExpand]);
 
-  const resetStatus = (clearExpand?: boolean) => {
-    if (clearExpand) {
-      setShowExpand(false);
-    }
+  const resetStatus = () => {
     setIsExpand(false);
     setTheme('');
-    setWrapperHeight(defaultHeight);
+    setTimeout(() => {
+      setWrapperHeight(defaultHeight);
+      setShowExpand(false);
+    }, 0);
   };
 
   return (
-    <div className={styles.chat_input_container}>
+    <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
         <div ref={instructionRef}>
           <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />
@@ -378,7 +378,7 @@ export const ChatInput = (props: IChatInputProps) => {
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         style={{
           // 2px 额外宽度 否则会有滚动条
-          height: wrapperHeight - 12 + 2 + 'px',
+          height: wrapperHeight - 12 + 'px',
           // maxHeight: wrapperHeight-16 + 'px',
           // minHeight: wrapperHeight-16 + 'px',
         }}
@@ -401,10 +401,19 @@ export const ChatInput = (props: IChatInputProps) => {
               )}
             >
               <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
-                <Icon
-                  className={cls(disabled ? getIcon('more') : getIcon('send1'), styles.send_icon)}
-                  onClick={() => handleSend()}
-                />
+                {disabled ? (
+                  <div className={styles.ai_loading}>
+                    {' '}
+                    <div className={styles.lds_ellipsis}>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                  </div>
+                ) : (
+                  <Icon className={cls(getIcon('send1'), styles.send_icon)} onClick={() => handleSend()} />
+                )}
               </Popover>
             </div>
           </div>

@@ -61,7 +61,11 @@
   background-color: #272d32;
   position: relative;
   border-radius: 8px;
-
+  padding: 1px;
+  &.active {
+    border: 1px solid #363940;
+    padding: 0;
+  }
   .theme_container {
     padding: 8px 12px;
     display: flex;
@@ -171,7 +175,6 @@
     position: relative;
     background-color: #272d32;
     border: none;
-
     :global {
       .kt-input-addon-after {
         align-items: flex-end;
@@ -250,6 +253,7 @@
   position: relative;
   width: 100%;
   font-size: 14px;
+  line-height: 22px;
   .render_text {
     // white-space: pre-wrap;
 
@@ -274,6 +278,7 @@
           // overflow: hidden;
           font-size: 12px;
           padding: 30px 8px 8px 8px;
+          line-height: 18px;
         }
 
         .action_toolbar {
@@ -434,33 +439,33 @@
   .lds_ellipsis {
     display: inline-block;
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 20px;
+    height: 20px;
   }
   .lds_ellipsis div {
     position: absolute;
-    top: 33px;
-    width: 13px;
-    height: 13px;
+    top: 11px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
-    background: #fff;
+    background: #315c99;
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
   }
   .lds_ellipsis div:nth-child(1) {
-    left: 8px;
-    animation: lds-ellipsis1 0.6s infinite;
+    left: 0px;
+    animation: lds-ellipsis1 1s infinite;
   }
   .lds_ellipsis div:nth-child(2) {
-    left: 8px;
-    animation: lds-ellipsis2 0.6s infinite;
+    left: 0px;
+    animation: lds-ellipsis2 1s infinite;
   }
   .lds_ellipsis div:nth-child(3) {
-    left: 32px;
-    animation: lds-ellipsis2 0.6s infinite;
+    left: 8px;
+    animation: lds-ellipsis2 1s infinite;
   }
   .lds_ellipsis div:nth-child(4) {
-    left: 56px;
-    animation: lds-ellipsis3 0.6s infinite;
+    left: 16px;
+    animation: lds-ellipsis3 1s infinite;
   }
   @keyframes lds-ellipsis1 {
     0% {
@@ -483,7 +488,7 @@
       transform: translate(0, 0);
     }
     100% {
-      transform: translate(24px, 0);
+      transform: translate(8px, 0);
     }
   }
 }
