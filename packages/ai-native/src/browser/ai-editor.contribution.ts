@@ -313,7 +313,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               ],
               () => null,
             );
-            this.commandService.executeCommand('editor.action.formatDocument');
             setTimeout(() => {
               this.disposeAllWidget();
             }, 110);
