@@ -207,7 +207,7 @@ export const ChatInput = (props: IChatInputProps) => {
     }
 
     // 自适应高度
-    if (inputRef && inputRef.current && !isExpand) {
+    if (inputRef && inputRef.current && value && !isExpand) {
       inputRef.current.style.height = 0 + 'px';
       const scrollHeight = inputRef.current.scrollHeight;
       inputRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
@@ -221,6 +221,14 @@ export const ChatInput = (props: IChatInputProps) => {
       }
     }
   }, [inputRef, value, enableOptions]);
+
+  useEffect(() => {
+    if (!value) {
+      setWrapperHeight(defaultHeight);
+      setShowExpand(false);
+      setIsExpand(false);
+    }
+  }, [value, wrapperHeight]);
 
   const handleInputChange = useCallback((value: string) => {
     setValue(value);
@@ -251,7 +259,7 @@ export const ChatInput = (props: IChatInputProps) => {
     if (value.trim() && onSend) {
       setValue('');
       onSend(preText + value);
-      resetStatus();
+      setTheme('');
       return;
     }
 
@@ -262,7 +270,7 @@ export const ChatInput = (props: IChatInputProps) => {
         return;
       }
       onSend(preText + ` \`\`\`\n ${selectCode} \n\`\`\``);
-      resetStatus();
+      setTheme('');
       return;
     }
 
@@ -347,15 +355,6 @@ export const ChatInput = (props: IChatInputProps) => {
       setShowExpand(false);
     }
   }, [isExpand]);
-
-  const resetStatus = () => {
-    setIsExpand(false);
-    setTheme('');
-    setTimeout(() => {
-      setWrapperHeight(defaultHeight);
-      setShowExpand(false);
-    }, 0);
-  };
 
   return (
     <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
