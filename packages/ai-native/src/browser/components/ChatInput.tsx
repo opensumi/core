@@ -251,7 +251,7 @@ export const ChatInput = (props: IChatInputProps) => {
     if (value.trim() && onSend) {
       setValue('');
       onSend(preText + value);
-      isExpand ? resetStatus() : resetStatus(true);
+      resetStatus();
       return;
     }
 
@@ -262,7 +262,7 @@ export const ChatInput = (props: IChatInputProps) => {
         return;
       }
       onSend(preText + ` \`\`\`\n ${selectCode} \n\`\`\``);
-      isExpand ? resetStatus() : resetStatus(true);
+      resetStatus();
       return;
     }
 
@@ -348,13 +348,13 @@ export const ChatInput = (props: IChatInputProps) => {
     }
   }, [isExpand]);
 
-  const resetStatus = (clearExpand?: boolean) => {
-    if (clearExpand) {
-      setShowExpand(false);
-    }
+  const resetStatus = () => {
     setIsExpand(false);
     setTheme('');
-    setWrapperHeight(defaultHeight);
+    setTimeout(() => {
+      setWrapperHeight(defaultHeight);
+      setShowExpand(false);
+    }, 0);
   };
 
   return (
@@ -378,7 +378,7 @@ export const ChatInput = (props: IChatInputProps) => {
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         style={{
           // 2px 额外宽度 否则会有滚动条
-          height: wrapperHeight - 12 + 2 + 'px',
+          height: wrapperHeight - 12 + 'px',
           // maxHeight: wrapperHeight-16 + 'px',
           // minHeight: wrapperHeight-16 + 'px',
         }}
