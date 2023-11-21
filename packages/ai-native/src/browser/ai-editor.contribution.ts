@@ -345,7 +345,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       if (value === EInlineOperation.Comments || value === EInlineOperation.Optimize) {
         let prompt = '';
         if (value === EInlineOperation.Comments) {
-          prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释，并保留缩进`;
+          prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
         } else if (value === EInlineOperation.Optimize) {
           prompt = this.aiChatService.optimzeCodePrompt(crossCode);
         }
