@@ -277,6 +277,7 @@ const InnerCommandGroups = {
     'editor.action.fontZoomIn',
     'editor.action.fontZoomOut',
     'editor.action.fontZoomReset',
+    'workbench.action.reloadWindow',
   ],
   'Code Editing and Refactoring': [
     'editor.undo',
@@ -690,11 +691,21 @@ export class AiSumiService {
 
   public async searchCommand(input: string): Promise<IAiBackServiceResponse<Command>> {
     this.findCommandRequestErrorCode = 0;
+
+    const command = this.searchWithoutAI(input);
+    if (command) {
+      return { data: command };
+    }
+
     try {
       return this.searchGroup(input);
     } catch {
       return { errorCode: 1 };
     }
+  }
+
+  private searchWithoutAI(input: string) {
+    return this.commandRegistryService.getCommands().find((command) => command.labelLocalized?.localized === input || command.label === input);
   }
 
   public async searchGroup(input: string) {
