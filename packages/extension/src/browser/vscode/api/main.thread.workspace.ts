@@ -5,16 +5,11 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { FileStat } from '@opensumi/ide-file-service';
+import { ResourceEdit, IBulkEditResult } from '@opensumi/ide-monaco/lib/browser/monaco-api/index';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
+import { IBulkEditServiceShape, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
-import {
-  ExtHostAPIIdentifier,
-  IMainThreadWorkspace,
-  IExtHostStorage,
-  IExtHostWorkspace,
-  reviveWorkspaceEditDto,
-} from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace } from '../../../common/vscode';
 import type * as model from '../../../common/vscode/model.api';
 
 @Injectable({ multiple: true })
@@ -34,8 +29,8 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;
 
-  @Autowired(IWorkspaceEditService)
-  workspaceEditService: IWorkspaceEditService;
+  @Autowired(IBulkEditServiceShape)
+  protected readonly bulkEditService: IBulkEditServiceShape;
 
   storageProxy: IExtHostStorage;
 
@@ -117,10 +112,10 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   }
 
   async $tryApplyWorkspaceEdit(dto: model.WorkspaceEditDto): Promise<boolean> {
-    const workspaceEdit = reviveWorkspaceEditDto(dto);
     try {
-      await this.workspaceEditService.apply(workspaceEdit);
-      return true;
+      const edits = ResourceEdit.convert(dto);
+      const { success } = (await this.bulkEditService.apply(edits)) as IBulkEditResult & { success: boolean };
+      return success;
     } catch (e) {
       return false;
     }

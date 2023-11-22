@@ -65,7 +65,7 @@ export class MonacoBulkEditService implements IBulkEditService {
   ): Promise<IBulkEditResult & { success: boolean }> {
     let edits = reviveWorkspaceEditDto2(resourceEdits);
 
-    if (options?.showPreview && this._previewHandler) {
+    if ((options?.showPreview || edits.some((edit) => edit.metadata?.needsConfirmation)) && this._previewHandler) {
       try {
         edits = await this._previewHandler(edits, options);
       } catch (err) {
