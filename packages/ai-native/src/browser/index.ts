@@ -1,8 +1,10 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
-import { BrowserModule, URI } from '@opensumi/ide-core-browser';
+import { BrowserModule, URI, View, ViewContainerOptions } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
@@ -107,6 +109,21 @@ export class AiNativeModule extends BrowserModule {
       {
         token: IBrowserCtxMenu,
         useClass: AiBrowserCtxMenuService,
+      },
+      {
+        token: IMainLayoutService,
+        useClass: class extends LayoutService {
+          override collectTabbarComponent(
+            views: View[],
+            options: ViewContainerOptions,
+            side: string,
+            Fc?: any,
+          ): string {
+            // AI Native IDE 模式下禁用该功能
+            options.noResize = false;
+            return super.collectTabbarComponent(views, options, side, Fc);
+          }
+        },
       },
     );
 

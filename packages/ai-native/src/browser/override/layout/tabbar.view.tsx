@@ -1,64 +1,27 @@
 import clsx from 'classnames';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 
 import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
-import { ICtxMenuRenderer, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { EDirection } from '@opensumi/ide-core-browser/lib/components';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LeftTabbarRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
 import { BaseTabPanelView, ContainerView } from '@opensumi/ide-main-layout/lib/browser/tabbar/panel.view';
 import {
   BottomTabRenderer,
   LeftTabRenderer,
-  RightTabRenderer,
   TabRendererBase,
 } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
 import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
-import { EnhanceIcon } from '../../components/Icon';
+import { EnhanceIcon, EnhanceIconWithCtxMenu } from '../../components/Icon';
 import { HorizontalVertical } from '../../components/lineVertical';
+import { EnhancePopover } from '../../components/Popover';
 
 import * as styles from './layout.module.less';
 
-const RenderExtraMenus = (props: { iconClass?: string; menuNodes: MenuNode[] }) => {
-  const { iconClass, menuNodes } = props;
-
-  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
-  const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
-  const iconRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    if (iconRef.current) {
-      const rect = iconRef.current.getBoundingClientRect();
-      const { x, y, width, height } = rect;
-
-      setAnchor({
-        x: x + width - 8,
-        y: y + height,
-      });
-    }
-  }, [iconRef.current]);
-
-  const handleClick = React.useCallback(() => {
-    if (!anchor) {
-      return;
-    }
-
-    ctxMenuRenderer.show({
-      anchor,
-      menuNodes,
-    });
-  }, [menuNodes, anchor]);
-
-  return (
-    <EnhanceIcon
-      iconClass={iconClass}
-      wrapperClassName={styles.extra_bottom_icon}
-      ref={iconRef}
-      onClick={handleClick}
-    ></EnhanceIcon>
-  );
-};
 
 // 将注册在 right bar 的组件渲染到 left bar
 const AiLeftTabbarRenderer: React.FC = () => {
@@ -88,7 +51,14 @@ const AiLeftTabbarRenderer: React.FC = () => {
       renderOtherVisibleContainers={renderOtherVisibleContainers}
       isRenderExtraTopMenus={false}
       renderExtraMenus={
-        navMenu.length === 0 ? null : <RenderExtraMenus iconClass={navMenu[0].icon} menuNodes={navMenu[0].children} />
+        navMenu.length === 0 ? null : (
+          <EnhanceIconWithCtxMenu
+            wrapperClassName={styles.extra_bottom_icon}
+            iconClass={navMenu[0].icon}
+            menuNodes={navMenu[0].children}
+            skew={{ x: -8, y: -4 }}
+          />
+        )
       }
     />
   );
@@ -115,9 +85,48 @@ export const AiRightTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => (
-  <RightTabRenderer className={clsx(className, styles.ai_right_slot)} components={components} tabbarView={() => null} />
-);
+}) => {
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+
+  const handleClose = useCallback(() => {
+    tabbarService.currentContainerId = '';
+  }, []);
+
+  const ContainerViewFn = useCallback((props: { component: ComponentRegistryInfo; side: string; titleMenu: IMenu }) => {
+    const { component } = props;
+    const { options } = component;
+    return (
+      <ContainerView
+        {...props}
+        renderContainerWrap={({ children }) => (
+            <div className={styles.right_slot_container_wrap}>
+              <div className={styles.header}>
+                <span className={styles.title}>{options && options.title}</span>
+                <div className={styles.side}>
+                  <EnhancePopover id={'ai_right_panel_header_close'} title='关闭'>
+                    <EnhanceIcon icon='close' onClick={handleClose} />
+                  </EnhancePopover>
+                </div>
+              </div>
+              <div className={styles.container}>{children}</div>
+            </div>
+          )}
+      />
+    );
+  }, []);
+
+  return (
+    <TabRendererBase
+      side={SlotLocation.right}
+      direction={EDirection.RightToLeft}
+      id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL}
+      className={clsx(className, styles.ai_right_slot)}
+      components={components}
+      TabbarView={() => null}
+      TabpanelView={() => <BaseTabPanelView PanelView={ContainerViewFn} />}
+    />
+  );
+};
 
 // 编辑器 bottom 面板
 export const AiBottomTabRenderer = ({

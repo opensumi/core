@@ -134,11 +134,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
                   priority,
                   expanded,
                   containerId,
-                  /**
-                   * AI Native IDE 模式下禁用该功能
-                   */
-                  noResize: false,
-                  // noResize,
+                  noResize,
                   fromExtension: true,
                   hideTab,
                 },
