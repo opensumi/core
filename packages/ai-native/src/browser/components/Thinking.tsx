@@ -51,14 +51,7 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
           <span className={styles.progress_bar}>
             {/* 保持动画效果一致 */}
             {(!!status || !children) && (
-              <Progress
-                loading={true}
-                wrapperClassName={`ai-native-progress-wrapper ${
-                  status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.ERROR
-                    ? 'ai-native-progress-wrapper-stop'
-                    : ''
-                }`}
-              />
+              <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />
             )}
           </span>
           <div className={styles.block} onClick={handlePause}>

@@ -86,42 +86,6 @@ div[class*='box-panel___'] {
   }
 }
 
-/**
-* 覆盖进度条样式
-*/
-.ai-native-progress-wrapper {
-  div[class*='progress___'] {
-    height: 4px;
-    background-color: transparent;
-    background-image: linear-gradient(91deg, #19cfff 0%, #8429ff 100%);
-    border-radius: 0px 50px 50px 100px;
-    animation: ai-progress 4s forwards;
-  }
-}
-.ai-native-progress-wrapper-stop {
-  div[class*='progress___'] {
-    width: 100% !important;
-    animation: ai-progress-stop 0.5 forwards;
-  }
-}
-
-@keyframes ai-progress {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
-}
-@keyframes ai-progress-stop {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
 /* 修改滚动条滑块的圆角 */
 ::-webkit-scrollbar-thumb {
   border-radius: 4px;
