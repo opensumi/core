@@ -27,9 +27,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Get yarn versions
-        id: get_yarn_versions
-        run: echo "yarn=$(yarn --version)" >> $GITHUB_OUTPUT
+      - name: Log Yarn version
+        run: yarn --version
 
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
