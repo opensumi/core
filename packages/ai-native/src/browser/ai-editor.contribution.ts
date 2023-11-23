@@ -294,7 +294,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineContentWidget?.setOptions({
           position: {
-            lineNumber: crossSelection.endLineNumber + 1,
+            lineNumber: crossSelection.startLineNumber - 1,
             column: 1,
           },
         });
@@ -319,6 +319,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           }),
           this.aiInlineChatService.onThumbs((isLike: boolean) => {
             this.aiReporter.end(relationId, { isLike });
+          }),
+          this.aiDiffWidget.onMaxLincCount((count) => {
+            requestAnimationFrame(() => {
+              const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+              this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
+            });
           }),
         ]);
       }

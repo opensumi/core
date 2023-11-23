@@ -43,6 +43,9 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   private domNode: HTMLElement;
   protected options: ShowAiContentOptions | undefined;
 
+  // 记录最开始时的 top 值
+  private originTop = 0;
+
   private readonly _onClickOperation = new Emitter<EInlineOperation>();
   public readonly onClickOperation: Event<EInlineOperation> = this._onClickOperation.event;
 
@@ -112,7 +115,16 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   hide: (options?: ShowAiContentOptions | undefined) => void = () => {
     this.options = undefined;
     this.editor.removeContentWidget(this);
+    ReactDOM.unmountComponentAtNode(this.getDomNode());
   };
+
+  offsetTop(top: number): void {
+    if (this.originTop === 0) {
+      this.originTop = this.domNode.style.top ? parseInt(this.domNode.style.top, 10) : 0;
+    }
+
+    this.domNode.style.top = `${this.originTop + top}px`;
+  }
 
   getId(): string {
     return AiInlineChatContentWidget;

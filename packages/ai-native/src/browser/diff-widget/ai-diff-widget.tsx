@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig, URI, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { AppConfig, Emitter, Event, URI, useInjectable, uuid } from '@opensumi/ide-core-browser';
 import { ConfigProvider } from '@opensumi/ide-core-browser';
 import { EditorCollectionService, IDiffEditor } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
@@ -129,8 +129,8 @@ export class AiDiffWidget extends ZoneWidget {
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
-
-  private recordLine: number;
+  private readonly _onMaxLincCount = new Emitter<number>();
+  public readonly onMaxLincCount: Event<number> = this._onMaxLincCount.event;
 
   private originValue: string;
   private modifiedValue: string;
@@ -157,6 +157,7 @@ export class AiDiffWidget extends ZoneWidget {
             onMaxLincCount={(n) => {
               if (n) {
                 this._relayout(n);
+                this._onMaxLincCount.fire(n);
               }
             }}
           />
@@ -186,10 +187,6 @@ export class AiDiffWidget extends ZoneWidget {
     // not implement
   }
 
-  public getRecordLine(): number {
-    return this.recordLine;
-  }
-
   public setContainerStyle(style: { [key in string]: string }): void {
     const keys = Object.keys(style);
     for (const key of keys) {
@@ -212,11 +209,12 @@ export class AiDiffWidget extends ZoneWidget {
   public override hide(): void {
     this.editor.setHiddenAreas([], AiDiffWidget._hideId);
     super.hide();
+    if (this.container) {
+      ReactDOM.unmountComponentAtNode(this.container!);
+    }
   }
 
   public showByLine(line: number, lineNumber = 20): void {
-    this.recordLine = line;
-
     /**
      * 由于 monaco 在最新的版本中支持了 showInHiddenAreas 选项（见：https://github.com/microsoft/vscode/pull/181029），具备了在空白行显示 zonewidget 的能力
      * 所以这里暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来，后续需要升级 monaco 来实现
