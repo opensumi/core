@@ -1,6 +1,6 @@
 import clsx from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -96,7 +96,10 @@ export const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = observer(({ component, titleMenu, side }) => {
+  renderContainerWrap?: React.FC<{
+    children: React.ReactNode;
+  }>;
+}> = observer(({ component, titleMenu, side, renderContainerWrap }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
@@ -121,6 +124,17 @@ export const ContainerView: React.FC<{
     [appConfig],
   );
 
+  const renderContainerWrapFn = useCallback(
+    (node: React.ReactNode) => {
+      if (renderContainerWrap) {
+        return renderContainerWrap({ children: node });
+      }
+
+      return node;
+    },
+    [renderContainerWrap],
+  );
+
   return (
     <div ref={containerRef} className={styles.view_container}>
       {!CustomComponent && (
@@ -139,19 +153,21 @@ export const ContainerView: React.FC<{
       )}
       <div className={styles.container_wrap} ref={(ele) => (ref.current = ele)}>
         <ProgressBar progressModel={indicator.progressModel} />
-        {CustomComponent ? (
-          <ConfigProvider value={appConfig}>
-            <ComponentRenderer
-              initialProps={{ viewState, ...component.options?.initialProps }}
-              Component={CustomComponent}
+        {renderContainerWrapFn(
+          CustomComponent ? (
+            <ConfigProvider value={appConfig}>
+              <ComponentRenderer
+                initialProps={{ viewState, ...component.options?.initialProps }}
+                Component={CustomComponent}
+              />
+            </ConfigProvider>
+          ) : (
+            <AccordionContainer
+              views={component.views}
+              minSize={component.options!.miniSize}
+              containerId={component.options!.containerId}
             />
-          </ConfigProvider>
-        ) : (
-          <AccordionContainer
-            views={component.views}
-            minSize={component.options!.miniSize}
-            containerId={component.options!.containerId}
-          />
+          ),
         )}
       </div>
     </div>

@@ -112,6 +112,11 @@ export class OutputService extends WithEventBus {
   }
 
   public async initOutputMonacoInstance(container: HTMLDivElement) {
+    // 防止重复初始化
+    if (this.outputEditor) {
+      return;
+    }
+
     this.outputEditor = this.editorCollectionService.createCodeEditor(container, {
       ...getSimpleEditorOptions(),
       lineDecorationsWidth: 20,
