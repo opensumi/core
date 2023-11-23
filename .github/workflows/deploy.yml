@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Build
         run: |
-          yarn install --immutable --immutable
+          yarn install --immutable 
           yarn run update:iconfont
 
       - name: Deploy
