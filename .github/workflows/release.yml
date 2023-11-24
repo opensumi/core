@@ -19,7 +19,7 @@ jobs:
     environment: latest
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
       # 判断用户是否有管理员权限
