@@ -23,6 +23,9 @@ jobs:
           flag: ${{ secrets.BOT_FLAG }}
 
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
