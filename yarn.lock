@@ -15990,7 +15990,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:^9.0.0, node-gyp@npm:latest":
+"node-gyp@npm:9.3.1":
   version: 9.3.1
   resolution: "node-gyp@npm:9.3.1"
   dependencies:
