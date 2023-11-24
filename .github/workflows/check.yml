@@ -76,7 +76,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Build
         run: |
-          yarn install --immutable 
+          yarn install --immutable
           yarn run init
           yarn run bundle:lite
 
