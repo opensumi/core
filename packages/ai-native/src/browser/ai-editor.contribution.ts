@@ -285,7 +285,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         editor.monacoEditor.setHiddenAreas([crossSelection], AiDiffWidget._hideId);
 
-        this.aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, crossCode, answer, model.getLanguageId()]);
+        this.aiDiffWidget = this.injector.get(AiDiffWidget, [monacoEditor!, crossSelection, answer]);
         this.aiDiffWidget.create();
         this.aiDiffWidget.showByLine(
           crossSelection.startLineNumber - 1,
@@ -294,7 +294,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineContentWidget?.setOptions({
           position: {
-            lineNumber: crossSelection.startLineNumber - 1,
+            lineNumber: crossSelection.endLineNumber + 1,
             column: 1,
           },
         });
@@ -322,8 +322,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           }),
           this.aiDiffWidget.onMaxLincCount((count) => {
             requestAnimationFrame(() => {
-              const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
-              this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
+              if (crossSelection.endLineNumber === model.getLineCount()) {
+                const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+                this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
+              }
             });
           }),
         ]);

@@ -2,14 +2,18 @@ import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig, Emitter, Event, URI, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { AppConfig, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
 import { ConfigProvider } from '@opensumi/ide-core-browser';
-import { EditorCollectionService, IDiffEditor } from '@opensumi/ide-editor';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
 import { ICodeEditor } from '@opensumi/ide-monaco';
-import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
+import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+
+import * as styles from './diff-widget.module.less';
 
 const diffEditorOptions: IDiffEditorOptions = {
   fixedOverflowWidgets: true,
@@ -20,7 +24,7 @@ const diffEditorOptions: IDiffEditorOptions = {
   lineNumbers: 'on',
   glyphMargin: true,
 
-  scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false },
+  scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false, vertical: 'hidden' },
   scrollBeyondLastLine: false,
   renderMarginRevertIcon: false,
   renderOverviewRuler: false,
@@ -37,15 +41,19 @@ const diffEditorOptions: IDiffEditorOptions = {
 };
 
 interface IDiffContentProviderProps {
-  dto: { originValue; modifiedValue; languageId } | undefined;
+  dto:
+    | {
+        selection: monaco.Selection;
+        modifiedValue: string;
+      }
+    | undefined;
   onMaxLincCount: (n) => void;
   editor: ICodeEditor;
 }
 
 const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
   const { dto, onMaxLincCount, editor } = props;
-  const documentModelService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
-  const editorCollectionService: EditorCollectionService = useInjectable(EditorCollectionService);
+  const monacoService: MonacoService = useInjectable(MonacoService);
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,58 +61,46 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       return;
     }
 
-    let diffEditor: IDiffEditor;
+    const model = editor.getModel();
 
-    const uid = uuid(4);
-    const originUri = URI.parse(`AI://origin${uid}`);
-    const actualUri = URI.parse(`AI://modified${uid}`);
+    if (!model) {
+      return;
+    }
 
-    Promise.all([
-      documentModelService.createModelReference(originUri),
-      documentModelService.createModelReference(actualUri),
-    ]).then((data) => {
-      const [original, modified] = data;
-      if (!original) {
-        return;
-      }
+    const { selection, modifiedValue } = dto;
 
-      const { originValue, modifiedValue, languageId } = dto!;
-
-      diffEditor = editorCollectionService.createDiffEditor(editorRef.current!, {
-        ...diffEditorOptions,
-        lineDecorationsWidth: editor.getLayoutInfo().decorationsWidth,
-      });
-
-      const originalModel = original.instance.getMonacoModel();
-      const modifiedModel = modified.instance.getMonacoModel();
-
-      originalModel.setMode(languageId);
-      modifiedModel.setMode(languageId);
-
-      originalModel.setValue(originValue);
-      modifiedModel.setValue(modifiedValue);
-
-      diffEditor.compare(original, modified);
-      diffEditor.originalEditor.monacoEditor.setModel(originalModel);
-      diffEditor.modifiedEditor.monacoEditor.setModel(modifiedModel);
-
-      diffEditor.originalEditor.monacoEditor.updateOptions({ readOnly: true });
-      diffEditor.modifiedEditor.monacoEditor.updateOptions({ readOnly: true });
-
-      if (onMaxLincCount) {
-        const { originalEditor, modifiedEditor } = diffEditor;
-
-        const originContentHeight = originalEditor.monacoEditor.getContentHeight();
-        const originLineCount =
-          originContentHeight / originalEditor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
-
-        const modifiedContentHeight = modifiedEditor.monacoEditor.getContentHeight();
-        const modifiedLineCount =
-          modifiedContentHeight / modifiedEditor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
-
-        onMaxLincCount(Math.max(originLineCount, modifiedLineCount) + 1);
-      }
+    const codeValueInRange = model.getValueInRange(selection);
+    const diffEditor = monacoService.createDiffEditor(editorRef.current!, {
+      ...diffEditorOptions,
+      lineDecorationsWidth: editor.getLayoutInfo().decorationsWidth,
+      lineNumbersMinChars: editor.getOption(monaco.editor.EditorOption.lineNumbersMinChars),
     });
+
+    const modelService = StandaloneServices.get(IModelService);
+    const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
+
+    const originalModel = modelService.createModel(codeValueInRange, languageSelection);
+    const modifiedModel = modelService.createModel(modifiedValue, languageSelection);
+
+    diffEditor.setModel({
+      original: originalModel,
+      modified: modifiedModel,
+    });
+    diffEditor.revealLine(selection.startLineNumber, monaco.editor.ScrollType.Immediate);
+
+    if (onMaxLincCount) {
+      const originalEditor = diffEditor.getOriginalEditor();
+      const modifiedEditor = diffEditor.getModifiedEditor();
+
+      const originContentHeight = originalEditor.getContentHeight();
+      const originLineCount = originContentHeight / originalEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
+
+      const modifiedContentHeight = modifiedEditor.getContentHeight();
+      const modifiedLineCount =
+        modifiedContentHeight / modifiedEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
+
+      onMaxLincCount(Math.max(originLineCount, modifiedLineCount) + 1);
+    }
 
     return () => {
       if (diffEditor) {
@@ -113,14 +109,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     };
   }, [dto]);
 
-  const styles: React.CSSProperties = {
-    borderTop: '1px solid rgba(255,255,255,0.15)',
-    borderBottom: '1px solid rgba(255,255,255,0.15)',
-    height: 'inherit',
-    width: '100%',
-  };
-
-  return <div ref={editorRef} style={styles}></div>;
+  return <div ref={editorRef} className={styles.diff_editor_widget}></div>;
 });
 
 @Injectable({ multiple: true })
@@ -132,9 +121,8 @@ export class AiDiffWidget extends ZoneWidget {
   private readonly _onMaxLincCount = new Emitter<number>();
   public readonly onMaxLincCount: Event<number> = this._onMaxLincCount.event;
 
-  private originValue: string;
+  private selection: monaco.Selection;
   private modifiedValue: string;
-  private languageId: string;
 
   protected applyClass(): void {}
   protected applyStyle(): void {}
@@ -144,15 +132,9 @@ export class AiDiffWidget extends ZoneWidget {
 
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
+        <div className={styles.ai_diff_editor_container}>
           <DiffContentProvider
-            dto={{ originValue: this.originValue, modifiedValue: this.modifiedValue, languageId: this.languageId }}
+            dto={{ selection: this.selection, modifiedValue: this.modifiedValue }}
             editor={this.editor}
             onMaxLincCount={(n) => {
               if (n) {
@@ -167,19 +149,17 @@ export class AiDiffWidget extends ZoneWidget {
     );
   }
 
-  constructor(editor: ICodeEditor, originValue: string, modifiedValue: string, languageId: string) {
+  constructor(editor: ICodeEditor, selection: monaco.Selection, modifiedValue: string) {
     super(editor, {
       showArrow: false,
       showFrame: false,
       arrowColor: undefined,
       frameColor: undefined,
-      // 这里有个小坑，如果不开启这个配置，那么在调用 show 函数的时候会自动对焦并滚动到对应 range，导致在编辑 result 视图中代码时光标总是滚动在最后一个 widget 上
       keepEditorSelection: true,
     });
 
-    this.originValue = originValue;
+    this.selection = selection;
     this.modifiedValue = modifiedValue;
-    this.languageId = languageId;
   }
 
   // 覆写 revealLine 函数，使其在 show 的时候编辑器不会定位到对应位置
@@ -225,7 +205,7 @@ export class AiDiffWidget extends ZoneWidget {
     super.show(
       {
         startLineNumber: line,
-        startColumn: 0,
+        startColumn: 1,
         endLineNumber: line,
         endColumn: Number.MAX_SAFE_INTEGER,
       },
