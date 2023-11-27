@@ -88,3 +88,7 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+Object.defineProperty(document, 'body', {
+  value: document.createElement('body'),
+});
