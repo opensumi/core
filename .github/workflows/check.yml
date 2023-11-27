@@ -18,10 +18,13 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -30,6 +33,7 @@ jobs:
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+
       - uses: actions/cache@v3
         id: yarn_cache
         with:
@@ -37,7 +41,8 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: install
+
+      - name: Install
         run: |
           yarn install --immutable
 
@@ -49,17 +54,19 @@ jobs:
       - name: Lint
         run: |
           yarn run lint --quiet
+
   build-windows:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 14.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v4
         with:
-          node-version: 14.x
+          node-version: 16.x
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $Env:GITHUB_OUTPUT
+
       - uses: actions/cache@v3
         id: yarn_cache
         with:
