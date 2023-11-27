@@ -19,7 +19,7 @@ import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-i
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
 import { ICommentsService, CommentMode } from '../../src/common';
-Error.stackTraceLimit = 100;
+
 describe('comment service test', () => {
   let injector: MockInjector;
   let commentsService: ICommentsService;

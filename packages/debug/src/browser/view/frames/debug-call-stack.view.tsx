@@ -8,6 +8,7 @@ import { DebugSession } from '../../debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 
 import { DebugStackSessionView } from './debug-call-stack-session.view';
+import styles from './debug-call-stack.module.less';
 
 export const DebugCallStackView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
@@ -32,7 +33,7 @@ export const DebugCallStackView = observer(({ viewState }: React.PropsWithChildr
   }, []);
 
   return (
-    <div style={{ width: viewState.width }}>
+    <div className={styles.call_stack_wrapper}>
       {sessions
         .filter((s: IDebugSession) => !s.parentSession)
         .map((session) => (
