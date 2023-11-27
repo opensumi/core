@@ -24,6 +24,7 @@ describe('quick-open service test', () => {
   beforeAll(() => {
     container = document.createElement('div');
     container.id = 'ide-overlay';
+    console.log('document.body ======>', document.body);
     document.body.appendChild(container);
   });
 
