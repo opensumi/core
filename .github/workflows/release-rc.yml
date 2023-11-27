@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
       # 判断用户是否有写权限
@@ -38,7 +38,9 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref }}
           token: ${{ env.GITHUB_TOKEN }}
-
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -47,6 +49,7 @@ jobs:
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+
       - uses: actions/cache@v3
         id: yarn_cache
         with:

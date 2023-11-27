@@ -440,7 +440,7 @@ describe('main layout test', () => {
       });
       expect(rightTabbarService.currentContainerId).toBeTruthy();
       // panel visible
-      expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.zIndex).toEqual('1');
+      expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
     });
   });
 

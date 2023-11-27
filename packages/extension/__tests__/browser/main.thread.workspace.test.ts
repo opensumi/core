@@ -87,7 +87,8 @@ import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { IWorkspaceEditService, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import { MonacoBulkEditService } from '@opensumi/ide-workspace-edit/lib/browser/bulk-edit.service';
 import { WorkspaceEditServiceImpl } from '@opensumi/ide-workspace-edit/lib/browser/workspace-edit.service';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
 
@@ -146,6 +147,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
     {
       token: IWorkspaceService,
       useClass: MockWorkspaceService,
+    },
+    {
+      token: IBulkEditServiceShape,
+      useClass: MonacoBulkEditService,
     },
     {
       token: IWorkspaceEditService,
