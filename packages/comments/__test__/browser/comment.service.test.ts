@@ -91,7 +91,7 @@ describe('comment service test', () => {
       const [thread] = createTestThreads(uri);
       expect(thread.uri.isEqual(uri));
       expect(thread.range.startLineNumber).toBe(1);
-      expect(thread.comments[0].body).toBe('评论内容');
+      expect(thread.comments[0].body).toBe('Comment Text');
     });
   });
 
@@ -158,7 +158,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容',
+          body: 'Comment Text',
         },
       ],
     });
@@ -177,7 +177,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容',
+          body: 'Comment Text',
         },
       ],
     });
@@ -257,7 +257,7 @@ describe('comment service test', () => {
             author: {
               name: 'User',
             },
-            body: '评论内容',
+            body: 'Comment Text',
           },
         ],
       }),
@@ -268,7 +268,7 @@ describe('comment service test', () => {
             author: {
               name: 'User',
             },
-            body: '评论内容2',
+            body: 'Comment Text 2',
           },
         ],
       }),
