@@ -410,7 +410,7 @@ describe('main layout test', () => {
       jest.advanceTimersByTime(10);
     });
     // panel visible
-    expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.zIndex).toEqual('1');
+    expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
   });
 
   it('should be able to judge whether a tab panel is visible', () => {
