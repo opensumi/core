@@ -31,8 +31,8 @@ const NoUpdateBoundary: React.FC<{ visible: boolean; children: React.ReactElemen
   (prev, next) => !(prev.visible || next.visible),
 );
 
-const panelVisible = { zIndex: 1, display: 'block' };
-const panelInVisible = { zIndex: -1, display: 'none' };
+const panelVisible = { display: 'block' };
+const panelInVisible = { display: 'none' };
 
 export interface IBaseTabPanelView {
   PanelView: React.FC<{ component: ComponentRegistryInfo; side: string; titleMenu: IMenu }>;
