@@ -82,9 +82,9 @@ export function connectDebugAdapter(server: vscode.DebugAdapterServer): DebugStr
  */
 export function directDebugAdapter(id: string, da: vscode.DebugAdapter): DebugStreamConnection {
   const server = net
-    .createServer((socket: net.Socket) => {
+    .createServer(() => {
       const session = new DirectDebugAdapter(id, da);
-      session.start(socket as NodeJS.ReadableStream, socket);
+      session.start();
     })
     .listen(0);
   return connectDebugAdapter({ port: (server.address() as net.AddressInfo).port });

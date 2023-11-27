@@ -891,6 +891,9 @@ export class DebugSession implements IDebugSession {
 
   public terminated = false;
   async terminate(restart?: boolean): Promise<void> {
+    // Some debug task may not support `initialized` request or failed to send `initialized` request
+    // State should not be DebugState.Initializing in this case
+    this.initialized = true;
     this.cancelAllRequests();
     if (this.lifecycleManagedByParent && this.parentSession) {
       await this.parentSession.terminate(restart);
