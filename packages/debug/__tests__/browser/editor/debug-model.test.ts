@@ -45,6 +45,7 @@ describe('Debug Model', () => {
         }),
         getLineFirstNonWhitespaceColumn: () => 1,
         getLineLastNonWhitespaceColumn: () => 10,
+        getLineCount: () => 10,
         onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
         onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
       })),
@@ -183,13 +184,13 @@ describe('Debug Model', () => {
   it('renderBreakpoints should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
     await debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
   it('render should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
     await debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
   it('toggleBreakpoint should be work', () => {
