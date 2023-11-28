@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 
 import { IWebSocket } from '@opensumi/ide-connection';
-import { Disposable, DisposableCollection, Event } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, Emitter, Event } from '@opensumi/ide-core-common';
 import { DebugStreamConnection } from '@opensumi/ide-debug';
 import { getSequenceId } from '@opensumi/ide-debug';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -15,22 +15,33 @@ export abstract class AbstractDebugAdapter implements vscode.DebugAdapter {
 }
 
 export class DirectDebugAdapter extends AbstractDebugAdapter {
+  private messageReceivedEmitter = new Emitter<string>();
+  private closeEmitter = new Emitter<void>();
+  onError: Event<Error> = Event.None;
+
   constructor(public id: string, public readonly implementation: vscode.DebugAdapter) {
     super(id);
+    this.implementation.onDidSendMessage((msg) => {
+      this.messageReceivedEmitter.fire(JSON.stringify(msg));
+    });
   }
 
-  start(channel: NodeJS.ReadableStream, outStream: NodeJS.WritableStream): void {
-    // @ts-ignore
-    this.implementation.start(channel, outStream);
+  get onClose() {
+    return this.closeEmitter.event;
   }
+
+  get onMessageReceived() {
+    return this.messageReceivedEmitter.event;
+  }
+
+  async start(): Promise<void> {}
 
   sendMessage(message: DebugProtocol.ProtocolMessage): void {
     this.implementation.handleMessage(message);
   }
 
-  stopSession(): Promise<void> {
+  async stop(): Promise<void> {
     this.implementation.dispose();
-    return Promise.resolve(undefined);
   }
 }
 
