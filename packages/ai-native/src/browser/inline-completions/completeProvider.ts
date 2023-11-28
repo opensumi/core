@@ -1,20 +1,20 @@
 import { debounce } from 'lodash';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { CommandService, WithEventBus, uuid } from '@opensumi/ide-core-common';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IAIReporter, AISerivceType } from '../../common';
 import { AI_INLINE_COMPLETION_REPORTET } from '../../common/command';
+import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
 import { CompletionRequestBean, CompletionResultModel, InlayList } from './model/competionModel';
 import { InlineCompletionItem } from './model/competionModel';
 import promptCache from './promptCache';
 import { prePromptHandler, preSuffixHandler } from './provider';
 import { AiCompletionsService } from './service/ai-completions.service';
-import { getPromptMessageText } from './utils/message';
 
 let lastRequestId: any;
 let timer: any;
@@ -108,22 +108,23 @@ class RequestImp {
       rs = cacheData;
       status = 1;
     } else {
-      // 不存在缓存发起请求
-      try {
-        rs = await aiCompletionsService.complete(completionRequestBean);
-        status = 0;
-      } catch (err: any) {
-        aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
-        const errTxt = err?.message === 'canceled' ? '补全已取消' : 'completion error';
-        aiCompletionsService.updateStatusBarItem(errTxt, false);
-        return [];
-      }
+      rs = await aiCompletionsService.complete(completionRequestBean);
+      status = 0;
     }
+
+    // 如果是取消直接返回
+    if ((rs && rs.isCancel) || this.isCancelFlag) {
+      aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime, isStop: true });
+      aiCompletionsService.updateStatusBarItem('补全已取消', false);
+      return [];
+    }
+
     if (!(rs && rs.sessionId)) {
       aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
       aiCompletionsService.hideStatusBarItem();
       return [];
     }
+
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
       aiReporter.end(relationId, { success: true, replytime: +new Date() - beginAlgTime });
@@ -132,14 +133,10 @@ class RequestImp {
     if (rs.codeModelList !== null) {
       codeModelSize = rs.codeModelList.length;
     }
+
     // 返回补全结果为空直接返回
     if (rs.codeModelList.length === 0) {
       aiCompletionsService.updateStatusBarItem('no result', false);
-      return [];
-    }
-    // 如果是取消直接返回
-    if (this.isCancelFlag) {
-      aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime, isStop: true });
       return [];
     }
 
@@ -173,7 +170,7 @@ class RequestImp {
           cursorPosition.lineNumber,
           cursorPosition.column,
           cursorPosition.lineNumber,
-          cursorPosition.column + insertText.length,
+          cursorPosition.column + insertText.length - 1,
         ),
         sessionId: rs.sessionId,
         command: {
@@ -227,23 +224,29 @@ interface ProviderType extends monaco.languages.InlineCompletionsProvider {
   isManual: boolean;
 }
 
-@Injectable({ multiple: true })
-export class TypeScriptCompletionsProvider extends WithEventBus implements ProviderType {
+@Injectable({ multiple: false })
+export class AiInlineCompletionsProvider extends WithEventBus implements ProviderType {
   @Autowired(AiCompletionsService)
   private aiCompletionsService: AiCompletionsService;
 
-  @Autowired(CommandService)
-  private commandService: CommandService;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   @Autowired(IAIReporter)
   private aiReporter: IAIReporter;
+
+  private aiNativeContextKey: AiNativeContextKey;
+
+  private editor: IEditor;
 
   isManual: boolean;
   isDelEvent: boolean;
   reqStack: ReqStack;
 
-  constructor(private readonly editor: IEditor) {
-    super();
+  public registerEditor(editor: IEditor): void {
+    this.aiNativeContextKey = this.injector.get(AiNativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
+
+    this.editor = editor;
 
     this.isManual = false;
     this.isDelEvent = false;
@@ -308,6 +311,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
       }),
     );
   }
+
   provideInlineCompletions(
     model: monaco.editor.ITextModel,
     position: monaco.Position,
@@ -337,6 +341,10 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
     }
   }
 
+  resetContextKey() {
+    this.aiNativeContextKey.inlineCompletionIsTrigger.reset();
+  }
+
   /**
    * 用户触发编辑器后，事件的回调
    * @param document
@@ -351,6 +359,7 @@ export class TypeScriptCompletionsProvider extends WithEventBus implements Provi
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
   ) {
+    this.aiNativeContextKey.inlineCompletionIsTrigger.set(true);
     // bugfix:修复当鼠标移动到代码补全上会触发一次手势事件，增加防抖，当手势触发后，能够防抖一次
     if (context.triggerKind === 0) {
       if (

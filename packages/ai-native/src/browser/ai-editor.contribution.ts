@@ -29,11 +29,12 @@ import {
 
 import { AiChatService } from './ai-chat.service';
 import { AiCodeWidget } from './code-widget/ai-code-widget';
+import { AiNativeContextKey } from './contextkey/ai-native.contextkey.service';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
-import { TypeScriptCompletionsProvider } from './inline-completions/completeProvider';
+import { AiInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 
@@ -63,8 +64,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IBrowserCtxMenu)
   private readonly ctxMenuRenderer: AiBrowserCtxMenuService;
 
-  @Autowired(CommandService)
-  private readonly commandService: CommandService;
+  @Autowired(AiInlineCompletionsProvider)
+  private readonly aiInlineCompletionsProvider: AiInlineCompletionsProvider;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -108,12 +109,12 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    this.registerCompletion(editor);
-
     const { monacoEditor, currentUri } = editor;
     if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
       return this;
     }
+
+    this.registerCompletion(editor);
 
     this.disposables.push(
       monacoEditor.onDidChangeModel(() => {
@@ -431,7 +432,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
    * 代码补全
    */
   private async registerCompletion(editor: IEditor): Promise<void> {
-    const { monacoEditor, currentUri, currentDocumentModel } = editor;
+    const { monacoEditor, currentUri } = editor;
 
     if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
       return;
@@ -447,6 +448,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       )(async (event) => {
         if (dispose) {
           dispose.dispose();
+          this.aiInlineCompletionsProvider.dispose();
         }
 
         const { monacoEditor, currentUri } = editor;
@@ -465,11 +467,16 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           return;
         }
 
-        const inlineCompleteProvider = this.injector.get(TypeScriptCompletionsProvider, [editor]);
+        this.aiInlineCompletionsProvider.registerEditor(editor);
 
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
-            const list = await inlineCompleteProvider.provideInlineCompletionItems(editor, position, context, token);
+            const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
+              editor,
+              position,
+              context,
+              token,
+            );
             return list;
           },
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},

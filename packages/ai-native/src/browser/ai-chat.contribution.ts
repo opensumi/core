@@ -19,7 +19,9 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  CommandService,
 } from '@opensumi/ide-core-browser';
+import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor } from '@opensumi/ide-editor';
@@ -50,6 +52,7 @@ import {
   AI_EXPLAIN_TERMINAL_COMMANDS,
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTET,
+  AI_INLINE_COMPLETION_VISIBLE,
   AI_RUN_DEBUG_COMMANDS,
 } from '../common/command';
 
@@ -59,6 +62,8 @@ import { AiEditorContribution } from './ai-editor.contribution';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
+import { AiInlineCompletionsProvider } from './inline-completions/completeProvider';
+import { AiCompletionsService } from './inline-completions/service/ai-completions.service';
 import {
   AiBottomTabRenderer,
   AiChatTabRenderer,
@@ -130,6 +135,15 @@ export class AiNativeCoreContribution
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
+  @Autowired(AiInlineCompletionsProvider)
+  private readonly aiInlineCompletionsProvider: AiInlineCompletionsProvider;
+
+  @Autowired(AiCompletionsService)
+  private readonly aiCompletionsService: AiCompletionsService;
 
   onStart() {
     this.registerFeature();
@@ -296,6 +310,17 @@ export class AiNativeCoreContribution
         this.aiReporter.end(relationId, { success: true, isReceive: true });
       },
     });
+
+    commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {
+      execute: async (visible: boolean) => {
+        if (!visible) {
+          await this.commandService.executeCommand('editor.action.inlineSuggest.hide');
+          this.aiCompletionsService.hideStatusBarItem();
+          this.aiInlineCompletionsProvider.resetContextKey();
+          this.aiInlineCompletionsProvider.cancelRequest();
+        }
+      },
+    });
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
@@ -345,9 +370,17 @@ export class AiNativeCoreContribution
     );
 
     keybindings.registerKeybinding({
+      command: AI_INLINE_COMPLETION_VISIBLE.id,
+      keybinding: 'esc',
+      args: false,
+      when: `editorFocus && ${InlineCompletionIsTrigger.raw}`,
+    });
+
+    keybindings.registerKeybinding({
       command: AI_INLINE_CHAT_VISIBLE.id,
       keybinding: 'esc',
       args: false,
+      when: `editorFocus && ${InlineChatIsVisible.raw}`,
     });
   }
 }
