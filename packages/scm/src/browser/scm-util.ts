@@ -21,7 +21,7 @@ export function getSCMResourceGroupContextValue(resource: ISCMResourceGroup | IS
 
 export function getSCMRepositoryDesc(repository: ISCMRepository) {
   const hasRootUri = repository.provider.rootUri;
-  const title = hasRootUri ? basename(repository.provider.rootUri!.toString()) : repository.provider.label;
+  const title = hasRootUri ? basename(repository.provider.rootUri.path) : repository.provider.label;
 
   const type = hasRootUri ? repository.provider.label : '';
 
