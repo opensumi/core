@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AiInlineChatContentWidget } from '../../common/index';
+import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
 import { AiInlineChatController, EInlineOperation } from './inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
@@ -34,8 +35,13 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   @Autowired(AiInlineChatService)
   private aiInlineChatService: AiInlineChatService;
+
+  private readonly aiNativeContextKey: AiNativeContextKey;
 
   allowEditorOverflow?: boolean | undefined = false;
   suppressMouseDown?: boolean | undefined = false;
@@ -51,6 +57,8 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
 
   constructor(private readonly editor: IMonacoCodeEditor) {
     super();
+
+    this.aiNativeContextKey = this.injector.get(AiNativeContextKey, [(this.editor as any)._contextKeyService]);
 
     this.hide();
     this.renderView();
@@ -104,7 +112,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     }
 
     this.options = options;
-
+    this.aiNativeContextKey.inlineChatIsVisible.set(true);
     this.editor.addContentWidget(this);
   }
 
@@ -113,6 +121,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   }
 
   hide: (options?: ShowAiContentOptions | undefined) => void = () => {
+    this.aiNativeContextKey.inlineChatIsVisible.set(false);
     this.options = undefined;
     this.editor.removeContentWidget(this);
     ReactDOM.unmountComponentAtNode(this.getDomNode());
