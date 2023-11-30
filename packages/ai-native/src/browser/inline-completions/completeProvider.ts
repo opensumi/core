@@ -118,6 +118,8 @@ class RequestImp {
       return [];
     }
 
+    aiCompletionsService.setLastSessionId(rs.sessionId);
+
     // 如果是取消直接返回
     if ((rs && rs.isCancel) || this.isCancelFlag) {
       aiReporter.end(relationId, {
@@ -193,7 +195,7 @@ class RequestImp {
         command: {
           id: AI_INLINE_COMPLETION_REPORTET.id,
           title: '',
-          arguments: [relationId],
+          arguments: [relationId, rs.sessionId, true],
         },
       });
     }
@@ -283,6 +285,9 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
       if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
         this.cancelRequest();
       }
+      requestAnimationFrame(() => {
+        this.aiCompletionsService.setVisibleCompletion(false);
+      });
     };
 
     const debouncedSelectionChange = debounce(() => selectionChange(), 50, {
@@ -325,6 +330,7 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
     this.addDispose(
       this.editor.monacoEditor.onDidBlurEditorText(() => {
         this.aiCompletionsService.hideStatusBarItem();
+        this.aiCompletionsService.setVisibleCompletion(false);
       }),
     );
   }
@@ -422,6 +428,11 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
       lastInLayList.column = position.column;
       lastInLayList.line = position.lineNumber;
     }
+
+    if (list.length > 0) {
+      this.aiCompletionsService.setVisibleCompletion(true);
+    }
+
     lastInLayList.lastResult = {
       items: list || [],
     };

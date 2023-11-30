@@ -305,9 +305,10 @@ export class AiNativeCoreContribution
     });
 
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTET, {
-      execute: (relationId: string) => {
+      execute: (relationId: string, sessionId: string, accept: boolean) => {
         // 补全埋点统计
         this.aiReporter.end(relationId, { success: true, isReceive: true });
+        this.aiCompletionsService.report({ sessionId, accept });
       },
     });
 
@@ -318,6 +319,7 @@ export class AiNativeCoreContribution
           this.aiCompletionsService.hideStatusBarItem();
           this.aiInlineCompletionsProvider.resetContextKey();
           this.aiInlineCompletionsProvider.cancelRequest();
+          this.aiCompletionsService.setVisibleCompletion(false);
         }
       },
     });

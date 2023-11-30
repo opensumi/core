@@ -17,6 +17,14 @@ export interface IAiCompletionOption {
   fileUrl?: string;
 }
 
+export interface IAiReportCompletionOption {
+  sessionId: string;
+  accept: boolean;
+  repo?: string;
+  completionUseTime?: number;
+  renderingTime?: number;
+}
+
 export interface IAiBackServiceResponse<T = string> {
   errorCode?: number;
   errorMsg?: string;
@@ -43,6 +51,7 @@ export interface IAiBackService<
     input: I,
     cancelToken?: CancellationToken,
   ): Promise<CompletionResponse>;
+  reportCompletion<I extends IAiReportCompletionOption>(input: I): Promise<void>;
 }
 
 export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
