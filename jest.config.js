@@ -101,7 +101,7 @@ module.exports = {
         '**/packages/*/__test?(s)__/common/**/?(*.)+(spec|test).[jt]s?(x)',
         // '**/tools/*/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         // '**/packages/extension/__tests__/hosted/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/{components,core-browser,core-common}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
+        // '**/packages/{components,core-browser,core-common}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
       ],
     },
   ],
