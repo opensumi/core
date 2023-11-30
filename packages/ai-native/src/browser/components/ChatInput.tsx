@@ -262,13 +262,13 @@ export const ChatInput = (props: IChatInputProps) => {
       setTheme('');
       return;
     }
+    if (!value.trim() && theme === InstructionEnum.aiSumiKey) {
+      message.info('很抱歉，您并未输入任何命令，可以试试这么问：/IDE 设置主题');
+      return;
+    }
 
     // 代码区选中状况
     if (theme && selectCode && !value.trim()) {
-      if (theme === InstructionEnum.aiSumiKey) {
-        message.info('很抱歉，您并未输入任何命令，可以试试这么问：/IDE 设置主题');
-        return;
-      }
       onSend(preText + ` \`\`\`\n ${selectCode} \n\`\`\``);
       setTheme('');
       return;
@@ -276,10 +276,6 @@ export const ChatInput = (props: IChatInputProps) => {
 
     // 报错提示
     if (theme && !value.trim() && !selectCode) {
-      if (theme === InstructionEnum.aiSumiKey) {
-        message.info('很抱歉，您并未输入任何命令，可以试试这么问：/IDE 设置主题');
-        return;
-      }
       message.info('很抱歉，您并未选中或输入任何代码，请先选中或输入代码');
     }
   }, [onSend, value]);
@@ -399,21 +395,17 @@ export const ChatInput = (props: IChatInputProps) => {
                 props.sendBtnClassName,
               )}
             >
-              <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
-                {disabled ? (
-                  <div className={styles.ai_loading}>
-                    {' '}
-                    <div className={styles.lds_ellipsis}>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                    </div>
-                  </div>
-                ) : (
+              {disabled ? (
+                <div className={styles.ai_loading}>
+                  <div className={styles.loader}></div>
+                  <div className={styles.loader}></div>
+                  <div className={styles.loader}></div>
+                </div>
+              ) : (
+                <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
                   <Icon className={cls(getIcon('send1'), styles.send_icon)} onClick={() => handleSend()} />
-                )}
-              </Popover>
+                </Popover>
+              )}
             </div>
           </div>
         }
