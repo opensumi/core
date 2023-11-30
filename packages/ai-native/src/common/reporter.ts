@@ -37,6 +37,10 @@ export interface RunInfo extends Partial<CommonLogInfo> {
 
 export interface Completion extends Partial<CommonLogInfo> {
   isReceive: boolean;
+  // 是否取消
+  isStop: boolean;
+  // 补全条数
+  completionNum: number;
 }
 
 export type ReportInfo =

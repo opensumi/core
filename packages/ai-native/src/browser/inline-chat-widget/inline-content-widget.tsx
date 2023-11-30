@@ -44,7 +44,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   private readonly aiNativeContextKey: AiNativeContextKey;
 
   allowEditorOverflow?: boolean | undefined = false;
-  suppressMouseDown?: boolean | undefined = false;
+  suppressMouseDown?: boolean | undefined = true;
 
   private domNode: HTMLElement;
   protected options: ShowAiContentOptions | undefined;
