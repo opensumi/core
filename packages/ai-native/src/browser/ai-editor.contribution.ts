@@ -477,6 +477,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
               context,
               token,
             );
+            this.logger.log(
+              'inline Completions:>>> ',
+              list.items.map((e) => e.insertText),
+            );
             return list;
           },
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},

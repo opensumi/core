@@ -112,22 +112,31 @@ class RequestImp {
       status = 0;
     }
 
-    // 如果是取消直接返回
-    if ((rs && rs.isCancel) || this.isCancelFlag) {
-      aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime, isStop: true });
-      aiCompletionsService.updateStatusBarItem('补全已取消', false);
-      return [];
-    }
-
     if (!(rs && rs.sessionId)) {
       aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
       aiCompletionsService.hideStatusBarItem();
       return [];
     }
 
+    // 如果是取消直接返回
+    if ((rs && rs.isCancel) || this.isCancelFlag) {
+      aiReporter.end(relationId, {
+        success: true,
+        replytime: +new Date() - beginAlgTime,
+        isStop: true,
+        completionNum: 0,
+      });
+      aiCompletionsService.updateStatusBarItem('补全已取消', false);
+      return [];
+    }
+
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
-      aiReporter.end(relationId, { success: true, replytime: +new Date() - beginAlgTime });
+      aiReporter.end(relationId, {
+        success: true,
+        replytime: +new Date() - beginAlgTime,
+        completionNum: rs.codeModelList.length,
+      });
     }
     let codeModelSize = 0;
     if (rs.codeModelList !== null) {
@@ -136,6 +145,7 @@ class RequestImp {
 
     // 返回补全结果为空直接返回
     if (rs.codeModelList.length === 0) {
+      aiReporter.end(relationId, { success: true, replytime: +new Date() - beginAlgTime, completionNum: 0 });
       aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
     }
@@ -161,16 +171,23 @@ class RequestImp {
       }
 
       let insertText = str;
+      const model = this.editor.monacoEditor.getModel()!;
 
       const cursorPosition = this.editor.monacoEditor.getPosition()!;
+      const textAfterCursor = model.getValueInRange({
+        startLineNumber: cursorPosition.lineNumber,
+        startColumn: cursorPosition.column,
+        endLineNumber: cursorPosition.lineNumber,
+        endColumn: model.getLineMaxColumn(cursorPosition.lineNumber),
+      });
 
       result.push({
-        insertText,
+        insertText: insertText + textAfterCursor,
         range: new monaco.Range(
           cursorPosition.lineNumber,
           cursorPosition.column,
           cursorPosition.lineNumber,
-          cursorPosition.column + insertText.length - 1,
+          cursorPosition.column + insertText.length + textAfterCursor.length,
         ),
         sessionId: rs.sessionId,
         command: {
