@@ -108,6 +108,11 @@ module.exports = {
         '**/packages/preferences/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/collaboration/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/workspace-edit/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/status-bar/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/opened-editor/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/addons/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/storage/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
+
         // '**/packages/*/__test?(s)__/common/**/?(*.)+(spec|test).[jt]s?(x)',
         // '**/tools/*/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         // '**/packages/extension/__tests__/hosted/**/?(*.)+(spec|test).[jt]s?(x)',
