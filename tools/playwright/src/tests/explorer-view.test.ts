@@ -360,8 +360,9 @@ console.log(a);`,
     await node?.open();
     expect(await node?.isExpanded()).toBeTruthy();
 
-    // select the `new_folder3` folder and expanded it
+    // select the `new_folder3` folder and toggle it twice
     node = await explorer.getFileStatTreeNodeByPath(newFileName_1);
+    await node?.open();
     await node?.open();
 
     action = await fileTreeView.getTitleActionByName('New File');
