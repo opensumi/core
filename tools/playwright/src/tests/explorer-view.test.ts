@@ -356,14 +356,12 @@ console.log(a);`,
       await app.page.keyboard.press('Enter');
     }
     await app.page.waitForTimeout(200);
-    // expanded `new_folder4`
     node = await explorer.getFileStatTreeNodeByPath(newFileName_2);
     await node?.open();
     expect(await node?.isExpanded()).toBeTruthy();
 
     // select the `new_folder3` folder and expanded it
     node = await explorer.getFileStatTreeNodeByPath(newFileName_1);
-    await node?.open();
     await node?.open();
 
     action = await fileTreeView.getTitleActionByName('New File');
