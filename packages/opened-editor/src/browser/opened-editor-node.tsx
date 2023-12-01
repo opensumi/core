@@ -110,7 +110,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   );
 
   const renderDescription = (node: EditorFileGroup | EditorFile) => {
-    if (EditorFileGroup.is(node)) {
+    if (EditorFileGroup.is(node) || (EditorFile.is(node) && node.tooltip === getNodeName(node))) {
       return null;
     }
     return (
