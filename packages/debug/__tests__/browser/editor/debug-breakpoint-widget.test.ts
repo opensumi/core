@@ -5,6 +5,8 @@ import { Emitter } from '@opensumi/ide-core-common';
 import { DebugEditor, IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugBreakpointWidget } from '@opensumi/ide-debug/lib/browser/editor';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -14,11 +16,13 @@ describe('Debug Breakpoint Widget', () => {
   let debugBreakpointWidget: DebugBreakpointWidget;
 
   const mockDebugEditor = {
+    focus: jest.fn(),
+    dispose: () => {},
     onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
     getLayoutInfo: jest.fn(() => ({ width: 100, height: 100 })),
     changeViewZones: jest.fn(() => Disposable.create(() => {})),
     getOption: () => 10,
-    createDecorationsCollection(decorations) {
+    createDecorationsCollection() {
       return {
         onDidChange: new Emitter().event,
         clear: () => {},
@@ -29,7 +33,18 @@ describe('Debug Breakpoint Widget', () => {
         has: () => true,
       };
     },
-    getModel: jest.fn(() => Disposable.create(() => {})),
+    monacoEditor: {
+      setModel: jest.fn(),
+      getModel: jest.fn(),
+      setValue: jest.fn(),
+      dispose: () => {},
+      onDidBlurEditorWidget: new Emitter().event,
+      onDidFocusEditorWidget: new Emitter().event,
+      onDidChangeModelContent: new Emitter().event,
+    },
+    getModel: jest.fn(() => ({
+      getLanguageId: () => 'javascript',
+    })),
   };
 
   beforeAll(() => {
@@ -39,7 +54,32 @@ describe('Debug Breakpoint Widget', () => {
     });
     mockInjector.overrideProviders({
       token: IWorkspaceService,
-      useValue: {},
+      useValue: {
+        roots: [],
+        onWorkspaceChanged: new Emitter().event,
+      },
+    });
+    mockInjector.overrideProviders({
+      token: EditorCollectionService,
+      useValue: mockService({
+        listEditors: () => [mockDebugEditor],
+        createCodeEditor: jest.fn(() => mockDebugEditor),
+      }),
+    });
+    mockInjector.overrideProviders({
+      token: IEditorDocumentModelService,
+      useValue: {
+        createModelReference: (uri) => ({
+          instance: {
+            uri,
+            getMonacoModel: () => ({
+              getValue: jest.fn(() => ''),
+              updateOptions: jest.fn(),
+            }),
+          },
+          dispose: jest.fn(),
+        }),
+      },
     });
     mockInjector.overrideProviders({
       token: IDebugSessionManager,
@@ -49,15 +89,15 @@ describe('Debug Breakpoint Widget', () => {
       token: IContextKeyService,
       useValue: {
         createKey: jest.fn(),
+        getContextValue: jest.fn(),
+        onDidChangeContext: new Emitter().event,
       },
     });
     mockInjector.overrideProviders({
-      token: IEditorDocumentModelService,
-      useValue: {},
-    });
-    mockInjector.overrideProviders({
       token: IFileServiceClient,
-      useValue: {},
+      useValue: {
+        onFilesChanged: jest.fn(),
+      },
     });
     debugBreakpointWidget = mockInjector.get(DebugBreakpointWidget);
   });
