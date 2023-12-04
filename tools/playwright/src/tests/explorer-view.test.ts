@@ -313,6 +313,8 @@ console.log(a);`,
     const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
     expect(afterDeleteNode).toBeDefined();
     expect(await afterDeleteNode?.label()).toBe('a/d');
+    const leftNode = await explorer.getFileStatTreeNodeByPath('test/a/d/c.js');
+    expect(leftNode).toBeDefined();
   });
 
   test('the visible state of outline panel should be restored after refreshing', async () => {
@@ -355,7 +357,7 @@ console.log(a);`,
       await input.type(newFileName_2, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
-    await app.page.waitForTimeout(200);
+    await app.page.waitForTimeout(500);
     node = await explorer.getFileStatTreeNodeByPath(newFileName_2);
     await node?.open();
     expect(await node?.isExpanded()).toBeTruthy();
