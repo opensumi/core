@@ -116,8 +116,7 @@ module.exports = {
         '**/packages/output/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/terminal-next/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/extension-storage/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/monaco/__tests__/browser/textmate.test.ts',
-        '**/packages/monaco/__tests__/browser/monaco-command.test.ts',
+        '**/packages/monaco/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
 
         // '**/packages/*/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/*/__test?(s)__/common/**/?(*.)+(spec|test).[jt]s?(x)',
