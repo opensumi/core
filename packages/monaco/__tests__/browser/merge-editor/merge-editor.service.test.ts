@@ -1,3 +1,5 @@
+import { act } from 'react-dom/test-utils';
+
 import { MonacoOverrideServiceRegistry, MonacoService, URI } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs, MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -103,7 +105,10 @@ a += 2;`),
 
   it('should be able to create', async () => {
     const monacoService: MonacoService = injector.get(MonacoService);
-    const mergeEditor = monacoService.createMergeEditor(document.createElement('div'));
+    let mergeEditor;
+    act(() => {
+      mergeEditor = monacoService.createMergeEditor(document.createElement('div'));
+    });
     expect(mergeEditor).toBeDefined();
     await mergeEditor.open(openMergeEditorArgs);
 
