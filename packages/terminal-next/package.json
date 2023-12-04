@@ -22,7 +22,7 @@
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
     "event-kit": "^2.5.3",
-    "node-pty": "0.11.0-beta19",
+    "node-pty": "1.0.0",
     "os-locale": "^4.0.0",
     "xterm": "5.2.0",
     "xterm-addon-canvas": "0.4.0",

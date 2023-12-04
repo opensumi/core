@@ -1,7 +1,6 @@
 import childProcess from 'child_process';
 import fs from 'fs';
 import net, { ListenOptions, Server } from 'net';
-import os from 'os';
 import { promisify } from 'util';
 
 import * as pty from 'node-pty';
@@ -201,16 +200,14 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     }
   }
 
-  $on(callId: number, pid: number, event: any): void {
-    const ptyInstance = this.ptyInstanceMap.get(pid);
-    ptyInstance?.on(event, (e) => {
-      this.$callback(callId, e);
-    });
-  }
-
   $resize(pid: number, columns: number, rows: number): void {
     const ptyInstance = this.ptyInstanceMap.get(pid);
     ptyInstance?.resize(columns, rows);
+  }
+
+  $clear(pid: number): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.clear();
   }
 
   $write(pid: number, data: string): void {

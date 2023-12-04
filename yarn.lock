@@ -3548,7 +3548,7 @@ __metadata:
     "@types/http-proxy": ^1.17.2
     event-kit: ^2.5.3
     http-proxy: ^1.18.0
-    node-pty: 0.11.0-beta19
+    node-pty: 1.0.0
     os-locale: ^4.0.0
     xterm: 5.2.0
     xterm-addon-canvas: 0.4.0
@@ -15797,6 +15797,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nan@npm:^2.17.0":
+  version: 2.18.0
+  resolution: "nan@npm:2.18.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 4fe42f58456504eab3105c04a5cffb72066b5f22bd45decf33523cb17e7d6abc33cca2a19829407b9000539c5cb25f410312d4dc5b30220167a3594896ea6a0a
+  languageName: node
+  linkType: hard
+
 "nanoid@npm:3.3.4, nanoid@npm:^3.3.4":
   version: 3.3.4
   resolution: "nanoid@npm:3.3.4"
@@ -16062,14 +16071,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-pty@npm:0.11.0-beta19":
-  version: 0.11.0-beta19
-  resolution: "node-pty@npm:0.11.0-beta19"
+"node-pty@npm:1.0.0":
+  version: 1.0.0
+  resolution: "node-pty@npm:1.0.0"
   dependencies:
-    nan: ^2.14.0
-  peerDependencies:
-    node-gyp: ^8.3.0
-  checksum: 1bad0f546bf446e84e850e3f437e38c8eefc6fcf6667cfc191e99bdb25929e6d8996b09a6c8ecb57ae4157a036858579d56a9167466cffea2c59ee3266bac4a3
+    nan: ^2.17.0
+    node-gyp: latest
+  checksum: 861b1708d81030da4f1f8cf06f367737de4e2e88ee6144bd0d1aadb57bdf1c09bd4c481453e462d2c9af9cc122d9643c7a8ac9c4a9ef1462c0486d741b220d09
   languageName: node
   linkType: hard
 
