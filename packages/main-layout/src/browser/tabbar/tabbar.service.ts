@@ -754,7 +754,7 @@ export class TabbarService extends WithEventBus {
     observe(this, 'currentContainerId', (change) => {
       if (this.prevSize === undefined) {
       }
-      this.previousContainerId = (change.oldValue as string) || '';
+      this.previousContainerId = change.oldValue || '';
       const currentId = change.newValue;
       this.handleChange(currentId, this.previousContainerId);
     });

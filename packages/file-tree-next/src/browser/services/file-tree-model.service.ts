@@ -1614,7 +1614,7 @@ export class FileTreeModelService {
               fileStat?.isDirectory ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             );
           } else {
-            this.messageService.error(res as string);
+            this.messageService.error(res);
           }
         }
       }
