@@ -1,7 +1,6 @@
 import http from 'http';
 import net from 'net';
 
-
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
@@ -21,8 +20,8 @@ export { RPCServiceCenter };
 
 export function createServerConnection2(
   server: http.Server,
-  injector,
-  modulesInstances,
+  injector: Injector,
+  modulesInstances: NodeModule[],
   handlerArr: WebSocketHandler[],
   serverAppOpts: IServerAppOpts,
 ) {
@@ -43,7 +42,7 @@ export function createServerConnection2(
 
       const serverConnection = createWebSocketConnection(connection);
       connection.messageConnection = serverConnection;
-      serviceCenter.setConnection(serverConnection);
+      serviceCenter.setMessageConnection(serverConnection);
 
       connection.onClose(() => {
         serviceCenter.removeConnection(serverConnection);
@@ -64,7 +63,7 @@ export function createServerConnection2(
   socketRoute.init();
 }
 
-export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
+export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger);
   const serviceCenter = new RPCServiceCenter(undefined, logger);
   const serviceChildInjector = bindModuleBackService(
@@ -76,7 +75,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
 
   server.on('connection', (connection) => {
     const serverConnection = createSocketConnection(connection);
-    serviceCenter.setConnection(serverConnection);
+    serviceCenter.setMessageConnection(serverConnection);
 
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
@@ -93,45 +92,70 @@ export function bindModuleBackService(
   serviceCenter: RPCServiceCenter,
   clientId?: string,
 ) {
-  const { createRPCService } = initRPCService(serviceCenter);
+  const { createRPCService, createRPCServiceByProtocol } = initRPCService(serviceCenter);
 
   const childInjector = injector.createChild();
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
-        if (service.token) {
-          const serviceToken = service.token;
+        const serviceToken = service.token;
+        if (!serviceToken || !injector.creatorMap.has(serviceToken)) {
+          continue;
+        }
 
-          if (!injector.creatorMap.has(serviceToken)) {
-            continue;
-          }
+        const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
 
-          const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
+        if ((creator as FactoryCreator).useFactory) {
+          const serviceFactory = (creator as FactoryCreator).useFactory;
+          childInjector.addProviders({
+            token: serviceToken,
+            useValue: serviceFactory(childInjector),
+          });
+        } else {
+          childInjector.addProviders({
+            token: serviceToken,
+            useClass: (creator as ClassCreator).useClass,
+          });
+        }
 
-          if ((creator as FactoryCreator).useFactory) {
-            const serviceFactory = (creator as FactoryCreator).useFactory;
-            childInjector.addProviders({
-              token: serviceToken,
-              useValue: serviceFactory(childInjector),
-            });
-          } else {
-            const serviceClass = (creator as ClassCreator).useClass;
-            childInjector.addProviders({
-              token: serviceToken,
-              useClass: serviceClass,
-            });
-          }
-          const serviceInstance = childInjector.get(serviceToken);
+        const serviceInstance = childInjector.get(serviceToken);
 
-          if (serviceInstance.setConnectionClientId && clientId) {
-            serviceInstance.setConnectionClientId(clientId);
-          }
-          const servicePath = service.servicePath;
-          const createService = createRPCService(servicePath, serviceInstance);
+        if (serviceInstance.setConnectionClientId && clientId) {
+          serviceInstance.setConnectionClientId(clientId);
+        }
 
-          if (!serviceInstance.rpcClient) {
-            serviceInstance.rpcClient = [createService];
-          }
+        const servicePath = service.servicePath;
+        const createService = createRPCService(servicePath, serviceInstance);
+
+        if (!serviceInstance.rpcClient) {
+          serviceInstance.rpcClient = [createService];
+        }
+      }
+    }
+
+    if (module.backServices2) {
+      for (const service of module.backServices2) {
+        const serviceToken = service.token;
+        if (!serviceToken || !injector.creatorMap.has(serviceToken)) {
+          continue;
+        }
+
+        const protocol = service.protocol;
+        if (!protocol) {
+          throw new Error(`service ${String(serviceToken)} protocol is undefined`);
+        }
+
+        const serviceInstance = childInjector.get(serviceToken);
+
+        if (serviceInstance.setConnectionClientId && clientId) {
+          serviceInstance.setConnectionClientId(clientId);
+        }
+
+        const servicePath = service.servicePath;
+        const createService = createRPCServiceByProtocol(servicePath, protocol, serviceInstance);
+
+        if (!serviceInstance.rpcClient) {
+          serviceInstance.rpcClient = [createService];
         }
       }
     }

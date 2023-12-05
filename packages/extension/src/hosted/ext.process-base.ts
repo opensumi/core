@@ -85,7 +85,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
 
   const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
 
-  extCenter.setConnection(createSocketConnection(extConnection));
+  extCenter.setMessageConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
 

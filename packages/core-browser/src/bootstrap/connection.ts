@@ -68,7 +68,7 @@ export async function bindConnectionService(
   connection: RPCMessageConnection,
 ) {
   const clientCenter = new RPCServiceCenter();
-  clientCenter.setConnection(connection);
+  clientCenter.setMessageConnection(connection);
 
   connection.onClose(() => {
     clientCenter.removeConnection(connection);

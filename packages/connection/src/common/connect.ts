@@ -1,6 +1,6 @@
 import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { RPCProxy, NOTREGISTERMETHOD, ILogger } from './proxy';
+import { RPCProxyJSONRPC, NOTREGISTERMETHOD, ILogger } from './proxy';
 
 export type RPCServiceMethod = (...args: any[]) => any;
 export type ServiceProxy = any;
@@ -56,9 +56,17 @@ export class RPCServiceStub {
     }
   }
 
+  addServiceByProtocol(service: any, protocol: object) {
+    const methods = this.getServiceMethod(service);
+    for (const method of methods) {
+      this.onRequest(method, service[method].bind(service));
+    }
+  }
+
   onRequest(name: string, method: RPCServiceMethod) {
     this.center.onRequest(this.getMethodName(name), method);
   }
+
   broadcast(name: string, ...args): Promise<any> {
     return this.center.broadcast(this.getMethodName(name), ...args);
   }
@@ -94,6 +102,14 @@ export function initRPCService<T = void>(center: RPCServiceCenter) {
       return proxy;
     },
     getRPCService: (name: string) => new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>(),
+    createRPCServiceByProtocol(name: string, protocol: object, service: any) {
+      const proxy = new RPCServiceStub(name, center, ServiceType.Service).getProxy<T>();
+      if (service) {
+        proxy.addServiceByProtocol(service, protocol);
+      }
+
+      return proxy;
+    },
   };
 }
 
@@ -117,9 +133,9 @@ export function getRPCService<T = void>(name: string, center: RPCServiceCenter):
 
 export class RPCServiceCenter {
   public uid: string;
-  public rpcProxy: RPCProxy[] = [];
+  public jsonRpcProxy: RPCProxyJSONRPC[] = [];
   public serviceProxy: ServiceProxy[] = [];
-  private connection: Array<MessageConnection> = [];
+  private messageConnections: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined };
 
   private createService: string[] = [];
@@ -152,39 +168,43 @@ export class RPCServiceCenter {
     return this.connectionPromise;
   }
 
-  setConnection(connection: MessageConnection) {
-    if (!this.connection.length) {
+  setMessageConnection(messageConnection: MessageConnection) {
+    if (this.messageConnections.length === 0) {
       this.connectionPromiseResolve();
     }
-    this.connection.push(connection);
 
-    const rpcProxy = new RPCProxy(this.serviceMethodMap, this.logger);
-    rpcProxy.listen(connection);
-    this.rpcProxy.push(rpcProxy);
+    this.messageConnections.push(messageConnection);
+
+    const rpcProxy = new RPCProxyJSONRPC(this.serviceMethodMap, this.logger);
+    rpcProxy.listen(messageConnection);
+
+    this.jsonRpcProxy.push(rpcProxy);
 
     const serviceProxy = rpcProxy.createProxy();
     this.serviceProxy.push(serviceProxy);
   }
 
   removeConnection(connection: MessageConnection) {
-    const removeIndex = this.connection.indexOf(connection);
+    const removeIndex = this.messageConnections.indexOf(connection);
     if (removeIndex !== -1) {
-      this.connection.splice(removeIndex, 1);
-      this.rpcProxy.splice(removeIndex, 1);
+      this.messageConnections.splice(removeIndex, 1);
+      this.jsonRpcProxy.splice(removeIndex, 1);
       this.serviceProxy.splice(removeIndex, 1);
     }
 
     return removeIndex !== -1;
   }
+
   onRequest(name: string, method: RPCServiceMethod) {
-    if (!this.connection.length) {
+    if (this.messageConnections.length === 0) {
       this.serviceMethodMap[name] = method;
     } else {
-      this.rpcProxy.forEach((proxy) => {
+      this.jsonRpcProxy.forEach((proxy) => {
         proxy.listenService({ [name]: method });
       });
     }
   }
+
   async broadcast(name: string, ...args): Promise<any> {
     const broadcastResult = this.serviceProxy.map((proxy) => proxy[name](...args));
     if (!broadcastResult || broadcastResult.length === 0) {

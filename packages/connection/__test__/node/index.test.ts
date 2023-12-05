@@ -159,7 +159,7 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    clientCenter.setConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
+    clientCenter.setMessageConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
 
     const { getRPCService } = initRPCService<
       MockFileService & {

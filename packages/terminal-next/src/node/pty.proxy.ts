@@ -302,7 +302,7 @@ export class PtyServiceProxyRPCProvider {
 
   private setProxyConnection(connection: net.Socket) {
     const serverConnection = createSocketConnection(connection);
-    this.ptyServiceCenter.setConnection(serverConnection);
+    this.ptyServiceCenter.setMessageConnection(serverConnection);
     connection.on('close', () => {
       this.ptyServiceCenter.removeConnection(serverConnection);
     });

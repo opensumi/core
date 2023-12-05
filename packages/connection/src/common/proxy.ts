@@ -18,20 +18,23 @@ export abstract class RPCService<T = any> {
 
 export const NOTREGISTERMETHOD = '$$NOTREGISTERMETHOD';
 
+const defaultReservedWordSet = new Set(['then']);
+
 export class ProxyClient {
   public proxy: any;
-  public reservedWords: string[];
+  public reservedWordSet: Set<string>;
 
-  constructor(proxy: any, reservedWords = ['then']) {
+  constructor(proxy: any, reservedWords?: string[]) {
     this.proxy = proxy;
-    this.reservedWords = reservedWords;
+    this.reservedWordSet = new Set(reservedWords) || defaultReservedWordSet;
   }
+
   public getClient() {
     return new Proxy(
       {},
       {
         get: (target, prop: string | symbol) => {
-          if (this.reservedWords.includes(prop as string) || typeof prop === 'symbol') {
+          if (this.reservedWordSet.has(prop as string) || typeof prop === 'symbol') {
             return Promise.resolve();
           } else {
             return this.proxy[prop];
@@ -46,24 +49,57 @@ interface IRPCResult {
   error: boolean;
   data: any;
 }
-export class RPCProxy {
-  private connectionPromise: Promise<MessageConnection>;
-  private connectionPromiseResolve: (connection: MessageConnection) => void;
-  private connection: MessageConnection;
-  private proxyService: any = {};
-  private logger: ILogger;
+
+export class RPCProxyBase<T> {
+  protected logger: ILogger;
+  protected connection: T;
+
+  protected connectionPromise: Promise<T>;
+  protected connectionPromiseResolve: (connection: T) => void;
+
+  constructor(public target?: RPCService, logger?: ILogger) {
+    this.logger = logger || console;
+    this.waitForConnection();
+  }
+
   // capture messages for opensumi devtools
-  private capture(message: ICapturedMessage): void {
+  protected capture(message: ICapturedMessage): void {
     const capturer = getCapturer();
     if (isDefined(capturer)) {
       capturer(message);
     }
   }
 
-  constructor(public target?: RPCService, logger?: ILogger) {
-    this.waitForConnection();
-    this.logger = logger || console;
+  protected waitForConnection() {
+    this.connectionPromise = new Promise((resolve) => {
+      this.connectionPromiseResolve = resolve;
+    });
   }
+
+  protected getServiceMethod(service: any): string[] {
+    let props: any[] = [];
+
+    if (/^\s*class/.test(service.constructor.toString())) {
+      let obj = service;
+      do {
+        props = props.concat(Object.getOwnPropertyNames(obj));
+      } while ((obj = Object.getPrototypeOf(obj)));
+      props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
+    } else {
+      for (const prop in service) {
+        if (service[prop] && typeof service[prop] === 'function') {
+          props.push(prop);
+        }
+      }
+    }
+
+    return props;
+  }
+}
+
+export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection> {
+  private proxyService: any = {};
+
   public listenService(service) {
     if (this.connection) {
       const proxyService = this.proxyService;
@@ -91,10 +127,10 @@ export class RPCProxy {
 
   public createProxy(): any {
     const proxy = new Proxy(this, this);
-
     const proxyClient = new ProxyClient(proxy);
     return proxyClient.getClient();
   }
+
   public get(target: any, p: PropertyKey) {
     const prop = p.toString();
 
@@ -165,30 +201,13 @@ export class RPCProxy {
         });
       });
   }
-  private getServiceMethod(service): string[] {
-    let props: any[] = [];
 
-    if (/^\s*class/.test(service.constructor.toString())) {
-      let obj = service;
-      do {
-        props = props.concat(Object.getOwnPropertyNames(obj));
-      } while ((obj = Object.getPrototypeOf(obj)));
-      props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
-    } else {
-      for (const prop in service) {
-        if (service[prop] && typeof service[prop] === 'function') {
-          props.push(prop);
-        }
-      }
-    }
-
-    return props;
-  }
   private bindOnRequest(service, cb?) {
     if (this.connection) {
       const connection = this.connection;
 
       const methods = this.getServiceMethod(service);
+
       methods.forEach((method) => {
         if (method.startsWith('on')) {
           connection.onNotification(method, (...args) => {
@@ -250,17 +269,11 @@ export class RPCProxy {
     }
   }
 
-  private waitForConnection() {
-    this.connectionPromise = new Promise((resolve) => {
-      this.connectionPromiseResolve = resolve;
-    });
-  }
-
   /**
    * 对于纯数组参数的情况，收到请求/通知后做展开操作
    * 因为在通信层会为每个 rpc 调用添加一个 CancellationToken 参数
    * 如果参数本身是数组, 在方法中如果使用 spread 运算符获取参数(...args)，则会出现 [...args, MutableToken] 这种情况
-   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link RPCProxy.get get} 方法
+   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link RPCProxyJSONRPC.get get} 方法
    * 此时接收到的数组类参数固定长度为 2，且最后一项一定是 MutableToken
    * @param args
    * @returns args

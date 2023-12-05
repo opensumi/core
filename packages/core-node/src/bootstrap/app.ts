@@ -150,28 +150,16 @@ export class ServerApp implements IServerApp {
   ) {
     await this.initializeContribution();
 
-    let serviceCenter;
-
     if (serviceHandler) {
-      serviceCenter = new RPCServiceCenter();
-      serviceHandler(serviceCenter);
+      serviceHandler(new RPCServiceCenter());
     } else {
+      // 创建 WebSocket 通道
       if (server instanceof http.Server || server instanceof https.Server) {
-        // 创建 websocket 通道
-        serviceCenter = createServerConnection2(
-          server,
-          this.injector,
-          this.modulesInstances,
-          this.webSocketHandler,
-          this.opts,
-        );
+        createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.opts);
       } else if (server instanceof net.Server) {
-        serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
+        createNetServerConnection(server, this.injector, this.modulesInstances);
       }
     }
-
-    // TODO: 每次链接来的时候绑定一次，或者是服务获取的时候多实例化出来
-    // bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();
   }
