@@ -357,9 +357,10 @@ console.log(a);`,
       await input.type(newFileName_2, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForTimeout(200);
     node = await explorer.getFileStatTreeNodeByPath(newFileName_2);
     await node?.open();
+    await app.page.waitForTimeout(200);
     expect(await node?.isExpanded()).toBeTruthy();
 
     // select the `new_folder3` folder and toggle it twice
