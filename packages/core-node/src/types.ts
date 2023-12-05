@@ -126,7 +126,9 @@ export interface IServerAppOpts extends Partial<Config> {
   webSocketHandler?: WebSocketHandler[];
   wsServerOptions?: ws.ServerOptions;
   pathMatchOptions?: {
-    // When true the regexp will match to the end of the string.
+    /**
+     *  When true the regexp will match to the end of the string.
+     */
     end?: boolean;
   };
   marketplace?: Partial<MarketplaceConfig>;

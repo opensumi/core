@@ -314,3 +314,5 @@ export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection> {
     }
   }
 }
+
+export class RPCProxySimple extends RPCProxyBase<{}> {}

@@ -131,6 +131,11 @@ export function getRPCService<T = void>(name: string, center: RPCServiceCenter):
   return new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>();
 }
 
+export interface IRPCServiceCenterOptions {
+  logger?: ILogger;
+  name?: string;
+}
+
 export class RPCServiceCenter {
   public uid: string;
   public jsonRpcProxy: RPCProxyJSONRPC[] = [];
@@ -145,12 +150,18 @@ export class RPCServiceCenter {
   private connectionPromiseResolve: () => void;
   private logger: ILogger;
 
-  constructor(private bench?: IBench, logger?: ILogger) {
-    this.uid = 'RPCServiceCenter:' + process.pid;
+  constructor(private bench?: IBench, options: IRPCServiceCenterOptions = {}) {
+    let { name } = options;
+    if (!name) {
+      if (typeof process !== 'undefined' && process.pid) {
+        name = 'pid-' + process.pid;
+      }
+    }
+    this.uid = 'RPCServiceCenter:' + name;
     this.connectionPromise = new Promise((resolve) => {
       this.connectionPromiseResolve = resolve;
     });
-    this.logger = logger || console;
+    this.logger = options.logger || console;
   }
 
   registerService(serviceName: string, type: ServiceType): void {

@@ -7,7 +7,6 @@ import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter
 import { ExtensionMessageReader } from './extension-message-reader';
 import { ExtensionMessageWriter } from './extension-message-writer';
 
-
 export interface IMainThreadConnection {
   $createConnection(id: string): Promise<void>;
   $deleteConnection(id: string): Promise<void>;

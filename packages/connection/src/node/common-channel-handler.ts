@@ -1,5 +1,5 @@
-import pathMatch from 'path-match';
-import ws from 'ws';
+import { MatchFunction, match } from 'path-to-regexp';
+import WebSocket from 'ws';
 
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
@@ -66,7 +66,7 @@ export class CommonChannelPathHandler {
   get(channelPath: string) {
     return this.handlerMap.get(channelPath);
   }
-  disposeConnectionClientId(connection: ws, clientId: string) {
+  disposeConnectionClientId(connection: WebSocket, clientId: string) {
     this.handlerMap.forEach((handlerArr: IPathHander[]) => {
       handlerArr.forEach((handler: IPathHander) => {
         handler.dispose(connection, clientId);
@@ -85,19 +85,18 @@ export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
   public handlerId = 'common-channel';
-  private wsServer: ws.Server;
-  protected handlerRoute: (wsPathname: string) => any;
+  private wsServer: WebSocket.Server;
+  protected handlerRoute: MatchFunction;
   private channelMap: Map<string | number, WSChannel> = new Map();
-  private connectionMap: Map<string, ws> = new Map();
+  private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(routePath: string, private logger: any = console, private options: CommonChannelHandlerOptions = {}) {
     super();
-    const route = pathMatch(options.pathMatchOptions);
-    this.handlerRoute = route(`${routePath}`);
+    this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }
-  private hearbeat(connectionId: string, connection: ws) {
+  private hearbeat(connectionId: string, connection: WebSocket) {
     const timer = global.setTimeout(() => {
       connection.ping();
       // console.log(`connectionId ${connectionId} ping`);
@@ -109,7 +108,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({
+    this.wsServer = new WebSocket.Server({
       noServer: true,
       ...this.options.wsServerOptions,
     });
@@ -120,7 +119,6 @@ export class CommonChannelHandler extends WebSocketHandler {
         try {
           msgObj = parse(data);
 
-          // 心跳消息
           if (msgObj.kind === 'heartbeat') {
             connection.send(
               stringify({
@@ -201,7 +199,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
   }
 
-  private channelConnectionSend = (connection: ws) => (content: string) => {
+  private channelConnectionSend = (connection: WebSocket) => (content: string) => {
     if (connection.readyState === connection.OPEN) {
       connection.send(content, (err: any) => {
         if (err) {
@@ -210,14 +208,14 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
     }
   };
-  public handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean {
-    const routeResult = this.handlerRoute(wsPathname);
+  public handleUpgrade(pathname: string, request: any, socket: any, head: any): boolean {
+    const routeResult = this.handlerRoute(pathname);
 
     if (routeResult) {
       const wsServer = this.wsServer;
-      wsServer.handleUpgrade(request, socket, head, (connection: any) => {
-        connection.routeParam = {
-          pathname: wsPathname,
+      wsServer.handleUpgrade(request, socket, head, (connection: WebSocket) => {
+        (connection as any).routeParam = {
+          pathname,
         };
 
         wsServer.emit('connection', connection);

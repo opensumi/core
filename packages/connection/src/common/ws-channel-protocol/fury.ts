@@ -22,6 +22,7 @@ const description = Type.object('ws-channel-protocol', {
   // error
   code: Type.uint32(),
   reason: Type.string(),
+  binary: Type.binary(),
 });
 
 const fury = new Fury({ hps });

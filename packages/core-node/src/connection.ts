@@ -37,7 +37,7 @@ export function createServerConnection2(
     handler: (connection: WSChannel, clientId: string) => {
       logger.log(`New RPC connection ${clientId}`);
 
-      const serviceCenter = new RPCServiceCenter(undefined, logger);
+      const serviceCenter = new RPCServiceCenter(undefined, { logger });
       const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
       const serverConnection = createWebSocketConnection(connection);
@@ -65,7 +65,7 @@ export function createServerConnection2(
 
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger);
-  const serviceCenter = new RPCServiceCenter(undefined, logger);
+  const serviceCenter = new RPCServiceCenter(undefined, { logger });
   const serviceChildInjector = bindModuleBackService(
     injector,
     modulesInstances,

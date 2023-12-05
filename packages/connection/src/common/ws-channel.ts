@@ -2,6 +2,7 @@ import { stringify } from './utils';
 import { PlatformBuffer } from './ws-channel-protocol/fury';
 
 export interface IWebSocket {
+  // send(content: PlatformBuffer, isBinary: true): void;
   send(content: string): void;
   close(...args): void;
   onMessage(cb: (data: any) => void): void;
@@ -37,7 +38,21 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+
+export interface BinaryMessage {
+  kind: 'binary';
+  id: string;
+  binary: PlatformBuffer;
+}
+
+export type ChannelMessage =
+  | HeartbeatMessage
+  | ClientMessage
+  | OpenMessage
+  | ReadyMessage
+  | DataMessage
+  | CloseMessage
+  | BinaryMessage;
 
 export type ConnectionSend = (content: PlatformBuffer | string) => void;
 
@@ -102,7 +117,15 @@ export class WSChannel implements IWebSocket {
       }),
     );
   }
-  send(content: string) {
+
+  send(content: PlatformBuffer, isBinary: true): void;
+  send(content: string): void;
+  send(content: any, isBinary?: boolean) {
+    if (isBinary) {
+      this.sendBinary(content as any);
+      return;
+    }
+
     this.connectionSend(
       stringify({
         kind: 'data',
@@ -111,12 +134,25 @@ export class WSChannel implements IWebSocket {
       }),
     );
   }
+
+  sendBinary(binary: PlatformBuffer) {
+    this.connectionSend(
+      stringify({
+        kind: 'binary',
+        id: this.id,
+        binary,
+      }),
+    );
+  }
+
   onError() {}
+
   close(code: number, reason: string) {
     if (this.fireClose) {
       this.fireClose(code, reason);
     }
   }
+
   onClose(cb: (code: number, reason: string) => void) {
     this.fireClose = cb;
   }
