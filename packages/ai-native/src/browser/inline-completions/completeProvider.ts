@@ -108,7 +108,17 @@ class RequestImp {
       rs = cacheData;
       status = 1;
     } else {
-      rs = await aiCompletionsService.complete(completionRequestBean);
+      try {
+        rs = await aiCompletionsService.complete(completionRequestBean);
+      } catch (error) {
+        aiReporter.end(relationId, {
+          success: false,
+          replytime: +new Date() - beginAlgTime,
+          message: error.toString(),
+        });
+        aiCompletionsService.hideStatusBarItem();
+        return [];
+      }
       status = 0;
     }
 
