@@ -16,8 +16,8 @@ import {
   ILogger,
   IDisposable,
   toDisposable,
-  createElectronClientConnection,
   IApplicationService,
+  createElectronClientConnectionEnhance,
 } from '@opensumi/ide-core-browser';
 
 import {
@@ -164,12 +164,14 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
 
+      const connection = createElectronClientConnectionEnhance(connectPath);
       // electron 环境下要使用 Node 端的 connection
-      mainThreadCenter.setMessageConnection(createElectronClientConnection(connectPath));
+      mainThreadCenter.setConnection(connection.messageConnection);
+      mainThreadCenter.setBinaryConnection(connection.binaryConnection);
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-      mainThreadCenter.setMessageConnection(createWebSocketConnection(channel));
+      mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 
     const { getRPCService } = initRPCService<{

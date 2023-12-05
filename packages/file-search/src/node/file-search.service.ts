@@ -25,11 +25,11 @@ export class FileSearchService implements IFileSearchService {
   async find(
     searchPattern: string,
     options: IFileSearchService.Options,
-    clientToken?: CancellationToken,
+    cancelToken?: CancellationToken,
   ): Promise<string[]> {
     const cancellationSource = new CancellationTokenSource();
-    if (clientToken) {
-      clientToken.onCancellationRequested(() => cancellationSource.cancel());
+    if (cancelToken) {
+      cancelToken.onCancellationRequested(() => cancellationSource.cancel());
     }
     const token = cancellationSource.token;
     const opts = {

@@ -9,7 +9,7 @@ export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
   const { getRPCService } = initRPCService(extCenter);
   const extConnection = net.createConnection('/tmp/test.sock');
 
-  extCenter.setMessageConnection(createSocketConnection(extConnection));
+  extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
   service.on('onMessage', (msg) => {

@@ -1,7 +1,10 @@
 import { WebSocket, Server } from 'mock-socket';
 
+import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
+
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
 import { stringify, parse } from '../../src/common/utils';
+
 (global as any).WebSocket = WebSocket;
 
 describe('connection browser', () => {
@@ -14,7 +17,7 @@ describe('connection browser', () => {
     let receivedHeartbeat = false;
     mockServer.on('connection', (socket) => {
       socket.on('message', (msg) => {
-        const msgObj = parse(msg as string);
+        const msgObj = parse(msg as PlatformBuffer);
         if (msgObj.kind === 'open') {
           socket.send(
             stringify({

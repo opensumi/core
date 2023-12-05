@@ -1,5 +1,7 @@
+import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
+
+import { BinaryConnection } from './binary-connection';
 import { stringify } from './utils';
-import { PlatformBuffer } from './ws-channel-protocol/fury';
 
 export interface IWebSocket {
   // send(content: PlatformBuffer, isBinary: true): void;
@@ -62,11 +64,10 @@ export class WSChannel implements IWebSocket {
 
   private connectionSend: ConnectionSend;
   private fireMessage: (data: any) => void;
+  private fireBinary: (data: PlatformBuffer) => void;
   private fireOpen: (id: string) => void;
   public fireReOpen: () => void;
   private fireClose: (code: number, reason: string) => void;
-
-  public messageConnection: any;
 
   constructor(connectionSend: ConnectionSend, id?: string) {
     this.connectionSend = connectionSend;
@@ -82,6 +83,9 @@ export class WSChannel implements IWebSocket {
   // server
   onMessage(cb: (data: any) => any) {
     this.fireMessage = cb;
+  }
+  onBinary(cb: (data: PlatformBuffer) => any) {
+    this.fireBinary = cb;
   }
   onOpen(cb: (id: string) => void) {
     this.fireOpen = cb;
@@ -103,6 +107,8 @@ export class WSChannel implements IWebSocket {
       this.fireOpen(msg.id);
     } else if (msg.kind === 'data' && this.fireMessage) {
       this.fireMessage(msg.content);
+    } else if (msg.kind === 'binary' && this.fireBinary) {
+      this.fireBinary(msg.binary);
     }
   }
 
@@ -155,6 +161,16 @@ export class WSChannel implements IWebSocket {
 
   onClose(cb: (code: number, reason: string) => void) {
     this.fireClose = cb;
+  }
+
+  createBinaryConnection() {
+    const binaryConnection = new BinaryConnection({
+      onmessage: (cb) => this.onBinary(cb),
+      send: (data) => {
+        this.sendBinary(data);
+      },
+    });
+    return binaryConnection;
   }
 }
 

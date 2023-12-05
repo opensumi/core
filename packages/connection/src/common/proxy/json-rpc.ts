@@ -1,141 +1,27 @@
-import { isDefined, uuid } from '@opensumi/ide-core-common';
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
+import { uuid } from '@opensumi/ide-core-common';
+import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
-import { MessageType, ResponseStatus, ICapturedMessage, getCapturer } from './utils';
+import { IRPCServiceMap } from '../rpc-service-center';
+import { MessageType, ResponseStatus, getServiceMethods } from '../utils';
 
-export interface ILogger {
-  warn(...args: any[]): void;
-}
-
-export abstract class RPCService<T = any> {
-  rpcClient?: T[];
-  rpcRegistered?: boolean;
-  register?(): () => Promise<T>;
-  get client() {
-    return this.rpcClient ? this.rpcClient[0] : undefined;
-  }
-}
-
-export const NOTREGISTERMETHOD = '$$NOTREGISTERMETHOD';
-
-const defaultReservedWordSet = new Set(['then']);
-
-export class ProxyClient {
-  public proxy: any;
-  public reservedWordSet: Set<string>;
-
-  constructor(proxy: any, reservedWords?: string[]) {
-    this.proxy = proxy;
-    this.reservedWordSet = new Set(reservedWords) || defaultReservedWordSet;
-  }
-
-  public getClient() {
-    return new Proxy(
-      {},
-      {
-        get: (target, prop: string | symbol) => {
-          if (this.reservedWordSet.has(prop as string) || typeof prop === 'symbol') {
-            return Promise.resolve();
-          } else {
-            return this.proxy[prop];
-          }
-        },
-      },
-    );
-  }
-}
+import { RPCProxyBase } from './base';
+import { NOTREGISTERMETHOD } from './constants';
 
 interface IRPCResult {
   error: boolean;
   data: any;
 }
 
-export class RPCProxyBase<T> {
-  protected logger: ILogger;
-  protected connection: T;
-
-  protected connectionPromise: Promise<T>;
-  protected connectionPromiseResolve: (connection: T) => void;
-
-  constructor(public target?: RPCService, logger?: ILogger) {
-    this.logger = logger || console;
-    this.waitForConnection();
-  }
-
-  // capture messages for opensumi devtools
-  protected capture(message: ICapturedMessage): void {
-    const capturer = getCapturer();
-    if (isDefined(capturer)) {
-      capturer(message);
-    }
-  }
-
-  protected waitForConnection() {
-    this.connectionPromise = new Promise((resolve) => {
-      this.connectionPromiseResolve = resolve;
-    });
-  }
-
-  protected getServiceMethod(service: any): string[] {
-    let props: any[] = [];
-
-    if (/^\s*class/.test(service.constructor.toString())) {
-      let obj = service;
-      do {
-        props = props.concat(Object.getOwnPropertyNames(obj));
-      } while ((obj = Object.getPrototypeOf(obj)));
-      props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
-    } else {
-      for (const prop in service) {
-        if (service[prop] && typeof service[prop] === 'function') {
-          props.push(prop);
-        }
-      }
-    }
-
-    return props;
-  }
-}
-
-export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection> {
-  private proxyService: any = {};
-
-  public listenService(service) {
-    if (this.connection) {
-      const proxyService = this.proxyService;
-      this.bindOnRequest(service, (service, prop) => {
-        proxyService[prop] = service[prop].bind(service);
-      });
-    } else {
-      const target = this.target || {};
-      const methods = this.getServiceMethod(service);
-      methods.forEach((method) => {
-        target[method] = service[method].bind(service);
-      });
-    }
-  }
-
-  public listen(connection: MessageConnection) {
-    this.connection = connection;
-
-    if (this.target) {
-      this.listenService(this.target);
-    }
-    this.connectionPromiseResolve(connection);
-    connection.listen();
-  }
-
-  public createProxy(): any {
-    const proxy = new Proxy(this, this);
-    const proxyClient = new ProxyClient(proxy);
-    return proxyClient.getClient();
+export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection, IRPCServiceMap> {
+  public getRPCInvokeProxy(): any {
+    return new Proxy(this, this);
   }
 
   public get(target: any, p: PropertyKey) {
     const prop = p.toString();
 
     return (...args: any[]) =>
-      this.connectionPromise.then((connection) => {
+      this.connectionPromise.promise.then((connection) => {
         connection = this.connection || connection;
         return new Promise((resolve, reject) => {
           try {
@@ -202,11 +88,11 @@ export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection> {
       });
   }
 
-  private bindOnRequest(service, cb?) {
+  protected bindOnRequest(service: IRPCServiceMap, cb?: ((service: IRPCServiceMap, prop: string) => void) | undefined) {
     if (this.connection) {
       const connection = this.connection;
 
-      const methods = this.getServiceMethod(service);
+      const methods = getServiceMethods(service);
 
       methods.forEach((method) => {
         if (method.startsWith('on')) {
@@ -280,7 +166,11 @@ export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection> {
    */
   private serializeArguments(args: any[]): any[] {
     const maybeCancellationToken = args[args.length - 1];
-    if (args.length === 2 && Array.isArray(args[0]) && maybeCancellationToken.hasOwnProperty('_isCancelled')) {
+    if (
+      args.length === 2 &&
+      Array.isArray(args[0]) &&
+      Object.prototype.hasOwnProperty.call(maybeCancellationToken, '_isCancelled')
+    ) {
       return [...args[0], maybeCancellationToken];
     }
 
@@ -314,5 +204,3 @@ export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection> {
     }
   }
 }
-
-export class RPCProxySimple extends RPCProxyBase<{}> {}

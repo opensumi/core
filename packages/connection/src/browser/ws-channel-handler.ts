@@ -2,10 +2,10 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 
 import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
+import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
 import { WSChannel } from '../common/ws-channel';
-import { PlatformBuffer } from '../common/ws-channel-protocol/fury';
 
 // 前台链接管理类
 export class WSChannelHandler {
@@ -17,10 +17,15 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
+  get LOG_TAG() {
+    return `[WSChannelHandler] [client-id:${this.clientId}] [ws-path:${this.wsPath}]`;
+  }
+
   constructor(public wsPath: UrlProvider, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {});
+    this.connection.binaryType = 'arraybuffer';
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -61,8 +66,10 @@ export class WSChannelHandler {
       let buffer: ArrayBuffer;
       if (e.data instanceof Blob) {
         buffer = await e.data.arrayBuffer();
+      } else if (e.data instanceof ArrayBuffer) {
+        buffer = e.data;
       } else {
-        throw new Error('unknown message type');
+        throw new Error(this.LOG_TAG + ' unknown message type, expect Blob');
       }
 
       const msg = parse(new Uint8Array(buffer));
@@ -72,11 +79,11 @@ export class WSChannelHandler {
         if (channel) {
           if (msg.kind === 'data' && !(channel as any).fireMessage) {
             // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
-            this.logger.error('channel not ready!', msg);
+            this.logger.error(this.LOG_TAG, 'channel not ready!', msg);
           }
           channel.handleMessage(msg);
         } else {
-          this.logger.warn(`channel ${msg.id} not found`);
+          this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
         }
       }
     };

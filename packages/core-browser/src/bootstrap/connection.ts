@@ -1,6 +1,7 @@
-import { Injector, Provider } from '@opensumi/di';
+import { Injector } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   getDebugLogger,
@@ -12,7 +13,7 @@ import {
   IEventBus,
   UrlProvider,
 } from '@opensumi/ide-core-common';
-import { BackService } from '@opensumi/ide-core-common/lib/module';
+import { BackService, BackServiceWithProtocol } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
 
@@ -63,26 +64,31 @@ export async function createClientConnection2(
   const channel = await wsChannelHandler.openChannel('RPCService');
   channel.onReOpen(() => onReconnect());
 
-  bindConnectionService(injector, modules, createWebSocketConnection(channel));
+  bindConnectionService(injector, modules, createWebSocketConnection(channel), channel.createBinaryConnection());
 }
 
 export async function bindConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
   connection: RPCMessageConnection,
+  binaryConnection: BinaryConnection,
 ) {
   const clientCenter = new RPCServiceCenter();
-  clientCenter.setMessageConnection(connection);
+  clientCenter.setConnection(connection);
+  clientCenter.setBinaryConnection(binaryConnection);
 
   connection.onClose(() => {
     clientCenter.removeConnection(connection);
+    clientCenter.removeBinaryConnection(binaryConnection);
   });
 
   const { getRPCService } = initRPCService(clientCenter);
 
   const backServiceArr: BackService[] = [];
+  const backServiceWithProtocolArr: BackServiceWithProtocol[] = [];
   // 存放依赖前端后端服务，后端服务实例化后再去实例化这些 token
   const dependClientBackServices: BackService[] = [];
+  const dependClientBackProtocolServices: BackServiceWithProtocol[] = [];
 
   for (const module of modules) {
     const moduleInstance = injector.get(module) as BasicModule;
@@ -91,27 +97,60 @@ export async function bindConnectionService(
         backServiceArr.push(backService);
       }
     }
+
+    if (moduleInstance.backServicesWithProtocol) {
+      for (const backService of moduleInstance.backServicesWithProtocol) {
+        backServiceWithProtocolArr.push(backService);
+      }
+    }
   }
 
   for (const backService of backServiceArr) {
     const { servicePath } = backService;
     const rpcService = getRPCService(servicePath);
 
-    const injectService = {
+    injector.addProviders({
       token: servicePath,
       useValue: rpcService,
-    } as Provider;
+    });
 
-    injector.addProviders(injectService);
     // 这里不进行初始化，先收集依赖，等所有 servicePath 实例化完后在做实例化，防止循环依赖
     if (backService.clientToken) {
       dependClientBackServices.push(backService);
     }
   }
 
+  for (const backService of backServiceWithProtocolArr) {
+    const { protocol } = backService;
+    const { name } = protocol;
+    const rpcService = getRPCService(name);
+    rpcService.loadProtocol(protocol);
+
+    injector.addProviders({
+      token: name,
+      useValue: rpcService,
+    });
+
+    if (backService.clientToken) {
+      dependClientBackProtocolServices.push(backService);
+    }
+  }
+
   for (const backService of dependClientBackServices) {
     const { servicePath } = backService;
     const rpcService = getRPCService(servicePath);
+    if (backService.clientToken) {
+      const clientService = injector.get(backService.clientToken);
+      rpcService.onRequestService(clientService);
+    }
+  }
+
+  // The client service are not implements the protocol
+  for (const backService of dependClientBackProtocolServices) {
+    const { protocol } = backService;
+    const { name } = protocol;
+    const rpcService = getRPCService(name);
+
     if (backService.clientToken) {
       const clientService = injector.get(backService.clientToken);
       rpcService.onRequestService(clientService);

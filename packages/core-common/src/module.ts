@@ -4,6 +4,8 @@
 
 import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@opensumi/di';
 
+import { RPCProtocol } from './connection/types';
+
 interface FrontService {
   token: Token;
   servicePath: string;
@@ -15,16 +17,16 @@ export interface BackService {
   servicePath: string;
 }
 
-export interface BackService2 {
+export interface BackServiceWithProtocol {
   token?: Token;
   clientToken?: Token;
-  servicePath: string;
-  protocol: object;
+  protocol: RPCProtocol<any>;
 }
 
 export class BasicModule {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
+
   providers?: Provider[];
   electronProviders?: Provider[];
   webProviders?: Provider[];
@@ -33,9 +35,8 @@ export class BasicModule {
   // rpc
   backServices?: BackService[];
   frontServices?: FrontService[];
-
   // new rpc service
-  backServices2?: BackService2[];
+  backServicesWithProtocol?: BackServiceWithProtocol[];
 }
 
 export function ModuleDependencies<T extends BasicModule>(dependencies: ConstructorOf<BasicModule>[]) {

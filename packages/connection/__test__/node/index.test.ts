@@ -2,7 +2,9 @@ import http from 'http';
 
 import ws from 'ws';
 
+import { createBinaryConnection } from '@opensumi/ide-connection/lib/common/binary-connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
+import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
@@ -63,7 +65,7 @@ describe('connection', () => {
     };
     const channel = new WSChannel(channelSend, 'TEST_CHANNEL_ID');
     connection.on('message', (msg) => {
-      const msgObj = parse(msg as string);
+      const msgObj = parse(msg as PlatformBuffer);
       if (msgObj.kind === 'ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
           channel.handleMessage(msgObj);
@@ -128,7 +130,7 @@ describe('connection', () => {
     const notificationMock = jest.fn();
 
     let serviceCenter;
-    let clientConnection;
+    let clientConnectionWs;
 
     await Promise.all([
       new Promise<void>((resolve) => {
@@ -142,8 +144,8 @@ describe('connection', () => {
       }),
 
       new Promise<void>((resolve) => {
-        clientConnection = new WebSocket('ws://0.0.0.0:7788/service');
-        clientConnection.on('open', () => {
+        clientConnectionWs = new WebSocket('ws://0.0.0.0:7788/service');
+        clientConnectionWs.on('open', () => {
           resolve(undefined);
         });
       }),
@@ -159,7 +161,8 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    clientCenter.setMessageConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
+    clientCenter.setConnection(createWebSocketConnection(clientConnectionWs) as RPCMessageConnection);
+    clientCenter.setBinaryConnection(createBinaryConnection(clientConnectionWs));
 
     const { getRPCService } = initRPCService<
       MockFileService & {

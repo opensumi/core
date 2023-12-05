@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 console.time('Render');
 import { Injector, Domain } from '@opensumi/di';
-import { IClientAppOpts, electronEnv, URI, createElectronClientConnection } from '@opensumi/ide-core-browser';
+import { IClientAppOpts, electronEnv, URI, createElectronClientConnectionEnhance } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 // 引入公共样式文件
 import '@opensumi/ide-core-browser/lib/style/index.less';
@@ -60,7 +60,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   if (electronEnv.metadata.isRemote) {
     app.start(mainDom, 'web');
   } else {
-    const connection = createElectronClientConnection();
-    app.start(mainDom, 'electron', connection);
+    const connection = createElectronClientConnectionEnhance();
+    app.start(mainDom, 'electron', connection.messageConnection, connection.binaryConnection);
   }
 }

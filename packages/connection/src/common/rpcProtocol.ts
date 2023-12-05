@@ -410,6 +410,6 @@ export class RPCProtocol implements IRPCProtocol {
     this._pendingRPCReplies.delete(callId);
     this._timeoutHandles.delete(callId);
 
-    pendingReply.reject(new Error('RPC Timeout: '+ callId));
+    pendingReply.reject(new Error('RPC Timeout: ' + callId));
   }
 }

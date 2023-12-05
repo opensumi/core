@@ -146,19 +146,16 @@ export class ServerApp implements IServerApp {
 
   async start(
     server: http.Server | https.Server | net.Server,
-    serviceHandler?: (serviceCenter: RPCServiceCenter) => void,
+    rpcServiceCallback?: (serviceCenter: RPCServiceCenter) => void,
   ) {
     await this.initializeContribution();
 
-    if (serviceHandler) {
-      serviceHandler(new RPCServiceCenter());
-    } else {
-      // 创建 WebSocket 通道
-      if (server instanceof http.Server || server instanceof https.Server) {
-        createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.opts);
-      } else if (server instanceof net.Server) {
-        createNetServerConnection(server, this.injector, this.modulesInstances);
-      }
+    if (rpcServiceCallback) {
+      rpcServiceCallback(new RPCServiceCenter());
+    } else if (server instanceof http.Server || server instanceof https.Server) {
+      createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.opts);
+    } else if (server instanceof net.Server) {
+      createNetServerConnection(server, this.injector, this.modulesInstances);
     }
 
     await this.startContribution();

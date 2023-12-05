@@ -1,5 +1,5 @@
 import { Injectable, Injector } from '@opensumi/di';
-import { NodeModule } from '@opensumi/ide-core-node';
+import { BackServiceWithProtocol, NodeModule } from '@opensumi/ide-core-node';
 
 import {
   IFileService,
@@ -8,8 +8,8 @@ import {
   FileServicePath,
   IShadowFileProvider,
   FileSystemProvider,
-  DiskFileServicePath,
 } from '../common';
+import { DiskFileServiceProtocol } from '../common/protocol';
 
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { getSafeFileservice } from './file-service';
@@ -35,16 +35,19 @@ export class FileServiceModule extends NodeModule {
 
   backServices = [
     {
-      servicePath: DiskFileServicePath,
-      token: IDiskFileProvider,
-    },
-    {
       servicePath: ShadowFileServicePath,
       token: IShadowFileProvider,
     },
     {
       servicePath: FileServicePath,
       token: IFileService,
+    },
+  ];
+
+  backServicesWithProtocol: BackServiceWithProtocol[] = [
+    {
+      protocol: DiskFileServiceProtocol,
+      token: IDiskFileProvider,
     },
   ];
 }

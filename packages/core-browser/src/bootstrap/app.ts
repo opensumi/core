@@ -8,6 +8,7 @@ import ResizeObserver from 'resize-observer-polyfill';
 import { Injector } from '@opensumi/di';
 import { RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-connection';
 import {
   CommandRegistry,
   isOSX,
@@ -45,7 +46,6 @@ import {
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
-import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
@@ -67,7 +67,7 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { electronEnv } from '../utils';
+import { createElectronClientConnectionEnhance, electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
@@ -209,17 +209,24 @@ export class ClientApp implements IClientApp, IDisposable {
     container: HTMLElement | IAppRenderer,
     type?: 'electron' | 'web',
     connection?: RPCMessageConnection,
+    binaryConnection?: BinaryConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
-    if (connection) {
-      await bindConnectionService(this.injector, this.modules, connection);
+    if (connection && binaryConnection) {
+      await bindConnectionService(this.injector, this.modules, connection, binaryConnection);
     } else {
       if (type === 'electron') {
-        await bindConnectionService(this.injector, this.modules, createElectronClientConnection());
+        const connection = createElectronClientConnectionEnhance();
+        await bindConnectionService(
+          this.injector,
+          this.modules,
+          connection.messageConnection,
+          connection.binaryConnection,
+        );
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,

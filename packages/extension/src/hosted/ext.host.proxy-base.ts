@@ -131,7 +131,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setRPCMethods() {
-    const proxyService = getRPCService(EXT_HOST_PROXY_PROTOCOL, this.clientCenter);
+    const proxyService = getRPCService<{ onMessage: (msg: any) => void }>(EXT_HOST_PROXY_PROTOCOL, this.clientCenter);
     const onMessageEmitter = new Emitter<string>();
     proxyService.on('onMessage', (msg: string) => {
       onMessageEmitter.fire(msg);
@@ -193,7 +193,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private setConnection() {
     const connection = createSocketConnection(this.socket);
-    this.clientCenter.setMessageConnection(connection);
+    this.clientCenter.setConnection(connection);
     this.socket.once('close', () => {
       connection.dispose();
       this.clientCenter.removeConnection(connection);

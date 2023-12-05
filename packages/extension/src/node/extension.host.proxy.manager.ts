@@ -73,7 +73,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private setProxyConnection(connection: net.Socket) {
     const serverConnection = createSocketConnection(connection);
-    this.extServiceProxyCenter.setMessageConnection(serverConnection);
+    this.extServiceProxyCenter.setConnection(serverConnection);
     connection.on('close', () => {
       this.extServiceProxyCenter.removeConnection(serverConnection);
     });
@@ -87,7 +87,10 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   private setExtHostProxyRPCProtocol() {
-    const proxyService = getRPCService(EXT_HOST_PROXY_PROTOCOL, this.extServiceProxyCenter);
+    const proxyService = getRPCService<{ onMessage: (msg: any) => void }>(
+      EXT_HOST_PROXY_PROTOCOL,
+      this.extServiceProxyCenter,
+    );
 
     const onMessageEmitter = new Emitter<string>();
     proxyService.on('onMessage', (msg) => {

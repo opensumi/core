@@ -1,4 +1,6 @@
-import { PlatformBuffer, deserialize, serialize } from './ws-channel-protocol/fury';
+import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
+
+import { wsChannelProtocolSerializer } from './protocols/base';
 
 import { ChannelMessage } from '.';
 
@@ -46,11 +48,11 @@ export interface WSCloseInfo {
 }
 
 export function stringify(obj: ChannelMessage): PlatformBuffer {
-  return serialize(obj);
+  return wsChannelProtocolSerializer.serialize(obj);
 }
 
 export function parse(input: PlatformBuffer): any {
-  return deserialize(input);
+  return wsChannelProtocolSerializer.deserialize(input);
 }
 
 export function getCapturer() {
@@ -58,4 +60,34 @@ export function getCapturer() {
     return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureRPC;
   }
   return;
+}
+
+type CheckIsValidMethod<T> = (obj: T) => boolean;
+
+type ValueOf<T> = T[keyof T];
+
+export function getServiceMethods<T extends object>(
+  service: T,
+  checkIsValidMethod?: CheckIsValidMethod<ValueOf<T>>,
+): string[] {
+  if (!checkIsValidMethod) {
+    checkIsValidMethod = (obj: any) => typeof obj === 'function';
+  }
+  let props: any[] = [];
+
+  if (/^\s*class/.test(service.constructor.toString())) {
+    let obj = service;
+    do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+    } while ((obj = Object.getPrototypeOf(obj)));
+    props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && checkIsValidMethod!(service[e]));
+  } else {
+    for (const prop in service) {
+      if (checkIsValidMethod!(service[prop])) {
+        props.push(prop);
+      }
+    }
+  }
+
+  return props;
 }

@@ -1,13 +1,14 @@
 import { MatchFunction, match } from 'path-to-regexp';
 import WebSocket from 'ws';
 
+import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
+
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
-import { PlatformBuffer } from '../common/ws-channel-protocol/fury';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
-export interface IPathHander {
+export interface IPathHandler {
   dispose: (connection: any, connectionId: string) => void;
   handler: (connection: any, connectionId: string, params?: any) => void;
   reconnect?: (connection: any, connectionId: string) => void;
@@ -15,10 +16,10 @@ export interface IPathHander {
 }
 
 export class CommonChannelPathHandler {
-  private handlerMap: Map<string, IPathHander[]> = new Map();
+  private handlerMap: Map<string, IPathHandler[]> = new Map();
   private paramsKey: Map<string, string> = new Map();
 
-  register(channelPath: string, handler: IPathHander) {
+  register(channelPath: string, handler: IPathHandler) {
     const paramsIndex = channelPath.indexOf('/:');
     const hasParams = paramsIndex >= 0;
     let channelToken = channelPath;
@@ -29,9 +30,9 @@ export class CommonChannelPathHandler {
     if (!this.handlerMap.has(channelToken)) {
       this.handlerMap.set(channelToken, []);
     }
-    const handlerArr = this.handlerMap.get(channelToken) as IPathHander[];
+    const handlerArr = this.handlerMap.get(channelToken) as IPathHandler[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection, clientId, params) => {
+    const setHandler = (connection: WSChannel, clientId: string, params) => {
       handler.connection = connection;
       handlerFn(connection, clientId, params);
     };
@@ -49,7 +50,7 @@ export class CommonChannelPathHandler {
     }
     return params;
   }
-  removeHandler(channelPath: string, handler: IPathHander) {
+  removeHandler(channelPath: string, handler: IPathHandler) {
     const paramsIndex = channelPath.indexOf(':');
     const hasParams = paramsIndex >= 0;
     let channelToken = channelPath;
@@ -67,8 +68,8 @@ export class CommonChannelPathHandler {
     return this.handlerMap.get(channelPath);
   }
   disposeConnectionClientId(connection: WebSocket, clientId: string) {
-    this.handlerMap.forEach((handlerArr: IPathHander[]) => {
-      handlerArr.forEach((handler: IPathHander) => {
+    this.handlerMap.forEach((handlerArr: IPathHandler[]) => {
+      handlerArr.forEach((handler: IPathHandler) => {
         handler.dispose(connection, clientId);
       });
     });
@@ -96,11 +97,10 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }
-  private hearbeat(connectionId: string, connection: WebSocket) {
+  private heartbeat(connectionId: string, connection: WebSocket) {
     const timer = global.setTimeout(() => {
       connection.ping();
-      // console.log(`connectionId ${connectionId} ping`);
-      this.hearbeat(connectionId, connection);
+      this.heartbeat(connectionId, connection);
     }, 5000);
 
     this.heartbeatMap.set(connectionId, timer);
@@ -131,7 +131,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             this.logger.log(`New connection with id ${clientId}`);
             connectionId = clientId;
             this.connectionMap.set(clientId, connection);
-            this.hearbeat(connectionId, connection);
+            this.heartbeat(connectionId, connection);
             // channel 消息处理
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
@@ -199,7 +199,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
   }
 
-  private channelConnectionSend = (connection: WebSocket) => (content: string) => {
+  private channelConnectionSend = (connection: WebSocket) => (content: string | PlatformBuffer) => {
     if (connection.readyState === connection.OPEN) {
       connection.send(content, (err: any) => {
         if (err) {

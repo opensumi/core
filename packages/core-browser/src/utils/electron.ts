@@ -1,3 +1,4 @@
+import type { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
@@ -122,4 +123,21 @@ export function createElectronClientConnection(connectPath?: string): MessageCon
   }
   const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
   return createSocketConnection(socket);
+}
+
+/**
+ * BinaryConnection 应该使用单独的 Socket，否则会和 MessageConnection 冲突
+ */
+export function createElectronClientConnectionEnhance(connectPath?: string): {
+  messageConnection: MessageConnection;
+  binaryConnection: BinaryConnection;
+} {
+  let socket;
+  if (connectPath) {
+    socket = electronEnv.createNetConnection(connectPath);
+  } else {
+    socket = electronEnv.createRPCNetConnection();
+  }
+  const { createSocketConnection, createBinaryConnection } = require('@opensumi/ide-connection/lib/node/connect');
+  return { messageConnection: createSocketConnection(socket), binaryConnection: createBinaryConnection(socket) };
 }

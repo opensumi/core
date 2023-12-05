@@ -2,7 +2,7 @@ import http from 'http';
 import net from 'net';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
-import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
+import { WSChannel, initRPCService, RPCServiceCenter, RPCService } from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   WebSocketServerRoute,
@@ -41,11 +41,14 @@ export function createServerConnection2(
       const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
       const serverConnection = createWebSocketConnection(connection);
-      connection.messageConnection = serverConnection;
-      serviceCenter.setMessageConnection(serverConnection);
+      const binaryConnection = connection.createBinaryConnection();
+      serviceCenter.setConnection(serverConnection);
+      serviceCenter.setBinaryConnection(binaryConnection);
 
       connection.onClose(() => {
         serviceCenter.removeConnection(serverConnection);
+        serviceCenter.removeBinaryConnection(binaryConnection);
+
         serviceChildInjector.disposeAll();
 
         logger.log(`Remove RPC connection ${clientId}`);
@@ -75,7 +78,7 @@ export function createNetServerConnection(server: net.Server, injector: Injector
 
   server.on('connection', (connection) => {
     const serverConnection = createSocketConnection(connection);
-    serviceCenter.setMessageConnection(serverConnection);
+    serviceCenter.setConnection(serverConnection);
 
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
@@ -133,8 +136,8 @@ export function bindModuleBackService(
       }
     }
 
-    if (module.backServices2) {
-      for (const service of module.backServices2) {
+    if (module.backServicesWithProtocol) {
+      for (const service of module.backServicesWithProtocol) {
         const serviceToken = service.token;
         if (!serviceToken || !injector.creatorMap.has(serviceToken)) {
           continue;
@@ -145,17 +148,16 @@ export function bindModuleBackService(
           throw new Error(`service ${String(serviceToken)} protocol is undefined`);
         }
 
-        const serviceInstance = childInjector.get(serviceToken);
+        const serviceInstance = childInjector.get(serviceToken) as RPCService;
 
         if (serviceInstance.setConnectionClientId && clientId) {
           serviceInstance.setConnectionClientId(clientId);
         }
 
-        const servicePath = service.servicePath;
-        const createService = createRPCServiceByProtocol(servicePath, protocol, serviceInstance);
+        const stub = createRPCServiceByProtocol(protocol, serviceInstance);
 
         if (!serviceInstance.rpcClient) {
-          serviceInstance.rpcClient = [createService];
+          serviceInstance.rpcClient = [stub];
         }
       }
     }
