@@ -3,6 +3,7 @@ import ws from 'ws';
 
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
+import { PlatformBuffer } from '../common/ws-channel-protocol/fury';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
@@ -112,16 +113,21 @@ export class CommonChannelHandler extends WebSocketHandler {
       noServer: true,
       ...this.options.wsServerOptions,
     });
-    this.wsServer.on('connection', (connection: ws) => {
-      let connectionId;
-      connection.on('message', (msg: string) => {
+    this.wsServer.on('connection', (connection) => {
+      let connectionId: string;
+      connection.on('message', (data: PlatformBuffer) => {
         let msgObj: ChannelMessage;
         try {
-          msgObj = parse(msg);
+          msgObj = parse(data);
 
           // 心跳消息
           if (msgObj.kind === 'heartbeat') {
-            connection.send(stringify(`heartbeat ${msgObj.clientId}`));
+            connection.send(
+              stringify({
+                kind: 'heartbeat',
+                clientId: msgObj.clientId,
+              }),
+            );
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
             this.logger.log(`New connection with id ${clientId}`);

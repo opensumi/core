@@ -1,3 +1,7 @@
+import { PlatformBuffer, deserialize, serialize } from './ws-channel-protocol/fury';
+
+import { ChannelMessage } from '.';
+
 declare global {
   interface Window {
     __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
@@ -41,12 +45,12 @@ export interface WSCloseInfo {
   connectInfo: ConnectionInfo;
 }
 
-export function stringify(obj: any): string {
-  return JSON.stringify(obj);
+export function stringify(obj: ChannelMessage): PlatformBuffer {
+  return serialize(obj);
 }
 
-export function parse(input: string, reviver?: (this: any, key: string, value: any) => any): any {
-  return JSON.parse(input, reviver);
+export function parse(input: PlatformBuffer): any {
+  return deserialize(input);
 }
 
 export function getCapturer() {

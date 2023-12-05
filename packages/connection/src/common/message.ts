@@ -6,6 +6,7 @@ import {
 import { Disposable } from '@opensumi/vscode-jsonrpc/lib/common/disposable';
 import { MessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
 import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
+
 /**
  * FIXME: 由于 `createMessageConnection` 方法隐式依赖了 `@opensumi/vscode-jsonrpc/lib/browser/main` 或 `@opensumi/vscode-jsonrpc/lib/node/main`
  * 的 `RIL.install()` 初始化代码，而 `browser/main` 中仅支持浏览器使用，
@@ -18,7 +19,13 @@ export class WebSocketMessageReader extends AbstractMessageReader implements Mes
   protected callback: DataCallback | undefined;
   protected events: { message?: any; error?: any }[] = [];
 
-  constructor(protected readonly socket) {
+  constructor(
+    protected readonly socket: {
+      onMessage?: (callback: (message: any) => void) => void;
+      onmessage?: (callback: (message: any) => void) => void;
+      on?: (event: string, callback: (message: any) => void) => void;
+    },
+  ) {
     super();
     if (this.socket.onMessage) {
       this.socket.onMessage((message) => {

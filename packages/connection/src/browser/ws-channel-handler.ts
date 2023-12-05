@@ -4,11 +4,12 @@ import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 
 import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
-import { WSChannel, MessageString } from '../common/ws-channel';
+import { WSChannel } from '../common/ws-channel';
+import { PlatformBuffer } from '../common/ws-channel-protocol/fury';
 
 // 前台链接管理类
 export class WSChannelHandler {
-  public connection: WebSocket;
+  public connection: ReconnectingWebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
   private channelCloseEventMap: Map<number | string, WSCloseInfo> = new Map();
   private logger = console;
@@ -19,7 +20,7 @@ export class WSChannelHandler {
   constructor(public wsPath: UrlProvider, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
-    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}) as WebSocket; // new WebSocket(wsPath, protocols);
+    this.connection = new ReconnectingWebSocket(wsPath, protocols, {});
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -31,11 +32,12 @@ export class WSChannelHandler {
     this.reporterService = reporterService;
   }
   private clientMessage() {
-    const clientMsg: MessageString = stringify({
-      kind: 'client',
-      clientId: this.clientId,
-    });
-    this.connection.send(clientMsg);
+    this.connection.send(
+      stringify({
+        kind: 'client',
+        clientId: this.clientId,
+      }),
+    );
   }
   private heartbeatMessage() {
     if (this.heartbeatMessageTimer) {
@@ -52,11 +54,18 @@ export class WSChannelHandler {
   }
 
   public async initHandler() {
-    this.connection.onmessage = (e) => {
+    this.connection.onmessage = async (e) => {
       // 一个心跳周期内如果有收到消息，则不需要再发送心跳
       this.heartbeatMessage();
 
-      const msg = parse(e.data);
+      let buffer: ArrayBuffer;
+      if (e.data instanceof Blob) {
+        buffer = await e.data.arrayBuffer();
+      } else {
+        throw new Error('unknown message type');
+      }
+
+      const msg = parse(new Uint8Array(buffer));
 
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
@@ -104,13 +113,11 @@ export class WSChannelHandler {
       });
     });
   }
-  private getChannelSend = (connection) => (content: string) => {
-    connection.send(content, (err: Error) => {
-      if (err) {
-        this.logger.warn(err);
-      }
-    });
+
+  private getChannelSend = (connection: ReconnectingWebSocket) => (content: PlatformBuffer | string) => {
+    connection.send(content);
   };
+
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
