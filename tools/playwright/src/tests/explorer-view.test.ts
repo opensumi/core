@@ -357,7 +357,7 @@ console.log(a);`,
       await input.type(newFileName_2, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
-    await app.page.waitForTimeout(500);
+    await app.page.waitForTimeout(1000);
     node = await explorer.getFileStatTreeNodeByPath(newFileName_2);
     await node?.open();
     expect(await node?.isExpanded()).toBeTruthy();
