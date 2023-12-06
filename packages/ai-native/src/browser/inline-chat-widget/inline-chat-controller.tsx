@@ -6,7 +6,7 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { ERROR_RESPONSE } from '../common-reponse';
+import { AiResponseTips } from '../../common';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../components/Icon';
 import { LineVertical } from '../components/lineVertical';
 import { Loading } from '../components/Loading';
@@ -144,7 +144,7 @@ export interface IAiInlineChatControllerProps {
 }
 
 const debounceMessage = debounce(() => {
-  message.info(ERROR_RESPONSE);
+  message.info(AiResponseTips.ERROR_RESPONSE);
 }, 1000);
 
 export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {

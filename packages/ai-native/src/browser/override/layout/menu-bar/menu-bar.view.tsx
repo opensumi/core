@@ -10,6 +10,7 @@ import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
+import { AiNativeConfig } from '../../../ai-config';
 import { AILogoAvatar, EnhanceIcon } from '../../../components/Icon';
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
@@ -70,7 +71,7 @@ export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const aiNativeConfig = useInjectable<AiNativeConfig>(AiNativeConfig);
   const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
 
   const [isOpen, setIsOpen] = React.useState<boolean>(true);
@@ -106,8 +107,8 @@ export const AiMenuBarView = () => {
   }, []);
 
   const MENUBAR_HEIGHT = React.useMemo(
-    () => appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
-    [appConfig],
+    () => aiNativeConfig.appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
+    [aiNativeConfig],
   );
 
   const handleLeftMenuVisiable = React.useCallback(() => {
@@ -144,9 +145,11 @@ export const AiMenuBarView = () => {
               placeholder='请搜索并选择指令'
             ></Input>
           </div> */}
-          <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
-            <AILogoAvatar iconClassName={styles.avatar_icon_large} />
-          </div>
+          {aiNativeConfig.capabilities.supportsAiChatAssistant && (
+            <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
+              <AILogoAvatar iconClassName={styles.avatar_icon_large} />
+            </div>
+          )}
         </div>
       </div>
     </div>
