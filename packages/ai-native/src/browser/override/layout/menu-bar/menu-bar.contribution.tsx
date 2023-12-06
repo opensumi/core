@@ -1,12 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import {
-  ComponentContribution,
-  ComponentRegistry,
-  Disposable,
-  Domain,
-  MenubarSettingId,
-  PreferenceService,
-} from '@opensumi/ide-core-browser';
+import { Ai_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-ai-native';
+import { ComponentContribution, ComponentRegistry, Disposable, Domain } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, IMenubarItem, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
 
@@ -15,8 +9,6 @@ import { AiMenuBarView } from './menu-bar.view';
 @Injectable()
 @Domain(ComponentContribution)
 export class AiMenuBarContribution extends Disposable implements ComponentContribution {
-  static AiMenuBarContainer = 'ai-menubar';
-
   @Autowired(MenubarStore)
   private readonly menubarStore: MenubarStore;
 
@@ -48,9 +40,9 @@ export class AiMenuBarContribution extends Disposable implements ComponentContri
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(AiMenuBarContribution.AiMenuBarContainer, {
+    registry.register(Ai_MENUBAR_CONTAINER_VIEW_ID, {
       component: AiMenuBarView,
-      id: AiMenuBarContribution.AiMenuBarContainer,
+      id: Ai_MENUBAR_CONTAINER_VIEW_ID,
     });
   }
 }

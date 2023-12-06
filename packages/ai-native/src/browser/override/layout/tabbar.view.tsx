@@ -22,7 +22,6 @@ import { EnhancePopover } from '../../components/Popover';
 
 import * as styles from './layout.module.less';
 
-
 // 将注册在 right bar 的组件渲染到 left bar
 const AiLeftTabbarRenderer: React.FC = () => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
@@ -99,18 +98,18 @@ export const AiRightTabRenderer = ({
       <ContainerView
         {...props}
         renderContainerWrap={({ children }) => (
-            <div className={styles.right_slot_container_wrap}>
-              <div className={styles.header}>
-                <span className={styles.title}>{options && options.title}</span>
-                <div className={styles.side}>
-                  <EnhancePopover id={'ai_right_panel_header_close'} title='关闭'>
-                    <EnhanceIcon icon='close' onClick={handleClose} />
-                  </EnhancePopover>
-                </div>
+          <div className={styles.right_slot_container_wrap}>
+            <div className={styles.header}>
+              <span className={styles.title}>{options && options.title}</span>
+              <div className={styles.side}>
+                <EnhancePopover id={'ai_right_panel_header_close'} title='关闭'>
+                  <EnhanceIcon icon='close' onClick={handleClose} />
+                </EnhancePopover>
               </div>
-              <div className={styles.container}>{children}</div>
             </div>
-          )}
+            <div className={styles.container}>{children}</div>
+          </div>
+        )}
       />
     );
   }, []);

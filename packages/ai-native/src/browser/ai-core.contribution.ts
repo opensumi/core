@@ -58,6 +58,7 @@ import {
 
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
+import { AiNativeConfig } from './ai-config';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
@@ -145,8 +146,14 @@ export class AiNativeCoreContribution
   @Autowired(AiCompletionsService)
   private readonly aiCompletionsService: AiCompletionsService;
 
-  onStart() {
+  @Autowired(AiNativeConfig)
+  private readonly aiNativeConfig: AiNativeConfig;
+
+  constructor() {
     this.registerFeature();
+  }
+
+  onStart() {
     this.aiProject.initRequirements();
   }
 
@@ -174,19 +181,23 @@ export class AiNativeCoreContribution
   }
 
   handleSettingSections(settingSections: { [key: string]: ISettingSection[] }) {
+    const groups: ISettingSection[] = [];
+
+    if (this.aiNativeConfig.capabilities.supportsInlineChat) {
+      groups.push({
+        title: 'Inline Chat',
+        preferences: [
+          {
+            id: AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+            localized: 'preference.aiNative.inlineChat.auto.visible',
+          },
+        ],
+      });
+    }
+
     return {
       ...settingSections,
-      [AI_NATIVE_SETTING_GROUP_ID]: [
-        {
-          title: 'Inline Chat',
-          preferences: [
-            {
-              id: AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
-              localized: 'preference.aiNative.inlineChat.auto.visible',
-            },
-          ],
-        },
-      ],
+      [AI_NATIVE_SETTING_GROUP_ID]: groups,
     };
   }
 

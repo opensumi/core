@@ -4,9 +4,8 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
-import { IAIReporter } from '../../common';
+import { AiResponseTips, IAIReporter } from '../../common';
 import { AiChatService } from '../ai-chat.service';
-import { STOP_IMMEDIATELY } from '../common-reponse';
 import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
@@ -85,7 +84,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
 
   const renderContent = useCallback(() => {
     if ((status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && !message?.trim()) {
-      return <span>{STOP_IMMEDIATELY}</span>;
+      return <span>{AiResponseTips.STOP_IMMEDIATELY}</span>;
     }
 
     return children;

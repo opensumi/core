@@ -5,6 +5,7 @@ import type {
   ExtensionBrowserStyleSheet,
   ExtensionCandidate,
   ExtensionConnectOption,
+  AiNativeConfig,
   UrlProvider,
 } from '@opensumi/ide-core-common';
 
@@ -257,6 +258,10 @@ export interface AppConfig {
    * default -1，it means disable
    */
   rpcMessageTimeout?: number;
+  /**
+   * AI Native 相关的配置项
+   */
+  aiNativeConfig?: AiNativeConfig;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

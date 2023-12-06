@@ -8,13 +8,19 @@ import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-ope
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum, IAIReporter, IAiBackServiceResponse } from '../common';
+import {
+  AISerivceType,
+  IChatMessageStructure,
+  InstructionEnum,
+  IAIReporter,
+  IAiBackServiceResponse,
+  AiResponseTips,
+} from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
-import { NOTFOUND_COMMAND, ERROR_RESPONSE, NOTFOUND_COMMAND_TIP } from './common-reponse';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
@@ -563,7 +569,11 @@ const AIWithCommandReply = async (
 
   aiChatService.setLatestSessionId(relationId);
 
-  const failedText = commandRes.errorCode ? ERROR_RESPONSE : !commandRes.data ? NOTFOUND_COMMAND : '';
+  const failedText = commandRes.errorCode
+    ? AiResponseTips.ERROR_RESPONSE
+    : !commandRes.data
+    ? AiResponseTips.NOTFOUND_COMMAND
+    : '';
 
   aiReporter.end(relationId, {
     replytime: +new Date() - startTime,
@@ -578,10 +588,10 @@ const AIWithCommandReply = async (
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
-          {failedText === NOTFOUND_COMMAND ? (
+          {failedText === AiResponseTips.NOTFOUND_COMMAND ? (
             <div>
               <p>{failedText}</p>
-              <p>{NOTFOUND_COMMAND_TIP}</p>
+              <p>{AiResponseTips.NOTFOUND_COMMAND_TIP}</p>
               <Button
                 style={{ width: '100%' }}
                 onClick={() =>

@@ -3,9 +3,7 @@ import React, { useCallback, useEffect } from 'react';
 
 import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 
-import { IAIReporter } from '../../common';
-import { AiChatService } from '../ai-chat.service';
-import { ERROR_RESPONSE } from '../common-reponse';
+import { AiResponseTips, IAIReporter } from '../../common';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
@@ -100,7 +98,9 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   const renderMsgList = useCallback(
     () => (
       <div className={styles.ai_chat_code_wrapper}>
-        <div className={styles.render_text}>{isError ? <span>{ERROR_RESPONSE}</span> : renderContent(content)}</div>
+        <div className={styles.render_text}>
+          {isError ? <span>{AiResponseTips.ERROR_RESPONSE}</span> : renderContent(content)}
+        </div>
       </div>
     ),
     [content, isError, isDone, status, sessionId, renderContent],

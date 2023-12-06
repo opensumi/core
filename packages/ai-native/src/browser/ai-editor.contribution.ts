@@ -11,7 +11,6 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   Schemes,
-  CommandService,
 } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
@@ -28,8 +27,7 @@ import {
 } from '../common';
 
 import { AiChatService } from './ai-chat.service';
-import { AiCodeWidget } from './code-widget/ai-code-widget';
-import { AiNativeContextKey } from './contextkey/ai-native.contextkey.service';
+import { AiNativeConfig } from './ai-config';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 import { EInlineOperation } from './inline-chat-widget/inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
@@ -45,6 +43,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiBackSerivcePath)
   private readonly aiBackService: IAiBackService;
+
+  @Autowired(AiNativeConfig)
+  private readonly aiNativeConfig: AiNativeConfig;
 
   @Autowired(AiInlineChatService)
   private readonly aiInlineChatService: AiInlineChatService;
@@ -79,7 +80,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private aiDiffWidget: AiDiffWidget;
-  private aiCodeWidget: AiCodeWidget;
   private aiInlineContentWidget: AiInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
@@ -87,9 +87,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   private disposeAllWidget() {
     if (this.aiDiffWidget) {
       this.aiDiffWidget.dispose();
-    }
-    if (this.aiCodeWidget) {
-      this.aiCodeWidget.dispose();
     }
     if (this.aiInlineContentWidget) {
       this.aiInlineContentWidget.dispose();
@@ -114,7 +111,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    this.registerCompletion(editor);
+    if (this.aiNativeConfig.capabilities.supportsInlineCompletion) {
+      this.registerCompletion(editor);
+    }
 
     this.disposables.push(
       monacoEditor.onDidChangeModel(() => {
@@ -131,7 +130,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposables.push(
       this.aiChatService.onInlineChatVisible((value: boolean) => {
         if (value) {
-          this.registerMiniInlineChat(editor);
+          this.registerInlineChat(editor);
         } else {
           this.disposeAllWidget();
         }
@@ -175,7 +174,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         return;
       }
 
-      this.registerMiniInlineChat(editor);
+      this.registerInlineChat(editor);
     });
 
     this.logger.log('AiEditorContribution:>>>', editor, monacoEditor);
@@ -186,7 +185,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   /**
    * 新版 inline chat（类似 cursor 那种）
    */
-  private async registerMiniInlineChat(editor: IEditor): Promise<void> {
+  private async registerInlineChat(editor: IEditor): Promise<void> {
+    if (this.aiNativeConfig.capabilities.supportsInlineChat === false) {
+      return;
+    }
+
     this.disposeAllWidget();
 
     const { monacoEditor, currentUri } = editor;

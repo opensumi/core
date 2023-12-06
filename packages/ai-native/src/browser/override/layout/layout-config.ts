@@ -1,12 +1,10 @@
 import { SlotLocation } from '@opensumi/ide-core-browser';
 
-import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
-
-import { AiMenuBarContribution } from './menu-bar/menu-bar.contribution';
+import { Ai_CHAT_CONTAINER_VIEW_ID, Ai_MENUBAR_CONTAINER_VIEW_ID } from '../../../common';
 
 export const AiTopLayoutConfig = {
   [SlotLocation.top]: {
-    modules: [AiMenuBarContribution.AiMenuBarContainer],
+    modules: [Ai_MENUBAR_CONTAINER_VIEW_ID],
   },
 };
 
