@@ -8,6 +8,7 @@ import {
   ReplyResponse,
   ErrorResponse,
   CancelResponse,
+  IAiMiddleware,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { Domain } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
@@ -30,6 +31,14 @@ export class AiNativeContribution implements AiNativeCoreContribution {
   registerRunFeature(registry: IAiRunFeatureRegistry) {
     // Not implements
   }
+
+  middleware: IAiMiddleware = {
+    language: {
+      provideInlineCompletions(model, position, context, token, next) {
+        return next(model, position, context, token);
+      },
+    },
+  };
 
   private getCrossCode(editor: IEditor): string {
     const { monacoEditor } = editor;

@@ -33,38 +33,36 @@ export const getAcceptText = (cuont: number) => {
 };
 
 class RequestImp {
-  editor: IEditor;
+  model: monaco.editor.ITextModel;
   _isManual: boolean;
   isCancelFlag: boolean;
   // todo
-  constructor(editor: IEditor, _isManual: boolean) {
-    this.editor = editor;
+  constructor(model: monaco.editor.ITextModel, _isManual: boolean) {
+    this.model = model;
     this._isManual = _isManual;
     this.isCancelFlag = false;
   }
   // 发送请求
-  async sendRequest(aiCompletionsService: AiCompletionsService, aiReporter: IAIReporter) {
-    const { editor } = this;
+  async sendRequest(position: monaco.Position, aiCompletionsService: AiCompletionsService, aiReporter: IAIReporter) {
+    const { model: editor } = this;
     const beginRequestTime = Date.now();
     if (!editor) {
       return [];
     }
 
-    const model = this.editor.monacoEditor.getModel()!;
-    const selection = this.editor.monacoEditor.getSelection();
-    const cursorPosition = selection?.getPosition()!;
+    const model = this.model;
 
-    const startRange = selection?.setStartPosition(0, 0);
+    const startRange = new monaco.Range(0, 0, position.lineNumber, position.column);
     let prompt = model.getValueInRange(startRange!);
 
     // 如果是空白页面,默认加个回车符?
-    if (this.editor.monacoEditor.getValue() === '') {
+    if (this.model.getValue() === '') {
       prompt += '\n';
     }
 
     const endRange = new monaco.Range(
-      cursorPosition.lineNumber,
-      cursorPosition.column,
+      position.lineNumber,
+      position.column,
       model.getLineCount(),
       Number.MAX_SAFE_INTEGER,
     );
@@ -163,13 +161,17 @@ class RequestImp {
     }
 
     aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
-    return this.pushResultAndRegist(rs, relationId);
+    return this.pushResultAndRegist(rs, position, relationId);
   }
   /**
    * 将补全结果推给用户并注册{@link COMMAND_ACCEPT} 事件
    * @param codeModelList
    */
-  pushResultAndRegist(rs: CompletionResultModel, relationId: string): Array<InlineCompletionItem> {
+  pushResultAndRegist(
+    rs: CompletionResultModel,
+    position: monaco.Position,
+    relationId: string,
+  ): Array<InlineCompletionItem> {
     const result = new Array<InlineCompletionItem>();
     for (const codeModel of rs.codeModelList) {
       const contentText = codeModel.content;
@@ -183,23 +185,22 @@ class RequestImp {
       }
 
       let insertText = str;
-      const model = this.editor.monacoEditor.getModel()!;
+      const model = this.model;
 
-      const cursorPosition = this.editor.monacoEditor.getPosition()!;
       const textAfterCursor = model.getValueInRange({
-        startLineNumber: cursorPosition.lineNumber,
-        startColumn: cursorPosition.column,
-        endLineNumber: cursorPosition.lineNumber,
-        endColumn: model.getLineMaxColumn(cursorPosition.lineNumber),
+        startLineNumber: position.lineNumber,
+        startColumn: position.column,
+        endLineNumber: position.lineNumber,
+        endColumn: model.getLineMaxColumn(position.lineNumber),
       });
 
       result.push({
         insertText: insertText + textAfterCursor,
         range: new monaco.Range(
-          cursorPosition.lineNumber,
-          cursorPosition.column,
-          cursorPosition.lineNumber,
-          cursorPosition.column + insertText.length + textAfterCursor.length,
+          position.lineNumber,
+          position.column,
+          position.lineNumber,
+          position.column + insertText.length + textAfterCursor.length,
         ),
         sessionId: rs.sessionId,
         command: {
@@ -225,12 +226,12 @@ class ReqStack {
   addReq(reqRequest: RequestImp) {
     this.queue.push(reqRequest);
   }
-  runReq() {
+  runReq(position: monaco.Position) {
     if (this.queue.length === 0) {
       return;
     }
     const fn = this.queue.pop();
-    return fn.sendRequest(this.aiCompletionsService, this.aiReporter);
+    return fn.sendRequest(position, this.aiCompletionsService, this.aiReporter);
   }
   cancleRqe() {
     if (this.queue.length === 0) {
@@ -387,7 +388,7 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
    * @returns
    */
   async provideInlineCompletionItems(
-    editor: IEditor,
+    model: monaco.editor.ITextModel,
     position: monaco.Position,
     context: monaco.languages.InlineCompletionContext,
     token: monaco.CancellationToken,
@@ -425,7 +426,7 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
       };
     }
     // 放入队列
-    const requestImp = new RequestImp(editor, _isManual);
+    const requestImp = new RequestImp(model, _isManual);
     this.reqStack.addReq(requestImp);
     // 如果是自动补全等待300ms
     if (!_isManual) {
@@ -433,7 +434,7 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
         timer = setTimeout(f, 300);
       });
     }
-    const list = await this.reqStack.runReq();
+    const list = await this.reqStack.runReq(position);
     if (position !== undefined) {
       lastInLayList.column = position.column;
       lastInLayList.line = position.lineNumber;
