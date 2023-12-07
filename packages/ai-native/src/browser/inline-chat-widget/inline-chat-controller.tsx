@@ -12,19 +12,14 @@ import { LineVertical } from '../components/lineVertical';
 import { Loading } from '../components/Loading';
 import { EnhancePopover } from '../components/Popover';
 import { Thumbs } from '../components/Thumbs';
+import { IInlineChatFeatureRegistry } from '../types';
 
+import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import * as styles from './inline-chat.module.less';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
-export enum EInlineOperation {
-  Explain = 'Explain',
-  Comments = 'Comments',
-  Test = 'Test',
-  Optimize = 'Optimize',
-}
-
 export interface IAiInlineOperationProps {
-  hanldeOperate: (d: EInlineOperation) => void;
+  hanldeActions: (id: string) => void;
   onClose?: () => void;
 }
 
@@ -32,20 +27,17 @@ export interface IAiInlineOperationProps {
  * 原始操作项
  */
 const AiInlineOperation = (props: IAiInlineOperationProps) => {
-  const { hanldeOperate, onClose } = props;
+  const { hanldeActions, onClose } = props;
+  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(IInlineChatFeatureRegistry);
 
-  const operationList = useMemo(
-    () => [
-      { title: EInlineOperation.Explain, popover: '解释代码' },
-      { title: EInlineOperation.Comments, popover: '添加注释' },
-      { title: EInlineOperation.Test, popover: '生成单测' },
-    ],
-    [],
+  const operationList = useMemo(() => inlineChatFeatureRegistry.getActionButtons(), [inlineChatFeatureRegistry]);
+
+  const handleClickActions = useCallback(
+    (id: string) => {
+      hanldeActions(id);
+    },
+    [hanldeActions],
   );
-
-  const handleClickOperate = useCallback((title: EInlineOperation) => {
-    hanldeOperate(title);
-  }, []);
 
   const handleClose = useCallback(() => {
     if (onClose) {
@@ -53,40 +45,41 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
     }
   }, [onClose]);
 
-  const moreOperation = useMemo(
-    () => [
-      new MenuNode({
-        id: `ai.menu.operation.${EInlineOperation.Optimize}`,
-        label: EInlineOperation.Optimize,
+  const moreOperation = useMemo(() => inlineChatFeatureRegistry.getActionMenus().map((data) => new MenuNode({
+        id: `ai.menu.operation.${data.id}`,
+        label: data.name,
         className: styles.more_operation_menu_item,
         execute: () => {
-          hanldeOperate(EInlineOperation.Optimize);
+          handleClickActions(data.id);
         },
-      }),
-    ],
-    [],
-  );
+      })), [inlineChatFeatureRegistry]);
+
+  if (operationList.length === 0 && moreOperation.length === 0) {
+    return null;
+  }
 
   return (
     <div className={styles.ai_inline_operation_panel}>
       <AILogoAvatar />
       <LineVertical margin={'0px 4px 0 8px'} />
       <div className={styles.operate_container}>
-        {operationList.map(({ title, popover }, i) => (
-          <EnhancePopover id={title} title={popover} key={`popover_${i}`}>
-            <EnhanceIcon onClick={() => handleClickOperate(title)}>
-              <span key={i}>{title}</span>
+        {operationList.map(({ name, title, id }, i) => (
+          <EnhancePopover id={id} title={title} key={`popover_${i}`}>
+            <EnhanceIcon onClick={() => handleClickActions(id)}>
+              <span key={i}>{name}</span>
             </EnhanceIcon>
           </EnhancePopover>
         ))}
-        <EnhanceIconWithCtxMenu
-          icon={'more'}
-          menuNodes={moreOperation}
-          skew={{
-            x: -83,
-            y: 5,
-          }}
-        />
+        {moreOperation.length > 0 && (
+          <EnhanceIconWithCtxMenu
+            icon={'more'}
+            menuNodes={moreOperation}
+            skew={{
+              x: -83,
+              y: 5,
+            }}
+          />
+        )}
         <div className={styles.close_container}>
           <LineVertical margin={'0px 4px 0 4px'} />
           <EnhanceIcon icon={'close'} onClick={handleClose} />
@@ -139,7 +132,7 @@ const AiInlineResult = () => {
 };
 
 export interface IAiInlineChatControllerProps {
-  onClickOperation: Emitter<EInlineOperation>;
+  onClickActions: Emitter<string>;
   onClose?: () => void;
 }
 
@@ -148,7 +141,7 @@ const debounceMessage = debounce(() => {
 }, 1000);
 
 export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
-  const { onClickOperation, onClose } = props;
+  const { onClickActions, onClose } = props;
   const aiInlineChatService: AiInlineChatService = useInjectable(AiInlineChatService);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
 
@@ -175,11 +168,11 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
 
-  const handleClickOperation = useCallback(
-    (title: EInlineOperation) => {
-      onClickOperation.fire(title);
+  const handleClickActions = useCallback(
+    (id: string) => {
+      onClickActions.fire(id);
     },
-    [onClickOperation],
+    [onClickActions],
   );
 
   const translateY: React.CSSProperties | undefined = useMemo(() => {
@@ -208,7 +201,7 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
       );
     }
 
-    return <AiInlineOperation hanldeOperate={handleClickOperation} onClose={onClose} />;
+    return <AiInlineOperation hanldeActions={handleClickActions} onClose={onClose} />;
   }, [status]);
 
   return (

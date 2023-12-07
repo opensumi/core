@@ -15,6 +15,7 @@ import {
 } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
+import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 
 export interface IAiSearchResponse extends IAiBackServiceResponse {
   answer?: string;
@@ -38,6 +39,9 @@ export class AiChatService extends Disposable {
   @Autowired(MsgStreamManager)
   private readonly msgStreamManager: MsgStreamManager;
 
+  @Autowired(AiMenubarService)
+  private readonly aiMenubarService: AiMenubarService;
+
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
@@ -57,6 +61,10 @@ export class AiChatService extends Disposable {
   }
 
   public launchChatMessage(data: IChatMessageStructure) {
+    if (this.aiMenubarService.getLatestWidth() !== 0) {
+      this.aiMenubarService.toggleRightPanel();
+    }
+
     this._onChatMessageLaunch.fire(data);
   }
 

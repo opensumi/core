@@ -1,12 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  AppConfig,
   CommandContribution,
   CommandRegistry,
   ComponentContribution,
   ComponentRegistry,
   Domain,
-  Position,
   URI,
   getIcon,
   SlotRendererContribution,
@@ -25,7 +23,6 @@ import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-co
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor } from '@opensumi/ide-editor';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ResourceService } from '@opensumi/ide-editor';
 import { IResource } from '@opensumi/ide-editor';
 import {
@@ -33,17 +30,13 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { SettingContribution } from '@opensumi/ide-preferences';
 import { ITerminalController, ITerminalGroupViewService } from '@opensumi/ide-terminal-next';
 
 import {
   AI_NATIVE_SETTING_GROUP_ID,
-  AiNativeContribution,
   AiNativeSettingSectionsId,
   Ai_CHAT_CONTAINER_VIEW_ID,
-  IAiRunFeatureRegistry,
   InstructionEnum,
   IAIReporter,
 } from '../common';
@@ -72,6 +65,7 @@ import {
   AiRightTabRenderer,
 } from './override/layout/tabbar.view';
 import { AiRunService } from './run/run.service';
+import { AiNativeCoreContribution, IAiRunFeatureRegistry, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
 @Domain(
@@ -84,7 +78,7 @@ import { AiRunService } from './run/run.service';
   SettingContribution,
   KeybindingContribution,
 )
-export class AiNativeCoreContribution
+export class AiNativeBrowserContribution
   implements
     ClientAppContribution,
     ComponentContribution,
@@ -100,15 +94,6 @@ export class AiNativeCoreContribution
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
-
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
-
-  @Autowired(IFileTreeAPI)
-  private readonly fileTreeAPI: IFileTreeAPI;
-
-  @Autowired(WorkbenchEditorService)
-  private readonly editorService: WorkbenchEditorServiceImpl;
 
   @Autowired(AiChatService)
   private readonly aiChatService: AiChatService;
@@ -128,11 +113,14 @@ export class AiNativeCoreContribution
   @Autowired(AiSumiService)
   private readonly aiSumi: AiSumiService;
 
-  @Autowired(AiNativeContribution)
-  private readonly contributions: ContributionProvider<AiNativeContribution>;
+  @Autowired(AiNativeCoreContribution)
+  private readonly contributions: ContributionProvider<AiNativeCoreContribution>;
 
   @Autowired(IAiRunFeatureRegistry)
   private readonly aiRunFeatureRegistry: IAiRunFeatureRegistry;
+
+  @Autowired(IInlineChatFeatureRegistry)
+  private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -165,6 +153,9 @@ export class AiNativeCoreContribution
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerRunFeature) {
         contribution.registerRunFeature(this.aiRunFeatureRegistry);
+      }
+      if (contribution.registerInlineChatFeature) {
+        contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
       }
     });
   }
@@ -224,57 +215,6 @@ export class AiNativeCoreContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(
-      {
-        id: 'ai.chat.createNewFile',
-      },
-      {
-        execute: async (fileName) => {
-          const workspaceDir = this.appConfig.workspaceDir;
-          return await this.fileTreeAPI.createFile(URI.parse(`${workspaceDir}/${fileName}`));
-        },
-      },
-    );
-
-    commands.registerCommand(
-      {
-        id: 'ai.chat.focusLine',
-      },
-      {
-        execute: async (line: number) => {
-          line = Number(line);
-          let currentEditor = this.editorService.currentEditor;
-          if (!currentEditor) {
-            this.editorService.setCurrentGroup(this.editorService.editorGroups[0]);
-          }
-
-          currentEditor = this.editorService.currentEditor;
-
-          currentEditor?.monacoEditor.focus();
-          setTimeout(() => {
-            currentEditor?.monacoEditor.revealLineInCenter(Number(line));
-            currentEditor?.monacoEditor.setPosition(new Position(line, 0));
-          }, 0);
-        },
-      },
-    );
-
-    commands.registerCommand(
-      {
-        id: 'cloudide.command.workspace.getRuntimeConfig',
-      },
-      {
-        execute: async (key: string) => {
-          const obj = {
-            workspaceIP: '127.0.0.1',
-            workspaceDir: '/Users/mushi/Documents/workcode/opensumi/core/tools/workspace',
-            proxyHost: 'https://ide.cloudbaseapp-sanbox.cn',
-          };
-          return obj[key];
-        },
-      },
-    );
-
     commands.registerCommand(AI_EXPLAIN_TERMINAL_COMMANDS, {
       execute: () => {
         const current = this.view.currentWidgetId;
@@ -337,10 +277,12 @@ export class AiNativeCoreContribution
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
-    menus.registerMenuItem(MenuId.TerminalInstanceContext, {
-      command: AI_EXPLAIN_TERMINAL_COMMANDS,
-      group: '0_ai',
-    });
+    if (this.aiNativeConfig.capabilities.supportsAiTerminal) {
+      menus.registerMenuItem(MenuId.TerminalInstanceContext, {
+        command: AI_EXPLAIN_TERMINAL_COMMANDS,
+        group: '0_ai',
+      });
+    }
 
     menus.registerMenuItem(MenuId.DebugConsoleContext, {
       command: AI_EXPLAIN_DEBUG_COMMANDS,
@@ -364,36 +306,41 @@ export class AiNativeCoreContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    registry.registerSlotRenderer(SlotLocation.left, AiLeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.bottom, AiBottomTabRenderer);
-    registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
+    if (this.aiNativeConfig.capabilities.supportsOpenSumiDesign) {
+      registry.registerSlotRenderer(SlotLocation.left, AiLeftTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.bottom, AiBottomTabRenderer);
+      registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
+    }
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
-    keybindings.registerKeybinding(
-      {
+    if (this.aiNativeConfig.capabilities.supportsInlineChat) {
+      keybindings.registerKeybinding(
+        {
+          command: AI_INLINE_CHAT_VISIBLE.id,
+          keybinding: 'ctrlcmd+i',
+          when: 'editorTextFocus',
+          args: true,
+          priority: 0,
+        },
+        KeybindingScope.USER,
+      );
+      keybindings.registerKeybinding({
         command: AI_INLINE_CHAT_VISIBLE.id,
-        keybinding: 'ctrlcmd+i',
-        when: 'editorTextFocus',
-        args: true,
-        priority: 0,
-      },
-      KeybindingScope.USER,
-    );
+        keybinding: 'esc',
+        args: false,
+        when: `editorFocus && ${InlineChatIsVisible.raw}`,
+      });
+    }
 
-    keybindings.registerKeybinding({
-      command: AI_INLINE_COMPLETION_VISIBLE.id,
-      keybinding: 'esc',
-      args: false,
-      when: `editorFocus && ${InlineCompletionIsTrigger.raw}`,
-    });
-
-    keybindings.registerKeybinding({
-      command: AI_INLINE_CHAT_VISIBLE.id,
-      keybinding: 'esc',
-      args: false,
-      when: `editorFocus && ${InlineChatIsVisible.raw}`,
-    });
+    if (this.aiNativeConfig.capabilities.supportsInlineCompletion) {
+      keybindings.registerKeybinding({
+        command: AI_INLINE_COMPLETION_VISIBLE.id,
+        keybinding: 'esc',
+        args: false,
+        when: `editorFocus && ${InlineCompletionIsTrigger.raw}`,
+      });
+    }
   }
 }
