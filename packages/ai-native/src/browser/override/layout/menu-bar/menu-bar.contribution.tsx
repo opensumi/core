@@ -1,8 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Ai_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-ai-native';
 import { ComponentContribution, ComponentRegistry, Disposable, Domain } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, IMenubarItem, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
+
+import { Ai_MENUBAR_CONTAINER_VIEW_ID } from '../../../../common';
 
 import { AiMenuBarView } from './menu-bar.view';
 
