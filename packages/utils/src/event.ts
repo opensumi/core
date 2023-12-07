@@ -571,6 +571,7 @@ export class Emitter<T> {
             }
           },
         };
+
         if (disposables instanceof DisposableStore) {
           disposables.add(result);
         } else if (Array.isArray(disposables)) {
@@ -735,6 +736,7 @@ export class PauseableEmitter<T> extends Emitter<T> {
 export interface WaitUntilEvent {
   waitUntil?(thenable: Promise<any>): void;
 }
+
 export namespace WaitUntilEvent {
   export async function fire<T extends WaitUntilEvent>(
     emitter: Emitter<T>,

@@ -67,7 +67,7 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { createElectronClientConnectionEnhance, electronEnv } from '../utils';
+import { createElectronConnection, electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
@@ -220,13 +220,8 @@ export class ClientApp implements IClientApp, IDisposable {
       await bindConnectionService(this.injector, this.modules, connection, binaryConnection);
     } else {
       if (type === 'electron') {
-        const connection = createElectronClientConnectionEnhance();
-        await bindConnectionService(
-          this.injector,
-          this.modules,
-          connection.messageConnection,
-          connection.binaryConnection,
-        );
+        const { messageConnection, binaryConnection } = createElectronConnection();
+        await bindConnectionService(this.injector, this.modules, messageConnection, binaryConnection);
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,

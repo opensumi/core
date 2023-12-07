@@ -27,7 +27,7 @@ export const ERROR_STATUS = {
 export const reader = BinaryReader({});
 const writer = BinaryWriter({});
 
-export const createRpcBinaryRequest = (requestId: number, rpcType: number, method: string, payload: Uint8Array) => {
+export const createRequestPacket = (requestId: number, rpcType: number, method: string, payload: Uint8Array) => {
   writer.reset();
   writer.uint8(PROTO_VERSION);
   writer.uint8(rpcType);
@@ -40,7 +40,7 @@ export const createRpcBinaryRequest = (requestId: number, rpcType: number, metho
   return writer.dump();
 };
 
-export const createRpcBinaryResponse = (requestId: number, payload: Uint8Array) => {
+export const createResponsePacket = (requestId: number, payload: Uint8Array) => {
   writer.reset();
 
   writer.uint8(PROTO_VERSION);
@@ -54,7 +54,7 @@ export const createRpcBinaryResponse = (requestId: number, payload: Uint8Array) 
   return writer.dump();
 };
 
-export const createRPCErrorResponse = (requestId: number, status: number, error: Error) => {
+export const createErrorResponsePacket = (requestId: number, status: number, error: Error) => {
   const errorString = serializeError(error);
   writer.reset();
 

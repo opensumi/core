@@ -1,7 +1,10 @@
+import { EventEmitter } from '@opensumi/events';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { BinaryConnection } from './binary-rpc/connection';
 import { stringify } from './utils';
+
+import { createWebSocketConnection } from '.';
 
 export interface IWebSocket {
   // send(content: PlatformBuffer, isBinary: true): void;
@@ -58,16 +61,15 @@ export type ChannelMessage =
 
 export type ConnectionSend = (content: PlatformBuffer | string) => void;
 
+type IWSChannelEventType = 'message' | 'binary' | 'open' | 'reOpen' | 'close' | 'error';
+
 export class WSChannel implements IWebSocket {
+  private emitter = new EventEmitter<IWSChannelEventType>();
+
   public id: string;
   public channelPath: string;
 
   private connectionSend: ConnectionSend;
-  private fireMessage: (data: any) => void;
-  private fireBinary: (data: PlatformBuffer) => void;
-  private fireOpen: (id: string) => void;
-  public fireReOpen: () => void;
-  private fireClose: (code: number, reason: string) => void;
 
   constructor(connectionSend: ConnectionSend, id?: string) {
     this.connectionSend = connectionSend;
@@ -80,19 +82,29 @@ export class WSChannel implements IWebSocket {
     this.connectionSend = connectionSend;
   }
 
-  // server
   onMessage(cb: (data: any) => any) {
-    this.fireMessage = cb;
+    return this.emitter.on('message', cb);
   }
   onBinary(cb: (data: PlatformBuffer) => any) {
-    this.fireBinary = cb;
+    return this.emitter.on('binary', cb);
   }
   onOpen(cb: (id: string) => void) {
-    this.fireOpen = cb;
+    return this.emitter.on('open', cb);
   }
   onReOpen(cb: () => void) {
-    this.fireReOpen = cb;
+    return this.emitter.on('reOpen', cb);
   }
+  onClose(cb: (code: number, reason: string) => void) {
+    return this.emitter.on('close', cb);
+  }
+  onError(cb: (err: any) => void) {
+    return this.emitter.on('error', cb);
+  }
+
+  fireReOpen() {
+    this.emitter.emit('reOpen');
+  }
+
   ready() {
     this.connectionSend(
       stringify({
@@ -103,12 +115,12 @@ export class WSChannel implements IWebSocket {
   }
 
   handleMessage(msg: ChannelMessage) {
-    if (msg.kind === 'ready' && this.fireOpen) {
-      this.fireOpen(msg.id);
-    } else if (msg.kind === 'data' && this.fireMessage) {
-      this.fireMessage(msg.content);
-    } else if (msg.kind === 'binary' && this.fireBinary) {
-      this.fireBinary(msg.binary);
+    if (msg.kind === 'ready') {
+      this.emitter.emit('open', msg.id);
+    } else if (msg.kind === 'data') {
+      this.emitter.emit('message', msg.content);
+    } else if (msg.kind === 'binary') {
+      this.emitter.emit('binary', msg.binary);
     }
   }
 
@@ -151,21 +163,24 @@ export class WSChannel implements IWebSocket {
     );
   }
 
-  onError() {}
-
   close(code: number, reason: string) {
-    if (this.fireClose) {
-      this.fireClose(code, reason);
-    }
+    this.emitter.emit('close', code, reason);
   }
 
-  onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb;
+  createMessageConnection() {
+    return createWebSocketConnection(this);
   }
 
   createBinaryConnection() {
     const binaryConnection = new BinaryConnection({
-      onmessage: (cb) => this.onBinary(cb),
+      onmessage: (cb) => {
+        const remove = this.onBinary(cb);
+        return {
+          dispose: () => {
+            remove();
+          },
+        };
+      },
       send: (data) => {
         this.sendBinary(data);
       },

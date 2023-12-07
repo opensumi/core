@@ -2,19 +2,28 @@ import http from 'http';
 import net from 'net';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
-import { WSChannel, initRPCService, RPCServiceCenter, RPCService } from '@opensumi/ide-connection';
+import {
+  WSChannel,
+  initRPCService,
+  RPCServiceCenter,
+  RPCService,
+  ChannelMessage,
+  parse,
+  ConnectionSend,
+} from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
   CommonChannelHandler,
   commonChannelPathHandler,
-  createSocketConnection,
 } from '@opensumi/ide-connection/lib/node';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
 import { IServerAppOpts } from './types';
+
+import { DisposableCollection } from '.';
 
 export { RPCServiceCenter };
 
@@ -67,7 +76,7 @@ export function createServerConnection2(
 }
 
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
-  const logger = injector.get(INodeLogger);
+  const logger = injector.get(INodeLogger) as INodeLogger;
   const serviceCenter = new RPCServiceCenter(undefined, { logger });
   const serviceChildInjector = bindModuleBackService(
     injector,
@@ -76,12 +85,57 @@ export function createNetServerConnection(server: net.Server, injector: Injector
     process.env.CODE_WINDOW_CLIENT_ID as string,
   );
 
-  server.on('connection', (connection) => {
-    const serverConnection = createSocketConnection(connection);
-    serviceCenter.setConnection(serverConnection);
+  const clientId = 'node-socket-connection';
+  const channelMap = new Map<string, WSChannel>();
 
-    connection.on('close', () => {
-      serviceCenter.removeConnection(serverConnection);
+  function getOrCreateChannel(channelId: string, connectionSend?: ConnectionSend) {
+    let channel = channelMap.get(channelId);
+    if (!channel && connectionSend) {
+      channel = new WSChannel(connectionSend, clientId);
+      channelMap.set(channelId, channel);
+    }
+    return channel;
+  }
+
+  server.on('connection', (socket) => {
+    const disposableCollection = new DisposableCollection();
+
+    socket.on('data', (data) => {
+      let msgObj: ChannelMessage;
+
+      try {
+        msgObj = parse(data);
+        if (msgObj.kind === 'open') {
+          const channel = getOrCreateChannel(msgObj.id, (content) => {
+            socket.write(content);
+          })!;
+
+          const messageConnection = channel.createMessageConnection();
+          serviceCenter.setConnection(messageConnection);
+
+          const binaryConnection = channel.createBinaryConnection();
+          serviceCenter.setBinaryConnection(binaryConnection);
+
+          disposableCollection.push({
+            dispose() {
+              serviceCenter.removeConnection(messageConnection);
+              serviceCenter.removeBinaryConnection(binaryConnection);
+            },
+          });
+        } else if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
+          const channel = getOrCreateChannel(msgObj.id);
+          if (!channel) {
+            logger.error(`channel ${msgObj.id} not found`);
+            return;
+          }
+
+          channel.handleMessage(msgObj);
+        }
+      } catch (error) {}
+    });
+
+    socket.on('close', () => {
+      disposableCollection.dispose();
       serviceChildInjector.disposeAll();
     });
   });

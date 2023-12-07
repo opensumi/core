@@ -111,6 +111,8 @@ export class RPCServiceCenter {
   }
 
   removeBinaryConnection(connection: BinaryConnection) {
+    connection.dispose();
+
     const removeIndex = this.binaryConnections.indexOf(connection);
     if (removeIndex !== -1) {
       this.binaryConnections.splice(removeIndex, 1);

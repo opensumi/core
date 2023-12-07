@@ -2,7 +2,7 @@ import net, { SocketConnectOpts } from 'net';
 
 import { Injectable, Optional } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { createSocketChannel } from '@opensumi/ide-connection/lib/node';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import {
@@ -34,7 +34,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
 
     // 处理回调
     createRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL, {
-      $callback: async (callId, ...args) => {
+      $callback: async (callId: number, ...args: any[]) => {
         if (callbackDisposed) {
           // 在这里做一下Dispose的处理，在Dispose之后回调不再被执行
           // TODO: 但是按照我的理解，在removeConnection之后这里就完全不应该被执行，但却被执行了，是为什么呢？
@@ -50,11 +50,15 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       },
     });
 
-    const messageConnection = createSocketConnection(socket);
+    const channel = createSocketChannel(socket);
+    const messageConnection = channel.createMessageConnection();
     clientCenter.setConnection(messageConnection);
+    const binaryConnection = channel.createBinaryConnection();
+    clientCenter.setBinaryConnection(binaryConnection);
     return Disposable.create(() => {
       callbackDisposed = true;
       clientCenter.removeConnection(messageConnection);
+      clientCenter.removeBinaryConnection(binaryConnection);
     });
   }
 

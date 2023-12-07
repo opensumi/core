@@ -2,7 +2,6 @@ import { Injector } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-rpc/connection';
-import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   getDebugLogger,
   IReporterService,
@@ -64,7 +63,7 @@ export async function createClientConnection2(
   const channel = await wsChannelHandler.openChannel('RPCService');
   channel.onReOpen(() => onReconnect());
 
-  bindConnectionService(injector, modules, createWebSocketConnection(channel), channel.createBinaryConnection());
+  bindConnectionService(injector, modules, channel.createMessageConnection(), channel.createBinaryConnection());
 }
 
 export async function bindConnectionService(

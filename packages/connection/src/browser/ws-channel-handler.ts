@@ -101,12 +101,10 @@ export class WSChannelHandler {
                 this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
               this.logger && this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
-            channel.open(channel.channelPath);
 
+            channel.open(channel.channelPath);
             // 针对前端需要重新设置下后台状态的情况
-            if (channel.fireReOpen) {
-              channel.fireReOpen();
-            }
+            channel.fireReOpen();
           });
         }
       });

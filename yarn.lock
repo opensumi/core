@@ -2675,6 +2675,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@opensumi/events@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@opensumi/events@npm:0.0.6"
+  checksum: 805271f1af8830bbc2ee6f8ae2fb489709cba348d7f19050fb619296011cb0b4a8d19e00539c4c8cd3011a57cd3d27d8f648ffe63da8ede753a3b5e3cab9313e
+  languageName: node
+  linkType: hard
+
 "@opensumi/ide-addons@workspace:*, @opensumi/ide-addons@workspace:packages/addons":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-addons@workspace:packages/addons"
@@ -2764,6 +2771,7 @@ __metadata:
   resolution: "@opensumi/ide-connection@workspace:packages/connection"
   dependencies:
     "@furyjs/fury": ^0.5.2-beta
+    "@opensumi/events": ^0.0.6
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"

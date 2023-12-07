@@ -2,14 +2,16 @@ import net from 'net';
 
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { createSocketChannel } from '@opensumi/ide-connection/lib/node';
 
 export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService(extCenter);
   const extConnection = net.createConnection('/tmp/test.sock');
 
-  extCenter.setConnection(createSocketConnection(extConnection));
+  const channel = createSocketChannel(extConnection);
+  extCenter.setConnection(channel.createMessageConnection());
+  extCenter.setBinaryConnection(channel.createBinaryConnection());
 
   const service = getRPCService('ExtProtocol');
   service.on('onMessage', (msg) => {

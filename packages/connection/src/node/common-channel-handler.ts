@@ -88,7 +88,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   public handlerId = 'common-channel';
   private wsServer: WebSocket.Server;
   protected handlerRoute: MatchFunction;
-  private channelMap: Map<string | number, WSChannel> = new Map();
+  private channelMap: Map<string, WSChannel> = new Map();
   private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
