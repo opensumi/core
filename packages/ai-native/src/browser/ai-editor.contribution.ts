@@ -455,7 +455,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
                 position,
                 context,
                 token,
-                (model, position, context, token) => this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
+                (model, position, context, token) =>
+                  this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
               );
             }
 
@@ -468,7 +469,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
             this.logger.log(
               'provideInlineCompletions:>>>> ',
-              list.map((data) => data.items),
+              list.items.map((data) => data.insertText),
             );
 
             return list;
