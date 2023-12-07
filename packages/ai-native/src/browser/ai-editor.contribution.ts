@@ -12,6 +12,7 @@ import {
   ILogServiceClient,
   Schemes,
   CancellationToken,
+  ContributionProvider,
 } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
@@ -28,7 +29,14 @@ import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inl
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { AiInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
-import { CancelResponse, ErrorResponse, IInlineChatFeatureRegistry, ReplyResponse } from './types';
+import {
+  AiNativeCoreContribution,
+  CancelResponse,
+  ErrorResponse,
+  IAiMiddleware,
+  IInlineChatFeatureRegistry,
+  ReplyResponse,
+} from './types';
 
 @Injectable()
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
@@ -62,6 +70,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
+  @Autowired(AiNativeCoreContribution)
+  private readonly contributions: ContributionProvider<AiNativeCoreContribution>;
+
+  private latestMiddlewareCollector: IAiMiddleware;
   private logger: ILogServiceClient;
 
   constructor() {
@@ -103,6 +115,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     if (this.aiNativeConfig.capabilities.supportsInlineCompletion) {
+      this.contributions.getContributions().forEach((contribution) => {
+        if (contribution.middleware) {
+          this.latestMiddlewareCollector = contribution.middleware;
+        }
+      });
       this.registerCompletion(editor);
     }
 
@@ -432,16 +449,29 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
+            if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
+              return this.latestMiddlewareCollector.language.provideInlineCompletions(
+                model,
+                position,
+                context,
+                token,
+                (model, position, context, token) =>
+                  this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
+              );
+            }
+
             const list = await this.aiInlineCompletionsProvider.provideInlineCompletionItems(
-              editor,
+              model,
               position,
               context,
               token,
             );
+
             this.logger.log(
-              'inline Completions:>>> ',
-              list.items.map((e) => e.insertText),
+              'provideInlineCompletions:>>>> ',
+              list.items.map((data) => data.insertText),
             );
+
             return list;
           },
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},

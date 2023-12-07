@@ -277,12 +277,10 @@ export class AiNativeBrowserContribution
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
-    if (this.aiNativeConfig.capabilities.supportsAiTerminal) {
-      menus.registerMenuItem(MenuId.TerminalInstanceContext, {
-        command: AI_EXPLAIN_TERMINAL_COMMANDS,
-        group: '0_ai',
-      });
-    }
+    menus.registerMenuItem(MenuId.TerminalInstanceContext, {
+      command: AI_EXPLAIN_TERMINAL_COMMANDS,
+      group: '0_ai',
+    });
 
     menus.registerMenuItem(MenuId.DebugConsoleContext, {
       command: AI_EXPLAIN_DEBUG_COMMANDS,

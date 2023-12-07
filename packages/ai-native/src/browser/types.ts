@@ -1,12 +1,10 @@
 import { CancellationToken, MaybePromise } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
+import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IAiBackService } from '../common/index';
 
 export type InlineChatOperationalRenderType = 'button' | 'dropdown';
-export const enum EditMode {
-  diffEditor = 'diffEditor',
-}
 
 export interface InlineChatAction {
   /**
@@ -101,6 +99,28 @@ export interface IAiRunFeatureRegistry {
 }
 
 export const AiNativeCoreContribution = Symbol('AiNativeCoreContribution');
+
+export type provideInlineCompletionsSignature<T> = (
+  this: void,
+  model: monaco.editor.ITextModel,
+  position: monaco.Position,
+  context: monaco.languages.InlineCompletionContext,
+  token: CancellationToken,
+) => monaco.languages.ProviderResult<T>;
+
+export interface IAiMiddleware {
+  language?: {
+    provideInlineCompletions?: (
+      this: void,
+      model: monaco.editor.ITextModel,
+      position: monaco.Position,
+      context: monaco.languages.InlineCompletionContext,
+      token: CancellationToken,
+      next: provideInlineCompletionsSignature<monaco.languages.InlineCompletions>,
+    ) => monaco.languages.ProviderResult<monaco.languages.InlineCompletions>;
+  };
+}
+
 export interface AiNativeCoreContribution {
   /**
    * 注册 ai run 的能力
@@ -112,4 +132,8 @@ export interface AiNativeCoreContribution {
    * @param registry
    */
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
+  /**
+   * 通过中间件扩展部分 ai 能力
+   */
+  middleware?: IAiMiddleware;
 }
