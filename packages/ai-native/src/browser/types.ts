@@ -101,21 +101,23 @@ export interface IAiRunFeatureRegistry {
 export const AiNativeCoreContribution = Symbol('AiNativeCoreContribution');
 
 export type provideInlineCompletionsSignature<T> = (
-    model: monaco.editor.ITextModel,
-    position: monaco.Position,
-    context: monaco.languages.InlineCompletionContext,
-    token: CancellationToken,
-  ) => monaco.languages.ProviderResult<T>;
+  this: void,
+  model: monaco.editor.ITextModel,
+  position: monaco.Position,
+  context: monaco.languages.InlineCompletionContext,
+  token: CancellationToken,
+) => monaco.languages.ProviderResult<T>;
 
 export interface IAiMiddleware {
   language?: {
-    provideInlineCompletions?: <T extends monaco.languages.InlineCompletions = monaco.languages.InlineCompletions>(
+    provideInlineCompletions?: (
+      this: void,
       model: monaco.editor.ITextModel,
       position: monaco.Position,
       context: monaco.languages.InlineCompletionContext,
       token: CancellationToken,
-      next: provideInlineCompletionsSignature<T>,
-    ) => monaco.languages.ProviderResult<T>;
+      next: provideInlineCompletionsSignature<monaco.languages.InlineCompletions>,
+    ) => monaco.languages.ProviderResult<monaco.languages.InlineCompletions>;
   };
 }
 
