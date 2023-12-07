@@ -67,7 +67,7 @@ export class RPCServiceCenter {
     await Promise.all([this.connectionPromise.promise, this.binaryConnectionPromise.promise]);
   }
 
-  setConnection(connection: MessageConnection) {
+  setConnection(connection: MessageConnection, binaryConnection: BinaryConnection) {
     if (this.messageConnections.length === 0) {
       this.connectionPromise.resolve();
     }
@@ -77,6 +77,8 @@ export class RPCServiceCenter {
     const rpcProxy = new ProxyJSONRPC(this.serviceMethodMap, this.logger);
     rpcProxy.listen(connection);
     this.proxyClients.push(rpcProxy.createProxyClient());
+
+    this.setBinaryConnection(binaryConnection);
   }
 
   removeConnection(connection: MessageConnection) {
@@ -89,7 +91,7 @@ export class RPCServiceCenter {
     return removeIndex !== -1;
   }
 
-  setBinaryConnection(connection: BinaryConnection) {
+  private setBinaryConnection(connection: BinaryConnection) {
     if (this.binaryConnections.length === 0) {
       this.binaryConnectionPromise.resolve();
     }

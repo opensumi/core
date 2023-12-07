@@ -52,9 +52,8 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
 
     const channel = createSocketChannel(socket);
     const messageConnection = channel.createMessageConnection();
-    clientCenter.setConnection(messageConnection);
     const binaryConnection = channel.createBinaryConnection();
-    clientCenter.setBinaryConnection(binaryConnection);
+    clientCenter.setConnection(messageConnection, binaryConnection);
     return Disposable.create(() => {
       callbackDisposed = true;
       clientCenter.removeConnection(messageConnection);

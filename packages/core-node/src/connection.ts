@@ -51,8 +51,7 @@ export function createServerConnection2(
 
       const serverConnection = createWebSocketConnection(connection);
       const binaryConnection = connection.createBinaryConnection();
-      serviceCenter.setConnection(serverConnection);
-      serviceCenter.setBinaryConnection(binaryConnection);
+      serviceCenter.setConnection(serverConnection, binaryConnection);
 
       connection.onClose(() => {
         serviceCenter.removeConnection(serverConnection);
@@ -111,10 +110,8 @@ export function createNetServerConnection(server: net.Server, injector: Injector
           })!;
 
           const messageConnection = channel.createMessageConnection();
-          serviceCenter.setConnection(messageConnection);
-
           const binaryConnection = channel.createBinaryConnection();
-          serviceCenter.setBinaryConnection(binaryConnection);
+          serviceCenter.setConnection(messageConnection, binaryConnection);
 
           disposableCollection.push({
             dispose() {

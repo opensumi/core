@@ -1,11 +1,5 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import {
-  initRPCService,
-  IRPCProtocol,
-  RPCProtocol,
-  RPCServiceCenter,
-  createWebSocketConnection,
-} from '@opensumi/ide-connection';
+import { initRPCService, IRPCProtocol, RPCProtocol, RPCServiceCenter } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
@@ -166,12 +160,11 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
       const { binaryConnection, messageConnection } = createElectronConnection(connectPath);
       // electron 环境下要使用 Node 端的 connection
-      mainThreadCenter.setConnection(messageConnection);
-      mainThreadCenter.setBinaryConnection(binaryConnection);
+      mainThreadCenter.setConnection(messageConnection, binaryConnection);
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-      mainThreadCenter.setConnection(createWebSocketConnection(channel));
+      mainThreadCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
     }
 
     const { getRPCService } = initRPCService<{

@@ -87,8 +87,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
 
   const channel = createSocketChannel(extConnection);
 
-  extCenter.setConnection(channel.createMessageConnection());
-  extCenter.setBinaryConnection(channel.createBinaryConnection());
+  extCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
 
   const service = getRPCService('ExtProtocol');
 

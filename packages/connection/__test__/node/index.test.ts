@@ -129,16 +129,16 @@ describe('connection', () => {
     const wss = new WebSocket.Server({ port: 7788 });
     const notificationMock = jest.fn();
 
-    let serviceCenter;
-    let clientConnectionWs;
+    let serviceCenter: RPCServiceCenter | undefined;
+    let clientConnectionWs: ws | undefined;
 
     await Promise.all([
       new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
           const serverConnection = createWebSocketConnection(connection);
-          serviceCenter.setConnection(serverConnection);
-
+          const binaryConnection = createBinaryConnectionForWS(connection);
+          serviceCenter.setConnection(serverConnection, binaryConnection);
           resolve(undefined);
         });
       }),
@@ -151,7 +151,7 @@ describe('connection', () => {
       }),
     ]);
 
-    const { createRPCService } = initRPCService(serviceCenter);
+    const { createRPCService } = initRPCService(serviceCenter!);
     createRPCService('MockFileServicePath', mockFileService);
 
     createRPCService('MockNotificationService', {
@@ -161,8 +161,10 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    clientCenter.setConnection(createWebSocketConnection(clientConnectionWs) as RPCMessageConnection);
-    clientCenter.setBinaryConnection(createBinaryConnectionForWS(clientConnectionWs));
+    clientCenter.setConnection(
+      createWebSocketConnection(clientConnectionWs) as RPCMessageConnection,
+      createBinaryConnectionForWS(clientConnectionWs!),
+    );
 
     const { getRPCService } = initRPCService<
       MockFileService & {

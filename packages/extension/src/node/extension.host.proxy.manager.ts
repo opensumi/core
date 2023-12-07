@@ -73,12 +73,11 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private setProxyConnection(connection: net.Socket) {
     const channel = createSocketChannel(connection);
-    const serverConnection = channel.createMessageConnection();
-    this.extServiceProxyCenter.setConnection(serverConnection);
+    const messageConnection = channel.createMessageConnection();
     const binaryConnection = channel.createBinaryConnection();
-    this.extServiceProxyCenter.setBinaryConnection(binaryConnection);
+    this.extServiceProxyCenter.setConnection(messageConnection, binaryConnection);
     connection.on('close', () => {
-      this.extServiceProxyCenter.removeConnection(serverConnection);
+      this.extServiceProxyCenter.removeConnection(messageConnection);
       this.extServiceProxyCenter.removeBinaryConnection(binaryConnection);
     });
     this.disposer.addDispose(

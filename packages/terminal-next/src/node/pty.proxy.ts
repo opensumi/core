@@ -303,9 +303,9 @@ export class PtyServiceProxyRPCProvider {
   private setProxyConnection(connection: net.Socket) {
     const channel = createSocketChannel(connection);
     const serverConnection = channel.createMessageConnection();
-    this.ptyServiceCenter.setConnection(serverConnection);
     const binaryConnection = channel.createBinaryConnection();
-    this.ptyServiceCenter.setBinaryConnection(binaryConnection);
+    this.ptyServiceCenter.setConnection(serverConnection, binaryConnection);
+
     connection.on('close', () => {
       this.ptyServiceCenter.removeConnection(serverConnection);
       this.ptyServiceCenter.removeBinaryConnection(binaryConnection);
