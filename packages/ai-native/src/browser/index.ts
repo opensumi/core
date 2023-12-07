@@ -7,19 +7,13 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import {
-  AiBackSerivcePath,
-  AiBackSerivceToken,
-  AiNativeContribution,
-  IAiChatService,
-  IAiRunFeatureRegistry,
-  IAIReporter,
-} from '../common';
+import { AiBackSerivcePath, AiBackSerivceToken, IAiChatService, IAIReporter } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeConfig } from './ai-config';
-import { AiNativeCoreContribution } from './ai-core.contribution';
+import { AiNativeBrowserContribution } from './ai-core.contribution';
 import { AIReporter } from './ai-reporter';
+import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
@@ -27,15 +21,20 @@ import { AiChatLayoutConfig, AiTopLayoutConfig } from './override/layout/layout-
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
 import { AiRunFeatureRegistry } from './run/run.feature.registry';
+import { AiNativeCoreContribution, IAiRunFeatureRegistry, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
 export class AiNativeModule extends BrowserModule {
-  contributionProvider = AiNativeContribution;
+  contributionProvider = AiNativeCoreContribution;
   providers: Provider[] = [
-    AiNativeCoreContribution,
+    AiNativeBrowserContribution,
     {
       token: IAiRunFeatureRegistry,
       useClass: AiRunFeatureRegistry,
+    },
+    {
+      token: IInlineChatFeatureRegistry,
+      useClass: InlineChatFeatureRegistry,
     },
     {
       token: IAiChatService,

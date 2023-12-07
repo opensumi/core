@@ -123,45 +123,6 @@ export enum AISerivceType {
   Completion = 'completion',
 }
 
-export type AiRunHandler = () => MaybePromise<void>;
-export interface IAiRunAnswerComponentProps {
-  input: string;
-}
-
-export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
-
-export interface IAiRunFeatureRegistry {
-  /**
-   * 注册 run 运行的能力
-   */
-  registerRun(handler: AiRunHandler): void;
-  /**
-   * 返回 answer 时渲染的组件
-   */
-  registerAnswerComponent(component: React.FC<IAiRunAnswerComponentProps>): void;
-
-  registerRequest(request: IAiBackService['request']): void;
-
-  registerStreamRequest(streamRequest: IAiBackService['requestStream']): void;
-
-  getRuns(): AiRunHandler[];
-
-  getAnswerComponent(): React.FC<IAiRunAnswerComponentProps> | undefined;
-
-  getRequest(): IAiBackService['request'];
-
-  getStreamRequest(): IAiBackService['requestStream'];
-}
-
-export const AiNativeContribution = Symbol('AiNativeContribution');
-export interface AiNativeContribution {
-  /**
-   * 注册 ai run 的能力
-   * @param registry
-   */
-  registerRunFeature?(registry: IAiRunFeatureRegistry): void;
-}
-
 export enum AiNativeSettingSectionsId {
   INLINE_CHAT_AUTO_VISIBLE = 'inlineChat.auto.visible',
 }

@@ -10,7 +10,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AiInlineChatContentWidget } from '../../common/index';
 import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
-import { AiInlineChatController, EInlineOperation } from './inline-chat-controller';
+import { AiInlineChatController } from './inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 export interface IInlineContentWidget extends monaco.editor.IContentWidget {
@@ -52,8 +52,8 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   // 记录最开始时的 top 值
   private originTop = 0;
 
-  private readonly _onClickOperation = new Emitter<EInlineOperation>();
-  public readonly onClickOperation: Event<EInlineOperation> = this._onClickOperation.event;
+  private readonly _onClickActions = new Emitter<string>();
+  public readonly onClickActions: Event<string> = this._onClickActions.event;
 
   constructor(private readonly editor: IMonacoCodeEditor) {
     super();
@@ -95,7 +95,7 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   private renderView(): void {
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
-        <AiInlineChatController onClickOperation={this._onClickOperation} onClose={() => this.dispose()} />
+        <AiInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />
       </ConfigProvider>,
       this.getDomNode(),
     );
