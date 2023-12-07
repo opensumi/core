@@ -1,4 +1,4 @@
-import { RPCProtocol, RPCProtocolMethod } from './fury-rpc';
+import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
 import { RPCServiceCenter } from './rpc-service-center';
 import { RPCServiceMethod, ServiceType, formatServiceType } from './types';
 import { getServiceMethods } from './utils';

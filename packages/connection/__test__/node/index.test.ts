@@ -2,12 +2,12 @@ import http from 'http';
 
 import ws from 'ws';
 
-import { createBinaryConnection } from '@opensumi/ide-connection/lib/common/binary-connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
+import { createBinaryConnectionByWebSocket } from '../../src/common/binary-rpc/connection';
 import { createWebSocketConnection } from '../../src/common/message';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
 import { parse } from '../../src/common/utils';
@@ -162,7 +162,7 @@ describe('connection', () => {
 
     const clientCenter = new RPCServiceCenter();
     clientCenter.setConnection(createWebSocketConnection(clientConnectionWs) as RPCMessageConnection);
-    clientCenter.setBinaryConnection(createBinaryConnection(clientConnectionWs));
+    clientCenter.setBinaryConnection(createBinaryConnectionByWebSocket(clientConnectionWs));
 
     const { getRPCService } = initRPCService<
       MockFileService & {

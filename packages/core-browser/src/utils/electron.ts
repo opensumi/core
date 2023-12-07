@@ -1,4 +1,4 @@
-import type { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-connection';
+import type { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-rpc/connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';

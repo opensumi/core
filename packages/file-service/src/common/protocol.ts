@@ -1,6 +1,6 @@
 import { Type } from '@furyjs/fury';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/fury-rpc';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/binary-rpc';
 
 import { DiskFileServicePath } from './tokens';
 

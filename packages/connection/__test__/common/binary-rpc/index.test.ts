@@ -1,6 +1,7 @@
 import { Type } from '@furyjs/fury';
 
-import { IRPCWithProtocolServiceMap, RPCProxyFury } from '../../../src/common';
+import { RPCProxyFury } from '../../../src/common';
+import { RPCServiceProtocolRepository } from '../../../src/common/rpc-service-protocol-repository';
 
 import { createFuryConnectionPair } from './utils';
 
@@ -16,9 +17,8 @@ describe('fury rpc', () => {
   });
 
   it('base', async () => {
-    const rpc1Map = {
+    const protocols = {
       shortUrl: {
-        method: (url: string) => url.slice(0, 10),
         protocol: {
           method: 'shortUrl',
           request: [
@@ -32,16 +32,7 @@ describe('fury rpc', () => {
           },
         },
       },
-    } as IRPCWithProtocolServiceMap;
-
-    const furyRPC1 = new RPCProxyFury(rpc1Map);
-
-    furyRPC1.listen(pair.connection1);
-    const fury1InvokeProxy = furyRPC1.getRPCInvokeProxy();
-
-    const rpc2Map = {
       add: {
-        method: (a: number, b: number) => a + b,
         protocol: {
           method: 'add',
           request: [
@@ -59,13 +50,27 @@ describe('fury rpc', () => {
           },
         },
       },
-    } as IRPCWithProtocolServiceMap;
+    };
 
-    const furyRPC2 = new RPCProxyFury(rpc2Map);
+    const repo = new RPCServiceProtocolRepository();
+
+    repo.loadProtocolMethod('shortUrl', protocols.shortUrl.protocol);
+    repo.loadProtocolMethod('add', protocols.add.protocol);
+
+    const furyRPC1 = new RPCProxyFury({
+      shortUrl: (url: string) => url.slice(0, 10),
+    });
+
+    furyRPC1.setProtocolRepository(repo);
+
+    furyRPC1.listen(pair.connection1);
+    const fury1InvokeProxy = furyRPC1.getRPCInvokeProxy();
+
+    const furyRPC2 = new RPCProxyFury({
+      add: (a: number, b: number) => a + b,
+    });
+    furyRPC2.setProtocolRepository(repo);
     furyRPC2.listen(pair.connection2);
-
-    furyRPC1.loadProtocol(rpc2Map);
-    furyRPC2.loadProtocol(rpc1Map);
 
     const fury2InvokeProxy = furyRPC2.getRPCInvokeProxy();
 

@@ -91,3 +91,14 @@ export function getServiceMethods<T extends object>(
 
   return props;
 }
+
+function getNotificationName(tag: string, name: string) {
+  return `on:${tag}:${name}`;
+}
+function getRequestName(tag: string, name: string) {
+  return `${tag}:${name}`;
+}
+
+export function getMethodName(tag: string, name: string) {
+  return name.startsWith('on') ? getNotificationName(tag, name) : getRequestName(tag, name);
+}

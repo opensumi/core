@@ -1,6 +1,6 @@
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { BinaryConnection } from './binary-connection';
+import { BinaryConnection } from './binary-rpc/connection';
 import { stringify } from './utils';
 
 export interface IWebSocket {

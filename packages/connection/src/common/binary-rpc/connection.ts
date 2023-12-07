@@ -1,8 +1,8 @@
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
-import { IDisposable } from '@opensumi/ide-utils';
+import { DisposableCollection, IDisposable } from '@opensumi/ide-utils';
 import { Dispatcher } from '@opensumi/ide-utils/lib/event';
 
-import { reviveError } from './fury-rpc/error-like';
+import { reviveError } from './error-like';
 import {
   CODEC,
   ERROR_STATUS,
@@ -11,8 +11,14 @@ import {
   createRpcBinaryRequest,
   createRpcBinaryResponse,
   reader,
-} from './fury-rpc/packet';
-import { RequestCallback } from './fury-rpc/types';
+} from './packet';
+import {
+  BinaryConnectionSocket,
+  GenericNotificationHandler,
+  GenericRequestHandler,
+  IBinaryDispatcherPayload,
+  RequestCallback,
+} from './types';
 
 function isPromise<T = any>(obj: any): obj is Promise<T> {
   return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
@@ -24,30 +30,64 @@ const assert = (condition: any, message: string) => {
   }
 };
 
-interface IBinaryDispatcherPayload {
-  requestId: number;
-  content: PlatformBuffer;
-}
+export class BinaryConnection implements IDisposable {
+  protected disposable = new DisposableCollection();
 
-export interface BinaryConnectionSocket {
-  send(data: Uint8Array): void;
-  onmessage: (cb: (data: Uint8Array) => void) => IDisposable | void;
-}
-
-type HandlerResult<R> = R | Promise<R>;
-
-export type GenericNotificationHandler = (...params: any[]) => void | Promise<void>;
-export type GenericRequestHandler<R> = (...params: any[]) => HandlerResult<R>;
-
-export class BinaryConnection {
   private _binaryDispatcher = new Dispatcher<IBinaryDispatcherPayload>();
   private _notificationDispatcher = new Dispatcher<PlatformBuffer>();
 
   private _requestId = 0;
   private _callbacks = new Map<number, RequestCallback>();
 
-  constructor(private _socket: BinaryConnectionSocket) {
-    this._socket.onmessage((data) => {
+  constructor(private _socket: BinaryConnectionSocket) {}
+
+  sendNotification(method: string, payload: Uint8Array) {
+    this._socket.send(createRpcBinaryRequest(this._requestId++, RPC_TYPE.Notification, method, payload));
+  }
+
+  sendRequest(method: string, payload: Uint8Array) {
+    return new Promise<Uint8Array>((resolve, reject) => {
+      this._callbacks.set(this._requestId, (error, result) => (error ? reject(error) : resolve(result)));
+      this._socket.send(createRpcBinaryRequest(this._requestId++, RPC_TYPE.Request, method, payload));
+    });
+  }
+
+  onNotification(method: string, handler: GenericNotificationHandler): IDisposable {
+    return this._notificationDispatcher.on(method)(handler);
+  }
+
+  onRequest(method: string, _handler: GenericRequestHandler<Uint8Array>): IDisposable {
+    const handler = (data: IBinaryDispatcherPayload) => {
+      const { requestId, content } = data;
+      let result: any;
+      let error: Error | undefined;
+      try {
+        result = _handler(content);
+      } catch (err) {
+        error = err;
+      }
+
+      if (error) {
+        this._socket.send(createRPCErrorResponse(requestId, ERROR_STATUS.EXEC_ERROR, error));
+      }
+
+      if (isPromise(result)) {
+        result
+          .then((result) => {
+            this._socket.send(createRpcBinaryResponse(requestId, result));
+          })
+          .catch((err) => {
+            this._socket.send(createRPCErrorResponse(requestId, ERROR_STATUS.EXEC_ERROR, err));
+          });
+      } else {
+        this._socket.send(createRpcBinaryResponse(requestId, result));
+      }
+    };
+    return this._binaryDispatcher.on(method)(handler);
+  }
+
+  listen() {
+    const toDispose = this._socket.onmessage((data) => {
       reader.reset(data);
       reader.skip(1);
       const rpcType = reader.uint8();
@@ -104,56 +144,17 @@ export class BinaryConnection {
         throw new Error(`Unknown rpc type: ${rpcType}`);
       }
     });
+    if (toDispose) {
+      this.disposable.push(toDispose);
+    }
   }
 
-  sendNotification(method: string, payload: Uint8Array) {
-    this._socket.send(createRpcBinaryRequest(this._requestId++, RPC_TYPE.Notification, method, payload));
+  dispose(): void {
+    this.disposable.dispose();
   }
-
-  sendRequest(method: string, payload: Uint8Array) {
-    return new Promise<Uint8Array>((resolve, reject) => {
-      this._callbacks.set(this._requestId, (error, result) => (error ? reject(error) : resolve(result)));
-      this._socket.send(createRpcBinaryRequest(this._requestId++, RPC_TYPE.Request, method, payload));
-    });
-  }
-
-  onNotification(method: string, handler: GenericNotificationHandler): IDisposable {
-    return this._notificationDispatcher.on(method)(handler);
-  }
-  onRequest(method: string, _handler: GenericRequestHandler<Uint8Array>): IDisposable {
-    const handler = (data: IBinaryDispatcherPayload) => {
-      const { requestId, content } = data;
-      let result: any;
-      let error: Error | undefined;
-      try {
-        result = _handler(content);
-      } catch (err) {
-        error = err;
-      }
-
-      if (error) {
-        this._socket.send(createRPCErrorResponse(requestId, ERROR_STATUS.EXEC_ERROR, error));
-      }
-
-      if (isPromise(result)) {
-        result
-          .then((result) => {
-            this._socket.send(createRpcBinaryResponse(requestId, result));
-          })
-          .catch((err) => {
-            this._socket.send(createRPCErrorResponse(requestId, ERROR_STATUS.EXEC_ERROR, err));
-          });
-      } else {
-        this._socket.send(createRpcBinaryResponse(requestId, result));
-      }
-    };
-    return this._binaryDispatcher.on(method)(handler);
-  }
-
-  listen() {}
 }
 
-export function createBinaryConnection(socket: any) {
+export function createBinaryConnectionByWebSocket(socket: any) {
   return new BinaryConnection({
     onmessage: (cb) => {
       if (socket.onMessage) {

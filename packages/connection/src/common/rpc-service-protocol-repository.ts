@@ -2,7 +2,8 @@ import Fury, { Type, TypeDescription } from '@furyjs/fury';
 
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { RPCProtocolMethod } from './fury-rpc';
+import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
+import { getMethodName } from './utils';
 
 export interface ISerializableRequest {
   args: ISerializableArguments;
@@ -32,7 +33,15 @@ export class RPCServiceProtocolRepository {
     return !!this.serializerMap[name];
   }
 
-  saveMethodProtocol(name: string, protocol: RPCProtocolMethod) {
+  loadProtocol(protocol: RPCProtocol) {
+    const { methods, name } = protocol;
+
+    for (const proto of methods) {
+      this.loadProtocolMethod(getMethodName(name, proto.method), proto);
+    }
+  }
+
+  loadProtocolMethod(name: string, protocol: RPCProtocolMethod) {
     const { method } = protocol;
 
     const props = {

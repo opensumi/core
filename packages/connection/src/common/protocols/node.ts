@@ -2,7 +2,7 @@ import { Type } from '@furyjs/fury';
 
 import { CommonServerPath } from '@opensumi/ide-core-common';
 
-import type { RPCProtocol } from '../fury-rpc';
+import type { RPCProtocol } from '../binary-rpc';
 
 export const CommonServerProtocol = {
   name: CommonServerPath,

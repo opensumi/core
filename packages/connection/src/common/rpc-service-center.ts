@@ -1,11 +1,12 @@
 import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { BinaryConnection } from './binary-connection';
-import { RPCProtocol, RPCProtocolMethod } from './fury-rpc';
+import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
+import { BinaryConnection } from './binary-rpc/connection';
 import { RPCProxyJSONRPC, NOTREGISTERMETHOD, ILogger, ProxyClient, RPCProxyFury } from './proxy';
 import { RPCServiceProtocolRepository } from './rpc-service-protocol-repository';
 import { IBench, RPCServiceMethod, ServiceType } from './types';
+import { getMethodName } from './utils';
 
 export interface IRPCServiceCenterOptions {
   logger?: ILogger;
@@ -119,19 +120,8 @@ export class RPCServiceCenter {
     return removeIndex !== -1;
   }
 
-  private getNotificationName(tag: string, name: string) {
-    return `on:${tag}:${name}`;
-  }
-  private getRequestName(tag: string, name: string) {
-    return `${tag}:${name}`;
-  }
-
-  getMethodName(tag: string, name: string) {
-    return name.startsWith('on') ? this.getNotificationName(tag, name) : this.getRequestName(tag, name);
-  }
-
   onRequest(tag: string, _name: string, method: RPCServiceMethod) {
-    const methodName = this.getMethodName(tag, _name);
+    const methodName = getMethodName(tag, _name);
     if (this.messageConnections.length === 0) {
       this.serviceMethodMap[methodName] = method;
     } else {
@@ -152,17 +142,12 @@ export class RPCServiceCenter {
   }
 
   loadProtocol(protocol: RPCProtocol) {
-    const { methods, name } = protocol;
-
     const protocolRepository = this.getOrCreateProtocolRepository();
-
-    for (const proto of methods) {
-      protocolRepository.saveMethodProtocol(this.getMethodName(name, proto.method), proto);
-    }
+    protocolRepository.loadProtocol(protocol);
   }
 
   onProtocolRequest(tag: string, _method: string, method: RPCServiceMethod) {
-    const methodName = this.getMethodName(tag, _method);
+    const methodName = getMethodName(tag, _method);
 
     if (this.binaryConnections.length === 0) {
       this.protocolServiceMethodMap[methodName] = method;
@@ -174,7 +159,7 @@ export class RPCServiceCenter {
   }
 
   async broadcast(tag: string, _name: string, ...args): Promise<any> {
-    const methodName = this.getMethodName(tag, _name);
+    const methodName = getMethodName(tag, _name);
 
     const clients = [] as ProxyClient<any>[];
     const repo = this.getOrCreateProtocolRepository();
