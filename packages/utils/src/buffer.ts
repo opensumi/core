@@ -2,13 +2,17 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/arrays.ts
 import { toCanonicalName, iconvDecode, UTF8 } from './encoding';
 import * as strings from './strings';
 
 let textEncoder: TextEncoder | null;
 
-const hasBuffer = typeof Buffer !== 'undefined';
+const isInNodeEnv =
+  typeof process !== 'undefined' &&
+  typeof process.versions !== 'undefined' &&
+  typeof process.versions.node !== 'undefined';
+
+const hasBuffer = isInNodeEnv && typeof Buffer !== 'undefined';
 const hasTextEncoder = typeof TextEncoder !== 'undefined';
 const hasTextDecoder = typeof TextDecoder !== 'undefined';
 
@@ -22,6 +26,7 @@ export class BinaryBuffer {
   }
 
   static wrap(actual: Uint8Array): BinaryBuffer {
+    // we use buffer mock in browser, but actually we can use Uint8Array directly
     if (hasBuffer && !Buffer.isBuffer(actual)) {
       // https://nodejs.org/dist/latest-v10.x/docs/api/buffer.html#buffer_class_method_buffer_from_arraybuffer_byteoffset_length
       // Create a zero-copy Buffer wrapper around the ArrayBuffer pointed to by the Uint8Array
@@ -67,10 +72,12 @@ export class BinaryBuffer {
   }
 
   readonly buffer: Uint8Array;
+  readonly byteOffset: number;
   readonly byteLength: number;
 
   private constructor(buffer: Uint8Array) {
     this.buffer = buffer;
+    this.byteOffset = buffer.byteOffset;
     this.byteLength = this.buffer.byteLength;
   }
 
