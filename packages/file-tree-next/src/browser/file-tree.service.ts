@@ -544,7 +544,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (node && node.parent) {
       // 压缩节点情况下，刷新父节点目录即可
       if (this.isCompactMode && !notRefresh) {
-        this.refresh(node.parent as Directory);
+        if (node.parent.children?.length === 2) {
+          // 当存在两个子节点时，删除一个子节点后，需要刷新父节点
+          this.refresh(node.parent?.parent as Directory);
+        } else {
+          this.refresh(node.parent as Directory);
+        }
       } else {
         (node.parent as Directory).removeNode(node.path);
       }
@@ -831,7 +836,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   public toggleFilterMode() {
     this._filterMode = !this.filterMode;
     this.onFilterModeChangeEmitter.fire(this.filterMode);
-    this.fileContextKey.filesExplorerFilteredContext.set(this.filterMode);
+    this.fileContextKey?.filesExplorerFilteredContext.set(this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
       // 退出时若需要做 filter 值清理以及聚焦操作

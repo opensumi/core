@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Select, Option } from '@opensumi/ide-components';
@@ -77,7 +77,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this._wrapper.appendChild(this._selection);
     this._wrapper.appendChild(this._input);
 
-    ReactDOM.render(<></>, this._input);
+    ReactDOM.createRoot(this._input).render(<></>);
   }
 
   public hide(): void {
@@ -239,7 +239,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   applyStyle() {
     this.syncPreContent();
 
-    ReactDOM.render(
+    ReactDOM.createRoot(this._selection).render(
       <Select
         value={this.context}
         selectedRenderer={() => <span className='kt-select-option'>{this.getContextToLocalize(this.context)}</span>}
@@ -249,7 +249,6 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
         {this.renderOption('hitCondition', this.getContextToLocalize('hitCondition'))}
         {this.renderOption('logMessage', this.getContextToLocalize('logMessage'))}
       </Select>,
-      this._selection,
     );
   }
 

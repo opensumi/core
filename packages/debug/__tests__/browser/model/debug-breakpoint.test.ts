@@ -10,6 +10,8 @@ import {
   isRuntimeBreakpoint,
 } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { DiskFileServicePath } from '@opensumi/ide-file-service';
+import { MockFsProvider } from '@opensumi/ide-file-service/__mocks__/file-system-provider';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 
 describe('Debug Breakpoints', () => {
@@ -18,10 +20,18 @@ describe('Debug Breakpoints', () => {
   const customBreakpointSource = { line: 8 };
   const nextLine = 10;
 
-  mockInjector.addProviders({
-    token: BreakpointManager,
-    useClass: BreakpointManager,
-  });
+  mockInjector.addProviders(
+    ...[
+      {
+        token: BreakpointManager,
+        useClass: BreakpointManager,
+      },
+      {
+        token: DiskFileServicePath,
+        useClass: MockFsProvider,
+      },
+    ],
+  );
 
   describe('Breakpoint Source', () => {
     let breakpoint: IDebugBreakpoint;

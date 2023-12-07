@@ -1,30 +1,45 @@
+import { ILogger } from '@opensumi/ide-core-common';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionModule } from '../../src/browser';
 import { IActivationEventService } from '../../src/browser/types';
 
 describe('activation event test', () => {
-  const injector = createBrowserInjector([ExtensionModule]);
-  const service: IActivationEventService = injector.get(IActivationEventService);
+  let injector;
+  let service: IActivationEventService;
+
+  beforeAll(() => {
+    injector = createBrowserInjector([ExtensionModule]);
+    injector.overrideProviders({
+      token: ILogger,
+      useValue: {
+        error: jest.fn(),
+      },
+    });
+    service = injector.get(IActivationEventService);
+  });
 
   it('normal event should be listened', async () => {
     let executed = 0;
+    let disposer;
 
-    const disposer = service.onEvent('onCommand:A', () => {
+    disposer = service.onEvent('onCommand:A', () => {
       executed++;
+      disposer.dispose();
     });
 
     await service.fireEvent('onCommand', 'A');
     expect(executed).toEqual(1);
 
-    disposer.dispose();
     await service.fireEvent('onCommand', 'A');
     expect(executed).toEqual(1);
 
-    service.onEvent('*', () => {
+    disposer = service.onEvent('onCommand:B', () => {
       executed++;
+      disposer.dispose();
     });
 
-    await service.fireEvent('*');
+    await service.fireEvent('onCommand', 'B');
     expect(executed).toEqual(2);
   });
 

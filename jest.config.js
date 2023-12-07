@@ -85,7 +85,9 @@ module.exports = {
       testEnvironment: 'jsdom',
       testEnvironmentOptions: {
         html: `<html>
-        <div id="main"></div>
+        <body>
+          <div id="main"></div>
+        </body>
         </html>`,
         runScripts: 'dangerously',
         url: 'http://localhost/?id=1',

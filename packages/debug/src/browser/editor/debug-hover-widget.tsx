@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -152,15 +152,12 @@ export class DebugHoverWidget implements IDebugHoverWidget {
   }
 
   private renderView(): void {
-    ReactDOM.render(
+    ReactDOM.createRoot(this.getDomNode()).render(
       <ConfigProvider value={this.configContext}>
         <DebugHoverView />
       </ConfigProvider>,
-      this.getDomNode(),
-      () => {
-        this.layoutContentWidget();
-      },
     );
+    this.layoutContentWidget();
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
