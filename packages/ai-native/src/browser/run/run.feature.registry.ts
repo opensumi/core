@@ -1,6 +1,7 @@
 import { Injectable } from '@opensumi/di';
 
-import { AiRunHandler, IAiRunAnswerComponentProps, IAiRunFeatureRegistry, IAiBackService } from '../../common';
+import { IAiBackService } from '../../common';
+import { AiRunHandler, IAiRunAnswerComponentProps, IAiRunFeatureRegistry } from '../types';
 
 @Injectable()
 export class AiRunFeatureRegistry implements IAiRunFeatureRegistry {
