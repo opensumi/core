@@ -1,7 +1,8 @@
-import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
-import { RPCServiceCenter } from './rpc-service-center';
-import { RPCServiceMethod, ServiceType, formatServiceType } from './types';
-import { getServiceMethods } from './utils';
+import { RPCProtocol, RPCProtocolMethod } from '../binary-rpc';
+import { RPCServiceMethod, ServiceType, formatServiceType } from '../types';
+import { getServiceMethods } from '../utils';
+
+import { RPCServiceCenter } from './center';
 
 export class RPCServiceStub {
   constructor(private serviceName: string, private center: RPCServiceCenter, private type: ServiceType) {
@@ -62,8 +63,8 @@ export class RPCServiceStub {
       }
     }
 
-    this.center.logger.log(this.LOG_TAG, `load protocol ${name} methods: ${methodsToLog.protocol.join('/')}`);
-    this.center.logger.log(this.LOG_TAG, `load json rpc methods: ${methodsToLog.jsonRpc.join('/')}`);
+    this.center.logger.log(this.LOG_TAG, `load ${name} protocol methods: ${methodsToLog.protocol.join('/')}`);
+    this.center.logger.log(this.LOG_TAG, `load ${name} json rpc methods: ${methodsToLog.jsonRpc.join('/')}`);
   }
 
   onRequest(name: string, method: RPCServiceMethod) {

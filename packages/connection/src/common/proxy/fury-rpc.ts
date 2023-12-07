@@ -1,13 +1,13 @@
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { BinaryConnection } from '../binary-rpc/connection';
-import { IRPCServiceMap } from '../rpc-service-center';
-import { RPCServiceProtocolRepository } from '../rpc-service-protocol-repository';
+import { ProtocolRepository } from '../protocol-repository';
+import { IRPCServiceMap } from '../types';
 
-import { RPCProxyBase } from './base';
+import { ProxyBase } from './base';
 
-export class RPCProxyFury extends RPCProxyBase<BinaryConnection, IRPCServiceMap> {
-  private protocolRepository: RPCServiceProtocolRepository;
+export class ProxyFury extends ProxyBase<BinaryConnection, IRPCServiceMap> {
+  private protocolRepository: ProtocolRepository;
 
   protected bindOnRequest(service: IRPCServiceMap, cb: (service: IRPCServiceMap, prop: string) => void): void {
     Object.entries(service).forEach(([name, value]) => {
@@ -20,32 +20,36 @@ export class RPCProxyFury extends RPCProxyBase<BinaryConnection, IRPCServiceMap>
       if (name.startsWith('on')) {
         this.connection.onNotification(name, (buffer: PlatformBuffer) => {
           const argsArray = this.protocolRepository.deserializeRequest(name, buffer);
+
           try {
             this.proxyService[name](...argsArray);
           } catch (e) {
-            this.logger.warn('notification', e);
+            this.logger.warn(`notification exec ${name} error`, e);
           }
         });
       } else {
         this.connection.onRequest(name, async (buffer: PlatformBuffer) => {
           const argsArray = this.protocolRepository.deserializeRequest(name, buffer);
+
+          let result: any;
           try {
-            const result = await this.proxyService[name](...argsArray);
-            return this.protocolRepository.serializeResult(name, result);
+            result = await this.proxyService[name](...argsArray);
           } catch (e) {
-            this.logger.warn('request', e);
+            this.logger.warn(`request exec ${name} error`, e);
             throw e;
           }
+
+          return this.protocolRepository.serializeResult(name, result);
         });
       }
     });
   }
 
-  setProtocolRepository(protocolRepository: RPCServiceProtocolRepository) {
+  setProtocolRepository(protocolRepository: ProtocolRepository) {
     this.protocolRepository = protocolRepository;
   }
 
-  getRPCInvokeProxy(): any {
+  getInvokeProxy(): any {
     return new Proxy(this, {
       get: (target, p: string | symbol) => {
         const prop = p.toString();

@@ -1,16 +1,15 @@
 import { Deferred, isDefined } from '@opensumi/ide-core-common';
 
-import { IRPCServiceMap } from '../rpc-service-center';
+import { ILogger, IRPCServiceMap } from '../types';
 import { ICapturedMessage, getCapturer, getServiceMethods } from '../utils';
 
 import { ProxyClient } from './proxy-client';
-import { ILogger } from './types';
 
 interface IBaseConnection {
   listen(): void;
 }
 
-export abstract class RPCProxyBase<T extends IBaseConnection, K extends IRPCServiceMap> {
+export abstract class ProxyBase<T extends IBaseConnection, K extends IRPCServiceMap> {
   protected proxyService: any = {};
 
   protected logger: ILogger;
@@ -64,7 +63,7 @@ export abstract class RPCProxyBase<T extends IBaseConnection, K extends IRPCServ
     }
   }
 
-  abstract getRPCInvokeProxy(): any;
+  abstract getInvokeProxy(): any;
 
   protected abstract bindOnRequest(service: K, cb: (service: K, prop: string) => void): void;
 }

@@ -1,15 +1,15 @@
 import { Type } from '@furyjs/fury';
 
-import { RPCProxyFury } from '../../../src/common';
-import { RPCServiceProtocolRepository } from '../../../src/common/rpc-service-protocol-repository';
+import { ProxyFury } from '../../../src/common';
+import { ProtocolRepository } from '../../../src/common/protocol-repository';
 
-import { createFuryConnectionPair } from './utils';
+import { createConnectionPair } from './utils';
 
 describe('fury rpc', () => {
-  let pair: ReturnType<typeof createFuryConnectionPair>;
+  let pair: ReturnType<typeof createConnectionPair>;
   jest.setTimeout(1000 * 1000);
   beforeEach(() => {
-    pair = createFuryConnectionPair();
+    pair = createConnectionPair();
   });
 
   afterEach(() => {
@@ -52,27 +52,27 @@ describe('fury rpc', () => {
       },
     };
 
-    const repo = new RPCServiceProtocolRepository();
+    const repo = new ProtocolRepository();
 
     repo.loadProtocolMethod('shortUrl', protocols.shortUrl.protocol);
     repo.loadProtocolMethod('add', protocols.add.protocol);
 
-    const furyRPC1 = new RPCProxyFury({
+    const furyRPC1 = new ProxyFury({
       shortUrl: (url: string) => url.slice(0, 10),
     });
 
     furyRPC1.setProtocolRepository(repo);
 
     furyRPC1.listen(pair.connection1);
-    const fury1InvokeProxy = furyRPC1.getRPCInvokeProxy();
+    const fury1InvokeProxy = furyRPC1.getInvokeProxy();
 
-    const furyRPC2 = new RPCProxyFury({
+    const furyRPC2 = new ProxyFury({
       add: (a: number, b: number) => a + b,
     });
     furyRPC2.setProtocolRepository(repo);
     furyRPC2.listen(pair.connection2);
 
-    const fury2InvokeProxy = furyRPC2.getRPCInvokeProxy();
+    const fury2InvokeProxy = furyRPC2.getInvokeProxy();
 
     const result = await fury1InvokeProxy.add(1, 2);
     expect(result).toBe(3);

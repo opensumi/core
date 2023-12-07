@@ -1,8 +1,8 @@
-import { RPCProxyBase } from './base';
+import { ProxyBase } from './base';
 
 const defaultReservedWordSet = new Set(['then']);
 
-export class ProxyClient<T extends RPCProxyBase<any, any>> {
+export class ProxyClient<T extends ProxyBase<any, any>> {
   protected original: T;
   protected proxy: any;
   protected reservedWordSet: Set<string>;
@@ -10,7 +10,7 @@ export class ProxyClient<T extends RPCProxyBase<any, any>> {
   constructor(original: T, reservedWords?: string[]) {
     this.original = original;
     this.reservedWordSet = new Set(reservedWords) || defaultReservedWordSet;
-    const proxy = original.getRPCInvokeProxy();
+    const proxy = original.getInvokeProxy();
 
     this.proxy = new Proxy(
       {},

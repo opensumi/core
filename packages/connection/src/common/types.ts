@@ -1,7 +1,8 @@
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 export type RPCServiceMethod = (...args: any[]) => any;
-export type ServiceProxy = any;
+
+export type IRPCServiceMap = Record<string, RPCServiceMethod>;
 
 export enum ServiceType {
   Service,
@@ -18,4 +19,9 @@ export interface RPCMessageConnection extends MessageConnection {
   uid?: string;
   writer?: any;
   reader?: any;
+}
+
+export interface ILogger {
+  warn(...args: any[]): void;
+  log(...args: any[]): void;
 }

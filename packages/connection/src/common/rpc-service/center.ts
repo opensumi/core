@@ -1,35 +1,24 @@
 import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
-import { BinaryConnection } from './binary-rpc/connection';
-import { RPCProxyJSONRPC, NOTREGISTERMETHOD, ILogger, ProxyClient, RPCProxyFury } from './proxy';
-import { RPCServiceProtocolRepository } from './rpc-service-protocol-repository';
-import { IBench, RPCServiceMethod, ServiceType } from './types';
-import { getMethodName } from './utils';
+import { RPCProtocol } from '../binary-rpc';
+import { BinaryConnection } from '../binary-rpc/connection';
+import { ProtocolRepository } from '../protocol-repository';
+import { ProxyJSONRPC, NOTREGISTERMETHOD, ProxyClient, ProxyFury } from '../proxy';
+import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
+import { getMethodName } from '../utils';
 
 export interface IRPCServiceCenterOptions {
   logger?: ILogger;
   name?: string;
 }
 
-export type IRPCServiceMap = Record<string, RPCServiceMethod>;
-
-export type IRPCWithProtocolServiceMap4Protocol = Partial<
-  Record<
-    string,
-    {
-      protocol: RPCProtocolMethod;
-    }
-  >
->;
-
 export class RPCServiceCenter {
   public uid: string;
 
-  private protocolRepository = new RPCServiceProtocolRepository();
+  private protocolRepository = new ProtocolRepository();
 
-  private proxyClients: ProxyClient<RPCProxyJSONRPC>[] = [];
+  private proxyClients: ProxyClient<ProxyJSONRPC>[] = [];
   // jsonrpc proxy start
   private messageConnections: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
@@ -37,7 +26,7 @@ export class RPCServiceCenter {
 
   // protocol proxy start
   private binaryConnections: Array<BinaryConnection> = [];
-  private protocolProxyClients: ProxyClient<RPCProxyFury>[] = [];
+  private protocolProxyClients: ProxyClient<ProxyFury>[] = [];
   private protocolServiceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
   // protocol proxy end
 
@@ -85,7 +74,7 @@ export class RPCServiceCenter {
 
     this.messageConnections.push(connection);
 
-    const rpcProxy = new RPCProxyJSONRPC(this.serviceMethodMap, this.logger);
+    const rpcProxy = new ProxyJSONRPC(this.serviceMethodMap, this.logger);
     rpcProxy.listen(connection);
     this.proxyClients.push(rpcProxy.createProxyClient());
   }
@@ -107,7 +96,7 @@ export class RPCServiceCenter {
 
     this.binaryConnections.push(connection);
 
-    const rpcProxy = new RPCProxyFury(this.protocolServiceMethodMap, this.logger);
+    const rpcProxy = new ProxyFury(this.protocolServiceMethodMap, this.logger);
     rpcProxy.setProtocolRepository(this.protocolRepository);
     rpcProxy.listen(connection);
 
@@ -181,6 +170,10 @@ export class RPCServiceCenter {
 
     if (doubtfulResult.length > 0) {
       this.logger.warn(`broadcast rpc \`${methodName}\` getting doubtful responses: ${doubtfulResult.join(',')}`);
+    }
+
+    if (result.length === 0) {
+      throw new Error(`${this.LOG_TAG} broadcast rpc \`${methodName}\` error: no remote service can handle this call`);
     }
 
     // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.

@@ -2,7 +2,7 @@ import { MessageChannel } from 'worker_threads';
 
 import { BinaryConnection } from '../../../src/common/binary-rpc/connection';
 
-export function createFuryConnectionPair() {
+export function createConnectionPair() {
   const channel = new MessageChannel();
 
   const { port1, port2 } = channel;

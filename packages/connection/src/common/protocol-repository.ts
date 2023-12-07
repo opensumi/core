@@ -6,15 +6,19 @@ import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
 import { getMethodName } from './utils';
 
 export interface ISerializableRequest {
-  args: ISerializableArguments;
+  a: ISerializableArguments;
 }
 
 export interface ISerializableArguments {
-  len: number;
+  l: number;
   [key: number]: any;
 }
 
-export class RPCServiceProtocolRepository {
+export interface ISerializableResult {
+  r: any;
+}
+
+export class ProtocolRepository {
   fury = new Fury({
     refTracking: true,
   });
@@ -22,9 +26,7 @@ export class RPCServiceProtocolRepository {
   private serializerMap = {} as Record<
     string,
     {
-      requestType: TypeDescription;
       request: ReturnType<Fury['registerSerializer']>;
-      resultType: TypeDescription;
       result: ReturnType<Fury['registerSerializer']>;
     }
   >;
@@ -42,77 +44,63 @@ export class RPCServiceProtocolRepository {
   }
 
   loadProtocolMethod(name: string, protocol: RPCProtocolMethod) {
-    const { method } = protocol;
-
-    const props = {
-      len: Type.uint8(),
+    const argsObj = {
+      l: Type.uint8(),
     } as Record<string, TypeDescription>;
     for (let argN = 0; argN < protocol.request.length; argN++) {
       const element = protocol.request[argN];
-      props[argN + ''] = element.type;
+      argsObj[argN] = element.type;
     }
 
-    const requestType = Type.object(method + 'request', {
-      args: Type.object(method + 'args' + protocol.request.length, props),
+    const requestProto = Type.object(name + '^', {
+      a: Type.object(name + 'a', argsObj),
     });
 
-    const resultType = Type.object(method + 'result', {
-      result: protocol.response.type,
-      error: Type.object(method + 'error', {
-        message: Type.string(),
-        stack: Type.string(),
-      }),
+    const resultProto = Type.object(name + 'v', {
+      r: protocol.response.type,
     });
-
-    const requestSerializer = this.fury.registerSerializer(requestType);
-    const resultSerializer = this.fury.registerSerializer(resultType);
 
     this.serializerMap[name] = {
-      requestType,
-      resultType,
-      request: requestSerializer,
-      result: resultSerializer,
+      request: this.fury.registerSerializer(requestProto),
+      result: this.fury.registerSerializer(resultProto),
     };
   }
 
   serializeRequest(name: string, args: any[]): PlatformBuffer {
     const serializableArgs = {
-      len: args.length,
+      l: args.length,
     } as ISerializableArguments;
     for (let i = 0; i < args.length; i++) {
       serializableArgs[i] = args[i];
     }
 
     const payload: ISerializableRequest = {
-      args: serializableArgs,
+      a: serializableArgs,
     };
 
     return this.serializerMap[name].request.serialize(payload);
   }
 
   deserializeRequest(name: string, buffer: PlatformBuffer): any[] {
-    const { args } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
+    const { a } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
 
     const argsArray = [] as any[];
-    for (let i = 0; i < args.len; i++) {
-      argsArray.push(args[i]);
+    for (let i = 0; i < a.l; i++) {
+      argsArray.push(a[i]);
     }
+
     return argsArray;
   }
 
-  serializeResult(name: string, result: any): PlatformBuffer {
+  serializeResult<T = any>(name: string, result: T): PlatformBuffer {
     const payload = {
-      result,
-      error: {
-        message: '',
-        stack: '',
-      },
-    };
+      r: result,
+    } as ISerializableResult;
     return this.serializerMap[name].result.serialize(payload);
   }
 
-  deserializeResult(name: string, buffer: PlatformBuffer): any {
-    const payload = this.serializerMap[name].result.deserialize(buffer) as any;
-    return payload.result;
+  deserializeResult<T = any>(name: string, buffer: PlatformBuffer): T {
+    const payload = this.serializerMap[name].result.deserialize(buffer) as ISerializableResult;
+    return payload.r;
   }
 }

@@ -1,19 +1,19 @@
 import { uuid } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
-import { IRPCServiceMap } from '../rpc-service-center';
+import { NOTREGISTERMETHOD } from '../constants';
+import { IRPCServiceMap } from '../types';
 import { MessageType, ResponseStatus, getServiceMethods } from '../utils';
 
-import { RPCProxyBase } from './base';
-import { NOTREGISTERMETHOD } from './constants';
+import { ProxyBase } from './base';
 
 interface IRPCResult {
   error: boolean;
   data: any;
 }
 
-export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection, IRPCServiceMap> {
-  public getRPCInvokeProxy(): any {
+export class ProxyJSONRPC extends ProxyBase<MessageConnection, IRPCServiceMap> {
+  public getInvokeProxy(): any {
     return new Proxy(this, this);
   }
 
@@ -159,7 +159,7 @@ export class RPCProxyJSONRPC extends RPCProxyBase<MessageConnection, IRPCService
    * 对于纯数组参数的情况，收到请求/通知后做展开操作
    * 因为在通信层会为每个 rpc 调用添加一个 CancellationToken 参数
    * 如果参数本身是数组, 在方法中如果使用 spread 运算符获取参数(...args)，则会出现 [...args, MutableToken] 这种情况
-   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link RPCProxyJSONRPC.get get} 方法
+   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link ProxyJSONRPC.get get} 方法
    * 此时接收到的数组类参数固定长度为 2，且最后一项一定是 MutableToken
    * @param args
    * @returns args
