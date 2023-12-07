@@ -4,13 +4,12 @@ import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
+import { SocketChannel } from '../common/socket-channel';
 import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
-import { WSChannel } from '../common/ws-channel';
 
-// 前台链接管理类
 export class WSChannelHandler {
   public connection: ReconnectingWebSocket;
-  private channelMap: Map<number | string, WSChannel> = new Map();
+  private channelMap: Map<number | string, SocketChannel> = new Map();
   private channelCloseEventMap: Map<number | string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
@@ -77,7 +76,7 @@ export class WSChannelHandler {
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
         if (channel) {
-          if (msg.kind === 'data' && !(channel as any).fireMessage) {
+          if (msg.kind === 'data' && !channel.isReady) {
             // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
             this.logger.error(this.LOG_TAG, 'channel not ready!', msg);
           }
@@ -126,7 +125,7 @@ export class WSChannelHandler {
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
-    const channel = new WSChannel(channelSend, channelId);
+    const channel = new SocketChannel(channelSend, channelId);
     this.channelMap.set(channel.id, channel);
 
     await new Promise((resolve) => {

@@ -47,18 +47,23 @@ export class RPCServiceStub {
 
     this.center.loadProtocol(protocol);
 
+    const methodsToLog = {
+      protocol: [] as string[],
+      jsonRpc: [] as string[],
+    };
+
     for (const method of serviceMethods) {
       if (Object.prototype.hasOwnProperty.call(protoMethodMap, method)) {
-        this.center.logger.log(this.LOG_TAG, `register service method ${method} in protocol ${name}`);
+        methodsToLog.protocol.push(method);
         this.center.onProtocolRequest(name, method, service[method].bind(service));
       } else {
-        this.center.logger.warn(
-          this.LOG_TAG,
-          `service method ${method} is not defined in protocol ${name}, fallback to normal rpc`,
-        );
+        methodsToLog.jsonRpc.push(method);
         this.onRequest(method, service[method].bind(service));
       }
     }
+
+    this.center.logger.log(this.LOG_TAG, `load protocol ${name} methods: ${methodsToLog.protocol.join('/')}`);
+    this.center.logger.log(this.LOG_TAG, `load json rpc methods: ${methodsToLog.jsonRpc.join('/')}`);
   }
 
   onRequest(name: string, method: RPCServiceMethod) {

@@ -6,7 +6,7 @@ import {
   createMessageConnection,
 } from '@opensumi/vscode-jsonrpc/lib/node/main';
 
-import { ChannelMessage, WSChannel, parse } from '../common';
+import { ChannelMessage, SocketChannel, parse } from '../common';
 import { BinaryConnection } from '../common/binary-rpc/connection';
 
 export function createSocketConnection(socket: net.Socket) {
@@ -15,7 +15,7 @@ export function createSocketConnection(socket: net.Socket) {
 
 const clientId = 'node-socket-connection';
 export function createSocketChannel(socket: net.Socket) {
-  const channel = new WSChannel((content) => {
+  const channel = new SocketChannel((content) => {
     socket.write(content);
   }, clientId);
 

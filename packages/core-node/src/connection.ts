@@ -3,7 +3,7 @@ import net from 'net';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import {
-  WSChannel,
+  SocketChannel,
   initRPCService,
   RPCServiceCenter,
   RPCService,
@@ -43,7 +43,7 @@ export function createServerConnection2(
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
-    handler: (connection: WSChannel, clientId: string) => {
+    handler: (connection: SocketChannel, clientId: string) => {
       logger.log(`New RPC connection ${clientId}`);
 
       const serviceCenter = new RPCServiceCenter(undefined, { logger });
@@ -86,12 +86,12 @@ export function createNetServerConnection(server: net.Server, injector: Injector
   );
 
   const clientId = 'node-socket-connection';
-  const channelMap = new Map<string, WSChannel>();
+  const channelMap = new Map<string, SocketChannel>();
 
   function getOrCreateChannel(channelId: string, connectionSend?: ConnectionSend) {
     let channel = channelMap.get(channelId);
     if (!channel && connectionSend) {
-      channel = new WSChannel(connectionSend, clientId);
+      channel = new SocketChannel(connectionSend, clientId);
       channelMap.set(channelId, channel);
     }
     return channel;

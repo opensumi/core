@@ -27,7 +27,7 @@ export type IRPCWithProtocolServiceMap4Protocol = Partial<
 export class RPCServiceCenter {
   public uid: string;
 
-  private protocolRepositoryMap = new Map<string, RPCServiceProtocolRepository>();
+  private protocolRepository = new RPCServiceProtocolRepository();
 
   private proxyClients: ProxyClient<RPCProxyJSONRPC>[] = [];
   // jsonrpc proxy start
@@ -47,6 +47,10 @@ export class RPCServiceCenter {
   private connectionPromise = new Deferred<void>();
   private binaryConnectionPromise = new Deferred<void>();
   public logger: ILogger;
+
+  get LOG_TAG() {
+    return `[RPCServiceCenter] [uid:${this.uid}]`;
+  }
 
   constructor(private bench?: IBench, options: IRPCServiceCenterOptions = {}) {
     let { name } = options;
@@ -104,7 +108,7 @@ export class RPCServiceCenter {
     this.binaryConnections.push(connection);
 
     const rpcProxy = new RPCProxyFury(this.protocolServiceMethodMap, this.logger);
-    rpcProxy.setProtocolRepository(this.getOrCreateProtocolRepository());
+    rpcProxy.setProtocolRepository(this.protocolRepository);
     rpcProxy.listen(connection);
 
     this.protocolProxyClients.push(rpcProxy.createProxyClient());
@@ -133,19 +137,8 @@ export class RPCServiceCenter {
     }
   }
 
-  private getOrCreateProtocolRepository(repoName = 'default') {
-    let t = this.protocolRepositoryMap.get(repoName);
-    if (!t) {
-      t = new RPCServiceProtocolRepository();
-      this.protocolRepositoryMap.set(repoName, t);
-    }
-
-    return t;
-  }
-
   loadProtocol(protocol: RPCProtocol) {
-    const protocolRepository = this.getOrCreateProtocolRepository();
-    protocolRepository.loadProtocol(protocol);
+    this.protocolRepository.loadProtocol(protocol);
   }
 
   onProtocolRequest(tag: string, _method: string, method: RPCServiceMethod) {
@@ -160,21 +153,20 @@ export class RPCServiceCenter {
     }
   }
 
-  async broadcast(tag: string, _name: string, ...args): Promise<any> {
-    const methodName = getMethodName(tag, _name);
+  async broadcast(tag: string, name: string, ...args: any[]): Promise<any> {
+    const methodName = getMethodName(tag, name);
 
     const clients = [] as ProxyClient<any>[];
-    const repo = this.getOrCreateProtocolRepository();
-    if (repo.has(methodName)) {
+    if (this.protocolRepository.has(methodName)) {
       clients.push(...this.protocolProxyClients);
     } else {
       clients.push(...this.proxyClients);
     }
 
-    const broadcastResult = await Promise.all(clients.map((client) => client.getProxied()[methodName](...args)));
+    const broadcastResult = await Promise.all(clients.map((client) => client.getProxy()[methodName](...args)));
 
     if (!broadcastResult || broadcastResult.length === 0) {
-      throw new Error(`broadcast rpc \`${methodName}\` error: no remote service can handle this call`);
+      throw new Error(`${this.LOG_TAG} broadcast rpc \`${methodName}\` error: no remote service found`);
     }
 
     const doubtfulResult = [] as any[];
@@ -190,6 +182,7 @@ export class RPCServiceCenter {
     if (doubtfulResult.length > 0) {
       this.logger.warn(`broadcast rpc \`${methodName}\` getting doubtful responses: ${doubtfulResult.join(',')}`);
     }
+
     // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.
     //        but actually we should throw an error to tell user that no remote service can handle this call.
     //        or just return `undefined`.

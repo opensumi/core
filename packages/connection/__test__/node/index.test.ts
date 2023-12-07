@@ -10,8 +10,8 @@ import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../sr
 import { createBinaryConnectionForWS } from '../../src/common/binary-rpc/connection';
 import { createWebSocketConnection } from '../../src/common/message';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
+import { SocketChannel } from '../../src/common/socket-channel';
 import { parse } from '../../src/common/utils';
-import { WSChannel } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
 const WebSocket = ws;
@@ -63,7 +63,7 @@ describe('connection', () => {
     const channelSend = (content) => {
       connection.send(content, (err) => {});
     };
-    const channel = new WSChannel(channelSend, 'TEST_CHANNEL_ID');
+    const channel = new SocketChannel(channelSend, 'TEST_CHANNEL_ID');
     connection.on('message', (msg) => {
       const msgObj = parse(msg as PlatformBuffer);
       if (msgObj.kind === 'ready') {

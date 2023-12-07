@@ -1,4 +1,4 @@
-import { WSChannel } from '@opensumi/ide-connection';
+import { SocketChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
@@ -104,7 +104,7 @@ describe('Debug console component Test Suites', () => {
           const channelSend = (content) => {
             //
           };
-          return new WSChannel(channelSend, 'mock_wschannel' + id);
+          return new SocketChannel(channelSend, 'mock_wschannel' + id);
         },
       },
     });

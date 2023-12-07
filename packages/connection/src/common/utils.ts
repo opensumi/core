@@ -62,17 +62,7 @@ export function getCapturer() {
   return;
 }
 
-type CheckIsValidMethod<T> = (obj: T) => boolean;
-
-type ValueOf<T> = T[keyof T];
-
-export function getServiceMethods<T extends object>(
-  service: T,
-  checkIsValidMethod?: CheckIsValidMethod<ValueOf<T>>,
-): string[] {
-  if (!checkIsValidMethod) {
-    checkIsValidMethod = (obj: any) => typeof obj === 'function';
-  }
+export function getServiceMethods<T extends object>(service: T): string[] {
   let props: any[] = [];
 
   if (/^\s*class/.test(service.constructor.toString())) {
@@ -80,10 +70,11 @@ export function getServiceMethods<T extends object>(
     do {
       props = props.concat(Object.getOwnPropertyNames(obj));
     } while ((obj = Object.getPrototypeOf(obj)));
-    props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && checkIsValidMethod!(service[e]));
+
+    props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
   } else {
     for (const prop in service) {
-      if (checkIsValidMethod!(service[prop])) {
+      if (typeof service[prop] === 'function') {
         props.push(prop);
       }
     }

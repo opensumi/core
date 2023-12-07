@@ -4,7 +4,7 @@ const defaultReservedWordSet = new Set(['then']);
 
 export class ProxyClient<T extends RPCProxyBase<any, any>> {
   protected original: T;
-  protected proxied: any;
+  protected proxy: any;
   protected reservedWordSet: Set<string>;
 
   constructor(original: T, reservedWords?: string[]) {
@@ -12,7 +12,7 @@ export class ProxyClient<T extends RPCProxyBase<any, any>> {
     this.reservedWordSet = new Set(reservedWords) || defaultReservedWordSet;
     const proxy = original.getRPCInvokeProxy();
 
-    this.proxied = new Proxy(
+    this.proxy = new Proxy(
       {},
       {
         get: (target, prop: string | symbol) => {
@@ -30,7 +30,7 @@ export class ProxyClient<T extends RPCProxyBase<any, any>> {
     return this.original;
   }
 
-  public getProxied<K extends object>(): K {
-    return this.proxied;
+  public getProxy<K extends object>(): K {
+    return this.proxy;
   }
 }

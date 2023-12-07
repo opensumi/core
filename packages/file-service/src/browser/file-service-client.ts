@@ -156,7 +156,7 @@ export class FileServiceClient implements IFileServiceClient {
     const provider = await this.getProvider(_uri.scheme);
     const rawContent = await provider.readFile(_uri.codeUri);
     const data = (rawContent as any).data || rawContent;
-    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    const buffer = BinaryBuffer.wrap(data);
     return { content: buffer.toString(options?.encoding) };
   }
 
@@ -165,7 +165,7 @@ export class FileServiceClient implements IFileServiceClient {
     const provider = await this.getProvider(_uri.scheme);
     const rawContent = await provider.readFile(_uri.codeUri);
     const data = (rawContent as any).data || rawContent;
-    const buffer = BinaryBuffer.wrap(Uint8Array.from(data));
+    const buffer = BinaryBuffer.wrap(data);
     return { content: buffer };
   }
 

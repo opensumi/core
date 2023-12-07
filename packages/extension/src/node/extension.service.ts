@@ -4,7 +4,7 @@ import path from 'path';
 import util from 'util';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { WSChannel } from '@opensumi/ide-connection';
+import { SocketChannel } from '@opensumi/ide-connection';
 import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
 import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter } from '@opensumi/ide-connection/lib/node';
 import {
@@ -505,7 +505,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       });
     } else {
       commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-        handler: (connection: WSChannel, connectionClientId: string) => {
+        handler: (connection: SocketChannel, connectionClientId: string) => {
           const reader = new WebSocketMessageReader(connection);
           const writer = new WebSocketMessageWriter(connection);
           handler({
