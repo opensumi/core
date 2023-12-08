@@ -1,8 +1,9 @@
+import Fury, { Type } from '@furyjs/fury';
+
 import { EventEmitter } from '@opensumi/events';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { BinaryConnection } from './binary-rpc/connection';
-import { stringify } from './utils';
+import { BinaryConnection } from './sumi-rpc/connection';
 
 import { createWebSocketConnection } from '.';
 
@@ -214,4 +215,35 @@ export class ChildConnectPath {
       clientId: list[2],
     };
   }
+}
+
+/**
+ * @furyjs/hps use v8's fast-calls-api that can be called directly by jit, ensure that the version of Node is 20 or above.
+ * Experimental feature, installation success cannot be guaranteed at this moment
+ **/
+// import hps from '@furyjs/hps';
+
+const hps = undefined;
+
+const fury = new Fury({ hps });
+
+export const wsChannelProtocol = Type.object('ws-channel-protocol', {
+  kind: Type.string(),
+  clientId: Type.string(),
+  id: Type.string(),
+  path: Type.string(),
+  content: Type.string(),
+  code: Type.uint32(),
+  reason: Type.string(),
+  binary: Type.binary(),
+});
+
+const wsChannelProtocolSerializer = fury.registerSerializer(wsChannelProtocol);
+
+export function stringify(obj: ChannelMessage): PlatformBuffer {
+  return wsChannelProtocolSerializer.serialize(obj);
+}
+
+export function parse(input: PlatformBuffer): any {
+  return wsChannelProtocolSerializer.deserialize(input);
 }

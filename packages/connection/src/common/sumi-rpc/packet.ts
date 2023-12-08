@@ -1,7 +1,7 @@
 import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { serializeError } from './error-like';
+import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
 const PROTO_VERSION = 1;
 
@@ -54,8 +54,8 @@ export const createResponsePacket = (requestId: number, payload: Uint8Array) => 
   return writer.dump();
 };
 
-export const createErrorResponsePacket = (requestId: number, status: number, error: Error) => {
-  const errorString = serializeError(error);
+export const createErrorResponsePacket = (requestId: number, status: number, error: any) => {
+  const errorString = stringifyError(error);
   writer.reset();
 
   writer.uint8(PROTO_VERSION);

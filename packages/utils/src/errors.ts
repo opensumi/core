@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/errors.ts
 
 export type ErrorListenerCallback = (error: any) => void;
 
@@ -91,19 +90,21 @@ export interface SerializedError {
   readonly name: string;
   readonly message: string;
   readonly stack: string;
+  readonly cause?: SerializedError;
 }
 
 export function transformErrorForSerialization(error: Error): SerializedError;
 export function transformErrorForSerialization(error: any): any;
 export function transformErrorForSerialization(error: any): any {
   if (error instanceof Error) {
-    const { name, message } = error;
+    const { name, message, cause } = error;
     const stack: string = (error as any).stacktrace || (error as any).stack;
     return {
       $isError: true,
       name,
       message,
       stack,
+      cause,
     };
   }
 
@@ -111,22 +112,32 @@ export function transformErrorForSerialization(error: any): any {
   return error;
 }
 
-// see https://github.com/v8/v8/wiki/Stack%20Trace%20API#basic-stack-traces
-export interface V8CallSite {
-  getThis(): any;
-  getTypeName(): string;
-  getFunction(): string;
-  getFunctionName(): string;
-  getMethodName(): string;
-  getFileName(): string;
-  getLineNumber(): number;
-  getColumnNumber(): number;
-  getEvalOrigin(): string;
-  isToplevel(): boolean;
-  isEval(): boolean;
-  isNative(): boolean;
-  isConstructor(): boolean;
-  toString(): string;
+function serializeErrorReplacer(key: string, value: any) {
+  if (value instanceof Error) {
+    return transformErrorForSerialization(value);
+  }
+  return value;
+}
+
+export function errorReviver(key: string, value: any): Error {
+  if (typeof value === 'object' && value.$isError) {
+    const result = new Error(value.message);
+    result.name = value.name;
+    result.stack = value.stack;
+    result.cause = value.cause;
+
+    return result;
+  }
+
+  return value;
+}
+
+export function stringifyError(error: any): string {
+  return JSON.stringify(error, serializeErrorReplacer);
+}
+
+export function parseError(value: string): any {
+  return JSON.parse(value, errorReviver);
 }
 
 const canceledName = 'Canceled';

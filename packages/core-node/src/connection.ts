@@ -11,19 +11,17 @@ import {
   parse,
   ConnectionSend,
 } from '@opensumi/ide-connection';
-import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
   CommonChannelHandler,
   commonChannelPathHandler,
 } from '@opensumi/ide-connection/lib/node';
+import { DisposableCollection } from '@opensumi/ide-utils';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
 import { IServerAppOpts } from './types';
-
-import { DisposableCollection } from '.';
 
 export { RPCServiceCenter };
 
@@ -43,22 +41,22 @@ export function createServerConnection2(
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
-    handler: (connection: SocketChannel, clientId: string) => {
+    handler: (channel: SocketChannel, clientId: string) => {
       logger.log(`New RPC connection ${clientId}`);
 
       const serviceCenter = new RPCServiceCenter(undefined, { logger });
       const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
-      const serverConnection = createWebSocketConnection(connection);
-      const binaryConnection = connection.createBinaryConnection();
+      const serverConnection = channel.createMessageConnection();
+      const binaryConnection = channel.createBinaryConnection();
+
       serviceCenter.setConnection(serverConnection, binaryConnection);
 
-      connection.onClose(() => {
+      channel.onClose(() => {
         serviceCenter.removeConnection(serverConnection);
         serviceCenter.removeBinaryConnection(binaryConnection);
 
         serviceChildInjector.disposeAll();
-
         logger.log(`Remove RPC connection ${clientId}`);
       });
     },

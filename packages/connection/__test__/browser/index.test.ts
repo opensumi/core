@@ -3,7 +3,7 @@ import { WebSocket, Server } from 'mock-socket';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
-import { stringify, parse } from '../../src/common/utils';
+import { stringify, parse } from '../../src/common/socket-channel';
 
 (global as any).WebSocket = WebSocket;
 

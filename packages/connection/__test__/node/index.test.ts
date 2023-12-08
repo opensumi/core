@@ -7,11 +7,10 @@ import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
-import { createBinaryConnectionForWS } from '../../src/common/binary-rpc/connection';
 import { createWebSocketConnection } from '../../src/common/message';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
-import { SocketChannel } from '../../src/common/socket-channel';
-import { parse } from '../../src/common/utils';
+import { SocketChannel, parse } from '../../src/common/socket-channel';
+import { createBinaryConnectionForWS } from '../../src/common/sumi-rpc/connection';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
 const WebSocket = ws;

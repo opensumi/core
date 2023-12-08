@@ -8,7 +8,7 @@ import ResizeObserver from 'resize-observer-polyfill';
 import { Injector } from '@opensumi/di';
 import { RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { BinaryConnection } from '@opensumi/ide-connection/lib/common/binary-rpc/connection';
+import { BinaryConnection } from '@opensumi/ide-connection/lib/common/sumi-rpc/connection';
 import {
   CommandRegistry,
   isOSX,

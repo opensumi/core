@@ -3,8 +3,7 @@ import WebSocket from 'ws';
 
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { SocketChannel, ChannelMessage } from '../common/socket-channel';
-import { stringify, parse } from '../common/utils';
+import { SocketChannel, ChannelMessage, parse, stringify } from '../common/socket-channel';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 

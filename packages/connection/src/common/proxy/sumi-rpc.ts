@@ -1,12 +1,12 @@
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { BinaryConnection } from '../binary-rpc/connection';
 import { ProtocolRepository } from '../protocol-repository';
+import { BinaryConnection } from '../sumi-rpc/connection';
 import { IRPCServiceMap } from '../types';
 
 import { ProxyBase } from './base';
 
-export class ProxyFury extends ProxyBase<BinaryConnection, IRPCServiceMap> {
+export class ProxySumi extends ProxyBase<BinaryConnection, IRPCServiceMap> {
   private protocolRepository: ProtocolRepository;
 
   protected bindOnRequest(service: IRPCServiceMap, cb: (service: IRPCServiceMap, prop: string) => void): void {
@@ -56,6 +56,10 @@ export class ProxyFury extends ProxyBase<BinaryConnection, IRPCServiceMap> {
 
         return (...args: any[]) =>
           this.connectionPromise.promise.then(async (connection) => {
+            if (!this.protocolRepository.has(prop)) {
+              throw new MethodProtocolNotFoundError(prop);
+            }
+
             const argsBuffer = this.protocolRepository.serializeRequest(prop, args);
             if (prop.startsWith('on')) {
               connection.sendNotification(prop, argsBuffer);
@@ -66,5 +70,11 @@ export class ProxyFury extends ProxyBase<BinaryConnection, IRPCServiceMap> {
           });
       },
     });
+  }
+}
+
+export class MethodProtocolNotFoundError extends Error {
+  constructor(method: string) {
+    super(`method ${method} not found`);
   }
 }

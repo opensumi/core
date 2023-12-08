@@ -1,6 +1,6 @@
 import { MessageChannel } from 'worker_threads';
 
-import { BinaryConnection } from '../../../src/common/binary-rpc/connection';
+import { BinaryConnection } from '../../../src/common/sumi-rpc/connection';
 
 export function createConnectionPair() {
   const channel = new MessageChannel();

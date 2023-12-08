@@ -1,4 +1,4 @@
-import { RPCProtocol, RPCProtocolMethod } from '../binary-rpc';
+import { TSumiProtocol, TSumiProtocolMethod } from '../sumi-rpc';
 import { RPCServiceMethod, ServiceType, formatServiceType } from '../types';
 import { getServiceMethods } from '../utils';
 
@@ -31,14 +31,14 @@ export class RPCServiceStub {
     }
   }
 
-  loadProtocol(protocol: RPCProtocol) {
+  loadProtocol(protocol: TSumiProtocol) {
     this.center.loadProtocol(protocol);
   }
 
-  onRequestServiceProtocol(service: any, protocol: RPCProtocol) {
+  onRequestServiceProtocol(service: any, protocol: TSumiProtocol) {
     const { name, methods } = protocol;
 
-    const protoMethodMap = Object.create(null) as Record<string, RPCProtocolMethod>;
+    const protoMethodMap = Object.create(null) as Record<string, TSumiProtocolMethod>;
 
     for (const m of methods) {
       protoMethodMap[m.method] = m;
@@ -102,7 +102,7 @@ export function initRPCService<T = void>(center: RPCServiceCenter) {
 
       return proxy;
     },
-    createRPCServiceByProtocol(protocol: RPCProtocol, service?: any) {
+    createRPCServiceByProtocol(protocol: TSumiProtocol, service?: any) {
       const name = protocol.name;
       const proxy = createRPCService<T>(name, center);
 

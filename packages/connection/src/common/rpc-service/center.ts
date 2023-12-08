@@ -1,10 +1,10 @@
 import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { RPCProtocol } from '../binary-rpc';
-import { BinaryConnection } from '../binary-rpc/connection';
 import { ProtocolRepository } from '../protocol-repository';
-import { ProxyJSONRPC, NOTREGISTERMETHOD, ProxyClient, ProxyFury } from '../proxy';
+import { ProxyJSONRPC, NOTREGISTERMETHOD, ProxyClient, ProxySumi } from '../proxy';
+import { TSumiProtocol } from '../sumi-rpc';
+import { BinaryConnection } from '../sumi-rpc/connection';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 
@@ -26,7 +26,7 @@ export class RPCServiceCenter {
 
   // protocol proxy start
   private binaryConnections: Array<BinaryConnection> = [];
-  private protocolProxyClients: ProxyClient<ProxyFury>[] = [];
+  private protocolProxyClients: ProxyClient<ProxySumi>[] = [];
   private protocolServiceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
   // protocol proxy end
 
@@ -98,7 +98,7 @@ export class RPCServiceCenter {
 
     this.binaryConnections.push(connection);
 
-    const rpcProxy = new ProxyFury(this.protocolServiceMethodMap, this.logger);
+    const rpcProxy = new ProxySumi(this.protocolServiceMethodMap, this.logger);
     rpcProxy.setProtocolRepository(this.protocolRepository);
     rpcProxy.listen(connection);
 
@@ -128,7 +128,7 @@ export class RPCServiceCenter {
     }
   }
 
-  loadProtocol(protocol: RPCProtocol) {
+  loadProtocol(protocol: TSumiProtocol) {
     this.protocolRepository.loadProtocol(protocol);
   }
 

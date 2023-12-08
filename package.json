@@ -41,7 +41,6 @@
     "test:ui-headful": "node -r ts-node/register ./scripts/run-ui-tests --headful=true",
     "test:ui-report": "node -r ts-node/register ./scripts/run-ui-tests --report=true",
     "test": "jest --forceExit --detectOpenHandles",
-    "test:node": "yarn test --selectProjects node",
     "prepare:test": "yarn && yarn run compile && yarn run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 yarn run test --coverage",
     "ci": "yarn run init && yarn run lint --quiet && yarn run check:dep && yarn run test:cov",

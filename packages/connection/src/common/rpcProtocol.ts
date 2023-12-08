@@ -1,34 +1,18 @@
-import { CancellationToken, CancellationTokenSource, Deferred, Event, Uri } from '@opensumi/ide-core-common';
+import {
+  CancellationToken,
+  CancellationTokenSource,
+  Deferred,
+  Event,
+  SerializedError,
+  Uri,
+  transformErrorForSerialization,
+} from '@opensumi/ide-core-common';
 // Uri: vscode 中的 uri
 // URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 
 export enum RPCProtocolEnv {
   MAIN,
   EXT,
-}
-
-export interface SerializedError {
-  readonly $isError: true;
-  readonly name: string;
-  readonly message: string;
-  readonly stack: string;
-}
-
-export function transformErrorForSerialization(error: Error): SerializedError;
-export function transformErrorForSerialization(error: any): any;
-export function transformErrorForSerialization(error: any): any {
-  if (error instanceof Error) {
-    const { name, message } = error;
-    const stack: string = (error as any).stacktrace || (error as any).stack;
-    return {
-      $isError: true,
-      name,
-      message,
-      stack,
-    };
-  }
-
-  return error;
 }
 
 export interface IProxyIdentifier {

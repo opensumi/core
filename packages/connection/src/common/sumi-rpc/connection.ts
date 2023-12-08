@@ -2,9 +2,8 @@ import type WebSocketWS from 'ws';
 
 import { EventEmitter } from '@opensumi/events';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
-import { DisposableCollection, IDisposable, Disposable } from '@opensumi/ide-utils';
+import { DisposableCollection, IDisposable, Disposable, parseError } from '@opensumi/ide-utils';
 
-import { reviveError } from './error-like';
 import {
   CODEC,
   ERROR_STATUS,
@@ -15,12 +14,12 @@ import {
   reader,
 } from './packet';
 import {
-  BinaryConnectionSocket,
-  GenericNotificationHandler,
-  GenericRequestHandler,
-  OnNotificationNotFoundHandler,
-  OnRequestNotFoundHandler,
-  RequestCallback,
+  IBinaryConnectionSocket,
+  TGenericNotificationHandler,
+  TGenericRequestHandler,
+  TOnNotificationNotFoundHandler,
+  TOnRequestNotFoundHandler,
+  TRequestCallback,
 } from './types';
 
 function isPromise<T = any>(obj: any): obj is Promise<T> {
@@ -45,9 +44,9 @@ export class BinaryConnection implements IDisposable {
   private _notificationEmitter = new EventEmitter<string>();
 
   private _requestId = 0;
-  private _callbacks = new Map<number, RequestCallback>();
+  private _callbacks = new Map<number, TRequestCallback>();
 
-  constructor(private socket: BinaryConnectionSocket) {}
+  constructor(private socket: IBinaryConnectionSocket) {}
 
   sendNotification(method: string, payload: Uint8Array) {
     this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, payload));
@@ -60,11 +59,11 @@ export class BinaryConnection implements IDisposable {
     });
   }
 
-  onNotification(method: string, handler: GenericNotificationHandler): IDisposable {
+  onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
     return Disposable.create(this._notificationEmitter.on(method, handler));
   }
 
-  onNotificationNotFound(handler: OnNotificationNotFoundHandler): IDisposable {
+  onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
     return Disposable.create(this._notificationEmitter.on(innerEvents.onNotificationNotFound, handler));
   }
 
@@ -95,14 +94,14 @@ export class BinaryConnection implements IDisposable {
     }
   }
 
-  onRequest(method: string, _handler: GenericRequestHandler<Uint8Array>): IDisposable {
+  onRequest(method: string, _handler: TGenericRequestHandler<Uint8Array>): IDisposable {
     const handler = (requestId: number, content: PlatformBuffer) => {
       this.runRequestHandler(_handler, requestId, content);
     };
     return Disposable.create(this._binaryEmitter.on(method, handler));
   }
 
-  onRequestNotFound(handler: OnRequestNotFoundHandler): IDisposable {
+  onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
     const handlerWrapper = (requestId: number, method: string, params: any[]) => {
       this.runRequestHandler(handler, requestId, method, params);
     };
@@ -125,7 +124,7 @@ export class BinaryConnection implements IDisposable {
           throw new Error(`No callback for request id: ${requestId}`);
         }
 
-        // 非 0 为错误
+        // if error code is not 0, it's an error
         const errorCode = reader.uint16();
 
         if (errorCode) {
@@ -133,7 +132,7 @@ export class BinaryConnection implements IDisposable {
           assert(codec === CODEC.JSON, 'Only support JSON error');
           const contentLen = reader.varInt32();
           const content = reader.stringUtf8(contentLen);
-          const error = reviveError(JSON.parse(content));
+          const error = parseError(content);
           callback(error);
           return;
         }

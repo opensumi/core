@@ -1,4 +1,4 @@
-export * from './fury-rpc';
+export * from './sumi-rpc';
 export * from '../constants';
 export * from './base';
 export * from './json-rpc';

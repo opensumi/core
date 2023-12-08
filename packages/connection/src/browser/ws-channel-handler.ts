@@ -4,8 +4,8 @@ import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { SocketChannel } from '../common/socket-channel';
-import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
+import { SocketChannel, parse, stringify } from '../common/socket-channel';
+import { WSCloseInfo, ConnectionInfo } from '../common/utils';
 
 export class WSChannelHandler {
   public connection: ReconnectingWebSocket;

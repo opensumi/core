@@ -7,7 +7,7 @@ import {
 } from '@opensumi/vscode-jsonrpc/lib/node/main';
 
 import { ChannelMessage, SocketChannel, parse } from '../common';
-import { BinaryConnection } from '../common/binary-rpc/connection';
+import { BinaryConnection } from '../common/sumi-rpc/connection';
 
 export function createSocketConnection(socket: net.Socket) {
   return createMessageConnection(new SocketMessageReader(socket), new SocketMessageWriter(socket));

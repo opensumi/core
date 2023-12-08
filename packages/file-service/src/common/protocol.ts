@@ -1,16 +1,9 @@
 import { Type } from '@furyjs/fury';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/binary-rpc';
+import { UriComponentsProto } from '@opensumi/ide-connection/lib/common/protocols/common';
+import { TSumiProtocol } from '@opensumi/ide-connection/lib/common/sumi-rpc';
 
 import { DiskFileServicePath } from './tokens';
-
-const UriComponentsProto = Type.object('uri-components', {
-  scheme: Type.string(),
-  authority: Type.string(),
-  path: Type.string(),
-  query: Type.string(),
-  fragment: Type.string(),
-});
 
 export const DiskFileServiceProtocol = {
   name: DiskFileServicePath,
@@ -28,4 +21,4 @@ export const DiskFileServiceProtocol = {
       },
     },
   ],
-} as RPCProtocol;
+} as TSumiProtocol;

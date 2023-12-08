@@ -4,7 +4,7 @@ export interface Request<T> {
 }
 
 export interface Response<T> {
-  type: T;
+  type?: T;
 }
 
 export interface RPCProtocolMethod<T> {

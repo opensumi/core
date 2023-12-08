@@ -2,7 +2,7 @@ import Fury, { Type, TypeDescription } from '@furyjs/fury';
 
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { RPCProtocol, RPCProtocolMethod } from './binary-rpc';
+import { TSumiProtocol, TSumiProtocolMethod } from './sumi-rpc';
 import { getMethodName } from './utils';
 
 export interface ISerializableRequest {
@@ -15,8 +15,26 @@ export interface ISerializableArguments {
 }
 
 export interface ISerializableResult {
+  /**
+   * function execute result
+   */
   r: any;
+
+  /**
+   * Function Return void or other type that protocol not defined
+   */
+  $?: string;
 }
+
+const createResultProto = (name: string, type?: TypeDescription) => {
+  const props = {
+    $: Type.string(),
+  } as Record<string, TypeDescription>;
+  if (type) {
+    props.r = type;
+  }
+  return Type.object(name, props);
+};
 
 export class ProtocolRepository {
   fury = new Fury({
@@ -35,7 +53,7 @@ export class ProtocolRepository {
     return !!this.serializerMap[name];
   }
 
-  loadProtocol(protocol: RPCProtocol) {
+  loadProtocol(protocol: TSumiProtocol) {
     const { methods, name } = protocol;
 
     for (const proto of methods) {
@@ -43,7 +61,7 @@ export class ProtocolRepository {
     }
   }
 
-  loadProtocolMethod(name: string, protocol: RPCProtocolMethod) {
+  loadProtocolMethod(name: string, protocol: TSumiProtocolMethod) {
     const argsObj = {
       l: Type.uint8(),
     } as Record<string, TypeDescription>;
@@ -56,9 +74,7 @@ export class ProtocolRepository {
       a: Type.object(name + 'a', argsObj),
     });
 
-    const resultProto = Type.object(name + 'v', {
-      r: protocol.response.type,
-    });
+    const resultProto = createResultProto(name + 'v', protocol.response.type);
 
     this.serializerMap[name] = {
       request: this.fury.registerSerializer(requestProto),
@@ -96,11 +112,38 @@ export class ProtocolRepository {
     const payload = {
       r: result,
     } as ISerializableResult;
+
+    payload.$ = ReturnValueTransfer.replacer(result);
+
     return this.serializerMap[name].result.serialize(payload);
   }
 
   deserializeResult<T = any>(name: string, buffer: PlatformBuffer): T {
     const payload = this.serializerMap[name].result.deserialize(buffer) as ISerializableResult;
+
+    if (payload.$) {
+      return ReturnValueTransfer.reviver(payload.$);
+    }
+
     return payload.r;
+  }
+}
+
+class ReturnValueTransfer {
+  static TypeUndefined = '$undefined';
+
+  static replacer(value: any) {
+    if (typeof value === 'undefined') {
+      return ReturnValueTransfer.TypeUndefined;
+    }
+    return undefined;
+  }
+
+  static reviver(value: any): any {
+    if (value === ReturnValueTransfer.TypeUndefined) {
+      return undefined;
+    }
+
+    throw new Error('Not implemented');
   }
 }

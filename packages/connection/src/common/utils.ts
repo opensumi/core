@@ -1,9 +1,3 @@
-import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
-
-import { wsChannelProtocolSerializer } from './protocols/base';
-
-import { ChannelMessage } from '.';
-
 declare global {
   interface Window {
     __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
@@ -45,14 +39,6 @@ export interface WSCloseInfo {
   channelPath: string;
   closeEvent: { code: number; reason: string };
   connectInfo: ConnectionInfo;
-}
-
-export function stringify(obj: ChannelMessage): PlatformBuffer {
-  return wsChannelProtocolSerializer.serialize(obj);
-}
-
-export function parse(input: PlatformBuffer): any {
-  return wsChannelProtocolSerializer.deserialize(input);
 }
 
 export function getCapturer() {
