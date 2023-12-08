@@ -1,9 +1,12 @@
 import { MatchFunction, match } from 'path-to-regexp';
 import WebSocket from 'ws';
 
+import { IDisposable } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { SocketChannel, ChannelMessage, parse, stringify } from '../common/socket-channel';
+import { IBinaryConnectionSocket } from '../common/sumi-rpc/types';
+import { ILogger } from '../common/types';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
@@ -223,5 +226,56 @@ export class CommonChannelHandler extends WebSocketHandler {
     }
 
     return false;
+  }
+}
+
+export interface ICommonHandlerSocket {
+  send(data: PlatformBuffer): void;
+  onmessage: (cb: (data: PlatformBuffer) => void) => IDisposable | void;
+}
+
+export type ICommonHandlerConnectionSend = (content: PlatformBuffer) => void;
+
+export class CommonChannelHandler4Electron {
+  channelMap = new Map<string, SocketChannel>();
+
+  constructor(public name: string, private logger: ILogger) {}
+
+  getOrCreateChannel(clientId: string, connectionSend?: ICommonHandlerConnectionSend) {
+    let channel = this.channelMap.get(clientId);
+    if (!channel && connectionSend) {
+      channel = new SocketChannel(connectionSend, clientId);
+      this.channelMap.set(clientId, channel);
+    }
+    return channel;
+  }
+
+  handleSocket(
+    socket: IBinaryConnectionSocket,
+    options: {
+      onSocketChannel(channel: SocketChannel): void;
+    },
+  ) {
+    socket.onmessage((data) => {
+      let msgObj: ChannelMessage;
+
+      try {
+        msgObj = parse(data);
+        if (msgObj.kind === 'open') {
+          const channel = this.getOrCreateChannel(msgObj.id, (content) => {
+            socket.send(content);
+          })!;
+          options.onSocketChannel(channel);
+        } else if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
+          const channel = this.getOrCreateChannel(msgObj.id);
+          if (!channel) {
+            this.logger.error(`channel ${msgObj.id} not found`);
+            return;
+          }
+
+          channel.handleMessage(msgObj);
+        }
+      } catch (error) {}
+    });
   }
 }

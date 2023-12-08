@@ -24,4 +24,5 @@ export interface RPCMessageConnection extends MessageConnection {
 export interface ILogger {
   warn(...args: any[]): void;
   log(...args: any[]): void;
+  error(...args: any[]): void;
 }

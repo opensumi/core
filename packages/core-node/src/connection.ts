@@ -7,9 +7,7 @@ import {
   initRPCService,
   RPCServiceCenter,
   RPCService,
-  ChannelMessage,
-  parse,
-  ConnectionSend,
+  SimpleCommonChannelHandler,
 } from '@opensumi/ide-connection';
 import {
   WebSocketServerRoute,
@@ -82,52 +80,41 @@ export function createNetServerConnection(server: net.Server, injector: Injector
     process.env.CODE_WINDOW_CLIENT_ID as string,
   );
 
-  const clientId = 'node-socket-connection';
-  const channelMap = new Map<string, SocketChannel>();
-
-  function getOrCreateChannel(channelId: string, connectionSend?: ConnectionSend) {
-    let channel = channelMap.get(channelId);
-    if (!channel && connectionSend) {
-      channel = new SocketChannel(connectionSend, clientId);
-      channelMap.set(channelId, channel);
-    }
-    return channel;
-  }
+  const channelHandler = new SimpleCommonChannelHandler(process.env.CODE_WINDOW_CLIENT_ID!, logger);
 
   server.on('connection', (socket) => {
     const disposableCollection = new DisposableCollection();
 
-    socket.on('data', (data) => {
-      let msgObj: ChannelMessage;
+    channelHandler.handleSocket(
+      {
+        onmessage(cb) {
+          socket.on('data', cb);
+          return {
+            dispose() {
+              socket.off('message', cb);
+            },
+          };
+        },
+        send(data) {
+          socket.write(data);
+        },
+      },
+      {
+        onSocketChannel(socketChannel) {
+          const serverConnection = socketChannel.createMessageConnection();
+          const binaryConnection = socketChannel.createBinaryConnection();
 
-      try {
-        msgObj = parse(data);
-        if (msgObj.kind === 'open') {
-          const channel = getOrCreateChannel(msgObj.id, (content) => {
-            socket.write(content);
-          })!;
-
-          const messageConnection = channel.createMessageConnection();
-          const binaryConnection = channel.createBinaryConnection();
-          serviceCenter.setConnection(messageConnection, binaryConnection);
+          serviceCenter.setConnection(serverConnection, binaryConnection);
 
           disposableCollection.push({
             dispose() {
-              serviceCenter.removeConnection(messageConnection);
+              serviceCenter.removeConnection(serverConnection);
               serviceCenter.removeBinaryConnection(binaryConnection);
             },
           });
-        } else if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
-          const channel = getOrCreateChannel(msgObj.id);
-          if (!channel) {
-            logger.error(`channel ${msgObj.id} not found`);
-            return;
-          }
-
-          channel.handleMessage(msgObj);
-        }
-      } catch (error) {}
-    });
+        },
+      },
+    );
 
     socket.on('close', () => {
       disposableCollection.dispose();

@@ -1,5 +1,3 @@
-import type WebSocketWS from 'ws';
-
 import { EventEmitter } from '@opensumi/events';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 import { DisposableCollection, IDisposable, Disposable, parseError } from '@opensumi/ide-utils';
@@ -183,24 +181,4 @@ export class BinaryConnection implements IDisposable {
   dispose(): void {
     this.disposable.dispose();
   }
-}
-
-export function createBinaryConnectionForWS(socket: WebSocketWS) {
-  return new BinaryConnection({
-    onmessage: (cb) => {
-      const handler = (data: Uint8Array) => {
-        cb(data);
-      };
-
-      socket.on('message', handler);
-      return {
-        dispose() {
-          socket.off('message', handler);
-        },
-      };
-    },
-    send(data) {
-      socket.send(data);
-    },
-  });
 }

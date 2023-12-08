@@ -6,11 +6,9 @@ import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { RPCService } from '../../src';
-import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
-import { createWebSocketConnection } from '../../src/common/message';
+import { RPCServiceCenter, SimpleCommonChannelHandler, initRPCService } from '../../src/common';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
 import { SocketChannel, parse } from '../../src/common/socket-channel';
-import { createBinaryConnectionForWS } from '../../src/common/sumi-rpc/connection';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
 const WebSocket = ws;
@@ -124,27 +122,55 @@ describe('connection', () => {
     server.close();
   });
 
+  const wssPort = 7788;
+
   it('RPCService', async () => {
-    const wss = new WebSocket.Server({ port: 7788 });
+    const wss = new WebSocket.Server({ port: wssPort });
     const notificationMock = jest.fn();
 
-    let serviceCenter: RPCServiceCenter | undefined;
-    let clientConnectionWs: ws | undefined;
+    const clientId = '123456';
+    const serviceCenter: RPCServiceCenter = new RPCServiceCenter();
+    const clientCenter = new RPCServiceCenter();
 
     await Promise.all([
       new Promise<void>((resolve) => {
+        const channelHandler = new SimpleCommonChannelHandler('test-server' + clientId, console);
         wss.on('connection', (connection) => {
-          serviceCenter = new RPCServiceCenter();
-          const serverConnection = createWebSocketConnection(connection);
-          const binaryConnection = createBinaryConnectionForWS(connection);
-          serviceCenter.setConnection(serverConnection, binaryConnection);
-          resolve(undefined);
+          channelHandler.handleSocket(
+            {
+              onmessage(cb) {
+                connection.on('message', (msg: PlatformBuffer) => {
+                  cb(msg);
+                });
+              },
+              send(content) {
+                connection.send(content);
+              },
+            },
+            {
+              onSocketChannel(channel) {
+                serviceCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
+                resolve(undefined);
+              },
+            },
+          );
         });
       }),
-
       new Promise<void>((resolve) => {
-        clientConnectionWs = new WebSocket('ws://0.0.0.0:7788/service');
+        const clientConnectionWs = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
+
         clientConnectionWs.on('open', () => {
+          const channel = new SocketChannel((content) => {
+            clientConnectionWs!.send(content);
+          }, clientId);
+
+          channel.open('default');
+          clientConnectionWs!.on('message', (data) => {
+            channel.handleServerResponseForNode(data as PlatformBuffer);
+          });
+
+          clientCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
+
           resolve(undefined);
         });
       }),
@@ -152,18 +178,11 @@ describe('connection', () => {
 
     const { createRPCService } = initRPCService(serviceCenter!);
     createRPCService('MockFileServicePath', mockFileService);
-
     createRPCService('MockNotificationService', {
       onFileChange() {
         notificationMock();
       },
     });
-
-    const clientCenter = new RPCServiceCenter();
-    clientCenter.setConnection(
-      createWebSocketConnection(clientConnectionWs) as RPCMessageConnection,
-      createBinaryConnectionForWS(clientConnectionWs!),
-    );
 
     const { getRPCService } = initRPCService<
       MockFileService & {

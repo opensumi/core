@@ -190,6 +190,17 @@ export class SocketChannel implements IWebSocket {
     });
     return binaryConnection;
   }
+
+  handleServerResponseForNode(data: PlatformBuffer) {
+    let msgObj: ChannelMessage;
+
+    try {
+      msgObj = parse(data);
+      if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
+        this.handleMessage(msgObj);
+      }
+    } catch (error) {}
+  }
 }
 
 export type SocketMessage = PlatformBuffer & {
