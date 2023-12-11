@@ -18,32 +18,45 @@ export class AiCompletionsService extends Disposable {
   private cancelIndicator = new CancellationTokenSource();
   // 是否显示了 inline 补全
   private isVisibleCompletion = false;
-  private reportTimeout: number;
   private lastSessionId: string;
+  private lastRenderTime: number;
+  private lastCompletionUseTime: number;
+
+  private recordRenderTime(): void {
+    this.lastRenderTime = Date.now();
+  }
+
+  private recordCompletionUseTime(preTime: number): void {
+    this.lastCompletionUseTime = Date.now() - preTime;
+  }
 
   public async complete(data: CompletionRequestBean) {
-    return await this.aiBackService.requestCompletion(data as any, this.cancelIndicator.token);
+    try {
+      const now = Date.now();
+      const result = await this.aiBackService.requestCompletion(data as any, this.cancelIndicator.token);
+      this.recordCompletionUseTime(now);
+      return result;
+    } catch (error) {
+      return [];
+    }
   }
 
   public async report(data: IAiReportCompletionOption) {
+    data.renderingTime = Date.now() - this.lastRenderTime;
+    data.completionUseTime = this.lastCompletionUseTime;
     this.aiBackService.reportCompletion(data);
     this.isVisibleCompletion = false;
   }
 
   public setVisibleCompletion(visible: boolean) {
-    if (this.reportTimeout) {
-      clearTimeout(this.reportTimeout);
-    }
-
     // 如何之前是 true，现在是 false，说明并没有进行采纳
     if (this.isVisibleCompletion === true && visible === false) {
       this.report({ sessionId: this.lastSessionId, accept: false });
     }
 
     if (visible === true) {
-      this.reportTimeout = setTimeout(() => {
-        this.isVisibleCompletion = visible;
-      }, 750) as unknown as number;
+      this.isVisibleCompletion = visible;
+      this.recordRenderTime();
     } else {
       this.isVisibleCompletion = false;
     }
