@@ -3,7 +3,6 @@ import type { Socket } from 'net';
 import type { SocketChannel } from '@opensumi/ide-connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 
@@ -126,12 +125,6 @@ export function createSocket(connectPath?: string) {
     socket = electronEnv.createRPCNetConnection();
   }
   return socket;
-}
-
-export function createElectronClientConnection(connectPath?: string): MessageConnection {
-  const socket = createSocket(connectPath);
-  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
-  return createSocketConnection(socket);
 }
 
 export function createElectronConnection(connectPath?: string) {

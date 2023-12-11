@@ -4,8 +4,6 @@ import WebSocket from 'ws';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { SocketChannel, ChannelMessage, parse, stringify } from '../common/socket-channel';
-import { IBinaryConnectionSocket } from '../common/sumi-rpc/types';
-import { ILogger } from '../common/types';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
@@ -84,8 +82,6 @@ export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 // 后台 Web 链接处理类
 export class CommonChannelHandler extends WebSocketHandler {
-  static channelId = 0;
-
   public handlerId = 'common-channel';
   private wsServer: WebSocket.Server;
   protected handlerRoute: MatchFunction;
@@ -135,13 +131,13 @@ export class CommonChannelHandler extends WebSocketHandler {
             this.heartbeat(connectionId, connection);
             // channel 消息处理
           } else if (msgObj.kind === 'open') {
-            const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
+            const channelId = msgObj.id;
             const { path } = msgObj;
             this.logger.log(`Open a new connection channel ${channelId} with path ${path}`);
 
             // 生成 channel 对象
             const connectionSend = this.channelConnectionSend(connection);
-            const channel = new SocketChannel(connectionSend, channelId);
+            const channel = new SocketChannel(connectionSend, { id: channelId });
             this.channelMap.set(channelId, channel);
 
             // 根据 path 拿到注册的 handler
@@ -207,6 +203,8 @@ export class CommonChannelHandler extends WebSocketHandler {
           this.logger.log(err);
         }
       });
+    } else {
+      this.logger.log('connection is not open');
     }
   };
   public handleUpgrade(pathname: string, request: any, socket: any, head: any): boolean {
@@ -225,51 +223,5 @@ export class CommonChannelHandler extends WebSocketHandler {
     }
 
     return false;
-  }
-}
-
-export type ICommonHandlerConnectionSend = (content: PlatformBuffer) => void;
-
-export class CommonChannelHandler4Electron {
-  channelMap = new Map<string, SocketChannel>();
-
-  constructor(public name: string, private logger: ILogger) {}
-
-  getOrCreateChannel(clientId: string, connectionSend?: ICommonHandlerConnectionSend) {
-    let channel = this.channelMap.get(clientId);
-    if (!channel && connectionSend) {
-      channel = new SocketChannel(connectionSend, clientId);
-      this.channelMap.set(clientId, channel);
-    }
-    return channel;
-  }
-
-  handleSocket(
-    socket: IBinaryConnectionSocket,
-    options: {
-      onSocketChannel(channel: SocketChannel): void;
-    },
-  ) {
-    socket.onmessage((data) => {
-      let msgObj: ChannelMessage;
-
-      try {
-        msgObj = parse(data);
-        if (msgObj.kind === 'open') {
-          const channel = this.getOrCreateChannel(msgObj.id, (content) => {
-            socket.send(content);
-          })!;
-          options.onSocketChannel(channel);
-        } else if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
-          const channel = this.getOrCreateChannel(msgObj.id);
-          if (!channel) {
-            this.logger.error(`channel ${msgObj.id} not found`);
-            return;
-          }
-
-          channel.handleMessage(msgObj);
-        }
-      } catch (error) {}
-    });
   }
 }

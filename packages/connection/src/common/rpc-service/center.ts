@@ -35,6 +35,7 @@ export class RPCServiceCenter {
 
   private connectionPromise = new Deferred<void>();
   private binaryConnectionPromise = new Deferred<void>();
+
   public logger: ILogger;
 
   get LOG_TAG() {
@@ -81,14 +82,15 @@ export class RPCServiceCenter {
     this.setBinaryConnection(binaryConnection);
   }
 
-  removeConnection(connection: MessageConnection) {
+  removeConnection(connection: MessageConnection, binaryConnection: BinaryConnection) {
     const removeIndex = this.messageConnections.indexOf(connection);
     if (removeIndex !== -1) {
       this.messageConnections.splice(removeIndex, 1);
       this.proxyClients.splice(removeIndex, 1);
     }
 
-    return removeIndex !== -1;
+    const result1 = removeIndex !== -1;
+    return result1 && this.removeBinaryConnection(binaryConnection);
   }
 
   private setBinaryConnection(connection: BinaryConnection) {
@@ -105,7 +107,7 @@ export class RPCServiceCenter {
     this.protocolProxyClients.push(rpcProxy.createProxyClient());
   }
 
-  removeBinaryConnection(connection: BinaryConnection) {
+  private removeBinaryConnection(connection: BinaryConnection) {
     connection.dispose();
 
     const removeIndex = this.binaryConnections.indexOf(connection);
@@ -132,14 +134,14 @@ export class RPCServiceCenter {
     this.protocolRepository.loadProtocol(protocol);
   }
 
-  onProtocolRequest(tag: string, _method: string, method: RPCServiceMethod) {
+  onProtocolRequest(tag: string, _method: string, methodFn: RPCServiceMethod) {
     const methodName = getMethodName(tag, _method);
 
     if (this.binaryConnections.length === 0) {
-      this.protocolServiceMethodMap[methodName] = method;
+      this.protocolServiceMethodMap[methodName] = methodFn;
     } else {
       this.protocolProxyClients.forEach((proxy) => {
-        proxy.getOriginal().listenService({ [methodName]: method });
+        proxy.getOriginal().listenService({ [methodName]: methodFn });
       });
     }
   }

@@ -6,7 +6,7 @@ import { IRPCServiceMap } from '../types';
 
 import { ProxyBase } from './base';
 
-export class ProxySumi extends ProxyBase<BinaryConnection, IRPCServiceMap> {
+export class ProxySumi extends ProxyBase<BinaryConnection> {
   private protocolRepository: ProtocolRepository;
 
   protected bindOnRequest(service: IRPCServiceMap, cb: (service: IRPCServiceMap, prop: string) => void): void {
@@ -18,11 +18,11 @@ export class ProxySumi extends ProxyBase<BinaryConnection, IRPCServiceMap> {
       cb(service, name);
 
       if (name.startsWith('on')) {
-        this.connection.onNotification(name, (headers: Record<string, any>, buffer: PlatformBuffer) => {
+        this.connection.onNotification(name, async (headers: Record<string, any>, buffer: PlatformBuffer) => {
           const argsArray = this.protocolRepository.deserializeRequest(name, buffer);
 
           try {
-            this.proxyService[name](...argsArray);
+            await this.proxyService[name](...argsArray);
           } catch (e) {
             this.logger.warn(`notification exec ${name} error`, e);
           }

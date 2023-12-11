@@ -2,6 +2,7 @@ import http from 'http';
 
 import ws from 'ws';
 
+import { WebSocketDriver } from '@opensumi/ide-connection/lib/common/driver/websocket';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
@@ -65,7 +66,7 @@ describe('connection', () => {
     const channelSend = (content) => {
       connection.send(content, (err) => {});
     };
-    const channel = new SocketChannel(channelSend, 'TEST_CHANNEL_ID');
+    const channel = new SocketChannel(channelSend, { id: 'TEST_CHANNEL_ID' });
     connection.on('message', (msg) => {
       const msgObj = parse(msg as PlatformBuffer);
       if (msgObj.kind === 'ready') {
@@ -142,30 +143,15 @@ describe('connection', () => {
         const channelHandler = new SimpleCommonChannelHandler('test-server' + clientId, console);
 
         wss.on('connection', (connection) => {
-          const toDispose = channelHandler.handleSocket(
-            {
-              onmessage(cb) {
-                connection.on('message', cb);
-                return {
-                  dispose: () => {
-                    connection.off('message', cb);
-                  },
-                };
-              },
-              send(content) {
-                connection.send(content);
-              },
+          const toDispose = channelHandler.handleSocket(new WebSocketDriver(connection), {
+            onSocketChannel(channel) {
+              serviceCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
+              resolve(undefined);
             },
-            {
-              onSocketChannel(channel) {
-                serviceCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
-                resolve(undefined);
-              },
-              onError(error) {
-                reject(error);
-              },
+            onError(error) {
+              reject(error);
             },
-          );
+          });
           connection.once('close', () => {
             toDispose.dispose();
           });
@@ -183,8 +169,7 @@ describe('connection', () => {
           clientCenter.setConnection(messageConnection, binaryConnection);
 
           clientConnectionWs.once('close', () => {
-            clientCenter.removeConnection(messageConnection);
-            clientCenter.removeBinaryConnection(binaryConnection);
+            clientCenter.removeConnection(messageConnection, binaryConnection);
           });
           resolve(undefined);
         });

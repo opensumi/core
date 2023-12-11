@@ -19,7 +19,7 @@ export class SimpleCommonChannelHandler {
   ) {
     let channel = this.channelMap.get(clientId);
     if (!channel && options?.connectionSend) {
-      channel = new SocketChannel(options.connectionSend, clientId);
+      channel = new SocketChannel(options.connectionSend, { id: clientId });
       this.channelMap.set(clientId, channel);
     }
     return channel;

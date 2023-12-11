@@ -54,7 +54,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
     });
 
-    it.only('send message & on message', async () => {
+    it('send message & on message', async () => {
       // 确保收到一次
       expect.assertions(1);
       const deferred = new Deferred();

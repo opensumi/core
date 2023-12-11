@@ -1,6 +1,7 @@
 import Fury, { Type } from '@furyjs/fury';
 
 import { EventEmitter } from '@opensumi/events';
+import { Deferred, ILogger } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { BinaryConnection } from './sumi-rpc/connection';
@@ -60,27 +61,33 @@ export type ChannelMessage =
   | CloseMessage
   | BinaryMessage;
 
-export type ConnectionSend = (content: PlatformBuffer | string) => void;
+export type TConnectionSend = (content: PlatformBuffer | string) => void;
 
-type IWSChannelEventType = 'message' | 'binary' | 'open' | 'reOpen' | 'close' | 'error';
+type TEventType = 'message' | 'binary' | 'open' | 'reOpen' | 'close' | 'error';
 
 export class SocketChannel implements IWebSocket {
-  private emitter = new EventEmitter<IWSChannelEventType>();
+  private isReadyPromise = new Deferred<void>();
+  private emitter = new EventEmitter<TEventType>();
 
   public id: string;
   public channelPath: string;
 
-  private connectionSend: ConnectionSend;
+  private _rawSend: TConnectionSend;
 
-  constructor(connectionSend: ConnectionSend, id?: string) {
-    this.connectionSend = connectionSend;
-    if (id) {
-      this.id = id;
+  logger: ILogger;
+
+  constructor(connectionSend: TConnectionSend, options?: { id?: string; logger?: ILogger }) {
+    this._rawSend = connectionSend;
+    if (options?.logger) {
+      this.logger = options.logger;
+    }
+    if (options?.id) {
+      this.id = options?.id;
     }
   }
 
-  public setConnectionSend(connectionSend: ConnectionSend) {
-    this.connectionSend = connectionSend;
+  public setConnectionSend(connectionSend: TConnectionSend) {
+    this._rawSend = connectionSend;
   }
 
   onMessage(cb: (data: any) => any) {
@@ -107,7 +114,7 @@ export class SocketChannel implements IWebSocket {
   }
 
   ready() {
-    this.connectionSend(
+    this._rawSend(
       stringify({
         kind: 'ready',
         id: this.id,
@@ -115,10 +122,15 @@ export class SocketChannel implements IWebSocket {
     );
   }
 
+  whenReady() {
+    return this.isReadyPromise.promise;
+  }
+
   isReady = false;
   handleMessage(msg: ChannelMessage) {
     if (msg.kind === 'ready') {
       this.isReady = true;
+      this.isReadyPromise.resolve();
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
       this.emitter.emit('message', msg.content);
@@ -127,10 +139,9 @@ export class SocketChannel implements IWebSocket {
     }
   }
 
-  // client
   open(path: string) {
     this.channelPath = path;
-    this.connectionSend(
+    this._rawSend(
       stringify({
         kind: 'open',
         id: this.id,
@@ -147,7 +158,7 @@ export class SocketChannel implements IWebSocket {
       return;
     }
 
-    this.connectionSend(
+    this._rawSend(
       stringify({
         kind: 'data',
         id: this.id,
@@ -157,7 +168,7 @@ export class SocketChannel implements IWebSocket {
   }
 
   sendBinary(binary: PlatformBuffer) {
-    this.connectionSend(
+    this._rawSend(
       stringify({
         kind: 'binary',
         id: this.id,
@@ -175,7 +186,7 @@ export class SocketChannel implements IWebSocket {
   }
 
   createBinaryConnection() {
-    const binaryConnection = new BinaryConnection({
+    return new BinaryConnection({
       onmessage: (cb) => {
         const remove = this.onBinary(cb);
         return {
@@ -188,18 +199,6 @@ export class SocketChannel implements IWebSocket {
         this.sendBinary(data);
       },
     });
-    return binaryConnection;
-  }
-
-  handleServerResponseForNode(data: PlatformBuffer) {
-    let msgObj: ChannelMessage;
-
-    try {
-      msgObj = parse(data);
-      if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
-        this.handleMessage(msgObj);
-      }
-    } catch (error) {}
   }
 
   listenChannel(channel: SocketChannel) {

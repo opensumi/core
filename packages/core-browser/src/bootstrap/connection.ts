@@ -76,8 +76,7 @@ export async function bindConnectionService(
   clientCenter.setConnection(connection, binaryConnection);
 
   connection.onClose(() => {
-    clientCenter.removeConnection(connection);
-    clientCenter.removeBinaryConnection(binaryConnection);
+    clientCenter.removeConnection(connection, binaryConnection);
   });
 
   const { getRPCService } = initRPCService(clientCenter);

@@ -247,14 +247,13 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
 // 需要单独运行PtyServer的时候集成此Class然后运行initServer
 export class PtyServiceProxyRPCProvider {
   private ptyServiceProxy: PtyServiceProxy;
-  private readonly ptyServiceCenter: RPCServiceCenter;
+  private readonly ptyServiceCenter = new RPCServiceCenter();
   private readonly debugLogger = getDebugLogger();
   private serverListenOptions: ListenOptions; // HOST + PORT or UNIX SOCK PATH
   private server: Server;
 
   constructor(listenOptions: ListenOptions = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
     this.serverListenOptions = listenOptions;
-    this.ptyServiceCenter = new RPCServiceCenter();
     const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
     const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
       .$callback;
@@ -307,8 +306,7 @@ export class PtyServiceProxyRPCProvider {
     this.ptyServiceCenter.setConnection(serverConnection, binaryConnection);
 
     connection.on('close', () => {
-      this.ptyServiceCenter.removeConnection(serverConnection);
-      this.ptyServiceCenter.removeBinaryConnection(binaryConnection);
+      this.ptyServiceCenter.removeConnection(serverConnection, binaryConnection);
     });
   }
 

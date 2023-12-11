@@ -5,6 +5,7 @@ import util from 'util';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { SimpleCommonChannelHandler, SocketChannel } from '@opensumi/ide-connection';
+import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/driver/socket';
 import { commonChannelPathHandler, createSocketChannel } from '@opensumi/ide-connection/lib/node';
 import {
   Event,
@@ -493,32 +494,17 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       mainThreadServer.on('connection', (connection) => {
         this.logger.log(`The electron mainThread ${clientId} connected`);
 
-        const toDispose = commonHandler.handleSocket(
-          {
-            onmessage: (cb) => {
-              connection.on('data', cb);
-              return {
-                dispose: () => {
-                  connection.off('data', cb);
-                },
-              };
-            },
-            send: (data) => {
-              connection.write(data);
-            },
+        const toDispose = commonHandler.handleSocket(new NetSocketDriver(connection), {
+          onSocketChannel: (channel) => {
+            handler({
+              socketChannel: channel,
+              clientId,
+            });
           },
-          {
-            onSocketChannel: (channel) => {
-              handler({
-                socketChannel: channel,
-                clientId,
-              });
-            },
-            onError: (error) => {
-              this.logger.error(`The electron mainThread ${clientId} connection error\n${error.message}`);
-            },
+          onError: (error) => {
+            this.logger.error(`The electron mainThread ${clientId} connection error\n${error.message}`);
           },
-        );
+        });
 
         connection.on('close', () => {
           toDispose && toDispose.dispose();

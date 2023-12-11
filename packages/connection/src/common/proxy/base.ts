@@ -9,7 +9,7 @@ interface IBaseConnection {
   listen(): void;
 }
 
-export abstract class ProxyBase<T extends IBaseConnection, K extends IRPCServiceMap> {
+export abstract class ProxyBase<T extends IBaseConnection> {
   protected proxyService: any = {};
 
   protected logger: ILogger;
@@ -17,7 +17,7 @@ export abstract class ProxyBase<T extends IBaseConnection, K extends IRPCService
 
   protected connectionPromise: Deferred<T> = new Deferred<T>();
 
-  constructor(public target?: K, logger?: ILogger) {
+  constructor(public target?: IRPCServiceMap, logger?: ILogger) {
     this.logger = logger || console;
   }
 
@@ -40,11 +40,11 @@ export abstract class ProxyBase<T extends IBaseConnection, K extends IRPCService
       this.listenService(this.target);
     }
 
-    this.connectionPromise.resolve(connection);
     connection.listen();
+    this.connectionPromise.resolve(connection);
   }
 
-  public listenService(service: K) {
+  public listenService(service: IRPCServiceMap) {
     if (this.connection) {
       const proxyService = this.proxyService;
       this.bindOnRequest(service, (service, prop) => {
@@ -65,5 +65,5 @@ export abstract class ProxyBase<T extends IBaseConnection, K extends IRPCService
 
   abstract getInvokeProxy(): any;
 
-  protected abstract bindOnRequest(service: K, cb: (service: K, prop: string) => void): void;
+  protected abstract bindOnRequest(service: IRPCServiceMap, cb: (service: IRPCServiceMap, prop: string) => void): void;
 }

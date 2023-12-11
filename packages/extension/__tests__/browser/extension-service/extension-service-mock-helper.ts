@@ -543,7 +543,7 @@ export function setupExtensionServiceInjector() {
           const channelSend = (content) => {
             //
           };
-          return new SocketChannel(channelSend, 'mock_wschannel');
+          return new SocketChannel(channelSend, { id: 'mock_wschannel' });
         },
       },
     },

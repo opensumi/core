@@ -9,8 +9,8 @@ import { WSCloseInfo, ConnectionInfo } from '../common/utils';
 
 export class WSChannelHandler {
   public connection: ReconnectingWebSocket;
-  private channelMap: Map<number | string, SocketChannel> = new Map();
-  private channelCloseEventMap: Map<number | string, WSCloseInfo> = new Map();
+  private channelMap: Map<string, SocketChannel> = new Map();
+  private channelCloseEventMap: Map<string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timer | null;
@@ -125,7 +125,7 @@ export class WSChannelHandler {
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
-    const channel = new SocketChannel(channelSend, channelId);
+    const channel = new SocketChannel(channelSend, { id: channelId });
     this.channelMap.set(channel.id, channel);
 
     await new Promise((resolve) => {

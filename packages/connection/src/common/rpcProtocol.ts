@@ -40,7 +40,7 @@ export function createMainContextProxyIdentifier<T>(identifier: string): ProxyId
   return result;
 }
 export interface IMessagePassingProtocol {
-  send(msg): void;
+  send(msg: string): void;
   onMessage: Event<string>;
   timeout?: number;
 }

@@ -8,6 +8,7 @@ import {
   SimpleCommonChannelHandler,
   SocketChannel,
 } from '@opensumi/ide-connection';
+import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/driver/socket';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 
@@ -68,32 +69,17 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
       this.logger.log('waiting ext-proxy connecting...');
       server.on('connection', (connection) => {
         this.logger.log('there are new connections coming in');
-        // 有新的连接时重新设置 RPCProtocol
-        const toDispose = channelHandler.handleSocket(
-          {
-            onmessage: (cb) => {
-              connection.on('data', cb);
-              return {
-                dispose: () => {
-                  connection.off('data', cb);
-                },
-              };
-            },
-            send: (data) => {
-              connection.write(data);
-            },
+        const toDispose = channelHandler.handleSocket(new NetSocketDriver(connection), {
+          onSocketChannel: (channel) => {
+            // 有新的连接时重新设置 RPCProtocol
+            this.setProxyConnection(connection, channel);
+            this.setExtHostProxyRPCProtocol();
+            resolve();
           },
-          {
-            onSocketChannel: (channel) => {
-              this.setProxyConnection(connection, channel);
-              this.setExtHostProxyRPCProtocol();
-              resolve();
-            },
-            onError: (error) => {
-              reject(error);
-            },
+          onError: (error) => {
+            reject(error);
           },
-        );
+        });
         connection.on('close', () => {
           toDispose && toDispose.dispose();
         });
@@ -108,8 +94,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     const binaryConnection = channel.createBinaryConnection();
     this.extServiceProxyCenter.setConnection(messageConnection, binaryConnection);
     connection.once('close', () => {
-      this.extServiceProxyCenter.removeConnection(messageConnection);
-      this.extServiceProxyCenter.removeBinaryConnection(binaryConnection);
+      this.extServiceProxyCenter.removeConnection(messageConnection, binaryConnection);
       channel.dispose();
     });
 

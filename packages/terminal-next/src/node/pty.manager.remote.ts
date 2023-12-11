@@ -56,8 +56,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     clientCenter.setConnection(messageConnection, binaryConnection);
     return Disposable.create(() => {
       callbackDisposed = true;
-      clientCenter.removeConnection(messageConnection);
-      clientCenter.removeBinaryConnection(binaryConnection);
+      clientCenter.removeConnection(messageConnection, binaryConnection);
     });
   }
 

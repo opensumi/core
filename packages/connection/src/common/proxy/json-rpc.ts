@@ -12,7 +12,7 @@ interface IRPCResult {
   data: any;
 }
 
-export class ProxyJSONRPC extends ProxyBase<MessageConnection, IRPCServiceMap> {
+export class ProxyJSONRPC extends ProxyBase<MessageConnection> {
   public getInvokeProxy(): any {
     return new Proxy(this, this);
   }
