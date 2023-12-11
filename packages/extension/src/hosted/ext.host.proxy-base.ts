@@ -199,6 +199,8 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     this.socket.once('close', () => {
       this.clientCenter.removeConnection(connection);
       this.clientCenter.removeBinaryConnection(binaryConnection);
+
+      channel.dispose();
     });
   }
 

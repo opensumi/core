@@ -1,14 +1,8 @@
-import { IDisposable } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { ChannelMessage, SocketChannel, parse } from './socket-channel';
 import { IBinaryConnectionSocket } from './sumi-rpc';
 import { ILogger } from './types';
-
-export interface ICommonHandlerSocket {
-  send(data: PlatformBuffer): void;
-  onmessage: (cb: (data: PlatformBuffer) => void) => IDisposable | void;
-}
 
 export type ICommonHandlerConnectionSend = (content: PlatformBuffer) => void;
 
@@ -17,10 +11,15 @@ export class SimpleCommonChannelHandler {
 
   constructor(public name: string, private logger: ILogger) {}
 
-  getOrCreateChannel(clientId: string, connectionSend?: ICommonHandlerConnectionSend) {
+  getOrCreateChannel(
+    clientId: string,
+    options?: {
+      connectionSend?: ICommonHandlerConnectionSend;
+    },
+  ) {
     let channel = this.channelMap.get(clientId);
-    if (!channel && connectionSend) {
-      channel = new SocketChannel(connectionSend, clientId);
+    if (!channel && options?.connectionSend) {
+      channel = new SocketChannel(options.connectionSend, clientId);
       this.channelMap.set(clientId, channel);
     }
     return channel;
@@ -30,16 +29,19 @@ export class SimpleCommonChannelHandler {
     socket: IBinaryConnectionSocket,
     options: {
       onSocketChannel(channel: SocketChannel): void;
+      onError(error: Error): void;
     },
   ) {
-    socket.onmessage((data) => {
+    return socket.onmessage((data) => {
       let msgObj: ChannelMessage;
 
       try {
         msgObj = parse(data);
         if (msgObj.kind === 'open') {
-          const channel = this.getOrCreateChannel(msgObj.id, (content) => {
-            socket.send(content);
+          const channel = this.getOrCreateChannel(msgObj.id, {
+            connectionSend: (content) => {
+              socket.send(content);
+            },
           })!;
           options.onSocketChannel(channel);
         } else if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
@@ -51,7 +53,10 @@ export class SimpleCommonChannelHandler {
 
           channel.handleMessage(msgObj);
         }
-      } catch (error) {}
+      } catch (error) {
+        this.logger.error(`handle socket message error: ${error}`);
+        options.onError(error);
+      }
     });
   }
 }

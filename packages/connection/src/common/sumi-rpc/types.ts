@@ -21,7 +21,7 @@ export type TRequestCallback = (
 
 export interface IBinaryConnectionSocket {
   send(data: Uint8Array): void;
-  onmessage: (cb: (data: Uint8Array) => void) => IDisposable | void;
+  onmessage: (cb: (data: Uint8Array) => void) => IDisposable;
 }
 
 export type THandlerResult<R> = R | Promise<R>;

@@ -201,6 +201,31 @@ export class SocketChannel implements IWebSocket {
       }
     } catch (error) {}
   }
+
+  listenChannel(channel: SocketChannel) {
+    let toDispose = [] as (() => void)[];
+    toDispose.push(
+      channel.onMessage((data) => {
+        this.send(data);
+      }),
+    );
+    toDispose.push(
+      channel.onBinary((data) => {
+        this.sendBinary(data);
+      }),
+    );
+
+    return {
+      dispose: () => {
+        toDispose.forEach((dispose) => dispose());
+        toDispose = [];
+      },
+    };
+  }
+
+  dispose() {
+    this.emitter.dispose();
+  }
 }
 
 export type SocketMessage = PlatformBuffer & {

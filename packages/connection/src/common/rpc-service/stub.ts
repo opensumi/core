@@ -19,7 +19,6 @@ export class RPCServiceStub {
     await this.center.when();
   }
 
-  // 服务方
   on(name: string, method: RPCServiceMethod) {
     this.onRequest(name, method);
   }

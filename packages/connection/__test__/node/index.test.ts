@@ -9,7 +9,12 @@ import { RPCService } from '../../src';
 import { RPCServiceCenter, SimpleCommonChannelHandler, initRPCService } from '../../src/common';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
 import { SocketChannel, parse } from '../../src/common/socket-channel';
-import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
+import {
+  WebSocketServerRoute,
+  CommonChannelHandler,
+  commonChannelPathHandler,
+  createSocketChannelForWS,
+} from '../../src/node';
 
 const WebSocket = ws;
 
@@ -133,15 +138,19 @@ describe('connection', () => {
     const clientCenter = new RPCServiceCenter();
 
     await Promise.all([
-      new Promise<void>((resolve) => {
+      new Promise<void>((resolve, reject) => {
         const channelHandler = new SimpleCommonChannelHandler('test-server' + clientId, console);
+
         wss.on('connection', (connection) => {
-          channelHandler.handleSocket(
+          const toDispose = channelHandler.handleSocket(
             {
               onmessage(cb) {
-                connection.on('message', (msg: PlatformBuffer) => {
-                  cb(msg);
-                });
+                connection.on('message', cb);
+                return {
+                  dispose: () => {
+                    connection.off('message', cb);
+                  },
+                };
               },
               send(content) {
                 connection.send(content);
@@ -152,25 +161,31 @@ describe('connection', () => {
                 serviceCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
                 resolve(undefined);
               },
+              onError(error) {
+                reject(error);
+              },
             },
           );
+          connection.once('close', () => {
+            toDispose.dispose();
+          });
         });
       }),
       new Promise<void>((resolve) => {
         const clientConnectionWs = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
 
         clientConnectionWs.on('open', () => {
-          const channel = new SocketChannel((content) => {
-            clientConnectionWs!.send(content);
-          }, clientId);
+          const channel = createSocketChannelForWS(clientConnectionWs, clientId);
 
-          channel.open('default');
-          clientConnectionWs!.on('message', (data) => {
-            channel.handleServerResponseForNode(data as PlatformBuffer);
+          const messageConnection = channel.createMessageConnection();
+          const binaryConnection = channel.createBinaryConnection();
+
+          clientCenter.setConnection(messageConnection, binaryConnection);
+
+          clientConnectionWs.once('close', () => {
+            clientCenter.removeConnection(messageConnection);
+            clientCenter.removeBinaryConnection(binaryConnection);
           });
-
-          clientCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
-
           resolve(undefined);
         });
       }),

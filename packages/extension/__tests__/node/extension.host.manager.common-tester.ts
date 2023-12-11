@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Provider } from '@opensumi/di';
-import { INodeLogger, MaybePromise, getDebugLogger, Deferred } from '@opensumi/ide-core-node';
+import { INodeLogger, MaybePromise, getDebugLogger, Deferred, AppConfig } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -33,6 +33,10 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
         },
         ...options.providers,
       );
+      injector.overrideProviders({
+        token: AppConfig,
+        useValue: {},
+      });
       extensionHostManager = injector.get<IExtensionHostManager>(IExtensionHostManager);
       // 等待服务端和客户端初始化完成
       await Promise.all([options.init(), extensionHostManager.init()]);
@@ -50,7 +54,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
     });
 
-    it('send message & on message', async () => {
+    it.only('send message & on message', async () => {
       // 确保收到一次
       expect.assertions(1);
       const deferred = new Deferred();

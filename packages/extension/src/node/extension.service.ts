@@ -1,12 +1,11 @@
 import type cp from 'child_process';
-import net from 'net';
+import net, { Socket } from 'net';
 import path from 'path';
 import util from 'util';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { SocketChannel } from '@opensumi/ide-connection';
-import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
-import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter } from '@opensumi/ide-connection/lib/node';
+import { SimpleCommonChannelHandler, SocketChannel } from '@opensumi/ide-connection';
+import { commonChannelPathHandler, createSocketChannel } from '@opensumi/ide-connection/lib/node';
 import {
   Event,
   Emitter,
@@ -18,6 +17,7 @@ import {
   SupportLogNamespace,
   ExtensionConnectOption,
   ExtensionConnectModeOption,
+  DisposableCollection,
 } from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import {
@@ -79,7 +79,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessMap: Map<string, number> = new Map();
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
-  private clientExtProcessExtConnection: Map<string, any> = new Map();
+  private clientExtProcessExtConnection: Map<
+    string,
+    {
+      connection: Socket;
+    }
+  > = new Map();
+  private clientExpProcessDisposableCollection: Map<string, DisposableCollection> = new Map();
   private clientExtProcessExtConnectionDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
@@ -168,7 +174,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private setExtProcessConnectionForward() {
     this.logger.log('setExtProcessConnectionForward', this.instanceId);
     this._setMainThreadConnection(async (connectionResult) => {
-      const { connection: mainThreadConnection, clientId } = connectionResult;
+      const { socketChannel, clientId } = connectionResult;
 
       await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
 
@@ -191,24 +197,22 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         return;
       }
 
-      const extConnection = this.clientExtProcessExtConnection.get(clientId);
+      let disposableCollection = this.clientExpProcessDisposableCollection.get(clientId);
+      if (disposableCollection) {
+        disposableCollection.dispose();
+        this.clientExpProcessDisposableCollection.delete(clientId);
+      }
+      disposableCollection = new DisposableCollection();
+      this.clientExpProcessDisposableCollection.set(clientId, disposableCollection);
+
+      const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
+
       // 重新生成实例，避免 tcp 消息有残留的缓存，造成分包错误
-      const extConnectionReader = new SocketMessageReader(extConnection.connection);
-      const extConnectionWriter = new SocketMessageWriter(extConnection.connection);
+      const channel = createSocketChannel(extConnection.connection);
 
-      this.clientExtProcessExtConnection.set(clientId, {
-        reader: extConnectionReader,
-        writer: extConnectionWriter,
-        connection: extConnection.connection,
-      });
+      disposableCollection.push(channel.listenChannel(socketChannel));
+      disposableCollection.push(socketChannel.listenChannel(channel));
 
-      mainThreadConnection.reader.listen((input) => {
-        extConnectionWriter.write(input);
-      });
-
-      extConnectionReader.listen((input) => {
-        mainThreadConnection.writer.write(input);
-      });
       // 连接恢复后清除销毁的定时器
       if (this.clientExtProcessThresholdExitTimerMap.has(clientId)) {
         const timer = this.clientExtProcessThresholdExitTimerMap.get(clientId) as NodeJS.Timeout;
@@ -475,25 +479,49 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return this.clientExtProcessInspectPortMap.get(clientId);
   }
 
-  private async _setMainThreadConnection(handler) {
+  private async _setMainThreadConnection(
+    handler: (connectionResult: { socketChannel: SocketChannel; clientId: string }) => void,
+  ) {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
       const mainThreadServer: net.Server = net.createServer();
       const mainThreadListenPath = await this.getElectronMainThreadListenPath2(clientId);
       this.logger.log(`The electron mainThread listen on ${mainThreadListenPath}`);
 
+      const commonHandler = new SimpleCommonChannelHandler('extension-node-service', this.logger);
+
       mainThreadServer.on('connection', (connection) => {
         this.logger.log(`The electron mainThread ${clientId} connected`);
 
-        handler({
-          connection: {
-            reader: new SocketMessageReader(connection),
-            writer: new SocketMessageWriter(connection),
+        const toDispose = commonHandler.handleSocket(
+          {
+            onmessage: (cb) => {
+              connection.on('data', cb);
+              return {
+                dispose: () => {
+                  connection.off('data', cb);
+                },
+              };
+            },
+            send: (data) => {
+              connection.write(data);
+            },
           },
-          clientId,
-        });
+          {
+            onSocketChannel: (channel) => {
+              handler({
+                socketChannel: channel,
+                clientId,
+              });
+            },
+            onError: (error) => {
+              this.logger.error(`The electron mainThread ${clientId} connection error\n${error.message}`);
+            },
+          },
+        );
 
         connection.on('close', () => {
+          toDispose && toDispose.dispose();
           this.logger.log(`Dispose client by clientId ${clientId}`);
           // electron 只要端口进程就杀死插件进程
           this.disposeClientExtProcess(clientId);
@@ -505,31 +533,23 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       });
     } else {
       commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-        handler: (connection: SocketChannel, connectionClientId: string) => {
-          const reader = new WebSocketMessageReader(connection);
-          const writer = new WebSocketMessageWriter(connection);
+        handler: (channel: SocketChannel, connectionClientId: string) => {
           handler({
-            connection: {
-              reader,
-              writer,
-            },
+            socketChannel: channel,
             clientId: connectionClientId,
           });
 
-          connection.onClose(() => {
-            reader.dispose();
-            writer.dispose();
+          channel.onClose(() => {
             this.logger.log(`The connection client ${connectionClientId} closed`);
 
-            if (this.clientExtProcessExtConnection.has(connectionClientId)) {
-              const extConnection: any = this.clientExtProcessExtConnection.get(connectionClientId);
-              if (extConnection.writer) {
-                extConnection.writer.dispose();
-              }
-              if (extConnection.reader) {
-                extConnection.reader.dispose();
+            if (this.clientExpProcessDisposableCollection.has(connectionClientId)) {
+              const disposableCollection = this.clientExpProcessDisposableCollection.get(connectionClientId);
+              if (disposableCollection) {
+                disposableCollection.dispose();
+                this.clientExpProcessDisposableCollection.delete(connectionClientId);
               }
             }
+
             // 当连接关闭后启动定时器清除插件进程
             this.closeExtProcessWhenConnectionClose(connectionClientId);
           });
@@ -597,7 +617,17 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       // connect 关闭
       if (this.clientExtProcessExtConnection.has(clientId)) {
         const connection = this.clientExtProcessExtConnection.get(clientId);
-        connection.connection.destroy();
+        if (connection) {
+          connection.connection.destroy();
+        }
+      }
+
+      if (this.clientExpProcessDisposableCollection.has(clientId)) {
+        const disposableCollection = this.clientExpProcessDisposableCollection.get(clientId);
+        if (disposableCollection) {
+          disposableCollection.dispose();
+          this.clientExpProcessDisposableCollection.delete(clientId);
+        }
       }
 
       this.clientExtProcessExtConnection.delete(clientId);

@@ -1,7 +1,6 @@
 import { MatchFunction, match } from 'path-to-regexp';
 import WebSocket from 'ws';
 
-import { IDisposable } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { SocketChannel, ChannelMessage, parse, stringify } from '../common/socket-channel';
@@ -227,11 +226,6 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     return false;
   }
-}
-
-export interface ICommonHandlerSocket {
-  send(data: PlatformBuffer): void;
-  onmessage: (cb: (data: PlatformBuffer) => void) => IDisposable | void;
 }
 
 export type ICommonHandlerConnectionSend = (content: PlatformBuffer) => void;

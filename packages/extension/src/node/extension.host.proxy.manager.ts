@@ -1,8 +1,13 @@
 import net from 'net';
 
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
-import { createSocketChannel } from '@opensumi/ide-connection/lib/node';
+import {
+  getRPCService,
+  RPCProtocol,
+  IRPCProtocol,
+  SimpleCommonChannelHandler,
+  SocketChannel,
+} from '@opensumi/ide-connection';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 
@@ -22,7 +27,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   private readonly logger: INodeLogger;
 
   @Autowired(AppConfig)
-  private readonly appconfig: AppConfig;
+  private readonly appConfig: AppConfig;
 
   private callId = 0;
 
@@ -47,11 +52,10 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   async init() {
     await this.startProxyServer();
-    this.setExtHostProxyRPCProtocol();
   }
 
   private startProxyServer() {
-    return new Promise<net.Socket | void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       const server = net.createServer();
       this.disposer.addDispose(
         toDisposable(() => {
@@ -59,27 +63,56 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
           server.close();
         }),
       );
+      const channelHandler = new SimpleCommonChannelHandler('extension-host-proxy-manager', this.logger);
+
       this.logger.log('waiting ext-proxy connecting...');
       server.on('connection', (connection) => {
         this.logger.log('there are new connections coming in');
         // 有新的连接时重新设置 RPCProtocol
-        this.setProxyConnection(connection);
-        this.setExtHostProxyRPCProtocol();
-        resolve();
+        const toDispose = channelHandler.handleSocket(
+          {
+            onmessage: (cb) => {
+              connection.on('data', cb);
+              return {
+                dispose: () => {
+                  connection.off('data', cb);
+                },
+              };
+            },
+            send: (data) => {
+              connection.write(data);
+            },
+          },
+          {
+            onSocketChannel: (channel) => {
+              this.setProxyConnection(connection, channel);
+              this.setExtHostProxyRPCProtocol();
+              resolve();
+            },
+            onError: (error) => {
+              reject(error);
+            },
+          },
+        );
+        connection.on('close', () => {
+          toDispose && toDispose.dispose();
+        });
       });
+
       server.listen(this.listenOptions);
     });
   }
 
-  private setProxyConnection(connection: net.Socket) {
-    const channel = createSocketChannel(connection);
+  private setProxyConnection(connection: net.Socket, channel: SocketChannel) {
     const messageConnection = channel.createMessageConnection();
     const binaryConnection = channel.createBinaryConnection();
     this.extServiceProxyCenter.setConnection(messageConnection, binaryConnection);
-    connection.on('close', () => {
+    connection.once('close', () => {
       this.extServiceProxyCenter.removeConnection(messageConnection);
       this.extServiceProxyCenter.removeBinaryConnection(binaryConnection);
+      channel.dispose();
     });
+
     this.disposer.addDispose(
       toDisposable(() => {
         if (!connection.destroyed) {
@@ -99,13 +132,14 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     proxyService.on('onMessage', (msg) => {
       onMessageEmitter.fire(msg);
     });
+
     const onMessage = onMessageEmitter.event;
     const send = proxyService.onMessage;
 
     this.extHostProxyProtocol = new RPCProtocol({
       onMessage,
       send,
-      timeout: this.appconfig.rpcMessageTimeout,
+      timeout: this.appConfig.rpcMessageTimeout,
     });
 
     this.extHostProxyProtocol.set(EXT_SERVER_IDENTIFIER, {

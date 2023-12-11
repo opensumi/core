@@ -1,5 +1,7 @@
 import type net from 'net';
 
+import type WebSocket from 'ws';
+
 import {
   SocketMessageReader,
   SocketMessageWriter,
@@ -22,6 +24,20 @@ export function createSocketChannel(socket: net.Socket) {
   channel.open('default');
   socket.on('data', (data) => {
     channel.handleServerResponseForNode(data);
+  });
+
+  return channel;
+}
+
+export function createSocketChannelForWS(socket: WebSocket, _clientId: string) {
+  const channel = new SocketChannel((content) => {
+    socket.send(content);
+  }, _clientId);
+
+  channel.open('default');
+
+  socket.on('message', (data) => {
+    channel.handleServerResponseForNode(data as Buffer);
   });
 
   return channel;

@@ -85,7 +85,7 @@ export function createNetServerConnection(server: net.Server, injector: Injector
   server.on('connection', (socket) => {
     const disposableCollection = new DisposableCollection();
 
-    channelHandler.handleSocket(
+    const toDispose = channelHandler.handleSocket(
       {
         onmessage(cb) {
           socket.on('data', cb);
@@ -113,10 +113,14 @@ export function createNetServerConnection(server: net.Server, injector: Injector
             },
           });
         },
+        onError(error) {
+          //
+        },
       },
     );
 
     socket.on('close', () => {
+      toDispose.dispose();
       disposableCollection.dispose();
       serviceChildInjector.disposeAll();
     });

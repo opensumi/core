@@ -5,7 +5,7 @@ import { ProtocolRepository } from '../../../src/common/protocol-repository';
 
 import { createConnectionPair } from './utils';
 
-describe('fury rpc', () => {
+describe('sumi rpc', () => {
   let pair: ReturnType<typeof createConnectionPair>;
   jest.setTimeout(1000 * 1000);
   beforeEach(() => {
