@@ -24,7 +24,7 @@
     "watch:webview": "yarn run build:webview -- --watch"
   },
   "dependencies": {
-    "@koa/cors": "^3.0.0",
+    "@koa/cors": "^5.0.0",
     "@opensumi/di": "^1.8.0",
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",

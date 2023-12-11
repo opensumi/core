@@ -1330,12 +1330,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koa/cors@npm:^3.0.0":
-  version: 3.4.3
-  resolution: "@koa/cors@npm:3.4.3"
+"@koa/cors@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@koa/cors@npm:5.0.0"
   dependencies:
     vary: ^1.1.2
-  checksum: 51a5b89b4ea19078272ea2702916c90375853b6cfb9b65bf7720653e99b36950c1fd90df66a77fb17839bb130dc7c9f83ccc0bcec40f9d09769f9ed77ced5f23
+  checksum: 050701fb57dede2fefe0217459782bab7c9488fd07ff1f87fff680005cab43e03b7509e6015ea68082aadb1b31fe3eea7858ebdc93a2cf6f26d36d071190d50c
   languageName: node
   linkType: hard
 
@@ -2526,7 +2526,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/cli-engine@workspace:tools/cli-engine"
   dependencies:
-    "@koa/cors": ^3.0.0
+    "@koa/cors": ^5.0.0
     "@opensumi/di": ^1.8.0
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
