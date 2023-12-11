@@ -34,19 +34,7 @@ export class AiNativeContribution implements AiNativeCoreContribution {
 
   middleware: IAiMiddleware = {
     language: {
-      provideInlineCompletions: async (model, position, context, token, next) =>
-        // mock 异步
-        // await new Promise((resolve) => setTimeout(resolve, 2000));
-        // return {
-        //   items: [
-        //     {
-        //       insertText: 'test'
-        //     }
-        //   ]
-        // }
-
-         next(model, position, context, token)
-      ,
+      provideInlineCompletions: async (model, position, context, token, next) => next(model, position, context, token),
     },
   };
 

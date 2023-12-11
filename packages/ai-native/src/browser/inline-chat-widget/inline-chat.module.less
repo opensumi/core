@@ -1,9 +1,10 @@
 @default_height: 24px;
 
 .ai_inline_chat_controller_panel {
-  background-color: #1b232b;
-  border: 1px solid rgba(42, 51, 68, 0.9);
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.5), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
+  background-color: var(--ai-native-inlineChat-background);
+  border: 1px solid var(--ai-native-inlineChat-border-color);
+  box-shadow: 0 9px 28px 8px var(--ai-native-inlineChat-box-shadow), 0 6px 16px 0 var(--ai-native-inlineChat-box-shadow),
+    0 3px 6px -4px var(--ai-native-inlineChat-box-shadow);
   border-radius: 8px;
   font-size: 12px;
 
@@ -11,6 +12,10 @@
     width: @default_height;
     height: @default_height;
     line-height: @default_height;
+  }
+
+  span {
+    color: var(--ai-native-inlineChat-text-color) !important;
   }
 }
 

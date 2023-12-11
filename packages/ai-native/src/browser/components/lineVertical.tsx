@@ -1,14 +1,14 @@
 import React from 'react';
 
 const lineStyles = {
-  backgroundColor: '#363940',
+  backgroundColor: 'var(--ai-native-inlineChat-vertical-background)',
   height: '100%',
   width: '1px',
   minWidth: '1px',
 };
 
 const horizontalStyles = {
-  backgroundColor: 'rgba(255,255,255,0.08)',
+  backgroundColor: 'var(--ai-native-inlineChat-vertical-background)',
   width: '100%',
   height: '1px',
   minHeight: '1px',
