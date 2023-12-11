@@ -10,14 +10,15 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.connection.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.connection.json",
+    "gen:zod": "tsx ./scripts/runtyping.ts"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@furyjs/fury": "^0.5.2-beta",
+    "@furyjs/fury": "^0.5.4-beta",
     "@opensumi/events": "^0.0.6",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
@@ -28,6 +29,9 @@
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
-    "mock-socket": "^9.0.2"
+    "@runtyping/zod": "^2.0.0",
+    "@ts-morph/bootstrap": "^0.22.0",
+    "mock-socket": "^9.0.2",
+    "zod": "^3.22.4"
   }
 }

@@ -31,8 +31,8 @@ const assert = (condition: any, message: string) => {
 };
 
 const innerEvents = {
-  onRequestNotFound: '#onRequestNotFound',
-  onNotificationNotFound: '#onNotificationNotFound',
+  onRequestNotFound: '##onRequestNotFound',
+  onNotificationNotFound: '##onNotificationNotFound',
 };
 
 export class BinaryConnection implements IDisposable {
@@ -47,13 +47,15 @@ export class BinaryConnection implements IDisposable {
   constructor(private socket: IBinaryConnectionSocket) {}
 
   sendNotification(method: string, payload: Uint8Array) {
-    this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, payload));
+    this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, {}, payload));
   }
 
   sendRequest(method: string, payload: Uint8Array) {
-    return new Promise<Uint8Array>((resolve, reject) => {
-      this._callbacks.set(this._requestId, (error, result) => (error ? reject(error) : resolve(result)));
-      this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Request, method, payload));
+    return new Promise<{ headers: Record<string, any>; result: Uint8Array }>((resolve, reject) => {
+      this._callbacks.set(this._requestId, (headers, error, result) =>
+        error ? reject(error) : resolve({ headers, result }),
+      );
+      this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Request, method, {}, payload));
     });
   }
 
@@ -76,32 +78,30 @@ export class BinaryConnection implements IDisposable {
     }
 
     if (error) {
-      this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, error));
-    }
-
-    if (isPromise(result)) {
+      this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, {}, error));
+    } else if (isPromise(result)) {
       result
         .then((result) => {
-          this.socket.send(createResponsePacket(requestId, result));
+          this.socket.send(createResponsePacket(requestId, {}, result));
         })
         .catch((err) => {
-          this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, err));
+          this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, {}, err));
         });
     } else {
-      this.socket.send(createResponsePacket(requestId, result));
+      this.socket.send(createResponsePacket(requestId, {}, result));
     }
   }
 
   onRequest(method: string, _handler: TGenericRequestHandler<Uint8Array>): IDisposable {
-    const handler = (requestId: number, content: PlatformBuffer) => {
-      this.runRequestHandler(_handler, requestId, content);
+    const handler = (requestId: number, headers: Record<string, any>, content: PlatformBuffer) => {
+      this.runRequestHandler(_handler, requestId, headers, content);
     };
     return Disposable.create(this._binaryEmitter.on(method, handler));
   }
 
   onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, params: any[]) => {
-      this.runRequestHandler(handler, requestId, method, params);
+    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, params: any[]) => {
+      this.runRequestHandler(handler, requestId, method, headers, params);
     };
 
     return Disposable.create(this._binaryEmitter.on(innerEvents.onRequestNotFound, handlerWrapper));
@@ -117,60 +117,69 @@ export class BinaryConnection implements IDisposable {
 
       if (rpcType === RPC_TYPE.Response) {
         const callback = this._callbacks.get(requestId);
-
         if (!callback) {
           throw new Error(`No callback for request id: ${requestId}`);
         }
 
-        // if error code is not 0, it's an error
-        const errorCode = reader.uint16();
+        const status = reader.uint16();
+        const headers = readHeaders();
+        const contentLen = reader.varInt32();
 
-        if (errorCode) {
+        // if error code is not 0, it's an error
+        if (status !== 0) {
           // 错误信息用 JSON 格式，方便且兼容性好，可恢复成 Error
-          assert(codec === CODEC.JSON, 'Only support JSON error');
-          const contentLen = reader.varInt32();
+          assert(codec === CODEC.JSON, 'Error response should be JSON encoded');
           const content = reader.stringUtf8(contentLen);
           const error = parseError(content);
-          callback(error);
+          callback(headers, error);
           return;
         }
 
-        if (codec === CODEC.Fury) {
-          const contentLen = reader.uint32();
+        if (codec === CODEC.Binary) {
           const buffer = reader.buffer(contentLen);
-          callback(undefined, buffer);
+          callback(headers, undefined, buffer);
           return;
         }
 
-        const contentLen = reader.varInt32();
         const content = reader.stringUtf8(contentLen);
         if (codec === CODEC.JSON) {
-          callback(undefined, JSON.parse(content));
+          callback(headers, undefined, JSON.parse(content));
         } else {
-          callback(undefined, content);
+          callback(headers, undefined, content);
         }
       } else if (rpcType === RPC_TYPE.Notification || rpcType === RPC_TYPE.Request) {
-        const methodLen = reader.varInt32();
-        const method = reader.stringUtf8(methodLen);
-        const contentLen = reader.uint32();
+        const method = readMethod();
+        const headers = readHeaders();
+
+        const contentLen = reader.varInt32();
         const content = reader.buffer(contentLen);
 
-        // todo: check a method is valid
         if (rpcType === RPC_TYPE.Request) {
           if (this._binaryEmitter.hasListener(method)) {
-            this._binaryEmitter.emit(method, requestId, content);
+            this._binaryEmitter.emit(method, requestId, headers, content);
           } else {
-            this._binaryEmitter.emit(innerEvents.onRequestNotFound, requestId, method, content);
+            this._binaryEmitter.emit(innerEvents.onRequestNotFound, requestId, method, headers, content);
           }
         } else {
           if (this._notificationEmitter.hasListener(method)) {
             this._notificationEmitter.emit(method, content);
           } else {
-            this._notificationEmitter.emit(innerEvents.onNotificationNotFound, method, content);
+            this._notificationEmitter.emit(innerEvents.onNotificationNotFound, method, headers, content);
           }
         }
       } else {
         throw new Error(`Unknown rpc type: ${rpcType}`);
+      }
+
+      function readMethod() {
+        const methodLen = reader.varInt32();
+        return reader.stringUtf8(methodLen);
+      }
+
+      function readHeaders() {
+        const headerLen = reader.varInt32();
+        const header = reader.stringUtf8(headerLen);
+        return JSON.parse(header);
       }
     });
     if (toDispose) {

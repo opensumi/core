@@ -18,7 +18,7 @@ export class ProxySumi extends ProxyBase<BinaryConnection, IRPCServiceMap> {
       cb(service, name);
 
       if (name.startsWith('on')) {
-        this.connection.onNotification(name, (buffer: PlatformBuffer) => {
+        this.connection.onNotification(name, (headers: Record<string, any>, buffer: PlatformBuffer) => {
           const argsArray = this.protocolRepository.deserializeRequest(name, buffer);
 
           try {
@@ -28,7 +28,7 @@ export class ProxySumi extends ProxyBase<BinaryConnection, IRPCServiceMap> {
           }
         });
       } else {
-        this.connection.onRequest(name, async (buffer: PlatformBuffer) => {
+        this.connection.onRequest(name, async (headers: Record<string, any>, buffer: PlatformBuffer) => {
           const argsArray = this.protocolRepository.deserializeRequest(name, buffer);
 
           let result: any;
@@ -64,7 +64,7 @@ export class ProxySumi extends ProxyBase<BinaryConnection, IRPCServiceMap> {
             if (prop.startsWith('on')) {
               connection.sendNotification(prop, argsBuffer);
             } else {
-              const result = await connection.sendRequest(prop, argsBuffer);
+              const { result } = await connection.sendRequest(prop, argsBuffer);
               return this.protocolRepository.deserializeResult(prop, result);
             }
           });

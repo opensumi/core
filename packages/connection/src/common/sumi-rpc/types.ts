@@ -13,7 +13,11 @@ export type TSumiProtocolMethod = _RPCProtocolMethod<TypeDescription>;
 export type TSumiRequest = _Request<TypeDescription>;
 export type TSumiResponse = _Response<TypeDescription>;
 
-export type TRequestCallback = (error?: Error, payload?: Uint8Array | string | any) => void;
+export type TRequestCallback = (
+  headers: Record<string, any>,
+  error?: Error,
+  payload?: Uint8Array | string | any,
+) => void;
 
 export interface IBinaryConnectionSocket {
   send(data: Uint8Array): void;

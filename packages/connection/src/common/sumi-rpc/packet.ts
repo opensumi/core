@@ -9,11 +9,12 @@ export const RPC_TYPE = {
   Request: 0,
   Notification: 1,
   Response: 2,
+  Heartbeat: 3,
 } as const;
 
 export const CODEC = {
   Text: 0,
-  Fury: 1,
+  Binary: 1,
   JSON: 2,
 };
 
@@ -27,35 +28,48 @@ export const ERROR_STATUS = {
 export const reader = BinaryReader({});
 const writer = BinaryWriter({});
 
-export const createRequestPacket = (requestId: number, rpcType: number, method: string, payload: Uint8Array) => {
+export const createRequestPacket = (
+  requestId: number,
+  rpcType: number,
+  method: string,
+  headers: Record<string, any>,
+  payload: Uint8Array,
+) => {
   writer.reset();
+
   writer.uint8(PROTO_VERSION);
   writer.uint8(rpcType);
   writer.uint32(requestId);
-  writer.uint8(CODEC.Fury);
+  writer.uint8(CODEC.Binary);
   writer.stringOfVarInt32(method);
-  writer.uint32(payload.length);
+  writer.stringOfVarInt32(JSON.stringify(headers));
+  writer.varInt32(payload.length);
   writer.buffer(payload);
 
   return writer.dump();
 };
 
-export const createResponsePacket = (requestId: number, payload: Uint8Array) => {
+export const createResponsePacket = (requestId: number, headers: Record<string, any>, payload: Uint8Array) => {
   writer.reset();
 
   writer.uint8(PROTO_VERSION);
   writer.uint8(RPC_TYPE.Response);
   writer.uint32(requestId);
-  writer.uint8(CODEC.Fury);
+  writer.uint8(CODEC.Binary);
   writer.uint16(ERROR_STATUS.OK);
-  writer.uint32(payload.length);
+  writer.stringOfVarInt32(JSON.stringify(headers));
+  writer.varInt32(payload.length);
   writer.buffer(payload);
 
   return writer.dump();
 };
 
-export const createErrorResponsePacket = (requestId: number, status: number, error: any) => {
-  const errorString = stringifyError(error);
+export const createErrorResponsePacket = (
+  requestId: number,
+  status: number,
+  headers: Record<string, any>,
+  error: any,
+) => {
   writer.reset();
 
   writer.uint8(PROTO_VERSION);
@@ -63,7 +77,8 @@ export const createErrorResponsePacket = (requestId: number, status: number, err
   writer.uint32(requestId);
   writer.uint8(CODEC.JSON);
   writer.uint16(status);
-  writer.stringOfVarInt32(errorString);
+  writer.stringOfVarInt32(JSON.stringify(headers));
+  writer.stringOfVarInt32(stringifyError(error));
 
   return writer.dump();
 };

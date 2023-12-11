@@ -4,6 +4,12 @@ export interface Request<T> {
 }
 
 export interface Response<T> {
+  transferEncoding?: 'chunked';
+  /**
+   * @default 4M
+   */
+  chunkSize?: number;
+
   type?: T;
 }
 
