@@ -2,7 +2,7 @@ import http from 'http';
 
 import ws from 'ws';
 
-import { WebSocketDriver } from '@opensumi/ide-connection/lib/common/driver/websocket';
+import { WebSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/websocket';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 

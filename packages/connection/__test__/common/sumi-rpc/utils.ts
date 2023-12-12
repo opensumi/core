@@ -1,5 +1,7 @@
 import { MessageChannel } from 'worker_threads';
 
+import { NodeMessagePortDriver } from '@opensumi/ide-connection/lib/common/drivers/node-message-port';
+
 import { BinaryConnection } from '../../../src/common/sumi-rpc/connection';
 
 export function createConnectionPair() {
@@ -7,23 +9,9 @@ export function createConnectionPair() {
 
   const { port1, port2 } = channel;
 
-  const connection1 = new BinaryConnection({
-    onmessage(cb) {
-      channel.port1.on('message', cb);
-    },
-    send(data) {
-      channel.port1.postMessage(data);
-    },
-  });
+  const connection1 = new BinaryConnection(new NodeMessagePortDriver(port1));
 
-  const connection2 = new BinaryConnection({
-    onmessage(cb) {
-      channel.port2.on('message', cb);
-    },
-    send(data) {
-      channel.port2.postMessage(data);
-    },
-  });
+  const connection2 = new BinaryConnection(new NodeMessagePortDriver(port2));
 
   return {
     connection1,

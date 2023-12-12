@@ -9,7 +9,7 @@ import {
   RPCService,
   SimpleCommonChannelHandler,
 } from '@opensumi/ide-connection';
-import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/driver/socket';
+import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/socket';
 import {
   WebSocketServerRoute,
   WebSocketHandler,

@@ -5,7 +5,7 @@ import util from 'util';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { SimpleCommonChannelHandler, SocketChannel } from '@opensumi/ide-connection';
-import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/driver/socket';
+import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/socket';
 import { commonChannelPathHandler, createSocketChannel } from '@opensumi/ide-connection/lib/node';
 import {
   Event,

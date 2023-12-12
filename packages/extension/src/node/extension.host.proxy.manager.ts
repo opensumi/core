@@ -8,7 +8,7 @@ import {
   SimpleCommonChannelHandler,
   SocketChannel,
 } from '@opensumi/ide-connection';
-import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/driver/socket';
+import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/socket';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 
