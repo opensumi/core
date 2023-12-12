@@ -322,6 +322,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     }
 
     for (const event of events) {
+      this.logger.log('NSFW watcher events: ', event.action, event.file || event.newFile || event.oldFile)
       if (event.action === INsfw.actions.RENAMED) {
         const deletedPath = this.resolvePath(event.directory, event.oldFile!);
         if (isIgnored(watcherId, deletedPath)) {
