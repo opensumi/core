@@ -2,7 +2,7 @@ import { ProxyBase } from './base';
 
 const defaultReservedWordSet = new Set(['then']);
 
-export class ProxyClient<T extends ProxyBase<any, any>> {
+export class ProxyClient<T extends ProxyBase<any>> {
   protected original: T;
   protected proxy: any;
   protected reservedWordSet: Set<string>;
