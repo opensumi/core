@@ -100,8 +100,9 @@ export class RPCServiceCenter {
 
     this.binaryConnections.push(connection);
 
+    connection.setProtocolRepository(this.protocolRepository);
+
     const rpcProxy = new ProxySumi(this.protocolServiceMethodMap, this.logger);
-    rpcProxy.setProtocolRepository(this.protocolRepository);
     rpcProxy.listen(connection);
 
     this.protocolProxyClients.push(rpcProxy.createProxyClient());

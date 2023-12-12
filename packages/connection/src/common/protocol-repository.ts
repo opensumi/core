@@ -6,11 +6,10 @@ import { TSumiProtocol, TSumiProtocolMethod } from './sumi-rpc';
 import { getMethodName } from './utils';
 
 export interface ISerializableRequest {
-  a: ISerializableArguments;
+  a: any[];
 }
 
 export interface ISerializableArguments {
-  l: number;
   [key: number]: any;
 }
 
@@ -62,16 +61,14 @@ export class ProtocolRepository {
   }
 
   loadProtocolMethod(name: string, protocol: TSumiProtocolMethod) {
-    const argsObj = {
-      l: Type.uint8(),
-    } as Record<string, TypeDescription>;
-    for (let argN = 0; argN < protocol.request.length; argN++) {
-      const element = protocol.request[argN];
-      argsObj[argN] = element.type;
+    const argsTuple = [] as TypeDescription[];
+
+    for (const element of protocol.request) {
+      argsTuple.push(element.type);
     }
 
     const requestProto = Type.object(name + '^', {
-      a: Type.object(name + 'a', argsObj),
+      a: Type.tuple(argsTuple),
     });
 
     const resultProto = createResultProto(name + 'v', protocol.response.type);
@@ -83,28 +80,20 @@ export class ProtocolRepository {
   }
 
   serializeRequest(name: string, args: any[]): PlatformBuffer {
-    const serializableArgs = {
-      l: args.length,
-    } as ISerializableArguments;
+    const newArray = new Array(args.length);
     for (let i = 0; i < args.length; i++) {
-      serializableArgs[i] = args[i];
+      newArray[i] = args[i];
     }
 
     const payload: ISerializableRequest = {
-      a: serializableArgs,
+      a: newArray,
     };
 
     return this.serializerMap[name].request.serialize(payload);
   }
 
   deserializeRequest(name: string, buffer: PlatformBuffer): any[] {
-    const { a } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
-
-    const argsArray = [] as any[];
-    for (let i = 0; i < a.l; i++) {
-      argsArray.push(a[i]);
-    }
-
+    const { a: argsArray } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
     return argsArray;
   }
 

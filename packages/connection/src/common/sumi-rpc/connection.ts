@@ -1,6 +1,7 @@
 import { EventEmitter } from '@opensumi/events';
-import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 import { DisposableCollection, IDisposable, Disposable, parseError } from '@opensumi/ide-utils';
+
+import { ProtocolRepository } from '../protocol-repository';
 
 import {
   CODEC,
@@ -44,30 +45,60 @@ export class BinaryConnection implements IDisposable {
   private _requestId = 0;
   private _callbacks = new Map<number, TRequestCallback>();
 
+  private protocolRepository: ProtocolRepository;
+
   constructor(private socket: IBinaryConnectionSocket) {}
 
-  sendNotification(method: string, payload: Uint8Array) {
+  sendNotification(method: string, ...args: any[]) {
+    if (!this.protocolRepository.has(method)) {
+      throw new MethodProtocolNotFoundError(method);
+    }
+
+    const payload = this.protocolRepository.serializeRequest(method, args);
     this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, {}, payload));
   }
 
-  sendRequest(method: string, payload: Uint8Array) {
-    return new Promise<{ headers: Record<string, any>; result: Uint8Array }>((resolve, reject) => {
-      this._callbacks.set(this._requestId, (headers, error, result) =>
-        error ? reject(error) : resolve({ headers, result }),
-      );
+  sendRequest(method: string, ...args: any[]) {
+    return new Promise<{ headers: Record<string, any>; result: any }>((resolve, reject) => {
+      this._callbacks.set(this._requestId, (headers, error, buffer) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        const result = this.protocolRepository.deserializeResult(method, buffer);
+        resolve(result);
+      });
+
+      if (!this.protocolRepository.has(method)) {
+        throw new MethodProtocolNotFoundError(method);
+      }
+      const payload = this.protocolRepository.serializeRequest(method, args);
       this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Request, method, {}, payload));
     });
   }
 
   onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
-    return Disposable.create(this._notificationEmitter.on(method, handler));
+    const handlerWrapper = (headers: Record<string, any>, args: any[]) => {
+      handler(...args);
+    };
+    return Disposable.create(this._notificationEmitter.on(method, handlerWrapper));
   }
 
   onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
-    return Disposable.create(this._notificationEmitter.on(innerEvents.onNotificationNotFound, handler));
+    const handlerWrapper = (method: string, headers: Record<string, any>, args: any[]) => {
+      handler(method, args);
+    };
+    return Disposable.create(this._notificationEmitter.on(innerEvents.onNotificationNotFound, handlerWrapper));
   }
 
-  private runRequestHandler<T extends (...args: any[]) => any>(handler: T, requestId: number, ...args: any[]) {
+  private runRequestHandler<T extends (...args: any[]) => any>(
+    method: string,
+    handler: T,
+    requestId: number,
+    headers: Record<string, any>,
+    args: any[],
+  ) {
     let result: any;
     let error: Error | undefined;
 
@@ -82,29 +113,35 @@ export class BinaryConnection implements IDisposable {
     } else if (isPromise(result)) {
       result
         .then((result) => {
-          this.socket.send(createResponsePacket(requestId, {}, result));
+          const payload = this.protocolRepository.serializeResult(method, result);
+          this.socket.send(createResponsePacket(requestId, {}, payload));
         })
         .catch((err) => {
           this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, {}, err));
         });
     } else {
-      this.socket.send(createResponsePacket(requestId, {}, result));
+      const payload = this.protocolRepository.serializeResult(method, result);
+      this.socket.send(createResponsePacket(requestId, {}, payload));
     }
   }
 
-  onRequest(method: string, _handler: TGenericRequestHandler<Uint8Array>): IDisposable {
-    const handler = (requestId: number, headers: Record<string, any>, content: PlatformBuffer) => {
-      this.runRequestHandler(_handler, requestId, headers, content);
+  onRequest(method: string, handler: TGenericRequestHandler<Uint8Array>): IDisposable {
+    const handlerWrapper = (requestId: number, headers: Record<string, any>, args: any[]) => {
+      this.runRequestHandler(method, handler, requestId, headers, args);
     };
-    return Disposable.create(this._binaryEmitter.on(method, handler));
+    return Disposable.create(this._binaryEmitter.on(method, handlerWrapper));
   }
 
   onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, params: any[]) => {
-      this.runRequestHandler(handler, requestId, method, headers, params);
+    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
+      this.runRequestHandler(method, handler, requestId, headers, args);
     };
 
     return Disposable.create(this._binaryEmitter.on(innerEvents.onRequestNotFound, handlerWrapper));
+  }
+
+  setProtocolRepository(protocolRepository: ProtocolRepository) {
+    this.protocolRepository = protocolRepository;
   }
 
   listen() {
@@ -153,18 +190,19 @@ export class BinaryConnection implements IDisposable {
 
         const contentLen = reader.varInt32();
         const content = reader.buffer(contentLen);
+        const argsArray = this.protocolRepository.deserializeRequest(method, content);
 
         if (rpcType === RPC_TYPE.Request) {
           if (this._binaryEmitter.hasListener(method)) {
-            this._binaryEmitter.emit(method, requestId, headers, content);
+            this._binaryEmitter.emit(method, requestId, headers, argsArray);
           } else {
-            this._binaryEmitter.emit(innerEvents.onRequestNotFound, requestId, method, headers, content);
+            this._binaryEmitter.emit(innerEvents.onRequestNotFound, requestId, method, headers, argsArray);
           }
         } else {
           if (this._notificationEmitter.hasListener(method)) {
-            this._notificationEmitter.emit(method, headers, content);
+            this._notificationEmitter.emit(method, headers, argsArray);
           } else {
-            this._notificationEmitter.emit(innerEvents.onNotificationNotFound, method, headers, content);
+            this._notificationEmitter.emit(innerEvents.onNotificationNotFound, method, headers, argsArray);
           }
         }
       } else {
@@ -189,5 +227,11 @@ export class BinaryConnection implements IDisposable {
 
   dispose(): void {
     this.disposable.dispose();
+  }
+}
+
+export class MethodProtocolNotFoundError extends Error {
+  constructor(method: string) {
+    super(`method ${method} not found`);
   }
 }

@@ -1,6 +1,8 @@
 import { Type } from '@furyjs/fury';
 
-import { MethodProtocolNotFoundError, ProxySumi } from '../../../src/common';
+import { MethodProtocolNotFoundError } from '@opensumi/ide-connection/lib/common/sumi-rpc/connection';
+
+import { ProxySumi } from '../../../src/common';
 import { ProtocolRepository } from '../../../src/common/protocol-repository';
 
 import { createConnectionPair } from './utils';
@@ -67,12 +69,13 @@ describe('sumi rpc', () => {
     repo.loadProtocolMethod('returnUndefined', protocols.returnUndefined.protocol);
     repo.loadProtocolMethod('add', protocols.add.protocol);
 
+    pair.connection1.setProtocolRepository(repo);
+    pair.connection2.setProtocolRepository(repo);
+
     const client1 = new ProxySumi({
       shortUrl: (url: string) => url.slice(0, 10),
       returnUndefined: () => undefined,
     });
-
-    client1.setProtocolRepository(repo);
 
     client1.listen(pair.connection1);
     const fury1InvokeProxy = client1.getInvokeProxy();
@@ -80,7 +83,7 @@ describe('sumi rpc', () => {
     const client2 = new ProxySumi({
       add: (a: number, b: number) => a + b,
     });
-    client2.setProtocolRepository(repo);
+
     client2.listen(pair.connection2);
 
     const fury2InvokeProxy = client2.getInvokeProxy();
