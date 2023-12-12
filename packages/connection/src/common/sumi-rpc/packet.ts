@@ -5,25 +5,26 @@ import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
 const PROTO_VERSION = 1;
 
-export const RPC_TYPE = {
-  Request: 0,
-  Notification: 1,
-  Response: 2,
-  Heartbeat: 3,
-} as const;
+export enum RPC_TYPE {
+  Handshake,
+  Request,
+  Notification,
+  Response,
+  Heartbeat,
+}
 
-export const CODEC = {
-  Text: 0,
-  Binary: 1,
-  JSON: 2,
-};
+export enum CODEC {
+  Text,
+  Binary,
+  JSON,
+}
 
-export const ERROR_STATUS = {
-  OK: 0,
-  EXEC_ERROR: 1,
-  PARSE_ERROR: 2,
-  SERVER_ERROR: 3,
-};
+export enum ERROR_STATUS {
+  OK,
+  EXEC_ERROR,
+  PARSE_ERROR,
+  SERVER_ERROR,
+}
 
 export const reader = BinaryReader({});
 const writer = BinaryWriter({});

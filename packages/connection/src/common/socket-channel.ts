@@ -1,7 +1,7 @@
 import Fury, { Type } from '@furyjs/fury';
 
 import { EventEmitter } from '@opensumi/events';
-import { Deferred, ILogger } from '@opensumi/ide-core-common';
+import { ILogger } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
 import { BinaryConnection } from './sumi-rpc/connection';
@@ -20,10 +20,12 @@ export interface IWebSocket {
 export interface ClientMessage {
   kind: 'client';
   clientId: string;
+  id: string;
 }
 export interface HeartbeatMessage {
   kind: 'heartbeat';
   clientId: string;
+  id: string;
 }
 export interface OpenMessage {
   kind: 'open';
@@ -66,23 +68,37 @@ export type TConnectionSend = (content: PlatformBuffer | string) => void;
 type TEventType = 'message' | 'binary' | 'open' | 'reOpen' | 'close' | 'error';
 
 export class SocketChannel implements IWebSocket {
-  private isReadyPromise = new Deferred<void>();
   private emitter = new EventEmitter<TEventType>();
 
   public id: string;
+  public tag: string;
   public channelPath: string;
 
   private _rawSend: TConnectionSend;
 
-  logger: ILogger;
+  logger?: ILogger;
 
-  constructor(connectionSend: TConnectionSend, options?: { id?: string; logger?: ILogger }) {
+  get LOG_TAG() {
+    return [
+      '[SocketChannel]',
+      this.tag ? `[tag:${this.tag}]` : '',
+      this.id ? `[id:${this.id}]` : '',
+      this.channelPath ? `[channel-path:${this.channelPath}]` : '',
+    ].join(' ');
+  }
+
+  constructor(connectionSend: TConnectionSend, options?: { id?: string; logger?: ILogger; tag?: string }) {
     this._rawSend = connectionSend;
     if (options?.logger) {
       this.logger = options.logger;
+    } else {
+      this.logger = console as any;
     }
     if (options?.id) {
       this.id = options?.id;
+    }
+    if (options?.tag) {
+      this.tag = options?.tag;
     }
   }
 
@@ -122,15 +138,11 @@ export class SocketChannel implements IWebSocket {
     );
   }
 
-  whenReady() {
-    return this.isReadyPromise.promise;
-  }
-
   isReady = false;
   handleMessage(msg: ChannelMessage) {
+    this.logger?.log(this.LOG_TAG, 'handleMessage', msg);
     if (msg.kind === 'ready') {
       this.isReady = true;
-      this.isReadyPromise.resolve();
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
       this.emitter.emit('message', msg.content);
@@ -140,6 +152,7 @@ export class SocketChannel implements IWebSocket {
   }
 
   open(path: string) {
+    this.logger?.log(this.LOG_TAG, 'open', path);
     this.channelPath = path;
     this._rawSend(
       stringify({
@@ -158,6 +171,7 @@ export class SocketChannel implements IWebSocket {
       return;
     }
 
+    this.logger?.log(this.LOG_TAG, 'send', content);
     this._rawSend(
       stringify({
         kind: 'data',

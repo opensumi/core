@@ -117,10 +117,12 @@ export class CommonChannelHandler extends WebSocketHandler {
           msgObj = parse(data);
 
           if (msgObj.kind === 'heartbeat') {
+            // 响应 heartbeat
             connection.send(
               stringify({
                 kind: 'heartbeat',
                 clientId: msgObj.clientId,
+                id: msgObj.clientId,
               }),
             );
           } else if (msgObj.kind === 'client') {
@@ -137,7 +139,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
             // 生成 channel 对象
             const connectionSend = this.channelConnectionSend(connection);
-            const channel = new SocketChannel(connectionSend, { id: channelId });
+            const channel = new SocketChannel(connectionSend, { id: channelId, tag: 'common-handler' });
             this.channelMap.set(channelId, channel);
 
             // 根据 path 拿到注册的 handler

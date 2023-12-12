@@ -1,5 +1,7 @@
 import type * as net from 'net';
 
+import { Type } from '@furyjs/fury';
+
 import { ProxyIdentifier } from '@opensumi/ide-connection';
 import { Event } from '@opensumi/ide-core-common';
 
@@ -23,6 +25,24 @@ export const EXT_HOST_PROXY_SERVER_PROT = 10299;
  * 用于插件后端服务和插件进程代理服务通信的 key
  */
 export const EXT_HOST_PROXY_PROTOCOL = 'EXT_HOST_PROXY_PROTOCOL';
+
+export const createExtHostProxyProtocol = (name: string) => ({
+  name,
+  methods: [
+    {
+      method: 'onMessage',
+      request: [
+        {
+          name: 'msg',
+          type: Type.string(),
+        },
+      ],
+      response: {},
+    },
+  ],
+});
+
+export const ExtHostProxyProtocolBinary = createExtHostProxyProtocol(EXT_HOST_PROXY_PROTOCOL);
 
 /**
  * 插件后端服务代理服务
@@ -126,7 +146,7 @@ export interface IExtHostProxyOptions {
    * control rpcProtocol message timeout
    * default -1，it means disable
    */
-   rpcMessageTimeout?: number;
+  rpcMessageTimeout?: number;
 }
 
 /**

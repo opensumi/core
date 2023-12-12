@@ -16,6 +16,7 @@ import {
 
 import {
   CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
+  createExtHostProxyProtocol,
   ExtensionNodeServiceServerPath,
   IExtension,
   IExtensionHostService,
@@ -170,6 +171,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     const { getRPCService } = initRPCService<{
       onMessage: (msg: string) => void;
     }>(mainThreadCenter);
+    const protocol = createExtHostProxyProtocol('ExtProtocol');
+    mainThreadCenter.loadProtocol(protocol);
 
     const service = getRPCService('ExtProtocol');
     const onMessageEmitter = new Emitter<string>();

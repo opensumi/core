@@ -494,7 +494,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       mainThreadServer.on('connection', (connection) => {
         this.logger.log(`The electron mainThread ${clientId} connected`);
 
-        const toDispose = commonHandler.handleSocket(new NetSocketDriver(connection), {
+        const toDispose = commonHandler.handleSocket(new NetSocketDriver(connection).createQueue(), {
           onSocketChannel: (channel) => {
             handler({
               socketChannel: channel,

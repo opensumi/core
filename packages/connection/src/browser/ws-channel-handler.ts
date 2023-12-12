@@ -40,6 +40,7 @@ export class WSChannelHandler {
       stringify({
         kind: 'client',
         clientId: this.clientId,
+        id: this.clientId,
       }),
     );
   }
@@ -51,6 +52,7 @@ export class WSChannelHandler {
       const msg = stringify({
         kind: 'heartbeat',
         clientId: this.clientId,
+        id: this.clientId,
       });
       this.connection.send(msg);
       this.heartbeatMessage();
@@ -125,7 +127,7 @@ export class WSChannelHandler {
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
-    const channel = new SocketChannel(channelSend, { id: channelId });
+    const channel = new SocketChannel(channelSend, { id: channelId, tag: 'ws-channel-handler' });
     this.channelMap.set(channel.id, channel);
 
     await new Promise((resolve) => {

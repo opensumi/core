@@ -2,10 +2,13 @@ import type { MessagePort } from 'worker_threads';
 
 import { IDisposable } from '@opensumi/ide-core-common';
 
-import { IBinaryConnectionSocket } from '../sumi-rpc';
+import { BaseDriver } from './base';
 
-export class NodeMessagePortDriver implements IBinaryConnectionSocket {
-  constructor(private port: MessagePort) {}
+export class NodeMessagePortDriver extends BaseDriver {
+  constructor(private port: MessagePort) {
+    super();
+  }
+
   send(data: Uint8Array): void {
     this.port.postMessage(data);
   }

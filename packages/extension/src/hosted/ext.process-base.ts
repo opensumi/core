@@ -18,7 +18,13 @@ import {
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
-import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
+import {
+  ProcessMessageType,
+  IExtensionHostService,
+  KT_PROCESS_SOCK_OPTION_KEY,
+  KT_APP_CONFIG_KEY,
+  createExtHostProxyProtocol,
+} from '../common';
 import { CommandHandler } from '../common/vscode';
 
 import { setPerformance } from './api/vscode/language/util';
@@ -90,6 +96,8 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
   extCenter.setConnection(channel.createMessageConnection(), channel.createBinaryConnection());
 
   const service = getRPCService('ExtProtocol');
+  const protocol = createExtHostProxyProtocol('ExtProtocol');
+  extCenter.loadProtocol(protocol);
 
   const onMessageEmitter = new Emitter<string>();
   service.on('onMessage', (msg: string) => {

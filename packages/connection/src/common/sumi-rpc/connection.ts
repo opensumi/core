@@ -162,7 +162,7 @@ export class BinaryConnection implements IDisposable {
           }
         } else {
           if (this._notificationEmitter.hasListener(method)) {
-            this._notificationEmitter.emit(method, content);
+            this._notificationEmitter.emit(method, headers, content);
           } else {
             this._notificationEmitter.emit(innerEvents.onNotificationNotFound, method, headers, content);
           }

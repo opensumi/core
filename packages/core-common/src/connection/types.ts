@@ -10,6 +10,9 @@ export interface Response<T> {
    */
   chunkSize?: number;
 
+  /**
+   * If the method no return value, the response type is void.
+   */
   type?: T;
 }
 

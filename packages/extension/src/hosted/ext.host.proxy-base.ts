@@ -15,6 +15,7 @@ import {
   IExtServerProxyRPCService,
   EXT_SERVER_IDENTIFIER,
   EXT_HOST_PROXY_SERVER_PROT,
+  ExtHostProxyProtocolBinary,
 } from '../common/ext.host.proxy';
 import { ExtensionHostManager } from '../node/extension.host.manager';
 
@@ -97,9 +98,13 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private connectedEmitter = new Emitter<void>();
 
-  private readonly debug = getDebugLogger();
+  private readonly logger = getDebugLogger();
 
   public readonly onConnected = this.connectedEmitter.event;
+
+  get LOG_TAG() {
+    return '[ExtHostProxy]';
+  }
 
   constructor(options?: IExtHostProxyOptions) {
     super();
@@ -132,6 +137,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private setRPCMethods() {
     const proxyService = getRPCService<{ onMessage: (msg: any) => void }>(EXT_HOST_PROXY_PROTOCOL, this.clientCenter);
+    this.clientCenter.loadProtocol(ExtHostProxyProtocolBinary);
     const onMessageEmitter = new Emitter<string>();
     proxyService.on('onMessage', (msg: string) => {
       onMessageEmitter.fire(msg);
@@ -155,18 +161,17 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   private reconnectOnEvent = () => {
     global.clearTimeout(this.reconnectingTimer);
     this.reconnectingTimer = global.setTimeout(() => {
-      this.debug.warn('reconnecting ext host server');
+      this.logger.warn(this.LOG_TAG, 'reconnecting ext host server');
       this.createSocket();
     }, this.options.retryTime!);
   };
 
   private connectOnEvent = () => {
-    this.debug.info('connect success');
+    this.logger.info(this.LOG_TAG, 'connect success');
     // this.previouslyConnected = true;
     global.clearTimeout(this.reconnectingTimer);
     this.setConnection();
     this.setRPCMethods();
-    this.connectedEmitter.fire();
   };
 
   private bindEvent(): IDisposable {
@@ -192,9 +197,14 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setConnection() {
-    const channel = createSocketChannel(this.socket);
+    const channel = createSocketChannel(this.socket, this.logger as any);
     const connection = channel.createMessageConnection();
     const binaryConnection = channel.createBinaryConnection();
+
+    channel.onOpen(() => {
+      this.connectedEmitter.fire();
+    });
+
     this.clientCenter.setConnection(connection, binaryConnection);
     this.socket.once('close', () => {
       channel.dispose();
@@ -204,6 +214,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private connect = (): IDisposable => {
     this.socket.connect(this.options.socketConnectOpts!);
+    this.logger.info(this.LOG_TAG, 'connecting ext host server', 'options:', this.options.socketConnectOpts!);
     return {
       dispose: () => {
         this.socket.destroy();

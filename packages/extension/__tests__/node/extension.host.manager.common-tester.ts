@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Provider } from '@opensumi/di';
-import { INodeLogger, MaybePromise, getDebugLogger, Deferred, AppConfig } from '@opensumi/ide-core-node';
+import { MaybePromise, Deferred, AppConfig } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -25,14 +25,9 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
     const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
 
     beforeEach(async () => {
+      process.env.KTLOG_SHOW_DEBUG = '1';
       injector = createNodeInjector([]);
-      injector.addProviders(
-        {
-          token: INodeLogger,
-          useValue: getDebugLogger(),
-        },
-        ...options.providers,
-      );
+      injector.overrideProviders(...options.providers);
       injector.overrideProviders({
         token: AppConfig,
         useValue: {},
@@ -46,6 +41,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       await extensionHostManager.dispose();
       await options.dispose();
       await injector.disposeAll();
+      process.env.KTLOG_SHOW_DEBUG = undefined;
     });
 
     it('fork extension host', async () => {
@@ -62,6 +58,8 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       const pid = await extensionHostManager.fork(extHostPath);
       await sleep(2000);
       extensionHostManager.onMessage(pid, (message) => {
+        // eslint-disable-next-line no-console
+        console.log('message', message);
         if (message === 'finish') {
           expect(message).toBe('finish');
           deferred.resolve();

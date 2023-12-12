@@ -2,10 +2,12 @@ import type WebSocket from 'ws';
 
 import { IDisposable } from '@opensumi/ide-core-common';
 
-import { IBinaryConnectionSocket } from '../sumi-rpc/types';
+import { BaseDriver } from './base';
 
-export class WebSocketDriver implements IBinaryConnectionSocket {
-  constructor(private socket: WebSocket) {}
+export class WebSocketDriver extends BaseDriver {
+  constructor(private socket: WebSocket) {
+    super();
+  }
   send(data: Uint8Array): void {
     this.socket.send(data);
   }

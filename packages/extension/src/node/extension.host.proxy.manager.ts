@@ -20,6 +20,7 @@ import {
   IExtHostProxyRPCService,
   EXT_HOST_PROXY_IDENTIFIER,
   EXT_HOST_PROXY_SERVER_PROT,
+  ExtHostProxyProtocolBinary,
 } from '../common';
 
 @Injectable()
@@ -44,6 +45,10 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private disposer = new Disposable();
 
+  get LOG_TAG() {
+    return '[ExtensionHostProxyManager]';
+  }
+
   constructor(
     @Optional()
     private listenOptions: net.ListenOptions = {
@@ -60,32 +65,39 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
       const server = net.createServer();
       this.disposer.addDispose(
         toDisposable(() => {
-          this.logger.warn('dispose server');
+          this.logger.warn(this.LOG_TAG, 'dispose server');
           server.close();
         }),
       );
       const channelHandler = new SimpleCommonChannelHandler('extension-host-proxy-manager', this.logger);
 
-      this.logger.log('waiting ext-proxy connecting...');
+      this.logger.log(this.LOG_TAG, 'waiting ext-proxy connecting...');
       server.on('connection', (connection) => {
-        this.logger.log('there are new connections coming in');
-        const toDispose = channelHandler.handleSocket(new NetSocketDriver(connection), {
+        this.logger.log(this.LOG_TAG, 'there is a new connection coming in');
+        const toDispose = channelHandler.handleSocket(new NetSocketDriver(connection).createQueue(), {
           onSocketChannel: (channel) => {
+            this.logger.log(this.LOG_TAG, 'channel open:', channel.id);
+
             // 有新的连接时重新设置 RPCProtocol
             this.setProxyConnection(connection, channel);
             this.setExtHostProxyRPCProtocol();
-            resolve();
+
+            setTimeout(() => {
+              resolve();
+            }, 1000);
           },
           onError: (error) => {
             reject(error);
           },
         });
+
         connection.on('close', () => {
           toDispose && toDispose.dispose();
         });
       });
 
       server.listen(this.listenOptions);
+      this.logger.log(this.LOG_TAG, `start proxy server on ${this.listenOptions.port}`);
     });
   }
 
@@ -112,6 +124,8 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
       EXT_HOST_PROXY_PROTOCOL,
       this.extServiceProxyCenter,
     );
+
+    this.extServiceProxyCenter.loadProtocol(ExtHostProxyProtocolBinary);
 
     const onMessageEmitter = new Emitter<string>();
     proxyService.on('onMessage', (msg) => {

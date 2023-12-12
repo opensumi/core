@@ -2,10 +2,12 @@ import type net from 'net';
 
 import { IDisposable } from '@opensumi/ide-core-common';
 
-import { IBinaryConnectionSocket } from '../sumi-rpc/types';
+import { BaseDriver } from './base';
 
-export class NetSocketDriver implements IBinaryConnectionSocket {
-  constructor(private socket: net.Socket) {}
+export class NetSocketDriver extends BaseDriver {
+  constructor(private socket: net.Socket) {
+    super();
+  }
   send(data: Uint8Array): void {
     this.socket.write(data);
   }

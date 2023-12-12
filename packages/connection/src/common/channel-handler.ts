@@ -15,14 +15,16 @@ export class SimpleCommonChannelHandler {
     clientId: string,
     options?: {
       connectionSend?: ICommonHandlerConnectionSend;
+      onSocketChannel?(channel: SocketChannel): void;
     },
-  ) {
+  ): SocketChannel {
     let channel = this.channelMap.get(clientId);
     if (!channel && options?.connectionSend) {
-      channel = new SocketChannel(options.connectionSend, { id: clientId });
+      channel = new SocketChannel(options.connectionSend, { id: clientId, tag: 'simple-common-handler' });
       this.channelMap.set(clientId, channel);
+      options.onSocketChannel?.(channel);
     }
-    return channel;
+    return channel!;
   }
 
   handleSocket(
@@ -32,27 +34,31 @@ export class SimpleCommonChannelHandler {
       onError(error: Error): void;
     },
   ) {
+    const onSocketChannel = (channel: SocketChannel) => {
+      channel.ready();
+
+      if (options.onSocketChannel) {
+        options.onSocketChannel(channel);
+      }
+    };
+
+    const createOptions = {
+      connectionSend: (content: PlatformBuffer) => {
+        socket.send(content);
+      },
+      onSocketChannel,
+    };
+
     return socket.onmessage((data) => {
       let msgObj: ChannelMessage;
 
       try {
         msgObj = parse(data);
-        if (msgObj.kind === 'open') {
-          const channel = this.getOrCreateChannel(msgObj.id, {
-            connectionSend: (content) => {
-              socket.send(content);
-            },
-          })!;
-          options.onSocketChannel(channel);
-        } else if (msgObj.kind === 'data' || msgObj.kind === 'binary') {
-          const channel = this.getOrCreateChannel(msgObj.id);
-          if (!channel) {
-            this.logger.error(`channel ${msgObj.id} not found`);
-            return;
-          }
+        this.logger.log(`[handleSocket] [${this.name}] [${msgObj.kind}]`, msgObj);
 
-          channel.handleMessage(msgObj);
-        }
+        const channel = this.getOrCreateChannel(msgObj.id, createOptions);
+
+        channel.handleMessage(msgObj);
       } catch (error) {
         this.logger.error(`handle socket message error: ${error}`);
         options.onError(error);

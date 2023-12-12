@@ -121,6 +121,10 @@ export class RPCServiceCenter {
 
   onRequest(tag: string, _name: string, method: RPCServiceMethod) {
     const methodName = getMethodName(tag, _name);
+    if (this.protocolRepository.has(methodName)) {
+      return this.onProtocolRequest(tag, _name, method);
+    }
+
     if (this.messageConnections.length === 0) {
       this.serviceMethodMap[methodName] = method;
     } else {

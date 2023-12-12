@@ -85,7 +85,7 @@ export function createNetServerConnection(server: net.Server, injector: Injector
   server.on('connection', (socket) => {
     const disposableCollection = new DisposableCollection();
 
-    const toDispose = channelHandler.handleSocket(new NetSocketDriver(socket), {
+    const toDispose = channelHandler.handleSocket(new NetSocketDriver(socket).createQueue(), {
       onSocketChannel(socketChannel) {
         const serverConnection = socketChannel.createMessageConnection();
         const binaryConnection = socketChannel.createBinaryConnection();
