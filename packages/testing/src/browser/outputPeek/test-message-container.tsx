@@ -169,15 +169,19 @@ export const TestMessageContainer = () => {
     };
   }, []);
 
+  const renderTestMessage = React.useCallback(() => {
+    if (type === EContainerType.DIFF) {
+      return <DiffContentProvider dto={dto} />;
+    } else if (type === EContainerType.MARKDOWN) {
+      return <MarkdownContentProvider dto={dto} />;
+    } else {
+      const msg = getMessage(dto).message;
+      return <div className={styles.preview_text}>{typeof msg === 'string' ? msg : msg.value}</div>;
+    }
+  }, []);
   return (
     <div className={styles.test_output_peek_message_container} style={{ height: '100%' }}>
-      {type === EContainerType.DIFF ? (
-        <DiffContentProvider dto={dto} />
-      ) : type === EContainerType.MARKDOWN ? (
-        <MarkdownContentProvider dto={dto} />
-      ) : type === EContainerType.PLANTTEXT ? (
-        getMessage(dto).message
-      ) : null}
+      {renderTestMessage()}
     </div>
   );
 };

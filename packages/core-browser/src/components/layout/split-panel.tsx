@@ -112,7 +112,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
     () => childList.reduce((accumulator, item) => accumulator + getProp(item, 'flex', 1), 0),
     [childList],
   );
-
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();

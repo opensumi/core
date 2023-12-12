@@ -4,6 +4,12 @@ import { ICtxMenuRenderer, AbstractMenuService } from '@opensumi/ide-core-browse
 import { IDebugModel, IDebugSessionManager } from '@opensumi/ide-debug';
 import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/editor-document-model-service';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
@@ -39,6 +45,7 @@ describe('Debug Model', () => {
         }),
         getLineFirstNonWhitespaceColumn: () => 1,
         getLineLastNonWhitespaceColumn: () => 10,
+        getLineCount: () => 10,
         onDidLayoutChange: jest.fn(() => Disposable.create(() => {})),
         onDidChangeContent: jest.fn(() => Disposable.create(() => {})),
       })),
@@ -108,7 +115,9 @@ describe('Debug Model', () => {
 
     mockInjector.overrideProviders({
       token: IContextKeyService,
-      useValue: {},
+      useValue: {
+        getContextValue: jest.fn(),
+      },
     });
 
     childInjector = DebugModel.createContainer(mockInjector, mockEditor as any);
@@ -122,12 +131,28 @@ describe('Debug Model', () => {
       token: DebugBreakpointWidget,
       useValue: mockBreakpointWidget,
     });
+
+    childInjector.overrideProviders({
+      token: IWorkspaceService,
+      useClass: WorkspaceService,
+    });
+
+    childInjector.overrideProviders({
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
+    });
+
+    childInjector.overrideProviders({
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
+    });
+
     debugModel = childInjector.get(IDebugModel);
   });
 
   it('debugModel should be init success', () => {
     expect(mockEditor.onKeyDown).toBeCalledTimes(1);
-    expect(mockEditor.getModel).toBeCalledTimes(1);
+    expect(mockEditor.getModel).toBeCalledTimes(4);
     expect(mockBreakpointManager.onDidChange).toBeCalledTimes(1);
   });
 
@@ -159,13 +184,13 @@ describe('Debug Model', () => {
   it('renderBreakpoints should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
     await debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
   it('render should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
     await debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(1);
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
   it('toggleBreakpoint should be work', () => {

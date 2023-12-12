@@ -27,9 +27,9 @@ export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
 
   async open(preview = true) {
     if (!preview) {
-      await this.elementHandle.dblclick();
+      await this.elementHandle?.dblclick();
     } else {
-      await this.elementHandle.click();
+      await this.elementHandle?.click();
     }
   }
 

@@ -36,6 +36,7 @@ export interface IRecycleTreeSize {
 }
 
 export interface IRecycleTreeProps<T = TreeModel> {
+  children(props: any): React.ReactNode;
   model: T;
   /**
    * 容器高度

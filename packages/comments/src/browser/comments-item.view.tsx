@@ -136,7 +136,7 @@ const ReplyItem: React.FC<{
               {timestamp && <Timestamp timestamp={timestamp} />}
               {typeof label === 'string' ? <span className={styles.comment_item_label}>{label}</span> : label}
               {' : '}
-              <span className={styles.comment_item_body}>{body}</span>
+              <span className={styles.comment_item_body}>{typeof body === 'string' ? body : body.value}</span>
               {reply.reactions && reply.reactions.length > 0 && (
                 <CommentReactionSwitcher className={styles.reply_item_title} thread={thread} comment={reply} />
               )}

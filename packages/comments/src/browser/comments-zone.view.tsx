@@ -1,7 +1,7 @@
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
 import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@opensumi/ide-core-browser';
@@ -160,11 +160,10 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
     this._container.appendChild(this._wrapper);
     this.observeContainer(this._wrapper);
     const customRender = this.commentsFeatureRegistry.getZoneWidgetRender();
-    ReactDOM.render(
+    ReactDOM.createRoot(this._wrapper).render(
       <ConfigProvider value={this.appConfig}>
         {customRender ? customRender(thread, this) : <CommentsZone thread={thread} widget={this} />}
       </ConfigProvider>,
-      this._wrapper,
     );
   }
 

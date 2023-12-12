@@ -1,3 +1,5 @@
+import { act } from 'react-dom/test-utils';
+
 import { Injector } from '@opensumi/di';
 import {
   CommentContentNode,
@@ -14,7 +16,6 @@ import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
 import { ICommentsService, CommentMode } from '../../src/common';
@@ -24,7 +25,6 @@ describe('comment service test', () => {
   let commentsService: ICommentsService;
   let currentEditor: IEditor;
   beforeAll(() => {
-    (global as any).monaco = createMockedMonaco() as any;
     const monacoEditor = mockService({
       getConfiguration: () => ({
         lineHeight: 20,
@@ -77,27 +77,22 @@ describe('comment service test', () => {
         },
       ]),
     );
-  });
-
-  beforeEach(() => {
     commentsService = injector.get<ICommentsService>(ICommentsService);
     commentsService.init();
   });
 
   afterEach(() => {
-    commentsService.dispose();
-  });
-
-  afterAll(() => {
-    (global as any).monaco = undefined;
+    commentsService['threads'].clear();
   });
 
   it('create thread', () => {
     const uri = URI.file('/test');
-    const [thread] = createTestThreads(uri);
-    expect(thread.uri.isEqual(uri));
-    expect(thread.range.startLineNumber).toBe(1);
-    expect(thread.comments[0].body).toBe('评论内容');
+    act(() => {
+      const [thread] = createTestThreads(uri);
+      expect(thread.uri.isEqual(uri));
+      expect(thread.range.startLineNumber).toBe(1);
+      expect(thread.comments[0].body).toBe('Comment Text');
+    });
   });
 
   it('get commentsThreads', () => {
@@ -163,7 +158,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容',
+          body: 'Comment Text',
         },
       ],
     });
@@ -182,7 +177,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容',
+          body: 'Comment Text',
         },
       ],
     });
@@ -192,11 +187,13 @@ describe('comment service test', () => {
   it('unvisible widget not to be called with showWidgetsIfShowed method', async () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
-    currentEditor.currentUri = uri;
-    // 生成一个 widget
-    thread.show(currentEditor);
-    // 调用隐藏方法，此时 isShow 为 false
-    thread.hide();
+    act(() => {
+      currentEditor.currentUri = uri;
+      // 生成一个 widget
+      thread.show(currentEditor);
+      // 调用隐藏方法，此时 isShow 为 false
+      thread.hide();
+    });
     const widget = thread.getWidgetByEditor(currentEditor);
     expect(widget?.isShow).toBeFalsy();
     const onShow = jest.fn();
@@ -211,10 +208,12 @@ describe('comment service test', () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
-    // 生成一个 widget
-    thread.show(currentEditor);
-    // 先通过 dispose 方式隐藏，此时 isShow 仍为 true
-    thread.hideWidgetsByDispose();
+    act(() => {
+      // 生成一个 widget
+      thread.show(currentEditor);
+      // 先通过 dispose 方式隐藏，此时 isShow 仍为 true
+      thread.hideWidgetsByDispose();
+    });
     const widget = thread.getWidgetByEditor(currentEditor);
     expect(widget?.isShow).toBeTruthy();
     const onShow = jest.fn();
@@ -227,8 +226,10 @@ describe('comment service test', () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
-    // 生成一个 widget
-    thread.show(currentEditor);
+    act(() => {
+      // 生成一个 widget
+      thread.show(currentEditor);
+    });
     const widget = thread.getWidgetByEditor(currentEditor);
     expect(widget?.isShow).toBeTruthy();
     thread.hideWidgetsByDispose();
@@ -256,7 +257,7 @@ describe('comment service test', () => {
             author: {
               name: 'User',
             },
-            body: '评论内容',
+            body: 'Comment Text',
           },
         ],
       }),
@@ -267,7 +268,7 @@ describe('comment service test', () => {
             author: {
               name: 'User',
             },
-            body: '评论内容2',
+            body: 'Comment Text 2',
           },
         ],
       }),

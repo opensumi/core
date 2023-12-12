@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import ReactDOMClient from 'react-dom/client';
 
 export const destroyFns: Array<() => void> = [];
 
@@ -31,7 +32,7 @@ export function createOverlay(children: React.ReactElement) {
   }
 
   function render(comp: React.ReactElement) {
-    ReactDOM.render(React.cloneElement(comp), div);
+    ReactDOMClient.createRoot(div).render(React.cloneElement(comp));
   }
 
   function update(newChildren: React.ReactElement) {

@@ -49,7 +49,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容1',
+          body: 'Comment Text',
         },
       ],
     });
@@ -66,7 +66,7 @@ describe('comment service test', () => {
           author: {
             name: 'User',
           },
-          body: '评论内容1',
+          body: 'Comment Text',
           data: {
             b: 1,
           },
@@ -89,14 +89,14 @@ describe('comment service test', () => {
         author: {
           name: 'User',
         },
-        body: '评论内容1',
+        body: 'Comment Text',
       },
       {
         mode: CommentMode.Editor,
         author: {
           name: 'User',
         },
-        body: '评论内容2',
+        body: 'Comment Text 2',
       },
     );
     expect(thread.comments.length).toBe(2);
@@ -112,14 +112,14 @@ describe('comment service test', () => {
         author: {
           name: 'User',
         },
-        body: '评论内容1',
+        body: 'Comment Text',
       },
       {
         mode: CommentMode.Editor,
         author: {
           name: 'User',
         },
-        body: '评论内容2',
+        body: 'Comment Text 2',
       },
     );
     thread.dispose();
@@ -129,10 +129,11 @@ describe('comment service test', () => {
   it('thread context service', () => {
     const uri = URI.file('/test');
     expect(commentsService.commentsThreads.length).toBe(0);
+    const contextValue = 'isDraft';
     const thread = commentsService.createThread(uri, positionToRange(1), {
-      contextValue: 'aaa',
+      contextValue,
     });
-    expect(thread.contextKeyService.getContextValue('thread')).toBe('aaa');
+    expect(thread.contextKeyService.getContextValue('thread')).toBe(contextValue);
     expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(1);
     commentsService.createThread(uri, positionToRange(2));
     // 同一个 uri 的 threadsLength 会变为 2

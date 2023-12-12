@@ -57,6 +57,7 @@ export interface MenuProps {
   getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
   overflowedIndicator?: React.ReactNode;
   forceSubMenuRender?: boolean;
+  children?: React.ReactNode;
 }
 
 type InternalMenuProps = MenuProps;
