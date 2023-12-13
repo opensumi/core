@@ -3,7 +3,7 @@ import net, { SocketConnectOpts } from 'net';
 import { Injectable, Optional } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { createSocketChannel } from '@opensumi/ide-connection/lib/node';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, IDisposable } from '@opensumi/ide-core-common';
 
 import {
   IPtyProxyRPCService,
@@ -19,6 +19,8 @@ import { PtyServiceManager } from './pty.manager';
 // 具体需要根据应用场景，通过DI注入覆盖PtyServiceManager使用
 @Injectable()
 export class PtyServiceManagerRemote extends PtyServiceManager {
+  protected disposableCollection = new DisposableCollection();
+
   // Pty运行在单独的容器上，通过Socket连接，可以自定义Socket连接参数
   constructor(@Optional() connectOpts: SocketConnectOpts = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
     super();
@@ -95,9 +97,14 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       // 连接错误的时候会抛出异常，此时自动重连，同时需要 catch 错误
       this.logger.warn(e);
     }
+    this.disposableCollection.push(Disposable.create(() => socket.destroy()));
   }
 
   protected initLocal() {
     // override 空置父类的方法，因为不需要LocalInit，使用RemoteInit替代
+  }
+
+  dispose() {
+    this.disposableCollection.dispose();
   }
 }

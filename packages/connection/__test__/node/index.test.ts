@@ -1,6 +1,6 @@
 import http from 'http';
 
-import ws from 'ws';
+import WebSocket from 'ws';
 
 import { WebSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/websocket';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
@@ -16,8 +16,6 @@ import {
   commonChannelPathHandler,
   createSocketChannelForWS,
 } from '../../src/node';
-
-const WebSocket = ws;
 
 class MockFileService extends RPCService {
   getContent(filePath) {
@@ -137,6 +135,7 @@ describe('connection', () => {
     const clientId = '123456';
     const serviceCenter: RPCServiceCenter = new RPCServiceCenter();
     const clientCenter = new RPCServiceCenter();
+    let clientConnectionWs: WebSocket;
 
     await Promise.all([
       new Promise<void>((resolve, reject) => {
@@ -158,7 +157,7 @@ describe('connection', () => {
         });
       }),
       new Promise<void>((resolve) => {
-        const clientConnectionWs = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
+        clientConnectionWs = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
 
         clientConnectionWs.on('open', () => {
           const channel = createSocketChannelForWS(clientConnectionWs, clientId);
@@ -216,6 +215,7 @@ describe('connection', () => {
     expect(notificationMock.mock.calls.length).toBe(2);
 
     wss.close();
+    clientConnectionWs!.close();
   });
 
   it('RPCProtocol', async () => {

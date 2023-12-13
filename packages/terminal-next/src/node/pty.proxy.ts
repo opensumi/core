@@ -7,7 +7,7 @@ import * as pty from 'node-pty';
 
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { createSocketChannel } from '@opensumi/ide-connection/lib/node';
-import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
+import { Disposable, DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
 import { isMacintosh, isLinux } from '@opensumi/ide-utils/lib/platform';
 
 import {
@@ -246,6 +246,8 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
 
 // 需要单独运行PtyServer的时候集成此Class然后运行initServer
 export class PtyServiceProxyRPCProvider {
+  protected disposableCollection = new DisposableCollection();
+
   private ptyServiceProxy: PtyServiceProxy;
   private readonly ptyServiceCenter = new RPCServiceCenter();
   private readonly debugLogger = getDebugLogger();
@@ -280,6 +282,7 @@ export class PtyServiceProxyRPCProvider {
       fs.unlinkSync(this.serverListenOptions.path); // 兜底逻辑，如果之前Server没有清除掉SOCK文件的话，那就先清除
     }
     this.server.listen(this.serverListenOptions);
+    this.disposableCollection.push(Disposable.create(() => this.server.close()));
     this.debugLogger.log('ptyServiceCenter: listening on', this.serverListenOptions);
   }
 
@@ -312,6 +315,10 @@ export class PtyServiceProxyRPCProvider {
 
   public get $ptyServiceProxy(): PtyServiceProxy {
     return this.ptyServiceProxy;
+  }
+
+  public dispose() {
+    this.disposableCollection.dispose();
   }
 }
 

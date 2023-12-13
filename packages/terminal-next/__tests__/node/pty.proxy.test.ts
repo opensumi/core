@@ -42,6 +42,8 @@ describe('PtyService function should be valid', () => {
   afterAll(() => {
     // 强制关闭Socket Server 正常情况下会监听process的exit来关闭，但是在测试中，需要手动close
     proxyProvider['server']?.close();
+    proxyProvider.dispose();
+    injector.disposeAll();
   });
 
   it('cannot create a invalid shell case1', async () => {
