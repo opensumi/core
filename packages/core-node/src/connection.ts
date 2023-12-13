@@ -85,29 +85,33 @@ export function createNetServerConnection(server: net.Server, injector: Injector
   server.on('connection', (socket) => {
     const disposableCollection = new DisposableCollection();
 
-    const toDispose = channelHandler.handleSocket(new NetSocketDriver(socket).createQueue(), {
-      onSocketChannel(socketChannel) {
-        const serverConnection = socketChannel.createMessageConnection();
-        const binaryConnection = socketChannel.createBinaryConnection();
+    disposableCollection.push(
+      channelHandler.handleSocket(new NetSocketDriver(socket).createQueue(), {
+        onSocketChannel(socketChannel) {
+          const serverConnection = socketChannel.createMessageConnection();
+          const binaryConnection = socketChannel.createBinaryConnection();
 
-        serviceCenter.setConnection(serverConnection, binaryConnection);
+          serviceCenter.setConnection(serverConnection, binaryConnection);
 
-        disposableCollection.push({
-          dispose() {
-            serviceCenter.removeConnection(serverConnection, binaryConnection);
-          },
-        });
-      },
-      onError(error) {
-        //
-      },
-    });
+          disposableCollection.push({
+            dispose() {
+              serviceCenter.removeConnection(serverConnection, binaryConnection);
+            },
+          });
+        },
+        onError(error) {
+          logger.error('net server connection on error', error);
+        },
+      }),
+    );
 
     socket.on('close', () => {
-      toDispose.dispose();
       disposableCollection.dispose();
-      serviceChildInjector.disposeAll();
     });
+  });
+
+  server.on('close', () => {
+    serviceChildInjector.disposeAll();
   });
 
   return serviceCenter;

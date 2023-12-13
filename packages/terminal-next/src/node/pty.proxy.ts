@@ -301,12 +301,12 @@ export class PtyServiceProxyRPCProvider {
 
   private setProxyConnection(connection: net.Socket) {
     const channel = createSocketChannel(connection);
-    const serverConnection = channel.createMessageConnection();
+    const messageConnection = channel.createMessageConnection();
     const binaryConnection = channel.createBinaryConnection();
-    this.ptyServiceCenter.setConnection(serverConnection, binaryConnection);
+    this.ptyServiceCenter.setConnection(messageConnection, binaryConnection);
 
     connection.on('close', () => {
-      this.ptyServiceCenter.removeConnection(serverConnection, binaryConnection);
+      this.ptyServiceCenter.removeConnection(messageConnection, binaryConnection);
     });
   }
 

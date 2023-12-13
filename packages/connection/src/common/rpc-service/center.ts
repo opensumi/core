@@ -18,8 +18,8 @@ export class RPCServiceCenter {
 
   private protocolRepository = new ProtocolRepository();
 
-  private proxyClients: ProxyClient<ProxyJSONRPC>[] = [];
   // jsonrpc proxy start
+  private proxyClients: ProxyClient<ProxyJSONRPC>[] = [];
   private messageConnections: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
   // jsonrpc proxy end
@@ -89,8 +89,8 @@ export class RPCServiceCenter {
       this.proxyClients.splice(removeIndex, 1);
     }
 
-    const result1 = removeIndex !== -1;
-    return result1 && this.removeBinaryConnection(binaryConnection);
+    const result = removeIndex !== -1;
+    return result && this.removeBinaryConnection(binaryConnection);
   }
 
   private setBinaryConnection(connection: BinaryConnection) {
