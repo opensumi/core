@@ -10,47 +10,47 @@ export interface IWebSocket {
 
 export interface ClientMessage {
   kind: 'client';
-  clientId: string;
+  id: string;
 }
 export interface HeartbeatMessage {
   kind: 'heartbeat';
-  clientId: string;
+  id: string;
 }
 export interface OpenMessage {
   kind: 'open';
-  id: number;
+  id: string;
   path: string;
 }
 export interface ReadyMessage {
   kind: 'ready';
-  id: number;
+  id: string;
 }
 export interface DataMessage {
   kind: 'data';
-  id: number;
+  id: string;
   content: string;
 }
 export interface CloseMessage {
   kind: 'close';
-  id: number;
+  id: string;
   code: number;
   reason: string;
 }
 export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
-  public id: number | string;
+  public id: string;
   public channelPath: string;
 
   private connectionSend: (content: string) => void;
   private fireMessage: (data: any) => void;
-  private fireOpen: (id: number) => void;
+  private fireOpen: (id: string) => void;
   public fireReOpen: () => void;
   private fireClose: (code: number, reason: string) => void;
 
   public messageConnection: any;
 
-  constructor(connectionSend: (content: string) => void, id?: number | string) {
+  constructor(connectionSend: (content: string) => void, id?: string) {
     this.connectionSend = connectionSend;
     if (id) {
       this.id = id;
@@ -65,7 +65,7 @@ export class WSChannel implements IWebSocket {
   onMessage(cb: (data: any) => any) {
     this.fireMessage = cb;
   }
-  onOpen(cb: (id: number) => void) {
+  onOpen(cb: (id: string) => void) {
     this.fireOpen = cb;
   }
   onReOpen(cb: () => void) {

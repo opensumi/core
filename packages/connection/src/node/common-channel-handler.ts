@@ -1,12 +1,12 @@
-import pathMatch from 'path-match';
-import ws from 'ws';
+import { MatchFunction, match } from 'path-to-regexp';
+import WebSocket from 'ws';
 
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
-export interface IPathHander {
+export interface IPathHandler {
   dispose: (connection: any, connectionId: string) => void;
   handler: (connection: any, connectionId: string, params?: any) => void;
   reconnect?: (connection: any, connectionId: string) => void;
@@ -14,10 +14,10 @@ export interface IPathHander {
 }
 
 export class CommonChannelPathHandler {
-  private handlerMap: Map<string, IPathHander[]> = new Map();
+  private handlerMap: Map<string, IPathHandler[]> = new Map();
   private paramsKey: Map<string, string> = new Map();
 
-  register(channelPath: string, handler: IPathHander) {
+  register(channelPath: string, handler: IPathHandler) {
     const paramsIndex = channelPath.indexOf('/:');
     const hasParams = paramsIndex >= 0;
     let channelToken = channelPath;
@@ -28,9 +28,9 @@ export class CommonChannelPathHandler {
     if (!this.handlerMap.has(channelToken)) {
       this.handlerMap.set(channelToken, []);
     }
-    const handlerArr = this.handlerMap.get(channelToken) as IPathHander[];
+    const handlerArr = this.handlerMap.get(channelToken) as IPathHandler[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection, clientId, params) => {
+    const setHandler = (connection: WSChannel, clientId: string, params: any) => {
       handler.connection = connection;
       handlerFn(connection, clientId, params);
     };
@@ -48,7 +48,7 @@ export class CommonChannelPathHandler {
     }
     return params;
   }
-  removeHandler(channelPath: string, handler: IPathHander) {
+  removeHandler(channelPath: string, handler: IPathHandler) {
     const paramsIndex = channelPath.indexOf(':');
     const hasParams = paramsIndex >= 0;
     let channelToken = channelPath;
@@ -65,9 +65,9 @@ export class CommonChannelPathHandler {
   get(channelPath: string) {
     return this.handlerMap.get(channelPath);
   }
-  disposeConnectionClientId(connection: ws, clientId: string) {
-    this.handlerMap.forEach((handlerArr: IPathHander[]) => {
-      handlerArr.forEach((handler: IPathHander) => {
+  disposeConnectionClientId(connection: WebSocket, clientId: string) {
+    this.handlerMap.forEach((handlerArr: IPathHandler[]) => {
+      handlerArr.forEach((handler: IPathHandler) => {
         handler.dispose(connection, clientId);
       });
     });
@@ -81,26 +81,22 @@ export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 // 后台 Web 链接处理类
 export class CommonChannelHandler extends WebSocketHandler {
-  static channelId = 0;
-
   public handlerId = 'common-channel';
-  private wsServer: ws.Server;
-  protected handlerRoute: (wsPathname: string) => any;
+  private wsServer: WebSocket.Server;
+  protected handlerRoute: MatchFunction;
   private channelMap: Map<string | number, WSChannel> = new Map();
-  private connectionMap: Map<string, ws> = new Map();
+  private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(routePath: string, private logger: any = console, private options: CommonChannelHandlerOptions = {}) {
     super();
-    const route = pathMatch(options.pathMatchOptions);
-    this.handlerRoute = route(`${routePath}`);
+    this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }
-  private hearbeat(connectionId: string, connection: ws) {
+  private heartbeat(connectionId: string, connection: WebSocket) {
     const timer = global.setTimeout(() => {
       connection.ping();
-      // console.log(`connectionId ${connectionId} ping`);
-      this.hearbeat(connectionId, connection);
+      this.heartbeat(connectionId, connection);
     }, 5000);
 
     this.heartbeatMap.set(connectionId, timer);
@@ -108,12 +104,12 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({
+    this.wsServer = new WebSocket.Server({
       noServer: true,
       ...this.options.wsServerOptions,
     });
-    this.wsServer.on('connection', (connection: ws) => {
-      let connectionId;
+    this.wsServer.on('connection', (connection: WebSocket) => {
+      let connectionId: string;
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
@@ -121,16 +117,20 @@ export class CommonChannelHandler extends WebSocketHandler {
 
           // 心跳消息
           if (msgObj.kind === 'heartbeat') {
-            connection.send(stringify(`heartbeat ${msgObj.clientId}`));
+            connection.send(
+              stringify({
+                kind: 'heartbeat',
+                id: msgObj.id,
+              }),
+            );
           } else if (msgObj.kind === 'client') {
-            const clientId = msgObj.clientId;
-            this.logger.log(`New connection with id ${clientId}`);
-            connectionId = clientId;
-            this.connectionMap.set(clientId, connection);
-            this.hearbeat(connectionId, connection);
+            connectionId = msgObj.id;
+            this.logger.log(`New connection with id ${connectionId}`);
+            this.connectionMap.set(connectionId, connection);
+            this.heartbeat(connectionId, connection);
             // channel 消息处理
           } else if (msgObj.kind === 'open') {
-            const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
+            const channelId = msgObj.id;
             const { path } = msgObj;
             this.logger.log(`Open a new connection channel ${channelId} with path ${path}`);
 
@@ -195,7 +195,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
   }
 
-  private channelConnectionSend = (connection: ws) => (content: string) => {
+  private channelConnectionSend = (connection: WebSocket) => (content: string) => {
     if (connection.readyState === connection.OPEN) {
       connection.send(content, (err: any) => {
         if (err) {

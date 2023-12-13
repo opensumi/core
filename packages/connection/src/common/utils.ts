@@ -1,3 +1,5 @@
+import { ChannelMessage } from '.';
+
 declare global {
   interface Window {
     __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
@@ -41,7 +43,7 @@ export interface WSCloseInfo {
   connectInfo: ConnectionInfo;
 }
 
-export function stringify(obj: any): string {
+export function stringify(obj: ChannelMessage): string {
   return JSON.stringify(obj);
 }
 

@@ -33,7 +33,7 @@ export class WSChannelHandler {
   private clientMessage() {
     const clientMsg: MessageString = stringify({
       kind: 'client',
-      clientId: this.clientId,
+      id: this.clientId,
     });
     this.connection.send(clientMsg);
   }
@@ -44,7 +44,7 @@ export class WSChannelHandler {
     this.heartbeatMessageTimer = global.setTimeout(() => {
       const msg = stringify({
         kind: 'heartbeat',
-        clientId: this.clientId,
+        id: this.clientId,
       });
       this.connection.send(msg);
       this.heartbeatMessage();
