@@ -1,3 +1,5 @@
+import { EventEmitter } from '@opensumi/events';
+
 import { stringify } from './utils';
 
 export interface IWebSocket {
@@ -39,14 +41,17 @@ export interface CloseMessage {
 export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
+  protected emitter = new EventEmitter<{
+    message: [data: any];
+    open: [id: string];
+    reOpen: [];
+    close: [code: number, reason: string];
+  }>();
+
   public id: string;
   public channelPath: string;
 
   private connectionSend: (content: string) => void;
-  private fireMessage: (data: any) => void;
-  private fireOpen: (id: string) => void;
-  public fireReOpen: () => void;
-  private fireClose: (code: number, reason: string) => void;
 
   public messageConnection: any;
 
@@ -63,13 +68,13 @@ export class WSChannel implements IWebSocket {
 
   // server
   onMessage(cb: (data: any) => any) {
-    this.fireMessage = cb;
+    this.emitter.on('message', cb);
   }
   onOpen(cb: (id: string) => void) {
-    this.fireOpen = cb;
+    this.emitter.on('open', cb);
   }
   onReOpen(cb: () => void) {
-    this.fireReOpen = cb;
+    this.emitter.on('reOpen', cb);
   }
   ready() {
     this.connectionSend(
@@ -80,10 +85,10 @@ export class WSChannel implements IWebSocket {
     );
   }
   handleMessage(msg: ChannelMessage) {
-    if (msg.kind === 'ready' && this.fireOpen) {
-      this.fireOpen(msg.id);
-    } else if (msg.kind === 'data' && this.fireMessage) {
-      this.fireMessage(msg.content);
+    if (msg.kind === 'ready') {
+      this.emitter.emit('open', msg.id);
+    } else if (msg.kind === 'data') {
+      this.emitter.emit('message', msg.content);
     }
   }
 
@@ -109,12 +114,13 @@ export class WSChannel implements IWebSocket {
   }
   onError() {}
   close(code: number, reason: string) {
-    if (this.fireClose) {
-      this.fireClose(code, reason);
-    }
+    this.emitter.emit('close', code, reason);
+  }
+  fireReOpen() {
+    this.emitter.emit('reOpen');
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb;
+    this.emitter.on('close', cb);
   }
 }
 

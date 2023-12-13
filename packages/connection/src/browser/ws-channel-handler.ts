@@ -8,7 +8,7 @@ import { WSChannel, MessageString } from '../common/ws-channel';
 
 // 前台链接管理类
 export class WSChannelHandler {
-  public connection: WebSocket;
+  public connection: ReconnectingWebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
   private channelCloseEventMap: Map<number | string, WSCloseInfo> = new Map();
   private logger = console;
@@ -19,7 +19,7 @@ export class WSChannelHandler {
   constructor(public wsPath: UrlProvider, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
-    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}) as WebSocket; // new WebSocket(wsPath, protocols);
+    this.connection = new ReconnectingWebSocket(wsPath, protocols, {});
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -88,9 +88,7 @@ export class WSChannelHandler {
             channel.open(channel.channelPath);
 
             // 针对前端需要重新设置下后台状态的情况
-            if (channel.fireReOpen) {
-              channel.fireReOpen();
-            }
+            channel.fireReOpen();
           });
         }
       });
@@ -104,12 +102,8 @@ export class WSChannelHandler {
       });
     });
   }
-  private getChannelSend = (connection) => (content: string) => {
-    connection.send(content, (err: Error) => {
-      if (err) {
-        this.logger.warn(err);
-      }
-    });
+  private getChannelSend = (connection: ReconnectingWebSocket) => (content: string) => {
+    connection.send(content);
   };
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
