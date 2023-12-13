@@ -39,7 +39,6 @@ export class WSChannelHandler {
     this.connection.send(
       stringify({
         kind: 'client',
-        clientId: this.clientId,
         id: this.clientId,
       }),
     );

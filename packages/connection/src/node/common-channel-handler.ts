@@ -125,7 +125,7 @@ export class CommonChannelHandler extends WebSocketHandler {
               }),
             );
           } else if (msgObj.kind === 'client') {
-            const clientId = msgObj.clientId;
+            const clientId = msgObj.id;
             this.logger.log(`New connection with id ${clientId}`);
             connectionId = clientId;
             this.connectionMap.set(clientId, connection);

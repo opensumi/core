@@ -19,7 +19,6 @@ export interface IWebSocket {
 
 export interface ClientMessage {
   kind: 'client';
-  clientId: string;
   id: string;
 }
 export interface HeartbeatMessage {
