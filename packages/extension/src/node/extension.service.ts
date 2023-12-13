@@ -4,7 +4,7 @@ import path from 'path';
 import util from 'util';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { SimpleCommonChannelHandler, SocketChannel } from '@opensumi/ide-connection';
+import { SimpleCommonChannelHandler, WSChannel } from '@opensumi/ide-connection';
 import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/socket';
 import { commonChannelPathHandler, createSocketChannel } from '@opensumi/ide-connection/lib/node';
 import {
@@ -481,7 +481,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _setMainThreadConnection(
-    handler: (connectionResult: { socketChannel: SocketChannel; clientId: string }) => void,
+    handler: (connectionResult: { socketChannel: WSChannel; clientId: string }) => void,
   ) {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
@@ -519,7 +519,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       });
     } else {
       commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-        handler: (channel: SocketChannel, connectionClientId: string) => {
+        handler: (channel: WSChannel, connectionClientId: string) => {
           handler({
             socketChannel: channel,
             clientId: connectionClientId,

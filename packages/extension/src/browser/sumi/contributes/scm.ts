@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LifeCyclePhase, IJSONSchema, localize } from '@opensumi/ide-core-common';
 import { SCMService } from '@opensumi/ide-scm';
 

@@ -15,7 +15,9 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   protected logger: ILogger;
   protected connection: T;
 
-  protected connectionPromise: Deferred<T> = new Deferred<T>();
+  protected connectionPromise: Deferred<void> = new Deferred<void>();
+
+  protected abstract proxyType: 'sumi-rpc' | 'json-rpc';
 
   constructor(public target?: IRPCServiceMap, logger?: ILogger) {
     this.logger = logger || console;
@@ -25,7 +27,10 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   protected capture(message: ICapturedMessage): void {
     const capturer = getCapturer();
     if (isDefined(capturer)) {
-      capturer(message);
+      capturer({
+        ...message,
+        proxyType: this.proxyType,
+      });
     }
   }
 
@@ -41,7 +46,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
     }
 
     connection.listen();
-    this.connectionPromise.resolve(connection);
+    this.connectionPromise.resolve();
   }
 
   public listenService(service: IRPCServiceMap) {

@@ -26,6 +26,8 @@ export interface ICapturedMessage {
   status?: ResponseStatus;
   data?: any;
   error?: any;
+
+  proxyType?: 'sumi-rpc' | 'json-rpc';
 }
 
 export interface ConnectionInfo {

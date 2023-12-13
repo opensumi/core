@@ -6,7 +6,7 @@ import {
   RPCProtocol,
   IRPCProtocol,
   SimpleCommonChannelHandler,
-  SocketChannel,
+  WSChannel,
 } from '@opensumi/ide-connection';
 import { NetSocketDriver } from '@opensumi/ide-connection/lib/common/drivers/socket';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
@@ -101,7 +101,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     });
   }
 
-  private setProxyConnection(connection: net.Socket, channel: SocketChannel) {
+  private setProxyConnection(connection: net.Socket, channel: WSChannel) {
     const messageConnection = channel.createMessageConnection();
     const binaryConnection = channel.createBinaryConnection();
     this.extServiceProxyCenter.setConnection(messageConnection, binaryConnection);

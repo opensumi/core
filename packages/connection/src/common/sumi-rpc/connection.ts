@@ -59,7 +59,7 @@ export class BinaryConnection implements IDisposable {
   }
 
   sendRequest(method: string, ...args: any[]) {
-    return new Promise<{ headers: Record<string, any>; result: any }>((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
       this._callbacks.set(this._requestId, (headers, error, buffer) => {
         if (error) {
           reject(error);
@@ -125,7 +125,7 @@ export class BinaryConnection implements IDisposable {
     }
   }
 
-  onRequest(method: string, handler: TGenericRequestHandler<Uint8Array>): IDisposable {
+  onRequest<T = any>(method: string, handler: TGenericRequestHandler<T>): IDisposable {
     const handlerWrapper = (requestId: number, headers: Record<string, any>, args: any[]) => {
       this.runRequestHandler(method, handler, requestId, headers, args);
     };

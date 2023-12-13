@@ -9,7 +9,7 @@ import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 import { RPCService } from '../../src';
 import { RPCServiceCenter, SimpleCommonChannelHandler, initRPCService } from '../../src/common';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
-import { SocketChannel, parse } from '../../src/common/socket-channel';
+import { WSChannel, parse } from '../../src/common/ws-channel';
 import {
   WebSocketServerRoute,
   CommonChannelHandler,
@@ -66,7 +66,7 @@ describe('connection', () => {
     const channelSend = (content) => {
       connection.send(content, (err) => {});
     };
-    const channel = new SocketChannel(channelSend, { id: 'TEST_CHANNEL_ID' });
+    const channel = new WSChannel(channelSend, { id: 'TEST_CHANNEL_ID' });
     connection.on('message', (msg) => {
       const msgObj = parse(msg as PlatformBuffer);
       if (msgObj.kind === 'ready') {

@@ -10,13 +10,13 @@ import {
   createMessageConnection,
 } from '@opensumi/vscode-jsonrpc/lib/node/main';
 
-import { SocketChannel, parse } from '../common';
+import { WSChannel, parse } from '../common';
 
 export function createSocketConnection(socket: net.Socket) {
   return createMessageConnection(new SocketMessageReader(socket), new SocketMessageWriter(socket));
 }
 
-function handleServerResponseForNode(socketChannel: SocketChannel, data: PlatformBuffer) {
+function handleServerResponseForNode(socketChannel: WSChannel, data: PlatformBuffer) {
   const msgObj = parse(data);
   socketChannel.handleMessage(msgObj);
   return msgObj;
@@ -26,7 +26,7 @@ const clientId = 'node-socket-connection';
 
 export function createSocketChannel(socket: net.Socket, logger?: ILogger) {
   const id = `${clientId}-${Math.random().toString(36).substring(2, 8)}`;
-  const channel = new SocketChannel(
+  const channel = new WSChannel(
     (content) => {
       socket.write(content);
     },
@@ -60,7 +60,7 @@ export function createSocketChannel(socket: net.Socket, logger?: ILogger) {
 }
 
 export function createSocketChannelForWS(socket: WebSocket, _clientId: string) {
-  const channel = new SocketChannel(
+  const channel = new WSChannel(
     (content) => {
       socket.send(content);
     },

@@ -3,7 +3,7 @@ import WebSocket from 'ws';
 
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { SocketChannel, ChannelMessage, parse, stringify } from '../common/socket-channel';
+import { WSChannel, ChannelMessage, parse, stringify } from '../common/ws-channel';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
@@ -31,7 +31,7 @@ export class CommonChannelPathHandler {
     }
     const handlerArr = this.handlerMap.get(channelToken) as IPathHandler[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection: SocketChannel, clientId: string, params) => {
+    const setHandler = (connection: WSChannel, clientId: string, params) => {
       handler.connection = connection;
       handlerFn(connection, clientId, params);
     };
@@ -85,7 +85,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   public handlerId = 'common-channel';
   private wsServer: WebSocket.Server;
   protected handlerRoute: MatchFunction;
-  private channelMap: Map<string, SocketChannel> = new Map();
+  private channelMap: Map<string, WSChannel> = new Map();
   private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
@@ -121,8 +121,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             connection.send(
               stringify({
                 kind: 'heartbeat',
-                clientId: msgObj.clientId,
-                id: msgObj.clientId,
+                id: msgObj.id,
               }),
             );
           } else if (msgObj.kind === 'client') {
@@ -139,7 +138,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
             // 生成 channel 对象
             const connectionSend = this.channelConnectionSend(connection);
-            const channel = new SocketChannel(connectionSend, { id: channelId, tag: 'common-handler' });
+            const channel = new WSChannel(connectionSend, { id: channelId, tag: 'common-handler' });
             this.channelMap.set(channelId, channel);
 
             // 根据 path 拿到注册的 handler

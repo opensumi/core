@@ -4,12 +4,12 @@ import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { SocketChannel, parse, stringify } from '../common/socket-channel';
 import { WSCloseInfo, ConnectionInfo } from '../common/utils';
+import { WSChannel, parse, stringify } from '../common/ws-channel';
 
 export class WSChannelHandler {
   public connection: ReconnectingWebSocket;
-  private channelMap: Map<string, SocketChannel> = new Map();
+  private channelMap: Map<string, WSChannel> = new Map();
   private channelCloseEventMap: Map<string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
@@ -51,7 +51,6 @@ export class WSChannelHandler {
     this.heartbeatMessageTimer = global.setTimeout(() => {
       const msg = stringify({
         kind: 'heartbeat',
-        clientId: this.clientId,
         id: this.clientId,
       });
       this.connection.send(msg);
@@ -84,7 +83,7 @@ export class WSChannelHandler {
           }
           channel.handleMessage(msg);
         } else {
-          this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+          this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found, kind: ${msg.kind}`);
         }
       }
     };
@@ -100,7 +99,7 @@ export class WSChannelHandler {
               const closeInfo = this.channelCloseEventMap.get(channel.id);
               this.reporterService &&
                 this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
-              this.logger && this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+              this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
 
             channel.open(channel.channelPath);
@@ -127,7 +126,7 @@ export class WSChannelHandler {
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
-    const channel = new SocketChannel(channelSend, { id: channelId, tag: 'ws-channel-handler' });
+    const channel = new WSChannel(channelSend, { id: channelId, tag: 'ws-channel-handler' });
     this.channelMap.set(channel.id, channel);
 
     await new Promise((resolve) => {
@@ -140,7 +139,7 @@ export class WSChannelHandler {
           closeEvent: { code, reason },
           connectInfo: (navigator as any).connection as ConnectionInfo,
         });
-        this.logger.log('channel close: ', code, reason);
+        this.logger.log(this.LOG_TAG, 'channel close: ', code, reason);
       });
       channel.open(channelPath);
     });

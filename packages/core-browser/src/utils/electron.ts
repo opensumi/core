@@ -1,6 +1,6 @@
 import type { Socket } from 'net';
 
-import type { SocketChannel } from '@opensumi/ide-connection';
+import type { WSChannel } from '@opensumi/ide-connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 
@@ -129,7 +129,7 @@ export function createSocket(connectPath?: string) {
 
 export function createElectronConnection(connectPath?: string) {
   const socket = createSocket(connectPath);
-  const channel = require('@opensumi/ide-connection/lib/node/connect').createSocketChannel(socket) as SocketChannel;
+  const channel = require('@opensumi/ide-connection/lib/node/connect').createSocketChannel(socket) as WSChannel;
   return {
     messageConnection: channel.createMessageConnection(),
     binaryConnection: channel.createBinaryConnection(),

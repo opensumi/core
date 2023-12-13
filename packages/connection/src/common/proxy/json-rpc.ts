@@ -13,79 +13,69 @@ interface IRPCResult {
 }
 
 export class ProxyJSONRPC extends ProxyBase<MessageConnection> {
+  proxyType = 'json-rpc' as const;
   public getInvokeProxy(): any {
     return new Proxy(this, this);
   }
 
   public get(target: any, p: PropertyKey) {
     const prop = p.toString();
+    return async (...args: any[]) => {
+      await this.connectionPromise.promise;
 
-    return (...args: any[]) =>
-      this.connectionPromise.promise.then((connection) => {
-        connection = this.connection || connection;
-        return new Promise((resolve, reject) => {
-          try {
-            let isSingleArray = false;
-            if (args.length === 1 && Array.isArray(args[0])) {
-              isSingleArray = true;
-            }
-            // 调用方法为 on 开头时，作为单项通知
-            if (prop.startsWith('on')) {
-              if (isSingleArray) {
-                connection.sendNotification(prop, [...args]);
-                this.capture({ type: MessageType.SendNotification, serviceMethod: prop, arguments: args });
-              } else {
-                connection.sendNotification(prop, ...args);
-                this.capture({ type: MessageType.SendNotification, serviceMethod: prop, arguments: args });
-              }
+      let isSingleArray = false;
+      if (args.length === 1 && Array.isArray(args[0])) {
+        isSingleArray = true;
+      }
 
-              resolve(null);
-            } else {
-              let requestResult: Promise<any>;
-              // generate a unique requestId to associate request and requestResult
-              const requestId = uuid();
+      // 调用方法为 on 开头时，作为单项通知
+      if (prop.startsWith('on')) {
+        if (isSingleArray) {
+          this.connection.sendNotification(prop, [...args]);
+        } else {
+          this.connection.sendNotification(prop, ...args);
+        }
+        this.capture({ type: MessageType.SendNotification, serviceMethod: prop, arguments: args });
+      } else {
+        let requestResult: Promise<any>;
+        // generate a unique requestId to associate request and requestResult
+        const requestId = uuid();
 
-              if (isSingleArray) {
-                requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
-                this.capture({ type: MessageType.SendRequest, requestId, serviceMethod: prop, arguments: args });
-              } else {
-                requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
-                this.capture({ type: MessageType.SendRequest, requestId, serviceMethod: prop, arguments: args });
-              }
+        if (isSingleArray) {
+          requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
+        } else {
+          requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
+        }
 
-              requestResult
-                .catch((err) => {
-                  reject(err);
-                })
-                .then((result: IRPCResult) => {
-                  if (result.error) {
-                    const error = new Error(result.data.message);
-                    if (result.data.stack) {
-                      error.stack = result.data.stack;
-                    }
-                    this.capture({
-                      type: MessageType.RequestResult,
-                      status: ResponseStatus.Fail,
-                      requestId,
-                      serviceMethod: prop,
-                      error: result.data,
-                    });
-                    reject(error);
-                  } else {
-                    this.capture({
-                      type: MessageType.RequestResult,
-                      status: ResponseStatus.Success,
-                      requestId,
-                      serviceMethod: prop,
-                      data: result.data,
-                    });
-                    resolve(result.data);
-                  }
-                });
-            }
-          } catch (e) {}
-        });
-      });
+        this.capture({ type: MessageType.SendRequest, requestId, serviceMethod: prop, arguments: args });
+
+        const result: IRPCResult = await requestResult;
+
+        if (result.error) {
+          const error = new Error(result.data.message);
+          if (result.data.stack) {
+            error.stack = result.data.stack;
+          }
+          this.capture({
+            type: MessageType.RequestResult,
+            status: ResponseStatus.Fail,
+            requestId,
+            serviceMethod: prop,
+            error: result.data,
+          });
+          throw error;
+        } else {
+          this.capture({
+            type: MessageType.RequestResult,
+            status: ResponseStatus.Success,
+            requestId,
+            serviceMethod: prop,
+            data: result.data,
+          });
+          return result.data;
+        }
+      }
+    };
   }
 
   protected bindOnRequest(service: IRPCServiceMap, cb?: ((service: IRPCServiceMap, prop: string) => void) | undefined) {

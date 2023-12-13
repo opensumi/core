@@ -1,13 +1,13 @@
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/connection/types';
 
-import { ChannelMessage, SocketChannel, parse } from './socket-channel';
 import { IBinaryConnectionSocket } from './sumi-rpc';
 import { ILogger } from './types';
+import { ChannelMessage, WSChannel, parse } from './ws-channel';
 
 export type ICommonHandlerConnectionSend = (content: PlatformBuffer) => void;
 
 export class SimpleCommonChannelHandler {
-  channelMap = new Map<string, SocketChannel>();
+  channelMap = new Map<string, WSChannel>();
 
   constructor(public name: string, private logger: ILogger) {}
 
@@ -15,12 +15,12 @@ export class SimpleCommonChannelHandler {
     clientId: string,
     options?: {
       connectionSend?: ICommonHandlerConnectionSend;
-      onSocketChannel?(channel: SocketChannel): void;
+      onSocketChannel?(channel: WSChannel): void;
     },
-  ): SocketChannel {
+  ): WSChannel {
     let channel = this.channelMap.get(clientId);
     if (!channel && options?.connectionSend) {
-      channel = new SocketChannel(options.connectionSend, { id: clientId, tag: 'simple-common-handler' });
+      channel = new WSChannel(options.connectionSend, { id: clientId, tag: 'simple-common-handler' });
       this.channelMap.set(clientId, channel);
       options.onSocketChannel?.(channel);
     }
@@ -30,11 +30,11 @@ export class SimpleCommonChannelHandler {
   handleSocket(
     socket: IBinaryConnectionSocket,
     options: {
-      onSocketChannel(channel: SocketChannel): void;
+      onSocketChannel(channel: WSChannel): void;
       onError(error: Error): void;
     },
   ) {
-    const onSocketChannel = (channel: SocketChannel) => {
+    const onSocketChannel = (channel: WSChannel) => {
       channel.ready();
 
       if (options.onSocketChannel) {

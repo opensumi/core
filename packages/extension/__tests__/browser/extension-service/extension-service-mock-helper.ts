@@ -5,7 +5,7 @@ import path from 'path';
 import { Injectable, Provider } from '@opensumi/di';
 import { ICommentsService } from '@opensumi/ide-comments';
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
-import { SocketChannel } from '@opensumi/ide-connection';
+import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   IContextKeyService,
@@ -543,7 +543,7 @@ export function setupExtensionServiceInjector() {
           const channelSend = (content) => {
             //
           };
-          return new SocketChannel(channelSend, { id: 'mock_wschannel' });
+          return new WSChannel(channelSend, { id: 'mock_wschannel' });
         },
       },
     },

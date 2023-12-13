@@ -6,11 +6,10 @@ import { TSumiProtocol, TSumiProtocolMethod } from './sumi-rpc';
 import { getMethodName } from './utils';
 
 export interface ISerializableRequest {
+  /**
+   * Arguments
+   */
   a: any[];
-}
-
-export interface ISerializableArguments {
-  [key: number]: any;
 }
 
 export interface ISerializableResult {
@@ -36,9 +35,7 @@ const createResultProto = (name: string, type?: TypeDescription) => {
 };
 
 export class ProtocolRepository {
-  fury = new Fury({
-    refTracking: true,
-  });
+  fury = new Fury();
 
   private serializerMap = {} as Record<
     string,

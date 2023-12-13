@@ -24,7 +24,6 @@ export interface ClientMessage {
 }
 export interface HeartbeatMessage {
   kind: 'heartbeat';
-  clientId: string;
   id: string;
 }
 export interface OpenMessage {
@@ -67,7 +66,7 @@ export type TConnectionSend = (content: PlatformBuffer | string) => void;
 
 type TEventType = 'message' | 'binary' | 'open' | 'reOpen' | 'close' | 'error';
 
-export class SocketChannel implements IWebSocket {
+export class WSChannel implements IWebSocket {
   private emitter = new EventEmitter<TEventType>();
 
   public id: string;
@@ -215,7 +214,7 @@ export class SocketChannel implements IWebSocket {
     });
   }
 
-  listenChannel(channel: SocketChannel) {
+  listenChannel(channel: WSChannel) {
     let toDispose = [] as (() => void)[];
     toDispose.push(
       channel.onMessage((data) => {
