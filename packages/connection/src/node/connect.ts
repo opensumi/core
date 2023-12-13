@@ -33,7 +33,8 @@ export function createSocketChannel(socket: net.Socket, logger?: ILogger) {
     { id, logger, tag: 'node-socket' },
   );
 
-  if (socket.readyState === 'open') {
+  // @types/node 10.x 版本的类型定义中没有 readyState 属性
+  if ((socket as any).readyState === 'open') {
     channel.open('default');
   } else {
     socket.on('connect', () => {
