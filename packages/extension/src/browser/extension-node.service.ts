@@ -178,7 +178,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
     const service = getRPCService('ExtProtocol');
     const onMessageEmitter = new Emitter<string>();
-    service.on('onMessage', (msg) => {
+    service.on('onMessage', (msg: string) => {
       onMessageEmitter.fire(msg);
     });
     const onMessage = onMessageEmitter.event;

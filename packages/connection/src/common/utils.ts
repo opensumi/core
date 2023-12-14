@@ -1,4 +1,4 @@
-import { ChannelMessage } from '.';
+import { ChannelMessage } from './ws-channel';
 
 declare global {
   interface Window {

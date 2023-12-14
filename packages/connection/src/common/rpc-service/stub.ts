@@ -1,5 +1,5 @@
 import { RPCServiceMethod, ServiceType } from '../types';
-import { getMethodName, getServiceMethods } from '../utils';
+import { getServiceMethods } from '../utils';
 
 import { RPCServiceCenter } from './center';
 
@@ -27,11 +27,11 @@ export class RPCServiceStub {
   }
 
   onRequest(name: string, method: RPCServiceMethod) {
-    this.center.onRequest(getMethodName(this.serviceName, name), method);
+    this.center.onRequest(this.serviceName, name, method);
   }
 
   broadcast(name: string, ...args: any[]): Promise<any> {
-    return this.center.broadcast(getMethodName(this.serviceName, name), ...args);
+    return this.center.broadcast(this.serviceName, name, ...args);
   }
 
   getProxy = <T>() =>

@@ -4,6 +4,7 @@ import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ProxyJSONRPC, ProxyWrapper } from '../proxy';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
+import { getMethodName } from '../utils';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
 
@@ -63,7 +64,8 @@ export class RPCServiceCenter {
 
     return removeIndex !== -1;
   }
-  onRequest(name: string, method: RPCServiceMethod) {
+  onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
+    const name = getMethodName(serviceName, _name);
     if (!this.connection.length) {
       this.serviceMethodMap[name] = method;
     } else {
@@ -72,7 +74,9 @@ export class RPCServiceCenter {
       });
     }
   }
-  async broadcast(name: string, ...args: any[]): Promise<any> {
+  async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
+    const name = getMethodName(serviceName, _name);
+
     const broadcastResult = await Promise.all(this.proxyWrappers.map((proxy) => proxy.getProxy()[name](...args)));
     if (!broadcastResult || broadcastResult.length === 0) {
       throw new Error(`broadcast rpc \`${name}\` error: no remote service can handle this call`);

@@ -45,7 +45,7 @@ export class WSChannel implements IWebSocket {
   protected emitter = new EventEmitter<{
     message: [data: any];
     open: [id: string];
-    reOpen: [];
+    reopen: [];
     close: [code: number, reason: string];
   }>();
 
@@ -95,7 +95,7 @@ export class WSChannel implements IWebSocket {
     this.emitter.on('open', cb);
   }
   onReOpen(cb: () => void) {
-    this.emitter.on('reOpen', cb);
+    this.emitter.on('reopen', cb);
   }
   ready() {
     this.connectionSend(
@@ -141,7 +141,7 @@ export class WSChannel implements IWebSocket {
     this.emitter.emit('close', code, reason);
   }
   fireReOpen() {
-    this.emitter.emit('reOpen');
+    this.emitter.emit('reopen');
   }
   onClose(cb: (code: number, reason: string) => void) {
     this.emitter.on('close', cb);
