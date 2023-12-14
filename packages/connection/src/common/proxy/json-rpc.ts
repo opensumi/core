@@ -1,7 +1,7 @@
 import { uuid } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
-import { NOTREGISTERMETHOD } from '../constants';
+import { METHOD_NOT_REGISTERED } from '../constants';
 import { IRPCServiceMap } from '../types';
 import { MessageType, ResponseStatus, getServiceMethods } from '../utils';
 
@@ -130,7 +130,7 @@ export class ProxyJSONRPC extends ProxyBase<MessageConnection> {
           const requestId = uuid();
           this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method });
           const result = {
-            data: NOTREGISTERMETHOD,
+            data: METHOD_NOT_REGISTERED,
           };
           this.capture({
             type: MessageType.OnRequestResult,
