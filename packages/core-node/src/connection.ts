@@ -3,13 +3,13 @@ import net from 'net';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
-import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { WSChannelConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/ws-channel';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
   CommonChannelHandler,
   commonChannelPathHandler,
-  createSocketConnection,
 } from '@opensumi/ide-connection/lib/node';
 
 import { INodeLogger } from './logger/node-logger';
@@ -40,12 +40,11 @@ export function createServerConnection2(
       const serviceCenter = new RPCServiceCenter(undefined, logger);
       const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
-      const serverConnection = createWebSocketConnection(connection);
-      connection.messageConnection = serverConnection;
-      serviceCenter.setConnection(serverConnection);
+      const wsChannel = new WSChannelConnection(connection);
+      const remove = serviceCenter.setConnection2(wsChannel);
 
       connection.onClose(() => {
-        serviceCenter.removeConnection(serverConnection);
+        remove.dispose();
         serviceChildInjector.disposeAll();
 
         logger.log(`Remove RPC connection ${clientId}`);
@@ -66,7 +65,7 @@ export function createServerConnection2(
 export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
   const logger = injector.get(INodeLogger);
 
-  server.on('connection', (connection) => {
+  server.on('connection', (socket) => {
     const serviceCenter = new RPCServiceCenter(undefined, logger);
     const serviceChildInjector = bindModuleBackService(
       injector,
@@ -75,11 +74,11 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
       process.env.CODE_WINDOW_CLIENT_ID as string,
     );
 
-    const serverConnection = createSocketConnection(connection);
-    serviceCenter.setConnection(serverConnection);
+    const socketConnection = new NetSocketConnection(socket);
+    const remove = serviceCenter.setConnection2(socketConnection);
 
-    connection.on('close', () => {
-      serviceCenter.removeConnection(serverConnection);
+    socket.on('close', () => {
+      remove.dispose();
       serviceChildInjector.disposeAll();
     });
   });

@@ -2,7 +2,7 @@ import type { ForkOptions } from 'child_process';
 import net from 'net';
 
 import { RPCService, RPCServiceCenter, getRPCService, IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { IExtensionHostManager } from '../common';
@@ -192,11 +192,10 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setConnection() {
-    const connection = createSocketConnection(this.socket);
-    this.clientCenter.setConnection(connection);
+    const socketConnection = new NetSocketConnection(this.socket);
+    const remove = this.clientCenter.setConnection2(socketConnection);
     this.socket.once('close', () => {
-      connection.dispose();
-      this.clientCenter.removeConnection(connection);
+      remove.dispose();
     });
   }
 

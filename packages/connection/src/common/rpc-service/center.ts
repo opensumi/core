@@ -1,12 +1,15 @@
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
+import { BaseConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ProxyJSONRPC, ProxyWrapper } from '../proxy';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
+
+export class RPCServiceUpstream {}
 
 export class RPCServiceCenter {
   public uid: string;
@@ -42,7 +45,19 @@ export class RPCServiceCenter {
     return this.connectionDeferred.promise;
   }
 
-  setConnection(connection: MessageConnection) {
+  setConnection2(connection: BaseConnection<any>): IDisposable {
+    const messageConnection = connection.createMessageConnection();
+    this.setConnection(messageConnection);
+
+    return {
+      dispose: () => {
+        messageConnection.dispose();
+        this.removeConnection(messageConnection);
+      },
+    };
+  }
+
+  private setConnection(connection: MessageConnection) {
     if (!this.connection.length) {
       this.connectionDeferred.resolve();
     }
@@ -55,7 +70,7 @@ export class RPCServiceCenter {
     this.proxyWrappers.push(wrapper);
   }
 
-  removeConnection(connection: MessageConnection) {
+  private removeConnection(connection: MessageConnection) {
     const removeIndex = this.connection.indexOf(connection);
     if (removeIndex !== -1) {
       this.connection.splice(removeIndex, 1);
@@ -78,9 +93,6 @@ export class RPCServiceCenter {
     const name = getMethodName(serviceName, _name);
 
     const broadcastResult = await Promise.all(this.proxyWrappers.map((proxy) => proxy.getProxy()[name](...args)));
-    if (!broadcastResult || broadcastResult.length === 0) {
-      throw new Error(`broadcast rpc \`${name}\` error: no remote service can handle this call`);
-    }
 
     const doubtfulResult = [] as any[];
     const result = [] as any[];
@@ -95,6 +107,11 @@ export class RPCServiceCenter {
     if (doubtfulResult.length > 0) {
       this.logger.warn(`broadcast rpc \`${name}\` getting doubtful responses: ${doubtfulResult.join(',')}`);
     }
+
+    if (result.length === 0) {
+      throw new Error(`broadcast rpc \`${name}\` error: no remote service can handle this call`);
+    }
+
     // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.
     //        but actually we should throw an error to tell user that no remote service can handle this call.
     //        or just return `undefined`.

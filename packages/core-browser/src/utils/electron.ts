@@ -1,3 +1,4 @@
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
@@ -122,4 +123,14 @@ export function createElectronClientConnection(connectPath?: string): MessageCon
   }
   const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
   return createSocketConnection(socket);
+}
+
+export function createNetSocketConnection(connectPath?: string): NetSocketConnection {
+  let socket;
+  if (connectPath) {
+    socket = electronEnv.createNetConnection(connectPath);
+  } else {
+    socket = electronEnv.createRPCNetConnection();
+  }
+  return new NetSocketConnection(socket);
 }

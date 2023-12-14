@@ -1,18 +1,18 @@
 import http from 'http';
 
-import ws from 'ws';
+import WebSocket from 'ws';
 
+import { WebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
-import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
+import { RPCServiceCenter, initRPCService } from '../../src/common';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
-import { createWebSocketConnection } from '../../src/common/message';
 import { parse } from '../../src/common/utils';
 import { WSChannel } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
-const WebSocket = ws;
+const wssPort = 7788;
 
 class MockFileService extends RPCService {
   getContent(filePath) {
@@ -36,7 +36,7 @@ describe('connection', () => {
     socketRoute.init();
 
     await new Promise<void>((resolve) => {
-      server.listen(7788, () => {
+      server.listen(wssPort, () => {
         resolve(undefined);
       });
     });
@@ -47,7 +47,7 @@ describe('connection', () => {
       dispose: () => {},
     });
 
-    const connection = new WebSocket('ws://0.0.0.0:7788/service');
+    const connection = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
 
     connection.on('error', () => {
       connection.close();
@@ -105,7 +105,7 @@ describe('connection', () => {
     socketRoute.init();
 
     await new Promise<void>((resolve) => {
-      server.listen(7788, () => {
+      server.listen(wssPort, () => {
         resolve(undefined);
       });
     });
@@ -116,7 +116,7 @@ describe('connection', () => {
       dispose: () => {},
     });
 
-    const connection = new WebSocket('ws://0.0.0.0:7788/service');
+    const connection = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
 
     connection.on('error', (e) => {
       deferred.reject(e);
@@ -127,32 +127,32 @@ describe('connection', () => {
   });
 
   it('RPCService', async () => {
-    const wss = new WebSocket.Server({ port: 7788 });
+    const wss = new WebSocket.Server({ port: wssPort });
     const notificationMock = jest.fn();
 
-    let serviceCenter;
-    let clientConnection;
+    let serviceCenter: RPCServiceCenter;
+    let clientConnection: WebSocket;
 
     await Promise.all([
       new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
-          const serverConnection = createWebSocketConnection(connection);
-          serviceCenter.setConnection(serverConnection);
+          const wsConnection = new WebSocketConnection(connection);
+          serviceCenter.setConnection2(wsConnection);
 
           resolve(undefined);
         });
       }),
 
       new Promise<void>((resolve) => {
-        clientConnection = new WebSocket('ws://0.0.0.0:7788/service');
+        clientConnection = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
         clientConnection.on('open', () => {
           resolve(undefined);
         });
       }),
     ]);
 
-    const { createRPCService } = initRPCService(serviceCenter);
+    const { createRPCService } = initRPCService(serviceCenter!);
     createRPCService('MockFileServicePath', mockFileService);
 
     createRPCService('MockNotificationService', {
@@ -162,7 +162,8 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    clientCenter.setConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
+    const wsConnection = new WebSocketConnection(clientConnection!);
+    clientCenter.setConnection2(wsConnection);
 
     const { getRPCService } = initRPCService<
       MockFileService & {

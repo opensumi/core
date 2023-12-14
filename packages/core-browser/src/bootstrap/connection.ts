@@ -1,7 +1,8 @@
 import { Injector, Provider } from '@opensumi/di';
-import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
+import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
+import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { WSChannelConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/ws-channel';
 import {
   getDebugLogger,
   IReporterService,
@@ -62,19 +63,19 @@ export async function createClientConnection2(
   const channel = await wsChannelHandler.openChannel('RPCService');
   channel.onReOpen(() => onReconnect());
 
-  bindConnectionService(injector, modules, createWebSocketConnection(channel));
+  bindConnectionService(injector, modules, new WSChannelConnection(channel) as any);
 }
 
 export async function bindConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
-  connection: RPCMessageConnection,
+  connection: BaseConnection<Uint8Array>,
 ) {
   const clientCenter = new RPCServiceCenter();
-  clientCenter.setConnection(connection);
+  const remove = clientCenter.setConnection2(connection);
 
   connection.onClose(() => {
-    clientCenter.removeConnection(connection);
+    remove.dispose();
   });
 
   const { getRPCService } = initRPCService(clientCenter);

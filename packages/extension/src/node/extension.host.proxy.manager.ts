@@ -2,7 +2,7 @@ import net from 'net';
 
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 
@@ -71,16 +71,15 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     });
   }
 
-  private setProxyConnection(connection: net.Socket) {
-    const serverConnection = createSocketConnection(connection);
-    this.extServiceProxyCenter.setConnection(serverConnection);
-    connection.on('close', () => {
-      this.extServiceProxyCenter.removeConnection(serverConnection);
+  private setProxyConnection(socket: net.Socket) {
+    const remove = this.extServiceProxyCenter.setConnection2(new NetSocketConnection(socket));
+    socket.on('close', () => {
+      remove.dispose();
     });
     this.disposer.addDispose(
       toDisposable(() => {
-        if (!connection.destroyed) {
-          connection.destroy();
+        if (!socket.destroyed) {
+          socket.destroy();
         }
       }),
     );

@@ -60,8 +60,6 @@ export class WSChannel implements IWebSocket {
 
   private connectionSend: (content: string) => void;
 
-  public messageConnection: any;
-
   get LOG_TAG() {
     return [
       '[WSChannel]',
@@ -89,13 +87,13 @@ export class WSChannel implements IWebSocket {
 
   // server
   onMessage(cb: (data: any) => any) {
-    this.emitter.on('message', cb);
+    return this.emitter.on('message', cb);
   }
   onOpen(cb: (id: string) => void) {
-    this.emitter.on('open', cb);
+    return this.emitter.on('open', cb);
   }
   onReOpen(cb: () => void) {
-    this.emitter.on('reopen', cb);
+    return this.emitter.on('reopen', cb);
   }
   ready() {
     this.connectionSend(
@@ -144,7 +142,7 @@ export class WSChannel implements IWebSocket {
     this.emitter.emit('reopen');
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.emitter.on('close', cb);
+    return this.emitter.on('close', cb);
   }
 }
 

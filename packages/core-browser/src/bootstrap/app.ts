@@ -6,8 +6,8 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
-import { RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   CommandRegistry,
   isOSX,
@@ -45,7 +45,6 @@ import {
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
-import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
@@ -67,7 +66,7 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { electronEnv } from '../utils';
+import { createNetSocketConnection, electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
@@ -208,7 +207,7 @@ export class ClientApp implements IClientApp, IDisposable {
   public async start(
     container: HTMLElement | IAppRenderer,
     type?: 'electron' | 'web',
-    connection?: RPCMessageConnection,
+    connection?: BaseConnection<Uint8Array>,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
@@ -219,7 +218,7 @@ export class ClientApp implements IClientApp, IDisposable {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
       if (type === 'electron') {
-        await bindConnectionService(this.injector, this.modules, createElectronClientConnection());
+        await bindConnectionService(this.injector, this.modules, createNetSocketConnection());
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,

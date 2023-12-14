@@ -4,7 +4,7 @@ import Stream from 'stream';
 
 import { ConstructorOf, Injector } from '@opensumi/di';
 import { RPCProtocol, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   Emitter,
   ReporterProcessMessage,
@@ -85,7 +85,9 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
 
   const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
 
-  extCenter.setConnection(createSocketConnection(extConnection));
+  const socketConnection = new NetSocketConnection(extConnection);
+
+  extCenter.setConnection2(socketConnection);
 
   const service = getRPCService('ExtProtocol');
 
