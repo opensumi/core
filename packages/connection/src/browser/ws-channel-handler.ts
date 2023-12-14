@@ -16,6 +16,10 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
+  get LOG_TAG() {
+    return `[WSChannelHandler] [client-id:${this.clientId}] [ws-path:${this.wsPath}]`;
+  }
+
   constructor(public wsPath: UrlProvider, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
@@ -61,21 +65,21 @@ export class WSChannelHandler {
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
         if (channel) {
-          if (msg.kind === 'data' && !(channel as any).fireMessage) {
+          if (msg.kind === 'data' && !channel.hasMessageListener()) {
             // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
-            this.logger.error('channel not ready!', msg);
+            this.logger.error(this.LOG_TAG, 'channel not ready!', msg);
           }
           channel.handleMessage(msg);
         } else {
-          this.logger.warn(`channel ${msg.id} not found`);
+          this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
         }
       }
     };
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       this.connection.addEventListener('open', () => {
         this.clientMessage();
         this.heartbeatMessage();
-        resolve(undefined);
+        resolve();
         // 重连 channel
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
@@ -83,10 +87,10 @@ export class WSChannelHandler {
               const closeInfo = this.channelCloseEventMap.get(channel.id);
               this.reporterService &&
                 this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
-              this.logger && this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+              this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
-            channel.open(channel.channelPath);
 
+            channel.open(channel.channelPath);
             // 针对前端需要重新设置下后台状态的情况
             channel.fireReOpen();
           });
@@ -108,12 +112,16 @@ export class WSChannelHandler {
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
-    const channel = new WSChannel(channelSend, channelId);
+    const channel = new WSChannel(channelSend, {
+      id: channelId,
+      logger: this.logger,
+      tag: 'browser-ws-client-handler',
+    });
     this.channelMap.set(channel.id, channel);
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       channel.onOpen(() => {
-        resolve(undefined);
+        resolve();
       });
       channel.onClose((code: number, reason: string) => {
         this.channelCloseEventMap.set(channelId, {
@@ -121,7 +129,7 @@ export class WSChannelHandler {
           closeEvent: { code, reason },
           connectInfo: (navigator as any).connection as ConnectionInfo,
         });
-        this.logger.log('channel close: ', code, reason);
+        this.logger.log(this.LOG_TAG, 'channel close: ', code, reason);
       });
       channel.open(channelPath);
     });

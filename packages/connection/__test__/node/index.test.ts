@@ -61,7 +61,10 @@ describe('connection', () => {
     const channelSend = (content) => {
       connection.send(content, (err) => {});
     };
-    const channel = new WSChannel(channelSend, 'TEST_CHANNEL_ID');
+    const channel = new WSChannel(channelSend, {
+      id: 'TEST_CHANNEL_ID',
+      tag: 'test',
+    });
     connection.on('message', (msg) => {
       const msgObj = parse(msg as string);
       if (msgObj.kind === 'ready') {

@@ -47,7 +47,7 @@ export function stringify(obj: ChannelMessage): string {
   return JSON.stringify(obj);
 }
 
-export function parse(input: string, reviver?: (this: any, key: string, value: any) => any): any {
+export function parse(input: string, reviver?: (this: any, key: string, value: any) => any): ChannelMessage {
   return JSON.parse(input, reviver);
 }
 

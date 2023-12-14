@@ -2,6 +2,8 @@ import { EventEmitter } from '@opensumi/events';
 
 import { stringify } from './utils';
 
+import { ILogger } from '.';
+
 export interface IWebSocket {
   send(content: string): void;
   close(...args): void;
@@ -49,16 +51,36 @@ export class WSChannel implements IWebSocket {
   }>();
 
   public id: string;
+  /**
+   * Because this class will be used in both browser and nodejs/electron, so we should use tag to distinguish each other.
+   */
+  public tag: string;
   public channelPath: string;
+
+  logger: ILogger = console;
 
   private connectionSend: (content: string) => void;
 
   public messageConnection: any;
 
-  constructor(connectionSend: (content: string) => void, id?: string) {
+  get LOG_TAG() {
+    return [
+      '[WSChannel]',
+      this.tag ? `[tag:${this.tag}]` : '',
+      this.id ? `[id:${this.id}]` : '',
+      this.channelPath ? `[channel-path:${this.channelPath}]` : '',
+    ].join(' ');
+  }
+
+  constructor(connectionSend: (content: string) => void, options: { id: string; logger?: ILogger; tag: string }) {
     this.connectionSend = connectionSend;
-    if (id) {
-      this.id = id;
+
+    const { id, logger, tag } = options;
+    this.id = id;
+    this.tag = tag;
+
+    if (logger) {
+      this.logger = logger;
     }
   }
 
@@ -111,6 +133,9 @@ export class WSChannel implements IWebSocket {
         content,
       }),
     );
+  }
+  hasMessageListener() {
+    return this.emitter.hasListener('message');
   }
   onError() {}
   close(code: number, reason: string) {

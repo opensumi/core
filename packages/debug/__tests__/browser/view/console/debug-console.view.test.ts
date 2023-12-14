@@ -104,7 +104,7 @@ describe('Debug console component Test Suites', () => {
           const channelSend = (content) => {
             //
           };
-          return new WSChannel(channelSend, 'mock_wschannel' + id);
+          return new WSChannel(channelSend, { id: 'mock_wschannel' + id, tag: 'test' });
         },
       },
     });
