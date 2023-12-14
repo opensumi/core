@@ -1,8 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
 
-import warning from '../utils/warning';
-
 import { IInputBaseProps, Input } from './Input';
 
 import './validate-input.less';
