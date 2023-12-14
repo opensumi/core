@@ -65,15 +65,16 @@ export function createServerConnection2(
 
 export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
   const logger = injector.get(INodeLogger);
-  const serviceCenter = new RPCServiceCenter(undefined, logger);
-  const serviceChildInjector = bindModuleBackService(
-    injector,
-    modulesInstances,
-    serviceCenter,
-    process.env.CODE_WINDOW_CLIENT_ID as string,
-  );
 
   server.on('connection', (connection) => {
+    const serviceCenter = new RPCServiceCenter(undefined, logger);
+    const serviceChildInjector = bindModuleBackService(
+      injector,
+      modulesInstances,
+      serviceCenter,
+      process.env.CODE_WINDOW_CLIENT_ID as string,
+    );
+
     const serverConnection = createSocketConnection(connection);
     serviceCenter.setConnection(serverConnection);
 
@@ -82,8 +83,6 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
       serviceChildInjector.disposeAll();
     });
   });
-
-  return serviceCenter;
 }
 
 export function bindModuleBackService(
