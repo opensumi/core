@@ -34,19 +34,22 @@ export async function createClientConnection2(
 
   const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, clientId);
   wsChannelHandler.setReporter(reporterService);
-  wsChannelHandler.connection.addEventListener('open', async () => {
-    await stateService.reachedState('core_module_initialized');
-    eventBus.fire(new BrowserConnectionOpenEvent());
+  wsChannelHandler.connection.addEventListener('open', () => {
+    stateService.reachedState('core_module_initialized').then(() => {
+      eventBus.fire(new BrowserConnectionOpenEvent());
+    });
   });
 
-  wsChannelHandler.connection.addEventListener('close', async () => {
-    await stateService.reachedState('core_module_initialized');
-    eventBus.fire(new BrowserConnectionCloseEvent());
+  wsChannelHandler.connection.addEventListener('close', () => {
+    stateService.reachedState('core_module_initialized').then(() => {
+      eventBus.fire(new BrowserConnectionCloseEvent());
+    });
   });
 
-  wsChannelHandler.connection.addEventListener('error', async (e) => {
-    await stateService.reachedState('core_module_initialized');
-    eventBus.fire(new BrowserConnectionErrorEvent(e));
+  wsChannelHandler.connection.addEventListener('error', (e) => {
+    stateService.reachedState('core_module_initialized').then(() => {
+      eventBus.fire(new BrowserConnectionErrorEvent(e));
+    });
   });
 
   await wsChannelHandler.initHandler();
