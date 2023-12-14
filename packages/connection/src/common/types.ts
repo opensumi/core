@@ -3,3 +3,6 @@ export interface ILogger {
   warn(...args: any[]): void;
   error(...args: any[]): void;
 }
+
+export type RPCServiceMethod = (...args: any[]) => any;
+export type IRPCServiceMap = Record<string, RPCServiceMethod>;

@@ -1,8 +1,11 @@
+import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { RPCProxy, NOTREGISTERMETHOD, ILogger } from './proxy';
+import { NOTREGISTERMETHOD } from './constants';
+import { ProxyJSONRPC, ProxyWrapper } from './proxy';
+import { ILogger, IRPCServiceMap, RPCServiceMethod } from './types';
+import { getMethodName, getServiceMethods } from './utils';
 
-export type RPCServiceMethod = (...args: any[]) => any;
 export type ServiceProxy = any;
 
 export enum ServiceType {
@@ -20,61 +23,36 @@ export class RPCServiceStub {
   async ready() {
     return this.center.when();
   }
-  getNotificationName(name: string) {
-    return `on:${this.serviceName}:${name}`;
-  }
-  getRequestName(name: string) {
-    return `${this.serviceName}:${name}`;
-  }
+
   // 服务方
   on(name: string, method: RPCServiceMethod) {
     this.onRequest(name, method);
   }
-  getServiceMethod(service): string[] {
-    let props: any[] = [];
 
-    if (/^\s*class/.test(service.constructor.toString())) {
-      let obj = service;
-      do {
-        props = props.concat(Object.getOwnPropertyNames(obj));
-      } while ((obj = Object.getPrototypeOf(obj)));
-      props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
-    } else {
-      for (const prop in service) {
-        if (service[prop] && typeof service[prop] === 'function') {
-          props.push(prop);
-        }
-      }
-    }
-
-    return props;
-  }
   onRequestService(service: any) {
-    const methods = this.getServiceMethod(service);
+    const methods = getServiceMethods(service);
     for (const method of methods) {
       this.onRequest(method, service[method].bind(service));
     }
   }
 
   onRequest(name: string, method: RPCServiceMethod) {
-    this.center.onRequest(this.getMethodName(name), method);
-  }
-  broadcast(name: string, ...args): Promise<any> {
-    return this.center.broadcast(this.getMethodName(name), ...args);
+    this.center.onRequest(getMethodName(this.serviceName, name), method);
   }
 
-  getMethodName(name: string) {
-    return name.startsWith('on') ? this.getNotificationName(name) : this.getRequestName(name);
+  broadcast(name: string, ...args: any[]): Promise<any> {
+    return this.center.broadcast(getMethodName(this.serviceName, name), ...args);
   }
+
   getProxy = <T>() =>
-    new Proxy<RPCServiceStub & T>(this as any, {
+    new Proxy<T extends void ? RPCServiceStub : RPCServiceStub & T>(this as any, {
       // 调用方
       get: (target, prop: string) => {
         if (!target[prop]) {
           if (typeof prop === 'symbol') {
             return Promise.resolve();
           } else {
-            return (...args) => this.ready().then(() => this.broadcast(prop, ...args));
+            return (...args: any[]) => this.ready().then(() => this.broadcast(prop, ...args));
           }
         } else {
           return target[prop];
@@ -86,14 +64,14 @@ export class RPCServiceStub {
 export function initRPCService<T = void>(center: RPCServiceCenter) {
   return {
     createRPCService: (name: string, service?: any) => {
-      const proxy = new RPCServiceStub(name, center, ServiceType.Service).getProxy<T>();
+      const proxy = createRPCService<T>(name, center);
       if (service) {
         proxy.onRequestService(service);
       }
 
       return proxy;
     },
-    getRPCService: (name: string) => new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>(),
+    getRPCService: (name: string) => getRPCService<T>(name, center),
   };
 }
 
@@ -115,25 +93,24 @@ export function getRPCService<T = void>(name: string, center: RPCServiceCenter):
   return new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>();
 }
 
+const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
+
 export class RPCServiceCenter {
   public uid: string;
-  public rpcProxy: RPCProxy[] = [];
-  public serviceProxy: ServiceProxy[] = [];
+
+  private proxyWrappers: ProxyWrapper<ProxyJSONRPC>[] = [];
+
   private connection: Array<MessageConnection> = [];
-  private serviceMethodMap = { client: undefined };
+  private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
 
   private createService: string[] = [];
   private getService: string[] = [];
 
-  private connectionPromise: Promise<void>;
-  private connectionPromiseResolve: () => void;
+  private connectionDeferred = new Deferred<void>();
   private logger: ILogger;
 
   constructor(private bench?: IBench, logger?: ILogger) {
-    this.uid = 'RPCServiceCenter:' + process.pid;
-    this.connectionPromise = new Promise((resolve) => {
-      this.connectionPromiseResolve = resolve;
-    });
+    this.uid = 'RPCServiceCenter:' + safeProcess.pid;
     this.logger = logger || console;
   }
 
@@ -149,29 +126,27 @@ export class RPCServiceCenter {
   }
 
   when() {
-    return this.connectionPromise;
+    return this.connectionDeferred.promise;
   }
 
   setConnection(connection: MessageConnection) {
     if (!this.connection.length) {
-      this.connectionPromiseResolve();
+      this.connectionDeferred.resolve();
     }
     this.connection.push(connection);
 
-    const rpcProxy = new RPCProxy(this.serviceMethodMap, this.logger);
+    const rpcProxy = new ProxyJSONRPC(this.serviceMethodMap, this.logger);
     rpcProxy.listen(connection);
-    this.rpcProxy.push(rpcProxy);
 
-    const serviceProxy = rpcProxy.createProxy();
-    this.serviceProxy.push(serviceProxy);
+    const wrapper = rpcProxy.createProxyWrapper();
+    this.proxyWrappers.push(wrapper);
   }
 
   removeConnection(connection: MessageConnection) {
     const removeIndex = this.connection.indexOf(connection);
     if (removeIndex !== -1) {
       this.connection.splice(removeIndex, 1);
-      this.rpcProxy.splice(removeIndex, 1);
-      this.serviceProxy.splice(removeIndex, 1);
+      this.proxyWrappers.splice(removeIndex, 1);
     }
 
     return removeIndex !== -1;
@@ -180,13 +155,13 @@ export class RPCServiceCenter {
     if (!this.connection.length) {
       this.serviceMethodMap[name] = method;
     } else {
-      this.rpcProxy.forEach((proxy) => {
-        proxy.listenService({ [name]: method });
+      this.proxyWrappers.forEach((proxy) => {
+        proxy.getOriginal().listenService({ [name]: method });
       });
     }
   }
-  async broadcast(name: string, ...args): Promise<any> {
-    const broadcastResult = this.serviceProxy.map((proxy) => proxy[name](...args));
+  async broadcast(name: string, ...args: any[]): Promise<any> {
+    const broadcastResult = await Promise.all(this.proxyWrappers.map((proxy) => proxy.getProxy()[name](...args)));
     if (!broadcastResult || broadcastResult.length === 0) {
       throw new Error(`broadcast rpc \`${name}\` error: no remote service can handle this call`);
     }

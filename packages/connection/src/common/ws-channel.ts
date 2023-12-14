@@ -1,8 +1,7 @@
 import { EventEmitter } from '@opensumi/events';
 
+import { ILogger } from './types';
 import { stringify } from './utils';
-
-import { ILogger } from '.';
 
 export interface IWebSocket {
   send(content: string): void;
