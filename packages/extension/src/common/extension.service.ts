@@ -1,4 +1,4 @@
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import { Deferred } from '@opensumi/ide-core-common';
 
 import { ActivatedExtensionJSON } from './activator';

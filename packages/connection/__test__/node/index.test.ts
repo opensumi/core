@@ -6,8 +6,8 @@ import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
+import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
 import { createWebSocketConnection } from '../../src/common/message';
-import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
 import { parse } from '../../src/common/utils';
 import { WSChannel } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';

@@ -1,4 +1,4 @@
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MonacoCommandService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { ICommandServiceToken } from '@opensumi/ide-monaco/lib/browser/contrib/command';

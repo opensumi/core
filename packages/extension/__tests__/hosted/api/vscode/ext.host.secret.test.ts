@@ -1,4 +1,4 @@
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';

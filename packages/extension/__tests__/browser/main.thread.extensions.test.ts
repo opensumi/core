@@ -1,5 +1,5 @@
 import { Injectable, Injector } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import { IContextKeyService, AppConfig } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';

@@ -3,7 +3,7 @@ import path from 'path';
 import { URI as Uri } from 'vscode-uri';
 
 import { Injector } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import { IExtensionProps, isWindows, URI } from '@opensumi/ide-core-common';
 
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';

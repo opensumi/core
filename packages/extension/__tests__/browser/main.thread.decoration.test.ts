@@ -1,6 +1,6 @@
 import type vscode from 'vscode';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@opensumi/ide-core-common';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';

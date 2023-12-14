@@ -6,7 +6,7 @@ import util from 'util';
 import temp = require('temp');
 import vscode from 'vscode';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import {
   PreferenceProviderProvider,
   PreferenceProvider,

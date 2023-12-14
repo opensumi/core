@@ -1,34 +1,20 @@
-import { CancellationToken, CancellationTokenSource, Deferred, Event, Uri } from '@opensumi/ide-core-common';
+import {
+  CancellationToken,
+  CancellationTokenSource,
+  Deferred,
+  Event,
+  SerializedError,
+  Uri,
+  transformErrorForSerialization,
+} from '@opensumi/ide-core-common';
+
+import { ILogger } from './types';
 // Uri: vscode 中的 uri
 // URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 
 export enum RPCProtocolEnv {
   MAIN,
   EXT,
-}
-
-export interface SerializedError {
-  readonly $isError: true;
-  readonly name: string;
-  readonly message: string;
-  readonly stack: string;
-}
-
-export function transformErrorForSerialization(error: Error): SerializedError;
-export function transformErrorForSerialization(error: any): any;
-export function transformErrorForSerialization(error: any): any {
-  if (error instanceof Error) {
-    const { name, message } = error;
-    const stack: string = (error as any).stacktrace || (error as any).stack;
-    return {
-      $isError: true,
-      name,
-      message,
-      stack,
-    };
-  }
-
-  return error;
 }
 
 export interface IProxyIdentifier {
@@ -56,7 +42,7 @@ export function createMainContextProxyIdentifier<T>(identifier: string): ProxyId
   return result;
 }
 export interface IMessagePassingProtocol {
-  send(msg): void;
+  send(msg: string): void;
   onMessage: Event<string>;
   timeout?: number;
 }
@@ -212,9 +198,9 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _timeoutHandles: Map<string, NodeJS.Timeout | number>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
-  private logger;
+  private logger: ILogger;
 
-  constructor(connection: IMessagePassingProtocol, logger?: any) {
+  constructor(connection: IMessagePassingProtocol, logger?: ILogger) {
     this._protocol = connection;
     this._locals = new Map();
     this._proxies = new Map();
@@ -290,8 +276,8 @@ export class RPCProtocol implements IRPCProtocol {
     return result.promise;
   }
 
-  private _receiveOneMessage(rawmsg: string): void {
-    const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
+  private _receiveOneMessage(rawMsg: string): void {
+    const msg = JSON.parse(rawMsg, ObjectTransfer.reviver);
 
     if (this._timeoutHandles.has(msg.id)) {
       // 忽略一些 jest 测试场景 clearTimeout not defined 的问题
@@ -410,6 +396,6 @@ export class RPCProtocol implements IRPCProtocol {
     this._pendingRPCReplies.delete(callId);
     this._timeoutHandles.delete(callId);
 
-    pendingReply.reject(new Error('RPC Timeout: '+ callId));
+    pendingReply.reject(new Error('RPC Timeout: ' + callId));
   }
 }

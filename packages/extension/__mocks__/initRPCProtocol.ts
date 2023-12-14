@@ -1,7 +1,7 @@
 import net from 'net';
 
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 

@@ -1,4 +1,4 @@
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
 
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { mockExtensions } from '../../../../__mocks__/extensions';
