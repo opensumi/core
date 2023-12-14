@@ -1,7 +1,6 @@
 import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
-import { BaseConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ProxyJSONRPC, ProxyWrapper } from '../proxy';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
@@ -45,19 +44,7 @@ export class RPCServiceCenter {
     return this.connectionDeferred.promise;
   }
 
-  setConnection2(connection: BaseConnection<any>): IDisposable {
-    const messageConnection = connection.createMessageConnection();
-    this.setConnection(messageConnection);
-
-    return {
-      dispose: () => {
-        messageConnection.dispose();
-        this.removeConnection(messageConnection);
-      },
-    };
-  }
-
-  private setConnection(connection: MessageConnection) {
+  setConnection(connection: MessageConnection): IDisposable {
     if (!this.connection.length) {
       this.connectionDeferred.resolve();
     }
@@ -68,6 +55,12 @@ export class RPCServiceCenter {
 
     const wrapper = rpcProxy.createProxyWrapper();
     this.proxyWrappers.push(wrapper);
+    return {
+      dispose: () => {
+        connection.dispose();
+        this.removeConnection(connection);
+      },
+    };
   }
 
   private removeConnection(connection: MessageConnection) {

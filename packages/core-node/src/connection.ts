@@ -4,13 +4,13 @@ import net from 'net';
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { WSChannelConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/ws-channel';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
   CommonChannelHandler,
   commonChannelPathHandler,
 } from '@opensumi/ide-connection/lib/node';
+import { SimpleCommonChannelHandler } from '@opensumi/ide-connection/lib/node/simple-channel-handler';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
@@ -18,10 +18,32 @@ import { IServerAppOpts } from './types';
 
 export { RPCServiceCenter };
 
+function handleClientChannel(
+  injector: Injector,
+  modulesInstances: NodeModule[],
+  channel: WSChannel,
+  clientId: string,
+  logger: INodeLogger,
+) {
+  logger.log(`New RPC connection ${clientId}`);
+
+  const serviceCenter = new RPCServiceCenter(undefined, logger);
+  const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
+
+  const remove = serviceCenter.setConnection(channel.createMessageConnection());
+
+  channel.onClose(() => {
+    remove.dispose();
+    serviceChildInjector.disposeAll();
+
+    logger.log(`Remove RPC connection ${clientId}`);
+  });
+}
+
 export function createServerConnection2(
   server: http.Server,
-  injector,
-  modulesInstances,
+  injector: Injector,
+  modulesInstances: NodeModule[],
   handlerArr: WebSocketHandler[],
   serverAppOpts: IServerAppOpts,
 ) {
@@ -34,21 +56,8 @@ export function createServerConnection2(
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
-    handler: (connection: WSChannel, clientId: string) => {
-      logger.log(`New RPC connection ${clientId}`);
-
-      const serviceCenter = new RPCServiceCenter(undefined, logger);
-      const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
-
-      const wsChannel = new WSChannelConnection(connection);
-      const remove = serviceCenter.setConnection2(wsChannel);
-
-      connection.onClose(() => {
-        remove.dispose();
-        serviceChildInjector.disposeAll();
-
-        logger.log(`Remove RPC connection ${clientId}`);
-      });
+    handler: (channel: WSChannel, clientId: string) => {
+      handleClientChannel(injector, modulesInstances, channel, clientId, logger);
     },
     dispose: () => {},
   });
@@ -62,24 +71,19 @@ export function createServerConnection2(
   socketRoute.init();
 }
 
-export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
+export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger);
 
+  const simpleChannelHandler = new SimpleCommonChannelHandler('NetServer-' + process.env.CODE_WINDOW_CLIENT_ID, logger);
+
   server.on('connection', (socket) => {
-    const serviceCenter = new RPCServiceCenter(undefined, logger);
-    const serviceChildInjector = bindModuleBackService(
-      injector,
-      modulesInstances,
-      serviceCenter,
-      process.env.CODE_WINDOW_CLIENT_ID as string,
-    );
-
-    const socketConnection = new NetSocketConnection(socket);
-    const remove = serviceCenter.setConnection2(socketConnection);
-
-    socket.on('close', () => {
-      remove.dispose();
-      serviceChildInjector.disposeAll();
+    simpleChannelHandler.handleSocket(new NetSocketConnection(socket), {
+      onSocketChannel(channel) {
+        handleClientChannel(injector, modulesInstances, channel, process.env.CODE_WINDOW_CLIENT_ID as string, logger);
+      },
+      onError(error) {
+        logger.error('net server connection on error', error);
+      },
     });
   });
 }

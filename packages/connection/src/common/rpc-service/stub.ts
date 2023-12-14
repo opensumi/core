@@ -35,7 +35,7 @@ export class RPCServiceStub {
   }
 
   getProxy = <T>() =>
-    new Proxy<T extends void ? RPCServiceStub : RPCServiceStub & T>(this as any, {
+    new Proxy<RPCServiceStub & T>(this as any, {
       // 调用方
       get: (target, prop: string) => {
         if (!target[prop]) {

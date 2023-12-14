@@ -22,8 +22,8 @@ export class NodeMessagePortConnection extends BaseConnection<Uint8Array> {
     };
   }
 
-  onClose(cb: () => void): IDisposable {
-    this.port.on('close', cb);
+  onceClose(cb: () => void): IDisposable {
+    this.port.once('close', cb);
     return {
       dispose: () => {
         this.port.off('close', cb);

@@ -1,4 +1,4 @@
-import { ProxyIdentifier } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { ProxyIdentifier } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { IDisposable, Uri, path } from '@opensumi/ide-core-common';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';

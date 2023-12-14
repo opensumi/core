@@ -1,29 +1,33 @@
-import ReconnectingWebSocket from 'reconnecting-websocket';
-
 import { uuid } from '@opensumi/ide-core-common';
-import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
+import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
+import { NetSocketConnection } from '../common/connection';
+import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
 import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
-import { WSChannel, MessageString } from '../common/ws-channel';
+import { WSChannel } from '../common/ws-channel';
 
-// 前台链接管理类
+/**
+ * 前台链接管理类
+ */
 export class WSChannelHandler {
-  public connection: ReconnectingWebSocket;
-  private channelMap: Map<number | string, WSChannel> = new Map();
-  private channelCloseEventMap: Map<number | string, WSCloseInfo> = new Map();
+  private channelMap: Map<string, WSChannel> = new Map();
+  private channelCloseEventMap: Map<string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
   get LOG_TAG() {
-    return `[WSChannelHandler] [client-id:${this.clientId}] [ws-path:${this.wsPath}]`;
+    return `[WSChannelHandler] [client-id:${this.clientId}]`;
   }
 
-  constructor(public wsPath: UrlProvider, logger: any, public protocols?: string[], clientId?: string) {
+  constructor(
+    public connection: ReconnectingWebSocketConnection | NetSocketConnection,
+    logger: any,
+    clientId?: string,
+  ) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
-    this.connection = new ReconnectingWebSocket(wsPath, protocols, {});
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -35,11 +39,12 @@ export class WSChannelHandler {
     this.reporterService = reporterService;
   }
   private clientMessage() {
-    const clientMsg: MessageString = stringify({
-      kind: 'client',
-      id: this.clientId,
-    });
-    this.connection.send(clientMsg);
+    this.connection.send(
+      stringify({
+        kind: 'client',
+        id: this.clientId,
+      }),
+    );
   }
   private heartbeatMessage() {
     if (this.heartbeatMessageTimer) {
@@ -56,11 +61,11 @@ export class WSChannelHandler {
   }
 
   public async initHandler() {
-    this.connection.onmessage = (e) => {
+    this.connection.onMessage((message) => {
       // 一个心跳周期内如果有收到消息，则不需要再发送心跳
       this.heartbeatMessage();
 
-      const msg = parse(e.data);
+      const msg = parse(message);
 
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
@@ -74,9 +79,10 @@ export class WSChannelHandler {
           this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
         }
       }
-    };
+    });
+
     await new Promise<void>((resolve) => {
-      this.connection.addEventListener('open', () => {
+      this.connection.onOpen(() => {
         this.clientMessage();
         this.heartbeatMessage();
         resolve();
@@ -97,18 +103,19 @@ export class WSChannelHandler {
         }
       });
 
-      this.connection.addEventListener('close', (event) => {
+      this.connection.onceClose((code, reason) => {
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
-            channel.close(event.code, event.reason);
+            channel.close(code ?? 1000, reason ?? '');
           });
         }
       });
     });
   }
-  private getChannelSend = (connection: ReconnectingWebSocket) => (content: string) => {
-    connection.send(content);
-  };
+  private getChannelSend =
+    (connection: ReconnectingWebSocketConnection | NetSocketConnection) => (content: Uint8Array) => {
+      connection.send(content);
+    };
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;

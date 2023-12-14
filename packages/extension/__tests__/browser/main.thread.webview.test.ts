@@ -1,4 +1,4 @@
-import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 import {

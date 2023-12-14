@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { Emitter, LogServiceForClientPath, LogLevel, getLanguageId } from '@opensumi/ide-core-common';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';

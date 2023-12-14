@@ -2,7 +2,7 @@ import http from 'http';
 
 import WebSocket from 'ws';
 
-import { WebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
@@ -37,7 +37,7 @@ describe('connection', () => {
 
     await new Promise<void>((resolve) => {
       server.listen(wssPort, () => {
-        resolve(undefined);
+        resolve();
       });
     });
 
@@ -54,7 +54,7 @@ describe('connection', () => {
     });
     await new Promise<void>((resolve) => {
       connection.on('open', () => {
-        resolve(undefined);
+        resolve();
       });
     });
 
@@ -65,8 +65,8 @@ describe('connection', () => {
       id: 'TEST_CHANNEL_ID',
       tag: 'test',
     });
-    connection.on('message', (msg) => {
-      const msgObj = parse(msg as string);
+    connection.on('message', (msg: Uint8Array) => {
+      const msgObj = parse(msg);
       if (msgObj.kind === 'ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
           channel.handleMessage(msgObj);
@@ -76,7 +76,7 @@ describe('connection', () => {
 
     await new Promise<void>((resolve) => {
       channel.onOpen(() => {
-        resolve(undefined);
+        resolve();
       });
       channel.open('TEST_CHANNEL');
     });
@@ -106,7 +106,7 @@ describe('connection', () => {
 
     await new Promise<void>((resolve) => {
       server.listen(wssPort, () => {
-        resolve(undefined);
+        resolve();
       });
     });
 
@@ -137,17 +137,22 @@ describe('connection', () => {
       new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
-          const wsConnection = new WebSocketConnection(connection);
-          serviceCenter.setConnection2(wsConnection);
+          const wsConnection = new WSWebSocketConnection(connection);
+          const channel = WSChannel.forClient(wsConnection, {
+            id: 'test-wss',
+            tag: 'test-wss',
+          });
 
-          resolve(undefined);
+          serviceCenter.setConnection(channel.createMessageConnection());
+
+          resolve();
         });
       }),
 
       new Promise<void>((resolve) => {
         clientConnection = new WebSocket(`ws://0.0.0.0:${wssPort}/service`);
         clientConnection.on('open', () => {
-          resolve(undefined);
+          resolve();
         });
       }),
     ]);
@@ -162,8 +167,12 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    const wsConnection = new WebSocketConnection(clientConnection!);
-    clientCenter.setConnection2(wsConnection);
+    const wsConnection = new WSWebSocketConnection(clientConnection!);
+    const channel = WSChannel.forClient(wsConnection, {
+      id: 'test',
+      tag: 'test',
+    });
+    clientCenter.setConnection(channel.createMessageConnection());
 
     const { getRPCService } = initRPCService<
       MockFileService & {

@@ -1,7 +1,12 @@
 import { EventEmitter } from '@opensumi/events';
 
+import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
-import { stringify } from './utils';
+import { parse, stringify } from './utils';
+
+import { createWebSocketConnection } from '.';
+
+export type TConnectionSend = (content: Uint8Array) => void;
 
 export interface IWebSocket {
   send(content: string): void;
@@ -41,9 +46,18 @@ export interface CloseMessage {
 }
 export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
+export interface IWSChannelCreateOptions {
+  id: string;
+  /**
+   * @example browser | ws-server | net-server | net-client | port1 | port2
+   */
+  tag: string;
+  logger?: ILogger;
+}
+
 export class WSChannel implements IWebSocket {
   protected emitter = new EventEmitter<{
-    message: [data: any];
+    message: [data: string];
     open: [id: string];
     reopen: [];
     close: [code: number, reason: string];
@@ -58,7 +72,22 @@ export class WSChannel implements IWebSocket {
 
   logger: ILogger = console;
 
-  private connectionSend: (content: string) => void;
+  private connectionSend: TConnectionSend;
+
+  static forClient(connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
+    const channel = new WSChannel(connection.send.bind(connection), options);
+
+    const toDispose = connection.onMessage((data) => {
+      const msg = parse(data);
+      channel.handleMessage(msg);
+    });
+
+    connection.onceClose(() => {
+      toDispose.dispose();
+    });
+
+    return channel;
+  }
 
   get LOG_TAG() {
     return [
@@ -69,7 +98,7 @@ export class WSChannel implements IWebSocket {
     ].join(' ');
   }
 
-  constructor(connectionSend: (content: string) => void, options: { id: string; logger?: ILogger; tag: string }) {
+  constructor(connectionSend: TConnectionSend, options: IWSChannelCreateOptions) {
     this.connectionSend = connectionSend;
 
     const { id, logger, tag } = options;
@@ -81,12 +110,12 @@ export class WSChannel implements IWebSocket {
     }
   }
 
-  public setConnectionSend(connectionSend: (content: string) => void) {
+  public setConnectionSend(connectionSend: TConnectionSend) {
     this.connectionSend = connectionSend;
   }
 
   // server
-  onMessage(cb: (data: any) => any) {
+  onMessage(cb: (data: string) => any) {
     return this.emitter.on('message', cb);
   }
   onOpen(cb: (id: string) => void) {
@@ -143,6 +172,9 @@ export class WSChannel implements IWebSocket {
   }
   onClose(cb: (code: number, reason: string) => void) {
     return this.emitter.on('close', cb);
+  }
+  createMessageConnection() {
+    return createWebSocketConnection(this);
   }
 }
 

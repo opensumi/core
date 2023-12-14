@@ -5,7 +5,7 @@ import { promisify } from 'util';
 
 import * as pty from 'node-pty';
 
-import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
 import { isMacintosh, isLinux } from '@opensumi/ide-utils/lib/platform';
@@ -256,8 +256,9 @@ export class PtyServiceProxyRPCProvider {
     this.serverListenOptions = listenOptions;
     this.ptyServiceCenter = new RPCServiceCenter();
     const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
-    const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
-      .$callback;
+    const $callback: (callId: number, ...args: any[]) => void = getRPCService(
+      PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
+    ).$callback;
 
     this.ptyServiceProxy = new PtyServiceProxy($callback);
 
@@ -302,7 +303,12 @@ export class PtyServiceProxyRPCProvider {
 
   private setProxyConnection(socket: net.Socket) {
     const connection = new NetSocketConnection(socket);
-    const remove = this.ptyServiceCenter.setConnection2(connection);
+    const channel = WSChannel.forClient(connection, {
+      id: 'pty',
+      tag: 'pty-service-proxy',
+    });
+
+    const remove = this.ptyServiceCenter.setConnection(channel.createMessageConnection());
     socket.on('close', () => {
       remove.dispose();
     });

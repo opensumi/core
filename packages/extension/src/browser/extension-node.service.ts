@@ -1,7 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { initRPCService, IRPCProtocol, RPCProtocol, RPCServiceCenter } from '@opensumi/ide-connection';
+import { initRPCService, IRPCProtocol, RPCProtocol, RPCServiceCenter, WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { WSChannelConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/ws-channel';
 import {
   AppConfig,
   Deferred,
@@ -158,13 +157,17 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
         electronEnv.metadata.windowClientId,
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-
+      const connection = createNetSocketConnection(connectPath);
+      const channel = WSChannel.forClient(connection, {
+        id: 'ext-node-service',
+        tag: 'ext-client',
+      });
       // electron 环境下要使用 Node 端的 connection
-      mainThreadCenter.setConnection2(createNetSocketConnection(connectPath));
+      mainThreadCenter.setConnection(channel.createMessageConnection());
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-      mainThreadCenter.setConnection2(new WSChannelConnection(channel));
+      mainThreadCenter.setConnection(channel.createMessageConnection());
     }
 
     const { getRPCService } = initRPCService<{

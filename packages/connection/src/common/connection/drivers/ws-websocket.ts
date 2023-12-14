@@ -4,7 +4,7 @@ import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
 
-export class WebSocketConnection extends BaseConnection<Uint8Array> {
+export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
   constructor(private socket: WebSocket) {
     super();
   }
@@ -20,8 +20,8 @@ export class WebSocketConnection extends BaseConnection<Uint8Array> {
       },
     };
   }
-  onClose(cb: () => void): IDisposable {
-    this.socket.on('close', cb);
+  onceClose(cb: () => void): IDisposable {
+    this.socket.once('close', cb);
     return {
       dispose: () => {
         this.socket.off('close', cb);

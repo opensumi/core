@@ -1,8 +1,10 @@
+import ReconnectingWebSocket from 'reconnecting-websocket';
+
 import { Injector, Provider } from '@opensumi/di';
-import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { RPCMessageConnection, RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { WSChannelConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/ws-channel';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import {
   getDebugLogger,
   IReporterService,
@@ -16,12 +18,13 @@ import {
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
+import { createNetSocketConnection } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
 const initialLogger = getDebugLogger();
 
-export async function createClientConnection2(
+export async function createClientConnection4Web(
   injector: Injector,
   modules: ModuleConstructor[],
   wsPath: UrlProvider,
@@ -29,25 +32,48 @@ export async function createClientConnection2(
   protocols?: string[],
   clientId?: string,
 ) {
+  const rawConnection = new ReconnectingWebSocket(wsPath, protocols, {});
+  rawConnection.binaryType = 'arraybuffer';
+  const connection = new ReconnectingWebSocketConnection(rawConnection);
+  return createClientConnection2(injector, modules, onReconnect, connection, clientId);
+}
+
+export async function createClientConnection4Electron(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  onReconnect: () => void,
+  clientId?: string,
+) {
+  const connection = createNetSocketConnection();
+  return createClientConnection2(injector, modules, onReconnect, connection, clientId);
+}
+
+export async function createClientConnection2(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  onReconnect: () => void,
+  connection: ReconnectingWebSocketConnection | NetSocketConnection,
+  clientId?: string,
+) {
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
   const stateService = injector.get(ClientAppStateService);
 
-  const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, clientId);
+  const wsChannelHandler = new WSChannelHandler(connection, initialLogger, clientId);
   wsChannelHandler.setReporter(reporterService);
-  wsChannelHandler.connection.addEventListener('open', () => {
+  wsChannelHandler.connection.onOpen(() => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionOpenEvent());
     });
   });
 
-  wsChannelHandler.connection.addEventListener('close', () => {
+  wsChannelHandler.connection.onceClose(() => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionCloseEvent());
     });
   });
 
-  wsChannelHandler.connection.addEventListener('error', (e) => {
+  wsChannelHandler.connection.onError((e) => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionErrorEvent(e));
     });
@@ -59,20 +85,21 @@ export async function createClientConnection2(
     token: WSChannelHandler,
     useValue: wsChannelHandler,
   });
+
   // 重连不会执行后面的逻辑
   const channel = await wsChannelHandler.openChannel('RPCService');
   channel.onReOpen(() => onReconnect());
 
-  bindConnectionService(injector, modules, new WSChannelConnection(channel) as any);
+  bindConnectionService(injector, modules, channel.createMessageConnection());
 }
 
 export async function bindConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
-  connection: BaseConnection<Uint8Array>,
+  connection: RPCMessageConnection,
 ) {
   const clientCenter = new RPCServiceCenter();
-  const remove = clientCenter.setConnection2(connection);
+  const remove = clientCenter.setConnection(connection);
 
   connection.onClose(() => {
     remove.dispose();

@@ -1,4 +1,4 @@
-import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MainThreadStatusBar } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.statusbar';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';

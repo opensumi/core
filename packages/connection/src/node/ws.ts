@@ -5,7 +5,7 @@ import ws from 'ws';
 
 export abstract class WebSocketHandler {
   abstract handlerId: string;
-  abstract handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean;
+  abstract handleUpgrade(pathname: string, request: any, socket: any, head: any): boolean;
   init?(): void;
 }
 

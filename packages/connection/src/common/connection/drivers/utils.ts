@@ -47,6 +47,6 @@ export const createQueue = <T>(socket: IConnectionShape<T>): IConnectionShape<T>
       socket.send(data);
     },
     onMessage: (cb) => queue.on(cb),
-    onClose: (cb) => socket.onClose(cb),
+    onceClose: (cb) => socket.onceClose(cb),
   };
 };

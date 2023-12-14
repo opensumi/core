@@ -8,7 +8,7 @@ import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
 export interface IPathHandler {
   dispose: (connection: any, connectionId: string) => void;
-  handler: (connection: any, connectionId: string, params?: any) => void;
+  handler: (connection: any, connectionId: string, params?: Record<string, string>) => void;
   reconnect?: (connection: any, connectionId: string) => void;
   connection?: any;
 }
@@ -30,16 +30,16 @@ export class CommonChannelPathHandler {
     }
     const handlerArr = this.handlerMap.get(channelToken) as IPathHandler[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection: WSChannel, clientId: string, params: any) => {
-      handler.connection = connection;
-      handlerFn(connection, clientId, params);
+    const setHandler = (channel: WSChannel, clientId: string, params: any) => {
+      handler.connection = channel;
+      handlerFn(channel, clientId, params);
     };
     handler.handler = setHandler;
     handlerArr.push(handler);
     this.handlerMap.set(channelToken, handlerArr);
   }
-  getParams(channelPath: string, value: string) {
-    const params = {};
+  getParams(channelPath: string, value: string): Record<string, string> {
+    const params = {} as Record<string, string>;
     if (this.paramsKey.has(channelPath)) {
       const key = this.paramsKey.get(channelPath);
       if (key) {
@@ -79,12 +79,14 @@ export class CommonChannelPathHandler {
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
-// 后台 Web 链接处理类
+/**
+ * 后台 Web 链接处理类
+ */
 export class CommonChannelHandler extends WebSocketHandler {
   public handlerId = 'common-channel';
   private wsServer: WebSocket.Server;
   protected handlerRoute: MatchFunction;
-  private channelMap: Map<string | number, WSChannel> = new Map();
+  private channelMap: Map<string, WSChannel> = new Map();
   private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
@@ -110,7 +112,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
     this.wsServer.on('connection', (connection: WebSocket) => {
       let connectionId: string;
-      connection.on('message', (msg: string) => {
+      connection.on('message', (msg: Uint8Array) => {
         let msgObj: ChannelMessage;
         try {
           msgObj = parse(msg);
@@ -141,7 +143,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
             // 根据 path 拿到注册的 handler
             let handlerArr = commonChannelPathHandler.get(path);
-            let params;
+            let params: Record<string, string> | undefined;
             // 尝试通过父路径查找处理函数，如server/:id方式注册的handler
             if (!handlerArr) {
               const slashIndex = path.indexOf('/');
@@ -195,7 +197,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
   }
 
-  private channelConnectionSend = (connection: WebSocket) => (content: string) => {
+  private channelConnectionSend = (connection: WebSocket) => (content: Uint8Array) => {
     if (connection.readyState === connection.OPEN) {
       connection.send(content, (err: any) => {
         if (err) {
@@ -204,17 +206,16 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
     }
   };
-  public handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean {
-    const routeResult = this.handlerRoute(wsPathname);
+  public handleUpgrade(pathname: string, request: any, socket: any, head: any): boolean {
+    const routeResult = this.handlerRoute(pathname);
 
     if (routeResult) {
-      const wsServer = this.wsServer;
-      wsServer.handleUpgrade(request, socket, head, (connection: any) => {
+      this.wsServer.handleUpgrade(request, socket, head, (connection: any) => {
         connection.routeParam = {
-          pathname: wsPathname,
+          pathname,
         };
 
-        wsServer.emit('connection', connection);
+        this.wsServer.emit('connection', connection);
       });
       return true;
     }

@@ -6,7 +6,7 @@ import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.m
 
 import { extensionHostManagerTester } from './extension.host.manager.common-tester';
 
-const PROXY_PORT = 10297;
+const PROXY_PORT = 10298;
 let extHostProxy: ExtHostProxy;
 
 extensionHostManagerTester({

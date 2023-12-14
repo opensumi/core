@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { IRPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Deferred, URI } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';

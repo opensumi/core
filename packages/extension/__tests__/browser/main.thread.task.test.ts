@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Emitter, FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { ExtensionService } from '@opensumi/ide-extension';

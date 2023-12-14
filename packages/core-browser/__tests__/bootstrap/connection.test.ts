@@ -5,7 +5,7 @@ import { IEventBus, BrowserConnectionErrorEvent } from '@opensumi/ide-core-commo
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ClientAppStateService } from '../../src/application';
-import { createClientConnection2 } from '../../src/bootstrap/connection';
+import { createClientConnection4Web } from '../../src/bootstrap/connection';
 (global as any).WebSocket = WebSocket;
 
 describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
@@ -30,7 +30,7 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
       done();
     });
     stateService = injector.get(ClientAppStateService);
-    createClientConnection2(injector, [], fakeWSURL, () => {});
+    createClientConnection4Web(injector, [], fakeWSURL, () => {});
     stateService.state = 'core_module_initialized';
     new Promise<void>((resolve) => {
       setTimeout(() => {

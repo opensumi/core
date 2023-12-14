@@ -1,7 +1,7 @@
 import net, { SocketConnectOpts } from 'net';
 
 import { Injectable, Optional } from '@opensumi/di';
-import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
@@ -51,7 +51,11 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     });
 
     const socketConnection = new NetSocketConnection(socket);
-    const remove = clientCenter.setConnection2(socketConnection);
+    const channel = WSChannel.forClient(socketConnection, {
+      id: 'pty-manager-remote',
+      tag: 'node-client',
+    });
+    const remove = clientCenter.setConnection(channel.createMessageConnection());
     return Disposable.create(() => {
       callbackDisposed = true;
       remove.dispose();

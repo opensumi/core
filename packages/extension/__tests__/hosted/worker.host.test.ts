@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { ProxyIdentifier } from '@opensumi/ide-connection';
-import { RPCProtocol } from '@opensumi/ide-connection/src/common/ext-rpc-protocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
 
 import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';

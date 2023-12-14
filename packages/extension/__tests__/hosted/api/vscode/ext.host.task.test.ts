@@ -33,9 +33,7 @@ import {
   ITerminalService,
   ITerminalTheme,
 } from '@opensumi/ide-terminal-next';
-import {
-  createTerminalClientFactory2,
-} from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
+import { createTerminalClientFactory2 } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';

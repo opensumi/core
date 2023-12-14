@@ -7,7 +7,6 @@ import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   CommandRegistry,
   isOSX,
@@ -66,11 +65,11 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { createNetSocketConnection, electronEnv } from '../utils';
+import { electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
-import { createClientConnection2, bindConnectionService } from './connection';
+import { createClientConnection4Web, createClientConnection4Electron } from './connection';
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 
@@ -204,38 +203,38 @@ export class ClientApp implements IClientApp, IDisposable {
    * 3. Starting
    * 4. Ready
    */
-  public async start(
-    container: HTMLElement | IAppRenderer,
-    type?: 'electron' | 'web',
-    connection?: BaseConnection<Uint8Array>,
-  ): Promise<void> {
+  public async start(container: HTMLElement | IAppRenderer, type?: 'electron' | 'web'): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
-    if (connection) {
-      await bindConnectionService(this.injector, this.modules, connection);
-    } else {
-      if (type === 'electron') {
-        await bindConnectionService(this.injector, this.modules, createNetSocketConnection());
-      } else if (type === 'web') {
-        await createClientConnection2(
-          this.injector,
-          this.modules,
-          this.connectionPath,
-          () => {
-            this.onReconnectContributions();
-          },
-          this.connectionProtocols,
-          this.config.clientId,
-        );
+    if (type === 'electron') {
+      await createClientConnection4Electron(
+        this.injector,
+        this.modules,
+        () => {
+          this.onReconnectContributions();
+        },
+        this.config.clientId,
+      );
+    } else if (type === 'web') {
+      await createClientConnection4Web(
+        this.injector,
+        this.modules,
+        this.connectionPath,
+        () => {
+          this.onReconnectContributions();
+        },
+        this.connectionProtocols,
+        this.config.clientId,
+      );
 
-        this.logger = this.getLogger();
-        // Replace Logger
-        this.injector.get(WSChannelHandler).replaceLogger(this.logger);
-      }
+      this.logger = this.getLogger();
+      // Replace Logger
+      this.injector.get(WSChannelHandler).replaceLogger(this.logger);
     }
+
     measureReporter.timeEnd('ClientApp.createConnection');
 
     this.logger = this.getLogger();
