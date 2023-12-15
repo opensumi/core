@@ -54,8 +54,6 @@ global.document.queryCommandSupported = () => {};
 global.document.execCommand = () => {};
 global.HTMLElement = jsdom.window.HTMLElement;
 global.self = global;
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
 
 global.ElectronIpcRenderer = {
   send: () => {},
