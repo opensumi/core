@@ -4,25 +4,22 @@ import { Stream } from 'stream';
 import { IDisposable, Sequencer } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
-import { StreamPacketDecoder, createStreamPacket } from './stream-packet';
+import { SumiStreamPacketDecoder, createSumiStreamPacket } from './stream-packet';
 
 export class NetSocketConnection extends BaseConnection<Uint8Array> {
   stream: Stream;
-  constructor(private socket: net.Socket) {
-    super();
-    this.stream = socket.pipe(
-      new StreamPacketDecoder({
-        prefixLength: 5,
-      }),
-    );
-  }
-
   encoding = 'utf8';
   sequencer = new Sequencer();
+
+  constructor(private socket: net.Socket) {
+    super();
+    this.stream = socket.pipe(new SumiStreamPacketDecoder());
+  }
+
   send(data: Uint8Array): void {
     this.sequencer.queue(async () => {
       await new Promise<void>((resolve, reject) => {
-        this.socket.write(createStreamPacket(data), this.encoding, (err: Error) => {
+        this.socket.write(createSumiStreamPacket(data), this.encoding, (err: Error) => {
           if (err) {
             reject(err);
           } else {

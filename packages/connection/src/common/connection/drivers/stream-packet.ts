@@ -11,7 +11,7 @@ type TBinaryReader = ReturnType<typeof BinaryReader>;
 export const reader = BinaryReader({});
 const writer = BinaryWriter({});
 
-export function createStreamPacket(content: Uint8Array) {
+export function createSumiStreamPacket(content: Uint8Array) {
   writer.reset();
   writer.uint32(kMagicNumber);
   writer.varInt32(content.byteLength);
@@ -19,7 +19,7 @@ export function createStreamPacket(content: Uint8Array) {
   return writer.dump();
 }
 
-export abstract class PacketStreamDecoder extends Transform {
+export abstract class StreamPacketDecoder extends Transform {
   private _buffers: Uint8Array[];
   /**
    * Buffers total byte length
@@ -75,7 +75,7 @@ export abstract class PacketStreamDecoder extends Transform {
       }
     }
 
-    const fullPacketLength = this._prefixLength + this._packetByteLength;
+    const fullPacketLength = this.reader.getCursor() + this._packetByteLength;
 
     // Not enough data yet, wait for more data
     if (this._buffersByteLength < fullPacketLength) {
@@ -117,9 +117,11 @@ export abstract class PacketStreamDecoder extends Transform {
   abstract getPacketLength(reader: TBinaryReader): number;
 }
 
-export class StreamPacketDecoder extends PacketStreamDecoder {
-  constructor(options: { prefixLength: number } & TransformOptions) {
-    super(options);
+export class SumiStreamPacketDecoder extends StreamPacketDecoder {
+  constructor() {
+    super({
+      prefixLength: 5,
+    });
   }
 
   getPacketLength(reader: TBinaryReader): number {

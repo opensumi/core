@@ -66,6 +66,10 @@ export class WSChannelHandler {
       this.heartbeatMessage();
 
       const msg = parse(message);
+      if (msg.kind === 'heartbeat') {
+        // 不处理心跳消息
+        return;
+      }
 
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
