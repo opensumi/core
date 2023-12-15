@@ -188,6 +188,18 @@ export class WSChannel implements IWebSocket {
   dispose() {
     this.emitter.dispose();
   }
+
+  listen(channel: WSChannel) {
+    channel.onMessage((data) => {
+      this.send(data);
+    });
+    channel.onClose((code, reason) => {
+      this.close(code, reason);
+    });
+    channel.onReOpen(() => {
+      this.fireReOpen();
+    });
+  }
 }
 
 export type MessageString = string & {
