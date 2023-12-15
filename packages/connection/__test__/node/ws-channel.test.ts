@@ -37,5 +37,6 @@ describe('ws channel node', () => {
 
     server.close();
     socket2.destroy();
+    socket2.end();
   });
 });

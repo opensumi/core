@@ -59,6 +59,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
       this.disposer.addDispose(
         toDisposable(() => {
           this.logger.warn(this.LOG_TAG, 'dispose server');
+          this.logger.log(this.LOG_TAG, 'connections count', server.connections);
           server.close((err) => {
             if (err) {
               this.logger.error(this.LOG_TAG, 'close server error', err);
@@ -67,14 +68,14 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
         }),
       );
 
-      this.logger.log('waiting ext-proxy connecting...');
+      this.logger.log(this.LOG_TAG, 'waiting ext-proxy connecting...');
       server.on('connection', (socket) => {
         const channel = WSChannel.forClient(new NetSocketConnection(socket), {
           id: 'ExtensionHostProxyManager',
           tag: 'client',
         });
 
-        this.logger.log('there are new connections coming in');
+        this.logger.log(this.LOG_TAG, 'there are new connections coming in');
         // 有新的连接时重新设置 RPCProtocol
         const remove = this.extServiceProxyCenter.setConnection(channel.createMessageConnection());
         socket.once('close', () => {
@@ -82,9 +83,9 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
         });
         this.disposer.addDispose(
           toDisposable(() => {
-            if (!socket.destroyed) {
-              socket.destroy();
-            }
+            this.logger.log(this.LOG_TAG, 'destroy socket');
+            socket.destroy();
+            socket.end();
           }),
         );
 

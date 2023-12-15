@@ -79,7 +79,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessMap: Map<string, number> = new Map();
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
-  private clientExtProcessExtConnection: Map<string, any> = new Map();
+  private clientExtProcessExtConnection: Map<
+    string,
+    {
+      connection: net.Socket;
+      reader?: SocketMessageReader;
+      writer?: SocketMessageWriter;
+    }
+  > = new Map();
   private clientExtProcessExtConnectionDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
@@ -191,7 +198,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         return;
       }
 
-      const extConnection = this.clientExtProcessExtConnection.get(clientId);
+      const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
       // 重新生成实例，避免 tcp 消息有残留的缓存，造成分包错误
       const extConnectionReader = new SocketMessageReader(extConnection.connection);
       const extConnectionWriter = new SocketMessageWriter(extConnection.connection);
@@ -475,7 +482,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return this.clientExtProcessInspectPortMap.get(clientId);
   }
 
-  private async _setMainThreadConnection(handler) {
+  private async _setMainThreadConnection(
+    handler: (connectionResult: {
+      connection: {
+        reader: SocketMessageReader | WebSocketMessageReader;
+        writer: SocketMessageWriter | WebSocketMessageWriter;
+      };
+      clientId: string;
+    }) => void,
+  ) {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
       const mainThreadServer: net.Server = net.createServer();
@@ -596,8 +611,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
       // connect 关闭
       if (this.clientExtProcessExtConnection.has(clientId)) {
-        const connection = this.clientExtProcessExtConnection.get(clientId);
+        const connection = this.clientExtProcessExtConnection.get(clientId)!;
         connection.connection.destroy();
+        connection.connection.end();
       }
 
       this.clientExtProcessExtConnection.delete(clientId);

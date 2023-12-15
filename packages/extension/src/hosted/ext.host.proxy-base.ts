@@ -27,6 +27,11 @@ import { ExtensionHostManager } from '../node/extension.host.manager';
 
 class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCService {
   private extensionHostManager: IExtensionHostManager;
+  private readonly logger = getDebugLogger();
+
+  get LOG_TAG() {
+    return '[ExtHostProxyRPCService]';
+  }
 
   constructor(private extServerProxy: IExtServerProxyRPCService) {
     super();
@@ -75,7 +80,10 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
   }
 
   async $onMessage(callId: number, pid: number): Promise<void> {
-    this.extensionHostManager.onMessage(pid, (msg) => this.extServerProxy.$callback(callId, msg));
+    this.extensionHostManager.onMessage(pid, (msg) => {
+      this.logger.log(this.LOG_TAG, 'onMessage', callId, pid, msg, this.extServerProxy);
+      this.extServerProxy.$callback(callId, msg);
+    });
   }
 
   async $disposeProcess(pid: number): Promise<void> {
@@ -104,9 +112,13 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private connectedEmitter = new Emitter<void>();
 
-  private readonly debug = getDebugLogger();
+  private readonly logger = getDebugLogger();
 
   public readonly onConnected = this.connectedEmitter.event;
+
+  get LOG_TAG() {
+    return '[ExtHostProxy]';
+  }
 
   constructor(options?: IExtHostProxyOptions) {
     super();
@@ -162,13 +174,13 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   private reconnectOnEvent = () => {
     global.clearTimeout(this.reconnectingTimer);
     this.reconnectingTimer = global.setTimeout(() => {
-      this.debug.warn('reconnecting ext host server');
+      this.logger.warn(this.LOG_TAG, 'reconnecting ext host server');
       this.createSocket();
     }, this.options.retryTime!);
   };
 
   private connectOnEvent = () => {
-    this.debug.info('connect success');
+    this.logger.info(this.LOG_TAG, 'connect success');
     // this.previouslyConnected = true;
     global.clearTimeout(this.reconnectingTimer);
     this.setConnection();
@@ -200,11 +212,11 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private setConnection() {
     const socketConnection = new NetSocketConnection(this.socket);
-    const wsChannel = WSChannel.forClient(socketConnection, {
-      id: 'ext-host-proxy-base',
+    const channel = WSChannel.forClient(socketConnection, {
+      id: 'ExtHostProxyBase',
       tag: 'client',
     });
-    const remove = this.clientCenter.setConnection(wsChannel.createMessageConnection());
+    const remove = this.clientCenter.setConnection(channel.createMessageConnection());
     this.socket.once('close', () => {
       remove.dispose();
     });
@@ -215,6 +227,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     return {
       dispose: () => {
         this.socket.destroy();
+        this.socket.end();
       },
     };
   };

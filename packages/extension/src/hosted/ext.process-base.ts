@@ -88,8 +88,8 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
   const socketConnection = new NetSocketConnection(extConnection);
 
   const channel = WSChannel.forClient(socketConnection, {
-    id: 'ext-process-base',
-    tag: 'node-client',
+    id: 'ExtProcessBaseRPCProtocol',
+    tag: 'ext-host-client',
   });
 
   extCenter.setConnection(channel.createMessageConnection());

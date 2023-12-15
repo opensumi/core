@@ -1,4 +1,5 @@
 import { EventEmitter } from '@opensumi/events';
+import { DisposableCollection } from '@opensumi/ide-core-common';
 
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
@@ -75,16 +76,22 @@ export class WSChannel implements IWebSocket {
   private connectionSend: TConnectionSend;
 
   static forClient(connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
+    const disposable = new DisposableCollection();
     const channel = new WSChannel(connection.send.bind(connection), options);
 
-    const toDispose = connection.onMessage((data) => {
-      const msg = parse(data);
-      channel.handleMessage(msg);
-    });
+    disposable.push(
+      connection.onMessage((data) => {
+        const msg = parse(data);
+        channel.handleMessage(msg);
+      }),
+    );
+    disposable.push(channel);
 
-    connection.onceClose(() => {
-      toDispose.dispose();
-    });
+    disposable.push(
+      connection.onceClose(() => {
+        disposable.dispose();
+      }),
+    );
 
     return channel;
   }
@@ -133,6 +140,8 @@ export class WSChannel implements IWebSocket {
     );
   }
   handleMessage(msg: ChannelMessage) {
+    this.logger.log(this.LOG_TAG, 'handleMessage', msg);
+
     if (msg.kind === 'ready') {
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
@@ -175,6 +184,9 @@ export class WSChannel implements IWebSocket {
   }
   createMessageConnection() {
     return createWebSocketConnection(this);
+  }
+  dispose() {
+    this.emitter.dispose();
   }
 }
 

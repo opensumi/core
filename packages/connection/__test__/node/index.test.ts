@@ -172,8 +172,11 @@ describe('connection', () => {
       id: 'test',
       tag: 'test',
     });
-    clientCenter.setConnection(channel.createMessageConnection());
 
+    const toDispose = clientCenter.setConnection(channel.createMessageConnection());
+    clientConnection!.once('close', () => {
+      toDispose.dispose();
+    });
     const { getRPCService } = initRPCService<
       MockFileService & {
         onFileChange: (k: any) => void;
@@ -206,6 +209,7 @@ describe('connection', () => {
     expect(notificationMock.mock.calls.length).toBe(2);
 
     wss.close();
+    clientConnection!.close();
   });
 
   it('RPCProtocol', async () => {

@@ -159,8 +159,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
       const connection = createNetSocketConnection(connectPath);
       const channel = WSChannel.forClient(connection, {
-        id: 'ext-node-service',
-        tag: 'ext-client',
+        id: 'NodeExtProcessService',
+        tag: 'browser-electron-client',
       });
       // electron 环境下要使用 Node 端的 connection
       mainThreadCenter.setConnection(channel.createMessageConnection());
