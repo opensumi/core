@@ -125,6 +125,10 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
      */
     this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
   }
+  // restart extProcess on reconnect
+  onReconnect() {
+    this.extensionService.restartExtProcess();
+  }
 
   /**
    * 当前客户端 id
