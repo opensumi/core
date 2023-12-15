@@ -114,7 +114,7 @@ export interface IElectronNativeDialogService {
 
 export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');
 
-export function createElectronClientConnection(connectPath?: string): MessageConnection {
+export function createElectronClientConnection1(connectPath?: string): MessageConnection {
   let socket;
   if (connectPath) {
     socket = electronEnv.createNetConnection(connectPath);

@@ -39,4 +39,55 @@ describe('ws channel node', () => {
     socket2.destroy();
     socket2.end();
   });
+
+  it('互相通信五千次', async () => {
+    jest.setTimeout(50 * 1000);
+
+    let count = 0;
+    const total = 5000;
+
+    const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
+
+    const server = new net.Server();
+
+    server.on('connection', (socket) => {
+      const channel1 = WSChannel.forClient(new NetSocketConnection(socket), {
+        id: 'channel1',
+        tag: 'test',
+      });
+      channel1.onMessage((d) => {
+        channel1.send(d + 'resp');
+      });
+    });
+
+    server.listen(ipcPath);
+
+    const socket2 = net.createConnection(ipcPath);
+
+    const channel2 = WSChannel.forClient(new NetSocketConnection(socket2), {
+      id: 'channel2',
+      tag: 'test',
+    });
+
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        channel2.onMessage(() => {
+          count++;
+          if (count === total) {
+            resolve();
+          }
+        });
+      }),
+      new Promise<void>((resolve) => {
+        for (let i = 0; i < total; i++) {
+          channel2.send('hello');
+        }
+        resolve();
+      }),
+    ]);
+
+    server.close();
+    socket2.destroy();
+    socket2.end();
+  });
 });
