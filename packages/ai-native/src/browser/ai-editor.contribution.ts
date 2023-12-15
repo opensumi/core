@@ -59,7 +59,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   private readonly preferenceService: PreferenceService;
 
   @Autowired(IBrowserCtxMenu)
-  private readonly aiCtxMenuRenderer: AiBrowserCtxMenuService;
+  private readonly ctxMenuRenderer: AiBrowserCtxMenuService;
 
   @Autowired(AiInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AiInlineCompletionsProvider;
@@ -131,7 +131,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       monacoEditor.onDidScrollChange(() => {
-        this.aiCtxMenuRenderer.hideInlineChatMenu();
+        /**
+         * 其他的 ctxmenu 服务注册的菜单在 onHide 函数里会有其他逻辑处理，例如在 editor.context.ts 会在 hide 的时候 focus 编辑器，影响使用
+         */
+        this.ctxMenuRenderer.onHide = undefined;
+        this.ctxMenuRenderer.hide(true);
       }),
     );
 

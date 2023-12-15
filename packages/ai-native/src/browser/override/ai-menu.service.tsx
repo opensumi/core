@@ -71,12 +71,4 @@ export class AiBrowserCtxMenuService extends BrowserCtxMenuService implements IB
   renderMenuItem(node: MenuNode, props: IMenuRenderProps): ReactNode | undefined | null {
     return <MenuComponent data={node} {...props} />;
   }
-
-  hideInlineChatMenu() {
-    /**
-     * 其他的 ctxmenu 服务注册的菜单在 onHide 函数里会有其他逻辑处理，例如在 editor.context.ts 会在 hide 的时候 focus 编辑器，影响使用
-     */
-    this.onHide = undefined;
-    this.hide(true);
-  }
 }
