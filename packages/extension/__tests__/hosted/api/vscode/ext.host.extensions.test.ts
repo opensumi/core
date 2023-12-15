@@ -36,7 +36,7 @@ const mockExtension = {
   defaultPkgNlsJSON: {},
 };
 
-describe(`test ${__filename}`, () => {
+describe('test ext host extension', () => {
   let rpcProtocol: RPCProtocol;
   let context: ExtensionContext;
   let extHostStorage: ExtHostStorage;
