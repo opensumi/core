@@ -59,7 +59,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   private readonly preferenceService: PreferenceService;
 
   @Autowired(IBrowserCtxMenu)
-  private readonly ctxMenuRenderer: AiBrowserCtxMenuService;
+  private readonly aiCtxMenuRenderer: AiBrowserCtxMenuService;
 
   @Autowired(AiInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AiInlineCompletionsProvider;
@@ -131,7 +131,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       monacoEditor.onDidScrollChange(() => {
-        this.ctxMenuRenderer.hide(true);
+        this.aiCtxMenuRenderer.hideInlineChatMenu();
       }),
     );
 
