@@ -255,10 +255,10 @@ export class PtyServiceProxyRPCProvider {
   constructor(listenOptions: ListenOptions = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
     this.serverListenOptions = listenOptions;
     this.ptyServiceCenter = new RPCServiceCenter();
-    const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
-    const $callback: (callId: number, ...args: any[]) => void = getRPCService(
-      PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
-    ).$callback;
+    const { createRPCService, getRPCService } = initRPCService<{
+      $callback: (callId: number, ...args: any[]) => void;
+    }>(this.ptyServiceCenter);
+    const $callback = getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL).$callback;
 
     this.ptyServiceProxy = new PtyServiceProxy($callback);
 

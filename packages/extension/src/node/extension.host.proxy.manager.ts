@@ -1,7 +1,7 @@
 import net from 'net';
 
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { getRPCService, RPCProtocol, IRPCProtocol, WSChannel } from '@opensumi/ide-connection';
+import { getRPCService, RPCProtocol, IRPCProtocol, WSChannel, IExtHostProxyBridge } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
@@ -99,7 +99,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   private setExtHostProxyRPCProtocol() {
-    const proxyService = getRPCService(EXT_HOST_PROXY_PROTOCOL, this.extServiceProxyCenter);
+    const proxyService = getRPCService<IExtHostProxyBridge>(EXT_HOST_PROXY_PROTOCOL, this.extServiceProxyCenter);
 
     const onMessageEmitter = new Emitter<string>();
     proxyService.on('onMessage', (msg) => {

@@ -15,11 +15,11 @@ export function initRPCService<T = void>(center: RPCServiceCenter) {
   };
 }
 
-export function createRPCService<T = void>(name: string, center: RPCServiceCenter): any {
+export function createRPCService<T = void>(name: string, center: RPCServiceCenter) {
   return new RPCServiceStub(name, center, ServiceType.Service).getProxy<T>();
 }
 
-export function getRPCService<T = void>(name: string, center: RPCServiceCenter): any {
+export function getRPCService<T = void>(name: string, center: RPCServiceCenter) {
   return new RPCServiceStub(name, center, ServiceType.Stub).getProxy<T>();
 }
 

@@ -399,3 +399,7 @@ export class RPCProtocol implements IRPCProtocol {
     pendingReply.reject(new Error('RPC Timeout: ' + callId));
   }
 }
+
+export interface IExtHostProxyBridge {
+  onMessage: (msg: string) => void;
+}

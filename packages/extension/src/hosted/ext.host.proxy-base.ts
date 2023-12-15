@@ -8,6 +8,7 @@ import {
   IRPCProtocol,
   RPCProtocol,
   WSChannel,
+  IExtHostProxyBridge,
 } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
@@ -150,7 +151,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setRPCMethods() {
-    const proxyService = getRPCService(EXT_HOST_PROXY_PROTOCOL, this.clientCenter);
+    const proxyService = getRPCService<IExtHostProxyBridge>(EXT_HOST_PROXY_PROTOCOL, this.clientCenter);
     const onMessageEmitter = new Emitter<string>();
     proxyService.on('onMessage', (msg: string) => {
       onMessageEmitter.fire(msg);
