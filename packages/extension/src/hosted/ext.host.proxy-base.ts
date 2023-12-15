@@ -231,4 +231,9 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       },
     };
   };
+
+  dispose(): void {
+    super.dispose();
+    this.logger.log(this.LOG_TAG, 'dispose');
+  }
 }

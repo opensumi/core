@@ -36,5 +36,6 @@ extensionHostManagerTester({
     }),
   dispose: () => {
     extHostProxy.dispose();
+    extHostProxy = null as any;
   },
 });

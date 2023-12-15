@@ -51,15 +51,15 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   async init() {
     await this.startProxyServer();
+    this.setExtHostProxyRPCProtocol();
   }
 
   private startProxyServer() {
-    return new Promise<net.Socket | void>((resolve) => {
+    return new Promise<void>((resolve) => {
       const server = net.createServer();
       this.disposer.addDispose(
         toDisposable(() => {
           this.logger.warn(this.LOG_TAG, 'dispose server');
-          this.logger.log(this.LOG_TAG, 'connections count', server.connections);
           server.close((err) => {
             if (err) {
               this.logger.error(this.LOG_TAG, 'close server error', err);
@@ -70,30 +70,32 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
       this.logger.log(this.LOG_TAG, 'waiting ext-proxy connecting...');
       server.on('connection', (socket) => {
-        const channel = WSChannel.forClient(new NetSocketConnection(socket), {
-          id: 'ExtensionHostProxyManager',
-          tag: 'client',
-        });
-
         this.logger.log(this.LOG_TAG, 'there are new connections coming in');
         // 有新的连接时重新设置 RPCProtocol
-        const remove = this.extServiceProxyCenter.setConnection(channel.createMessageConnection());
-        socket.once('close', () => {
-          remove.dispose();
-        });
-        this.disposer.addDispose(
-          toDisposable(() => {
-            this.logger.log(this.LOG_TAG, 'destroy socket');
-            socket.destroy();
-            socket.end();
-          }),
-        );
-
+        this.setProxyConnection(socket);
         this.setExtHostProxyRPCProtocol();
         resolve();
       });
       server.listen(this.listenOptions);
     });
+  }
+
+  private setProxyConnection(connection: net.Socket) {
+    const channel = WSChannel.forClient(new NetSocketConnection(connection), {
+      id: 'ExtensionHostProxyManager',
+      tag: 'client',
+    });
+    const remove = this.extServiceProxyCenter.setConnection(channel.createMessageConnection());
+    connection.once('close', () => {
+      remove.dispose();
+    });
+
+    this.disposer.addDispose(
+      toDisposable(() => {
+        connection.destroy();
+        connection.end();
+      }),
+    );
   }
 
   private setExtHostProxyRPCProtocol() {
@@ -189,6 +191,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   async dispose() {
     if (!this.disposer.disposed) {
+      this.logger.log(this.LOG_TAG, 'dispose ext host proxy');
       await this.extHostProxy?.$dispose();
       this.disposer.dispose();
     }
