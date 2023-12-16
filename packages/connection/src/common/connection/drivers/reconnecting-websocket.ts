@@ -14,6 +14,10 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     this.socket.send(data);
   }
 
+  isOpen(): boolean {
+    return this.socket.readyState === this.socket.OPEN;
+  }
+
   onOpen(cb: () => void): IDisposable {
     this.socket.addEventListener('open', cb);
     return {

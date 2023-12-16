@@ -54,6 +54,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     const channel = WSChannel.forClient(socketConnection, {
       id: 'pty-manager-remote',
       tag: 'node-client',
+      logger: this.logger,
     });
     const remove = clientCenter.setConnection(channel.createMessageConnection());
     return Disposable.create(() => {

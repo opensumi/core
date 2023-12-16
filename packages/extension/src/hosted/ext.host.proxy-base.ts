@@ -216,6 +216,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     const channel = WSChannel.forClient(socketConnection, {
       id: 'EXT_HOST_PROXY',
       tag: 'ExtHostProxyBase',
+      logger: this.logger,
     });
     const remove = this.clientCenter.setConnection(channel.createMessageConnection());
     this.socket.once('close', () => {

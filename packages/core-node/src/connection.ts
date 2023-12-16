@@ -10,7 +10,6 @@ import {
   CommonChannelHandler,
   commonChannelPathHandler,
 } from '@opensumi/ide-connection/lib/node';
-import { SimpleCommonChannelHandler } from '@opensumi/ide-connection/lib/node/simple-channel-handler';
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
@@ -72,19 +71,16 @@ export function createServerConnection2(
 }
 
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
-  const logger = injector.get(INodeLogger);
-
-  const simpleChannelHandler = new SimpleCommonChannelHandler('NetServer-' + process.env.CODE_WINDOW_CLIENT_ID, logger);
+  const logger = injector.get(INodeLogger) as INodeLogger;
 
   server.on('connection', (socket) => {
-    simpleChannelHandler.handleSocket(new NetSocketConnection(socket), {
-      onSocketChannel(channel) {
-        handleClientChannel(injector, modulesInstances, channel, process.env.CODE_WINDOW_CLIENT_ID as string, logger);
-      },
-      onError(error) {
-        logger.error('net server connection on error', error);
-      },
+    logger.log('new connection', socket.remoteAddress, socket.remotePort);
+    const channel = WSChannel.forClient(new NetSocketConnection(socket), {
+      id: process.env.CODE_WINDOW_CLIENT_ID!,
+      tag: 'server',
+      logger,
     });
+    handleClientChannel(injector, modulesInstances, channel, process.env.CODE_WINDOW_CLIENT_ID!, logger);
   });
 }
 

@@ -16,6 +16,11 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
     this.stream = socket.pipe(new SumiStreamPacketDecoder());
   }
 
+  isOpen(): boolean {
+    // 当前的 types 不支持提示这个字段
+    return (this.socket as any).readyState === 'open';
+  }
+
   send(data: Uint8Array): void {
     this.sequencer.queue(async () => {
       await new Promise<void>((resolve, reject) => {

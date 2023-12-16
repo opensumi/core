@@ -84,27 +84,39 @@ export class WSChannelHandler {
         }
       }
     });
+    const onOpen1 = () => {
+      this.clientMessage();
+      this.heartbeatMessage();
+    };
 
-    await new Promise<void>((resolve) => {
-      this.connection.onOpen(() => {
-        this.clientMessage();
-        this.heartbeatMessage();
-        resolve();
-        // 重连 channel
-        if (this.channelMap.size) {
-          this.channelMap.forEach((channel) => {
-            channel.onOpen(() => {
-              const closeInfo = this.channelCloseEventMap.get(channel.id);
-              this.reporterService &&
-                this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
-              this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
-            });
-
-            channel.open(channel.channelPath);
-            // 针对前端需要重新设置下后台状态的情况
-            channel.fireReOpen();
+    const onOpen2 = () => {
+      // 重连 channel
+      if (this.channelMap.size) {
+        this.channelMap.forEach((channel) => {
+          channel.onOpen(() => {
+            const closeInfo = this.channelCloseEventMap.get(channel.id);
+            this.reporterService &&
+              this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT, REPORT_NAME.CHANNEL_RECONNECT, closeInfo);
+            this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
           });
-        }
+
+          channel.open(channel.channelPath);
+          // 针对前端需要重新设置下后台状态的情况
+          channel.fireReOpen();
+        });
+      }
+    };
+    await new Promise<void>((resolve) => {
+      if (this.connection.isOpen()) {
+        onOpen1();
+        resolve();
+        onOpen2();
+      }
+
+      this.connection.onOpen(() => {
+        onOpen1();
+        resolve();
+        onOpen2();
       });
 
       this.connection.onceClose((code, reason) => {

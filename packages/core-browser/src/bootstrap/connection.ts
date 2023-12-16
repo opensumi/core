@@ -1,7 +1,7 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 import { Injector, Provider } from '@opensumi/di';
-import { RPCMessageConnection, RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { RPCMessageConnection, RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
@@ -41,11 +41,15 @@ export async function createClientConnection4Web(
 export async function createClientConnection4Electron(
   injector: Injector,
   modules: ModuleConstructor[],
-  onReconnect: () => void,
   clientId?: string,
 ) {
   const connection = createNetSocketConnection();
-  return createClientConnection2(injector, modules, onReconnect, connection, clientId);
+  const channel = WSChannel.forClient(connection, {
+    id: clientId! || 'client' + Math.random().toString(36).slice(2, -1),
+    tag: 'xxx',
+    logger: console,
+  });
+  return bindConnectionService(injector, modules, channel.createMessageConnection());
 }
 
 export async function createClientConnection2(
@@ -61,10 +65,19 @@ export async function createClientConnection2(
 
   const wsChannelHandler = new WSChannelHandler(connection, initialLogger, clientId);
   wsChannelHandler.setReporter(reporterService);
-  wsChannelHandler.connection.onOpen(() => {
+
+  const onOpen = () => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionOpenEvent());
     });
+  };
+
+  if (wsChannelHandler.connection.isOpen()) {
+    onOpen();
+  }
+
+  wsChannelHandler.connection.onOpen(() => {
+    onOpen();
   });
 
   wsChannelHandler.connection.onceClose(() => {

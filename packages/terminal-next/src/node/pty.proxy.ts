@@ -248,7 +248,7 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
 export class PtyServiceProxyRPCProvider {
   private ptyServiceProxy: PtyServiceProxy;
   private readonly ptyServiceCenter: RPCServiceCenter;
-  private readonly debugLogger = getDebugLogger();
+  private readonly logger = getDebugLogger();
   private serverListenOptions: ListenOptions; // HOST + PORT or UNIX SOCK PATH
   private server: Server;
 
@@ -273,7 +273,7 @@ export class PtyServiceProxyRPCProvider {
   private createSocket() {
     this.server = net.createServer();
     this.server.on('connection', (connection) => {
-      this.debugLogger.log('ptyServiceCenter: new connections coming in');
+      this.logger.log('ptyServiceCenter: new connections coming in');
       this.setProxyConnection(connection);
     });
     // const ipcPath = normalizedIpcHandlerPath()
@@ -282,7 +282,7 @@ export class PtyServiceProxyRPCProvider {
       fs.unlinkSync(this.serverListenOptions.path); // 兜底逻辑，如果之前Server没有清除掉SOCK文件的话，那就先清除
     }
     this.server.listen(this.serverListenOptions);
-    this.debugLogger.log('ptyServiceCenter: listening on', this.serverListenOptions);
+    this.logger.log('ptyServiceCenter: listening on', this.serverListenOptions);
   }
 
   // Close Server, release UNIX DOMAIN SOCKET
@@ -306,6 +306,7 @@ export class PtyServiceProxyRPCProvider {
     const channel = WSChannel.forClient(connection, {
       id: 'pty',
       tag: 'pty-service-proxy',
+      logger: this.logger,
     });
 
     const remove = this.ptyServiceCenter.setConnection(channel.createMessageConnection());

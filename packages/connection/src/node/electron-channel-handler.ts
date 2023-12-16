@@ -2,7 +2,7 @@ import { ILogger, parse } from '../common';
 import { IConnectionShape } from '../common/connection/types';
 import { ChannelMessage, TConnectionSend, WSChannel } from '../common/ws-channel';
 
-export class SimpleCommonChannelHandler {
+export class NodeCommonChannelHandler {
   channelMap = new Map<string, WSChannel>();
 
   constructor(public name: string, private logger: ILogger) {}

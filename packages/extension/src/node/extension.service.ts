@@ -207,6 +207,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const extChannel = WSChannel.forClient(new NetSocketConnection(extConnection.connection), {
         id: 'ExtensionHostForward',
         tag: 'node-ext-client',
+        logger: this.logger,
       });
 
       this.clientExtProcessExtConnection.set(clientId, {

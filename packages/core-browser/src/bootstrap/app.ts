@@ -210,14 +210,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
     if (type === 'electron') {
-      await createClientConnection4Electron(
-        this.injector,
-        this.modules,
-        () => {
-          this.onReconnectContributions();
-        },
-        this.config.clientId,
-      );
+      await createClientConnection4Electron(this.injector, this.modules, this.config.clientId);
     } else if (type === 'web') {
       await createClientConnection4Web(
         this.injector,
@@ -229,7 +222,6 @@ export class ClientApp implements IClientApp, IDisposable {
         this.connectionProtocols,
         this.config.clientId,
       );
-
       this.logger = this.getLogger();
       // Replace Logger
       this.injector.get(WSChannelHandler).replaceLogger(this.logger);
@@ -400,12 +392,14 @@ export class ClientApp implements IClientApp, IDisposable {
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
   }
-
+  nameSet = new Set<string>();
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
+    this.nameSet.add(name);
     const result = await fn();
     measureReporter.timeEnd(name);
+    this.nameSet.delete(name);
     return result;
   }
 
