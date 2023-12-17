@@ -4,7 +4,7 @@ import { Stream } from 'stream';
 import { IDisposable, Sequencer } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
-import { SumiStreamPacketDecoder, createSumiStreamPacket } from './stream-packet';
+import { SumiStreamPacketDecoder, createSumiStreamPacket, parseSumiStreamPacket } from './stream-packet';
 
 export class NetSocketConnection extends BaseConnection<Uint8Array> {
   stream: Stream;
@@ -39,7 +39,7 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
     const handler = (data: Uint8Array) => {
-      cb(data);
+      cb(parseSumiStreamPacket(data));
     };
     this.stream.on('data', handler);
     return {
