@@ -1,4 +1,4 @@
-import type ReconnectingWebSocket from 'reconnecting-websocket';
+import ReconnectingWebSocket, { Options as ReconnectingWebSocketOptions, UrlProvider } from 'reconnecting-websocket';
 import type { ErrorEvent } from 'reconnecting-websocket';
 
 import { IDisposable } from '@opensumi/ide-core-common';
@@ -71,5 +71,13 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
         this.socket.removeEventListener('error', handler);
       },
     };
+  }
+
+  static forURL(url: UrlProvider, protocols?: string | string[], options?: ReconnectingWebSocketOptions) {
+    const rawConnection = new ReconnectingWebSocket(url, protocols, options);
+    rawConnection.binaryType = 'arraybuffer';
+    const connection = new ReconnectingWebSocketConnection(rawConnection);
+
+    return connection;
   }
 }

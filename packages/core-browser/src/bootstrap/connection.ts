@@ -1,5 +1,3 @@
-import ReconnectingWebSocket from 'reconnecting-websocket';
-
 import { Injector, Provider } from '@opensumi/di';
 import { RPCMessageConnection, RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
@@ -32,10 +30,13 @@ export async function createClientConnection4Web(
   protocols?: string[],
   clientId?: string,
 ) {
-  const rawConnection = new ReconnectingWebSocket(wsPath, protocols, {});
-  rawConnection.binaryType = 'arraybuffer';
-  const connection = new ReconnectingWebSocketConnection(rawConnection);
-  return createClientConnection2(injector, modules, onReconnect, connection, clientId);
+  return createClientConnection2(
+    injector,
+    modules,
+    onReconnect,
+    ReconnectingWebSocketConnection.forURL(wsPath, protocols),
+    clientId,
+  );
 }
 
 export async function createClientConnection4Electron(

@@ -1,5 +1,7 @@
 import { WebSocket, Server } from 'mock-socket';
 
+import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
 import { stringify, parse } from '../../src/common/utils';
 (global as any).WebSocket = WebSocket;
@@ -14,7 +16,7 @@ describe('connection browser', () => {
     let receivedHeartbeat = false;
     mockServer.on('connection', (socket) => {
       socket.on('message', (msg) => {
-        const msgObj = parse(msg as string);
+        const msgObj = parse(msg as Uint8Array);
         if (msgObj.kind === 'open') {
           socket.send(
             stringify({
@@ -28,7 +30,7 @@ describe('connection browser', () => {
       });
     });
 
-    const wsChannelHandler = new WSChannelHandler(fakeWSURL, console);
+    const wsChannelHandler = new WSChannelHandler(ReconnectingWebSocketConnection.forURL(fakeWSURL), console);
 
     await wsChannelHandler.initHandler();
     await new Promise<void>((resolve) => {
