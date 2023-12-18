@@ -1,16 +1,19 @@
-import { WebSocket, Server } from 'mock-socket';
-
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+import { WebSocket, Server } from '@opensumi/mock-socket';
 
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
 import { stringify, parse } from '../../src/common/utils';
 (global as any).WebSocket = WebSocket;
 
+const randomPortFn = () => Math.floor(Math.random() * 10000) + 10000;
+
+const randomPort = randomPortFn();
+
 describe('connection browser', () => {
   it('init connection', async () => {
     jest.setTimeout(20000);
 
-    const fakeWSURL = 'ws://localhost:8089';
+    const fakeWSURL = `ws://localhost:${randomPort}`;
     const mockServer = new Server(fakeWSURL);
 
     let receivedHeartbeat = false;

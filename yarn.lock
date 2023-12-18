@@ -2612,7 +2612,7 @@ __metadata:
     "@types/react-is": ^16.7.1
     "@types/socket.io-client": ^1.4.32
     "@types/temp": ^0.9.1
-    "@types/ws": ^6.0.1
+    "@types/ws": ^8.5.10
     "@typescript-eslint/eslint-plugin": ^5.12.1
     "@typescript-eslint/parser": ^5.12.1
     async-retry: ^1.3.1
@@ -2775,8 +2775,8 @@ __metadata:
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/mock-socket": ^9.3.1
     "@opensumi/vscode-jsonrpc": ^8.0.0-next.2
-    mock-socket: ^9.0.2
     path-match: ^1.2.4
     reconnecting-websocket: ^4.4.0
     ws: ^8.15.1
@@ -3701,6 +3701,13 @@ __metadata:
     "@opensumi/ide-overlay": "workspace:*"
   languageName: unknown
   linkType: soft
+
+"@opensumi/mock-socket@npm:^9.3.1":
+  version: 9.3.1
+  resolution: "@opensumi/mock-socket@npm:9.3.1"
+  checksum: 11d65f807441ea23c8089ec23463e1d4aa319e6d6539c54fa68fe546ed8c1182ce3cf87c9182a08f7cdc1d890a94f9114f5ef5d808555b38958a109d7ed1fb58
+  languageName: node
+  linkType: hard
 
 "@opensumi/monaco-editor-core@npm:0.35.0-patch.3":
   version: 0.35.0-patch.3
@@ -4656,12 +4663,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ws@npm:^6.0.1":
-  version: 6.0.4
-  resolution: "@types/ws@npm:6.0.4"
+"@types/ws@npm:^8.5.10":
+  version: 8.5.10
+  resolution: "@types/ws@npm:8.5.10"
   dependencies:
     "@types/node": "*"
-  checksum: b2656a76bfad0c17bb1e3fc237ba7122431c1373669977ed8edef45934c82f71c75d8c71f0a576dc6d98b0954fd94cae0166c6b4ccb40f7e0ee29cc92673519c
+  checksum: 3ec416ea2be24042ebd677932a462cf16d2080393d8d7d0b1b3f5d6eaa4a7387aaf0eefb99193c0bfd29444857cf2e0c3ac89899e130550dc6c14ada8a46d25e
   languageName: node
   linkType: hard
 
@@ -15633,13 +15640,6 @@ __metadata:
   version: 5.15.7
   resolution: "mobx@npm:5.15.7"
   checksum: 46aa00c330a256fdde1c030cf8bab0baebc7fdfb23709884400ac486c318ce650acc336fd8f1e629b5c8680d82051f2aed4737406c4ac6fe1b2d9f3d978c4339
-  languageName: node
-  linkType: hard
-
-"mock-socket@npm:^9.0.2":
-  version: 9.1.5
-  resolution: "mock-socket@npm:9.1.5"
-  checksum: a01586bc2850eb5809eda6de0c7ab19255c1e0eb217a805f86ba662bb4aab00b919032d67e7c826c6c12bcfb2fbe19cecbacf0ab6184936487edc4ba37d3ba53
   languageName: node
   linkType: hard
 

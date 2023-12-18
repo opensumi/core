@@ -28,6 +28,6 @@
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
-    "mock-socket": "^9.0.2"
+    "@opensumi/mock-socket": "^9.3.1"
   }
 }

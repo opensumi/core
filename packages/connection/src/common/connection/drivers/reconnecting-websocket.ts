@@ -34,6 +34,9 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
         buffer = e.data.arrayBuffer();
       } else if (e.data instanceof ArrayBuffer) {
         buffer = Promise.resolve(e.data);
+      } else if (e.data?.constructor?.name === 'Buffer') {
+        // Compatibility with nodejs Buffer in test environment
+        buffer = Promise.resolve(e.data);
       } else {
         throw new Error('unknown message type, expect Blob or ArrayBuffer, received: ' + typeof e.data);
       }

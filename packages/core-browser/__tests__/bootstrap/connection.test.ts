@@ -1,6 +1,5 @@
-import { WebSocket, Server } from 'mock-socket';
-
 import { IEventBus, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
+import { WebSocket, Server } from '@opensumi/mock-socket';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
