@@ -12,6 +12,7 @@ import {
   IAiBackServiceOption,
   IChatMessageStructure,
   InstructionEnum,
+  IAIReporter,
 } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
@@ -41,6 +42,9 @@ export class AiChatService extends Disposable {
 
   @Autowired(AiMenubarService)
   private readonly aiMenubarService: AiMenubarService;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
@@ -217,7 +221,7 @@ export class AiChatService extends Disposable {
    * by backend service
    * @param message
    */
-  public onMessage(message: string) {
+  public onMessage(message: string, sessionId: string) {
     try {
       const msgObj = JSON.parse(message);
 
@@ -226,6 +230,14 @@ export class AiChatService extends Disposable {
         this.msgStreamManager.recordMessage(id, choices[0]);
       } else {
         this.msgStreamManager.sendErrorStatue();
+      }
+
+      if (msgObj.errorCode && sessionId) {
+        const errMsg = msgObj.errorMsg || '';
+        this.aiReporter.end(sessionId, {
+          message: errMsg,
+          success: false,
+        });
       }
     } catch (error) {
       new Error(`onMessage error: ${error}`);

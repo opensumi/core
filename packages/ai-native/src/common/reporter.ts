@@ -41,6 +41,8 @@ export interface Completion extends Partial<CommonLogInfo> {
   isStop: boolean;
   // 补全条数
   completionNum: number;
+  // 渲染时长
+  renderingTime: number;
 }
 
 export type ReportInfo =

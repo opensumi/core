@@ -101,6 +101,8 @@ class RequestImp {
     const cacheData = promptCache.getCache(prompt);
 
     const relationId = aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
+    aiCompletionsService.setLastRelationId(relationId);
+
     // 如果存在缓存
     if (cacheData) {
       rs = cacheData;

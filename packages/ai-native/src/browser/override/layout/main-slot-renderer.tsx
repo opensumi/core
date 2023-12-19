@@ -27,7 +27,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
         flexGrow={1}
         resizeHandleClassName={styles.ai_native_slot_resize_horizontal}
       >
-        <SlotRenderer slot='left' isTabbar={true} defaultSize={256} minResize={200} maxResize={350} />
+        <SlotRenderer slot='left' isTabbar={true} defaultSize={256} minResize={200} />
         <SplitPanel
           id='main-vertical'
           minResize={300}

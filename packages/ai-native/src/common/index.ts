@@ -18,6 +18,8 @@ export interface IAiCompletionOption {
 }
 
 export interface IAiReportCompletionOption {
+  relationId: string;
+
   sessionId: string;
   accept: boolean;
   repo?: string;

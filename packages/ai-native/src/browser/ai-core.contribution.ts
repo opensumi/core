@@ -122,9 +122,6 @@ export class AiNativeBrowserContribution
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
 
-  @Autowired(IAIReporter)
-  private readonly aiReporter: IAIReporter;
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
@@ -258,8 +255,7 @@ export class AiNativeBrowserContribution
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTET, {
       execute: (relationId: string, sessionId: string, accept: boolean) => {
         // 补全埋点统计
-        this.aiReporter.end(relationId, { success: true, isReceive: true });
-        this.aiCompletionsService.report({ sessionId, accept });
+        this.aiCompletionsService.report({ sessionId, accept, relationId });
       },
     });
 

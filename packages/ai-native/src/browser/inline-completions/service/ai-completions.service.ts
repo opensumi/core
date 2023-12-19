@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
 
-import { AiBackSerivcePath, IAiBackService, IAiReportCompletionOption } from '../../../common';
+import { AiBackSerivcePath, IAiBackService, IAiReportCompletionOption, IAIReporter } from '../../../common';
 import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()
@@ -15,10 +15,16 @@ export class AiCompletionsService extends Disposable {
   @Autowired(IStatusBarService)
   private readonly statusBarService: IStatusBarService;
 
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
+
   private cancelIndicator = new CancellationTokenSource();
   // 是否显示了 inline 补全
   private isVisibleCompletion = false;
+  // 会话 id
   private lastSessionId: string;
+  // 统计 id
+  private lastRelationId: string;
   private lastRenderTime: number;
   private lastCompletionUseTime: number;
 
@@ -42,16 +48,20 @@ export class AiCompletionsService extends Disposable {
   }
 
   public async report(data: IAiReportCompletionOption) {
+    const { relationId, accept } = data;
+
     data.renderingTime = Date.now() - this.lastRenderTime;
     data.completionUseTime = this.lastCompletionUseTime;
     this.aiBackService.reportCompletion(data);
+    this.aiReporter.end(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
+
     this.isVisibleCompletion = false;
   }
 
   public setVisibleCompletion(visible: boolean) {
-    // 如何之前是 true，现在是 false，说明并没有进行采纳
+    // 如果之前是 true，现在是 false，说明并没有进行采纳
     if (this.isVisibleCompletion === true && visible === false) {
-      this.report({ sessionId: this.lastSessionId, accept: false });
+      this.report({ sessionId: this.lastSessionId, accept: false, relationId: this.lastRelationId });
     }
 
     if (visible === true) {
@@ -64,6 +74,10 @@ export class AiCompletionsService extends Disposable {
 
   public setLastSessionId(sessionId: string) {
     this.lastSessionId = sessionId;
+  }
+
+  public setLastRelationId(relationId: string) {
+    this.lastRelationId = relationId;
   }
 
   public async cancelRequest() {

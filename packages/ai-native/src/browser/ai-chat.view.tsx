@@ -442,6 +442,7 @@ const AISearch = async (
     const uid = uuid(6);
 
     const send = () => {
+      aiChatService.setLatestSessionId(relationId);
       if (type === AISerivceType.SearchDoc) {
         aiChatService.searchDoc(input, relationId);
       } else {
@@ -471,7 +472,6 @@ const AISearch = async (
       className: styles.chat_with_more_actions,
     });
 
-    aiChatService.setLatestSessionId(relationId);
     return aiMessage;
   } catch (error) {}
 };
@@ -480,11 +480,12 @@ const AISearch = async (
 const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
   try {
     const { aiChatService, relationId } = params;
-    const send = async () => {
+    const send = () => {
+      aiChatService.setLatestSessionId(relationId);
       aiChatService.messageWithStream(prompt, {}, relationId);
     };
 
-    await send();
+    send();
 
     const aiMessage = createMessageByAI({
       id: uuid(6),
@@ -499,8 +500,6 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
       ),
       className: styles.chat_with_more_actions,
     });
-
-    aiChatService.setLatestSessionId(relationId);
     return aiMessage;
   } catch (error) {}
 };
@@ -508,6 +507,7 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
 // 带有代码的 AI 回复组件
 const AICodeReply = (input, aiChatService: AiChatService, relationId: string) => {
   try {
+    aiChatService.setLatestSessionId(relationId);
     const aiMessage = createMessageByAI({
       id: uuid(6),
       relationId,
@@ -518,8 +518,6 @@ const AICodeReply = (input, aiChatService: AiChatService, relationId: string) =>
       ),
       className: styles.chat_with_more_actions,
     });
-
-    aiChatService.setLatestSessionId(relationId);
     return aiMessage;
   } catch (error) {}
 };
@@ -531,6 +529,7 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
   let success = true;
   try {
     const RenderAnswer = aiRunService.answerComponentRender();
+    aiChatService.setLatestSessionId(relationId);
 
     aiMessage = createMessageByAI({
       id: uuid(6),
@@ -542,8 +541,6 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
       ),
       className: styles.chat_with_more_actions,
     });
-
-    aiChatService.setLatestSessionId(relationId);
   } catch (error) {
     success = false;
   }
