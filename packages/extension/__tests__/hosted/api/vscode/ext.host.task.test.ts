@@ -49,7 +49,7 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import {
   MockMainLayoutService,
-  MockSocketService,
+  MockTerminalService,
   MockTerminalProfileInternalService,
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
@@ -120,7 +120,7 @@ describe('ExtHostTask API', () => {
     },
     {
       token: ITerminalService,
-      useValue: new MockSocketService(),
+      useValue: new MockTerminalService(),
     },
     {
       token: ITerminalInternalService,

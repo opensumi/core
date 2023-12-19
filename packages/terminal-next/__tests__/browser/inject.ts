@@ -56,7 +56,7 @@ import { ITerminalPreference } from '../../src/common/preference';
 import {
   MockMainLayoutService,
   MockTerminalThemeService,
-  MockSocketService,
+  MockTerminalService,
   MockPreferenceService,
   MockThemeService,
   MockFileService,
@@ -88,7 +88,7 @@ export const injector = new MockInjector([
   },
   {
     token: ITerminalService,
-    useClass: MockSocketService,
+    useClass: MockTerminalService,
   },
   {
     token: IApplicationService,
