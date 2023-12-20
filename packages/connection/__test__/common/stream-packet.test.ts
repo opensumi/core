@@ -1,12 +1,14 @@
+/* eslint-disable no-console */
 import { PassThrough } from 'stream';
+
+import { pSeries } from '@opensumi/ide-core-common';
 
 import {
   SumiStreamPacketDecoder,
   createSumiStreamPacket,
   kMagicNumber,
-  parseSumiStreamPacket,
   reader,
-} from '../../lib/common/connection/drivers/stream-packet';
+} from '../../src/common/connection/drivers/stream-packet';
 
 describe('stream-packet', () => {
   it('can create sumi stream packet', () => {
@@ -28,34 +30,42 @@ describe('stream-packet', () => {
       return payload;
     }
 
+    console.time('createPayload');
     const p1k = createPayload(1024);
     const p64k = createPayload(64 * 1024);
     const p128k = createPayload(128 * 1024);
     const p1m = createPayload(1024 * 1024);
+    const p5m = createPayload(5 * 1024 * 1024);
     const p10m = createPayload(10 * 1024 * 1024);
+    console.timeEnd('createPayload');
 
-    const packets = [p1k, p64k, p128k, p1m, p10m];
+    const pressure = 256 * 1024;
+    const packets = [p1k, p64k, p128k, p1m, p5m, p10m];
 
-    await Promise.all(
-      packets.map(async (packet) => {
+    await pSeries(
+      packets.map((packet) => async () => {
         const decoder = new SumiStreamPacketDecoder();
+
         const pass = new PassThrough({
-          write(chunk, encoding, callback) {
-            // write chunk by size 64 * 1024
-            for (let i = 0; i < chunk.byteLength; i += 64 * 1024) {
-              this.push(chunk.slice(i, i + 64 * 1024));
+          write(chunk: Uint8Array, encoding, callback) {
+            console.log('write chunk', chunk.byteLength);
+            // write chunk by ${pressure} bytes
+            for (let i = 0; i < chunk.byteLength; i += pressure) {
+              this.push(chunk.subarray(i, i + pressure));
             }
+            logMemoryUsage();
+
             callback();
           },
         });
 
         pass.write(createSumiStreamPacket(packet));
-
+        logMemoryUsage();
         const readable = pass.pipe(decoder);
 
         await new Promise<void>((resolve) => {
           readable.on('data', (data) => {
-            expect(Uint8Array.from(parseSumiStreamPacket(data))).toEqual(packet);
+            expect(Uint8Array.from(data)).toEqual(packet);
             resolve();
           });
         });
@@ -63,3 +73,14 @@ describe('stream-packet', () => {
     );
   });
 });
+
+function logMemoryUsage() {
+  const used = process.memoryUsage();
+  let text = new Date().toLocaleString('zh') + ' Memory usage:\n';
+  // eslint-disable-next-line guard-for-in
+  for (const key in used) {
+    text += `${key} ${Math.round((used[key] / 1024 / 1024) * 100) / 100} MB\n`;
+  }
+
+  console.log(text);
+}
