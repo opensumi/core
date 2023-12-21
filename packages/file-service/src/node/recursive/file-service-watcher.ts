@@ -342,7 +342,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         return deletedPath + newPath;
       }
 
-      return paths.join(event.directory, event.file!);
+      return event.action + paths.join(event.directory, event.file!);
     });
 
     for (const event of mergedEvents) {
