@@ -9,30 +9,45 @@
     justify-content: space-between;
     width: inherit;
     align-items: center;
-    padding: 0 16px;
-    padding-left: 12px;
+    padding: 0 12px 0 8px;
 
     .left {
       display: flex;
       align-items: center;
       z-index: 2;
 
+      .enhance_menu {
+        padding: 8px;
+      }
+
+      .dividing {
+        margin-left: 5px;
+        width: 2px;
+        height: 12px;
+        background-color: var(--editorGroup-border);
+      }
+
       .top_menus_bar {
-        margin-left: 16px;
+        margin-left: 6px;
         display: flex;
         align-items: center;
+        border-radius: 6px;
+
+        .ai_enhance_menu {
+          padding: 8px 6px;
+        }
 
         .caret_icon {
-          transform: rotate(90deg);
           font-size: 12px;
+          margin-left: 4px;
         }
 
         .extra_top_icon {
-          width: 24px;
-          height: 24px;
+          width: 16px;
+          height: 16px;
           background-image: url(https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*BstfT6p0xWUAAAAAAAAAAAAADhl8AQ/original);
           background-repeat: no-repeat;
-          background-position: 50% 50%;
+          background-size: 100%;
 
           &::before {
             content: initial;
@@ -54,8 +69,9 @@
 
       .run {
         .btn {
-          background-color: rgba(4, 74, 16, 0.6);
+          background-color: var(--activityBar-activeBorder);
           border-radius: 8px;
+          padding: 0 13px 0 11px;
           color: rgba(215, 219, 222, 1);
         }
       }
@@ -80,17 +96,16 @@
       }
 
       .ai_switch {
-        height: 24px;
-        width: 24px;
-        min-width: 24px;
-        border-radius: 12px;
+        height: 16px;
+        width: 16px;
+        min-width: 16px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         .avatar_icon_large {
-          width: 24px;
-          height: 24px;
+          width: 16px;
+          height: 16px;
           font-size: 16px !important;
         }
         &.opened {

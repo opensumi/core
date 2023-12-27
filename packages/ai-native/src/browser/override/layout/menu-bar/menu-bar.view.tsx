@@ -60,8 +60,13 @@ const AiMenuBarRender = () => {
 
   return (
     <>
-      <EnhanceIcon className={styles.extra_top_icon} ref={iconRef} onClick={handleClick}>
-        <Icon className={clsx(getIcon('caret-right'), styles.caret_icon)} />
+      <EnhanceIcon
+        wrapperClassName={styles.ai_enhance_menu}
+        className={styles.extra_top_icon}
+        ref={iconRef}
+        onClick={handleClick}
+      >
+        <Icon className={clsx(getIcon('down'), styles.caret_icon)} />
       </EnhanceIcon>
     </>
   );
@@ -122,7 +127,12 @@ export const AiMenuBarView = () => {
     <div id={VIEW_CONTAINERS.MENUBAR} className={styles.menu_bar_view} style={{ height: MENUBAR_HEIGHT }}>
       <div className={styles.container}>
         <div className={styles.left}>
-          <EnhanceIcon icon={isVisiablePanel ? 'left-nav-open' : 'left-nav-close'} onClick={handleLeftMenuVisiable} />
+          <EnhanceIcon
+            wrapperClassName={styles.enhance_menu}
+            icon={isVisiablePanel ? 'left-nav-open' : 'left-nav-close'}
+            onClick={handleLeftMenuVisiable}
+          />
+          <span className={styles.dividing}></span>
           <div className={styles.top_menus_bar}>
             <AiMenuBarRender />
           </div>
