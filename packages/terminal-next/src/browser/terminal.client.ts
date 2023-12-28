@@ -427,6 +427,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           msg: 'terminal.response',
         });
       }),
+
+      this._attachAddon.onInput((data) => {
+        this._onInput.fire({ id: this.id, data });
+      }),
     ]);
     this.xterm.raw.loadAddon(this._attachAddon);
   }
