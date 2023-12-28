@@ -9,6 +9,9 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
   private _disposeConnection: Disposable | null;
   private _terminal: Terminal;
 
+  private _onInput = new Emitter<string>();
+  onInput = this._onInput.event;
+
   private _onData = new Emitter<string | ArrayBuffer>();
   onData = this._onData.event;
 
@@ -79,6 +82,7 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     // 记录 lastInputTime，用于终端反应速度统计
     this._timeResponse();
     this.connection.sendData(data);
+    this._onInput.fire(data);
   }
 
   private _sendBinary(data: string): void {
