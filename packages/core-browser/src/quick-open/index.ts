@@ -586,7 +586,7 @@ export enum QuickTitleButtonSide {
 /**
  * @deprecated
  */
-export class ThemeIcon {
+class ThemeIcon {
   static readonly File: ThemeIcon = new ThemeIcon('file');
 
   static readonly Folder: ThemeIcon = new ThemeIcon('folder');

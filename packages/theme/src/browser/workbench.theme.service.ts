@@ -33,6 +33,7 @@ import {
   selectionBackground,
 } from '../common/color-registry';
 import { ThemeChangedEvent } from '../common/event';
+import { getIconRegistry } from '../common/icon-registry';
 import {
   ColorIdentifier,
   DEFAULT_THEME_ID,
@@ -74,6 +75,8 @@ const tokenGroupToScopesMap = {
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
   private colorRegistry = getColorRegistry();
 
+  private iconRegistry = getIconRegistry();
+
   private colorClassNameMap = new Map<string, string>();
 
   colorThemeLoaded: Deferred<void> = new Deferred();
@@ -84,6 +87,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   private themes: Map<string, ThemeData> = new Map();
   private themeContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
+
+  // private readonly productIconThemeRegistry: ThemeRegistry<ProductIconThemeData>;
+  // private currentProductIconTheme: ProductIconThemeData;
+  // private readonly onProductIconThemeChange: Emitter<IWorkbenchProductIconTheme>;
+  // private readonly productIconThemeWatcher: ThemeFileWatcher;
+  // private readonly productIconThemeSequencer: Sequencer;
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
   protected extensionReady: boolean;
@@ -300,6 +309,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
     return themeInfos;
   }
+
+  // public get onDidProductIconThemeChange(): Event<IWorkbenchProductIconTheme> {
+  // 	return this.onProductIconThemeChange.event;
+  // }
 
   protected doSetPreferenceSchema() {
     this.preferenceSchemaProvider.setSchema(

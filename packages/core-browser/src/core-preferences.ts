@@ -40,12 +40,12 @@ export const FILE_TREE_DEFAULTS = {
 export const corePreferenceSchema: PreferenceSchema = {
   type: 'object',
   properties: {
-    'general.language': {
+    [GeneralSettingsId.Language]: {
       type: 'string',
       enum: getAvailableLanguages().map((l) => l.languageId),
       default: LOCALE_TYPES.EN_US,
     },
-    'general.theme': {
+    [GeneralSettingsId.Theme]: {
       type: 'string',
       default: 'vs-dark',
       enum: [],
@@ -58,6 +58,11 @@ export const corePreferenceSchema: PreferenceSchema = {
     [GeneralSettingsId.Icon]: {
       type: 'string',
       default: 'vs-minimal',
+      enum: [],
+    },
+    [GeneralSettingsId.ProductIconTheme]: {
+      type: 'string',
+      default: 'opensumi-icons',
       enum: [],
     },
     'workbench.colorCustomizations': {
@@ -318,6 +323,7 @@ export interface CoreConfiguration {
   'files.associations': { [key: string]: string };
   'files.encoding': string;
   'general.language': string;
+  'general.productIconTheme': string;
   'general.theme': string;
   'view.saveLayoutWithWorkspace': boolean;
   'menubar.compactMode': boolean;

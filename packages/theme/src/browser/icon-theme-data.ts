@@ -66,7 +66,7 @@ interface IconsAssociation {
   languageIds?: { [languageId: string]: string };
 }
 
-interface IconThemeDocument extends IconsAssociation {
+export interface IconThemeDocument extends IconsAssociation {
   iconDefinitions: { [key: string]: IconDefinition };
   fonts: FontDefinition[];
   light?: IconsAssociation;

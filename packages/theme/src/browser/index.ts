@@ -4,9 +4,10 @@ import { BrowserModule } from '@opensumi/ide-core-browser';
 import { ThemeContributionProvider } from '../common/provider';
 import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
 import { ICSSStyleService } from '../common/style';
-import { IIconService, IThemeService, ThemeServicePath } from '../common/theme.service';
+import { ThemeServicePath, IThemeService, IIconService, IProductIconService } from '../common/theme.service';
 
 import { IconService } from './icon.service';
+import { ProductIconService } from './product-icon.service';
 import { SemanticTokenRegistryImpl } from './semantic-tokens-registry';
 import { CSSStyleService } from './style.service';
 import { ThemeContribution } from './theme.contribution';
@@ -26,6 +27,10 @@ export class ThemeModule extends BrowserModule {
     {
       token: IIconService,
       useClass: IconService,
+    },
+    {
+      token: IProductIconService,
+      useClass: ProductIconService,
     },
     {
       token: ISemanticTokenRegistry,
