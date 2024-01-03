@@ -128,14 +128,9 @@ export class WSChannelHandler {
       });
     });
   }
-  private getChannelSend =
-    (connection: ReconnectingWebSocketConnection | NetSocketConnection) => (content: Uint8Array) => {
-      connection.send(content);
-    };
   public async openChannel(channelPath: string) {
-    const channelSend = this.getChannelSend(this.connection);
     const channelId = `${this.clientId}:${channelPath}`;
-    const channel = new WSChannel(channelSend, {
+    const channel = new WSChannel(this.connection, {
       id: channelId,
       logger: this.logger,
       tag: 'browser-ws-client-handler',

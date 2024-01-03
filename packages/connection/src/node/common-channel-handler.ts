@@ -137,8 +137,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             this.logger.log(`Open a new connection channel ${channelId} with path ${path}`);
 
             // 生成 channel 对象
-            const connectionSend = this.channelConnectionSend(connection);
-            const channel = new WSChannel(connectionSend, { id: channelId, tag: 'node-ws-server-handler' });
+            const channel = WSChannel.forWebSocket(connection, { id: channelId, tag: 'node-ws-server-handler' });
             this.channelMap.set(channelId, channel);
 
             // 根据 path 拿到注册的 handler

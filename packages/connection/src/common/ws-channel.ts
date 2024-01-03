@@ -1,6 +1,11 @@
+import type net from 'net';
+
+import type WebSocket from 'ws';
+
 import { EventEmitter } from '@opensumi/events';
 import { DisposableCollection } from '@opensumi/ide-core-common';
 
+import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
 import { parse, stringify } from './utils';
@@ -73,11 +78,9 @@ export class WSChannel implements IWebSocket {
 
   logger: ILogger = console;
 
-  private connectionSend: TConnectionSend;
-
   static forClient(connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
     const disposable = new DisposableCollection();
-    const channel = new WSChannel(connection.send.bind(connection), options);
+    const channel = new WSChannel(connection, options);
 
     disposable.push(
       connection.onMessage((data) => {
@@ -96,6 +99,16 @@ export class WSChannel implements IWebSocket {
     return channel;
   }
 
+  static forWebSocket(socket: WebSocket, options: IWSChannelCreateOptions) {
+    const wsConnection = new WSWebSocketConnection(socket);
+    return WSChannel.forClient(wsConnection, options);
+  }
+
+  static forNetSocket(socket: net.Socket, options: IWSChannelCreateOptions) {
+    const wsConnection = new NetSocketConnection(socket);
+    return WSChannel.forClient(wsConnection, options);
+  }
+
   get LOG_TAG() {
     return [
       '[WSChannel]',
@@ -105,9 +118,7 @@ export class WSChannel implements IWebSocket {
     ].join(' ');
   }
 
-  constructor(connectionSend: TConnectionSend, options: IWSChannelCreateOptions) {
-    this.connectionSend = connectionSend;
-
+  constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
     const { id, logger, tag } = options;
     this.id = id;
     this.tag = tag;
@@ -115,10 +126,6 @@ export class WSChannel implements IWebSocket {
     if (logger) {
       this.logger = logger;
     }
-  }
-
-  public setConnectionSend(connectionSend: TConnectionSend) {
-    this.connectionSend = connectionSend;
   }
 
   // server
@@ -132,7 +139,7 @@ export class WSChannel implements IWebSocket {
     return this.emitter.on('reopen', cb);
   }
   ready() {
-    this.connectionSend(
+    this.connection.send(
       stringify({
         kind: 'ready',
         id: this.id,
@@ -152,7 +159,7 @@ export class WSChannel implements IWebSocket {
   // client
   open(path: string) {
     this.channelPath = path;
-    this.connectionSend(
+    this.connection.send(
       stringify({
         kind: 'open',
         id: this.id,
@@ -161,7 +168,7 @@ export class WSChannel implements IWebSocket {
     );
   }
   send(content: string) {
-    this.connectionSend(
+    this.connection.send(
       stringify({
         kind: 'data',
         id: this.id,

@@ -1,7 +1,6 @@
 import net from 'net';
 
 import { WSChannel } from '@opensumi/ide-connection';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 describe('ws channel node', () => {
@@ -11,7 +10,7 @@ describe('ws channel node', () => {
     const server = new net.Server();
 
     server.on('connection', (socket) => {
-      const channel1 = WSChannel.forClient(new NetSocketConnection(socket), {
+      const channel1 = WSChannel.forNetSocket(socket, {
         id: 'channel1',
         tag: 'test',
       });
@@ -22,7 +21,7 @@ describe('ws channel node', () => {
 
     const socket2 = net.createConnection(ipcPath);
 
-    const channel2 = WSChannel.forClient(new NetSocketConnection(socket2), {
+    const channel2 = WSChannel.forNetSocket(socket2, {
       id: 'channel2',
       tag: 'test',
     });
@@ -51,7 +50,7 @@ describe('ws channel node', () => {
     const server = new net.Server();
 
     server.on('connection', (socket) => {
-      const channel1 = WSChannel.forClient(new NetSocketConnection(socket), {
+      const channel1 = WSChannel.forNetSocket(socket, {
         id: 'channel1',
         tag: 'test',
       });
@@ -64,7 +63,7 @@ describe('ws channel node', () => {
 
     const socket2 = net.createConnection(ipcPath);
 
-    const channel2 = WSChannel.forClient(new NetSocketConnection(socket2), {
+    const channel2 = WSChannel.forNetSocket(socket2, {
       id: 'channel2',
       tag: 'test',
     });

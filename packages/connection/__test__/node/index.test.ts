@@ -58,10 +58,8 @@ describe('connection', () => {
       });
     });
 
-    const channelSend = (content) => {
-      connection.send(content, (err) => {});
-    };
-    const channel = new WSChannel(channelSend, {
+    const wsConnection = new WSWebSocketConnection(connection);
+    const channel = new WSChannel(wsConnection, {
       id: 'TEST_CHANNEL_ID',
       tag: 'test',
     });
@@ -137,8 +135,7 @@ describe('connection', () => {
       new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
-          const wsConnection = new WSWebSocketConnection(connection);
-          const channel = WSChannel.forClient(wsConnection, {
+          const channel = WSChannel.forWebSocket(connection, {
             id: 'test-wss',
             tag: 'test-wss',
           });
@@ -167,8 +164,7 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    const wsConnection = new WSWebSocketConnection(clientConnection!);
-    const channel = WSChannel.forClient(wsConnection, {
+    const channel = WSChannel.forWebSocket(clientConnection!, {
       id: 'test',
       tag: 'test',
     });
