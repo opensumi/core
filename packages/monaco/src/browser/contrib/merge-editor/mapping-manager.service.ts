@@ -76,11 +76,11 @@ export class MappingManagerService extends Disposable {
     };
   }
 
-  public inputComputeResultRangeMappingTurnLeft(changes: LineRangeMapping[]): void {
+  public inputComputeResultRangeMappingTurnLeft(changes: readonly LineRangeMapping[]): void {
     this.documentMappingTurnLeft.inputComputeResultRangeMapping(changes);
   }
 
-  public inputComputeResultRangeMappingTurnRight(changes: LineRangeMapping[]): void {
+  public inputComputeResultRangeMappingTurnRight(changes: readonly LineRangeMapping[]): void {
     this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
   }
 

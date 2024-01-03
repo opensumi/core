@@ -483,7 +483,7 @@ export namespace KeyModifier {
 
 export interface Key {
   readonly code: string;
-  readonly keyCode: KeyCodeEnum;
+  readonly keyCode: number;
   readonly easyString: string;
 }
 

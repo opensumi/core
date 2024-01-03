@@ -258,8 +258,8 @@ export class LabelService extends WithEventBus {
 }
 
 let modeService: any;
-let modelService: any;
-let languageService: any;
+let modelService: IModelService;
+let languageService: ILanguageService;
 const getIconClass = (
   resource: URI,
   options?: ILabelOptions,
@@ -311,7 +311,10 @@ const getIconClass = (
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     } else {
       _onDidChange = new Emitter<void>();
-      languageService.onDidEncounterLanguage(() => {
+      Event.any(
+        languageService.onDidRequestBasicLanguageFeatures,
+        languageService.onDidRequestBasicLanguageFeatures,
+      )(() => {
         if (detectModeId(modelService, languageService, monaco.Uri.file(resource.withoutQuery().toString()))) {
           _onDidChange?.fire();
           _onDidChange?.dispose();

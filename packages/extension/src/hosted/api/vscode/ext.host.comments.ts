@@ -617,7 +617,7 @@ function convertToModeComment(
   }
 
   const iconPath =
-    vscodeComment.author && vscodeComment.author.iconPath ? vscodeComment.author.iconPath.toString() : undefined;
+    vscodeComment.author && vscodeComment.author.iconPath ? vscodeComment.author.iconPath.toJSON() : undefined;
 
   return {
     mode: vscodeComment.mode,
@@ -650,7 +650,7 @@ function convertFromReaction(reaction: models.CommentReaction): vscode.CommentRe
   return {
     label: reaction.label || '',
     count: reaction.count || 0,
-    iconPath: reaction.iconPath ? URI.revive(reaction.iconPath) : '',
+    iconPath: reaction.iconPath ? URI.revive(reaction.iconPath as UriComponents) : '',
     authorHasReacted: reaction.hasReacted || false,
   };
 }

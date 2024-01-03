@@ -17,12 +17,13 @@ import {
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
-import { IMarkerData, IRange, Uri, UriComponents, IMarkdownString } from '@opensumi/ide-core-common';
+import { IMarkerData, IRange, UriComponents, IMarkdownString } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
 // eslint-disable-next-line import/no-restricted-paths
 import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import type {
   CodeActionContext,
@@ -720,6 +721,7 @@ export interface SelectedSuggestionInfo {
   text: string;
   isSnippetText: boolean;
   completionKind: CompletionItemKind;
+  equals(other: SelectedSuggestionInfo): boolean;
 }
 
 // inline completion end

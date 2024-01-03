@@ -39,7 +39,10 @@ import {
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import * as monaco from '@opensumi/monaco-editor-core';
-import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import {
+  EditorContributionInstantiation,
+  registerEditorContribution,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
@@ -172,8 +175,9 @@ export class MonacoClientContribution
           (id: string, contribCtor: new (editor: ICodeEditor, ...services: any) => IEditorContribution) => {
             const existContrib = this.editorExtensionsRegistry.getSomeEditorContributions([id]);
             if (existContrib.length === 0) {
-              registerEditorContribution(id, contribCtor);
+              registerEditorContribution(id, contribCtor, EditorContributionInstantiation.Eager);
             } else {
+              // @ts-ignore
               existContrib[0].ctor = contribCtor;
             }
           },
@@ -461,7 +465,7 @@ export class MonacoClientContribution
         continue;
       }
       const command = this.monacoCommandRegistry.validate(item.command);
-      if (command) {
+      if (command && item.keybinding) {
         const rawKeybinding = MonacoResolvedKeybinding.toKeybinding(item.keybinding);
         // 当不存在 when 条件或不包含 `editorFocus` 时，追加 editorFocus 条件
         let when = item.when;

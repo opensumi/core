@@ -42,7 +42,6 @@ import {
   create,
   createDiffEditor,
   onDidCreateEditor,
-  createDiffNavigator,
   createModel,
   setModelLanguage,
   setModelMarkers,
@@ -70,7 +69,6 @@ export function createMonacoEditorApi() {
     create,
     onDidCreateEditor,
     createDiffEditor,
-    createDiffNavigator,
 
     createModel,
     setModelLanguage,
