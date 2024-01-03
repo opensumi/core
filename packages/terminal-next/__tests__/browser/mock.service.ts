@@ -55,6 +55,7 @@ export class MockTerminalService implements ITerminalService {
 
   constructor() {
     this.channels = new Map();
+    this.socks = new Map();
     this._response = new Map();
   }
 

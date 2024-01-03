@@ -5,7 +5,7 @@ import { IDisposable } from '@opensumi/ide-core-common';
 import { BaseConnection } from './base';
 
 export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
-  constructor(private socket: WebSocket) {
+  constructor(public socket: WebSocket) {
     super();
   }
   send(data: Uint8Array): void {

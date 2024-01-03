@@ -61,7 +61,7 @@ export class WSChannel implements IWebSocket {
     message: [data: string];
     open: [id: string];
     reopen: [];
-    close: [code: number, reason: string];
+    close: [code?: number, reason?: string];
   }>();
 
   public id: string;
@@ -173,7 +173,7 @@ export class WSChannel implements IWebSocket {
     return this.emitter.hasListener('message');
   }
   onError() {}
-  close(code: number, reason: string) {
+  close(code?: number, reason?: string) {
     this.emitter.emit('close', code, reason);
   }
   fireReOpen() {

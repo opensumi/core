@@ -576,7 +576,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   resolveConnection(connection: ITerminalConnection | undefined) {
     if (!connection) {
-      this._attached.resolve();
+      this._attached.reject('no connection while attaching terminal client');
       return;
     }
 
