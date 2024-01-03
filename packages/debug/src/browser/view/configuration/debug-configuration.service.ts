@@ -55,7 +55,7 @@ export class DebugConfigurationService {
   workspaceRoots: string[] = [];
 
   @observable.shallow
-  configurationOptions: DebugSessionOptions[];
+  configurationOptions: DebugSessionOptions[] = [];
 
   get whenReady() {
     return this._whenReady;

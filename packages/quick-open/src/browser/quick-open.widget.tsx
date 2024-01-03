@@ -36,7 +36,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   public validateType?: VALIDATE_TYPE;
 
   @observable.shallow
-  private _items: QuickOpenItem[];
+  private _items: QuickOpenItem[] = [];
 
   @computed
   public get isShow() {

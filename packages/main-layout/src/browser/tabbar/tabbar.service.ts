@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { observable, action, observe, computed } from 'mobx';
+import { observable, action, observe, computed, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -57,13 +57,13 @@ const CONTAINER_NAME_MAP = {
 
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
-  @observable currentContainerId: string;
+  currentContainerId: string;
 
   previousContainerId = '';
 
   // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
-  @observable state: Map<string, TabState> = new Map();
+  state: Map<string, TabState> = new Map();
 
   private storedState: { [containerId: string]: TabState } = {};
 
@@ -116,7 +116,7 @@ export class TabbarService extends WithEventBus {
   private progressService: IProgressService;
 
   // 提供给Mobx强刷
-  @observable forceUpdate = 0;
+  forceUpdate = 0;
 
   private accordionRestored: Set<string> = new Set();
 
@@ -140,6 +140,11 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
+    makeObservable(this, {
+      currentContainerId: observable,
+      state: observable,
+      forceUpdate: observable,
+    });
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
