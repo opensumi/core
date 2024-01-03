@@ -1,8 +1,7 @@
 import { MatchFunction, match } from 'path-to-regexp';
 import WebSocket from 'ws';
 
-import { stringify, parse } from '../common/utils';
-import { WSChannel, ChannelMessage } from '../common/ws-channel';
+import { WSChannel, ChannelMessage, stringify, parse } from '../common/ws-channel';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 

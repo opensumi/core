@@ -3,8 +3,8 @@ import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
-import { stringify, parse, WSCloseInfo, ConnectionInfo } from '../common/utils';
-import { WSChannel } from '../common/ws-channel';
+import { WSCloseInfo, ConnectionInfo } from '../common/utils';
+import { WSChannel, stringify, parse } from '../common/ws-channel';
 
 /**
  * 前台链接管理类

@@ -9,8 +9,6 @@ export interface ILogger {
 export type RPCServiceMethod = (...args: any[]) => any;
 export type IRPCServiceMap = Record<string, RPCServiceMethod>;
 
-export type ServiceProxy = any;
-
 export enum ServiceType {
   Service,
   Stub,

@@ -5,16 +5,13 @@ import { RPCServiceCenter } from './center';
 
 export class RPCServiceStub {
   constructor(private serviceName: string, private center: RPCServiceCenter, private type: ServiceType) {
-    if (this.type === ServiceType.Service) {
-      this.center.registerService(serviceName, this.type);
-    }
+    this.center.registerService(serviceName, this.type);
   }
 
   async ready() {
     return this.center.when();
   }
 
-  // 服务方
   on(name: string, method: RPCServiceMethod) {
     this.onRequest(name, method);
   }

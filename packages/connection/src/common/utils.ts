@@ -1,7 +1,3 @@
-import Fury, { Type } from '@furyjs/fury';
-
-import { ChannelMessage } from './ws-channel';
-
 declare global {
   interface Window {
     __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
@@ -81,34 +77,4 @@ export function getRequestName(serviceName: string, name: string) {
 
 export function getMethodName(serviceName: string, name: string) {
   return name.startsWith('on') ? getNotificationName(serviceName, name) : getRequestName(serviceName, name);
-}
-
-/**
- * @furyjs/hps use v8's fast-calls-api that can be called directly by jit, ensure that the version of Node is 20 or above.
- * Experimental feature, installation success cannot be guaranteed at this moment
- **/
-// import hps from '@furyjs/hps';
-
-const hps = undefined;
-
-const fury = new Fury({ hps });
-
-export const wsChannelProtocol = Type.object('ws-channel-protocol', {
-  kind: Type.string(),
-  clientId: Type.string(),
-  id: Type.string(),
-  path: Type.string(),
-  content: Type.string(),
-  code: Type.uint32(),
-  reason: Type.string(),
-});
-
-const wsChannelProtocolSerializer = fury.registerSerializer(wsChannelProtocol);
-
-export function stringify(obj: ChannelMessage): Uint8Array {
-  return wsChannelProtocolSerializer.serialize(obj);
-}
-
-export function parse(input: Uint8Array): ChannelMessage {
-  return wsChannelProtocolSerializer.deserialize(input) as any;
 }

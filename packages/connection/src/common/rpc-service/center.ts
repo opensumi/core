@@ -8,8 +8,6 @@ import { getMethodName } from '../utils';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
 
-export class RPCServiceUpstream {}
-
 export class RPCServiceCenter {
   public uid: string;
 
@@ -17,9 +15,6 @@ export class RPCServiceCenter {
 
   private connection: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
-
-  private createService: string[] = [];
-  private getService: string[] = [];
 
   private connectionDeferred = new Deferred<void>();
   private logger: ILogger;
@@ -31,12 +26,9 @@ export class RPCServiceCenter {
 
   registerService(serviceName: string, type: ServiceType): void {
     if (type === ServiceType.Service) {
-      this.createService.push(serviceName);
       if (this.bench) {
         this.bench.registerService(serviceName);
       }
-    } else if (type === ServiceType.Stub) {
-      this.getService.push(serviceName);
     }
   }
 

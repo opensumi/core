@@ -1,5 +1,6 @@
 import type net from 'net';
 
+import Fury, { Type } from '@furyjs/fury';
 import type WebSocket from 'ws';
 
 import { EventEmitter } from '@opensumi/events';
@@ -8,7 +9,6 @@ import { DisposableCollection } from '@opensumi/ide-core-common';
 import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
-import { parse, stringify } from './utils';
 
 import { createWebSocketConnection } from '.';
 
@@ -232,4 +232,26 @@ export class ChildConnectPath {
       clientId: list[2],
     };
   }
+}
+
+const fury = new Fury({});
+
+export const wsChannelProtocol = Type.object('ws-channel-protocol', {
+  kind: Type.string(),
+  clientId: Type.string(),
+  id: Type.string(),
+  path: Type.string(),
+  content: Type.string(),
+  code: Type.uint32(),
+  reason: Type.string(),
+});
+
+const wsChannelProtocolSerializer = fury.registerSerializer(wsChannelProtocol);
+
+export function stringify(obj: ChannelMessage): Uint8Array {
+  return wsChannelProtocolSerializer.serialize(obj);
+}
+
+export function parse(input: Uint8Array): ChannelMessage {
+  return wsChannelProtocolSerializer.deserialize(input) as any;
 }
