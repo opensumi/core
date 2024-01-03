@@ -16,7 +16,7 @@ describe('stream-packet', () => {
     const packet = createSumiStreamPacket(content);
 
     reader.reset(packet);
-    expect(reader.uint32()).toBe(kMagicNumber);
+    expect(reader.uint8()).toBe(kMagicNumber);
     expect(reader.varInt32()).toBe(content.byteLength);
     expect(Uint8Array.from(reader.buffer(content.byteLength))).toEqual(content);
   });

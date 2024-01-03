@@ -4,8 +4,7 @@ import { alloc } from '@furyjs/fury/dist/lib/platformBuffer';
 import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-// Sumi
-export const kMagicNumber = 0x53756d69;
+export const kMagicNumber = 0b11111111;
 
 export const reader = BinaryReader({});
 const writer = BinaryWriter({});
@@ -14,7 +13,7 @@ const fastBuffer = alloc(8);
 
 export function createSumiStreamPacket(content: Uint8Array) {
   writer.reset();
-  writer.uint32(kMagicNumber);
+  writer.uint8(kMagicNumber);
   writer.varInt32(content.byteLength);
   writer.buffer(content);
   return writer.dump();
@@ -27,13 +26,13 @@ export abstract class StreamPacketDecoder extends Transform {
    */
   private _buffersByteLength: number;
   /**
-   * Current packet byte length = prefix length + content length
+   * Packet content end = content start + content length
    */
-  private _packetByteLength: number;
+  private _packetContentEnd: number;
   /**
-   * Packet prefix length
+   * Packet content start
    */
-  private _packetPrefixLength: number;
+  private _packetContentStart: number;
 
   private _prefixLength: number;
 
@@ -42,8 +41,8 @@ export abstract class StreamPacketDecoder extends Transform {
     this._prefixLength = options.prefixLength;
     this._buffers = [] as Uint8Array[];
     this._buffersByteLength = 0;
-    this._packetByteLength = 0;
-    this._packetPrefixLength = 0;
+    this._packetContentEnd = 0;
+    this._packetContentStart = 0;
   }
 
   _transform(chunk: Uint8Array, encoding: string, callback: TransformCallback): void {
@@ -64,45 +63,45 @@ export abstract class StreamPacketDecoder extends Transform {
       return true;
     }
 
-    if (!this._packetByteLength) {
-      [this._packetPrefixLength, this._packetByteLength] = this.getPacketRange(Buffer.concat(this._buffers));
+    if (!this._packetContentEnd) {
+      [this._packetContentStart, this._packetContentEnd] = this.getPacketRange(Buffer.concat(this._buffers));
     }
 
     // Not enough data yet, wait for more data
-    if (this._buffersByteLength < this._packetByteLength) {
+    if (this._buffersByteLength < this._packetContentEnd) {
       return true;
     }
 
     if (this._buffers.length === 1) {
-      if (this._buffersByteLength === this._packetByteLength) {
-        this.push(this._buffers[0].subarray(this._packetPrefixLength));
+      if (this._buffersByteLength === this._packetContentEnd) {
+        this.push(this._buffers[0].subarray(this._packetContentStart));
       } else {
-        this.push(this._buffers[0].subarray(this._packetPrefixLength, this._packetByteLength));
+        this.push(this._buffers[0].subarray(this._packetContentStart, this._packetContentEnd));
       }
     } else {
-      this.push(Buffer.concat(this._buffers, this._packetByteLength).subarray(this._packetPrefixLength));
+      this.push(Buffer.concat(this._buffers, this._packetContentEnd).subarray(this._packetContentStart));
     }
 
     // Remove the consumed bytes from the buffers
-    if (this._buffersByteLength > this._packetByteLength) {
+    if (this._buffersByteLength > this._packetContentEnd) {
       const lastBuffer = this._buffers[this._buffers.length - 1];
 
       // this._buffersByteLength -  this._packetByteLength 是剩余的字节数，这次没用完的
       // lastBuffer.byteLength 是最后一个 buffer 的字节数
-      const start = lastBuffer.byteLength - (this._buffersByteLength - this._packetByteLength);
+      const start = lastBuffer.byteLength - (this._buffersByteLength - this._packetContentEnd);
 
       this._buffers = [lastBuffer.subarray(start)];
-      this._buffersByteLength -= this._packetByteLength;
-      this._packetByteLength = 0;
-      this._packetPrefixLength = 0;
+      this._buffersByteLength -= this._packetContentEnd;
+      this._packetContentEnd = 0;
+      this._packetContentStart = 0;
 
       return false;
     }
 
     this._buffers = [];
     this._buffersByteLength = 0;
-    this._packetByteLength = 0;
-    this._packetPrefixLength = 0;
+    this._packetContentEnd = 0;
+    this._packetContentStart = 0;
 
     return true;
   }
@@ -119,7 +118,7 @@ export class SumiStreamPacketDecoder extends StreamPacketDecoder {
   constructor() {
     super({
       /**
-       * Sumi packet prefix length: 5 - 8 bytes
+       * 1 byte magic number + 4 bytes content length
        */
       prefixLength: 5,
     });
@@ -128,7 +127,7 @@ export class SumiStreamPacketDecoder extends StreamPacketDecoder {
   getPacketRange(buffer: Uint8Array): [number, number] {
     this.reader.reset(buffer);
 
-    const magicNumber = this.reader.uint32();
+    const magicNumber = this.reader.uint8();
     if (magicNumber !== kMagicNumber) {
       throw new Error(`Invalid magic number: ${magicNumber}`);
     }
