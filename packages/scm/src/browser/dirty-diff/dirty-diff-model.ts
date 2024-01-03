@@ -21,6 +21,8 @@ import {
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
@@ -30,7 +32,6 @@ import { IDirtyDiffModel, ISCMRepository, SCMService } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { DirtyDiffWidget } from './dirty-diff-widget';
 
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 const { sortedDiff } = arrays;
 
@@ -197,12 +198,33 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       originalURI as monaco.Uri,
       this._editorModel.getMonacoModel().uri,
       {
-        diffAlgorithm: 'smart',
         ignoreTrimWhitespace: false,
-        maxComputationTime: 1000,
+        maxComputationTimeMs: 1000,
+        computeMoves: false,
       },
+      'advanced',
     );
-    return ret && ret.changes;
+    return ret && this.getLineChanges(ret.changes);
+  }
+
+  // copy by https://github.com/microsoft/vscode/blob/main/src/vs/editor/common/services/editorSimpleWorker.ts#L426
+  private getLineChanges(changes: readonly DetailedLineRangeMapping[]): ILineChange[] {
+    return changes.map((m) => [
+      m.original.startLineNumber,
+      m.original.endLineNumberExclusive,
+      m.modified.startLineNumber,
+      m.modified.endLineNumberExclusive,
+      m.innerChanges?.map((m) => [
+        m.originalRange.startLineNumber,
+        m.originalRange.startColumn,
+        m.originalRange.endLineNumber,
+        m.originalRange.endColumn,
+        m.modifiedRange.startLineNumber,
+        m.modifiedRange.startColumn,
+        m.modifiedRange.endLineNumber,
+        m.modifiedRange.endColumn,
+      ]),
+    ]);
   }
 
   private getOriginalURIPromise(): Promise<Uri | null> {
@@ -259,7 +281,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
     const uri = this._editorModel.getMonacoModel().uri;
     // find the first matched scm repository
-    return first(this.scmService.repositories.map((r) => () => r.provider.getOriginalResource(uri)));
+    return first(this.scmService.repositories.map((r) => () => r.provider.getOriginalResource(uri as Uri)));
   }
 
   // 查找下一个changes

@@ -10,13 +10,13 @@ import {
 import { KeyCode as MonacoKeyCode } from '@opensumi/monaco-editor-core';
 import { AriaLabelProvider, UILabelProvider } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
 import {
-  ChordKeybinding,
-  KeybindingModifier,
+  KeyCodeChord,
+  Keybinding,
   Modifiers,
+  ResolvedChord,
   ResolvedKeybinding,
-  ResolvedKeybindingPart,
-  ScanCodeBinding,
-  SimpleKeybinding,
+  ScanCodeChord,
+  SingleModifierChord,
 } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import * as platform from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
@@ -24,6 +24,18 @@ import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/
 import { KEY_CODE_MAP } from './monaco.keycode-map';
 
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
+  hasMultipleChords(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  getChords(): ResolvedChord[] {
+    throw new Error('Method not implemented.');
+  }
+  getDispatchChords(): (string | null)[] {
+    throw new Error('Method not implemented.');
+  }
+  getSingleModifierDispatchChords(): (SingleModifierChord | null)[] {
+    throw new Error('Method not implemented.');
+  }
   protected readonly parts: { modifiers: Modifiers & { key: string | null } }[];
 
   constructor(protected readonly keySequence: KeySequence, keybindingService: KeybindingRegistry) {
@@ -75,7 +87,7 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     return this.parts.map((part, index) => {
       const keyCode = KEY_CODE_MAP[this.keySequence[index].key!.keyCode];
       return USLayoutResolvedKeybinding.getDispatchStr(
-        new SimpleKeybinding(
+        new KeyCodeChord(
           part.modifiers.ctrlKey,
           part.modifiers.shiftKey,
           part.modifiers.altKey,
@@ -86,14 +98,14 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     });
   }
 
-  getSingleModifierDispatchParts(): (KeybindingModifier | null)[] {
+  getSingleModifierDispatchParts(): (SingleModifierChord | null)[] {
     return []; /* NOOP */
   }
 
-  public getParts(): ResolvedKeybindingPart[] {
+  public getParts(): ResolvedChord[] {
     return this.parts.map(
       (part) =>
-        new ResolvedKeybindingPart(
+        new ResolvedChord(
           part.modifiers.ctrlKey,
           part.modifiers.shiftKey,
           part.modifiers.altKey,
@@ -108,9 +120,9 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     return keybinding.key;
   }
 
-  static keyCode(keybinding: SimpleKeybinding | ScanCodeBinding): KeyCode {
+  static keyCode(keybinding: KeyCodeChord | ScanCodeChord): KeyCode {
     const keyCode =
-      keybinding instanceof SimpleKeybinding
+      keybinding instanceof KeyCodeChord
         ? keybinding.keyCode
         : USLayoutResolvedKeybinding['_scanCodeToKeyCode'](keybinding.scanCode);
     const sequence: Keystroke = {
@@ -136,8 +148,8 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     return KeyCode.createKeyCode(sequence);
   }
 
-  static keySequence(keybinding: ChordKeybinding): KeySequence {
-    return keybinding.parts.map((part) => this.keyCode(part));
+  static keySequence(keybinding: Keybinding): KeySequence {
+    return keybinding.chords.map((part) => this.keyCode(part));
   }
 
   static monaco2BrowserKeyCode(keyCode: MonacoKeyCode): number {
@@ -149,7 +161,7 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     return -1;
   }
 
-  static toKeybinding(keybindings: Array<SimpleKeybinding | ScanCodeBinding>): string {
-    return keybindings.map((binding) => this.keyCode(binding)).join(' ');
+  static toKeybinding(keybinding: Keybinding): string {
+    return keybinding.chords.map((binding) => this.keyCode(binding)).join(' ');
   }
 }

@@ -1,9 +1,6 @@
 import { IDocumentDiff } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/documentDiffProvider';
-import { RangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
-import {
-  IDiffComputationResult,
-  IEditorWorkerService,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
+import { RangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
+import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { ITextModel } from '../../../monaco-api/types';
@@ -22,10 +19,11 @@ export class ComputerDiffModel {
   /**
    * editorWorkerService.computeDiff 计算出的结果是一个简化的序列化数据，需要转换成含 range 类的对象
    */
-  private convertDiffResult(result: IDiffComputationResult): IDocumentDiff {
+  private convertDiffResult(result: IDocumentDiff): IDocumentDiff {
     return {
       identical: result.identical,
       quitEarly: result.quitEarly,
+      moves: [],
       changes: result.changes.map(
         (c) =>
           new LineRangeMapping(
@@ -40,13 +38,18 @@ export class ComputerDiffModel {
   }
 
   public async computeDiff(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
-    const result = await this.editorWorkerService.computeDiff(model1.uri, model2.uri, {
-      ignoreTrimWhitespace: false,
-      maxComputationTime: 0,
-      diffAlgorithm: 'experimental',
-    });
+    const result = await this.editorWorkerService.computeDiff(
+      model1.uri,
+      model2.uri,
+      {
+        ignoreTrimWhitespace: false,
+        maxComputationTimeMs: 0,
+        computeMoves: false,
+      },
+      'advanced',
+    );
 
-    const empty = { quitEarly: false, identical: false, changes: [] };
+    const empty = { quitEarly: false, identical: false, changes: [], moves: [] };
 
     if (model1.isDisposed() || model2.isDisposed()) {
       return empty;

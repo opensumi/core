@@ -54,7 +54,6 @@ export function createMockedMonacoEditorApi(): any {
       quickFireEvent('onDidCreateEditor', editor.getTheirsEditor());
       return editor;
     },
-    createDiffNavigator: (diffEditor, opts) => new MockedDiffNavigator(diffEditor, opts),
     onDidCreateModel: quickEvent(' onDidCreateModel'),
     createModel: (value, language, uri) => {
       const model = new MockedMonacoModel(value, language, uri);

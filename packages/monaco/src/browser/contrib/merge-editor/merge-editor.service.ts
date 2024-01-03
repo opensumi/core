@@ -231,8 +231,8 @@ export class MergeEditorService extends Disposable {
   ): Promise<void> {
     this.mappingManagerService.clearMapping();
 
-    let turnLeftMapping: LineRangeMapping[] = memoryMapping1;
-    let turnRightMapping: LineRangeMapping[] = memoryMapping2;
+    let turnLeftMapping: readonly LineRangeMapping[] = memoryMapping1;
+    let turnRightMapping: readonly LineRangeMapping[] = memoryMapping2;
 
     if (memoryMapping1.length === 0 && memoryMapping2.length === 0) {
       this.resultView.reset();

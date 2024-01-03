@@ -73,7 +73,7 @@ export class DocumentMapping extends Disposable {
     }
   }
 
-  public inputComputeResultRangeMapping(changes: LineRangeMapping[]): void {
+  public inputComputeResultRangeMapping(changes: readonly LineRangeMapping[]): void {
     const [originalRange, modifiedRange] = [flatOriginal(changes), flatModified(changes)];
 
     if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {

@@ -89,7 +89,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     });
   }
 
-  public inputDiffComputingResult(changes: LineRangeMapping[]): void {
+  public inputDiffComputingResult(changes: readonly LineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
     this.updateDecorations();
     this.registerActionsProvider({

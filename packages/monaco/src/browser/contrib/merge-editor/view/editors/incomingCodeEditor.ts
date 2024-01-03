@@ -85,7 +85,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     });
   }
 
-  public inputDiffComputingResult(changes: LineRangeMapping[]): void {
+  public inputDiffComputingResult(changes: readonly LineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
     this.updateDecorations();
     this.registerActionsProvider({

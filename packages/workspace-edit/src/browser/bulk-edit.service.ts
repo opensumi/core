@@ -71,7 +71,7 @@ export class MonacoBulkEditService implements IBulkEditService {
         edits = await this._previewHandler(edits, options);
       } catch (err) {
         this.logger.error(`Handle refactor preview error: \n ${err.message || err}`);
-        return { ariaSummary: err.message, success: false };
+        return { ariaSummary: err.message, isApplied: false, success: false };
       }
     }
 
@@ -80,12 +80,13 @@ export class MonacoBulkEditService implements IBulkEditService {
       await this.workspaceEditService.apply(workspaceEdit);
       return {
         ariaSummary: this.getAriaSummary(totalEdits, totalFiles),
+        isApplied: true,
         success: true,
       };
     } catch (err) {
       const errMsg = `Error applying workspace edits: ${err.toString()}`;
       this.logger.error(errMsg);
-      return { ariaSummary: errMsg, success: false };
+      return { ariaSummary: errMsg, isApplied: false, success: false };
     }
   }
 

@@ -125,7 +125,7 @@ export const parseSnippet = (value: string) => {
   const isHasSnippetRegex = new RegExp(/\${\d+:(.*)/);
 
   if (isHasSnippetRegex.test(value) || doubleQuotesRegex.test(value)) {
-    const snippetParse = snippet.text(value);
+    const snippetParse = snippet.parse(value).toString();
     return snippetParse.replace(doubleQuotesRegex, '$1');
   }
 

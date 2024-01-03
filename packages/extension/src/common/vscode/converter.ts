@@ -1592,7 +1592,7 @@ export namespace InlayHintLabelPart {
       result.command = converter.fromInternal(part.command);
     }
     if (part.location) {
-      result.location = location.to(part.location);
+      result.location = location.to(part.location as model.Location);
     }
     return result;
   }

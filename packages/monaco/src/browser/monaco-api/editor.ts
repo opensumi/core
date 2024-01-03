@@ -38,7 +38,6 @@ import {
   colorizeModelLine,
   create,
   createDiffEditor,
-  createDiffNavigator,
   createModel,
   createWebWorker,
   defineTheme,
@@ -53,7 +52,7 @@ import {
   setModelLanguage,
   setModelMarkers,
   setTheme,
-  tokenize,
+  tokenize
 } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 import { AccessibilitySupport } from '@opensumi/monaco-editor-core/esm/vs/platform/accessibility/common/accessibility';
 import { IMarkerData } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
@@ -70,7 +69,6 @@ export function createMonacoEditorApi() {
     create,
     onDidCreateEditor,
     createDiffEditor,
-    createDiffNavigator,
 
     createModel,
     setModelLanguage,
@@ -127,12 +125,5 @@ export function createMonacoEditorApi() {
 }
 
 export {
-  IDecorationOptions,
-  IModelDecorationOptions,
-  ICodeEditor,
-  IModelDeltaDecoration,
-  IEditorOptions,
-  ITextModelUpdateOptions,
-  IDiffEditorOptions,
-  IMarkerData,
+  ICodeEditor, IDecorationOptions, IDiffEditorOptions, IEditorOptions, IMarkerData, IModelDecorationOptions, IModelDeltaDecoration, ITextModelUpdateOptions
 };
