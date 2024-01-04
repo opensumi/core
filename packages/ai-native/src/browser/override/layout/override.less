@@ -9,10 +9,15 @@ div[class*='box-panel___'] {
     top: -7px;
     right: -7px;
     font-size: 10px;
-    width: 16px;
+    min-width: 16px;
+    padding: 0 1px;
     height: 16px;
     line-height: 16px;
   }
+}
+
+#opensumi-statusbar {
+  opacity: 0.35;
 }
 
 /**
@@ -22,17 +27,22 @@ div[class*='box-panel___'] {
   background-color: transparent !important;
 
   ul.kt-inner-menu-sub {
-    background-color: #171c25 !important;
-    border: 1px solid #363940 !important;
-    box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
+    backdrop-filter: saturate(150%) blur(20px) !important;
+    -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
+    background-color: rgba(34, 40, 48, 0.65) !important;
+    border: 0 none !important;
+    box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 3px 6px -4px rgba(0, 0, 0, 0.4),
+      0px 6px 16px 0px rgba(0, 0, 0, 0.24) !important;
     border-radius: 8px !important;
   }
 }
 
 .kt-menu.kt-inner-menu,
 .kt-menu .kt-inner-menu {
-  background-color: #171c25 !important;
-  border: 1px solid #363940 !important;
+  backdrop-filter: saturate(150%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
+  background-color: rgba(34, 40, 48, 0.65) !important;
+  border: 0 none !important;
   box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
   border-radius: 8px !important;
   min-width: initial;
@@ -63,12 +73,14 @@ div[class*='box-panel___'] {
 * 覆盖 popover 样式
 */
 .kt-popover-content {
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 6px 16px 0px rgba(0, 0, 0, 0.24),
+    0px 3px 6px -4px rgba(0, 0, 0, 0.4);
   padding: 5px 8px;
-  border: 1px solid var(--kt-popover-border);
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgb(255 255 255 / 12%);
+  color: rgba(255, 255, 255, 0.95);
+  background-color: #2b333d;
+  line-height: 18px;
+  margin-top: -3px;
   .kt-popover-title {
     margin-bottom: 0;
     font-size: 12px;
@@ -78,10 +90,10 @@ div[class*='box-panel___'] {
     content: '';
     position: absolute;
     left: 50%;
-    margin-left: -9px;
+    margin-left: -7px;
     width: 0;
     height: 0;
-    border: 9px solid transparent;
+    border: 7px solid transparent;
     top: 100%;
     border-bottom-width: 0;
     border-top-color: var(--kt-popover-border);

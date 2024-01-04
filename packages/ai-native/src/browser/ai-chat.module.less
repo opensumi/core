@@ -2,11 +2,10 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--panel-background);
-  border: 1px solid var(--sideBar-border);
+  background-color: #151b21;
   border-radius: 12px;
   overflow: hidden;
-  font-size: 14px;
+  font-size: 12px;
   user-select: text;
 
   .ai_chat_hexagon_box {
@@ -77,13 +76,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 0 12px 16px;
-    border-bottom: 1px solid var(--sideBar-border);
+    background-color: #222830;
 
     .left {
       display: flex;
       align-items: center;
       height: 16px;
-      color: #fff;
+      color: rgba(255, 255, 255, 0.85);
 
       .ai_avatar_icon {
         width: 18px;
@@ -104,8 +103,9 @@
     .right {
       display: flex;
       align-items: center;
+      padding-right: 10px;
       .popover_icon {
-        margin-right: 6px;
+        margin-left: 4px;
       }
 
       span {
@@ -146,9 +146,16 @@
         overflow: auto;
         padding-top: 10px;
 
-        .chat_container_content {
-          margin-bottom: 4px;
-          display: block;
+        .chat_container_des {
+          img {
+            width: 20px;
+            margin-right: 3px;
+          }
+        }
+
+        .chat_head {
+          font-size: 14px;
+          line-height: 22px;
         }
 
         .message_list {
@@ -209,13 +216,13 @@
           }
 
           .tag {
-            background: #ffffff14;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
             height: 22px;
             padding: 2px 10px 2px 6px;
-            border-radius: 6px;
             line-height: 18px;
             margin-right: 8px;
-            color: #ffffffa6;
+            color: rgba(255, 255, 255, 0.65);
             cursor: pointer;
           }
         }

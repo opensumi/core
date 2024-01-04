@@ -12,21 +12,20 @@
 .ai_editor_tab_block_container {
   display: flex;
   align-items: center;
-  height: 28px;
-  border-radius: 8px;
+  height: 36px;
+  border-radius: 12px 12px 0 0;
   padding: 0 8px;
   margin-right: 0 !important;
 
-  &:hover {
-    outline: 1px solid var(--activityBar-activeBorder);
-    background-color: var(--tab-activeBackground);
-    color: var(--tab-activeForeground);
-
-    div:first-child {
-      &::before {
-        filter: grayscale(0);
-      }
-    }
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 12px;
+    display: inline-block;
+    width: 1px;
+    height: 12px;
+    background-color: rgba(250, 250, 250, 0.08);
   }
 
   > div:first-child {
@@ -43,8 +42,12 @@
   }
 
   &.active {
-    background-color: var(--tab-activeBackground);
+    background-color: #151b21;
     color: var(--tab-activeForeground);
+
+    &::after {
+      content: none;
+    }
 
     div:first-child {
       &::before {

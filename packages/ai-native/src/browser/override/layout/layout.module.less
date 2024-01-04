@@ -22,35 +22,69 @@
   .ai_native_slot_main {
     height: 100%;
     width: 100%;
-    background-color: #151b21;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: #222830;
     border-radius: 12px;
     overflow: hidden;
+
+    div[class*='kt_workbench_editor___'] {
+      background: none;
+    }
 
     /**
     * ---------------- 覆盖 editor tab 样式 ---------------------
     */
-    div[class*='kt_editor_tabs_content___'] {
-      padding: 0 4px;
+
+    div[class*='kt_editor_tabs_scroll_wrapper___'] {
+      &:after {
+        display: none;
+      }
     }
 
     div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_content___'] {
       div[class*='kt_editor_tab___'] {
         border-right: none;
         border-top: none;
-        padding: 0 4px;
+        padding: 0;
         min-width: initial;
+        align-items: center;
         padding-bottom: 1px;
 
-        &:hover {
-          color: var(--tab-inactiveForeground);
-
-          div[class*='close_tab___'] {
-            display: block !important;
+        // 最有一个元素分割线隐藏
+        &:last-child {
+          > div::after {
+            content: none;
           }
         }
 
-        &::after {
+        div[class*='tab_right___'] {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+        }
+
+        div:first-child {
+          margin-right: 0;
+        }
+
+        div[class*='kt_editor_close_icon___'] {
+          width: 22px;
+          height: 22px;
+          border-radius: 4px;
+          &:hover {
+            background-color: rgba(250, 250, 250, 0.06);
+          }
+        }
+
+        div[class*='close_tab___'] {
+          display: block;
+        }
+
+        &:hover {
+          color: var(--tab-inactiveForeground);
+        }
+
+        &::after,
+        &::before {
           content: none;
         }
       }
@@ -70,12 +104,41 @@
       }
     }
 
+    div[class*='kt_editor_tabs__'] {
+      div[class*='editor_actions__'] {
+        &::after,
+        &::before {
+          content: none;
+        }
+
+        span[class*='iconAction__'] {
+          padding: 2px;
+          font-size: 14px;
+        }
+        span[class*='btnAction__'] {
+          padding: 2px;
+          &:hover {
+            border-radius: 4px;
+            background-color: var(--kt-icon-hoverBackground);
+          }
+        }
+      }
+    }
+
     /**
     * ---------------- 覆盖 editor navigation 导航条样式 ---------------------
     */
     div[class*='navigation_container___'] {
       height: 28px;
-      margin-bottom: 10px;
+      background: rgba(0, 0, 0, 0.15);
+      border-bottom: 0 none;
+    }
+
+    /**
+    * ---------------- 覆盖 editor component 内容区块样式 ---------------------
+    */
+    div[class*='kt_editor_component___'] {
+      background-color: #151b21;
     }
   }
 }
@@ -99,14 +162,34 @@
       outline: none;
     }
   }
-  div[class*='mod_selected___'] {
-    div[class*='opened_editor_node_overflow_wrap'] {
-      color: #fff !important;
+
+  div[class*='section_label__'],
+  div[class*='titlebar'] {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  div[class*='titlebar'] {
+    h1 {
+      color: rgba(255, 255, 255, 0.85);
     }
   }
 
   div[class*='opened_editor_node___'] {
     border-radius: 4px;
+
+    div[class*='opened_editor_node_overflow_wrap___'] {
+      color: rgba(255, 255, 255, 0.65);
+    }
+  }
+
+  div[class*='mod_selected___'] {
+    div[class*='opened_editor_node_overflow_wrap__'] {
+      color: #fff !important;
+    }
+  }
+
+  div[class*='resize-lock'] {
+    color: red;
   }
 
   div[class*='icon_tab___'] {
@@ -123,7 +206,7 @@
         font-size: 16px;
         width: 16px;
         height: 16px;
-        color: var(--activityBar-inactiveForeground);
+        color: rgba(255, 255, 255, 0.45);
 
         &.mask-mode {
           background-color: var(--activityBar-inactiveForeground);
@@ -181,8 +264,10 @@
 
   // 底部菜单样式
   .extra_bottom_icon {
+    opacity: 0.45;
     &:hover {
       background-color: transparent !important;
+      opacity: 1;
     }
 
     span {
@@ -203,7 +288,8 @@
   // 搜索输入框样式
   :global {
     // div[class*='search_container___'] {
-    .kt-input-default {
+    .kt-input-default,
+    .input-box.popup .kt-input {
       background-color: #ffffff14;
       border-radius: 8px;
       color: #ffffff40;
@@ -233,8 +319,68 @@
   }
 
   div[class*='bottom_bar_container___'] {
+    background-color: #222830;
     width: 100%;
     height: 32px;
+  }
+
+  div[class*='titleActions___'] {
+    > span {
+      margin-left: 4px;
+    }
+    span[class*='iconAction__'] {
+      font-size: 14px;
+      padding: 2px;
+    }
+
+    span[class*='btnAction__'] {
+      padding: 3px;
+      font-size: 14px;
+      &:hover {
+        border-radius: 4px;
+        background-color: var(--kt-icon-hoverBackground);
+      }
+    }
+  }
+
+  div[class*='kt-select-value-small'] {
+    height: 24px;
+    border: 0 none;
+    border-radius: 4px;
+  }
+
+  div[class*='markerFilterContent___'] {
+    justify-content: start;
+
+    div[class*='filterInput___'] {
+      height: 24px;
+      font-size: 12px;
+      border-radius: 4px;
+      background-color: #151b21;
+      width: 240px;
+      max-width: 240px;
+      border: 0 none;
+      span[class*='kt-icon'] {
+        color: rgba(255, 255, 255, 0.35);
+      }
+    }
+  }
+
+  div[class*='debug_console_filter___'] {
+    justify-content: start;
+
+    div[class*='filter_input___'] {
+      height: 24px;
+      font-size: 12px;
+      border-radius: 4px;
+      background-color: #151b21;
+      width: 240px;
+      max-width: 240px;
+      border: 0 none;
+      span[class*='kt-icon'] {
+        color: rgba(255, 255, 255, 0.35);
+      }
+    }
   }
 
   /* 过度方案 */
@@ -286,7 +432,7 @@
     }
 
     .rce-mbox {
-      background-color: #ffffff0a;
+      background-color: rgba(255, 255, 255, 0.06);
       border-radius: 2px 12px 12px 12px;
       box-shadow: none;
       padding: 8px 12px;
@@ -370,8 +516,8 @@
 
     .rce-user-msg {
       .rce-mbox-right {
+        background: rgba(60, 141, 255, 0.15);
         border-radius: 12px 12px 2px 12px;
-        background-color: #3c8dff4d;
         margin-right: 0;
         margin-left: 0;
         max-width: 100%;
@@ -386,6 +532,11 @@
 }
 
 :global {
+  .monaco-editor,
+  .monaco-editor-background,
+  .monaco-editor .margin {
+    background: #151b21 !important;
+  }
   .rce-container-mbox {
     margin: 8px 16px;
   }
