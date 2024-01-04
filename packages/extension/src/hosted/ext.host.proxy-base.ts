@@ -82,7 +82,6 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
 
   async $onMessage(callId: number, pid: number): Promise<void> {
     this.extensionHostManager.onMessage(pid, (msg) => {
-      this.logger.log(this.LOG_TAG, 'onMessage', callId, pid, msg, this.extServerProxy);
       this.extServerProxy.$callback(callId, msg);
     });
   }
@@ -229,13 +228,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     return {
       dispose: () => {
         this.socket.destroy();
-        this.socket.end();
       },
     };
   };
-
-  dispose(): void {
-    super.dispose();
-    this.logger.log(this.LOG_TAG, 'dispose');
-  }
 }

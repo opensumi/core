@@ -195,15 +195,6 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
   }
 
-  private channelConnectionSend = (connection: WebSocket) => (content: Uint8Array) => {
-    if (connection.readyState === connection.OPEN) {
-      connection.send(content, (err: any) => {
-        if (err) {
-          this.logger.log(err);
-        }
-      });
-    }
-  };
   public handleUpgrade(pathname: string, request: any, socket: any, head: any): boolean {
     const routeResult = this.handlerRoute(pathname);
 

@@ -6,6 +6,7 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
+import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   CommandRegistry,
@@ -69,7 +70,7 @@ import { electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
-import { createClientConnection4Web, createClientConnection4Electron } from './connection';
+import { createClientConnection4Web, createClientConnection4Electron, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 
@@ -203,13 +204,19 @@ export class ClientApp implements IClientApp, IDisposable {
    * 3. Starting
    * 4. Ready
    */
-  public async start(container: HTMLElement | IAppRenderer, type?: 'electron' | 'web'): Promise<void> {
+  public async start(
+    container: HTMLElement | IAppRenderer,
+    type?: 'electron' | 'web',
+    channel?: WSChannel,
+  ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
-    if (type === 'electron') {
+    if (channel) {
+      await bindConnectionService(this.injector, this.modules, channel);
+    } else if (type === 'electron') {
       await createClientConnection4Electron(this.injector, this.modules, this.config.clientId);
     } else if (type === 'web') {
       await createClientConnection4Web(
@@ -392,14 +399,11 @@ export class ClientApp implements IClientApp, IDisposable {
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
   }
-  nameSet = new Set<string>();
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
-    this.nameSet.add(name);
     const result = await fn();
     measureReporter.timeEnd(name);
-    this.nameSet.delete(name);
     return result;
   }
 

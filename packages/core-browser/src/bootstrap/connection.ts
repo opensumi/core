@@ -1,5 +1,5 @@
 import { Injector, Provider } from '@opensumi/di';
-import { RPCMessageConnection, RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
+import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
@@ -46,11 +46,11 @@ export async function createClientConnection4Electron(
 ) {
   const connection = createNetSocketConnection();
   const channel = WSChannel.forClient(connection, {
-    id: clientId! || 'client' + Math.random().toString(36).slice(2, -1),
-    tag: 'xxx',
+    id: clientId || 'client' + Math.random().toString(36).slice(2, -1),
+    tag: 'electron-renderer',
     logger: console,
   });
-  return bindConnectionService(injector, modules, channel.createMessageConnection());
+  return bindConnectionService(injector, modules, channel);
 }
 
 export async function createClientConnection2(
@@ -104,14 +104,11 @@ export async function createClientConnection2(
   const channel = await wsChannelHandler.openChannel('RPCService');
   channel.onReOpen(() => onReconnect());
 
-  bindConnectionService(injector, modules, channel.createMessageConnection());
+  bindConnectionService(injector, modules, channel);
 }
 
-export async function bindConnectionService(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  connection: RPCMessageConnection,
-) {
+export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
+  const connection = channel.createMessageConnection();
   const clientCenter = new RPCServiceCenter();
   const remove = clientCenter.setConnection(connection);
 

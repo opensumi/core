@@ -1,7 +1,6 @@
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 
@@ -108,22 +107,10 @@ if (typeof ElectronIpcRenderer !== 'undefined') {
 
 export interface IElectronNativeDialogService {
   showOpenDialog(options: Electron.OpenDialogOptions): Promise<string[] | undefined>;
-
   showSaveDialog(options: Electron.SaveDialogOptions): Promise<string | undefined>;
 }
 
 export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');
-
-export function createElectronClientConnection1(connectPath?: string): MessageConnection {
-  let socket;
-  if (connectPath) {
-    socket = electronEnv.createNetConnection(connectPath);
-  } else {
-    socket = electronEnv.createRPCNetConnection();
-  }
-  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
-  return createSocketConnection(socket);
-}
 
 export function createNetSocketConnection(connectPath?: string): NetSocketConnection {
   let socket;

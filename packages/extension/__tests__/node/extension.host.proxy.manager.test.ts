@@ -6,7 +6,7 @@ import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.m
 
 import { extensionHostManagerTester } from './extension.host.manager.common-tester';
 
-const PROXY_PORT = 10298;
+const PROXY_PORT = 10297;
 let extHostProxy: ExtHostProxy;
 
 // KTLOG_SHOW_DEBUG=1 yarn jest packages/extension/__tests__/node/extension.host.proxy.manager.test.ts --detectOpenHandles

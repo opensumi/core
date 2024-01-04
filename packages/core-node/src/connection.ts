@@ -77,7 +77,7 @@ export function createNetServerConnection(server: net.Server, injector: Injector
     logger.log('new connection', socket.remoteAddress, socket.remotePort);
     const channel = WSChannel.forClient(new NetSocketConnection(socket), {
       id: process.env.CODE_WINDOW_CLIENT_ID!,
-      tag: 'server',
+      tag: 'node-server',
       logger,
     });
     handleClientChannel(injector, modulesInstances, channel, process.env.CODE_WINDOW_CLIENT_ID!, logger);

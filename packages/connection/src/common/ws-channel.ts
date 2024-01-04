@@ -8,9 +8,8 @@ import { DisposableCollection } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
+import { createWebSocketConnection } from './message';
 import { ILogger } from './types';
-
-import { createWebSocketConnection } from '.';
 
 export type TConnectionSend = (content: Uint8Array) => void;
 
@@ -110,12 +109,7 @@ export class WSChannel implements IWebSocket {
   }
 
   get LOG_TAG() {
-    return [
-      '[WSChannel]',
-      this.tag ? `[tag:${this.tag}]` : '',
-      this.id ? `[id:${this.id}]` : '',
-      this.channelPath ? `[channel-path:${this.channelPath}]` : '',
-    ].join(' ');
+    return `[WSChannel] [tag:${this.tag}] [id:${this.id}] [channel-path:${this.channelPath}]`;
   }
 
   constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
