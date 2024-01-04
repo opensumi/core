@@ -1,6 +1,7 @@
 import { MatchFunction, match } from 'path-to-regexp';
 import WebSocket from 'ws';
 
+import { WSWebSocketConnection } from '../common/connection';
 import { WSChannel, ChannelMessage, stringify, parse } from '../common/ws-channel';
 
 import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
@@ -79,7 +80,7 @@ export class CommonChannelPathHandler {
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 /**
- * 后台 Web 链接处理类
+ * Channel Handler for nodejs
  */
 export class CommonChannelHandler extends WebSocketHandler {
   public handlerId = 'common-channel';
@@ -116,7 +117,6 @@ export class CommonChannelHandler extends WebSocketHandler {
         try {
           msgObj = parse(msg);
 
-          // 心跳消息
           if (msgObj.kind === 'heartbeat') {
             connection.send(
               stringify({
@@ -129,14 +129,13 @@ export class CommonChannelHandler extends WebSocketHandler {
             this.logger.log(`New connection with id ${connectionId}`);
             this.connectionMap.set(connectionId, connection);
             this.heartbeat(connectionId, connection);
-            // channel 消息处理
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id;
             const { path } = msgObj;
             this.logger.log(`Open a new connection channel ${channelId} with path ${path}`);
+            const wsConnection = new WSWebSocketConnection(connection);
 
-            // 生成 channel 对象
-            const channel = WSChannel.forWebSocket(connection, { id: channelId, tag: 'node-ws-server-handler' });
+            const channel = new WSChannel(wsConnection, { id: channelId, tag: 'node-ws-server-handler' });
             this.channelMap.set(channelId, channel);
 
             // 根据 path 拿到注册的 handler
@@ -170,12 +169,12 @@ export class CommonChannelHandler extends WebSocketHandler {
             }
           }
         } catch (e) {
-          this.logger.warn(e);
+          this.logger.error('handle connection message error', e);
         }
       });
 
       connection.on('close', () => {
-        commonChannelPathHandler.disposeConnectionClientId(connection, connectionId as string);
+        commonChannelPathHandler.disposeConnectionClientId(connection, connectionId);
 
         if (this.heartbeatMap.has(connectionId)) {
           clearTimeout(this.heartbeatMap.get(connectionId) as NodeJS.Timeout);
@@ -199,8 +198,8 @@ export class CommonChannelHandler extends WebSocketHandler {
     const routeResult = this.handlerRoute(pathname);
 
     if (routeResult) {
-      this.wsServer.handleUpgrade(request, socket, head, (connection: any) => {
-        connection.routeParam = {
+      this.wsServer.handleUpgrade(request, socket, head, (connection) => {
+        (connection as any).routeParam = {
           pathname,
         };
 

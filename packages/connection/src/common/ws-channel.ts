@@ -141,8 +141,6 @@ export class WSChannel implements IWebSocket {
     );
   }
   handleMessage(msg: ChannelMessage) {
-    // this.logger.log(this.LOG_TAG, 'handleMessage', msg);
-
     if (msg.kind === 'ready') {
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
