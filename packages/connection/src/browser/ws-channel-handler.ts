@@ -7,7 +7,7 @@ import { WSCloseInfo, ConnectionInfo } from '../common/utils';
 import { WSChannel, stringify, parse } from '../common/ws-channel';
 
 /**
- * 前台链接管理类
+ * Channel Handler in browser
  */
 export class WSChannelHandler {
   private channelMap: Map<string, WSChannel> = new Map();
