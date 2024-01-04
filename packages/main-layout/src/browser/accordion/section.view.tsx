@@ -159,7 +159,7 @@ export const AccordionSection = ({
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
         >
-          <div className={styles.label_wrap}>
+          <div className={cls(styles.label_wrap, expanded ? styles.label_wrap_expanded : '')}>
             <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
             <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
               {headerLabel}

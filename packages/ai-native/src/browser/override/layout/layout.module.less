@@ -153,9 +153,6 @@
     font-size: 12px;
     color: rgba(255, 255, 255, 0.65);
   }
-  div[class*='mod_selected___'] {
-    color: #fff !important;
-  }
 
   div[class*='kt_split_panel_header___'] {
     &:focus {
@@ -163,12 +160,22 @@
     }
   }
 
-  div[class*='section_label__'],
-  div[class*='titlebar'] {
-    color: rgba(255, 255, 255, 0.85);
+  /**
+  * ---------------- 菜单相关样式 ---------------------
+  */
+  div[class*='section_label__'] {
+    color: rgba(255, 255, 255, 0.65);
   }
 
-  div[class*='titlebar'] {
+  div[class*='label_wrap_expanded__'] {
+    i[class*='arrow_icon___'],
+    div[class*='section_label__'] {
+      color: #fff;
+    }
+  }
+
+  div[class*='titlebar__'] {
+    color: rgba(255, 255, 255, 0.85);
     h1 {
       color: rgba(255, 255, 255, 0.85);
     }
@@ -182,8 +189,18 @@
     }
   }
 
+  div[class*='expansion_toggle___'] {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
   div[class*='mod_selected___'] {
+    color: #fff !important;
+
     div[class*='opened_editor_node_overflow_wrap__'] {
+      color: #fff !important;
+    }
+
+    div[class*='expansion_toggle___'] {
       color: #fff !important;
     }
   }
