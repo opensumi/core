@@ -45,14 +45,21 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
     }
   }, [onClose]);
 
-  const moreOperation = useMemo(() => inlineChatFeatureRegistry.getActionMenus().map((data) => new MenuNode({
-        id: `ai.menu.operation.${data.id}`,
-        label: data.name,
-        className: styles.more_operation_menu_item,
-        execute: () => {
-          handleClickActions(data.id);
-        },
-      })), [inlineChatFeatureRegistry]);
+  const moreOperation = useMemo(
+    () =>
+      inlineChatFeatureRegistry.getActionMenus().map(
+        (data) =>
+          new MenuNode({
+            id: `ai.menu.operation.${data.id}`,
+            label: data.name,
+            className: styles.more_operation_menu_item,
+            execute: () => {
+              handleClickActions(data.id);
+            },
+          }),
+      ),
+    [inlineChatFeatureRegistry],
+  );
 
   if (operationList.length === 0 && moreOperation.length === 0) {
     return null;
@@ -65,7 +72,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
       <div className={styles.operate_container}>
         {operationList.map(({ name, title, id }, i) => (
           <EnhancePopover id={id} title={title} key={`popover_${i}`}>
-            <EnhanceIcon onClick={() => handleClickActions(id)}>
+            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => handleClickActions(id)}>
               <span key={i}>{name}</span>
             </EnhanceIcon>
           </EnhancePopover>
@@ -74,6 +81,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
           <EnhanceIconWithCtxMenu
             icon={'more'}
             menuNodes={moreOperation}
+            wrapperClassName={styles.operate_item}
             skew={{
               x: -83,
               y: 5,
@@ -82,7 +90,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
         )}
         <div className={styles.close_container}>
           <LineVertical margin={'0px 4px 0 4px'} />
-          <EnhanceIcon icon={'close'} onClick={handleClose} />
+          <EnhanceIcon icon={'close'} onClick={handleClose} wrapperClassName={styles.operate_item} />
         </div>
       </div>
     </div>

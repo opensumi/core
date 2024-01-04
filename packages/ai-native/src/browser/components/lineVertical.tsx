@@ -1,7 +1,7 @@
 import React from 'react';
 
 const lineStyles = {
-  backgroundColor: 'var(--ai-native-inlineChat-vertical-background)',
+  backgroundColor: 'rgba(0,0,0,0.25)',
   height: '100%',
   width: '1px',
   minWidth: '1px',
