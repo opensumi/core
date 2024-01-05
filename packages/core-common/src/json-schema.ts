@@ -1,3 +1,5 @@
+export type JSONSchemaType = string | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object';
+
 export interface IJSONSchema {
   id?: string;
   $id?: string;
@@ -81,8 +83,6 @@ export interface IJSONSchema {
   allowComments?: boolean;
   allowTrailingCommas?: boolean;
 }
-
-export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object';
 
 export interface IJSONSchemaMap {
   [name: string]: IJSONSchema;

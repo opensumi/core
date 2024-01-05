@@ -17,10 +17,8 @@ import {
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 
 import {
-  FontIconDefinition,
   IIconService,
   IIconTheme,
-  IconFontFamily,
   IconShape,
   IconThemeInfo,
   IconThemeType,
@@ -346,32 +344,6 @@ export class IconService extends WithEventBus implements IIconService {
     );
 
     this.updateIconThemes();
-  }
-
-  registerFontIcons(definitions: FontIconDefinition[], iconFontFamilies: IconFontFamily[]) {
-    const styleSheetContnt: string[] = [];
-
-    for (const def of definitions) {
-      styleSheetContnt.push(
-        `.codicon-${def.id}::before { content: '${def.content}'; font-family: '${def.fontFamily}' }`,
-      );
-    }
-
-    for (const font of iconFontFamilies) {
-      styleSheetContnt.push(
-        `@font-face {src: url('${font.source}') format('${font.format}'); font-family: '${font.fontFamily}'; font-display: ${font.display}; }`,
-      );
-    }
-
-    let styleNode = document.getElementById('codiconStyles');
-    if (styleNode) {
-      styleNode.innerHTML = styleSheetContnt.join('\r');
-    } else {
-      styleNode = document.createElement('style');
-      styleNode.id = 'codiconStyles';
-      styleNode.innerHTML = styleSheetContnt.join('\r');
-      document.getElementsByTagName('head')[0].appendChild(styleNode);
-    }
   }
 
   getAvailableThemeInfos(): IconThemeInfo[] {

@@ -4,11 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ThemeIcon, localize, IJSONSchema, IJSONSchemaMap, Emitter, Event, URI } from '@opensumi/ide-core-common';
-import {
-  getIconRegistry as MonacoGetIconRegistory,
-  IconContribution,
-  IconDefaults,
-} from '@opensumi/monaco-editor-core/esm/vs/platform/theme/common/iconRegistry';
+import { getSumiiconFontCharacters } from '@opensumi/ide-core-common/lib/codicons';
+import { getIconRegistry as MonacoGetIconRegistory } from '@opensumi/monaco-editor-core/esm/vs/platform/theme/common/iconRegistry';
 
 import { codIconIdentifier, sumiIconIdentifier } from './icons';
 
@@ -21,11 +18,20 @@ export interface IconDefinition {
   fontCharacter: string;
 }
 
-export { IconContribution };
-
+export declare type IconDefaults = ThemeIcon | IconDefinition;
+export interface IconDefinition {
+  font?: IconFontContribution;
+  fontCharacter: string;
+}
 export interface IconFontContribution {
   readonly id: string;
   readonly definition: IconFontDefinition;
+}
+export interface IconContribution {
+  readonly id: string;
+  description: string | undefined;
+  deprecationMessage?: string;
+  readonly defaults: IconDefaults;
 }
 
 export interface IconFontDefinition {
@@ -91,7 +97,7 @@ class IconRegistry implements IIconRegistry {
   readonly onDidChange: Event<void> = this._onDidChange.event;
 
   private iconsById: { [key: string]: IconContribution };
-  private sumiiconsById: { [key: string]: IconContribution };
+  private sumiIconsById: { [key: string]: IconContribution };
 
   private iconSchema: IJSONSchema & { properties: IJSONSchemaMap } = {
     definitions: {
@@ -129,18 +135,18 @@ class IconRegistry implements IIconRegistry {
 
   private iconFontsById: { [key: string]: IconFontDefinition };
 
-  private monacoIconRegistry = MonacoGetIconRegistory();
+  private _monacoIconRegistry = MonacoGetIconRegistory();
 
   constructor() {
     this.iconsById = {};
     this.iconFontsById = {};
-    this.sumiiconsById = {};
+    this.sumiIconsById = {};
     // register monaco codicon
     this.registerCodicon();
   }
 
   private registerCodicon() {
-    const codicons = (this.monacoIconRegistry as any).iconsById;
+    const codicons = (this._monacoIconRegistry as any).iconsById;
     for (const id in codicons) {
       if (Object.hasOwn(codicons, id)) {
         const codicon = codicons[id];
@@ -195,7 +201,7 @@ class IconRegistry implements IIconRegistry {
     description?: string,
     deprecationMessage?: string,
   ): ThemeIcon {
-    const existing = this.sumiiconsById[id];
+    const existing = this.sumiIconsById[id];
     if (existing) {
       if (description && !existing.description) {
         existing.description = description;
@@ -214,7 +220,7 @@ class IconRegistry implements IIconRegistry {
       description,
       deprecationMessage,
     };
-    this.sumiiconsById[id] = iconContribution;
+    this.sumiIconsById[id] = iconContribution;
     const propertySchema: IJSONSchema = { $ref: '#/definitions/icons' };
     if (deprecationMessage) {
       propertySchema.deprecationMessage = deprecationMessage;
@@ -243,7 +249,7 @@ class IconRegistry implements IIconRegistry {
 
   public getIcons(isSumi?: boolean): IconContribution[] {
     if (isSumi) {
-      return Object.keys(this.sumiiconsById).map((id) => this.sumiiconsById[id]);
+      return Object.keys(this.sumiIconsById).map((id) => this.sumiIconsById[id]);
     }
     return Object.keys(this.iconsById).map((id) => this.iconsById[id]);
   }
@@ -253,7 +259,7 @@ class IconRegistry implements IIconRegistry {
   }
 
   public getMonacoIcon(id: string): IconContribution | undefined {
-    return this.monacoIconRegistry.getIcon(id);
+    return this._monacoIconRegistry.getIcon(id) as IconContribution;
   }
 
   public getIconSchema(): IJSONSchema {
@@ -267,11 +273,11 @@ class IconRegistry implements IIconRegistry {
   public registerIconFont(id: string, definition: IconFontDefinition): IconFontDefinition {
     const existing = this.iconFontsById[id];
     if (existing) {
-      return existing as IconFontDefinition;
+      return existing;
     }
     this.iconFontsById[id] = definition;
     this._onDidChange.fire();
-    return definition as IconFontDefinition;
+    return definition;
   }
 
   public deregisterIconFont(id: string): void {
@@ -351,16 +357,14 @@ function registerIdentifierIcon() {
   }
 }
 
-// 此处不调用 codicon 的注册 因为 monaco 内已注册 从 monaco 获取
-// function initialize() {
-//   const sumiIconFontCharacters = getSumiiconFontCharacters();
-//   for (const icon in sumiIconFontCharacters) {
-//     if (Object.hasOwn(sumiIconFontCharacters, icon)) {
-//       const fontCharacter = '\\' + sumiIconFontCharacters[icon].toString(16);
-//       iconRegistry.registerSumiIcon(icon, { fontCharacter });
-//     }
-//   }
-// }
+function initialize() {
+  const sumiIconFontCharacters = getSumiiconFontCharacters();
+  for (const icon in sumiIconFontCharacters) {
+    if (Object.hasOwn(sumiIconFontCharacters, icon)) {
+      const fontCharacter = '\\' + sumiIconFontCharacters[icon].toString(16);
+      iconRegistry.registerSumiIcon(icon, { fontCharacter });
+    }
+  }
+}
 
-// initialize();
 registerIdentifierIcon();

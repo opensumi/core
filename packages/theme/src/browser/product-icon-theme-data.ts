@@ -1,7 +1,7 @@
 import * as parser from 'jsonc-parser';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { getDebugLogger, URI, formatLocalize, ThemeIcon, isString, path, Logger } from '@opensumi/ide-core-browser';
+import { URI, ThemeIcon, isString, path, Logger, localize } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
@@ -61,12 +61,12 @@ export class ProductIconThemeData implements IProductIconTheme {
       this.iconThemeDocument = await _loadProductIconThemeDocument(this.fileServiceClient, location, warnings);
     } catch (error) {
       // TODO more error handling
-      getDebugLogger().log(formatLocalize('error.cannotparseicontheme', location.codeUri.fsPath));
+      this.logger.error(localize('error.cannotparseicontheme', `parse icon theme failed ${location.codeUri.fsPath}`));
     }
 
     this.isLoaded = true;
     if (warnings.length) {
-      this.logger.error(formatLocalize('error.parseicondefs', location.toString(), warnings.join('\n')));
+      this.logger.warn(localize('error.parseicondefs', warnings.toString()));
     }
     return this.styleSheetContent;
   }
@@ -103,6 +103,12 @@ function _resolveIconDefinition(
   let definition: IconDefinition | undefined = iconDefinitions.get(iconContribution.id);
   let defaults = iconContribution.defaults;
   while (!definition && ThemeIcon.isThemeIcon(defaults)) {
+    // sumi icon proxy
+    if (defaults.alias) {
+      const alias = defaults.alias;
+      const definitionProxy = alias.find((iconId: string) => iconDefinitions.get(iconId));
+      return definitionProxy ? iconDefinitions.get(definitionProxy) : undefined;
+    }
     // look if an inherited icon has a definition
     const ic = iconRegistry.getIcon(defaults.id);
     if (ic) {
@@ -132,18 +138,13 @@ async function _loadProductIconThemeDocument(
   const contentValue = parser.parse(ret.content.toString(), parseErrors);
 
   if (parseErrors.length > 0) {
-    return Promise.reject(
-      new Error(
-        formatLocalize(
-          'error.cannotparseicontheme',
-          parseErrors.map((e) => e.error),
-        ),
-      ),
-    );
+    return Promise.reject(new Error(localize('error.cannotparseicontheme', 'parse icon theme failed')));
   } else if (typeof contentValue !== 'object') {
-    return Promise.reject(new Error(formatLocalize('error.invalidformat')));
+    return Promise.reject(new Error(localize('error.invalidformat', 'Invalid icon theme format')));
   } else if (!contentValue.iconDefinitions || !Array.isArray(contentValue.fonts) || !contentValue.fonts.length) {
-    return Promise.reject(new Error(formatLocalize('error.missingProperties')));
+    return Promise.reject(
+      new Error(localize('error.missingProperties', 'Missing properties: iconDefinitions or fonts')),
+    );
   }
 
   const iconThemeDocumentLocationDirname = path.dirname(location.toString());
@@ -157,18 +158,14 @@ async function _loadProductIconThemeDocument(
       if (isString(font.weight) && font.weight.match(fontWeightRegex)) {
         fontWeight = font.weight;
       } else {
-        warnings.push(
-          formatLocalize('error.fontWeight', "Invalid font weight in font '{0}'. Ignoring setting.", font.id),
-        );
+        warnings.push(localize('error.fontWeight', `Invalid font weight in font '${font.id}'. Ignoring setting.`));
       }
 
       let fontStyle;
       if (isString(font.style) && font.style.match(fontStyleRegex)) {
         fontStyle = font.style;
       } else {
-        warnings.push(
-          formatLocalize('error.fontStyle', "Invalid font style in font '{0}'. Ignoring setting.", font.id),
-        );
+        warnings.push(localize('error.fontStyle', `Invalid font style in font '${font.id}'. Ignoring setting.`));
       }
 
       const sanitizedSrc: IconFontSource[] = [];
@@ -178,9 +175,7 @@ async function _loadProductIconThemeDocument(
             const iconFontLocation = path.join(iconThemeDocumentLocationDirname, s.path);
             sanitizedSrc.push({ location: URI.parse(iconFontLocation), format: s.format });
           } else {
-            warnings.push(
-              formatLocalize('error.fontSrc', "Invalid font source in font '{0}'. Ignoring source.", font.id),
-            );
+            warnings.push(localize('error.fontSrc', `Invalid font source in font '${font.id}'. Ignoring source.`));
           }
         }
       }
@@ -188,13 +183,11 @@ async function _loadProductIconThemeDocument(
         sanitizedFonts.set(fontId, { weight: fontWeight, style: fontStyle, src: sanitizedSrc });
       } else {
         warnings.push(
-          formatLocalize('error.noFontSrc', "No valid font source in font '{0}'. Ignoring font definition.", font.id),
+          localize('error.noFontSrc', `No valid font source in font '${font.id}'. Ignoring font definition.`),
         );
       }
     } else {
-      warnings.push(
-        formatLocalize('error.fontId', "Missing or invalid font id '{0}'. Skipping font definition.", font.id),
-      );
+      warnings.push(localize('error.fontId', `Missing or invalid font id '${font.id}'. Skipping font definition.`));
     }
   }
 
@@ -209,14 +202,15 @@ async function _loadProductIconThemeDocument(
       const fontId = definition.fontId ?? primaryFontId;
       const fontDefinition = sanitizedFonts.get(fontId);
       if (fontDefinition) {
+        // pi ?
         const font = { id: `pi-${fontId}`, definition: fontDefinition };
         iconDefinitions.set(iconId, { fontCharacter: definition.fontCharacter, font });
       } else {
-        warnings.push(formatLocalize('error.icon.font', "Skipping icon definition '{0}'. Unknown font.", iconId));
+        warnings.push(localize('error.icon.font', `Skipping icon definition '${iconId}'. Unknown font.`));
       }
     } else {
       warnings.push(
-        formatLocalize('error.icon.fontCharacter', "Skipping icon definition '{0}'. Unknown fontCharacter.", iconId),
+        localize('error.icon.fontCharacter', `Skipping icon definition '${iconId}'. Unknown fontCharacter.`),
       );
     }
   }

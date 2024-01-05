@@ -1,7 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
-import { LifeCyclePhase, URI, path } from '@opensumi/ide-core-common';
-import { FontIconDefinition, IIconService, IconFontFamily, ThemeContribution } from '@opensumi/ide-theme';
+import { URI, path, LifeCyclePhase, localize, ILogger } from '@opensumi/ide-core-common';
+import { ThemeContribution, IIconService } from '@opensumi/ide-theme';
+import { getIconRegistry } from '@opensumi/ide-theme/lib/common/icon-registry';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
@@ -44,6 +45,12 @@ export interface IconSchema {
   };
 }
 
+const formatMap: Record<string, string> = {
+  ttf: 'truetype',
+  woff: 'woff',
+  woff2: 'woff2',
+};
+
 @Injectable()
 @Contributes('icons')
 @LifeCycle(LifeCyclePhase.Initialize)
@@ -57,44 +64,55 @@ export class IconsContributionPoint extends VSCodeContributePoint<IconSchema> {
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
 
-  contribute(): void | Promise<void> {
-    const codiconDeinitions: FontIconDefinition[] = [];
-    const fontFaces: { [k: string]: IconFontFamily } = {};
+  @Autowired(ILogger)
+  logger: ILogger;
 
+  private iconRegistry = getIconRegistry();
+
+  contribute(): void | Promise<void> {
     for (const { extensionId, contributes } of this.contributesMap) {
-      Object.keys(contributes).forEach((k) => {
-        const icon = contributes[k];
+      Object.keys(contributes).forEach((id) => {
+        const icon = contributes[id];
         const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
         if (extension) {
-          const fontFamily = `${extensionId}/${icon.default.fontPath}`;
           const defaultIcon = icon.default;
           if (typeof defaultIcon === 'string') {
-            // iconRegistry.registerIcon(id, { id: defaultIcon }, iconContribution.description);
+            this.iconRegistry.registerIcon(id, { id: defaultIcon }, icon.description);
           } else if (
             typeof defaultIcon === 'object' &&
             typeof defaultIcon.fontPath === 'string' &&
             typeof defaultIcon.fontCharacter === 'string'
           ) {
-            if (!fontFaces[fontFamily]) {
-              const fontPath = URI.from(extension.uri!).resolve(icon.default.fontPath);
-              const format = path.extname(defaultIcon.fontPath).substring(1);
-              if (format && format[0]) {
-                fontFaces[fontFamily] = {
-                  source: this.staticResourceService.resolveStaticResource(fontPath).toString(),
-                  format,
-                  fontFamily,
-                  display: 'blok',
-                };
-              }
+            const fontPath = URI.from(extension.uri!).resolve(icon.default.fontPath);
+            const fileExt = path.extname(defaultIcon.fontPath).substring(1);
+            const format = formatMap[fileExt];
+            if (!format) {
+              this.logger.warn(
+                localize(
+                  'invalid.icons.default.fontPath.extension',
+                  `Expected \`contributes.icons.default.fontPath\` to have file extension 'woff', woff2' or 'ttf', is '${fileExt}'.`,
+                ),
+              );
+              return;
             }
-            codiconDeinitions.push({ content: icon.default.fontCharacter, id: k, fontFamily });
+            const fontId = path.join(extensionId, defaultIcon.fontPath);
+            const definition = this.iconRegistry.registerIconFont(fontId, {
+              src: [{ location: this.staticResourceService.resolveStaticResource(fontPath), format }],
+            });
+            this.iconRegistry.registerIcon(
+              id,
+              {
+                fontCharacter: defaultIcon.fontCharacter,
+                font: {
+                  id: fontId,
+                  definition,
+                },
+              },
+              icon.description,
+            );
           }
         }
       });
     }
-
-    const fontFamilies = Object.keys(fontFaces).map((k) => fontFaces[k]);
-
-    this.iconService.registerFontIcons(codiconDeinitions, fontFamilies);
   }
 }

@@ -903,34 +903,98 @@ export const codIconIdentifier = {
   },
 };
 
+// TODO more icons
+// 已覆盖绝大多数 默认 sumi 图标
 // proxy to codicon
 export const sumiIconIdentifier = {
-  explorer: {
+  'sumi-explorer': {
     defaults: Sumiicon.explorer,
     description: localize('', 'View icon in the Explorer view.'),
   },
-  search: {
+  'sumi-search': {
     defaults: Sumiicon.search,
     description: localize('', 'View icon in the Search view.'),
   },
-  debug: {
+  'sumi-debug': {
     defaults: Sumiicon.debug,
     description: localize('', 'View icon in the Debug view.'),
   },
-  scm: {
+  'sumi-scm': {
     defaults: Sumiicon.scm,
     description: localize('', 'View icon in the Source Control  view.'),
   },
-  extension: {
+  'sumi-extension': {
     defaults: Sumiicon.extension,
     description: localize('', 'View icon in the Extension view.'),
   },
-  embed: {
+  'sumi-embed': {
     defaults: Sumiicon.embed,
-    description: localize('', 'embed icon.'),
   },
-  setting: {
+  'sumi-setting': {
     defaults: Sumiicon.setting,
-    description: localize('', 'setting icon.'),
+  },
+  'sumi-sync': {
+    defaults: Sumiicon.sync,
+  },
+  'sumi-zsh': {
+    defaults: Sumiicon.zsh,
+  },
+  'sumi-bash': {
+    defaults: Sumiicon.bash,
+  },
+  'sumi-clear': {
+    defaults: Sumiicon.clear,
+  },
+  'sumi-new-file': {
+    defaults: Sumiicon.newFile,
+  },
+  'sumi-new-folder': {
+    defaults: Sumiicon.newFolder,
+  },
+  'sumi-refresh': {
+    defaults: Sumiicon.refresh,
+  },
+  'sumi-more': {
+    defaults: Sumiicon.more,
+  },
+  'sumi-open': {
+    defaults: Sumiicon.open,
+  },
+  'sumi-close': {
+    defaults: Sumiicon.close,
+  },
+  'sumi-delete': {
+    defaults: Sumiicon.delete,
+  },
+  'sumi-right': {
+    defaults: Sumiicon.right,
+  },
+  'sumi-left': {
+    defaults: Sumiicon.left,
+  },
+  'sumi-down': {
+    defaults: Sumiicon.down,
+  },
+  'sumi-up': {
+    defaults: Sumiicon.up,
+  },
+  'sumi-arrowright': {
+    defaults: Sumiicon.arrowRight,
+  },
+  'sumi-arrowleft': {
+    defaults: Sumiicon.arrowLeft,
+  },
+  'sumi-arrowdown': {
+    defaults: Sumiicon.arrowDown,
+  },
+  'sumi-arrowup': {
+    defaults: Sumiicon.arrowUp,
+  },
+  // TODO arrow-down arrow-right 需要改为 down right
+  'sumi-arrow-right': {
+    defaults: Sumiicon.right,
+  },
+  'sumi-arrow-down': {
+    defaults: Sumiicon.down,
   },
 };

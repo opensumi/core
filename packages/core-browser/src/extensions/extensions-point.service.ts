@@ -38,7 +38,7 @@ export class ExtensionsPointServiceImpl implements IExtensionsSchemaService {
         const perProp = lodashGet(properties, assignExtensionPoint.concat('properties'));
         lodashAssign(jsonSchema.properties, perProp);
       }
-      lodashSet(properties, assignExtensionPoint, jsonSchema);
+      lodashSet(properties!, assignExtensionPoint, jsonSchema);
     };
   }
 

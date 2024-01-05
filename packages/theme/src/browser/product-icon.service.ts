@@ -89,28 +89,6 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
     super();
     this.listen();
     this.getIconsStyleSheet = getIconsStyleSheet(this, this.staticResourceService);
-    this.getIconsStyleSheet.onDidChange(() => {
-      // this.iconMap = new Map();
-      // this.iconThemes = new Map();
-      // this.iconContributionRegistry = new Map();
-      // this.getIconsStyleSheet.getCSS().split('\n').forEach((line) => {
-      //   const match = line.match(/\.codicon-(\w+):before/);
-      //   if (match) {
-      //     const codicon = match[1];
-      //     const icon = line.match(/content: "(.*)"/)?.[1];
-      //     if (icon) {
-      //       this.iconMap.set(codicon, icon);
-      //     }
-      //   }
-      // });
-      // this.getIconsStyleSheet.getIconTheme().forEach((theme) => {
-      //   this.iconThemes.set(theme.themeId, theme);
-      //   this.iconContributionRegistry.set(theme.themeId, {
-      //     contribution: theme,
-      //     basePath: URI.file(theme.path),
-      //   });
-      // });
-    });
     this.disposables.push(this.getIconsStyleSheet);
   }
 
@@ -244,7 +222,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
           [GeneralSettingsId.ProductIconTheme]: {
             type: 'string',
             // TODO default icon
-            default: 'vscode-icons',
+            default: 'opensumi-icons',
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
           },
         },
@@ -360,6 +338,7 @@ export function getIconsStyleSheet(
       return rules.join('\n');
     },
     getSumiCSS() {
+      const isSumi = true;
       const productIconTheme = themeService ? themeService.currentThemeData : new UnthemedProductIconTheme();
       const usedFontIds: { [id: string]: IconFontDefinition } = {};
       const formatIconRule = (contribution: IconContribution): string | undefined => {
@@ -370,15 +349,16 @@ export function getIconsStyleSheet(
         const fontContribution = definition.font;
         if (fontContribution) {
           usedFontIds[fontContribution.id] = fontContribution.definition as IconFontDefinition;
-          return `.kticon-${contribution.id}:before { content: '${
+          return `.kticon-${contribution.id.slice(5)}:before { content: '${
             definition.fontCharacter
           }'; font-family: ${asCSSPropertyValue(fontContribution.id)}; }`;
         }
-        return `.kticon-${contribution.id}:before { content: '${definition.fontCharacter}'; }`;
+        return `.kticon-${contribution.id.slice(5)}:before { content: '${definition.fontCharacter}'; }`;
       };
 
       const rules: string[] = [];
-      for (const contribution of iconRegistry.getIcons(true)) {
+      // get sumi icons
+      for (const contribution of iconRegistry.getIcons(isSumi)) {
         const rule = formatIconRule(contribution);
         if (rule) {
           rules.push(rule);
