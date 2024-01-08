@@ -34,7 +34,7 @@ export class AiNativeContribution implements AiNativeCoreContribution {
 
   middleware: IAiMiddleware = {
     language: {
-      provideInlineCompletions: async (model, position, context, token, next) => next(model, position, context, token),
+      provideInlineCompletions: async (model, position, token, next, bean) => next(bean),
     },
   };
 

@@ -41,7 +41,7 @@ export class AIReporter implements IAIReporter {
       clearTimeout(cancleHanddler);
     }
 
-    this.report(relationId, { ...data, success: true, isStart: false });
+    this.report(relationId, { success: true, ...data, isStart: false });
   }
 
   private report(relationId: string, data: ReportInfo) {
