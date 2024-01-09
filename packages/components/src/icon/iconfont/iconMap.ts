@@ -153,6 +153,7 @@ export const defaultIconfont = {
   'revoke-white': 'revoke-white',
   'right': 'right',
   'rollback': 'rollback',
+  'run': 'run',
   'rust': 'rust',
   'save-all': 'save-all',
   'scm': 'scm',

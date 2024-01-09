@@ -106,7 +106,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   const renderFolderToggle = (node: OutlineCompositeTreeNode, clickHandler: any) => (
     <div
       onClick={clickHandler}
-      className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+      className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('right'), {
         [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
       })}
     />

@@ -6,17 +6,6 @@
     height: 100%;
     margin: 0 3px;
     position: relative;
-
-    &::after {
-      content: '';
-      position: absolute;
-      height: 25px;
-      width: 2px;
-      background-color: #31363b;
-      border-radius: 1px;
-      top: 50%;
-      left: 1px;
-    }
   }
 
   .ai_native_slot_main {
@@ -33,6 +22,10 @@
     /**
     * ---------------- 覆盖 editor tab 样式 ---------------------
     */
+
+    div[class*='editorGroupHeader___'] {
+      background-color: #222830;
+    }
 
     div[class*='kt_editor_tabs_scroll_wrapper___'] {
       &:after {
@@ -72,6 +65,7 @@
           border-radius: 4px;
           &:hover {
             background-color: rgba(250, 250, 250, 0.06);
+            color: #fff;
           }
         }
 
@@ -90,7 +84,7 @@
       }
 
       div[class*='kt_editor_tab_current___'] {
-        background-color: transparent !important;
+        background-color: #222830 !important;
 
         div[class*='close_tab___'] {
           display: block;
@@ -114,12 +108,17 @@
         span[class*='iconAction__'] {
           padding: 2px;
           font-size: 14px;
+          color: rgba(255, 255, 255, 0.65);
+          &:not(.disabled):hover {
+            color: #fff;
+          }
         }
         span[class*='btnAction__'] {
           padding: 2px;
           &:hover {
             border-radius: 4px;
             background-color: var(--kt-icon-hoverBackground);
+            color: #fff;
           }
         }
       }
@@ -132,6 +131,12 @@
       height: 28px;
       background: rgba(0, 0, 0, 0.15);
       border-bottom: 0 none;
+      span[class*='navigation-part___'] {
+        color: rgba(255, 255, 255, 0.45);
+      }
+      span[class*='navigation_icon___'] {
+        color: rgba(255, 255, 255, 0.65);
+      }
     }
 
     /**
@@ -216,6 +221,11 @@
 
     &:hover {
       background-color: var(--activityBar-activeBorder);
+      :global {
+        .activity-icon {
+          color: #fff;
+        }
+      }
     }
 
     :global {
@@ -223,7 +233,7 @@
         font-size: 16px;
         width: 16px;
         height: 16px;
-        color: rgba(255, 255, 255, 0.45);
+        color: rgba(255, 255, 255, 0.65);
 
         &.mask-mode {
           background-color: var(--activityBar-inactiveForeground);
@@ -265,6 +275,9 @@
         .active {
           div[class*='icon_tab___'] {
             background-color: var(--activityBar-activeBorder);
+            .activity-icon {
+              color: #fff;
+            }
 
             &::before {
               content: none;
@@ -351,6 +364,10 @@
     span[class*='iconAction__'] {
       font-size: 14px;
       padding: 2px;
+      color: rgba(255, 255, 255, 0.65);
+      &:not(.disabled):hover {
+        color: #fff;
+      }
     }
 
     span[class*='btnAction__'] {
@@ -359,6 +376,7 @@
       &:hover {
         border-radius: 4px;
         background-color: var(--kt-icon-hoverBackground);
+        color: #fff;
       }
     }
   }
@@ -405,7 +423,7 @@
 
   /* 过度方案 */
   div[class*='tab_bar___'] {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: #222830;
   }
 
   li[class*='bottom_tab___'] {
@@ -413,7 +431,7 @@
   }
 
   div[class*='panel_title_bar___'] {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: #222830;
   }
 
   div[class*='panel_title_bar___']::before {

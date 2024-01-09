@@ -227,7 +227,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       if (isDirectory) {
         return (
           <div
-            className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+            className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('right'), {
               [`${styles.mod_collapsed}`]:
                 isNewPrompt ||
                 !(
@@ -243,7 +243,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('right'), {
             [`${styles.mod_collapsed}`]: !(node as Directory).expanded,
           })}
         />
