@@ -88,12 +88,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private themes: Map<string, ThemeData> = new Map();
   private themeContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
 
-  // private readonly productIconThemeRegistry: ThemeRegistry<ProductIconThemeData>;
-  // private currentProductIconTheme: ProductIconThemeData;
-  // private readonly onProductIconThemeChange: Emitter<IWorkbenchProductIconTheme>;
-  // private readonly productIconThemeWatcher: ThemeFileWatcher;
-  // private readonly productIconThemeSequencer: Sequencer;
-
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
   protected extensionReady: boolean;
 
@@ -309,10 +303,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
     return themeInfos;
   }
-
-  // public get onDidProductIconThemeChange(): Event<IWorkbenchProductIconTheme> {
-  // 	return this.onProductIconThemeChange.event;
-  // }
 
   protected doSetPreferenceSchema() {
     this.preferenceSchemaProvider.setSchema(

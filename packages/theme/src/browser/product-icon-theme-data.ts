@@ -3,7 +3,6 @@ import * as parser from 'jsonc-parser';
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, ThemeIcon, isString, path, Logger, localize } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import { IProductIconTheme, ExtensionData, ThemeContribution } from '../common';
 import {
@@ -42,12 +41,9 @@ export class ProductIconThemeData implements IProductIconTheme {
   private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired()
-  private readonly staticResourceService: StaticResourceService;
-
-  @Autowired()
   private logger: Logger;
 
-  private constructor(id: string, label: string, settingsId: string) {
+  constructor(id: string, label: string, settingsId: string) {
     this.id = id;
     this.label = label;
     this.settingsId = settingsId;

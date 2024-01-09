@@ -4,19 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ThemeIcon, localize, IJSONSchema, IJSONSchemaMap, Emitter, Event, URI } from '@opensumi/ide-core-common';
-import { getSumiiconFontCharacters } from '@opensumi/ide-core-common/lib/codicons';
-import { getIconRegistry as MonacoGetIconRegistory } from '@opensumi/monaco-editor-core/esm/vs/platform/theme/common/iconRegistry';
+import { getCodiconFontCharacters } from '@opensumi/ide-core-common/lib/codicons';
 
-import { codIconIdentifier, sumiIconIdentifier } from './icons';
+import { sumiIconIdentifier } from './icons';
 
 export const Extensions = {
   IconContribution: 'base.contributions.icons',
 };
-
-export interface IconDefinition {
-  font?: IconFontContribution; // undefined for the default font (codicon)
-  fontCharacter: string;
-}
 
 export declare type IconDefaults = ThemeIcon | IconDefinition;
 export interface IconDefinition {
@@ -135,25 +129,24 @@ class IconRegistry implements IIconRegistry {
 
   private iconFontsById: { [key: string]: IconFontDefinition };
 
-  private _monacoIconRegistry = MonacoGetIconRegistory();
+  // private _monacoIconRegistry = MonacoGetIconRegistory();
 
   constructor() {
     this.iconsById = {};
     this.iconFontsById = {};
     this.sumiIconsById = {};
-    // register monaco codicon
-    this.registerCodicon();
   }
 
-  private registerCodicon() {
-    const codicons = (this._monacoIconRegistry as any).iconsById;
-    for (const id in codicons) {
-      if (Object.hasOwn(codicons, id)) {
-        const codicon = codicons[id];
-        this.registerIcon(id, codicon.defaults, codicon.description);
-      }
-    }
-  }
+  // get monaco icons
+  // private registerCodicon() {
+  //   const codicons = (this._monacoIconRegistry as any).iconsById;
+  //   for (const id in codicons) {
+  //     if (Object.hasOwn(codicons, id)) {
+  //       const codicon = codicons[id];
+  //       this.registerIcon(id, codicon.defaults, codicon.description);
+  //     }
+  //   }
+  // }
 
   public registerIcon(
     id: string,
@@ -258,10 +251,6 @@ class IconRegistry implements IIconRegistry {
     return this.iconsById[id];
   }
 
-  public getMonacoIcon(id: string): IconContribution | undefined {
-    return this._monacoIconRegistry.getIcon(id) as IconContribution;
-  }
-
   public getIconSchema(): IJSONSchema {
     return this.iconSchema;
   }
@@ -342,11 +331,12 @@ export function getIconRegistry() {
 }
 
 // 初始化注册 vscode 定义 icon
-function registerIdentifierIcon() {
-  for (const icon in codIconIdentifier) {
-    if (Object.hasOwn(codIconIdentifier, icon)) {
-      const codicon = codIconIdentifier[icon];
-      iconRegistry.registerIcon(icon, codicon.defaults, codicon.description);
+function initialize() {
+  const codiconFontCharacters = getCodiconFontCharacters();
+  for (const icon in codiconFontCharacters) {
+    if (Object.hasOwn(codiconFontCharacters, icon)) {
+      const fontCharacter = '\\' + codiconFontCharacters[icon].toString(16);
+      iconRegistry.registerIcon(icon, { fontCharacter });
     }
   }
   for (const icon in sumiIconIdentifier) {
@@ -357,14 +347,4 @@ function registerIdentifierIcon() {
   }
 }
 
-function initialize() {
-  const sumiIconFontCharacters = getSumiiconFontCharacters();
-  for (const icon in sumiIconFontCharacters) {
-    if (Object.hasOwn(sumiIconFontCharacters, icon)) {
-      const fontCharacter = '\\' + sumiIconFontCharacters[icon].toString(16);
-      iconRegistry.registerSumiIcon(icon, { fontCharacter });
-    }
-  }
-}
-
-registerIdentifierIcon();
+initialize();

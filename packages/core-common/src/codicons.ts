@@ -723,4 +723,12 @@ export const Sumiicon = {
     'find-next-match',
     'diff-editor-next-change',
   ]),
+  start: registerSumi('play', 0xea3f, ['play', 'notebook-execute']),
+  saveAll: registerSumi('save-all', 0xe71b, ['save-all', 'notebook-save-all']),
+  closeAll: registerSumi('close-all', 0xe71c, ['close-all', 'watch-expressions-remove-all', 'breakpoints-remove-all']),
+  collapseAll: registerSumi('collapse-all', 0xe7bf, ['collapse-all', 'debug-collapse-all', 'search-collapse-results']),
+  expandAll: registerSumi('expand-all', 0xe613, ['expand-all', 'debug-expand-all', 'search-expand-results']),
+  retrieval: registerSumi('sumi-retrieval', 0xea61, []),
+  eyeClose: registerSumi('eye-closed', 0xe8ff, ['eye-closed']),
+  ellipsis: registerSumi('ellipsis', 0xe7fc, ['ellipsis', 'search-details']),
 } as const;

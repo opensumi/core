@@ -11,7 +11,7 @@ export type ThemesSchema = Array<ThemeContribution>;
 // 优化 monaco 初始化
 @Injectable()
 @Contributes('productIconThemes')
-@LifeCycle(LifeCyclePhase.Ready)
+@LifeCycle(LifeCyclePhase.Initialize)
 export class ProductIconThemesContributionPoint extends VSCodeContributePoint<ThemesSchema> {
   @Autowired(IProductIconService)
   protected readonly productIconService: IProductIconService;

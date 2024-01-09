@@ -28,7 +28,11 @@ import {
 } from '../common';
 import { IconContribution, IconDefinition, IconFontDefinition, getIconRegistry } from '../common/icon-registry';
 
+import { ProductIconThemeData } from './product-icon-theme-data';
 import { ProductIconThemeStore } from './product-icon-theme-store';
+
+export const DEFAULT_PRODUCT_ICON_THEME_ID = 'opensumi-icons';
+export const DEFAULT_PRODUCT_ICON_THEME_LABEL = 'OpenSumi Icons';
 
 export function asCSSUrl(uri: URI | null | undefined, staticResourceService: StaticResourceService): string {
   if (!uri) {
@@ -71,25 +75,35 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   private readonly logger: ILogger;
 
   private themeChangeEmitter: Emitter<IProductIconTheme> = new Emitter();
-  public onThemeChange: Event<IProductIconTheme> = this.themeChangeEmitter.event;
   public currentThemeId: string;
   public currentTheme: IProductIconTheme;
-  private productIconThemes: Map<string, IProductIconTheme> = new Map();
-  productIconThemeLoaded: Deferred<void> = new Deferred<void>();
+  public productIconThemeLoaded: Deferred<void> = new Deferred<void>();
 
-  private productIconContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
+  private productIconContributionRegistry: Map<string, { contribution: ThemeContribution; basePath?: URI }> = new Map();
   private latestApplyTheme: string;
 
-  private iconThemes: Map<string, IProductIconTheme> = new Map();
-  private iconMap: Map<string, string> = new Map();
   private getIconsStyleSheet: IIconsStyleSheet;
   readonly onDidProductIconThemeChange: Event<IProductIconTheme> = this.themeChangeEmitter.event;
+
+  private defaultProductIconTheme = new ProductIconThemeData(
+    DEFAULT_PRODUCT_ICON_THEME_ID,
+    DEFAULT_PRODUCT_ICON_THEME_LABEL,
+    DEFAULT_PRODUCT_ICON_THEME_ID,
+  );
 
   constructor() {
     super();
     this.listen();
     this.getIconsStyleSheet = getIconsStyleSheet(this, this.staticResourceService);
     this.disposables.push(this.getIconsStyleSheet);
+    this.productIconContributionRegistry.set(DEFAULT_PRODUCT_ICON_THEME_ID, {
+      contribution: {
+        id: this.defaultProductIconTheme.id,
+        label: this.defaultProductIconTheme.label,
+        path: '',
+        extensionId: this.defaultProductIconTheme.id,
+      },
+    });
   }
 
   private listen() {
@@ -138,33 +152,35 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   }
 
   async applyTheme(themeId: string): Promise<void> {
-    this.toggleIconVisible(true);
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
     this.latestApplyTheme = themeId;
 
     const productIconThemeData = await this.getProductIconTheme(themeId);
+    if (this.latestApplyTheme !== themeId) {
+      return;
+    }
+
+    let styleNode = document.getElementById('product-icon-style');
+    let monacoNode = document.getElementById('codiconStyles');
+
     if (!productIconThemeData) {
       this.logger.warn('Target ProductIconTheme extension not detected, use built-in icons.');
-      document.getElementsByTagName('body')[0].classList.add('default-product-icons');
+      styleNode?.remove();
+      monacoNode?.remove();
+      this.currentThemeId = this.defaultProductIconTheme.id;
+      this.currentTheme = this.defaultProductIconTheme;
       this.productIconThemeLoaded.resolve();
       return;
     }
     this.currentThemeId = themeId;
-    document.getElementsByTagName('body')[0].classList.remove('default-product-icons');
     this.currentTheme = productIconThemeData;
 
-    // styleSheetContent 内仅存储 opensumi icon
-    // vscode icon 为 codicon 由 monaoc-colors 样式表承载
-    // 由于 两者加载时机无法判断 所以内容需区分开
-
+    // product-icon-style 内存储 opensumi icon
+    // codiconStyles 内存储 codicon icon
     const codiconStyles = this.getIconsStyleSheet.getCSS();
     const sumiiconStyles = this.getIconsStyleSheet.getSumiCSS();
-
-    let styleNode = document.getElementById('product-icon-style');
-    let monacoNode = document.getElementById('codiconStyles');
-    // let monacoNode = document.getElementsByClassName('monaco-colors')[0];
 
     // TODO monaco patch monaco-colors cannot remove
     if (monacoNode) {
@@ -192,10 +208,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   }
 
   async getProductIconTheme(themeId: string): Promise<IProductIconTheme | undefined> {
-    let theme = this.productIconThemes.get(themeId);
-    if (theme) {
-      return theme;
-    }
+    let theme: IProductIconTheme | undefined;
     const extContribution = this.productIconContributionRegistry.get(themeId);
     if (extContribution) {
       theme = await this.productIconThemeStore.getProductIconTheme(
@@ -216,13 +229,15 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
         this.applyTheme(preferencesProductIcon);
       }
     }
+    const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(GeneralSettingsId.ProductIconTheme);
+    if (currentSchemas) {
+      delete currentSchemas.scope;
+    }
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
           [GeneralSettingsId.ProductIconTheme]: {
-            type: 'string',
-            // TODO default icon
-            default: 'opensumi-icons',
+            ...currentSchemas,
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
           },
         },
@@ -260,17 +275,6 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
       });
     }
     return themeInfos;
-  }
-
-  toggleIconVisible(show?: boolean) {
-    const rootNode = document.getElementsByTagName('body')[0]!;
-    if (show === undefined) {
-      rootNode.classList.toggle('show-product-icons');
-    } else if (show === true) {
-      rootNode.classList.add('show-product-icons');
-    } else {
-      rootNode.classList.remove('show-product-icons');
-    }
   }
 }
 export interface IIconsStyleSheet extends IDisposable {
@@ -338,7 +342,6 @@ export function getIconsStyleSheet(
       return rules.join('\n');
     },
     getSumiCSS() {
-      const isSumi = true;
       const productIconTheme = themeService ? themeService.currentThemeData : new UnthemedProductIconTheme();
       const usedFontIds: { [id: string]: IconFontDefinition } = {};
       const formatIconRule = (contribution: IconContribution): string | undefined => {
@@ -358,7 +361,7 @@ export function getIconsStyleSheet(
 
       const rules: string[] = [];
       // get sumi icons
-      for (const contribution of iconRegistry.getIcons(isSumi)) {
+      for (const contribution of iconRegistry.getIcons(true)) {
         const rule = formatIconRule(contribution);
         if (rule) {
           rules.push(rule);

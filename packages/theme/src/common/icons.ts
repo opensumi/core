@@ -997,4 +997,28 @@ export const sumiIconIdentifier = {
   'sumi-arrow-down': {
     defaults: Sumiicon.down,
   },
+  'sumi-start': {
+    defaults: Sumiicon.start,
+  },
+  'sumi-save-all': {
+    defaults: Sumiicon.saveAll,
+  },
+  'sumi-close-all': {
+    defaults: Sumiicon.closeAll,
+  },
+  'sumi-collapse-all': {
+    defaults: Sumiicon.collapseAll,
+  },
+  'sumi-expand-all': {
+    defaults: Sumiicon.expandAll,
+  },
+  'sumi-retrieval': {
+    defaults: Sumiicon.retrieval,
+  },
+  'sumi-eye-close': {
+    defaults: Sumiicon.eyeClose,
+  },
+  'sumi-ellipsis': {
+    defaults: Sumiicon.ellipsis,
+  },
 };
