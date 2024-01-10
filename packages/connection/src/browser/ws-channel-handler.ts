@@ -57,27 +57,28 @@ export class WSChannelHandler {
       this.heartbeatMessage();
 
       const msg = parse(message);
+
+      if (!msg.id) {
+        // unknown message
+        this.logger.warn(this.LOG_TAG, 'unknown message', msg);
+        return;
+      }
       if (msg.kind === 'heartbeat') {
-        // 不处理心跳消息
+        // don't handle server2client heartbeat message
         return;
       }
 
-      if (msg.id) {
-        const channel = this.channelMap.get(msg.id);
-        if (channel) {
-          if (msg.kind === 'data' && !channel.hasMessageListener()) {
-            // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
-            this.logger.error(this.LOG_TAG, 'channel not ready!', msg);
-          }
-          channel.handleMessage(msg);
-        } else {
-          this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+      const channel = this.channelMap.get(msg.id);
+      if (channel) {
+        if (msg.kind === 'data' && !channel.hasMessageListener()) {
+          // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
+          this.logger.error(this.LOG_TAG, 'channel not ready!', msg);
         }
+        channel.handleMessage(msg);
+      } else {
+        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
       }
     });
-    const onOpenStage1 = () => {
-      this.heartbeatMessage();
-    };
 
     const onOpenStage2 = () => {
       // 重连 channel
@@ -98,13 +99,13 @@ export class WSChannelHandler {
     };
     await new Promise<void>((resolve) => {
       if (this.connection.isOpen()) {
-        onOpenStage1();
+        this.heartbeatMessage();
         resolve();
         onOpenStage2();
       }
 
       this.connection.onOpen(() => {
-        onOpenStage1();
+        this.heartbeatMessage();
         resolve();
         onOpenStage2();
       });
