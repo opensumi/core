@@ -6,8 +6,6 @@ import { BaseConnection } from './base';
 import { StreamPacketDecoder, createSumiStreamPacket } from './stream-decoder';
 
 export class NetSocketConnection extends BaseConnection<Uint8Array> {
-  encoding = 'utf8';
-
   protected decoder = new StreamPacketDecoder();
 
   constructor(private socket: net.Socket) {
@@ -18,7 +16,7 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
   }
 
   isOpen(): boolean {
-    // 当前的 types 不支持提示这个字段
+    // currently we use `@types/node@10`, 10.x does not have `readyState` property
     return (this.socket as any).readyState === 'open';
   }
 

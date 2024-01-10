@@ -72,9 +72,11 @@ export class StreamPacketDecoder {
   }
 
   /**
-   * 首先我们读开头的 4 个字节，如果不是 0x69 0x6d 0x75 0x53，就丢弃，继续读下一个字节，直到读到 0x69 0x6d 0x75 0x53
-   * 然后读下一个字节，这个字节是一个 varint32，表示后面的数据的长度
-   * 然后读后面的数据，直到读到 varint32 表示的长度，然后把这个数据返回，然后继续读下一个数据包
+   * First we read the first 4 bytes, if it is not magic 4 bytes
+   * discard it and continue to read the next byte until we get magic 4 bytes
+   * magic 4 bytes is 0x69 0x6d 0x75 0x53
+   * Then read the next byte, this is a varint32, which means the length of the following data
+   * Then read the following data, until we get the length of varint32, then return this data and continue to read the next packet
    */
   _detectPacketHeader() {
     if (this._buffers.length === 0) {
