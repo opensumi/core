@@ -17,7 +17,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   protected connectionPromise: Deferred<void> = new Deferred<void>();
 
-  protected abstract proxyType: 'json-rpc';
+  protected abstract engine: 'json-rpc';
 
   constructor(public target?: IRPCServiceMap, logger?: ILogger) {
     this.logger = logger || console;
@@ -29,7 +29,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
     if (isDefined(capturer)) {
       capturer({
         ...message,
-        proxyType: this.proxyType,
+        engine: this.engine,
       });
     }
   }

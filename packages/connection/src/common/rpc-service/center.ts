@@ -2,7 +2,7 @@ import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { ProxyJSONRPC, ProxyWrapper } from '../proxy';
+import { ProxyLegacy, ProxyWrapper } from '../proxy';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 
@@ -11,7 +11,7 @@ const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mo
 export class RPCServiceCenter {
   public uid: string;
 
-  private proxyWrappers: ProxyWrapper<ProxyJSONRPC>[] = [];
+  private proxyWrappers: ProxyWrapper<ProxyLegacy>[] = [];
 
   private connection: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
@@ -32,7 +32,7 @@ export class RPCServiceCenter {
     }
   }
 
-  when() {
+  ready() {
     return this.connectionDeferred.promise;
   }
 
@@ -42,7 +42,7 @@ export class RPCServiceCenter {
     }
     this.connection.push(connection);
 
-    const rpcProxy = new ProxyJSONRPC(this.serviceMethodMap, this.logger);
+    const rpcProxy = new ProxyLegacy(this.serviceMethodMap, this.logger);
     rpcProxy.listen(connection);
 
     const wrapper = rpcProxy.createProxyWrapper();

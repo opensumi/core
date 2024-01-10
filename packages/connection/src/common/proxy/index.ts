@@ -1,5 +1,5 @@
 export * from './wrapper';
-export * from './json-rpc';
+export * from './legacy';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];

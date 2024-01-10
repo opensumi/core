@@ -9,7 +9,7 @@ export class RPCServiceStub {
   }
 
   async ready() {
-    return this.center.when();
+    return this.center.ready();
   }
 
   on(name: string, method: RPCServiceMethod) {
