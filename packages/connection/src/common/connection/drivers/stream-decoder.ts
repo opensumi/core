@@ -8,7 +8,6 @@ import { Buffers } from '../buffers';
 
 export const kMagicNumber = 0x53756d69;
 
-export const reader = BinaryReader({});
 const writer = BinaryWriter({});
 
 const emptyBuffer = alloc(8);
@@ -46,14 +45,30 @@ export class StreamPacketDecoder {
 
   push(chunk: Uint8Array): void {
     this._buffers.push(chunk);
+    let done = false;
 
-    const done = this._detectPacket();
-    if (done) {
+    while (!done) {
+      done = this._parsePacket();
+    }
+  }
+
+  _parsePacket(): boolean {
+    const found = this._detectPacketHeader();
+    if (found) {
       const fullBinary = this._buffers.splice(0, this._tmpChunksTotalBytesCursor + this._tmpContentLength);
       const binary = fullBinary.splice(this._tmpChunksTotalBytesCursor, this._tmpContentLength).slice();
       this.emitter.emit('data', binary);
       this.reset();
+
+      if (this._buffers.length > 0) {
+        // has more data, continue to parse
+        return false;
+      }
+
+      return true;
     }
+
+    return true;
   }
 
   /**
@@ -61,13 +76,13 @@ export class StreamPacketDecoder {
    * 然后读下一个字节，这个字节是一个 varint32，表示后面的数据的长度
    * 然后读后面的数据，直到读到 varint32 表示的长度，然后把这个数据返回，然后继续读下一个数据包
    */
-  _detectPacket() {
+  _detectPacketHeader() {
     if (this._buffers.length === 0) {
       return false;
     }
 
     if (this._tmpPacketState !== 4) {
-      this._tmpChunksTotalBytesCursor = this._detectPacketStart();
+      this._tmpChunksTotalBytesCursor = this._detectPacketMagicNumber();
     }
 
     if (this._tmpPacketState !== 4) {
@@ -97,7 +112,7 @@ export class StreamPacketDecoder {
     return true;
   }
 
-  _detectPacketStart() {
+  _detectPacketMagicNumber() {
     let chunkIndex = 0;
     let chunkCursor = 0;
 

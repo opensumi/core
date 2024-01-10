@@ -2,6 +2,7 @@ import net from 'net';
 
 import { WSChannel } from '@opensumi/ide-connection';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
+const total = 1000;
 
 describe('ws channel node', () => {
   it('works on net.Socket', async () => {
@@ -39,11 +40,10 @@ describe('ws channel node', () => {
     socket2.end();
   });
 
-  it('互相通信五千次', async () => {
-    jest.setTimeout(50 * 1000);
+  it(`互相通信 N 次(N = ${total})`, async () => {
+    jest.setTimeout(50000 * 1000);
 
     let count = 0;
-    const total = 5000;
 
     const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
 

@@ -1,11 +1,14 @@
 /* eslint-disable no-console */
 
+import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
+
 import {
   StreamPacketDecoder,
   createSumiStreamPacket,
   kMagicNumber,
-  reader,
 } from '../../src/common/connection/drivers/stream-decoder';
+
+const reader = BinaryReader({});
 
 function round(x: number, count: number) {
   return Math.round(x * 10 ** count) / 10 ** count;
