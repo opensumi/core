@@ -17,9 +17,7 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
-  get LOG_TAG() {
-    return `[WSChannelHandler] [client-id:${this.clientId}]`;
-  }
+  LOG_TAG = '[WSChannelHandler]';
 
   constructor(
     public connection: ReconnectingWebSocketConnection | NetSocketConnection,
@@ -28,6 +26,7 @@ export class WSChannelHandler {
   ) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
+    this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {
@@ -37,14 +36,6 @@ export class WSChannelHandler {
   }
   setReporter(reporterService: IReporterService) {
     this.reporterService = reporterService;
-  }
-  private clientMessage() {
-    this.connection.send(
-      stringify({
-        kind: 'client',
-        id: this.clientId,
-      }),
-    );
   }
   private heartbeatMessage() {
     if (this.heartbeatMessageTimer) {
@@ -84,12 +75,11 @@ export class WSChannelHandler {
         }
       }
     });
-    const onOpen1 = () => {
-      this.clientMessage();
+    const onOpenStage1 = () => {
       this.heartbeatMessage();
     };
 
-    const onOpen2 = () => {
+    const onOpenStage2 = () => {
       // 重连 channel
       if (this.channelMap.size) {
         this.channelMap.forEach((channel) => {
@@ -108,15 +98,15 @@ export class WSChannelHandler {
     };
     await new Promise<void>((resolve) => {
       if (this.connection.isOpen()) {
-        onOpen1();
+        onOpenStage1();
         resolve();
-        onOpen2();
+        onOpenStage2();
       }
 
       this.connection.onOpen(() => {
-        onOpen1();
+        onOpenStage1();
         resolve();
-        onOpen2();
+        onOpenStage2();
       });
 
       this.connection.onceClose((code, reason) => {

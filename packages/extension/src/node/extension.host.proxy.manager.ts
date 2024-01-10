@@ -38,9 +38,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private disposer = new Disposable();
 
-  get LOG_TAG() {
-    return '[ExtensionHostProxyManager]';
-  }
+  LOG_TAG = '[ExtensionHostProxyManager]';
 
   constructor(
     @Optional()

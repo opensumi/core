@@ -21,10 +21,6 @@ export interface IWebSocket {
   onClose(cb: (code: number, reason: string) => void): void;
 }
 
-export interface ClientMessage {
-  kind: 'client';
-  id: string;
-}
 export interface HeartbeatMessage {
   kind: 'heartbeat';
   id: string;
@@ -49,7 +45,7 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage = HeartbeatMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export interface IWSChannelCreateOptions {
   id: string;
@@ -108,9 +104,7 @@ export class WSChannel implements IWebSocket {
     return WSChannel.forClient(wsConnection, options);
   }
 
-  get LOG_TAG() {
-    return `[WSChannel] [tag:${this.tag}] [id:${this.id}] [channel-path:${this.channelPath}]`;
-  }
+  LOG_TAG = '[WSChannel]';
 
   constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
     const { id, logger, tag } = options;
@@ -120,6 +114,8 @@ export class WSChannel implements IWebSocket {
     if (logger) {
       this.logger = logger;
     }
+
+    this.LOG_TAG = `[WSChannel] [tag:${this.tag}] [id:${this.id}]`;
   }
 
   // server

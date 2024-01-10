@@ -95,6 +95,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }
+
   private heartbeat(connectionId: string, connection: WebSocket) {
     const timer = global.setTimeout(() => {
       connection.ping();
@@ -124,19 +125,17 @@ export class CommonChannelHandler extends WebSocketHandler {
                 id: msgObj.id,
               }),
             );
-          } else if (msgObj.kind === 'client') {
+          } else if (msgObj.kind === 'open') {
             connectionId = msgObj.id;
+            const { path } = msgObj;
+            this.logger.log(`Open a new connection channel ${connectionId} with path ${path}`);
+            const wsConnection = new WSWebSocketConnection(connection);
             this.logger.log(`New connection with id ${connectionId}`);
             this.connectionMap.set(connectionId, connection);
             this.heartbeat(connectionId, connection);
-          } else if (msgObj.kind === 'open') {
-            const channelId = msgObj.id;
-            const { path } = msgObj;
-            this.logger.log(`Open a new connection channel ${channelId} with path ${path}`);
-            const wsConnection = new WSWebSocketConnection(connection);
 
-            const channel = new WSChannel(wsConnection, { id: channelId, tag: 'node-ws-server-handler' });
-            this.channelMap.set(channelId, channel);
+            const channel = new WSChannel(wsConnection, { id: connectionId, tag: 'node-ws-server-handler' });
+            this.channelMap.set(connectionId, channel);
 
             // 根据 path 拿到注册的 handler
             let handlerArr = commonChannelPathHandler.get(path);

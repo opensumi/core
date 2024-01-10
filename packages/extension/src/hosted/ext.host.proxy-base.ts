@@ -10,7 +10,6 @@ import {
   WSChannel,
   IExtHostProxyBridge,
 } from '@opensumi/ide-connection';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { IExtensionHostManager } from '../common';
@@ -30,9 +29,7 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
   private extensionHostManager: IExtensionHostManager;
   private readonly logger = getDebugLogger();
 
-  get LOG_TAG() {
-    return '[ExtHostProxyRPCService]';
-  }
+  LOG_TAG = '[ExtHostProxyRPCService]';
 
   constructor(private extServerProxy: IExtServerProxyRPCService) {
     super();
@@ -116,9 +113,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   public readonly onConnected = this.connectedEmitter.event;
 
-  get LOG_TAG() {
-    return '[ExtHostProxy]';
-  }
+  LOG_TAG = '[ExtHostProxy]';
 
   constructor(options?: IExtHostProxyOptions) {
     super();
@@ -141,10 +136,12 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       this.previouslyDisposer.dispose();
     }
     const disposer = new Disposable();
-    // 每次断连后重新生成 Socket 实例，否则会触发两次 close
+
+    // 每次断连后重新生成 Socket 实例
     this.socket = new net.Socket();
     disposer.addDispose(this.bindEvent());
     disposer.addDispose(this.connect());
+
     this.previouslyDisposer = disposer;
     this.addDispose(this.previouslyDisposer);
   }
@@ -211,8 +208,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setConnection() {
-    const socketConnection = new NetSocketConnection(this.socket);
-    const channel = WSChannel.forClient(socketConnection, {
+    const channel = WSChannel.forNetSocket(this.socket, {
       id: 'EXT_HOST_PROXY',
       tag: 'ExtHostProxyBase',
       logger: this.logger,
