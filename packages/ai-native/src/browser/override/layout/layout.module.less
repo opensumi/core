@@ -113,12 +113,27 @@
             color: #fff;
           }
         }
+
         span[class*='btnAction__'] {
           padding: 2px;
           &:hover {
             border-radius: 4px;
             background-color: var(--kt-icon-hoverBackground);
             color: #fff;
+          }
+        }
+
+        button[class*='btnAction__'] {
+          border-radius: 4px;
+          color: rgba(255, 255, 255, 0.65);
+          &:hover {
+            color: #fff;
+            background-color: var(--kt-icon-hoverBackground);
+          }
+          :global {
+            .kt-icon {
+              font-size: 12px;
+            }
           }
         }
       }
