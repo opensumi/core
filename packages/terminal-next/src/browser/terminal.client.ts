@@ -408,7 +408,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose([
       this._attachAddon,
       this._attachAddon.onData((data) => {
-        this._onOutput.fire({ id: this.id, data });
+        const buffer = this.xterm.raw.buffer.active;
+        const lastLineNumber = buffer.baseY + buffer.cursorY;
+        this._onOutput.fire({ id: this.id, data, lineNumber: lastLineNumber });
       }),
       this._attachAddon.onExit((code) => {
         this.logger.warn(`${this.id} ${this.name} exit with ${code}`);

@@ -8,6 +8,7 @@ import { IWidget } from './resize';
 export interface ITerminalDataEvent {
   id: string;
   data: string | ArrayBuffer;
+  lineNumber?: number; // 事件触发时，终端的行数
 }
 
 export interface ITerminalExitEvent {
