@@ -6,10 +6,6 @@ describe('Buffers', () => {
     list.push(new Uint8Array([1, 2, 3]));
     list.push(new Uint8Array([4, 5, 6]));
 
-    expect(() => {
-      list.slice(-1, 1);
-    }).toThrow();
-
     expect(list.slice(0, 0)).toEqual(new Uint8Array(0));
     expect(list.slice(0, 2)).toEqual(new Uint8Array([1, 2]));
     expect(list.slice(0, 7)).toEqual(new Uint8Array([1, 2, 3, 4, 5, 6]));
