@@ -130,7 +130,6 @@ export class CommonChannelHandler extends WebSocketHandler {
             const { path } = msgObj;
             this.logger.log(`Open a new connection channel ${connectionId} with path ${path}`);
             const wsConnection = new WSWebSocketConnection(connection);
-            this.logger.log(`New connection with id ${connectionId}`);
             this.connectionMap.set(connectionId, connection);
             this.heartbeat(connectionId, connection);
 

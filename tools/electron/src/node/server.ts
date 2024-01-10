@@ -49,7 +49,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     deferred.resolve(server);
   });
 
-  openInspector();
+  process.env.DEV_OPEN_INSPECTOR && openInspector();
 
   await deferred.promise;
 }

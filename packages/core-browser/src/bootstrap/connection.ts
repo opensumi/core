@@ -30,7 +30,7 @@ export async function createClientConnection4Web(
   protocols?: string[],
   clientId?: string,
 ) {
-  return createClientConnection2(
+  return createConnectionService(
     injector,
     modules,
     onReconnect,
@@ -53,7 +53,7 @@ export async function createClientConnection4Electron(
   return bindConnectionService(injector, modules, channel);
 }
 
-export async function createClientConnection2(
+export async function createConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
   onReconnect: () => void,
@@ -64,8 +64,8 @@ export async function createClientConnection2(
   const eventBus = injector.get(IEventBus);
   const stateService = injector.get(ClientAppStateService);
 
-  const wsChannelHandler = new WSChannelHandler(connection, initialLogger, clientId);
-  wsChannelHandler.setReporter(reporterService);
+  const channelHandler = new WSChannelHandler(connection, initialLogger, clientId);
+  channelHandler.setReporter(reporterService);
 
   const onOpen = () => {
     stateService.reachedState('core_module_initialized').then(() => {
@@ -73,35 +73,35 @@ export async function createClientConnection2(
     });
   };
 
-  if (wsChannelHandler.connection.isOpen()) {
+  if (channelHandler.connection.isOpen()) {
     onOpen();
   }
 
-  wsChannelHandler.connection.onOpen(() => {
+  channelHandler.connection.onOpen(() => {
     onOpen();
   });
 
-  wsChannelHandler.connection.onceClose(() => {
+  channelHandler.connection.onceClose(() => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionCloseEvent());
     });
   });
 
-  wsChannelHandler.connection.onError((e) => {
+  channelHandler.connection.onError((e) => {
     stateService.reachedState('core_module_initialized').then(() => {
       eventBus.fire(new BrowserConnectionErrorEvent(e));
     });
   });
 
-  await wsChannelHandler.initHandler();
+  await channelHandler.initHandler();
 
   injector.addProviders({
     token: WSChannelHandler,
-    useValue: wsChannelHandler,
+    useValue: channelHandler,
   });
 
   // 重连不会执行后面的逻辑
-  const channel = await wsChannelHandler.openChannel('RPCService');
+  const channel = await channelHandler.openChannel('RPCService');
   channel.onReOpen(() => onReconnect());
 
   bindConnectionService(injector, modules, channel);

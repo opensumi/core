@@ -78,9 +78,7 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
   }
 
   async $onMessage(callId: number, pid: number): Promise<void> {
-    this.extensionHostManager.onMessage(pid, (msg) => {
-      this.extServerProxy.$callback(callId, msg);
-    });
+    this.extensionHostManager.onMessage(pid, (msg) => this.extServerProxy.$callback(callId, msg));
   }
 
   async $disposeProcess(pid: number): Promise<void> {

@@ -518,24 +518,24 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       });
     } else {
       commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-        handler: (connection: WSChannel, connectionClientId: string) => {
+        handler: (channel: WSChannel, clientId: string) => {
           handler({
-            channel: connection,
-            clientId: connectionClientId,
+            channel,
+            clientId,
           });
 
-          connection.onClose(() => {
-            connection.dispose();
-            this.logger.log(`The connection client ${connectionClientId} closed`);
+          channel.onClose(() => {
+            channel.dispose();
+            this.logger.log(`The connection client ${clientId} closed`);
 
-            if (this.clientExtProcessExtConnection.has(connectionClientId)) {
-              const extConnection = this.clientExtProcessExtConnection.get(connectionClientId)!;
+            if (this.clientExtProcessExtConnection.has(clientId)) {
+              const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
               if (extConnection.channel) {
                 extConnection.channel.dispose();
               }
             }
             // 当连接关闭后启动定时器清除插件进程
-            this.closeExtProcessWhenConnectionClose(connectionClientId);
+            this.closeExtProcessWhenConnectionClose(clientId);
           });
         },
         dispose: () => {},

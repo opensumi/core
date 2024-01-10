@@ -11,11 +11,9 @@ import { IConnectionShape } from './connection/types';
 import { createWebSocketConnection } from './message';
 import { ILogger } from './types';
 
-export type TConnectionSend = (content: Uint8Array) => void;
-
 export interface IWebSocket {
   send(content: string): void;
-  close(...args): void;
+  close(...args: any[]): void;
   onMessage(cb: (data: any) => void): void;
   onError(cb: (reason: any) => void): void;
   onClose(cb: (code: number, reason: string) => void): void;
