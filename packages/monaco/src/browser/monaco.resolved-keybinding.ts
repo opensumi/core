@@ -25,16 +25,16 @@ import { KEY_CODE_MAP } from './monaco.keycode-map';
 
 export class MonacoResolvedKeybinding extends ResolvedKeybinding {
   hasMultipleChords(): boolean {
-    throw new Error('Method not implemented.');
+    return true;
   }
   getChords(): ResolvedChord[] {
-    throw new Error('Method not implemented.');
+    return [];
   }
   getDispatchChords(): (string | null)[] {
-    throw new Error('Method not implemented.');
+    return [];
   }
   getSingleModifierDispatchChords(): (SingleModifierChord | null)[] {
-    throw new Error('Method not implemented.');
+    return [];
   }
   protected readonly parts: { modifiers: Modifiers & { key: string | null } }[];
 

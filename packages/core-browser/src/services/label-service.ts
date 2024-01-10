@@ -12,9 +12,9 @@ import {
   WithEventBus,
   arrays,
 } from '@opensumi/ide-core-common';
+import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { getIcon } from '../style/icon/icon';
@@ -30,7 +30,7 @@ export namespace DataUri {
   export const META_DATA_SIZE = 'size';
   export const META_DATA_MIME = 'mime';
 
-  export function parseMetaData(dataUri: monaco.Uri): Map<string, string> {
+  export function parseMetaData(dataUri: Uri): Map<string, string> {
     const metadata = new Map<string, string>();
     const uriPath = dataUri.path;
     // Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
@@ -271,7 +271,7 @@ const getIconClass = (
   let name: string | undefined;
   // 获取资源的路径和名称，data-uri单独处理
   if (resource.scheme === 'data') {
-    const metadata = DataUri.parseMetaData(monaco.Uri.file(resource.toString()));
+    const metadata = DataUri.parseMetaData(Uri.file(resource.toString()));
     name = metadata.get(DataUri.META_DATA_LABEL);
   } else {
     name = cssEscape(basenameOrAuthority(resource).toLowerCase());
@@ -302,20 +302,16 @@ const getIconClass = (
     if (!modelService) {
       modelService = StandaloneServices.get(IModelService);
     }
-    const detectedModeId = detectModeId(
-      modelService,
-      languageService,
-      monaco.Uri.file(resource.withoutQuery().toString()),
-    );
+    const detectedModeId = detectModeId(modelService, languageService, Uri.file(resource.withoutQuery().toString()));
     if (detectedModeId) {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     } else {
       _onDidChange = new Emitter<void>();
       Event.any(
         languageService.onDidRequestBasicLanguageFeatures,
-        languageService.onDidRequestBasicLanguageFeatures,
+        languageService.onDidRequestRichLanguageFeatures,
       )(() => {
-        if (detectModeId(modelService, languageService, monaco.Uri.file(resource.withoutQuery().toString()))) {
+        if (detectModeId(modelService, languageService, Uri.file(resource.withoutQuery().toString()))) {
           _onDidChange?.fire();
           _onDidChange?.dispose();
         }
@@ -342,7 +338,7 @@ export function basenameOrAuthority(resource: URI) {
 export function detectModeId(
   modelService: IModelService,
   languageService: ILanguageService,
-  resource: monaco.Uri,
+  resource: Uri,
 ): string | null {
   if (!resource) {
     return null; // we need a resource at least
@@ -380,7 +376,7 @@ export function detectModeId(
 export function getLanguageIdFromMonaco(uri: URI) {
   languageService = StandaloneServices.get(ILanguageService);
   modelService = StandaloneServices.get(IModelService);
-  return detectModeId(modelService, languageService, monaco.Uri.parse(uri.toString()));
+  return detectModeId(modelService, languageService, Uri.parse(uri.toString()));
 }
 
 /**
