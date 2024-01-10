@@ -290,7 +290,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_watch_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={cls(styles.debug_watch_node_segment, styles.expansion_toggle, getIcon('right-arrow'), {
           [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
         })}
       />

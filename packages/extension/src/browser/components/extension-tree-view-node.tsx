@@ -155,7 +155,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     return (
       <div
         onClick={clickHandler}
-        className={cls(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={cls(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('right-arrow'), {
           [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
         })}
       />
