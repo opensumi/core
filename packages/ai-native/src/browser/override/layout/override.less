@@ -50,7 +50,7 @@ div[class*='box-panel___'] {
   box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
   border-radius: 8px !important;
   min-width: initial;
-  // padding: 8px 0 !important;
+  padding: 4px 0 !important;
   .kt-inner-menu-submenu-title {
     height: 28px !important;
   }
@@ -107,4 +107,33 @@ div[class*='box-panel___'] {
 /* 修改滚动条滑块的圆角 */
 ::-webkit-scrollbar-thumb {
   border-radius: 4px;
+}
+
+/* 修改滚动条大小调整 */
+
+#workbench-editor .monaco-editor {
+  .decorationsOverviewRuler {
+    width: 4px !important;
+  }
+  .minimap {
+    left: auto !important;
+    right: 4px !important;
+  }
+  .monaco-scrollable-element {
+    .vertical {
+      width: 4px !important;
+      .slider {
+        width: 4px !important;
+        left: unset !important;
+        right: 0;
+      }
+    }
+
+    .horizontal {
+      height: 4px !important;
+      .slider {
+        height: 4px !important;
+      }
+    }
+  }
 }

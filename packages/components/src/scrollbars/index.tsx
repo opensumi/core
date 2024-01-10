@@ -197,7 +197,7 @@ export const Scrollbars = ({
 Scrollbars.displayName = 'CustomScrollbars';
 
 export const ScrollbarsVirtualList = React.forwardRef((props, ref) => (
-  <Scrollbars {...props} thumbSize={10} forwardedRef={ref} />
+  <Scrollbars {...props} thumbSize={4} forwardedRef={ref} />
 ));
 
 ScrollbarsVirtualList.displayName = 'ScrollbarsVirtualList';

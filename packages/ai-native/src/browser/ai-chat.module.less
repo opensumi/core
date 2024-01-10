@@ -5,7 +5,7 @@
   background-color: #151b21;
   border-radius: 12px;
   overflow: hidden;
-  font-size: 12px;
+  font-size: 14px;
   user-select: text;
 
   .ai_chat_hexagon_box {
@@ -146,6 +146,14 @@
         overflow: auto;
         padding-top: 10px;
 
+        &::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          border-radius: 2px;
+        }
+
         .chat_container_des {
           img {
             width: 20px;
@@ -156,6 +164,9 @@
         .chat_head {
           font-size: 14px;
           line-height: 22px;
+          a {
+            color: #3c8dff;
+          }
         }
 
         .message_list {
@@ -219,11 +230,15 @@
             background: rgba(255, 255, 255, 0.08);
             border-radius: 4px;
             height: 22px;
-            padding: 2px 10px 2px 6px;
+            font-size: 12px;
+            padding: 2px 6px;
             line-height: 18px;
             margin-right: 8px;
             color: rgba(255, 255, 255, 0.65);
             cursor: pointer;
+            &:hover {
+              color: #fff;
+            }
           }
         }
       }
