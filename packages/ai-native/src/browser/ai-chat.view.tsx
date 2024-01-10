@@ -309,10 +309,14 @@ export const AiChatView = observer(() => {
             <EnhanceIcon className={getIcon('setting')} onClick={handleUnresolved} />
           </Popover> */}
           <Popover insertClass={styles.popover_icon} id={'ai-chat-header-clear'} title='清空'>
-            <EnhanceIcon className={getIcon('clear')} onClick={handleClear} />
+            <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('clear')} onClick={handleClear} />
           </Popover>
           <Popover insertClass={styles.popover_icon} id={'ai-chat-header-close'} title='关闭'>
-            <EnhanceIcon className={getIcon('window-close')} onClick={handleClose} />
+            <EnhanceIcon
+              wrapperClassName={styles.action_btn}
+              className={getIcon('window-close')}
+              onClick={handleClose}
+            />
           </Popover>
         </div>
       </div>

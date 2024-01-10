@@ -89,7 +89,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
           />
         )}
         <div className={styles.close_container}>
-          <LineVertical height={'70%'} margin={'0px 4px 0 4px'} />
+          <LineVertical height={'60%'} margin={'0px 6px 0 6px'} />
           <EnhanceIcon icon={'window-close'} onClick={handleClose} wrapperClassName={styles.operate_item} />
         </div>
       </div>
@@ -121,19 +121,20 @@ const AiInlineResult = () => {
 
   return (
     <div className={styles.ai_inline_result_panel}>
-      <div className={styles.side} style={{ marginRight: 128 }}>
-        <EnhanceIcon icon={'check'} onClick={handleAdopt}>
+      <div className={styles.side}>
+        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'check'} onClick={handleAdopt}>
           <span>采纳</span>
         </EnhanceIcon>
-        <EnhanceIcon icon={'diuqi'} onClick={handleDiscard}>
+        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'diuqi'} onClick={handleDiscard}>
           <span>丢弃</span>
         </EnhanceIcon>
-        <EnhanceIcon icon={'zhongxin'} onClick={handleRefresh}>
+        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'zhongxin'} onClick={handleRefresh}>
           <span>重新生成</span>
         </EnhanceIcon>
       </div>
+      <LineVertical height={'60%'} margin={'0px 6px 0 6px'} />
       <div className={styles.side}>
-        <Thumbs onClick={handleThumbs} />
+        <Thumbs wrapperClassName={styles.operate_icon} onClick={handleThumbs} />
       </div>
     </div>
   );

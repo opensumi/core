@@ -106,7 +106,11 @@
         }
 
         span[class*='iconAction__'] {
-          padding: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
           font-size: 14px;
           color: rgba(255, 255, 255, 0.65);
           &:not(.disabled):hover {
@@ -115,7 +119,13 @@
         }
 
         span[class*='btnAction__'] {
-          padding: 2px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          padding: 0;
+          font-size: 14px;
           &:hover {
             border-radius: 4px;
             background-color: var(--kt-icon-hoverBackground);
@@ -134,6 +144,12 @@
             .kt-icon {
               font-size: 12px;
             }
+          }
+        }
+
+        :global {
+          .ackground-mode {
+            opacity: 0.65;
           }
         }
       }
@@ -177,6 +193,27 @@
   div[class*='kt_split_panel_header___'] {
     &:focus {
       outline: none;
+    }
+    div[class*='actions_wrap___'] {
+      margin: 0 8px;
+    }
+    div[class*='titleActions___'] {
+      > span {
+        display: flex;
+        width: 22px;
+        height: 22px;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0;
+        color: rgba(255, 255, 255, 0.65);
+        &::before {
+          font-size: 14px;
+        }
+        &:hover {
+          color: #fff;
+          background-color: var(--activityBar-activeBorder);
+        }
+      }
     }
   }
 
@@ -251,7 +288,7 @@
         color: rgba(255, 255, 255, 0.65);
 
         &.mask-mode {
-          background-color: var(--activityBar-inactiveForeground);
+          background-color: rgba(255, 255, 255, 0.65);
           -webkit-mask-size: 16px;
         }
       }
@@ -292,6 +329,9 @@
             background-color: var(--activityBar-activeBorder);
             .activity-icon {
               color: #fff;
+              &.mask-mode {
+                background-color: #fff;
+              }
             }
 
             &::before {
@@ -369,6 +409,10 @@
     height: 32px;
   }
 
+  div[class*='panel_toolbar_container___'] {
+    margin: 0 10px;
+  }
+
   div[class*='titleActions___'] {
     > span {
       margin-left: 4px;
@@ -377,8 +421,12 @@
       }
     }
     span[class*='iconAction__'] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 14px;
-      padding: 2px;
+      width: 22px;
+      height: 22px;
       color: rgba(255, 255, 255, 0.65);
       &:not(.disabled):hover {
         color: #fff;
@@ -457,8 +505,15 @@
     border-top: none;
   }
 
+  div[class*='item_container__'] {
+    border: 0 none;
+  }
+
   div[class*='item_selected___'] {
     background-color: rgba(21, 27, 33, 1);
+    &::after {
+      display: none;
+    }
   }
 
   div[class*='tab_contents___'] {
@@ -554,7 +609,7 @@
 
     .rce-mlist {
       color: #ffffff;
-      font-weight: 300;
+      font-weight: normal;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -562,6 +617,7 @@
     }
 
     .rce-ai-msg {
+      margin: 8px 32px 8px 16px;
       > .rce-mbox {
         // margin-bottom: 28px;
         width: 100%;
