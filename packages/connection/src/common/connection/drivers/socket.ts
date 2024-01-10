@@ -1,19 +1,20 @@
 import type net from 'net';
-import { Stream } from 'stream';
 
-import { IDisposable, Sequencer } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
-import { SumiStreamPacketDecoder, createSumiStreamPacket } from './stream-packet';
+import { StreamPacketDecoder, createSumiStreamPacket } from './stream-decoder';
 
 export class NetSocketConnection extends BaseConnection<Uint8Array> {
-  stream: Stream;
   encoding = 'utf8';
-  sequencer = new Sequencer();
+
+  protected decoder = new StreamPacketDecoder();
 
   constructor(private socket: net.Socket) {
     super();
-    this.stream = socket.pipe(new SumiStreamPacketDecoder());
+    this.socket.on('data', (chunk) => {
+      this.decoder.push(chunk);
+    });
   }
 
   isOpen(): boolean {
@@ -22,30 +23,13 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
   }
 
   send(data: Uint8Array): void {
-    this.sequencer.queue(async () => {
-      await new Promise<void>((resolve, reject) => {
-        this.socket.write(createSumiStreamPacket(data), this.encoding, (err: Error) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      }).catch((err) => {
-        this.onError(err);
-      });
-    });
+    this.socket.write(createSumiStreamPacket(data));
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
-    const handler = (data: Uint8Array) => {
-      cb(data);
-    };
-    this.stream.on('data', handler);
+    const dispose = this.decoder.onData(cb);
     return {
-      dispose: () => {
-        this.stream.off('data', handler);
-      },
+      dispose,
     };
   }
 
