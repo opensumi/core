@@ -1,7 +1,6 @@
 import http from 'http';
 import net from 'net';
 
-
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
@@ -66,25 +65,25 @@ export function createServerConnection2(
 
 export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
   const logger = injector.get(INodeLogger);
-  const serviceCenter = new RPCServiceCenter(undefined, logger);
-  const serviceChildInjector = bindModuleBackService(
-    injector,
-    modulesInstances,
-    serviceCenter,
-    process.env.CODE_WINDOW_CLIENT_ID as string,
-  );
 
   server.on('connection', (connection) => {
     const serverConnection = createSocketConnection(connection);
+    const serviceCenter = new RPCServiceCenter(undefined, logger);
+
     serviceCenter.setConnection(serverConnection);
+
+    const serviceChildInjector = bindModuleBackService(
+      injector,
+      modulesInstances,
+      serviceCenter,
+      process.env.CODE_WINDOW_CLIENT_ID as string,
+    );
 
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
       serviceChildInjector.disposeAll();
     });
   });
-
-  return serviceCenter;
 }
 
 export function bindModuleBackService(
