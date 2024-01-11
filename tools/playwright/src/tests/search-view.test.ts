@@ -20,7 +20,7 @@ let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Search Panel', () => {
   test.beforeAll(async () => {
-    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/search')]);
+    workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/search')]);
     app = await OpenSumiApp.load(page, workspace);
     search = await app.open(OpenSumiSearchView);
   });
