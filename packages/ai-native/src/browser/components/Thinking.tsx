@@ -105,7 +105,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
             ) : null}
           </div>
           <div className={styles.thumbs}>
-            <Thumbs relationId={sessionId} aiReporterService={aiReporter} />
+            <Thumbs relationId={sessionId} wrapperClassName={styles.icon_btn} aiReporterService={aiReporter} />
           </div>
         </div>
       </div>

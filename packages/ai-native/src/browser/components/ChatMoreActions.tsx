@@ -44,7 +44,7 @@ export const ChatMoreActions = (props: IChatMoreActionsProps) => {
           ) : null}
         </div>
         <div className={styles.thumbs}>
-          <Thumbs relationId={sessionId} aiReporterService={aiReporter} />
+          <Thumbs relationId={sessionId} wrapperClassName={styles.icon_btn} aiReporterService={aiReporter} />
         </div>
       </div>
     </div>

@@ -50,12 +50,24 @@
       transform: rotate(90deg);
       margin-right: 6px;
       cursor: pointer;
+      &::before {
+        font-size: 16px;
+      }
     }
+  }
+
+  .option_btn {
+    font-size: 16px;
   }
 
   .thumbs {
     display: flex;
     flex: 0 0 auto;
+    .icon_btn {
+      > span::before {
+        font-size: 16px;
+      }
+    }
   }
 
   :global {
