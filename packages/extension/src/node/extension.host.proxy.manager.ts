@@ -1,15 +1,14 @@
 import net from 'net';
 
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { getRPCService, RPCProtocol, IRPCProtocol, WSChannel, IExtHostProxyBridge } from '@opensumi/ide-connection';
+import { RPCProtocol, IRPCProtocol, WSChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
-import { RPCServiceCenter, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
+import { INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 
 import {
   IExtensionHostManager,
   Output,
-  EXT_HOST_PROXY_PROTOCOL,
   EXT_SERVER_IDENTIFIER,
   IExtHostProxyRPCService,
   EXT_HOST_PROXY_IDENTIFIER,
@@ -28,8 +27,6 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private extHostProxyProtocol: IRPCProtocol;
 
-  private readonly extServiceProxyCenter = new RPCServiceCenter();
-
   private extHostProxy: IExtHostProxyRPCService;
 
   private callbackMap = new Map<number, (...args: any[]) => void>();
@@ -39,6 +36,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   private disposer = new Disposable();
 
   LOG_TAG = '[ExtensionHostProxyManager]';
+  channel: WSChannel;
 
   constructor(
     @Optional()
@@ -79,14 +77,10 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   private setProxyConnection(connection: net.Socket) {
-    const channel = WSChannel.forClient(new NetSocketConnection(connection), {
+    this.channel = WSChannel.forClient(new NetSocketConnection(connection), {
       id: 'EXT_HOST_PROXY',
       tag: 'ExtensionHostProxyManager',
       logger: this.logger,
-    });
-    const remove = this.extServiceProxyCenter.setConnection(channel.createMessageConnection());
-    connection.once('close', () => {
-      remove.dispose();
     });
 
     this.disposer.addDispose(
@@ -98,14 +92,14 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   }
 
   private setExtHostProxyRPCProtocol() {
-    const proxyService = getRPCService<IExtHostProxyBridge>(EXT_HOST_PROXY_PROTOCOL, this.extServiceProxyCenter);
-
     const onMessageEmitter = new Emitter<string>();
-    proxyService.on('onMessage', (msg) => {
+    this.channel.onMessage((msg) => {
       onMessageEmitter.fire(msg);
     });
     const onMessage = onMessageEmitter.event;
-    const send = proxyService.onMessage;
+    const send = (msg: string) => {
+      this.channel.send(msg);
+    };
 
     this.extHostProxyProtocol = new RPCProtocol({
       onMessage,
