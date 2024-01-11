@@ -163,11 +163,11 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
         tag: 'browser-electron-client',
       });
       // electron 环境下要使用 Node 端的 connection
-      mainThreadCenter.setConnection(channel.createMessageConnection());
+      mainThreadCenter.setChannel(channel);
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-      mainThreadCenter.setConnection(channel.createMessageConnection());
+      mainThreadCenter.setChannel(channel);
     }
 
     const { getRPCService } = initRPCService<{

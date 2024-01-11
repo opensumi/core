@@ -211,7 +211,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       tag: 'ExtHostProxyBase',
       logger: this.logger,
     });
-    const remove = this.clientCenter.setConnection(channel.createMessageConnection());
+    const remove = this.clientCenter.setChannel(channel);
     this.socket.once('close', () => {
       remove.dispose();
     });

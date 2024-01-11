@@ -92,7 +92,7 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
     tag: 'ext-host-client',
   });
 
-  extCenter.setConnection(channel.createMessageConnection());
+  extCenter.setChannel(channel);
 
   const service = getRPCService('ExtProtocol');
 

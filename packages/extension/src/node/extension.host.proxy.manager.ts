@@ -84,7 +84,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
       tag: 'ExtensionHostProxyManager',
       logger: this.logger,
     });
-    const remove = this.extServiceProxyCenter.setConnection(channel.createMessageConnection());
+    const remove = this.extServiceProxyCenter.setChannel(channel);
     connection.once('close', () => {
       remove.dispose();
     });
