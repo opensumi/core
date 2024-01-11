@@ -91,7 +91,7 @@ export class WSChannelHandler {
             this.logger.log(this.LOG_TAG, `channel reconnect ${this.clientId}:${channel.channelPath}`);
           });
 
-          channel.open(channel.channelPath);
+          channel.open(channel.channelPath, this.clientId);
           // 针对前端需要重新设置下后台状态的情况
           channel.fireReOpen();
         });
@@ -140,7 +140,7 @@ export class WSChannelHandler {
         });
         this.logger.log(this.LOG_TAG, 'channel close: ', code, reason);
       });
-      channel.open(channelPath);
+      channel.open(channelPath, this.clientId);
     });
 
     return channel;

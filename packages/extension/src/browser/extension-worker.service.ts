@@ -56,7 +56,6 @@ export class WorkerExtProcessService
     if (this.protocol) {
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
-      this.logger.verbose(this.protocol);
       this.apiFactoryDisposable.push(
         toDisposable(await initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
         toDisposable(createSumiApiFactory(this.protocol, this.injector)),

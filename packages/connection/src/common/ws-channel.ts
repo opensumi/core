@@ -27,6 +27,7 @@ export interface OpenMessage {
   kind: 'open';
   id: string;
   path: string;
+  clientId: string;
 }
 export interface ReadyMessage {
   kind: 'ready';
@@ -143,13 +144,14 @@ export class WSChannel implements IWebSocket {
   }
 
   // client
-  open(path: string) {
+  open(path: string, clientId: string) {
     this.channelPath = path;
     this.connection.send(
       stringify({
         kind: 'open',
         id: this.id,
         path,
+        clientId,
       }),
     );
   }

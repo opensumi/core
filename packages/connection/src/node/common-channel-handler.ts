@@ -132,15 +132,15 @@ export class CommonChannelHandler extends WebSocketHandler {
               }),
             );
           } else if (msgObj.kind === 'open') {
-            connectionId = msgObj.id;
-            const { path } = msgObj;
-            this.logger.log(`Open a new connection channel ${connectionId} with path ${path}`);
+            const { id, path, clientId } = msgObj;
+            connectionId = clientId;
+            this.logger.log(`Open a new connection channel ${id} with path ${path}`);
             const wsConnection = new WSWebSocketConnection(connection);
-            this.connectionMap.set(connectionId, connection);
-            this.heartbeat(connectionId, connection);
+            this.connectionMap.set(id, connection);
+            this.heartbeat(id, connection);
 
-            const channel = new WSChannel(wsConnection, { id: connectionId, tag: 'node-ws-server-handler' });
-            this.channelMap.set(connectionId, channel);
+            const channel = new WSChannel(wsConnection, { id, tag: 'node-ws-server-handler' });
+            this.channelMap.set(id, channel);
 
             // 根据 path 拿到注册的 handler
             let handlerArr = commonChannelPathHandler.get(path);
