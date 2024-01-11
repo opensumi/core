@@ -56,7 +56,7 @@ describe('connection', () => {
         resolve();
       });
     });
-
+    const clientId = 'TEST_CLIENT';
     const wsConnection = new WSWebSocketConnection(connection);
     const channel = new WSChannel(wsConnection, {
       id: 'TEST_CHANNEL_ID',
@@ -75,7 +75,7 @@ describe('connection', () => {
       channel.onOpen(() => {
         resolve();
       });
-      channel.open('TEST_CHANNEL');
+      channel.open('TEST_CHANNEL', clientId);
     });
     expect(mockHandler.mock.calls.length).toBe(1);
 
