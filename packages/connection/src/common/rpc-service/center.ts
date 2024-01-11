@@ -2,6 +2,7 @@ import { Deferred } from '@opensumi/ide-core-common';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ProxyLegacy } from '../proxy';
+import { ProxySumi } from '../proxy/sumi';
 import { TSumiProtocol } from '../rpc';
 import { ProtocolRepository } from '../rpc/protocol-repository';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
@@ -14,20 +15,48 @@ const defaultReservedWordSet = new Set(['then']);
 
 class Invoker {
   legacyProxy: ProxyLegacy;
+  sumiProxy: ProxySumi;
 
   private legacyInvokeProxy: any;
+  private sumiInvokeProxy: any;
+
+  private protocolRepository: ProtocolRepository;
+
+  setProtocolRepository(protocolRepository: ProtocolRepository) {
+    this.protocolRepository = protocolRepository;
+  }
 
   setLegacyProxy(proxy: ProxyLegacy) {
     this.legacyProxy = proxy;
     this.legacyInvokeProxy = proxy.getInvokeProxy();
   }
 
+  setSumiProxy(proxy: ProxySumi) {
+    this.sumiProxy = proxy;
+    this.sumiInvokeProxy = proxy.getInvokeProxy();
+  }
+
   invoke(name: string, ...args: any[]) {
     if (defaultReservedWordSet.has(name) || typeof name === 'symbol') {
       return Promise.resolve();
     }
+    if (this.protocolRepository.has(name)) {
+      return this.sumiInvokeProxy[name](...args);
+    }
 
     return this.legacyInvokeProxy[name](...args);
+  }
+
+  register(name: string, method: RPCServiceMethod) {
+    const methods = {
+      [name]: method,
+    };
+    if (this.protocolRepository.has(name)) {
+      this.sumiProxy.listenService(methods);
+      return;
+    }
+
+    this.legacyProxy.listenService(methods);
   }
 }
 
@@ -40,6 +69,7 @@ export class RPCServiceCenter {
   private connection: Array<WSChannel> = [];
 
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
+  private serviceMethodWithProtocolMap = { client: undefined } as unknown as IRPCServiceMap;
 
   private connectionDeferred = new Deferred<void>();
   private logger: ILogger;
@@ -69,12 +99,20 @@ export class RPCServiceCenter {
     const index = this.connection.length - 1;
 
     const rpcProxy = new ProxyLegacy(this.serviceMethodMap, this.logger);
-    const connection = channel.createMessageConnection();
-    rpcProxy.listen(connection);
+    const messageConnection = channel.createMessageConnection();
+    rpcProxy.listen(messageConnection);
 
     const invoker = new Invoker();
 
     invoker.setLegacyProxy(rpcProxy);
+
+    const connection = channel.createConnection();
+    connection.setProtocolRepository(this.protocolRepository);
+
+    const sumiProxy = new ProxySumi(this.serviceMethodWithProtocolMap, this.logger);
+    sumiProxy.listen(connection);
+
+    invoker.setSumiProxy(sumiProxy);
 
     this.invokers.push(invoker);
 
@@ -82,6 +120,7 @@ export class RPCServiceCenter {
       dispose: () => {
         this.connection.splice(index, 1);
         this.invokers.splice(index, 1);
+        messageConnection.dispose();
         connection.dispose();
       },
     };
@@ -94,17 +133,21 @@ export class RPCServiceCenter {
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
     const name = getMethodName(serviceName, _name);
     if (!this.connection.length) {
-      this.serviceMethodMap[name] = method;
+      if (this.protocolRepository.has(name)) {
+        this.serviceMethodWithProtocolMap[name] = method;
+      } else {
+        this.serviceMethodMap[name] = method;
+      }
     } else {
-      this.invokers.forEach((proxy) => {
-        proxy.legacyProxy.listenService({ [name]: method });
+      this.invokers.forEach((invoker) => {
+        invoker.register(name, method);
       });
     }
   }
 
   async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
     const name = getMethodName(serviceName, _name);
-    const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
+    const broadcastResult = await Promise.all(this.invokers.map((i) => i.invoke(name, ...args)));
 
     const doubtfulResult = [] as any[];
     const result = [] as any[];

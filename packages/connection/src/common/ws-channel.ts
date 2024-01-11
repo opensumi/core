@@ -6,6 +6,8 @@ import type WebSocket from 'ws';
 import { EventEmitter } from '@opensumi/events';
 import { DisposableCollection } from '@opensumi/ide-core-common';
 
+import { Connection } from '../common/rpc/connection';
+
 import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { createWebSocketConnection } from './message';
@@ -46,13 +48,27 @@ export interface DataMessage {
   id: string;
   content: string;
 }
+
+export interface BinaryMessage {
+  kind: 'binary';
+  id: string;
+  binary: Uint8Array;
+}
+
 export interface CloseMessage {
   kind: 'close';
   id: string;
   code: number;
   reason: string;
 }
-export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage =
+  | PingMessage
+  | PongMessage
+  | OpenMessage
+  | ServerReadyMessage
+  | DataMessage
+  | BinaryMessage
+  | CloseMessage;
 
 export interface IWSChannelCreateOptions {
   /**
@@ -72,6 +88,7 @@ export class WSChannel implements IWebSocket {
     open: [id: string];
     reopen: [];
     close: [code?: number, reason?: string];
+    binary: [buffer: Uint8Array];
   }>();
 
   public id: string;
@@ -151,6 +168,8 @@ export class WSChannel implements IWebSocket {
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
       this.emitter.emit('message', msg.content);
+    } else if (msg.kind === 'binary') {
+      this.emitter.emit('binary', msg.binary);
     }
   }
 
@@ -175,6 +194,21 @@ export class WSChannel implements IWebSocket {
       }),
     );
   }
+
+  sendBinary(binary: Uint8Array) {
+    this.connection.send(
+      stringify({
+        id: this.id,
+        kind: 'binary',
+        binary,
+      }),
+    );
+  }
+
+  onBinary(cb: (binary: Uint8Array) => void) {
+    return this.emitter.on('binary', cb);
+  }
+
   hasMessageListener() {
     return this.emitter.hasListener('message');
   }
@@ -190,6 +224,24 @@ export class WSChannel implements IWebSocket {
   }
   createMessageConnection() {
     return createWebSocketConnection(this);
+  }
+  createConnection() {
+    return new Connection({
+      onMessage: (cb) => {
+        const remove = this.onBinary(cb);
+        return {
+          dispose: () => {
+            remove();
+          },
+        };
+      },
+      send: (data) => {
+        this.sendBinary(data);
+      },
+      onceClose(cb) {
+        return this.onceClose(cb);
+      },
+    });
   }
   dispose() {
     this.emitter.dispose();
@@ -243,6 +295,7 @@ export const wsChannelProtocol = Type.object('ws-channel-protocol', {
   content: Type.string(),
   code: Type.uint32(),
   reason: Type.string(),
+  binary: Type.binary(),
 });
 
 const wsChannelProtocolSerializer = fury.registerSerializer(wsChannelProtocol);
