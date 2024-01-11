@@ -139,7 +139,7 @@ describe('connection', () => {
             tag: 'test-wss',
           });
 
-          serviceCenter.setConnection(channel.createMessageConnection());
+          serviceCenter.setChannel(channel);
 
           resolve();
         });
@@ -168,7 +168,7 @@ describe('connection', () => {
       tag: 'test',
     });
 
-    const toDispose = clientCenter.setConnection(channel.createMessageConnection());
+    const toDispose = clientCenter.setChannel(channel);
     clientConnection!.once('close', () => {
       toDispose.dispose();
     });

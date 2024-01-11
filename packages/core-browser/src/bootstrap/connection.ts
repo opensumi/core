@@ -108,11 +108,10 @@ export async function createConnectionService(
 }
 
 export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
-  const connection = channel.createMessageConnection();
   const clientCenter = new RPCServiceCenter();
-  const remove = clientCenter.setConnection(connection);
+  const remove = clientCenter.setChannel(channel);
 
-  connection.onClose(() => {
+  channel.onClose(() => {
     remove.dispose();
   });
 

@@ -309,7 +309,7 @@ export class PtyServiceProxyRPCProvider {
       logger: this.logger,
     });
 
-    const remove = this.ptyServiceCenter.setConnection(channel.createMessageConnection());
+    const remove = this.ptyServiceCenter.setChannel(channel);
     socket.on('close', () => {
       remove.dispose();
     });

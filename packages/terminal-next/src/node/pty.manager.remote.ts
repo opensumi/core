@@ -56,7 +56,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       tag: 'node-client',
       logger: this.logger,
     });
-    const remove = clientCenter.setConnection(channel.createMessageConnection());
+    const remove = clientCenter.setChannel(channel);
     return Disposable.create(() => {
       callbackDisposed = true;
       remove.dispose();

@@ -6,6 +6,7 @@ import { ProxyLegacy } from '../proxy';
 import { Invoker } from '../proxy/base';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
+import { WSChannel } from '../ws-channel';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
 
@@ -37,7 +38,11 @@ export class RPCServiceCenter {
     return this.connectionDeferred.promise;
   }
 
-  setConnection(connection: MessageConnection): IDisposable {
+  setChannel(channel: WSChannel) {
+    return this.setConnection(channel.createMessageConnection());
+  }
+
+  protected setConnection(connection: MessageConnection): IDisposable {
     if (!this.connection.length) {
       this.connectionDeferred.resolve();
     }
