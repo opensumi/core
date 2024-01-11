@@ -99,7 +99,12 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
         <div className={styles.bottom_container}>
           <div className={styles.reset}>
             {isRenderRegenerate ? (
-              <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={handleRegenerate}>
+              <EnhanceIcon
+                icon={'refresh'}
+                wrapperClassName={styles.text_btn}
+                className={styles.transform}
+                onClick={handleRegenerate}
+              >
                 <span>重新生成</span>
               </EnhanceIcon>
             ) : null}

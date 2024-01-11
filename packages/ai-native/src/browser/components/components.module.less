@@ -26,6 +26,12 @@
     :first-child {
       margin-right: 4px;
     }
+
+    &:hover {
+      span {
+        color: #3c8dff !important;
+      }
+    }
   }
 }
 
@@ -55,7 +61,14 @@
       }
     }
   }
-
+  .text_btn {
+    &:hover {
+      background: transparent;
+      span {
+        color: #3c8dff !important;
+      }
+    }
+  }
   .option_btn {
     font-size: 16px;
   }
@@ -290,6 +303,12 @@
           font-size: 12px;
           padding: 30px 8px 8px 8px;
           line-height: 18px;
+          &::-webkit-scrollbar {
+            width: 4px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.06) !important;
+          }
         }
 
         .action_toolbar {
