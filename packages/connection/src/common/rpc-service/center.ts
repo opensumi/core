@@ -1,21 +1,40 @@
-import { Deferred, IDisposable } from '@opensumi/ide-core-common';
-import { MessageConnection } from '@opensumi/vscode-jsonrpc';
+import { Deferred } from '@opensumi/ide-core-common';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ProxyLegacy } from '../proxy';
-import { Invoker } from '../proxy/base';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 import { WSChannel } from '../ws-channel';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
 
+const defaultReservedWordSet = new Set(['then']);
+
+class Invoker {
+  legacyProxy: ProxyLegacy;
+
+  private legacyInvokeProxy: any;
+
+  setLegacyProxy(proxy: ProxyLegacy) {
+    this.legacyProxy = proxy;
+    this.legacyInvokeProxy = proxy.getInvokeProxy();
+  }
+
+  invoke(name: string, ...args: any[]) {
+    if (defaultReservedWordSet.has(name) || typeof name === 'symbol') {
+      return Promise.resolve();
+    }
+
+    return this.legacyInvokeProxy[name](...args);
+  }
+}
+
 export class RPCServiceCenter {
   public uid: string;
 
-  private invokers: Invoker<ProxyLegacy>[] = [];
+  private invokers: Invoker[] = [];
+  private connection: Array<WSChannel> = [];
 
-  private connection: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
 
   private connectionDeferred = new Deferred<void>();
@@ -39,55 +58,53 @@ export class RPCServiceCenter {
   }
 
   setChannel(channel: WSChannel) {
-    return this.setConnection(channel.createMessageConnection());
-  }
-
-  protected setConnection(connection: MessageConnection): IDisposable {
     if (!this.connection.length) {
       this.connectionDeferred.resolve();
     }
-    this.connection.push(connection);
+    this.connection.push(channel);
+    const index = this.connection.length - 1;
 
     const rpcProxy = new ProxyLegacy(this.serviceMethodMap, this.logger);
+    const connection = channel.createMessageConnection();
     rpcProxy.listen(connection);
 
-    this.invokers.push(rpcProxy.createInvoker());
+    const invoker = new Invoker();
+
+    invoker.setLegacyProxy(rpcProxy);
+
+    this.invokers.push(invoker);
 
     return {
       dispose: () => {
+        this.connection.splice(index, 1);
+        this.invokers.splice(index, 1);
         connection.dispose();
-        this.removeConnection(connection);
       },
     };
   }
 
-  private removeConnection(connection: MessageConnection) {
-    const removeIndex = this.connection.indexOf(connection);
-    if (removeIndex !== -1) {
-      this.connection.splice(removeIndex, 1);
-      this.invokers.splice(removeIndex, 1);
-    }
-
-    return removeIndex !== -1;
-  }
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
     const name = getMethodName(serviceName, _name);
     if (!this.connection.length) {
       this.serviceMethodMap[name] = method;
     } else {
       this.invokers.forEach((proxy) => {
-        proxy.connection.listenService({ [name]: method });
+        proxy.legacyProxy.listenService({ [name]: method });
       });
     }
   }
+
   async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
     const name = getMethodName(serviceName, _name);
-
     const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
 
     const doubtfulResult = [] as any[];
     const result = [] as any[];
     for (const i of broadcastResult) {
+      if (!i) {
+        continue;
+      }
+
       if (i === METHOD_NOT_REGISTERED) {
         doubtfulResult.push(i);
       } else {

@@ -32,10 +32,6 @@ export abstract class ProxyBase<T extends IBaseConnection> {
     }
   }
 
-  public createInvoker(): Invoker<any> {
-    return new Invoker(this);
-  }
-
   listen(connection: T): void {
     this.connection = connection;
 
@@ -49,55 +45,23 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   public listenService(service: IRPCServiceMap) {
     if (this.connection) {
-      const proxyService = this.proxyService;
       this.bindOnRequest(service, (service, prop) => {
-        proxyService[prop] = service[prop].bind(service);
+        this.proxyService[prop] = service[prop].bind(service);
       });
     } else {
       if (!this.target) {
         this.target = {} as any;
       }
-      const target = this.target as any;
+
       const methods = getServiceMethods(service);
-      methods.forEach((method) => {
+      for (const method of methods) {
         // `getServiceMethods` ensure that method is a function
-        target[method] = service[method]!.bind(service);
-      });
+        (this.target as any)[method] = service[method]!.bind(service);
+      }
     }
   }
 
   abstract getInvokeProxy(): any;
 
   protected abstract bindOnRequest(service: IRPCServiceMap, cb: (service: IRPCServiceMap, prop: string) => void): void;
-}
-
-const defaultReservedWordSet = new Set(['then']);
-
-export class Invoker<T extends ProxyBase<any>> {
-  public connection: T;
-  public proxy: any;
-  protected reservedWordSet: Set<string>;
-
-  constructor(connection: T, reservedWords?: string[]) {
-    this.connection = connection;
-    this.reservedWordSet = new Set(reservedWords) || defaultReservedWordSet;
-    const proxy = connection.getInvokeProxy();
-
-    this.proxy = new Proxy(
-      {},
-      {
-        get: (target, prop: string | symbol) => {
-          if (this.reservedWordSet.has(prop as string) || typeof prop === 'symbol') {
-            return Promise.resolve();
-          } else {
-            return proxy[prop];
-          }
-        },
-      },
-    );
-  }
-
-  invoke(name: string, ...args: any[]) {
-    return this.proxy[name](...args);
-  }
 }
