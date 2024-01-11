@@ -1,5 +1,5 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { initRPCService, IRPCProtocol, RPCProtocol, RPCServiceCenter, WSChannel } from '@opensumi/ide-connection';
+import { IRPCProtocol, RPCProtocol, WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
@@ -148,7 +148,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   private async initExtProtocol() {
-    const mainThreadCenter = new RPCServiceCenter();
+    let channel: WSChannel;
 
     // Electron 环境下，未指定 isRemote 时默认使用本地连接
     // 否则使用 WebSocket 连接
@@ -158,29 +158,23 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
       const connection = createNetSocketConnection(connectPath);
-      const channel = WSChannel.forClient(connection, {
+      channel = WSChannel.forClient(connection, {
         id: 'NodeExtProcessService',
         tag: 'browser-electron-client',
       });
-      // electron 环境下要使用 Node 端的 connection
-      mainThreadCenter.setChannel(channel);
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-      mainThreadCenter.setChannel(channel);
+      channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
     }
 
-    const { getRPCService } = initRPCService<{
-      onMessage: (msg: string) => void;
-    }>(mainThreadCenter);
-
-    const service = getRPCService('ExtProtocol');
     const onMessageEmitter = new Emitter<string>();
-    service.on('onMessage', (msg: string) => {
+    channel.onMessage((msg: string) => {
       onMessageEmitter.fire(msg);
     });
     const onMessage = onMessageEmitter.event;
-    const send = service.onMessage;
+    const send = (msg: string) => {
+      channel.send(msg);
+    };
 
     const mainThreadProtocol = new RPCProtocol({
       onMessage,

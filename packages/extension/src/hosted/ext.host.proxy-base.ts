@@ -1,15 +1,7 @@
 import type { ForkOptions } from 'child_process';
 import net from 'net';
 
-import {
-  RPCService,
-  RPCServiceCenter,
-  getRPCService,
-  IRPCProtocol,
-  RPCProtocol,
-  WSChannel,
-  IExtHostProxyBridge,
-} from '@opensumi/ide-connection';
+import { RPCService, IRPCProtocol, RPCProtocol, WSChannel } from '@opensumi/ide-connection';
 import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { IExtensionHostManager } from '../common';
@@ -17,7 +9,6 @@ import {
   IExtHostProxyRPCService,
   IExtHostProxy,
   IExtHostProxyOptions,
-  EXT_HOST_PROXY_PROTOCOL,
   EXT_HOST_PROXY_IDENTIFIER,
   IExtServerProxyRPCService,
   EXT_SERVER_IDENTIFIER,
@@ -93,8 +84,6 @@ class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCServi
 export class ExtHostProxy extends Disposable implements IExtHostProxy {
   private socket: net.Socket;
 
-  private readonly clientCenter: RPCServiceCenter;
-
   private protocol: IRPCProtocol;
 
   private options: IExtHostProxyOptions;
@@ -112,6 +101,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   public readonly onConnected = this.connectedEmitter.event;
 
   LOG_TAG = '[ExtHostProxy]';
+  channel: WSChannel;
 
   constructor(options?: IExtHostProxyOptions) {
     super();
@@ -122,7 +112,6 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       },
       ...options,
     };
-    this.clientCenter = new RPCServiceCenter();
   }
 
   init() {
@@ -145,13 +134,15 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setRPCMethods() {
-    const proxyService = getRPCService<IExtHostProxyBridge>(EXT_HOST_PROXY_PROTOCOL, this.clientCenter);
     const onMessageEmitter = new Emitter<string>();
-    proxyService.on('onMessage', (msg: string) => {
+    this.channel.onMessage((msg: string) => {
       onMessageEmitter.fire(msg);
     });
     const onMessage = onMessageEmitter.event;
-    const send = proxyService.onMessage;
+
+    const send = (msg: string) => {
+      this.channel.send(msg);
+    };
 
     this.protocol = new RPCProtocol({
       onMessage,
@@ -206,14 +197,10 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setConnection() {
-    const channel = WSChannel.forNetSocket(this.socket, {
+    this.channel = WSChannel.forNetSocket(this.socket, {
       id: 'EXT_HOST_PROXY',
       tag: 'ExtHostProxyBase',
       logger: this.logger,
-    });
-    const remove = this.clientCenter.setChannel(channel);
-    this.socket.once('close', () => {
-      remove.dispose();
     });
   }
 
