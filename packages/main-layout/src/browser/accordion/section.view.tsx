@@ -160,7 +160,7 @@ export const AccordionSection = ({
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
         >
           <div className={cls(styles.label_wrap, expanded ? styles.label_wrap_expanded : '')}>
-            <i className={cls(getIcon('down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
+            <i className={cls(getIcon('down-arrow'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
             <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
               {headerLabel}
             </div>
