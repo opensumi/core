@@ -79,6 +79,12 @@ export class CommonChannelPathHandler {
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
+interface ILogger {
+  log: (...args: any[]) => void;
+  warn: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+}
+
 /**
  * Channel Handler for nodejs
  */
@@ -90,7 +96,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
-  constructor(routePath: string, private logger: any = console, private options: CommonChannelHandlerOptions = {}) {
+  constructor(routePath: string, private logger: ILogger = console, private options: CommonChannelHandlerOptions = {}) {
     super();
     this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
@@ -178,7 +184,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           clearTimeout(this.heartbeatMap.get(connectionId) as NodeJS.Timeout);
           this.heartbeatMap.delete(connectionId);
 
-          this.logger.verbose(`Clear heartbeat from channel ${connectionId}`);
+          this.logger.log(`Clear heartbeat from channel ${connectionId}`);
         }
 
         Array.from(this.channelMap.values())
@@ -186,7 +192,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           .forEach((channel) => {
             channel.close(1, 'close');
             this.channelMap.delete(channel.id);
-            this.logger.verbose(`Remove connection channel ${channel.id}`);
+            this.logger.log(`Remove connection channel ${channel.id}`);
           });
       });
     });
