@@ -4,6 +4,8 @@ import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.
 
 import { IAiBackService } from '../common/index';
 
+import { CompletionRequestBean, CompletionResultModel } from './inline-completions/model/competionModel';
+
 export type InlineChatOperationalRenderType = 'button' | 'dropdown';
 
 export interface InlineChatAction {
@@ -100,24 +102,18 @@ export interface IAiRunFeatureRegistry {
 
 export const AiNativeCoreContribution = Symbol('AiNativeCoreContribution');
 
-export type provideInlineCompletionsSignature<T> = (
+export type IProvideInlineCompletionsSignature = (
   this: void,
   model: monaco.editor.ITextModel,
   position: monaco.Position,
-  context: monaco.languages.InlineCompletionContext,
   token: CancellationToken,
-) => monaco.languages.ProviderResult<T>;
+  next: (reqBean: CompletionRequestBean) => MaybePromise<CompletionResultModel | null>,
+  completionRequestBean: CompletionRequestBean,
+) => MaybePromise<CompletionResultModel | null>;
 
 export interface IAiMiddleware {
   language?: {
-    provideInlineCompletions?: (
-      this: void,
-      model: monaco.editor.ITextModel,
-      position: monaco.Position,
-      context: monaco.languages.InlineCompletionContext,
-      token: CancellationToken,
-      next: provideInlineCompletionsSignature<monaco.languages.InlineCompletions>,
-    ) => monaco.languages.ProviderResult<monaco.languages.InlineCompletions>;
+    provideInlineCompletions?: IProvideInlineCompletionsSignature;
   };
 }
 

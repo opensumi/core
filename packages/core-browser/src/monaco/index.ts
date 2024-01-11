@@ -130,7 +130,7 @@ export interface MimeAssociation {
 }
 
 export interface SuggestEventPayload {
-  eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
-  data: ISelectedSuggestion | SuggestWidget;
+  eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus' | 'onAcceptSelectedSuggestion';
+  data: ISelectedSuggestion | SuggestWidget | undefined;
 }
 export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}

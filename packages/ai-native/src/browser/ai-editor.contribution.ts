@@ -28,6 +28,7 @@ import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feat
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { AiInlineCompletionsProvider } from './inline-completions/completeProvider';
+import { AiCompletionsService } from './inline-completions/service/ai-completions.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
 import {
   AiNativeCoreContribution,
@@ -72,6 +73,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiNativeCoreContribution)
   private readonly contributions: ContributionProvider<AiNativeCoreContribution>;
+
+  @Autowired(AiCompletionsService)
+  private aiCompletionsService: AiCompletionsService;
 
   private latestMiddlewareCollector: IAiMiddleware;
   private logger: ILogServiceClient;
@@ -454,13 +458,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
             if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
-              return this.latestMiddlewareCollector.language.provideInlineCompletions(
-                model,
-                position,
-                context,
-                token,
-                (model, position, context, token) =>
-                  this.aiInlineCompletionsProvider.provideInlineCompletionItems(model, position, context, token),
+              this.aiCompletionsService.setMiddlewareComplete(
+                this.latestMiddlewareCollector?.language?.provideInlineCompletions,
               );
             }
 
@@ -479,6 +478,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             return list;
           },
           freeInlineCompletions(completions: InlineCompletions<InlineCompletion>) {},
+          handleItemDidShow: (completions, item) => {
+            if (completions.items.length > 0) {
+              this.aiCompletionsService.setVisibleCompletion(true);
+            }
+          },
         });
         this.disposables.push(dispose);
       }),

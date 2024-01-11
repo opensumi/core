@@ -5,10 +5,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
  */
 export interface CodeModel {
   content: string;
-  displayName: string;
-  id: number;
-  score: number;
-  completionType: number;
 }
 /**
  * 补全返回结果对象
@@ -16,6 +12,7 @@ export interface CodeModel {
 export interface CompletionResultModel {
   sessionId: string;
   codeModelList: Array<CodeModel>;
+  isCancel?: boolean;
 }
 
 /**

@@ -36,21 +36,26 @@ class RequestImp {
   model: monaco.editor.ITextModel;
   _isManual: boolean;
   isCancelFlag: boolean;
+  aiCompletionsService: AiCompletionsService;
   // todo
-  constructor(model: monaco.editor.ITextModel, _isManual: boolean) {
+  constructor(model: monaco.editor.ITextModel, _isManual: boolean, aiCompletionsService: AiCompletionsService) {
     this.model = model;
     this._isManual = _isManual;
     this.isCancelFlag = false;
+    this.aiCompletionsService = aiCompletionsService;
   }
   // 发送请求
-  async sendRequest(position: monaco.Position, aiCompletionsService: AiCompletionsService, aiReporter: IAIReporter) {
+  async sendRequest(
+    position: monaco.Position,
+    aiReporter: IAIReporter,
+    model: monaco.editor.ITextModel,
+    token: monaco.CancellationToken,
+  ) {
     const { model: editor } = this;
     const beginRequestTime = Date.now();
     if (!editor) {
       return [];
     }
-
-    const model = this.model;
 
     const startRange = new monaco.Range(0, 0, position.lineNumber, position.column);
     let prompt = model.getValueInRange(startRange!);
@@ -91,17 +96,17 @@ class RequestImp {
       fileUrl: model.uri.toString().split('/').pop()!,
     };
 
-    aiCompletionsService.updateStatusBarItem('running', true);
+    this.aiCompletionsService.updateStatusBarItem('running', true);
     const beginAlgTime = +new Date();
     let status = 0; // 0: 远程请求的结果 1: 网络缓存中的结果
     if (this.isCancelFlag) {
       return [];
     }
-    let rs;
+    let rs: CompletionResultModel | null;
     const cacheData = promptCache.getCache(prompt);
 
     const relationId = aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
-    aiCompletionsService.setLastRelationId(relationId);
+    this.aiCompletionsService.setLastRelationId(relationId);
 
     // 如果存在缓存
     if (cacheData) {
@@ -109,42 +114,42 @@ class RequestImp {
       status = 1;
     } else {
       try {
-        rs = await aiCompletionsService.complete(completionRequestBean);
+        rs = await this.aiCompletionsService.complete(completionRequestBean, model, position, token);
       } catch (error) {
-        aiReporter.end(relationId, {
+        this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
           replytime: +new Date() - beginAlgTime,
           message: error.toString(),
         });
-        aiCompletionsService.hideStatusBarItem();
+        this.aiCompletionsService.hideStatusBarItem();
         return [];
       }
       status = 0;
     }
 
     if (!(rs && rs.sessionId)) {
-      aiReporter.end(relationId, { success: false, replytime: +new Date() - beginAlgTime });
-      aiCompletionsService.hideStatusBarItem();
+      this.aiCompletionsService.reporterEnd(relationId, { success: false, replytime: +new Date() - beginAlgTime });
+      this.aiCompletionsService.hideStatusBarItem();
       return [];
     }
 
-    aiCompletionsService.setLastSessionId(rs.sessionId);
+    this.aiCompletionsService.setLastSessionId(rs.sessionId);
 
     // 如果是取消直接返回
     if ((rs && rs.isCancel) || this.isCancelFlag) {
-      aiReporter.end(relationId, {
+      this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: +new Date() - beginAlgTime,
         isStop: true,
         completionNum: 0,
       });
-      aiCompletionsService.updateStatusBarItem('补全已取消', false);
+      this.aiCompletionsService.updateStatusBarItem('补全已取消', false);
       return [];
     }
 
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
-      aiReporter.end(relationId, {
+      this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
         replytime: +new Date() - beginAlgTime,
         completionNum: rs.codeModelList.length,
@@ -157,12 +162,16 @@ class RequestImp {
 
     // 返回补全结果为空直接返回
     if (rs.codeModelList.length === 0) {
-      aiReporter.end(relationId, { success: true, replytime: +new Date() - beginAlgTime, completionNum: 0 });
-      aiCompletionsService.updateStatusBarItem('no result', false);
+      this.aiCompletionsService.reporterEnd(relationId, {
+        success: true,
+        replytime: +new Date() - beginAlgTime,
+        completionNum: 0,
+      });
+      this.aiCompletionsService.updateStatusBarItem('no result', false);
       return [];
     }
 
-    aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
+    this.aiCompletionsService.updateStatusBarItem('completion result: ' + rs.codeModelList.length, false);
     return this.pushResultAndRegist(rs, position, relationId);
   }
   /**
@@ -196,8 +205,21 @@ class RequestImp {
         endColumn: model.getLineMaxColumn(position.lineNumber),
       });
 
+      // 临时修复方案，用于解决补全后面多了几个括号的问题
+      const removeChars = (a: string, b: string) => {
+        let result = '';
+        for (let char of b) {
+          if (char === ' ' || !a.includes(char)) {
+            result += char;
+          }
+        }
+        return result;
+      };
+
+      const filteredString = removeChars(insertText, textAfterCursor);
+
       result.push({
-        insertText: insertText + textAfterCursor,
+        insertText: insertText + filteredString,
         range: new monaco.Range(
           position.lineNumber,
           position.column,
@@ -228,12 +250,12 @@ class ReqStack {
   addReq(reqRequest: RequestImp) {
     this.queue.push(reqRequest);
   }
-  runReq(position: monaco.Position) {
+  runReq(position: monaco.Position, model: monaco.editor.ITextModel, token: monaco.CancellationToken) {
     if (this.queue.length === 0) {
       return;
     }
     const fn = this.queue.pop();
-    return fn.sendRequest(position, this.aiCompletionsService, this.aiReporter);
+    return fn.sendRequest(position, this.aiReporter, model, token);
   }
   cancleRqe() {
     if (this.queue.length === 0) {
@@ -428,7 +450,7 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
       };
     }
     // 放入队列
-    const requestImp = new RequestImp(model, _isManual);
+    const requestImp = new RequestImp(model, _isManual, this.aiCompletionsService);
     this.reqStack.addReq(requestImp);
     // 如果是自动补全等待300ms
     if (!_isManual) {
@@ -436,14 +458,10 @@ export class AiInlineCompletionsProvider extends WithEventBus implements Provide
         timer = setTimeout(f, 300);
       });
     }
-    const list = await this.reqStack.runReq(position);
+    const list = await this.reqStack.runReq(position, model, token);
     if (position !== undefined) {
       lastInLayList.column = position.column;
       lastInLayList.line = position.lineNumber;
-    }
-
-    if (list.length > 0) {
-      this.aiCompletionsService.setVisibleCompletion(true);
     }
 
     lastInLayList.lastResult = {

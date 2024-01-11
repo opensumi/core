@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { SuggestEvent, DisposableCollection } from '@opensumi/ide-core-browser';
-import { IEventBus } from '@opensumi/ide-core-common';
+import { CommandService, IEventBus } from '@opensumi/ide-core-common';
 import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 
 import { IEditor } from '../../common';
@@ -14,6 +14,9 @@ export class EditorSuggestWidgetContribution implements IEditorFeatureContributi
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   contribute(editor: IEditor) {
     const disposable = new DisposableCollection();
@@ -59,6 +62,18 @@ export class EditorSuggestWidgetContribution implements IEditorFeatureContributi
               data: e,
             }),
           );
+        }),
+      );
+      disposable.push(
+        this.commandService.onDidExecuteCommand((command) => {
+          if (command.commandId === 'acceptSelectedSuggestion') {
+            this.eventBus.fire(
+              new SuggestEvent({
+                eventType: 'onAcceptSelectedSuggestion',
+                data: undefined,
+              }),
+            );
+          }
         }),
       );
 
