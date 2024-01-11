@@ -15,7 +15,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   protected connectionPromise: Deferred<void> = new Deferred<void>();
 
-  protected abstract engine: 'legacy';
+  protected abstract engine: 'legacy' | 'sumi';
 
   constructor(public target?: IRPCServiceMap, logger?: ILogger) {
     this.logger = logger || console;

@@ -93,24 +93,6 @@ export interface SerializedError {
   readonly stack: string;
 }
 
-export function transformErrorForSerialization(error: Error): SerializedError;
-export function transformErrorForSerialization(error: any): any;
-export function transformErrorForSerialization(error: any): any {
-  if (error instanceof Error) {
-    const { name, message } = error;
-    const stack: string = (error as any).stacktrace || (error as any).stack;
-    return {
-      $isError: true,
-      name,
-      message,
-      stack,
-    };
-  }
-
-  // return as is
-  return error;
-}
-
 const canceledName = 'Canceled';
 
 /**
@@ -171,4 +153,59 @@ export function getErrorMessage(err: any): string {
   }
 
   return String(err);
+}
+
+export interface SerializedError {
+  readonly $isError: true;
+  readonly name: string;
+  readonly message: string;
+  readonly stack: string;
+  readonly cause?: SerializedError;
+}
+
+export function transformErrorForSerialization(error: Error): SerializedError;
+export function transformErrorForSerialization(error: any): any;
+export function transformErrorForSerialization(error: any): any {
+  if (error instanceof Error) {
+    const { name, message, cause } = error;
+    const stack: string = (error as any).stacktrace || (error as any).stack;
+    return {
+      $isError: true,
+      name,
+      message,
+      stack,
+      cause,
+    };
+  }
+
+  // return as is
+  return error;
+}
+
+function serializeErrorReplacer(key: string, value: any) {
+  if (value instanceof Error) {
+    return transformErrorForSerialization(value);
+  }
+  return value;
+}
+
+export function errorReviver(key: string, value: any): Error {
+  if (typeof value === 'object' && value.$isError) {
+    const result = new Error(value.message);
+    result.name = value.name;
+    result.stack = value.stack;
+    result.cause = value.cause;
+
+    return result;
+  }
+
+  return value;
+}
+
+export function stringifyError(error: any): string {
+  return JSON.stringify(error, serializeErrorReplacer);
+}
+
+export function parseError(value: string): any {
+  return JSON.parse(value, errorReviver);
 }
