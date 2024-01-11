@@ -13,7 +13,7 @@ interface IRPCResult {
 }
 
 export class ProxyLegacy extends ProxyBase<MessageConnection> {
-  engine = 'json-rpc' as const;
+  engine = 'legacy' as const;
 
   public getInvokeProxy(): any {
     return new Proxy(this, this);

@@ -2,7 +2,8 @@ import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { ProxyLegacy, ProxyWrapper } from '../proxy';
+import { ProxyLegacy } from '../proxy';
+import { Invoker } from '../proxy/base';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 
@@ -11,7 +12,7 @@ const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mo
 export class RPCServiceCenter {
   public uid: string;
 
-  private proxyWrappers: ProxyWrapper<ProxyLegacy>[] = [];
+  private invokers: Invoker<ProxyLegacy>[] = [];
 
   private connection: Array<MessageConnection> = [];
   private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
@@ -45,8 +46,8 @@ export class RPCServiceCenter {
     const rpcProxy = new ProxyLegacy(this.serviceMethodMap, this.logger);
     rpcProxy.listen(connection);
 
-    const wrapper = rpcProxy.createProxyWrapper();
-    this.proxyWrappers.push(wrapper);
+    this.invokers.push(rpcProxy.createInvoker());
+
     return {
       dispose: () => {
         connection.dispose();
@@ -59,7 +60,7 @@ export class RPCServiceCenter {
     const removeIndex = this.connection.indexOf(connection);
     if (removeIndex !== -1) {
       this.connection.splice(removeIndex, 1);
-      this.proxyWrappers.splice(removeIndex, 1);
+      this.invokers.splice(removeIndex, 1);
     }
 
     return removeIndex !== -1;
@@ -69,15 +70,15 @@ export class RPCServiceCenter {
     if (!this.connection.length) {
       this.serviceMethodMap[name] = method;
     } else {
-      this.proxyWrappers.forEach((proxy) => {
-        proxy.getOriginal().listenService({ [name]: method });
+      this.invokers.forEach((proxy) => {
+        proxy.connection.listenService({ [name]: method });
       });
     }
   }
   async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
     const name = getMethodName(serviceName, _name);
 
-    const broadcastResult = await Promise.all(this.proxyWrappers.map((proxy) => proxy.getProxy()[name](...args)));
+    const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
 
     const doubtfulResult = [] as any[];
     const result = [] as any[];
