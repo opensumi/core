@@ -3721,9 +3721,9 @@ __metadata:
   resolution: "@opensumi/playwright@workspace:tools/playwright"
   dependencies:
     "@opensumi/ide-utils": "workspace:*"
-    "@playwright/test": 1.29.1
-    allure-commandline: ^2.13.8
-    allure-playwright: ^2.0.0-beta.14
+    "@playwright/test": 1.40.1
+    allure-commandline: ^2.25.0
+    allure-playwright: ^2.10.0
     typescript: 4.9.3
   languageName: unknown
   linkType: soft
@@ -3817,15 +3817,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.29.1":
-  version: 1.29.1
-  resolution: "@playwright/test@npm:1.29.1"
+"@playwright/test@npm:1.40.1":
+  version: 1.40.1
+  resolution: "@playwright/test@npm:1.40.1"
   dependencies:
-    "@types/node": "*"
-    playwright-core: 1.29.1
+    playwright: 1.40.1
   bin:
     playwright: cli.js
-  checksum: c4424ee09f6589a296a3a78402f8c9eac841f3e5f44d96e3a2ba07aaa00d53ee9c10cc96379b304743a9e70f231df0ded0ad2fc197f412ada67b4cf17ee24b0f
+  checksum: ae094e6cb809365c0707ee2b184e42d2a2542569ada020d2d44ca5866066941262bd9a67af185f86c2fb0133c9b712ea8cb73e2959a289e4261c5fd17077283c
   languageName: node
   linkType: hard
 
@@ -5359,31 +5358,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"allure-commandline@npm:^2.13.8":
-  version: 2.20.1
-  resolution: "allure-commandline@npm:2.20.1"
+"allure-commandline@npm:^2.25.0":
+  version: 2.25.0
+  resolution: "allure-commandline@npm:2.25.0"
   bin:
     allure: bin/allure
-  checksum: f00e04418d9a3250a3d35f004c58e379729f40975022a8fedcf06c59bbdeeca71e0170edb5b86239b991b700bdc1445a6c93d04d0665296d82288641a0eb7388
+  checksum: 06fb1383fc99c9892742d41fa83887d9f93640a6434c372aedbd9b11dc7de3cf8281875a83c69e2dfcfd36d8acbba20f12aadd6ee70fa37c787f9a9ab2922fbe
   languageName: node
   linkType: hard
 
-"allure-js-commons@npm:2.0.0-beta.25":
-  version: 2.0.0-beta.25
-  resolution: "allure-js-commons@npm:2.0.0-beta.25"
+"allure-js-commons@npm:2.10.0":
+  version: 2.10.0
+  resolution: "allure-js-commons@npm:2.10.0"
   dependencies:
     properties: ^1.2.1
-    uuid: ^8.3.0
-  checksum: bab8c2658656732b5e9b8cc9beabc6a1fc7d0d16ff78eb692febb25b819c377919afffa88c89d3057c54b8af8d8e82c99d89138cf3dbb5df31f464a17f80032d
+  checksum: 491c01bd6d2dea9826034f94cfb1e0a36bda618362a847bdd493e753e2397ec3d340745b960ca54c7dec6738360050480cde2b821b9086eeb67ceb6cad4a9c63
   languageName: node
   linkType: hard
 
-"allure-playwright@npm:^2.0.0-beta.14":
-  version: 2.0.0-beta.25
-  resolution: "allure-playwright@npm:2.0.0-beta.25"
+"allure-playwright@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "allure-playwright@npm:2.10.0"
   dependencies:
-    allure-js-commons: 2.0.0-beta.25
-  checksum: 8f5a73b8e176a20337a9de71eb5c887f9bc79b12d666b0c0abfe60dccb01fc3cd384ea5cff2747d83e64ab1a5192a108131195435692582ef41ba43accaa4261
+    allure-js-commons: 2.10.0
+  checksum: 7d07c9df88526cbb1c2f24d71bb6c0e43a6692c3f8a587532acc563cb9d46450ed4a31cda71514f570e2798947df5b38b564baaa643f74ad4d1f93ac56dcc308
   languageName: node
   linkType: hard
 
@@ -10725,6 +10723,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fsevents@npm:2.3.2, fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
+  version: 2.3.2
+  resolution: "fsevents@npm:2.3.2"
+  dependencies:
+    node-gyp: latest
+  checksum: 97ade64e75091afee5265e6956cb72ba34db7819b4c3e94c431d4be2b19b8bb7a2d4116da417950c3425f17c8fe693d25e20212cac583ac1521ad066b77ae31f
+  conditions: os=darwin
+  languageName: node
+  linkType: hard
+
 "fsevents@npm:^1.2.7":
   version: 1.2.13
   resolution: "fsevents@npm:1.2.13"
@@ -10736,12 +10744,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
+"fsevents@patch:fsevents@2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@^2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@npm:2.3.2"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
     node-gyp: latest
-  checksum: 97ade64e75091afee5265e6956cb72ba34db7819b4c3e94c431d4be2b19b8bb7a2d4116da417950c3425f17c8fe693d25e20212cac583ac1521ad066b77ae31f
   conditions: os=darwin
   languageName: node
   linkType: hard
@@ -10752,15 +10759,6 @@ __metadata:
   dependencies:
     bindings: ^1.5.0
     nan: ^2.12.1
-  conditions: os=darwin
-  languageName: node
-  linkType: hard
-
-"fsevents@patch:fsevents@^2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
-  version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
-  dependencies:
-    node-gyp: latest
   conditions: os=darwin
   languageName: node
   linkType: hard
@@ -17490,12 +17488,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.29.1":
-  version: 1.29.1
-  resolution: "playwright-core@npm:1.29.1"
+"playwright-core@npm:1.40.1":
+  version: 1.40.1
+  resolution: "playwright-core@npm:1.40.1"
+  bin:
+    playwright-core: cli.js
+  checksum: 84d92fb9b86e3c225b16b6886bf858eb5059b4e60fa1205ff23336e56a06dcb2eac62650992dede72f406c8e70a7b6a5303e511f9b4bc0b85022ede356a01ee0
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.40.1":
+  version: 1.40.1
+  resolution: "playwright@npm:1.40.1"
+  dependencies:
+    fsevents: 2.3.2
+    playwright-core: 1.40.1
+  dependenciesMeta:
+    fsevents:
+      optional: true
   bin:
     playwright: cli.js
-  checksum: e1c8423db4d28f44e5365a353f321b04a07709c8bf26d0c908f06d2c2669f715315170f84ca98a532951c2ac6324f5f48f651dca1abe43092c7637bdb4703303
+  checksum: 9e36791c1b4a649c104aa365fdd9d049924eeb518c5967c0e921aa38b9b00994aa6ee54784d6c2af194b3b494b6f69772673081ef53c6c4a4b2065af9955c4ba
   languageName: node
   linkType: hard
 

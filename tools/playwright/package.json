@@ -18,7 +18,7 @@
   },
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.playwright.json && npx playwright install chromium",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.playwright.json && yarn playwright install chromium",
     "ui-tests": "yarn run build && playwright test --config=./configs/playwright.config.ts",
     "ui-tests-ci": "yarn run build && playwright test --config=./configs/playwright.ci.config.ts",
     "ui-tests-headful": "yarn run build && playwright test --config=./configs/playwright.headful.config.ts",
@@ -26,12 +26,12 @@
     "ui-tests-report": "yarn run build ui-tests-report-generate && allure open allure-results/allure-report"
   },
   "dependencies": {
-    "@playwright/test": "1.29.1"
+    "@playwright/test": "1.40.1"
   },
   "devDependencies": {
     "@opensumi/ide-utils": "workspace:*",
-    "allure-commandline": "^2.13.8",
-    "allure-playwright": "^2.0.0-beta.14",
+    "allure-commandline": "^2.25.0",
+    "allure-playwright": "^2.10.0",
     "typescript": "4.9.3"
   }
 }

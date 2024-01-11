@@ -4,7 +4,7 @@ import { PlaywrightTestConfig } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
   testDir: '../lib/tests',
-  testMatch: ['**/*.js'],
+  testMatch: ['**/*.test.js'],
   workers: 2,
   timeout: 60 * 1000,
   use: {
