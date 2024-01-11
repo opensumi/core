@@ -47,7 +47,6 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   async init() {
     await this.startProxyServer();
-    this.setExtHostProxyRPCProtocol();
   }
 
   private startProxyServer() {
