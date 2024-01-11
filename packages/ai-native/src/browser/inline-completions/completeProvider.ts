@@ -205,8 +205,21 @@ class RequestImp {
         endColumn: model.getLineMaxColumn(position.lineNumber),
       });
 
+      // 临时修复方案，用于解决补全后面多了几个括号的问题
+      const removeChars = (a: string, b: string) => {
+        let result = '';
+        for (let char of b) {
+          if (char === ' ' || !a.includes(char)) {
+            result += char;
+          }
+        }
+        return result;
+      };
+
+      const filteredString = removeChars(insertText, textAfterCursor);
+
       result.push({
-        insertText: insertText + textAfterCursor,
+        insertText: insertText + filteredString,
         range: new monaco.Range(
           position.lineNumber,
           position.column,

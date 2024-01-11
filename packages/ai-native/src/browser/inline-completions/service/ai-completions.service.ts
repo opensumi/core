@@ -29,7 +29,7 @@ export class AiCompletionsService extends Disposable {
 
   private cancelIndicator = new CancellationTokenSource();
   // 是否使用默认的补全模型
-  private isDefaultCompletionModel = true;
+  protected isDefaultCompletionModel = true;
   // 是否显示了 inline 补全
   private isVisibleCompletion = false;
   // 会话 id
