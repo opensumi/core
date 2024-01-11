@@ -123,8 +123,11 @@ export function bindModuleBackService(
           if (serviceInstance.setConnectionClientId && clientId) {
             serviceInstance.setConnectionClientId(clientId);
           }
-          const servicePath = service.servicePath;
-          const createService = createRPCService(servicePath, serviceInstance);
+          const createService = createRPCService(service.servicePath, serviceInstance);
+
+          if (service.protocol) {
+            createService.loadProtocol(service.protocol);
+          }
 
           if (!serviceInstance.rpcClient) {
             serviceInstance.rpcClient = [createService];

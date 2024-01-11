@@ -2,6 +2,8 @@ import { Deferred } from '@opensumi/ide-core-common';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ProxyLegacy } from '../proxy';
+import { TSumiProtocol } from '../rpc';
+import { ProtocolRepository } from '../rpc/protocol-repository';
 import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 import { WSChannel } from '../ws-channel';
@@ -30,6 +32,8 @@ class Invoker {
 }
 
 export class RPCServiceCenter {
+  private protocolRepository = new ProtocolRepository();
+
   public uid: string;
 
   private invokers: Invoker[] = [];
@@ -81,6 +85,10 @@ export class RPCServiceCenter {
         connection.dispose();
       },
     };
+  }
+
+  loadProtocol(protocol: TSumiProtocol) {
+    this.protocolRepository.loadProtocol(protocol);
   }
 
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {

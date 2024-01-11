@@ -4,15 +4,19 @@
 
 import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@opensumi/di';
 
+import { RPCProtocol } from './types/protocol';
+
 interface FrontService {
   token: Token;
   servicePath: string;
+  protocol?: RPCProtocol<any>;
 }
 
 export interface BackService {
   token?: Token;
   clientToken?: Token;
   servicePath: string;
+  protocol?: RPCProtocol<any>;
 }
 
 export class BasicModule {

@@ -1,3 +1,4 @@
+import { TSumiProtocol } from '../rpc';
 import { RPCServiceMethod, ServiceType } from '../types';
 import { getServiceMethods } from '../utils';
 
@@ -21,6 +22,10 @@ export class RPCServiceStub {
     for (const method of methods) {
       this.onRequest(method, service[method].bind(service));
     }
+  }
+
+  loadProtocol(protocol: TSumiProtocol) {
+    this.center.loadProtocol(protocol);
   }
 
   onRequest(name: string, method: RPCServiceMethod) {

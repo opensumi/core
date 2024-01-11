@@ -7,7 +7,7 @@ import {
   RPCProtocolMethod as _RPCProtocolMethod,
   Request as _Request,
   Response as _Response,
-} from './base-types';
+} from '@opensumi/ide-core-common/lib/types/protocol';
 
 export type TSumiProtocol = _RPCProtocol<TypeDescription>;
 export type TSumiProtocolMethod = _RPCProtocolMethod<TypeDescription>;
