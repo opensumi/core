@@ -125,24 +125,6 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
           cb(service, method);
         }
       });
-
-      connection.onRequest((method) => {
-        if (!this.proxyService[method]) {
-          const requestId = uuid();
-          this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method });
-          const result = {
-            data: METHOD_NOT_REGISTERED,
-          };
-          this.capture({
-            type: MessageType.OnRequestResult,
-            status: ResponseStatus.Fail,
-            requestId,
-            serviceMethod: method,
-            error: result.data,
-          });
-          return result;
-        }
-      });
     }
   }
 
@@ -193,5 +175,26 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
     } catch (e) {
       this.logger.warn('notification', e);
     }
+  }
+
+  listen(connection: MessageConnection): void {
+    super.listen(connection);
+    connection.onRequest((method) => {
+      if (!this.proxyService[method]) {
+        const requestId = uuid();
+        this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method });
+        const result = {
+          data: METHOD_NOT_REGISTERED,
+        };
+        this.capture({
+          type: MessageType.OnRequestResult,
+          status: ResponseStatus.Fail,
+          requestId,
+          serviceMethod: method,
+          error: result.data,
+        });
+        return result;
+      }
+    });
   }
 }

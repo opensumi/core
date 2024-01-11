@@ -101,10 +101,6 @@ export class RPCServiceCenter {
     const doubtfulResult = [] as any[];
     const result = [] as any[];
     for (const i of broadcastResult) {
-      if (!i) {
-        continue;
-      }
-
       if (i === METHOD_NOT_REGISTERED) {
         doubtfulResult.push(i);
       } else {
