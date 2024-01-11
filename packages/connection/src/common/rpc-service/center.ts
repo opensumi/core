@@ -20,11 +20,7 @@ class Invoker {
   private legacyInvokeProxy: any;
   private sumiInvokeProxy: any;
 
-  private protocolRepository: ProtocolRepository;
-
-  setProtocolRepository(protocolRepository: ProtocolRepository) {
-    this.protocolRepository = protocolRepository;
-  }
+  constructor(protected protocolRepository: ProtocolRepository) {}
 
   setLegacyProxy(proxy: ProxyLegacy) {
     this.legacyProxy = proxy;
@@ -102,7 +98,7 @@ export class RPCServiceCenter {
     const messageConnection = channel.createMessageConnection();
     rpcProxy.listen(messageConnection);
 
-    const invoker = new Invoker();
+    const invoker = new Invoker(this.protocolRepository);
 
     invoker.setLegacyProxy(rpcProxy);
 
