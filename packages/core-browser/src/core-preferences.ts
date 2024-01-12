@@ -63,7 +63,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     [GeneralSettingsId.ProductIconTheme]: {
       type: 'string',
       default: 'opensumi-icons',
-      enum: [],
+      enum: ['opensumi-icons'],
     },
     'workbench.colorCustomizations': {
       type: 'object',

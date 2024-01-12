@@ -50,3 +50,4 @@ export class ThemeModule extends BrowserModule {
 }
 
 export * from './icon.service';
+export * from './product-icon.service';

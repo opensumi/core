@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { LifeCyclePhase, URI } from '@opensumi/ide-core-common';
-import { ThemeContribution, IProductIconService, IIconService } from '@opensumi/ide-theme';
+import { ThemeContribution, IProductIconService } from '@opensumi/ide-theme';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';

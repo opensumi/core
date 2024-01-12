@@ -250,7 +250,9 @@ class IconRegistry implements IIconRegistry {
   public getIcon(id: string): IconContribution | undefined {
     return this.iconsById[id];
   }
-
+  public getSumiIcon(id: string): IconContribution | undefined {
+    return this.sumiIconsById[id];
+  }
   public getIconSchema(): IJSONSchema {
     return this.iconSchema;
   }

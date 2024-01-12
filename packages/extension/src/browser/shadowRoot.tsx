@@ -142,9 +142,6 @@ const ShadowRoot = ({
           iconService.onThemeChange((e) => {
             iconStyle.innerHTML = e.styleSheetContent;
           }),
-          productIconService.onThemeChange((e) => {
-            productIconStyle.innerHTML = e.styleSheetContent || '';
-          }),
         ]);
         shadowRootElement.appendChild(newHead);
         const portalRoot = viewExtensionService.getPortalShadowRoot(extensionId);

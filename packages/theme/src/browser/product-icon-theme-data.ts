@@ -134,7 +134,7 @@ async function _loadProductIconThemeDocument(
   const contentValue = parser.parse(ret.content.toString(), parseErrors);
 
   if (parseErrors.length > 0) {
-    return Promise.reject(new Error(localize('error.cannotparseicontheme', 'parse icon theme failed')));
+    return Promise.reject(new Error(localize('error.cannotparseicontheme', 'Parse product icon theme failed')));
   } else if (typeof contentValue !== 'object') {
     return Promise.reject(new Error(localize('error.invalidformat', 'Invalid icon theme format')));
   } else if (!contentValue.iconDefinitions || !Array.isArray(contentValue.fonts) || !contentValue.fonts.length) {

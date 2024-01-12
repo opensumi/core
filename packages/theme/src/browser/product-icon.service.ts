@@ -25,14 +25,13 @@ import {
   getThemeId,
   IconThemeInfo,
   ExtensionData,
+  DEFAULT_PRODUCT_ICON_THEME_ID,
+  DEFAULT_PRODUCT_ICON_THEME_LABEL,
 } from '../common';
 import { IconContribution, IconDefinition, IconFontDefinition, getIconRegistry } from '../common/icon-registry';
 
 import { ProductIconThemeData } from './product-icon-theme-data';
 import { ProductIconThemeStore } from './product-icon-theme-store';
-
-export const DEFAULT_PRODUCT_ICON_THEME_ID = 'opensumi-icons';
-export const DEFAULT_PRODUCT_ICON_THEME_LABEL = 'OpenSumi Icons';
 
 export function asCSSUrl(uri: URI | null | undefined, staticResourceService: StaticResourceService): string {
   if (!uri) {

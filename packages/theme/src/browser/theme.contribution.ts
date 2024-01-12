@@ -27,6 +27,7 @@ import {
   IconThemeInfo,
   ThemeInfo,
   getThemeTypeName,
+  DEFAULT_PRODUCT_ICON_THEME_ID,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 
@@ -67,6 +68,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   async initialize() {
     this.registerDefaultColorTheme();
+    this.registerDefaultProductIconTheme();
 
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
@@ -88,9 +90,9 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   private registerDefaultProductIconTheme() {
     const themeId = this.preferenceService.get<string>(GeneralSettingsId.ProductIconTheme);
-    const shouldApplyDefaultThemeId = !themeId || themeId.includes('dark');
+    const shouldApplyDefaultThemeId = !themeId;
     if (shouldApplyDefaultThemeId) {
-      this.themeService.applyTheme(DEFAULT_THEME_ID);
+      this.productIconService.applyTheme(DEFAULT_PRODUCT_ICON_THEME_ID);
     }
   }
 

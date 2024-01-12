@@ -9,6 +9,9 @@ import { IconContribution, IconDefinition } from './icon-registry';
 export const ThemeServicePath = 'themeServicePath';
 
 export const DEFAULT_THEME_ID = 'ide-dark';
+
+export const DEFAULT_PRODUCT_ICON_THEME_ID = 'opensumi-icons';
+export const DEFAULT_PRODUCT_ICON_THEME_LABEL = 'OpenSumi Icons';
 // from vscode
 export const colorIdPattern = '^\\w+[.\\w+]*$';
 
