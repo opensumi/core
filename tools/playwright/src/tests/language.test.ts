@@ -18,7 +18,7 @@ let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Language', () => {
   test.beforeAll(async () => {
-    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/language')]);
+    workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/language')]);
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);

@@ -18,7 +18,7 @@ let workspace: OpenSumiWorkspace;
 test.describe('OpenSumi Extension', () => {
   // 用 git 插件来验证扩展相关功能
   test.beforeAll(async () => {
-    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/git-workspace')]);
+    workspace = new OpenSumiWorkspace([path.resolve(__dirname, '../../src/tests/workspaces/git-workspace')]);
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
