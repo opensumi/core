@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #151b21;
+  background-color: var(--panel-background);
   border-radius: 12px;
   overflow: hidden;
   font-size: 14px;
@@ -76,7 +76,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 0 12px 16px;
-    background-color: #222830;
+    background-color: var(--kt-panelTitle-background);
 
     .left {
       display: flex;
@@ -139,8 +139,7 @@
         align-items: flex-start;
         color: #ffffff;
         font-size: 12px;
-        font-weight: 300;
-        margin-left: 16px;
+        padding: 0 32px 0 16px;
 
         .chat_loading_mgs_avatar {
           height: 32px;
@@ -154,13 +153,10 @@
         height: 100%;
         overflow: auto;
         padding-top: 10px;
+        margin-right: 2px;
 
         &::-webkit-scrollbar {
           width: 4px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          border-radius: 2px;
         }
 
         .chat_container_des {
@@ -204,12 +200,12 @@
         }
       }
 
-      .chat_input_warp {
+      .chat_input_wrap {
         padding: 16px;
         display: flex;
         flex-direction: column;
         position: relative;
-        background-color: #151b21;
+        background-color: var(--panel-background);
         border-radius: 0 0 0 12px;
 
         .header_operate {

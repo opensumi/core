@@ -3,8 +3,9 @@
   width: initial;
 
   .ai_native_slot_resize_horizontal {
+    width: 2px;
     height: 100%;
-    margin: 0 3px;
+    margin: 0 2px;
     position: relative;
   }
 
@@ -24,7 +25,7 @@
     */
 
     div[class*='editorGroupHeader___'] {
-      background-color: #222830;
+      background-color: var(--kt-panelTitle-background);
     }
 
     div[class*='kt_editor_tabs_scroll_wrapper___'] {
@@ -85,7 +86,7 @@
       }
 
       div[class*='kt_editor_tab_current___'] {
-        background-color: #222830 !important;
+        background-color: var(--kt-panelTitle-background) !important;
 
         div[class*='close_tab___'] {
           display: block;
@@ -115,6 +116,7 @@
           line-height: 22px;
           font-size: 14px;
           color: rgba(255, 255, 255, 0.65);
+          margin-left: 2px;
           &:not(.disabled):hover {
             color: #fff;
           }
@@ -128,6 +130,7 @@
           height: 22px;
           padding: 0;
           font-size: 14px;
+          margin-left: 2px;
           &:hover {
             border-radius: 4px;
             background-color: var(--kt-icon-hoverBackground);
@@ -185,7 +188,8 @@
     * ---------------- 覆盖 editor component 内容区块样式 ---------------------
     */
     div[class*='kt_editor_component___'] {
-      background-color: #151b21;
+      padding-right: 2px;
+      background-color: var(--panel-background);
     }
   }
 }
@@ -199,6 +203,12 @@
     border-radius: 4px;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.65);
+  }
+
+  div[class*='kt_split_panel___'] {
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
   }
 
   div[class*='kt_split_panel_header___'] {
@@ -381,6 +391,10 @@
     }
   }
 
+  div[class*='outline_node___'] {
+    border-radius: 4px;
+  }
+
   // 搜索输入框样式
   :global {
     // div[class*='search_container___'] {
@@ -415,7 +429,7 @@
   }
 
   div[class*='bottom_bar_container___'] {
-    background-color: #222830;
+    background-color: var(--kt-panelTitle-background);
     width: 100%;
     height: 32px;
   }
@@ -497,7 +511,7 @@
 
   /* 过度方案 */
   div[class*='tab_bar___'] {
-    background-color: #222830;
+    background-color: var(--kt-panelTitle-background);
   }
 
   li[class*='bottom_tab___'] {
@@ -505,7 +519,7 @@
   }
 
   div[class*='panel_title_bar___'] {
-    background-color: #222830;
+    background-color: var(--kt-panelTitle-background);
   }
 
   div[class*='panel_title_bar___']::before {
@@ -694,7 +708,7 @@
   .monaco-editor,
   .monaco-editor-background,
   .monaco-editor .margin {
-    background: #151b21 !important;
+    background: var(--panel-background) !important;
   }
   .rce-container-mbox {
     margin: 8px 16px;

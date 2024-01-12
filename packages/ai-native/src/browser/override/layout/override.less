@@ -89,7 +89,7 @@ div[class*='box-panel___'] {
   padding: 5px 8px;
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.95);
-  background-color: #2b333d;
+  background-color: var(--kt-popover-background);
   line-height: 18px;
   margin-top: -3px;
   .kt-popover-title {
@@ -115,7 +115,7 @@ div[class*='box-panel___'] {
 html {
   ::-webkit-scrollbar-thumb {
     border-radius: 4px !important;
-    background: rgba(255, 255, 255, 0.06) !important;
+    background: var(--scrollbarSlider-background) !important;
   }
 }
 
@@ -136,6 +136,7 @@ html {
         width: 4px !important;
         left: unset !important;
         right: 0;
+        border-radius: 4px !important;
       }
     }
 
@@ -145,5 +146,18 @@ html {
         height: 4px !important;
       }
     }
+  }
+}
+
+.basic_tree {
+  .tree_node {
+    border-radius: 4px;
+  }
+}
+
+/* 设置滚动条宽度 */
+.xterm .xterm-viewport {
+  &::-webkit-scrollbar {
+    width: 4px;
   }
 }

@@ -343,7 +343,7 @@ export const AiChatView = observer(() => {
               </div>
             )}
           </div>
-          <div className={styles.chat_input_warp}>
+          <div className={styles.chat_input_wrap}>
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
                 <Popover id={'ai-chat-header-explain'} title='解释代码'>

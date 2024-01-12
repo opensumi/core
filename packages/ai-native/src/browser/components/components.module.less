@@ -29,10 +29,14 @@
 
     &:hover {
       span {
-        color: #3c8dff !important;
+        color: var(--kt-primaryButton-background) !important;
       }
     }
   }
+}
+
+.thinking_text {
+  font-size: 14px;
 }
 
 .bottom_container {
@@ -211,7 +215,7 @@
     :global {
       .kt-input-addon-after {
         align-items: flex-end;
-        margin: 6px 4px 0 0;
+        margin: 7px 4px 0 0;
       }
     }
 
@@ -220,10 +224,6 @@
       line-height: 16px;
       &::-webkit-scrollbar {
         width: 4px;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        border-radius: 2px;
       }
     }
 
@@ -238,7 +238,6 @@
     }
 
     .send_chat_btn {
-      border-radius: 2px;
       width: 24px;
       height: 24px;
       display: flex;
@@ -267,6 +266,7 @@
       }
 
       .send_icon {
+        font-size: 16px;
         color: rgba(60, 141, 255, 0.65);
       }
     }
@@ -304,10 +304,8 @@
           padding: 30px 8px 8px 8px;
           line-height: 18px;
           &::-webkit-scrollbar {
-            width: 4px;
-          }
-          &::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.06) !important;
+            width: auto;
+            height: 4px;
           }
         }
 
@@ -335,7 +333,7 @@
             justify-content: center;
             font-size: 12px;
             color: rgba(255, 255, 255, 0.65);
-
+            border-radius: 4px;
             &:hover {
               color: #fff;
               background-color: rgba(255, 255, 255, 0.08);
@@ -346,7 +344,7 @@
 
       :global {
         .hljs {
-          background-color: #151b21;
+          background-color: val(--panel-background);
         }
       }
 

@@ -36,7 +36,7 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
 
   const renderContent = useCallback(() => {
     if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
-      return <span>Thinking...</span>;
+      return <span className={styles.thinking_text}>Thinking...</span>;
     }
 
     return children;
