@@ -64,7 +64,7 @@ describe('connection', () => {
     });
     connection.on('message', (msg: Uint8Array) => {
       const msgObj = parse(msg);
-      if (msgObj.kind === 'ready') {
+      if (msgObj.kind === 'server-ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
           channel.handleMessage(msgObj);
         }

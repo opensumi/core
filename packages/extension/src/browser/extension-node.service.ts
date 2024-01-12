@@ -11,6 +11,7 @@ import {
   IDisposable,
   toDisposable,
   IApplicationService,
+  fromWindowClientId,
 } from '@opensumi/ide-core-browser';
 import { createNetSocketConnection } from '@opensumi/ide-core-browser';
 
@@ -159,7 +160,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
       const connection = createNetSocketConnection(connectPath);
       channel = WSChannel.forClient(connection, {
-        id: 'NodeExtProcessService',
+        id: fromWindowClientId('NodeExtProcessService'),
         tag: 'browser-electron-client',
       });
     } else {

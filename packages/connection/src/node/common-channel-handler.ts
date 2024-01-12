@@ -1,6 +1,7 @@
 import { MatchFunction, match } from 'path-to-regexp';
 import WebSocket from 'ws';
 
+import { ILogger } from '../common';
 import { WSWebSocketConnection } from '../common/connection';
 import { WSChannel, ChannelMessage, stringify, parse } from '../common/ws-channel';
 
@@ -79,12 +80,6 @@ export class CommonChannelPathHandler {
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
-interface ILogger {
-  log: (...args: any[]) => void;
-  warn: (...args: any[]) => void;
-  error: (...args: any[]) => void;
-}
-
 /**
  * Channel Handler for nodejs
  */
@@ -118,23 +113,24 @@ export class CommonChannelHandler extends WebSocketHandler {
       ...this.options.wsServerOptions,
     });
     this.wsServer.on('connection', (connection: WebSocket) => {
-      let connectionId: string;
+      let clientId: string;
       connection.on('message', (msg: Uint8Array) => {
         let msgObj: ChannelMessage;
         try {
           msgObj = parse(msg);
 
-          if (msgObj.kind === 'heartbeat') {
+          if (msgObj.kind === 'ping') {
             connection.send(
               stringify({
-                kind: 'heartbeat',
-                id: msgObj.id,
+                kind: 'pong',
+                id: clientId,
+                clientId,
               }),
             );
           } else if (msgObj.kind === 'open') {
-            const { id, path, clientId } = msgObj;
-            connectionId = clientId;
-            this.logger.log(`Open a new connection channel ${id} with path ${path}`);
+            const { id, path } = msgObj;
+            clientId = msgObj.clientId;
+            this.logger.log(`Open a new connection channel ${clientId} with path ${path}`);
             const wsConnection = new WSWebSocketConnection(connection);
             this.connectionMap.set(id, connection);
             this.heartbeat(id, connection);
@@ -158,11 +154,10 @@ export class CommonChannelHandler extends WebSocketHandler {
             if (handlerArr) {
               for (let i = 0, len = handlerArr.length; i < len; i++) {
                 const handler = handlerArr[i];
-                handler.handler(channel, connectionId, params);
+                handler.handler(channel, clientId, params);
               }
             }
-
-            channel.ready();
+            channel.serverReady();
           } else {
             const { id } = msgObj;
             const channel = this.channelMap.get(id);
@@ -178,17 +173,17 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
 
       connection.on('close', () => {
-        commonChannelPathHandler.disposeConnectionClientId(connection, connectionId);
+        commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
-        if (this.heartbeatMap.has(connectionId)) {
-          clearTimeout(this.heartbeatMap.get(connectionId) as NodeJS.Timeout);
-          this.heartbeatMap.delete(connectionId);
+        if (this.heartbeatMap.has(clientId)) {
+          clearTimeout(this.heartbeatMap.get(clientId) as NodeJS.Timeout);
+          this.heartbeatMap.delete(clientId);
 
-          this.logger.log(`Clear heartbeat from channel ${connectionId}`);
+          this.logger.log(`Clear heartbeat from channel ${clientId}`);
         }
 
         Array.from(this.channelMap.values())
-          .filter((channel) => channel.id.toString().indexOf(connectionId) !== -1)
+          .filter((channel) => channel.id.toString().indexOf(clientId) !== -1)
           .forEach((channel) => {
             channel.close(1, 'close');
             this.channelMap.delete(channel.id);

@@ -60,7 +60,7 @@ export class StreamPacketDecoder {
       this.emitter.emit('data', binary);
       this.reset();
 
-      if (this._buffers.length > 0) {
+      if (this._buffers.byteLength > 0) {
         // has more data, continue to parse
         return false;
       }
@@ -79,7 +79,7 @@ export class StreamPacketDecoder {
    * Then read the following data, until we get the length of varint32, then return this data and continue to read the next packet
    */
   _detectPacketHeader() {
-    if (this._buffers.length === 0) {
+    if (this._buffers.byteLength === 0) {
       return false;
     }
 
@@ -92,7 +92,7 @@ export class StreamPacketDecoder {
       return false;
     }
 
-    if (this._tmpChunksTotalBytesCursor + 4 > this._buffers.length) {
+    if (this._tmpChunksTotalBytesCursor + 4 > this._buffers.byteLength) {
       // Not enough data yet, wait for more data
       return false;
     }
@@ -106,7 +106,7 @@ export class StreamPacketDecoder {
       this.reader.reset(emptyBuffer);
     }
 
-    if (this._tmpChunksTotalBytesCursor + this._tmpContentLength > this._buffers.length) {
+    if (this._tmpChunksTotalBytesCursor + this._tmpContentLength > this._buffers.byteLength) {
       // Not enough data yet, wait for more data
       return false;
     }

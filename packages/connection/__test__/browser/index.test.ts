@@ -24,10 +24,10 @@ describe('connection browser', () => {
           socket.send(
             stringify({
               id: msgObj.id,
-              kind: 'ready',
+              kind: 'server-ready',
             }),
           );
-        } else if (msgObj.kind === 'heartbeat') {
+        } else if (msgObj.kind === 'ping') {
           receivedHeartbeat = true;
         }
       });

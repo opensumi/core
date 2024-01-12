@@ -19,18 +19,26 @@ export interface IWebSocket {
   onClose(cb: (code: number, reason: string) => void): void;
 }
 
-export interface HeartbeatMessage {
-  kind: 'heartbeat';
+export interface PingMessage {
+  kind: 'ping';
+  clientId: string;
   id: string;
 }
+
+export interface PongMessage {
+  kind: 'pong';
+  clientId: string;
+  id: string;
+}
+
 export interface OpenMessage {
   kind: 'open';
   id: string;
   path: string;
   clientId: string;
 }
-export interface ReadyMessage {
-  kind: 'ready';
+export interface ServerReadyMessage {
+  kind: 'server-ready';
   id: string;
 }
 export interface DataMessage {
@@ -44,9 +52,12 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-export type ChannelMessage = HeartbeatMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | DataMessage | CloseMessage;
 
 export interface IWSChannelCreateOptions {
+  /**
+   * every channel's unique id
+   */
   id: string;
   /**
    * @example browser | ws-server | net-server | net-client | port1 | port2
@@ -78,8 +89,7 @@ export class WSChannel implements IWebSocket {
 
     disposable.push(
       connection.onMessage((data) => {
-        const msg = parse(data);
-        channel.handleMessage(msg);
+        channel.handleMessage(parse(data));
       }),
     );
     disposable.push(channel);
@@ -124,19 +134,20 @@ export class WSChannel implements IWebSocket {
   onOpen(cb: (id: string) => void) {
     return this.emitter.on('open', cb);
   }
-  onReOpen(cb: () => void) {
+  onReopen(cb: () => void) {
     return this.emitter.on('reopen', cb);
   }
-  ready() {
+  serverReady() {
     this.connection.send(
       stringify({
-        kind: 'ready',
+        kind: 'server-ready',
         id: this.id,
       }),
     );
   }
+
   handleMessage(msg: ChannelMessage) {
-    if (msg.kind === 'ready') {
+    if (msg.kind === 'server-ready') {
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
       this.emitter.emit('message', msg.content);
@@ -171,7 +182,7 @@ export class WSChannel implements IWebSocket {
   close(code?: number, reason?: string) {
     this.emitter.emit('close', code, reason);
   }
-  fireReOpen() {
+  fireReopen() {
     this.emitter.emit('reopen');
   }
   onClose(cb: (code: number, reason: string) => void) {
@@ -191,8 +202,8 @@ export class WSChannel implements IWebSocket {
     channel.onClose((code, reason) => {
       this.close(code, reason);
     });
-    channel.onReOpen(() => {
-      this.fireReOpen();
+    channel.onReopen(() => {
+      this.fireReopen();
     });
   }
 }

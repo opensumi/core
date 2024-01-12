@@ -16,7 +16,7 @@ import {
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
-import { createNetSocketConnection } from '../utils';
+import { createNetSocketConnection, fromWindowClientId } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
@@ -46,7 +46,7 @@ export async function createClientConnection4Electron(
 ) {
   const connection = createNetSocketConnection();
   const channel = WSChannel.forClient(connection, {
-    id: clientId || 'client' + Math.random().toString(36).slice(2, -1),
+    id: clientId || fromWindowClientId('RPCService'),
     tag: 'electron-renderer',
     logger: console,
   });
@@ -102,7 +102,7 @@ export async function createConnectionService(
 
   // 重连不会执行后面的逻辑
   const channel = await channelHandler.openChannel('RPCService');
-  channel.onReOpen(() => onReconnect());
+  channel.onReopen(() => onReconnect());
 
   bindConnectionService(injector, modules, channel);
 }

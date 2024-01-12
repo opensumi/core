@@ -43,7 +43,8 @@ export class WSChannelHandler {
     }
     this.heartbeatMessageTimer = global.setTimeout(() => {
       const msg = stringify({
-        kind: 'heartbeat',
+        kind: 'ping',
+        clientId: this.clientId,
         id: this.clientId,
       });
       this.connection.send(msg);
@@ -58,13 +59,14 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
+      if (msg.kind === 'pong') {
+        // ignore server2client pong message
+        return;
+      }
+
       if (!msg.id) {
         // unknown message
         this.logger.warn(this.LOG_TAG, 'unknown message', msg);
-        return;
-      }
-      if (msg.kind === 'heartbeat') {
-        // don't handle server2client heartbeat message
         return;
       }
 
@@ -80,8 +82,7 @@ export class WSChannelHandler {
       }
     });
 
-    const onOpenStage2 = () => {
-      // 重连 channel
+    const reopenExistsChannel = () => {
       if (this.channelMap.size) {
         this.channelMap.forEach((channel) => {
           channel.onOpen(() => {
@@ -93,7 +94,7 @@ export class WSChannelHandler {
 
           channel.open(channel.channelPath, this.clientId);
           // 针对前端需要重新设置下后台状态的情况
-          channel.fireReOpen();
+          channel.fireReopen();
         });
       }
     };
@@ -101,13 +102,13 @@ export class WSChannelHandler {
       if (this.connection.isOpen()) {
         this.heartbeatMessage();
         resolve();
-        onOpenStage2();
+        reopenExistsChannel();
       }
 
       this.connection.onOpen(() => {
         this.heartbeatMessage();
         resolve();
-        onOpenStage2();
+        reopenExistsChannel();
       });
 
       this.connection.onceClose((code, reason) => {

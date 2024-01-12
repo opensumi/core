@@ -1,5 +1,3 @@
-import { MessageConnection } from '@opensumi/vscode-jsonrpc';
-
 export interface ILogger {
   log(...args: any[]): void;
   warn(...args: any[]): void;
@@ -16,10 +14,4 @@ export enum ServiceType {
 
 export interface IBench {
   registerService: (service: string) => void;
-}
-
-export interface RPCMessageConnection extends MessageConnection {
-  uid?: string;
-  writer?: any;
-  reader?: any;
 }

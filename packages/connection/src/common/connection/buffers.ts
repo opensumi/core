@@ -14,7 +14,7 @@ export class Buffers {
   buffers = [] as Uint8Array[];
   protected size = 0;
 
-  get length() {
+  get byteLength() {
     return this.size;
   }
 
@@ -31,14 +31,14 @@ export class Buffers {
   slice(start?: number, end?: number) {
     const buffers = this.buffers;
     if (end === undefined) {
-      end = this.length;
+      end = this.size;
     }
     if (start === undefined) {
       start = 0;
     }
 
-    if (end > this.length) {
-      end = this.length;
+    if (end > this.size) {
+      end = this.size;
     }
 
     if (start >= end) {
@@ -67,7 +67,7 @@ export class Buffers {
   }
 
   pos(i: number): { buf: number; offset: number } {
-    if (i < 0 || i >= this.length) {
+    if (i < 0 || i >= this.size) {
       throw new Error('oob');
     }
     let l = i;
@@ -84,18 +84,18 @@ export class Buffers {
     }
   }
 
-  copy(target: Uint8Array, targetStart = 0, sourceStart = 0, sourceEnd = this.length) {
+  copy(target: Uint8Array, targetStart = 0, sourceStart = 0, sourceEnd = this.size) {
     return copy(this.slice(sourceStart, sourceEnd), target, targetStart, 0, sourceEnd - sourceStart);
   }
 
   splice(start: number, deleteCount: number, ...reps: Uint8Array[]) {
     const buffers = this.buffers;
-    const index = start >= 0 ? start : this.length - start;
+    const index = start >= 0 ? start : this.size - start;
 
     if (deleteCount === undefined) {
-      deleteCount = this.length - index;
-    } else if (deleteCount > this.length - index) {
-      deleteCount = this.length - index;
+      deleteCount = this.size - index;
+    } else if (deleteCount > this.size - index) {
+      deleteCount = this.size - index;
     }
 
     for (const i of reps) {
@@ -151,10 +151,10 @@ export class Buffers {
       ii += reps.length;
     }
 
-    while (removed.length < deleteCount) {
+    while (removed.byteLength < deleteCount) {
       const buf = buffers[ii];
       const len = buf.length;
-      const take = Math.min(len, deleteCount - removed.length);
+      const take = Math.min(len, deleteCount - removed.byteLength);
 
       if (take === len) {
         removed.push(buf);
@@ -165,7 +165,7 @@ export class Buffers {
       }
     }
 
-    this.size -= removed.length;
+    this.size -= removed.byteLength;
 
     return removed;
   }

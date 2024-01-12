@@ -92,12 +92,18 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
   );
 }
 
+export interface IElectronEnvMetadata {
+  windowClientId: string;
+  [key: string]: any;
+}
+
 export const electronEnv: {
   currentWindowId: number;
   currentWebContentsId: number;
   ipcRenderer: IElectronIpcRenderer;
   webviewPreload: string;
   plainWebviewPreload: string;
+  metadata: IElectronEnvMetadata;
   [key: string]: any;
 } = (global as any) || {};
 
@@ -120,4 +126,8 @@ export function createNetSocketConnection(connectPath?: string): NetSocketConnec
     socket = electronEnv.createRPCNetConnection();
   }
   return new NetSocketConnection(socket);
+}
+
+export function fromWindowClientId(suffix: string) {
+  return `${suffix}-${electronEnv.metadata.windowClientId}`;
 }

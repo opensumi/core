@@ -497,7 +497,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.logger.log(`The electron mainThread ${clientId} connected`);
 
         const channel = WSChannel.forClient(new NetSocketConnection(connection), {
-          id: 'ElectronMainThreadForward',
+          id: 'ElectronMainThreadForward- + clientId',
           tag: 'node-host-client',
         });
 
@@ -506,9 +506,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           clientId,
         });
 
-        connection.on('close', () => {
+        connection.once('close', () => {
           this.logger.log(`Dispose client by clientId ${clientId}`);
-          // electron 只要端口进程就杀死插件进程
+          // if renderer connection is lost, kill ext process
+          // this means user has close the window
           this.disposeClientExtProcess(clientId);
         });
       });
@@ -534,7 +535,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
                 extConnection.channel.dispose();
               }
             }
-            // 当连接关闭后启动定时器清除插件进程
             this.closeExtProcessWhenConnectionClose(clientId);
           });
         },
