@@ -37,12 +37,46 @@ class GlyphMarginModel extends ViewsModel {
     }
   }
 
+  /**
+   * monaco 0.45 版本将断点 dom 放在了 glyph-margin-widgets 的 dom 里
+   */
+  async getGlyphMarginWidgets(lineNumber: number) {
+    const margin = await this.getElement();
+    const widgets = await margin?.$$('.glyph-margin-widgets > div');
+    if (!widgets) {
+      return;
+    }
+
+    for (const node of widgets) {
+      const styles = await node.getAttribute('style');
+
+      const tops = styles?.match(/top: [0-9]*px;/g) || ['0'];
+      const topNums = tops[0].match(/\d+/g);
+      if (Array.isArray(topNums) && topNums.length > 0) {
+        let topNum: number | string = topNums[0];
+        topNum = Number(topNum);
+
+        // 每个 view-lines 默认高度都是 18
+        const line = topNum / 18 + 1;
+        if (line === lineNumber) {
+          return node;
+        }
+      } else {
+        return;
+      }
+    }
+  }
+
   async hasBreakpoint(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
-    return !!(await node.$('.sumi-debug-breakpoint'));
+    const className = await node.getProperty('className');
+    const classValue = await className.jsonValue();
+    return classValue.includes('sumi-debug-breakpoint');
   }
 
   async hasTopStackFrame(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
-    return !!(await node.$('.sumi-debug-top-stack-frame'));
+    const className = await node.getProperty('className');
+    const classValue = await className.jsonValue();
+    return classValue.includes('sumi-debug-top-stack-frame');
   }
 
   async hasTopStackFrameLine(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {

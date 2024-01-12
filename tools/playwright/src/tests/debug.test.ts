@@ -34,11 +34,11 @@ test.describe('OpenSumi Debug', () => {
   test('Debug breakpoint editor glyph margin should be worked', async () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
     const glyphMarginModel = await editor.getGlyphMarginModel();
-    let overlay = await glyphMarginModel.getOverlay(6);
+    const overlay = await glyphMarginModel.getOverlay(6);
     await overlay?.click({ position: { x: 9, y: 9 }, force: true });
     // 此时元素 dom 结构已经改变，需要重新获取
-    overlay = await glyphMarginModel.getOverlay(6);
-    expect(await glyphMarginModel.hasBreakpoint(overlay!)).toBeTruthy();
+    const marginWidgets = await glyphMarginModel.getGlyphMarginWidgets(6);
+    expect(await glyphMarginModel.hasBreakpoint(marginWidgets!)).toBeTruthy();
     await editor.close();
   });
 
@@ -48,7 +48,7 @@ test.describe('OpenSumi Debug', () => {
 
     debugView = await app.open(OpenSumiDebugView);
     const glyphMarginModel = await editor.getGlyphMarginModel();
-    let glyphOverlay = await glyphMarginModel.getOverlay(6);
+    let glyphOverlay = await glyphMarginModel.getGlyphMarginWidgets(6);
     expect(glyphOverlay).toBeDefined();
     if (!glyphOverlay) {
       return;
@@ -62,12 +62,12 @@ test.describe('OpenSumi Debug', () => {
     await debugView.start();
     await app.page.waitForTimeout(2000);
 
-    glyphOverlay = await glyphMarginModel.getOverlay(6);
-    expect(glyphOverlay).toBeDefined();
-    if (!glyphOverlay) {
+    const topStackFrameNode = await glyphMarginModel.getGlyphMarginWidgets(6);
+    expect(topStackFrameNode).toBeDefined();
+    if (!topStackFrameNode) {
       return;
     }
-    expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay)).toBeTruthy();
+    expect(await glyphMarginModel.hasTopStackFrame(topStackFrameNode)).toBeTruthy();
 
     const overlaysModel = await editor.getOverlaysModel();
     const viewOverlay = await overlaysModel.getOverlay(6);
