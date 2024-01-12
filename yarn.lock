@@ -334,14 +334,18 @@ __metadata:
   checksum: 2678231192c0471dbc2fc403fb19456cc46b1afefcfebf6bc0f48b2e938fdb0fef2e0fe90c8c8ae1f021dae5012b700372e4b5d15867f1d7764616532e4a6324
 =======
 "@babel/helpers@npm:^7.23.7":
-  version: 7.23.7
-  resolution: "@babel/helpers@npm:7.23.7"
+  version: 7.23.8
+  resolution: "@babel/helpers@npm:7.23.8"
   dependencies:
     "@babel/template": ^7.22.15
     "@babel/traverse": ^7.23.7
     "@babel/types": ^7.23.6
+<<<<<<< HEAD
   checksum: 4f3bdf35fb54ff79107c6020ba1e36a38213a15b05ca0fa06c553b65f566e185fba6339fb3344be04593ebc244ed0bbb0c6087e73effe0d053a30bcd2db3a013
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: 8b522d527921f8df45a983dc7b8e790c021250addf81ba7900ba016e165442a527348f6f877aa55e1debb3eef9e860a334b4e8d834e6c9b438ed61a63d9a7ad4
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -539,6 +543,7 @@ __metadata:
 
 "@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.10.1, @babel/runtime@npm:^7.11.1, @babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.18.0, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.23.2":
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: 7.23.9
   resolution: "@babel/runtime@npm:7.23.9"
   dependencies:
@@ -564,9 +569,13 @@ __metadata:
 =======
   version: 7.23.7
   resolution: "@babel/runtime@npm:7.23.7"
+=======
+  version: 7.23.8
+  resolution: "@babel/runtime@npm:7.23.8"
+>>>>>>> fix: ci
   dependencies:
     regenerator-runtime: ^0.14.0
-  checksum: eba85bd24d250abb5ae19b16cffc15a54d3894d8228ace40fa4c0e2f1938f28b38ad3e3430ebff9a1ef511eeb8c527e36044ac19076d6deafa52cef35d8624b9
+  checksum: 0bd5543c26811153822a9f382fd39886f66825ff2a397a19008011376533747cd05c33a91f6248c0b8b0edf0448d7c167ebfba34786088f1b7eb11c65be7dfc3
   languageName: node
   linkType: hard
 
@@ -663,6 +672,7 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "@commitlint/config-validator@npm:^18.6.1":
   version: 18.6.1
   resolution: "@commitlint/config-validator@npm:18.6.1"
@@ -674,11 +684,20 @@ __metadata:
 "@commitlint/config-validator@npm:^18.4.3":
   version: 18.4.3
   resolution: "@commitlint/config-validator@npm:18.4.3"
+=======
+"@commitlint/config-validator@npm:^18.4.4":
+  version: 18.4.4
+  resolution: "@commitlint/config-validator@npm:18.4.4"
+>>>>>>> fix: ci
   dependencies:
-    "@commitlint/types": ^18.4.3
+    "@commitlint/types": ^18.4.4
     ajv: ^8.11.0
+<<<<<<< HEAD
   checksum: e56aa321aa4f680ed78822f974e724e27c005c6c6b910ff59c3a2b0220c97ff4291e316674637ec28da6f8234952e2d20673d9851e049913474e8f24b4e2d376
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: 6712b83a12750182ad5d35dd9f9767908df93d950b703c51edf812433249041565aba148221d06f3afd6ac6030d0ddd5d6628c76504c6b01596ac1cd6dd3001c
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -700,6 +719,7 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "@commitlint/execute-rule@npm:^18.6.1":
   version: 18.6.1
   resolution: "@commitlint/execute-rule@npm:18.6.1"
@@ -710,6 +730,12 @@ __metadata:
   resolution: "@commitlint/execute-rule@npm:18.4.3"
   checksum: 0f0e99e2f079872efe39915313f7d353a36dfac4432bb74ac60a526ca3c9b7bb55365a2e4627f99f4be3fb8ac4c6e745adcacfbdcbf940418f101ffaa10d5ae3
 >>>>>>> fix: inline hover widget style
+=======
+"@commitlint/execute-rule@npm:^18.4.4":
+  version: 18.4.4
+  resolution: "@commitlint/execute-rule@npm:18.4.4"
+  checksum: f09d966479a7d7521e095b1a78ae8b357a722e4fe62250a4c4a6834825fff3ccaad3991be0bc2c6ed3c88adfa3e5a3f57d794cabb5d0b84228ebc3b0926d4ce1
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -747,6 +773,7 @@ __metadata:
 
 "@commitlint/load@npm:>6.1.1":
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: 18.6.1
   resolution: "@commitlint/load@npm:18.6.1"
   dependencies:
@@ -764,6 +791,15 @@ __metadata:
     "@commitlint/types": ^18.4.3
     "@types/node": ^18.11.9
 >>>>>>> fix: inline hover widget style
+=======
+  version: 18.4.4
+  resolution: "@commitlint/load@npm:18.4.4"
+  dependencies:
+    "@commitlint/config-validator": ^18.4.4
+    "@commitlint/execute-rule": ^18.4.4
+    "@commitlint/resolve-extends": ^18.4.4
+    "@commitlint/types": ^18.4.4
+>>>>>>> fix: ci
     chalk: ^4.1.0
     cosmiconfig: ^8.3.6
     cosmiconfig-typescript-loader: ^5.0.0
@@ -772,10 +808,14 @@ __metadata:
     lodash.uniq: ^4.5.0
     resolve-from: ^5.0.0
 <<<<<<< HEAD
+<<<<<<< HEAD
   checksum: 383a9a59c5b291fdf369735731b226b48aadd455adb1ba4353e90c5fa51d9f836242806c58211c248e6a58a1df89975e91f706b8629e023dd88079910f4508ef
 =======
   checksum: 8fb8652f00f739c75493d3c805d5cc09e5bef8398eff26b9fbfd8d2be2b6a47758bab72650a3ab5202427c9e1936ea36270c40aca39f87fade38c7293194ee21
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: 2643f6fdd7f79fc82c14ce88809b69af69c72757e30902ed79d2c26f90035edebf5d5bd10319362e14f7c85dbe36961cb28bc9e376a93e7c83822f24aa37a5a3
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -839,6 +879,7 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "@commitlint/resolve-extends@npm:^18.6.1":
   version: 18.6.1
   resolution: "@commitlint/resolve-extends@npm:18.6.1"
@@ -853,15 +894,27 @@ __metadata:
     "@commitlint/config-validator": ^18.4.3
     "@commitlint/types": ^18.4.3
 >>>>>>> fix: inline hover widget style
+=======
+"@commitlint/resolve-extends@npm:^18.4.4":
+  version: 18.4.4
+  resolution: "@commitlint/resolve-extends@npm:18.4.4"
+  dependencies:
+    "@commitlint/config-validator": ^18.4.4
+    "@commitlint/types": ^18.4.4
+>>>>>>> fix: ci
     import-fresh: ^3.0.0
     lodash.mergewith: ^4.6.2
     resolve-from: ^5.0.0
     resolve-global: ^1.0.0
 <<<<<<< HEAD
+<<<<<<< HEAD
   checksum: d9077b4bebae11ef3f8257894718eaae46f304ccf867f41d8e1a53862027e193a4ea269dbe8939ec3cd5d6c2793e26bca2ead5d3d4beced2078f7ae5270c4f1f
 =======
   checksum: ef321ae425385e720763019a1dcf39b5daf65a661f6af43d69b7aad04eda21ce43487c7552b65f5611c96b45bfefabe63c9eaef20352f223812b5c9d489a600a
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: b48946fa43cb63149d1771d28d1bdfe81a5b13f5223dbf6958edbe0bcf9635364ba1f07e16a3592069dba4c864a7a403e41af708367472b0d2fd5c9ed38d0997
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -904,6 +957,7 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "@commitlint/types@npm:^18.6.1":
   version: 18.6.1
   resolution: "@commitlint/types@npm:18.6.1"
@@ -918,6 +972,14 @@ __metadata:
     chalk: ^4.1.0
   checksum: 52dfc0ee835f3030fff25e45b4568e83eef818126a30f60860637c74de4919c5f9f1eab157622bb70facf9483f07898cfcb47efa484caf6443dd866942e460ec
 >>>>>>> fix: inline hover widget style
+=======
+"@commitlint/types@npm:^18.4.4":
+  version: 18.4.4
+  resolution: "@commitlint/types@npm:18.4.4"
+  dependencies:
+    chalk: ^4.1.0
+  checksum: bda09adc5f4a7d460120891ad85d2950cb3db17ee9ecf93b820c4782c5a9f8cb235b28fb559a3c4f38fbb5ada43b50bab4c2ee1eb87853be4febbcd8da30fd1f
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -1054,6 +1116,7 @@ __metadata:
 
 "@humanwhocodes/config-array@npm:^0.11.13":
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: 0.11.14
   resolution: "@humanwhocodes/config-array@npm:0.11.14"
   dependencies:
@@ -1064,12 +1127,20 @@ __metadata:
 =======
   version: 0.11.13
   resolution: "@humanwhocodes/config-array@npm:0.11.13"
+=======
+  version: 0.11.14
+  resolution: "@humanwhocodes/config-array@npm:0.11.14"
+>>>>>>> fix: ci
   dependencies:
-    "@humanwhocodes/object-schema": ^2.0.1
-    debug: ^4.1.1
+    "@humanwhocodes/object-schema": ^2.0.2
+    debug: ^4.3.1
     minimatch: ^3.0.5
+<<<<<<< HEAD
   checksum: f8ea57b0d7ed7f2d64cd3944654976829d9da91c04d9c860e18804729a33f7681f78166ef4c761850b8c324d362f7d53f14c5c44907a6b38b32c703ff85e4805
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: 861ccce9eaea5de19546653bccf75bf09fe878bc39c3aab00aeee2d2a0e654516adad38dd1098aab5e3af0145bbcbf3f309bdf4d964f8dab9dcd5834ae4c02f2
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -1081,16 +1152,22 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fix: ci
 "@humanwhocodes/object-schema@npm:^2.0.2":
   version: 2.0.2
   resolution: "@humanwhocodes/object-schema@npm:2.0.2"
   checksum: 2fc11503361b5fb4f14714c700c02a3f4c7c93e9acd6b87a29f62c522d90470f364d6161b03d1cc618b979f2ae02aed1106fd29d302695d8927e2fc8165ba8ee
+<<<<<<< HEAD
 =======
 "@humanwhocodes/object-schema@npm:^2.0.1":
   version: 2.0.1
   resolution: "@humanwhocodes/object-schema@npm:2.0.1"
   checksum: 24929487b1ed48795d2f08346a0116cc5ee4634848bce64161fb947109352c562310fd159fc64dda0e8b853307f5794605191a9547f7341158559ca3c8262a45
 >>>>>>> fix: inline hover widget style
+=======
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -1593,13 +1670,17 @@ __metadata:
   checksum: ac7dd2cfe0b479aa1b81776d40d789243131cc792dc8b6b6a028c70fcd6171958ae1a71bf67b618ffe3c0c3feead9870c095ee46a5e30319410d92976b28f498
 =======
 "@jridgewell/trace-mapping@npm:^0.3.12, @jridgewell/trace-mapping@npm:^0.3.13, @jridgewell/trace-mapping@npm:^0.3.17, @jridgewell/trace-mapping@npm:^0.3.18, @jridgewell/trace-mapping@npm:^0.3.9":
-  version: 0.3.20
-  resolution: "@jridgewell/trace-mapping@npm:0.3.20"
+  version: 0.3.21
+  resolution: "@jridgewell/trace-mapping@npm:0.3.21"
   dependencies:
     "@jridgewell/resolve-uri": ^3.1.0
     "@jridgewell/sourcemap-codec": ^1.4.14
+<<<<<<< HEAD
   checksum: cd1a7353135f385909468ff0cf20bdd37e59f2ee49a13a966dedf921943e222082c583ade2b579ff6cd0d8faafcb5461f253e1bf2a9f48fec439211fdbe788f5
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: e91d3943c6d84687503ba033600d42b2a81d9eaf32758fee06449cd1415c59b944af08841e99f030b71f83bb5f814969e96fc8aa29e469eb3ea1b46597d13cff
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -4974,9 +5055,14 @@ __metadata:
   resolution: "@types/koa@npm:2.14.0"
 =======
 "@types/koa@npm:*, @types/koa@npm:^2.13.4":
+<<<<<<< HEAD
   version: 2.13.12
   resolution: "@types/koa@npm:2.13.12"
 >>>>>>> fix: inline hover widget style
+=======
+  version: 2.14.0
+  resolution: "@types/koa@npm:2.14.0"
+>>>>>>> fix: ci
   dependencies:
     "@types/accepts": "*"
     "@types/content-disposition": "*"
@@ -4987,6 +5073,7 @@ __metadata:
     "@types/koa-compose": "*"
     "@types/node": "*"
 <<<<<<< HEAD
+<<<<<<< HEAD
   checksum: 57d809e42350c9ddefa2150306355e40757877468bb027e0bd99f5aeb43cfaf8ba8b14761ea65e419d6fb4c2403a1f3ed0762872a9cf040dbd14357caca56548
   languageName: node
   linkType: hard
@@ -4994,6 +5081,9 @@ __metadata:
 "@types/lodash@npm:^4.14.202":
 =======
   checksum: 4a2e7e19bf91779d0a3c46b8838d6faba5ee0e9a888e5ef8683722c21aa8efcf35f86d1a661adb56ca9f239f7724e306055e33bfa1b2dc008b9c0fa9fcc12bee
+=======
+  checksum: 57d809e42350c9ddefa2150306355e40757877468bb027e0bd99f5aeb43cfaf8ba8b14761ea65e419d6fb4c2403a1f3ed0762872a9cf040dbd14357caca56548
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -5084,6 +5174,7 @@ __metadata:
 
 "@types/node@npm:*":
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: 20.11.19
   resolution: "@types/node@npm:20.11.19"
   dependencies:
@@ -5096,9 +5187,13 @@ __metadata:
 =======
   version: 20.10.6
   resolution: "@types/node@npm:20.10.6"
+=======
+  version: 20.11.0
+  resolution: "@types/node@npm:20.11.0"
+>>>>>>> fix: ci
   dependencies:
     undici-types: ~5.26.4
-  checksum: ada40e4ccbda3697dca88f8d13f4c996c493be6fbc15f5f5d3b91096d56bd700786a2c148a92a2b4c5d1f133379e63f754a786b3aebfc6a7d09fc7ea16dc017b
+  checksum: 1bd6890db7e0404d11c33d28f46f19f73256f0ba35d19f0ef2a0faba09f366f188915fb9338eebebcc472075c1c4941e17c7002786aa69afa44980737846b200
   languageName: node
   linkType: hard
 
@@ -5111,6 +5206,7 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^16.11.26":
+<<<<<<< HEAD
 <<<<<<< HEAD
   version: 16.18.82
   resolution: "@types/node@npm:16.18.82"
@@ -5132,15 +5228,20 @@ __metadata:
   version: 16.18.69
   resolution: "@types/node@npm:16.18.69"
   checksum: ac7076062e59169ac1907e9347d939ed5f79c6a3ec2a531fe7186caf2fcf8d66de9b87ad42d92c4dfa6cb44b1018ab89fef1e054a82af36deea04ba32a5a670a
+=======
+  version: 16.18.70
+  resolution: "@types/node@npm:16.18.70"
+  checksum: 0c8a1ee93f6c0940629fbf6245ff22e0c7423b7c7c74c47e7171dc6342d279c2f931d50894c3d1b9a66238469b2b3d2d3c7fcf21eb3af6a03fc588f9ab6db849
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.11.18, @types/node@npm:^18.11.9":
-  version: 18.19.4
-  resolution: "@types/node@npm:18.19.4"
+"@types/node@npm:^18.11.18":
+  version: 18.19.6
+  resolution: "@types/node@npm:18.19.6"
   dependencies:
     undici-types: ~5.26.4
-  checksum: 3a32a31b2df85d4bebb5e3c91ec1a0908d587a2a2fd31ab4eeebd609d1c04bbcc9ba97e290e3230f843c9f43f17efb9f5cde56412b4b0f5acbfe5577179b23c8
+  checksum: f0f3739f2d0e5be7b0b41a1fb149f554b1d6cb6c61c68e316c01ec2605559314f5434c170fb8e1a32f6c96a08ac752baa00ffe4451c154e37c77f76b70cf3d5b
   languageName: node
   linkType: hard
 
@@ -5648,31 +5749,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/compiler-core@npm:3.4.3":
-  version: 3.4.3
-  resolution: "@vue/compiler-core@npm:3.4.3"
+"@vue/compiler-core@npm:3.4.10":
+  version: 3.4.10
+  resolution: "@vue/compiler-core@npm:3.4.10"
   dependencies:
     "@babel/parser": ^7.23.6
-    "@vue/shared": 3.4.3
+    "@vue/shared": 3.4.10
     entities: ^4.5.0
     estree-walker: ^2.0.2
     source-map-js: ^1.0.2
-  checksum: 775ef54c51f613e9ed8eebd6618e00399ffc69491238001caba93307e9f796d0e32b2ce1129c0738f53e0933ba49a59ca8745e4dd57ebc442b3697900ae67fa4
+  checksum: 70ba4df509959bf1fe452f89210edf4593f35e8905d61f3631d8a11c0ad597caa2c915266be999173185adf4b516c9c9b712d74d3baad24c06052aaa725807a8
   languageName: node
   linkType: hard
 
-"@vue/compiler-dom@npm:3.4.3":
-  version: 3.4.3
-  resolution: "@vue/compiler-dom@npm:3.4.3"
+"@vue/compiler-dom@npm:3.4.10":
+  version: 3.4.10
+  resolution: "@vue/compiler-dom@npm:3.4.10"
   dependencies:
+<<<<<<< HEAD
     "@vue/compiler-core": 3.4.3
     "@vue/shared": 3.4.3
   checksum: f07c50d7abf8dba40ef8451028b7254fa71ac1c1c20f10d5fd530f94485de3b717df734bd648be57e31605e5986f8ad55b8462514dd621f73adf5dee9aa038c1
 >>>>>>> fix: inline hover widget style
+=======
+    "@vue/compiler-core": 3.4.10
+    "@vue/shared": 3.4.10
+  checksum: a137d4bf0050d592ce1fbf2c292f305d4db8eb79bd697c33a9e244c5b81a13be77df30b4f5a2b7fac95b39eef6b736fe6523fe59fa983d441d93c0b3b38d0918
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
 "@vue/compiler-sfc@npm:^3.3.4":
+<<<<<<< HEAD
 <<<<<<< HEAD
   version: 3.4.19
   resolution: "@vue/compiler-sfc@npm:3.4.19"
@@ -5682,10 +5790,21 @@ __metadata:
     "@vue/compiler-dom": 3.4.19
     "@vue/compiler-ssr": 3.4.19
     "@vue/shared": 3.4.19
+=======
+  version: 3.4.10
+  resolution: "@vue/compiler-sfc@npm:3.4.10"
+  dependencies:
+    "@babel/parser": ^7.23.6
+    "@vue/compiler-core": 3.4.10
+    "@vue/compiler-dom": 3.4.10
+    "@vue/compiler-ssr": 3.4.10
+    "@vue/shared": 3.4.10
+>>>>>>> fix: ci
     estree-walker: ^2.0.2
     magic-string: ^0.30.6
     postcss: ^8.4.33
     source-map-js: ^1.0.2
+<<<<<<< HEAD
   checksum: d622207fdb2030320d3612226da077914018cdf9deb06db0368bbb5dd4ee796aa5f83717287cd5834157d67596142957e7d955d16b5345eafa3e13cb48d3a79a
   languageName: node
   linkType: hard
@@ -5704,6 +5823,26 @@ __metadata:
   version: 3.4.19
   resolution: "@vue/shared@npm:3.4.19"
   checksum: 676c2ec007efc5963a37811e1991f7a114ea603d52721feb59e6c1ac119127d1bdf80c57b09b32a53bb803922edc50e3753d847e800e16018a80fc5f9b84fcf5
+=======
+  checksum: e315e853342eee374c3b2155b07dc9d0c57c9dcd2edec2302cda9c9cd322e890592e169399ea4f1eb409a03133976b23521b5c16b3ba2a34fc9dd551e543369b
+  languageName: node
+  linkType: hard
+
+"@vue/compiler-ssr@npm:3.4.10":
+  version: 3.4.10
+  resolution: "@vue/compiler-ssr@npm:3.4.10"
+  dependencies:
+    "@vue/compiler-dom": 3.4.10
+    "@vue/shared": 3.4.10
+  checksum: 4f0336757cf968aa89fe8589c9d765a10c853f2d895c7fbab51cb09543c4758e346e78bd4e915ce85ad59597e536ff43696c813fa0f25114cef89779a2d9e7a0
+  languageName: node
+  linkType: hard
+
+"@vue/shared@npm:3.4.10":
+  version: 3.4.10
+  resolution: "@vue/shared@npm:3.4.10"
+  checksum: 31328ce26b846d924b5276e6bafdfbc7c774905383f8514d3ff5f48f9bfb491b9686b088a362ea58823c620d20fe477d42596c5b08916dfc85ebd58450932904
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -6192,6 +6331,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 >>>>>>> fix: inline hover widget style
 "abort-controller@npm:^3.0.0":
   version: 3.0.0
@@ -6202,6 +6342,8 @@ __metadata:
   languageName: node
   linkType: hard
 
+=======
+>>>>>>> fix: ci
 "abstract-leveldown@npm:^6.2.1":
   version: 6.3.0
   resolution: "abstract-leveldown@npm:6.3.0"
@@ -6283,9 +6425,9 @@ __metadata:
   linkType: hard
 
 "acorn-walk@npm:^8.0.2, acorn-walk@npm:^8.1.1":
-  version: 8.3.1
-  resolution: "acorn-walk@npm:8.3.1"
-  checksum: 5c8926ddb5400bc825b6baca782931f9df4ace603ba1a517f5243290fd9cdb089d52877840687b5d5c939591ebc314e2e63721514feaa37c6829c828f2b940ce
+  version: 8.3.2
+  resolution: "acorn-walk@npm:8.3.2"
+  checksum: 3626b9d26a37b1b427796feaa5261faf712307a8920392c8dce9a5739fb31077667f4ad2ec71c7ac6aaf9f61f04a9d3d67ff56f459587206fc04aa31c27ef392
   languageName: node
   linkType: hard
 
@@ -6718,12 +6860,9 @@ __metadata:
 <<<<<<< HEAD
 =======
 "are-we-there-yet@npm:^4.0.0":
-  version: 4.0.1
-  resolution: "are-we-there-yet@npm:4.0.1"
-  dependencies:
-    delegates: ^1.0.0
-    readable-stream: ^4.1.0
-  checksum: 16871ee259e138bfab60800ae5b53406fb1b72b5d356f98b13c1b222bb2a13d9bc4292d79f4521fb0eca10874eb3838ae0d9f721f3bb34ddd37ee8f949831800
+  version: 4.0.2
+  resolution: "are-we-there-yet@npm:4.0.2"
+  checksum: 29d562d3aad6428aa4d732f78b058f1025fda00305bb307b4cd6ee26a43e5b4c90c113e97e01fa43bfe04556a800ba7e5c947907891ae99bfb8a5ae2488078d0
   languageName: node
   linkType: hard
 
@@ -7217,14 +7356,18 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.0.0":
-  version: 1.6.3
-  resolution: "axios@npm:1.6.3"
+  version: 1.6.5
+  resolution: "axios@npm:1.6.5"
   dependencies:
-    follow-redirects: ^1.15.0
+    follow-redirects: ^1.15.4
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
+<<<<<<< HEAD
   checksum: 07ef3bb83fc2dacc1ae2c97f2bbd04ef7701f5655f9037789d79ee78b698ffa50eaa8465c2017d4d3e9ce7d94cb779f730acaab32ce9036d0a4933c1e89df4da
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: e28d67b2d9134cb4608c44d8068b0678cfdccc652742e619006f27264a30c7aba13b2cd19c6f1f52ae195b5232734925928fb192d5c85feea7edd2f273df206d
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -7831,16 +7974,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "buffer@npm:6.0.3"
-  dependencies:
-    base64-js: ^1.3.1
-    ieee754: ^1.2.1
-  checksum: 5ad23293d9a731e4318e420025800b42bf0d264004c0286c8cc010af7a270c7a0f6522e84f54b9ad65cbd6db20b8badbfd8d2ebf4f80fa03dab093b89e68c3f9
-  languageName: node
-  linkType: hard
-
 "builtin-status-codes@npm:^3.0.0":
   version: 3.0.0
   resolution: "builtin-status-codes@npm:3.0.0"
@@ -8262,9 +8395,9 @@ __metadata:
   checksum: 2ab5fcec8fd3ee5d817a44bf1fb69804a6924d190e476863fb519692cd3e85a3a775bf4a2b6ba793f8db592ca61255b7f77f3d773ff7d42b452216f180bcdd2f
 =======
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001565":
-  version: 1.0.30001572
-  resolution: "caniuse-lite@npm:1.0.30001572"
-  checksum: 7d017a99a38e29ccee4ed3fc0ef1eb90cf082fcd3a7909c5c536c4ba1d55c5b26ecc1e4ad82c1caa6bfadce526764b354608710c9b61a75bdc7ce8ca15c5fcf2
+  version: 1.0.30001576
+  resolution: "caniuse-lite@npm:1.0.30001576"
+  checksum: b8b332675fe703d5e57b02df5f100345f2a3796c537a42422f5bfc82d3256b8bad3f4e2788553656d2650006d13a4b5db99725e2a9462cc0c8035ba494ba1857
   languageName: node
   linkType: hard
 
@@ -11117,10 +11250,16 @@ __metadata:
   checksum: 18c37e3c923a9ea9cc60f9e2a34345c08510605eab7859618c9a7bc9db5d7aa181507ae028a3a66fa812370539f5e81c621efe9318ec586b06e0a1504ff94100
 =======
 "electron-to-chromium@npm:^1.4.601":
+<<<<<<< HEAD
   version: 1.4.617
   resolution: "electron-to-chromium@npm:1.4.617"
   checksum: 0e3f53b3db19a4b1d400c0b466099607d4b5873b5b030f33c67b82babfa8828e1733ce1881ff22a90926e12a4b1ec5816947135b345e96f5fc288133fed857c6
 >>>>>>> fix: inline hover widget style
+=======
+  version: 1.4.629
+  resolution: "electron-to-chromium@npm:1.4.629"
+  checksum: 3ebf55bdfc4d1ac41888a474c447d6d20728d0bb1cdb63e0f184bb655cc279040d5537f2d25c2f315d0e7b5b075bbdf6043475f28ca8928888dbf06a08c4c2f7
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -11967,13 +12106,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"event-target-shim@npm:^5.0.0":
-  version: 5.0.1
-  resolution: "event-target-shim@npm:5.0.1"
-  checksum: 1ffe3bb22a6d51bdeb6bf6f7cf97d2ff4a74b017ad12284cc9e6a279e727dc30a5de6bb613e5596ff4dc3e517841339ad09a7eec44266eccb1aa201a30448166
-  languageName: node
-  linkType: hard
-
 "eventemitter3@npm:^4.0.0, eventemitter3@npm:^4.0.4":
   version: 4.0.7
   resolution: "eventemitter3@npm:4.0.7"
@@ -11982,10 +12114,14 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "events@npm:^3.2.0, events@npm:^3.3.0":
 =======
 "events@npm:^3.0.0, events@npm:^3.3.0":
 >>>>>>> fix: inline hover widget style
+=======
+"events@npm:^3.0.0":
+>>>>>>> fix: ci
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
@@ -12792,6 +12928,7 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.4":
   version: 1.15.5
   resolution: "follow-redirects@npm:1.15.5"
@@ -12801,6 +12938,9 @@ __metadata:
   checksum: 5ca49b5ce6f44338cbfc3546823357e7a70813cecc9b7b768158a1d32c1e62e7407c944402a918ea8c38ae2e78266312d617dc68783fac502cbb55e1047b34ec
 =======
 "follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.0":
+=======
+"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.4":
+>>>>>>> fix: ci
   version: 1.15.4
   resolution: "follow-redirects@npm:1.15.4"
   peerDependenciesMeta:
@@ -13129,10 +13269,14 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "fsevents@npm:2.3.2":
 =======
 "fsevents@npm:2.3.2, fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
 >>>>>>> fix: inline hover widget style
+=======
+"fsevents@npm:2.3.2":
+>>>>>>> fix: ci
   version: 2.3.2
   resolution: "fsevents@npm:2.3.2"
   dependencies:
@@ -13163,10 +13307,24 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "fsevents@patch:fsevents@2.3.2#~builtin<compat/fsevents>":
 =======
 "fsevents@patch:fsevents@2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@^2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
 >>>>>>> fix: inline hover widget style
+=======
+"fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
+  version: 2.3.3
+  resolution: "fsevents@npm:2.3.3"
+  dependencies:
+    node-gyp: latest
+  checksum: 11e6ea6fea15e42461fc55b4b0e4a0a3c654faa567f1877dbd353f39156f69def97a69936d1746619d656c4b93de2238bf731f6085a03a50cabf287c9d024317
+  conditions: os=darwin
+  languageName: node
+  linkType: hard
+
+"fsevents@patch:fsevents@2.3.2#~builtin<compat/fsevents>":
+>>>>>>> fix: ci
   version: 2.3.2
   resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
@@ -13194,16 +13352,31 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+"fsevents@patch:fsevents@^2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
+  version: 2.3.3
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.3#~builtin<compat/fsevents>::version=2.3.3&hash=df0bf1"
+  dependencies:
+    node-gyp: latest
+  conditions: os=darwin
+  languageName: node
+  linkType: hard
+
+>>>>>>> fix: ci
 "function-bind@npm:^1.1.2":
   version: 1.1.2
   resolution: "function-bind@npm:1.1.2"
   checksum: 2b0ff4ce708d99715ad14a6d1f894e2a83242e4a52ccfcefaee5e40050562e5f6dafc1adbb4ce2d4ab47279a45dc736ab91ea5042d843c3c092820dfe032efb1
+<<<<<<< HEAD
 =======
 "function-bind@npm:^1.1.1":
   version: 1.1.1
   resolution: "function-bind@npm:1.1.1"
   checksum: b32fbaebb3f8ec4969f033073b43f5c8befbb58f1a79e12f1d7490358150359ebd92f49e72ff0144f65f2c48ea2a605bff2d07965f548f6474fd8efd95bf361a
 >>>>>>> fix: inline hover widget style
+=======
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -14773,8 +14946,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "ieee754@npm:^1.1.13, ieee754@npm:^1.1.4, ieee754@npm:^1.2.1":
 >>>>>>> fix: inline hover widget style
+=======
+"ieee754@npm:^1.1.13, ieee754@npm:^1.1.4":
+>>>>>>> fix: ci
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
   checksum: 5144c0c9815e54ada181d80a0b810221a253562422e7c6c3a60b1901154184f49326ec239d618c416c1c5945a2e197107aee8d986a3dd836b53dffefd99b5e7e
@@ -19666,6 +19843,7 @@ __metadata:
 
 "node-abi@npm:^3.3.0":
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: 3.54.0
   resolution: "node-abi@npm:3.54.0"
   dependencies:
@@ -19685,6 +19863,13 @@ __metadata:
     semver: ^7.3.5
   checksum: 2ef47937d058fa1f0817294fe5ac3ec1d370d3f8eb4931ea920b7e147033390058d3bc35b64d9161036ad2fda191aa1155005cea20ec50984312637221559354
 >>>>>>> fix: inline hover widget style
+=======
+  version: 3.54.0
+  resolution: "node-abi@npm:3.54.0"
+  dependencies:
+    semver: ^7.3.5
+  checksum: 260caae87299bb2fac6a269ba5dd378dbe1d99030396832fca7199b6cb5fd46556d2ec0d431f4a76ab2d53e49948047543afe3f1d70d0e6ebad04d33139650da
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -19767,21 +19952,30 @@ __metadata:
 
 "node-gyp-build@npm:^4.3.0":
 <<<<<<< HEAD
+<<<<<<< HEAD
   version: 4.8.0
   resolution: "node-gyp-build@npm:4.8.0"
 =======
   version: 4.7.1
   resolution: "node-gyp-build@npm:4.7.1"
 >>>>>>> fix: inline hover widget style
+=======
+  version: 4.8.0
+  resolution: "node-gyp-build@npm:4.8.0"
+>>>>>>> fix: ci
   bin:
     node-gyp-build: bin.js
     node-gyp-build-optional: optional.js
     node-gyp-build-test: build-test.js
 <<<<<<< HEAD
+<<<<<<< HEAD
   checksum: b82a56f866034b559dd3ed1ad04f55b04ae381b22ec2affe74b488d1582473ca6e7f85fccf52da085812d3de2b0bf23109e752a57709ac7b9963951c710fea40
 =======
   checksum: 2ef8248021489db03be3e8098977cdc797b80a9b12b77c6dcb89b0dc89b8c62e6a482672ee298f61021740ae7f080fb33154cfec8fb158cec620f57b0fae87c0
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: b82a56f866034b559dd3ed1ad04f55b04ae381b22ec2affe74b488d1582473ca6e7f85fccf52da085812d3de2b0bf23109e752a57709ac7b9963951c710fea40
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -22728,18 +22922,27 @@ __metadata:
   linkType: hard
 
 "postcss@npm:^8.4.32":
+<<<<<<< HEAD
   version: 8.4.32
   resolution: "postcss@npm:8.4.32"
 >>>>>>> fix: inline hover widget style
+=======
+  version: 8.4.33
+  resolution: "postcss@npm:8.4.33"
+>>>>>>> fix: ci
   dependencies:
     nanoid: ^3.3.7
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
 <<<<<<< HEAD
+<<<<<<< HEAD
   checksum: cf3c3124d3912a507603f6d9a49b3783f741075e9aa73eb592a6dd9194f9edab9d20a8875d16d137d4f779fe7b6fbd1f5727e39bfd1c3003724980ee4995e1da
 =======
   checksum: 220d9d0bf5d65be7ed31006c523bfb11619461d296245c1231831f90150aeb4a31eab9983ac9c5c89759a3ca8b60b3e0d098574964e1691673c3ce5c494305ae
 >>>>>>> fix: inline hover widget style
+=======
+  checksum: 6f98b2af4b76632a3de20c4f47bf0e984a1ce1a531cf11adcb0b1d63a6cbda0aae4165e578b66c32ca4879038e3eaad386a6be725a8fb4429c78e3c1ab858fe9
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -23912,6 +24115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "readable-stream@npm:^4.1.0":
 >>>>>>> fix: inline hover widget style
   version: 4.5.2
@@ -23928,6 +24132,8 @@ __metadata:
 
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> fix: ci
 "readdirp@npm:^2.2.1":
   version: 2.2.1
   resolution: "readdirp@npm:2.2.1"
@@ -24624,13 +24830,13 @@ __metadata:
 "safer-buffer@npm:>= 2.1.2 < 3, safer-buffer@npm:>= 2.1.2 < 3.0.0, safer-buffer@npm:^2.1.0":
 =======
 "safe-regex-test@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "safe-regex-test@npm:1.0.0"
+  version: 1.0.2
+  resolution: "safe-regex-test@npm:1.0.2"
   dependencies:
-    call-bind: ^1.0.2
-    get-intrinsic: ^1.1.3
+    call-bind: ^1.0.5
+    get-intrinsic: ^1.2.2
     is-regex: ^1.1.4
-  checksum: bc566d8beb8b43c01b94e67de3f070fd2781685e835959bbbaaec91cc53381145ca91f69bd837ce6ec244817afa0a5e974fc4e40a2957f0aca68ac3add1ddd34
+  checksum: 4af5ce05a2daa4f6d4bfd5a3c64fc33d6b886f6592122e93c0efad52f7147b9b605e5ffc03c269a1e3d1f8db2a23bc636628a961c9fd65bafdc09503330673fd
   languageName: node
   linkType: hard
 
@@ -25904,10 +26110,16 @@ __metadata:
   linkType: hard
 
 "stream-shift@npm:^1.0.0":
+<<<<<<< HEAD
   version: 1.0.1
   resolution: "stream-shift@npm:1.0.1"
   checksum: 59b82b44b29ec3699b5519a49b3cedcc6db58c72fb40c04e005525dfdcab1c75c4e0c180b923c380f204bed78211b9bad8faecc7b93dece4d004c3f6ec75737b
 >>>>>>> fix: inline hover widget style
+=======
+  version: 1.0.2
+  resolution: "stream-shift@npm:1.0.2"
+  checksum: d1f57e3dd6f5f5b193a52a477187e8014555dd10e10c9ca38beb9ebbb58a423c453b5707ec96c88e83a9781f657bcaae8459d110aa8639b4480843a71fd2f2e6
+>>>>>>> fix: ci
   languageName: node
   linkType: hard
 
@@ -26048,10 +26260,14 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "string_decoder@npm:^1.1.1, string_decoder@npm:^1.3.0":
 =======
 "string_decoder@npm:^1.0.0, string_decoder@npm:^1.1.1, string_decoder@npm:^1.3.0":
 >>>>>>> fix: inline hover widget style
+=======
+"string_decoder@npm:^1.0.0, string_decoder@npm:^1.1.1":
+>>>>>>> fix: ci
   version: 1.3.0
   resolution: "string_decoder@npm:1.3.0"
   dependencies:
