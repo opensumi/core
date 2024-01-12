@@ -1,5 +1,4 @@
-import { RPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Disposable } from '@opensumi/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
 import { IQuickInputService, QuickOpenService, QuickPickService } from '@opensumi/ide-quick-open';
 import { QuickInputService } from '@opensumi/ide-quick-open/lib/browser/quick-input-service';
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
@@ -8,6 +7,7 @@ import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/them
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainThreadQuickOpen } from '../../../../src/browser/vscode/api/main.thread.quickopen';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { InputBoxValidationSeverity, QuickPickItemKind } from '../../../../src/common/vscode/ext-types';
@@ -15,20 +15,7 @@ import { ExtHostQuickOpen } from '../../../../src/hosted/api/vscode/ext.host.qui
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 let extHost: ExtHostQuickOpen;
 let mainThread: MainThreadQuickOpen;

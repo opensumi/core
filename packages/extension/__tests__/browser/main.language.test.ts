@@ -1,7 +1,6 @@
 import type vscode from 'vscode';
 
-import { RPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
+import { CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { URI, Uri, Position } from '@opensumi/ide-core-common';
 import {
@@ -29,6 +28,7 @@ import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalo
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
 import { ExtHostAPIIdentifier, IExtensionDescription, MainThreadAPIIdentifier } from '../../src/common/vscode';
@@ -39,20 +39,7 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { createToken } from '../../src/hosted/api/vscode/language/util';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 const defaultSelector = { scheme: 'far', language: 'a' };
 const disposables: DisposableCollection = new DisposableCollection();

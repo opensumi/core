@@ -1,6 +1,5 @@
 import type vscode from 'vscode';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@opensumi/ide-core-common';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
@@ -14,24 +13,11 @@ import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/v
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockExtensions } from '../../__mocks__/extensions';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { ExtHostDecorations } from '../../src/hosted/api/vscode/ext.host.decoration';
 import ExtensionHostextWindowAPIImpl from '../../src/hosted/ext.host';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 describe('MainThreadDecorationAPI Test Suites ', () => {
   const injector = createBrowserInjector([]);

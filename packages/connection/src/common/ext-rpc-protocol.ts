@@ -2,6 +2,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
   Deferred,
+  Emitter,
   Event,
   SerializedError,
   Uri,
@@ -9,6 +10,8 @@ import {
 } from '@opensumi/ide-core-common';
 
 import { ILogger } from './types';
+import { WSChannel } from './ws-channel';
+
 // Uri: vscode 中的 uri
 // URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 
@@ -398,4 +401,27 @@ export class RPCProtocol implements IRPCProtocol {
 
     pendingReply.reject(new Error('RPC Timeout: ' + callId));
   }
+}
+
+interface RPCProtocolCreateOptions {
+  timeout?: number;
+}
+
+export function createRPCProtocol(channel: WSChannel, options: RPCProtocolCreateOptions = {}): RPCProtocol {
+  const onMessageEmitter = new Emitter<string>();
+  channel.onMessage((msg: string) => {
+    onMessageEmitter.fire(msg);
+  });
+
+  const onMessage = onMessageEmitter.event;
+  const send = (msg: string) => {
+    channel.send(msg);
+  };
+
+  const mainThreadProtocol = new RPCProtocol({
+    onMessage,
+    send,
+    timeout: options.timeout,
+  });
+  return mainThreadProtocol;
 }

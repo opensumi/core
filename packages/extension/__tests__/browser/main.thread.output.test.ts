@@ -1,24 +1,15 @@
 import { Injector } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
-import { Emitter } from '@opensumi/ide-core-common';
 import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockOutputService } from '../../__mocks__/api/output.service';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import * as types from '../../src/common/vscode/ext-types';
 import { ExtHostOutput } from '../../src/hosted/api/vscode/ext.host.output';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
+const { rpcProtocolExt } = createMockPairRPCProtocol();
 
 describe('MainThreadOutput Test Suites', () => {
   const injector = createBrowserInjector(

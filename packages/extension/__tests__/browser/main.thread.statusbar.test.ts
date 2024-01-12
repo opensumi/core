@@ -1,5 +1,4 @@
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
-import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
+import { CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MainThreadStatusBar } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.statusbar';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { StatusBarAlignment } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
@@ -9,20 +8,9 @@ import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-ba
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockExtensionDescription } from '../../__mocks__/extensions';
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 describe('MainThreadStatusBar API Test Suites', () => {
   const injector = createBrowserInjector([]);

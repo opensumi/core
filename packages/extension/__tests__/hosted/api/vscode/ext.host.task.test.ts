@@ -1,6 +1,5 @@
 import path from 'path';
 
-import { RPCProtocol } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
@@ -54,6 +53,7 @@ import {
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { mockExtensionProps } from '../../../../__mocks__/extensions';
+import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainthreadTasks } from '../../../../src/browser/vscode/api/main.thread.tasks';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
@@ -65,20 +65,7 @@ import { CustomBuildTaskProvider } from './__mock__/taskProvider';
 
 const extension = mockExtensionProps;
 
-const emitterA = new EventEmitter<any>();
-const emitterB = new EventEmitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 let extHostTask: ExtHostTasks;
 let extHostTerminal: ExtHostTerminal;

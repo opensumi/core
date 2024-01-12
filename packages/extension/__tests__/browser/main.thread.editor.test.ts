@@ -2,7 +2,6 @@ import path from 'path';
 
 import isEqual from 'lodash/isEqual';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { URI, IContextKeyService } from '@opensumi/ide-core-browser';
 import { CorePreferences, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
 import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
@@ -77,24 +76,13 @@ import {
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { TestEditorDocumentProvider, TestResourceResolver } from '../../../editor/__tests__/browser/test-providers';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MainThreadEditorService } from '../../src/browser/vscode/api/main.thread.editor';
 import * as types from '../../src/common/vscode/ext-types';
 import { ExtensionHostEditorService } from '../../src/hosted/api/vscode/editor/editor.host';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
 const preferences: Map<string, any> = new Map();
 const emitter = new Emitter<IConfigurationChangeEvent>();
 

@@ -4,9 +4,8 @@ import { Injector } from '@opensumi/di';
 import { ICommentsService, ICommentsFeatureRegistry, CommentReactionClick } from '@opensumi/ide-comments';
 import { CommentsFeatureRegistry } from '@opensumi/ide-comments/lib/browser/comments-feature.registry';
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
-import { RPCProtocol } from '@opensumi/ide-connection';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Uri, Emitter, Disposable, IEventBus, URI, Deferred } from '@opensumi/ide-core-common';
+import { Uri, Disposable, IEventBus, URI, Deferred } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { MainthreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
@@ -27,6 +26,7 @@ import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.serv
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
+import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -37,18 +37,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
   let vscodeComments: typeof vscode.comments;
   let extComments: ExtHostComments;
   let mainThreadComments: IMainThreadComments;
-  const emitterExt = new Emitter<any>();
-  const emitterMain = new Emitter<any>();
-  const mockClientExt = {
-    send: (msg) => emitterMain.fire(msg),
-    onMessage: emitterExt.event,
-  };
-  const mockClientMain = {
-    send: (msg) => emitterExt.fire(msg),
-    onMessage: emitterMain.event,
-  };
-  const rpcProtocolExt = new RPCProtocol(mockClientExt);
-  const rpcProtocolMain = new RPCProtocol(mockClientMain);
+  const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
   beforeEach(() => {
     injector = createBrowserInjector([]);

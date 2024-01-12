@@ -1,7 +1,7 @@
 import type { ForkOptions } from 'child_process';
 import net from 'net';
 
-import { RPCService, IRPCProtocol, RPCProtocol, WSChannel } from '@opensumi/ide-connection';
+import { RPCService, IRPCProtocol, WSChannel, createRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { IExtensionHostManager } from '../common';
@@ -134,19 +134,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setRPCMethods() {
-    const onMessageEmitter = new Emitter<string>();
-    this.channel.onMessage((msg: string) => {
-      onMessageEmitter.fire(msg);
-    });
-    const onMessage = onMessageEmitter.event;
-
-    const send = (msg: string) => {
-      this.channel.send(msg);
-    };
-
-    this.protocol = new RPCProtocol({
-      onMessage,
-      send,
+    this.protocol = createRPCProtocol(this.channel, {
       timeout: this.options.rpcMessageTimeout,
     });
     this.extServerProxy = this.protocol.getProxy(EXT_SERVER_IDENTIFIER);
