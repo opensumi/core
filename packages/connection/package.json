@@ -17,7 +17,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@furyjs/fury": "0.5.4-beta",
+    "@furyjs/fury": "0.5.6-beta",
     "@opensumi/events": "^0.1.0",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
