@@ -669,7 +669,15 @@ export const localizationBundle = {
     'editor.configuration.suggest.preview': 'Enable or disable the rendering of the suggestion preview.',
     'editor.configuration.suggest.details.visible':
       'Controls whether editor code completion expands details by default',
+    // inlineSuggest start
     'editor.configuration.inlineSuggest.enabled': 'Enable or disable the rendering of automatic inline completions.',
+    'editor.configuration.inlineSuggest.showToolbar': 'Controls when to show the inline suggestion toolbar.',
+    'editor.configuration.inlineSuggest.showToolbar.always':
+      'Show the inline suggestion toolbar whenever an inline suggestion is shown.',
+    'editor.configuration.inlineSuggest.showToolbar.onHover':
+      'Show the inline suggestion toolbar when hovering over an inline suggestion.',
+    'editor.configuration.inlineSuggest.showToolbar.never': 'Never show the inline suggestion toolbar.',
+    // inlineSuggest end
     'editor.configuration.experimental.stickyScroll':
       'Shows the nested current scopes during the scroll at the top of the editor.',
     'editor.configuration.customCodeActionMenu.showHeaders':
