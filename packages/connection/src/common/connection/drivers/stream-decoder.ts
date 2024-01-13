@@ -1,4 +1,3 @@
-import { alloc } from '@furyjs/fury/dist/lib/platformBuffer';
 import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
@@ -10,9 +9,18 @@ export const kMagicNumber = 0x53756d69;
 
 const writer = BinaryWriter({});
 
-const emptyBuffer = alloc(8);
-
-export function createSumiStreamPacket(content: Uint8Array) {
+/**
+ * When we send data through net.Socket, the data is not guaranteed to be sent as a whole.
+ *
+ * So we need to add a header to the data, so that the receiver can know the length of the data,
+ * The header is 4 bytes, the first 4 bytes is a magic number, which is `Sumi` in little endian.
+ * use magic number can help us to detect the start of the packet in the stream.
+ * > You can use `Buffer.from('Sumi')` to get this magic number
+ *
+ * The next 4 bytes is a varUInt32, which means the length of the following data, and
+ * the following data is the content.
+ */
+export function createStreamPacket(content: Uint8Array) {
   writer.reset();
   writer.uint32(kMagicNumber);
   writer.varUInt32(content.byteLength);
@@ -74,7 +82,6 @@ export class StreamPacketDecoder {
   /**
    * First we read the first 4 bytes, if it is not magic 4 bytes
    * discard it and continue to read the next byte until we get magic 4 bytes
-   * magic 4 bytes is 0x69 0x6d 0x75 0x53
    * Then read the next byte, this is a varUint32, which means the length of the following data
    * Then read the following data, until we get the length of varUint32, then return this data and continue to read the next packet
    */
@@ -185,5 +192,11 @@ export class StreamPacketDecoder {
 
   onData(cb: (data: Uint8Array) => void) {
     return this.emitter.on('data', cb);
+  }
+
+  dispose() {
+    this.reader = BinaryReader({});
+    this.emitter.dispose();
+    this._buffers.dispose();
   }
 }

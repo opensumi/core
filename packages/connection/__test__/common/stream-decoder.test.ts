@@ -4,7 +4,7 @@ import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
 
 import {
   StreamPacketDecoder,
-  createSumiStreamPacket,
+  createStreamPacket,
   kMagicNumber,
 } from '../../src/common/connection/drivers/stream-decoder';
 
@@ -42,10 +42,10 @@ console.timeEnd('createPayload');
 // 1m
 const pressure = 1024 * 1024;
 
-const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [createSumiStreamPacket(v), v] as const);
+const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [createStreamPacket(v), v] as const);
 
 const mixedPackets = [p1m, p5m].map((v) => {
-  const sumiPacket = createSumiStreamPacket(v);
+  const sumiPacket = createStreamPacket(v);
   const newPacket = createPayload(1024 + sumiPacket.byteLength);
   newPacket.set(sumiPacket, 1024);
   return [newPacket, v] as const;
@@ -56,7 +56,7 @@ const packets = [...purePackets, ...mixedPackets];
 describe('stream-packet', () => {
   it('can create sumi stream packet', () => {
     const content = new Uint8Array([1, 2, 3]);
-    const packet = createSumiStreamPacket(content);
+    const packet = createStreamPacket(content);
 
     reader.reset(packet);
     expect(reader.uint32()).toBe(kMagicNumber);
@@ -77,7 +77,7 @@ describe('stream-packet', () => {
 
           expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
         }
-
+        decoder.dispose();
         done();
       });
 

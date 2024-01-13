@@ -19,40 +19,62 @@ export interface IWebSocket {
   onClose(cb: (code: number, reason: string) => void): void;
 }
 
+/**
+ * `ping` and `pong` are used to detect whether the connection is alive.
+ */
 export interface PingMessage {
   kind: 'ping';
-  clientId: string;
   id: string;
+  clientId: string;
 }
 
+/**
+ * when server receive a `ping` message, it should reply a `pong` message, vice versa.
+ */
 export interface PongMessage {
   kind: 'pong';
-  clientId: string;
   id: string;
+  clientId: string;
 }
 
+/**
+ * `open` message is used to open a new channel.
+ * `path` is used to identify which handler should be used to handle the channel.
+ * `clientId` is used to identify the client.
+ */
 export interface OpenMessage {
   kind: 'open';
   id: string;
   path: string;
   clientId: string;
 }
+
+/**
+ * when server receive a `open` message, it should reply a `server-ready` message.
+ * this is indicate that the channel is ready to use.
+ */
 export interface ServerReadyMessage {
   kind: 'server-ready';
   id: string;
 }
-export interface DataMessage {
+
+/**
+ * `text` message indicate that the content is a text message.
+ */
+export interface TextMessage {
   kind: 'data';
   id: string;
   content: string;
 }
+
 export interface CloseMessage {
   kind: 'close';
   id: string;
   code: number;
   reason: string;
 }
-export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | DataMessage | CloseMessage;
+
+export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | TextMessage | CloseMessage;
 
 export interface IWSChannelCreateOptions {
   /**
@@ -60,6 +82,7 @@ export interface IWSChannelCreateOptions {
    */
   id: string;
   /**
+   * Because this class will be used in both browser and nodejs/electron, so we should use tag to distinguish each other.
    * @example browser | ws-server | net-server | net-client | port1 | port2
    */
   tag: string;
@@ -75,10 +98,8 @@ export class WSChannel implements IWebSocket {
   }>();
 
   public id: string;
-  /**
-   * Because this class will be used in both browser and nodejs/electron, so we should use tag to distinguish each other.
-   */
-  public tag: string;
+  public LOG_TAG = '[WSChannel]';
+
   public channelPath: string;
 
   logger: ILogger = console;
@@ -113,18 +134,15 @@ export class WSChannel implements IWebSocket {
     return WSChannel.forClient(wsConnection, options);
   }
 
-  LOG_TAG = '[WSChannel]';
-
   constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
     const { id, logger, tag } = options;
     this.id = id;
-    this.tag = tag;
 
     if (logger) {
       this.logger = logger;
     }
 
-    this.LOG_TAG = `[WSChannel] [tag:${this.tag}] [id:${this.id}]`;
+    this.LOG_TAG = `[WSChannel] [tag:${tag}] [id:${id}]`;
   }
 
   // server

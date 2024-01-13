@@ -3,7 +3,7 @@ import type net from 'net';
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
-import { StreamPacketDecoder, createSumiStreamPacket } from './stream-decoder';
+import { StreamPacketDecoder, createStreamPacket } from './stream-decoder';
 
 export class NetSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new StreamPacketDecoder();
@@ -13,6 +13,9 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
     this.socket.on('data', (chunk) => {
       this.decoder.push(chunk);
     });
+    this.socket.once('close', () => {
+      this.decoder.dispose();
+    });
   }
 
   isOpen(): boolean {
@@ -21,7 +24,7 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
   }
 
   send(data: Uint8Array): void {
-    this.socket.write(createSumiStreamPacket(data));
+    this.socket.write(createStreamPacket(data));
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {

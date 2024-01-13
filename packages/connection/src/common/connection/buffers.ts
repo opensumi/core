@@ -183,4 +183,9 @@ export class Buffers {
   toUint8Array() {
     return this.slice();
   }
+
+  dispose() {
+    this.buffers = [];
+    this.size = 0;
+  }
 }
