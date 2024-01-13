@@ -15,7 +15,7 @@ const emptyBuffer = alloc(8);
 export function createSumiStreamPacket(content: Uint8Array) {
   writer.reset();
   writer.uint32(kMagicNumber);
-  writer.varInt32(content.byteLength);
+  writer.varUInt32(content.byteLength);
   writer.buffer(content);
   return writer.dump();
 }
@@ -75,8 +75,8 @@ export class StreamPacketDecoder {
    * First we read the first 4 bytes, if it is not magic 4 bytes
    * discard it and continue to read the next byte until we get magic 4 bytes
    * magic 4 bytes is 0x69 0x6d 0x75 0x53
-   * Then read the next byte, this is a varint32, which means the length of the following data
-   * Then read the following data, until we get the length of varint32, then return this data and continue to read the next packet
+   * Then read the next byte, this is a varUint32, which means the length of the following data
+   * Then read the following data, until we get the length of varUint32, then return this data and continue to read the next packet
    */
   _detectPacketHeader() {
     if (this._buffers.byteLength === 0) {
@@ -101,9 +101,8 @@ export class StreamPacketDecoder {
       // read the content length
       const buffers = this._buffers.slice(this._tmpChunksTotalBytesCursor, this._tmpChunksTotalBytesCursor + 4);
       this.reader.reset(buffers);
-      this._tmpContentLength = this.reader.varInt32();
+      this._tmpContentLength = this.reader.varUInt32();
       this._tmpChunksTotalBytesCursor += this.reader.getCursor();
-      this.reader.reset(emptyBuffer);
     }
 
     if (this._tmpChunksTotalBytesCursor + this._tmpContentLength > this._buffers.byteLength) {

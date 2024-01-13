@@ -41,7 +41,7 @@ describe('ws channel node', () => {
   });
 
   it(`互相通信 N 次(N = ${total})`, async () => {
-    jest.setTimeout(50000 * 1000);
+    jest.setTimeout(20 * 1000);
 
     let count = 0;
 
