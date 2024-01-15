@@ -102,7 +102,7 @@ describe('Debug console component Test Suites', () => {
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel(id: string) {
-          return new WSChannel(new EmptyConnection(), { id: 'mock_wschannel' + id, tag: 'test' });
+          return new WSChannel(new EmptyConnection(), { id: 'mock_wschannel' + id });
         },
       },
     });

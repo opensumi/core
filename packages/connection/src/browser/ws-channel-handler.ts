@@ -125,7 +125,6 @@ export class WSChannelHandler {
     const channel = new WSChannel(this.connection, {
       id: channelId,
       logger: this.logger,
-      tag: 'browser-ws-client-handler',
     });
     this.channelMap.set(channel.id, channel);
 

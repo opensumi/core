@@ -60,7 +60,6 @@ describe('connection', () => {
     const wsConnection = new WSWebSocketConnection(connection);
     const channel = new WSChannel(wsConnection, {
       id: 'TEST_CHANNEL_ID',
-      tag: 'test',
     });
     connection.on('message', (msg: Uint8Array) => {
       const msgObj = parse(msg);
@@ -136,7 +135,6 @@ describe('connection', () => {
           serviceCenter = new RPCServiceCenter();
           const channel = WSChannel.forWebSocket(connection, {
             id: 'test-wss',
-            tag: 'test-wss',
           });
 
           serviceCenter.setChannel(channel);
@@ -165,7 +163,6 @@ describe('connection', () => {
     const clientCenter = new RPCServiceCenter();
     const channel = WSChannel.forWebSocket(clientConnection!, {
       id: 'test',
-      tag: 'test',
     });
 
     const toDispose = clientCenter.setChannel(channel);

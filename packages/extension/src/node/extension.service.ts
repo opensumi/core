@@ -205,8 +205,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       // 重新生成实例，避免 tcp 消息有残留的缓存，造成分包错误
       const extChannel = WSChannel.forClient(new NetSocketConnection(extConnection.connection), {
-        id: 'ExtensionHostForward',
-        tag: 'node-ext-client',
+        id: 'ExtensionHostForward-' + clientId,
         logger: this.logger,
       });
 
@@ -498,7 +497,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
         const channel = WSChannel.forClient(new NetSocketConnection(connection), {
           id: 'ElectronMainThreadForward- + clientId',
-          tag: 'node-host-client',
         });
 
         handler({

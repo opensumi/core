@@ -148,7 +148,6 @@ export function createWsServer() {
   server.on('connection', (socket) => {
     const channel = WSChannel.forClient(new WSWebSocketConnection(socket), {
       id: 'ws-server',
-      tag: 'ws-server',
     });
 
     channel.onMessage((data) => {

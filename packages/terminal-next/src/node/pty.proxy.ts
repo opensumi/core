@@ -305,7 +305,6 @@ export class PtyServiceProxyRPCProvider {
     const connection = new NetSocketConnection(socket);
     const channel = WSChannel.forClient(connection, {
       id: 'pty',
-      tag: 'pty-service-proxy',
       logger: this.logger,
     });
 

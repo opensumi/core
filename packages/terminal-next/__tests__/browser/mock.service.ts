@@ -72,7 +72,6 @@ export class MockTerminalService implements ITerminalService {
     const sock = new WebSocket(localhost(getPort()));
     const channel = WSChannel.forClient(new WSWebSocketConnection(sock), {
       id: sessionId,
-      tag: 'terminal-client',
     });
 
     this.channels.set(sessionId, channel);

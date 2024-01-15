@@ -80,7 +80,6 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
   const socket = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
   const channel = WSChannel.forNetSocket(socket, {
     id: 'ExtProcessBaseRPCProtocol',
-    tag: 'ext-host-client',
   });
 
   const appConfig = extInjector.get(AppConfig);

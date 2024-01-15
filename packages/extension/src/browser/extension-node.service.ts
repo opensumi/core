@@ -160,7 +160,6 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       const connection = createNetSocketConnection(connectPath);
       channel = WSChannel.forClient(connection, {
         id: fromWindowClientId('NodeExtProcessService'),
-        tag: 'browser-electron-client',
       });
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);

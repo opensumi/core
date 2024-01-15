@@ -13,7 +13,6 @@ describe('ws channel node', () => {
     server.on('connection', (socket) => {
       const channel1 = WSChannel.forNetSocket(socket, {
         id: 'channel1',
-        tag: 'test',
       });
       channel1.send('hello');
     });
@@ -24,7 +23,6 @@ describe('ws channel node', () => {
 
     const channel2 = WSChannel.forNetSocket(socket2, {
       id: 'channel2',
-      tag: 'test',
     });
 
     const msg = await new Promise<string>((resolve) => {
@@ -52,7 +50,6 @@ describe('ws channel node', () => {
     server.on('connection', (socket) => {
       const channel1 = WSChannel.forNetSocket(socket, {
         id: 'channel1',
-        tag: 'test',
       });
       channel1.onMessage((d) => {
         channel1.send(d + 'resp');
@@ -65,7 +62,6 @@ describe('ws channel node', () => {
 
     const channel2 = WSChannel.forNetSocket(socket2, {
       id: 'channel2',
-      tag: 'test',
     });
 
     await Promise.all([

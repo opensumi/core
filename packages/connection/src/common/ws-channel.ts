@@ -59,9 +59,10 @@ export interface ServerReadyMessage {
 }
 
 /**
- * `text` message indicate that the content is a text message.
+ * `data` message indicate that the channel has received some data.
+ * the `content` field is the data, it should be a string.
  */
-export interface TextMessage {
+export interface DataMessage {
   kind: 'data';
   id: string;
   content: string;
@@ -74,18 +75,14 @@ export interface CloseMessage {
   reason: string;
 }
 
-export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | TextMessage | CloseMessage;
+export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | DataMessage | CloseMessage;
 
 export interface IWSChannelCreateOptions {
   /**
-   * every channel's unique id
+   * every channel's unique id, it only used in client to server architecture.
+   * server will store this id and use it to identify which channel should be used.
    */
   id: string;
-  /**
-   * Because this class will be used in both browser and nodejs/electron, so we should use tag to distinguish each other.
-   * @example browser | ws-server | net-server | net-client | port1 | port2
-   */
-  tag: string;
   logger?: ILogger;
 }
 
@@ -135,14 +132,14 @@ export class WSChannel implements IWebSocket {
   }
 
   constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
-    const { id, logger, tag } = options;
+    const { id, logger } = options;
     this.id = id;
 
     if (logger) {
       this.logger = logger;
     }
 
-    this.LOG_TAG = `[WSChannel] [tag:${tag}] [id:${id}]`;
+    this.LOG_TAG = `[WSChannel] [id:${id}]`;
   }
 
   // server

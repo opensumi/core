@@ -53,7 +53,6 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     const socketConnection = new NetSocketConnection(socket);
     const channel = WSChannel.forClient(socketConnection, {
       id: 'pty-manager-remote',
-      tag: 'node-client',
       logger: this.logger,
     });
     const remove = clientCenter.setChannel(channel);

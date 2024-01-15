@@ -78,7 +78,6 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   private setProxyConnection(connection: net.Socket) {
     this.channel = WSChannel.forClient(new NetSocketConnection(connection), {
       id: 'EXT_HOST_PROXY',
-      tag: 'ExtensionHostProxyManager',
       logger: this.logger,
     });
 

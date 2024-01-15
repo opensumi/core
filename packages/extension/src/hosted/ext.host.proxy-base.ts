@@ -187,7 +187,6 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   private setConnection() {
     this.channel = WSChannel.forNetSocket(this.socket, {
       id: 'EXT_HOST_PROXY',
-      tag: 'ExtHostProxyBase',
       logger: this.logger,
     });
   }

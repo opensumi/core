@@ -541,7 +541,7 @@ export function setupExtensionServiceInjector() {
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel() {
-          return new WSChannel(new EmptyConnection(), { id: 'mock_wschannel', tag: 'test' });
+          return new WSChannel(new EmptyConnection(), { id: 'mock_wschannel' });
         },
       },
     },

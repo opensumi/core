@@ -47,7 +47,6 @@ export async function createClientConnection4Electron(
   const connection = createNetSocketConnection();
   const channel = WSChannel.forClient(connection, {
     id: clientId || fromWindowClientId('RPCService'),
-    tag: 'electron-renderer',
     logger: console,
   });
   return bindConnectionService(injector, modules, channel);
