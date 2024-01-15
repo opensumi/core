@@ -71,9 +71,9 @@ export interface IChatMessageStructure {
    */
   prompt?: string;
   /**
-   * 消息类型
+   * 数据采集上报消息类型
    */
-  type?: string;
+  reportType?: string;
 }
 
 /**
