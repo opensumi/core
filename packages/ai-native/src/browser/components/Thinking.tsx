@@ -36,7 +36,7 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
 
   const renderContent = useCallback(() => {
     if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
-      return <span>Thinking...</span>;
+      return <span className={styles.thinking_text}>Thinking...</span>;
     }
 
     return children;
@@ -99,13 +99,18 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
         <div className={styles.bottom_container}>
           <div className={styles.reset}>
             {isRenderRegenerate ? (
-              <EnhanceIcon icon={'refresh'} className={styles.transform} onClick={handleRegenerate}>
+              <EnhanceIcon
+                icon={'refresh'}
+                wrapperClassName={styles.text_btn}
+                className={styles.transform}
+                onClick={handleRegenerate}
+              >
                 <span>重新生成</span>
               </EnhanceIcon>
             ) : null}
           </div>
           <div className={styles.thumbs}>
-            <Thumbs relationId={sessionId} aiReporterService={aiReporter} />
+            <Thumbs relationId={sessionId} wrapperClassName={styles.icon_btn} aiReporterService={aiReporter} />
           </div>
         </div>
       </div>

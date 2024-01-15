@@ -1,11 +1,10 @@
 @default_height: 24px;
 
 .ai_inline_chat_controller_panel {
-  background-color: var(--ai-native-inlineChat-background);
-  border: 1px solid var(--ai-native-inlineChat-border-color);
-  box-shadow: 0 9px 28px 8px var(--ai-native-inlineChat-box-shadow), 0 6px 16px 0 var(--ai-native-inlineChat-box-shadow),
-    0 3px 6px -4px var(--ai-native-inlineChat-box-shadow);
-  border-radius: 8px;
+  background-color: #2b333d;
+  border-radius: 6px;
+  box-shadow: 0px 8px 20px 6px rgba(0, 0, 0, 0.2), 0px 3px 6px -4px rgba(0, 0, 0, 0.4),
+    0px 6px 16px 0px rgba(0, 0, 0, 0.24);
   font-size: 12px;
 
   .ai_inline_chat_loading {
@@ -15,7 +14,10 @@
   }
 
   span {
-    color: var(--ai-native-inlineChat-text-color) !important;
+    color: var(--ai-native-text-color-normal);
+    &:hover {
+      color: var(--ai-native-text-color-common);
+    }
   }
 }
 
@@ -23,7 +25,7 @@
   display: flex;
   align-items: center;
   height: @default_height;
-  padding: 4px 8px;
+  padding: 1px 8px;
 
   .logo_container {
     .avatar_icon {
@@ -46,8 +48,11 @@
   }
 
   .operate_container {
-    span {
-      line-height: 14px;
+    .operate_item {
+      height: 22px;
+      line-height: 22px;
+      padding: 0 4px;
+      border-radius: 4px;
     }
 
     .close_container {
@@ -67,14 +72,24 @@
 .ai_inline_result_panel {
   display: flex;
   align-items: center;
-  height: 100%;
-  padding: 4px;
-
+  height: @default_height;
+  padding: 1px 8px;
   justify-content: space-between;
 
   .side {
     display: flex;
     align-items: center;
+    .operate_btn {
+      height: 22px;
+      line-height: 22px;
+      padding: 0 6px;
+    }
+    .operate_icon {
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      border-radius: 4px;
+    }
   }
 }
 

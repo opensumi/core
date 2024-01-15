@@ -12,21 +12,20 @@
 .ai_editor_tab_block_container {
   display: flex;
   align-items: center;
-  height: 28px;
-  border-radius: 8px;
+  height: 36px;
+  border-radius: 12px 12px 0 0;
   padding: 0 8px;
   margin-right: 0 !important;
 
-  &:hover {
-    outline: 1px solid var(--activityBar-activeBorder);
-    background-color: var(--tab-activeBackground);
-    color: var(--tab-activeForeground);
-
-    div:first-child {
-      &::before {
-        filter: grayscale(0);
-      }
-    }
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 12px;
+    display: inline-block;
+    width: 1px;
+    height: 12px;
+    background-color: var(--ai-native-block-background-common);
   }
 
   > div:first-child {
@@ -38,13 +37,17 @@
       background-size: 14px;
       background-position: 2px;
       filter: grayscale(1);
-      color: rgba(255, 255, 255, 0.25);
+      color: var(--ai-native-icon-color);
     }
   }
 
   &.active {
-    background-color: var(--tab-activeBackground);
+    background-color: var(--panel-background);
     color: var(--tab-activeForeground);
+
+    &::after {
+      content: none;
+    }
 
     div:first-child {
       &::before {
@@ -60,10 +63,10 @@
     }
 
     div[class*='close_tab___'] {
-      color: rgba(255, 255, 255, 0.25);
+      color: var(--ai-native-icon-color);
 
       &:hover {
-        color: rgba(255, 255, 255, 0.65);
+        color: var(--ai-native-text-color-normal);
       }
     }
   }
@@ -76,7 +79,7 @@
   width: 100%;
   user-select: none;
   padding-left: 12px;
-  padding-right: 4px;
+  padding-right: 12px;
   min-width: 150px;
 
   .icon {
@@ -92,6 +95,7 @@
     justify-content: right;
     text-align: center;
     color: var(--kt-menu-descriptionForeground);
+    font-size: 12px;
   }
 
   .icon,
@@ -102,7 +106,7 @@
     align-items: center;
 
     :global(.kt-icon) {
-      color: var(--menu-foreground);
+      color: var(--ai-native-text-color-normal);
     }
   }
 

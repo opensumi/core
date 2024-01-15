@@ -45,14 +45,21 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
     }
   }, [onClose]);
 
-  const moreOperation = useMemo(() => inlineChatFeatureRegistry.getActionMenus().map((data) => new MenuNode({
-        id: `ai.menu.operation.${data.id}`,
-        label: data.name,
-        className: styles.more_operation_menu_item,
-        execute: () => {
-          handleClickActions(data.id);
-        },
-      })), [inlineChatFeatureRegistry]);
+  const moreOperation = useMemo(
+    () =>
+      inlineChatFeatureRegistry.getActionMenus().map(
+        (data) =>
+          new MenuNode({
+            id: `ai.menu.operation.${data.id}`,
+            label: data.name,
+            className: styles.more_operation_menu_item,
+            execute: () => {
+              handleClickActions(data.id);
+            },
+          }),
+      ),
+    [inlineChatFeatureRegistry],
+  );
 
   if (operationList.length === 0 && moreOperation.length === 0) {
     return null;
@@ -61,11 +68,11 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
   return (
     <div className={styles.ai_inline_operation_panel}>
       <AILogoAvatar />
-      <LineVertical margin={'0px 4px 0 8px'} />
+      <LineVertical height={'70%'} margin={'0px 4px 0 8px'} />
       <div className={styles.operate_container}>
         {operationList.map(({ name, title, id }, i) => (
           <EnhancePopover id={id} title={title} key={`popover_${i}`}>
-            <EnhanceIcon onClick={() => handleClickActions(id)}>
+            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => handleClickActions(id)}>
               <span key={i}>{name}</span>
             </EnhanceIcon>
           </EnhancePopover>
@@ -74,6 +81,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
           <EnhanceIconWithCtxMenu
             icon={'more'}
             menuNodes={moreOperation}
+            wrapperClassName={styles.operate_item}
             skew={{
               x: -83,
               y: 5,
@@ -81,8 +89,8 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
           />
         )}
         <div className={styles.close_container}>
-          <LineVertical margin={'0px 4px 0 4px'} />
-          <EnhanceIcon icon={'close'} onClick={handleClose} />
+          <LineVertical height={'60%'} margin={'0px 6px 0 6px'} />
+          <EnhanceIcon icon={'window-close'} onClick={handleClose} wrapperClassName={styles.operate_item} />
         </div>
       </div>
     </div>
@@ -113,19 +121,20 @@ const AiInlineResult = () => {
 
   return (
     <div className={styles.ai_inline_result_panel}>
-      <div className={styles.side} style={{ marginRight: 128 }}>
-        <EnhanceIcon icon={'check'} onClick={handleAdopt}>
+      <div className={styles.side}>
+        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'check'} onClick={handleAdopt}>
           <span>采纳</span>
         </EnhanceIcon>
-        <EnhanceIcon icon={'diuqi'} onClick={handleDiscard}>
+        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'diuqi'} onClick={handleDiscard}>
           <span>丢弃</span>
         </EnhanceIcon>
-        <EnhanceIcon icon={'zhongxin'} onClick={handleRefresh}>
+        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'zhongxin'} onClick={handleRefresh}>
           <span>重新生成</span>
         </EnhanceIcon>
       </div>
+      <LineVertical height={'60%'} margin={'0px 6px 0 6px'} />
       <div className={styles.side}>
-        <Thumbs onClick={handleThumbs} />
+        <Thumbs wrapperClassName={styles.operate_icon} onClick={handleThumbs} />
       </div>
     </div>
   );

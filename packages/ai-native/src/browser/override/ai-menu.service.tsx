@@ -53,7 +53,7 @@ const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
         {data.keybinding ? <div className={styles.shortcut}>{data.keybinding}</div> : null}
         {hasSubmenu ? (
           <div className={styles.submenuIcon}>
-            <Icon icon='caret-right' />
+            <Icon icon='right-arrow' />
           </div>
         ) : null}
         {!data.keybinding && !hasSubmenu && data.extraDesc && <div className={styles.extraDesc}>{data.extraDesc}</div>}

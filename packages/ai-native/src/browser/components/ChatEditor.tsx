@@ -1,3 +1,4 @@
+import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
@@ -178,7 +179,7 @@ const CodeBlock = ({ content = '', renderText }: { content?: string; renderText?
     content = content.trim();
     return (
       <div className={styles.code_block}>
-        <div className={styles.code_language}>{heighLightLang}</div>
+        <div className={styles.code_language}>{capitalize(heighLightLang)}</div>
         <CodeEditorWithHighlight input={content} language={language} />
       </div>
     );
@@ -256,7 +257,11 @@ export const CodeBlockWrapperInput = ({ text }: { text: string }) => {
   return (
     <div className={styles.ai_chat_code_wrapper}>
       <div className={styles.render_text}>
-        {tag && <div className={styles.tag}>{tag}</div>}
+        {tag && (
+          <div className={styles.tag_wrapper}>
+            <span className={styles.tag}>{tag}</span>
+          </div>
+        )}
         <CodeBlock content={txt} />
       </div>
     </div>

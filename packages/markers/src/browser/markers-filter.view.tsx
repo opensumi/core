@@ -2,7 +2,8 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
+import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { useDisposable } from '@opensumi/ide-core-browser/lib/utils/react-hooks';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
@@ -38,6 +39,7 @@ export const MarkerFilterPanel = observer(() => {
     <div className={styles.markerFilterContent}>
       <AutoFocusedInput
         containerId={MARKER_CONTAINER_ID}
+        addonBefore={<Icon className={getIcon('search')} />}
         hasClear
         className={styles.filterInput}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}

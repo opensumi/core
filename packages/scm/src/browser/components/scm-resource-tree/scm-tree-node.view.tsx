@@ -119,7 +119,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={clx(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          className={clx(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('right-arrow'), {
             [`${styles.mod_collapsed}`]: !(node as SCMResourceGroup).expanded,
           })}
         />
@@ -322,7 +322,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={clx(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          className={clx(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('right-arrow'), {
             [`${styles.mod_collapsed}`]: !(node as SCMResourceFolder).expanded,
           })}
         />

@@ -102,7 +102,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
     (node: CommentFileNode) => (
       <div
         onClick={handleTwistierClick}
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={cls(styles.segment, styles.expansion_toggle, getIcon('right-arrow'), {
           [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
         })}
       />

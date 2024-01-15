@@ -6,11 +6,20 @@ div[class*='box-panel___'] {
 
 #opensumi-left-tabbar {
   span[class*='tab_badge___'] {
-    top: 20px;
-    right: 0;
-    height: 14px;
+    top: 0;
+    right: -8px;
     font-size: 10px;
+    min-width: 16px;
+    padding: 0 2px;
+    height: 14px;
+    line-height: 14px;
+    letter-spacing: -0.5px;
   }
+}
+
+#opensumi-statusbar {
+  opacity: 0.35;
+  border-top: 0;
 }
 
 /**
@@ -20,29 +29,44 @@ div[class*='box-panel___'] {
   background-color: transparent !important;
 
   ul.kt-inner-menu-sub {
-    background-color: #171c25 !important;
-    border: 1px solid #363940 !important;
-    box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
+    backdrop-filter: saturate(150%) blur(20px) !important;
+    -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
+    background-color: rgba(34, 40, 48, 0.85) !important;
+    border: 0 none !important;
+    box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 3px 6px -4px rgba(0, 0, 0, 0.4),
+      0px 6px 16px 0px rgba(0, 0, 0, 0.24) !important;
     border-radius: 8px !important;
+    margin-left: 2px;
+    .kt-icon {
+      display: none;
+    }
   }
 }
 
 .kt-menu.kt-inner-menu,
 .kt-menu .kt-inner-menu {
-  background-color: #171c25 !important;
-  border: 1px solid #363940 !important;
+  backdrop-filter: saturate(150%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
+  background-color: rgba(34, 40, 48, 0.85) !important;
+  border: 0 none !important;
   box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
   border-radius: 8px !important;
   min-width: initial;
-  // padding: 8px 0 !important;
-  .kt-inner-menu-submenu-title {
+  padding: 4px 0 !important;
+  .kt-inner-menu-submenu-title,
+  .kt-inner-menu-item {
     height: 28px !important;
+    padding: 0 !important;
+    line-height: 28px !important;
+  }
+  li.kt-inner-menu-submenu {
+    line-height: 28px;
+    padding-bottom: 0;
   }
 }
 
 .kt-menu.kt-inner-menu .kt-inner-menu-item {
   margin: 0 !important;
-  padding: 3px 4px !important;
   height: 28px !important;
   display: flex !important;
   align-items: center !important;
@@ -54,19 +78,21 @@ div[class*='box-panel___'] {
   pointer-events: none !important;
   background-color: var(--menu-separatorBackground) !important;
   opacity: 0.3;
-  margin: 8px 0 !important;
+  margin: 4px 0 !important;
 }
 
 /**
 * 覆盖 popover 样式
 */
 .kt-popover-content {
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 6px 16px 0px rgba(0, 0, 0, 0.24),
+    0px 3px 6px -4px rgba(0, 0, 0, 0.4);
   padding: 5px 8px;
-  border: 1px solid var(--kt-popover-border);
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgb(255 255 255 / 12%);
+  color: var(--kt-popover-foreground);
+  background-color: var(--kt-popover-background);
+  line-height: 18px;
+  margin-top: -3px;
   .kt-popover-title {
     margin-bottom: 0;
     font-size: 12px;
@@ -76,10 +102,10 @@ div[class*='box-panel___'] {
     content: '';
     position: absolute;
     left: 50%;
-    margin-left: -9px;
+    margin-left: -7px;
     width: 0;
     height: 0;
-    border: 9px solid transparent;
+    border: 7px solid transparent;
     top: 100%;
     border-bottom-width: 0;
     border-top-color: var(--kt-popover-border);
@@ -87,6 +113,52 @@ div[class*='box-panel___'] {
 }
 
 /* 修改滚动条滑块的圆角 */
-::-webkit-scrollbar-thumb {
-  border-radius: 4px;
+html {
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px !important;
+    background: var(--scrollbarSlider-background) !important;
+  }
+}
+
+/* 修改滚动条大小调整 */
+
+#workbench-editor .monaco-editor {
+  .decorationsOverviewRuler {
+    width: 4px !important;
+  }
+  .minimap {
+    left: auto !important;
+    right: 4px !important;
+  }
+  .monaco-scrollable-element {
+    .vertical {
+      width: 4px !important;
+      .slider {
+        width: 4px !important;
+        left: unset !important;
+        right: 0;
+        border-radius: 4px !important;
+      }
+    }
+
+    .horizontal {
+      height: 4px !important;
+      .slider {
+        height: 4px !important;
+      }
+    }
+  }
+}
+
+.basic_tree {
+  .tree_node {
+    border-radius: 4px;
+  }
+}
+
+/* 设置滚动条宽度 */
+.xterm .xterm-viewport {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
 }

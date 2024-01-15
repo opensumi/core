@@ -224,7 +224,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
           {supportsThreadIdCorrespond || threads.length > 0 ? (
             <>
               <div
-                className={unfold ? getIcon('arrow-down') : getIcon('arrow-right')}
+                className={unfold ? getIcon('down-arrow') : getIcon('right-arrow')}
                 onClick={() => setUnfold(!unfold)}
               ></div>
               <div className={cls([getIcon('debug'), styles.debug_session_icon])}></div>

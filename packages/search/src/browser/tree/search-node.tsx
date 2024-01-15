@@ -172,7 +172,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: SearchFileNode) => (
       <div
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={cls(styles.segment, styles.expansion_toggle, getIcon('right-arrow'), {
           [`${styles.mod_collapsed}`]: !(node as SearchFileNode).expanded,
         })}
       />

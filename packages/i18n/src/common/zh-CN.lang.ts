@@ -822,7 +822,7 @@ export const localizationBundle = {
     'markers.panel.filter.errors': '错误',
     'markers.panel.filter.warnings': '警告',
     'markers.panel.filter.infos': '信息',
-    'markers.filter.placeholder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
+    'markers.filter.placeholder': '筛选器，例如：text、**/*.ts',
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
     'markers.status.no.problems': '没有问题',
