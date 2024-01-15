@@ -103,13 +103,13 @@ export class WSChannelHandler {
         this.heartbeatMessage();
         resolve();
         reopenExistsChannel();
+      } else {
+        this.connection.onOpen(() => {
+          this.heartbeatMessage();
+          resolve();
+          reopenExistsChannel();
+        });
       }
-
-      this.connection.onOpen(() => {
-        this.heartbeatMessage();
-        resolve();
-        reopenExistsChannel();
-      });
 
       this.connection.onceClose((code, reason) => {
         if (this.channelMap.size) {
@@ -126,6 +126,7 @@ export class WSChannelHandler {
       id: channelId,
       logger: this.logger,
     });
+
     this.channelMap.set(channel.id, channel);
 
     await new Promise<void>((resolve) => {

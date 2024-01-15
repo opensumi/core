@@ -600,7 +600,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       if (this.clientExtProcessExtConnection.has(clientId)) {
         const connection = this.clientExtProcessExtConnection.get(clientId)!;
         connection.connection.destroy();
-        connection.connection.end();
       }
 
       this.clientExtProcessExtConnection.delete(clientId);

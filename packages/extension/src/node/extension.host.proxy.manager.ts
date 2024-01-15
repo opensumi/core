@@ -83,8 +83,9 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
     this.disposer.addDispose(
       toDisposable(() => {
-        connection.destroy();
-        connection.end();
+        if (!connection.destroyed) {
+          connection.destroy();
+        }
       }),
     );
   }

@@ -74,11 +74,12 @@ export async function createConnectionService(
 
   if (channelHandler.connection.isOpen()) {
     onOpen();
+  } else {
+    const dispose = channelHandler.connection.onOpen(() => {
+      onOpen();
+      dispose.dispose();
+    });
   }
-
-  channelHandler.connection.onOpen(() => {
-    onOpen();
-  });
 
   channelHandler.connection.onceClose(() => {
     stateService.reachedState('core_module_initialized').then(() => {
@@ -108,10 +109,11 @@ export async function createConnectionService(
 
 export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
-  const remove = clientCenter.setChannel(channel);
+  const dispose = clientCenter.setChannel(channel);
 
-  channel.onClose(() => {
-    remove.dispose();
+  const toRemove = channel.onClose(() => {
+    dispose.dispose();
+    toRemove();
   });
 
   const { getRPCService } = initRPCService(clientCenter);

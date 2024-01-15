@@ -77,7 +77,12 @@ export interface ExtProcessConfig {
 }
 
 async function initRPCProtocol(extInjector: Injector): Promise<any> {
-  const socket = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
+  const extConnection = argv[KT_PROCESS_SOCK_OPTION_KEY];
+
+  logger = new ExtensionLogger2(extInjector);
+  logger.log('init rpc protocol for ext connection path', extConnection);
+
+  const socket = net.createConnection(JSON.parse(extConnection));
   const channel = WSChannel.forNetSocket(socket, {
     id: 'ExtProcessBaseRPCProtocol',
   });
@@ -88,8 +93,6 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
     timeout: appConfig.rpcMessageTimeout,
   });
 
-  logger = new ExtensionLogger2(extInjector);
-  logger.log('process extConnection path', argv[KT_PROCESS_SOCK_OPTION_KEY]);
   return { extProtocol, logger };
 }
 

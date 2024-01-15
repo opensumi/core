@@ -18,7 +18,6 @@ import { ExtensionHostManager } from '../node/extension.host.manager';
 
 class ExtHostProxyRPCService extends RPCService implements IExtHostProxyRPCService {
   private extensionHostManager: IExtensionHostManager;
-  private readonly logger = getDebugLogger();
 
   LOG_TAG = '[ExtHostProxyRPCService]';
 
@@ -94,7 +93,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   private previouslyDisposer: IDisposable;
 
-  private connectedEmitter = new Emitter<void>();
+  private connectedEmitter = this.registerDispose(new Emitter<void>());
 
   private readonly logger = getDebugLogger();
 
@@ -102,6 +101,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
 
   LOG_TAG = '[ExtHostProxy]';
   channel: WSChannel;
+  disposer: Disposable;
 
   constructor(options?: IExtHostProxyOptions) {
     super();
@@ -122,14 +122,14 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     if (this.previouslyDisposer) {
       this.previouslyDisposer.dispose();
     }
-    const disposer = new Disposable();
+    this.disposer = new Disposable();
 
     // 每次断连后重新生成 Socket 实例
     this.socket = new net.Socket();
-    disposer.addDispose(this.bindEvent());
-    disposer.addDispose(this.connect());
+    this.disposer.addDispose(this.bindEvent());
+    this.disposer.addDispose(this.connect());
 
-    this.previouslyDisposer = disposer;
+    this.previouslyDisposer = this.disposer;
     this.addDispose(this.previouslyDisposer);
   }
 
@@ -140,7 +140,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     this.extServerProxy = this.protocol.getProxy(EXT_SERVER_IDENTIFIER);
     const extHostProxyRPCService = new ExtHostProxyRPCService(this.extServerProxy);
     this.protocol.set(EXT_HOST_PROXY_IDENTIFIER, extHostProxyRPCService);
-    this.addDispose({
+    this.disposer.addDispose({
       dispose: () => extHostProxyRPCService.$dispose(),
     });
   }
@@ -189,6 +189,8 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
       id: 'EXT_HOST_PROXY',
       logger: this.logger,
     });
+
+    this.disposer.addDispose(this.channel);
   }
 
   private connect = (): IDisposable => {

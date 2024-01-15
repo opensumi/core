@@ -88,7 +88,6 @@ export class CommonChannelHandler extends WebSocketHandler {
   private wsServer: WebSocket.Server;
   protected handlerRoute: MatchFunction;
   private channelMap: Map<string, WSChannel> = new Map();
-  private connectionMap: Map<string, WebSocket> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(routePath: string, private logger: ILogger = console, private options: CommonChannelHandlerOptions = {}) {
@@ -114,6 +113,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     });
     this.wsServer.on('connection', (connection: WebSocket) => {
       let clientId: string;
+
       connection.on('message', (msg: Uint8Array) => {
         let msgObj: ChannelMessage;
         try {
@@ -123,19 +123,17 @@ export class CommonChannelHandler extends WebSocketHandler {
             connection.send(
               stringify({
                 kind: 'pong',
-                id: clientId,
+                id: msgObj.id,
                 clientId,
               }),
             );
           } else if (msgObj.kind === 'open') {
             const { id, path } = msgObj;
             clientId = msgObj.clientId;
-            this.logger.log(`Open a new connection channel ${clientId} with path ${path}`);
-            const wsConnection = new WSWebSocketConnection(connection);
-            this.connectionMap.set(id, connection);
+            this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
             this.heartbeat(id, connection);
 
-            const channel = new WSChannel(wsConnection, { id });
+            const channel = new WSChannel(new WSWebSocketConnection(connection), { id });
             this.channelMap.set(id, channel);
 
             // 根据 path 拿到注册的 handler
@@ -157,6 +155,7 @@ export class CommonChannelHandler extends WebSocketHandler {
                 handler.handler(channel, clientId, params);
               }
             }
+
             channel.serverReady();
           } else {
             const { id } = msgObj;
@@ -172,7 +171,7 @@ export class CommonChannelHandler extends WebSocketHandler {
         }
       });
 
-      connection.on('close', () => {
+      connection.once('close', () => {
         commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
         if (this.heartbeatMap.has(clientId)) {
@@ -186,6 +185,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           .filter((channel) => channel.id.toString().indexOf(clientId) !== -1)
           .forEach((channel) => {
             channel.close(1, 'close');
+            channel.dispose();
             this.channelMap.delete(channel.id);
             this.logger.log(`Remove connection channel ${channel.id}`);
           });
