@@ -647,7 +647,7 @@ export default {
     'kt.panelTitle.background': '#222830',
     'kt.popover.background': '#2b333d',
     'kt.popover.border': '#363940',
-    'kt.popover.foreground': '#ffffff',
+    'kt.popover.foreground': '#fffffff2',
     'kt.popover.prominentBackground': '#2C3033',
     'kt.primaryButton.background': '#3c8dff',
     'kt.primaryButton.clickBackground': '#1A66AC',
