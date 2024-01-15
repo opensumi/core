@@ -141,12 +141,12 @@ test.describe('OpenSumi Debug', () => {
     await app.page.waitForTimeout(2000);
 
     // get editor line 6
-    glyphOverlay = await glyphMarginModel.getOverlay(6);
-    expect(glyphOverlay).toBeDefined();
-    if (!glyphOverlay) {
+    const glyphMarginWidget = await glyphMarginModel.getGlyphMarginWidgets(6);
+    expect(glyphMarginWidget).toBeDefined();
+    if (!glyphMarginWidget) {
       return;
     }
-    expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay)).toBeTruthy();
+    expect(await glyphMarginModel.hasTopStackFrame(glyphMarginWidget)).toBeTruthy();
 
     const overlaysModel = await editor.getOverlaysModel();
     const viewOverlay = await overlaysModel.getOverlay(6);
