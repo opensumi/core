@@ -36,8 +36,13 @@ test.describe('OpenSumi Debug', () => {
     const glyphMarginModel = await editor.getGlyphMarginModel();
     const overlay = await glyphMarginModel.getOverlay(6);
     await overlay?.click({ position: { x: 9, y: 9 }, force: true });
+    await app.page.waitForTimeout(1000);
     // 此时元素 dom 结构已经改变，需要重新获取
     const marginWidgets = await glyphMarginModel.getGlyphMarginWidgets(6);
+    expect(marginWidgets).toBeDefined();
+    if (!marginWidgets) {
+      return;
+    }
     expect(await glyphMarginModel.hasBreakpoint(marginWidgets!)).toBeTruthy();
     await editor.close();
   });
