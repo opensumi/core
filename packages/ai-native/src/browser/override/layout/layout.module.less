@@ -192,6 +192,22 @@
       background-color: var(--panel-background);
     }
   }
+
+  :global {
+    .monaco-editor,
+    .monaco-editor-background,
+    .monaco-editor .margin {
+      background: var(--panel-background) !important;
+    }
+    .rce-container-mbox {
+      margin: 8px 16px;
+    }
+
+    // TODO
+    .rce-container-mbox:nth-child(2) {
+      margin-top: 8px !important;
+    }
+  }
 }
 
 .ai_left_slot {
@@ -698,22 +714,6 @@
       background: var(--vscode-textBlockQuote-background);
       border-color: var(--vscode-textBlockQuote-border);
     }
-  }
-}
-
-:global {
-  .monaco-editor,
-  .monaco-editor-background,
-  .monaco-editor .margin {
-    background: var(--panel-background) !important;
-  }
-  .rce-container-mbox {
-    margin: 8px 16px;
-  }
-
-  // TODO
-  .rce-container-mbox:nth-child(2) {
-    margin-top: 8px !important;
   }
 }
 
