@@ -1,4 +1,4 @@
-import { MaybePromise, CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken } from '@opensumi/ide-core-common';
 
 export * from './reporter';
 export const AiBackSerivceToken = Symbol('AiBackSerivceToken');
@@ -70,6 +70,10 @@ export interface IChatMessageStructure {
    * 实际调用的 prompt
    */
   prompt?: string;
+  /**
+   * 消息类型
+   */
+  type?: string;
 }
 
 /**

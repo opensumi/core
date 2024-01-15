@@ -190,7 +190,7 @@ export const AiChatView = observer(() => {
 
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, prompt } = value;
+      const { message, prompt, type } = value;
       const preMessagelist = messageListData;
 
       setLoading(true);
@@ -198,8 +198,8 @@ export const AiChatView = observer(() => {
       const userInput = await aiChatService.switchAIService(message as string, prompt);
 
       const startTime = +new Date();
-      const relationId = aiReporter.start(userInput.type, {
-        msgType: userInput.type,
+      const relationId = aiReporter.start(type || userInput.type, {
+        msgType: type || userInput.type,
         message: userInput.message,
       });
 

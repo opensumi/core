@@ -5,7 +5,7 @@ export const AI_REPORTER_NAME = 'AI';
 export interface CommonLogInfo {
   replytime: number;
   success: boolean;
-  msgType: AISerivceType;
+  msgType: string;
   message: string;
   isStart: boolean;
   isLike: boolean;
