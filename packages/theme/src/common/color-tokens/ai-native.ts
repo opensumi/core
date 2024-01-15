@@ -148,3 +148,10 @@ export const aiNativeContainerBackground = registerColor(
   '',
   true,
 );
+
+export const aiNativeMonacoBackground = registerColor(
+  'ai.native.monaco.background',
+  { dark: '#151b21', light: '#fff', hcDark: null, hcLight: null },
+  '',
+  true,
+);
