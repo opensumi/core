@@ -52,12 +52,17 @@ class GlyphMarginModel extends ViewsModel {
 
       const tops = styles?.match(/top: [0-9]*px;/g) || ['0'];
       const topNums = tops[0].match(/\d+/g);
-      if (Array.isArray(topNums) && topNums.length > 0) {
+
+      const height = styles?.match(/height: [0-9]*px;/g) || ['0'];
+      const heightNums = height[0].match(/\d+/g);
+      if (Array.isArray(topNums) && topNums.length > 0 && Array.isArray(heightNums) && heightNums.length > 0) {
         let topNum: number | string = topNums[0];
         topNum = Number(topNum);
 
-        // 每个 view-lines 默认高度都是 18
-        const line = topNum / 18 + 1;
+        let heightNum: number | string = heightNums[0];
+        heightNum = Number(heightNum);
+
+        const line = topNum / heightNum + 1;
         if (line === lineNumber) {
           return node;
         }
