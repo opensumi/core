@@ -2,7 +2,7 @@ import os from 'os';
 import path from 'path';
 
 import * as fse from 'fs-extra';
-const { JSDOM } = require('jsdom');
+import { JSDOM } from 'jsdom';
 const { window } = new JSDOM('');
 (global as any).UIEvent = window.UIEvent;
 
