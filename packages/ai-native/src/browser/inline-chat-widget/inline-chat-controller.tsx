@@ -68,7 +68,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
   return (
     <div className={styles.ai_inline_operation_panel}>
       <AILogoAvatar />
-      <LineVertical height={'70%'} margin={'0px 4px 0 8px'} />
+      <LineVertical height={'60%'} margin={'0px 4px 0 8px'} />
       <div className={styles.operate_container}>
         {operationList.map(({ name, title, id }, i) => (
           <EnhancePopover id={id} title={title} key={`popover_${i}`}>

@@ -62,7 +62,9 @@ const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
 
 const AI_NAME = 'AI 研发助手';
+const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
+let isAutoScroll = false;
 
 export const AiChatView = observer(() => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
@@ -158,12 +160,34 @@ export const AiChatView = observer(() => {
   );
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
-      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      isAutoScroll = true;
+      containerRef.current.scrollTo({
+        top: 2000,
+      });
     }
   }, [containerRef]);
 
   React.useEffect(() => {
     setMessageListData([firstMsg]);
+    let timerHandle;
+    containerRef.current?.addEventListener('scroll', () => {
+      clearTimeout(timerHandle);
+      // 排除自动滚动
+      if (isAutoScroll) {
+        isAutoScroll = false;
+        return;
+      }
+
+      containerRef.current?.classList.add(SCROLL_CLASSNAME);
+      isAutoScroll = false;
+      timerHandle = setTimeout(() => {
+        containerRef.current?.classList.remove(SCROLL_CLASSNAME);
+      }, 2000);
+    });
+
+    return () => {
+      containerRef.current?.removeEventListener('scroll', () => {});
+    };
   }, []);
 
   React.useEffect(() => {

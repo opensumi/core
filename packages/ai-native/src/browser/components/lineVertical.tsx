@@ -1,14 +1,14 @@
 import React from 'react';
 
 const lineStyles = {
-  backgroundColor: 'var(--ai-native-border-color-common)',
+  backgroundColor: 'var(--ai-native-border-color-normal)',
   height: '100%',
   width: '1px',
   minWidth: '1px',
 };
 
 const horizontalStyles = {
-  backgroundColor: 'var(--ai-native-border-color-common)',
+  backgroundColor: 'var(--ai-native-border-color-normal)',
   width: '100%',
   height: '1px',
   minHeight: '1px',

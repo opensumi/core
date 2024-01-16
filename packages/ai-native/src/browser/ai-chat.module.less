@@ -154,6 +154,8 @@
         overflow: auto;
         padding-top: 10px;
         margin-right: 2px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid transparent;
 
         &::-webkit-scrollbar {
           width: 4px;
@@ -200,8 +202,12 @@
         }
       }
 
+      :global(.chat_scroll) {
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+
       .chat_input_wrap {
-        padding: 16px;
+        padding: 11px 16px 16px;
         display: flex;
         flex-direction: column;
         position: relative;
