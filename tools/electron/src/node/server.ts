@@ -1,23 +1,23 @@
 /* eslint-disable no-console */
+import inspector from 'inspector';
 import net from 'net';
 
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, LogLevel } from '@opensumi/ide-core-common';
 import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 import { parseArgv } from '@opensumi/ide-utils/lib/argv';
-
 const argv = parseArgv(process.argv.slice(2));
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const deferred = new Deferred<net.Server>();
   let opts: IServerAppOpts = {
-    webSocketHandler: [],
     marketplace: {
       endpoint: DEFAULT_TRS_REGISTRY.ENDPOINT,
       showBuiltinExtensions: true,
       accountId: DEFAULT_TRS_REGISTRY.ACCOUNT_ID,
       masterKey: DEFAULT_TRS_REGISTRY.MASTER_KEY,
     },
+    logLevel: LogLevel.Verbose,
   };
   if (Array.isArray(arg1)) {
     opts = {
@@ -49,5 +49,19 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     deferred.resolve(server);
   });
 
+  process.env.DEV_OPEN_INSPECTOR && openInspector();
+
   await deferred.promise;
+}
+
+function openInspector() {
+  const url = inspector.url();
+  if (url) {
+    console.log(`inspector url: ${url}`);
+    return;
+  }
+
+  inspector.open(10234);
+  const inspectorUrl = inspector.url();
+  console.log(`inspector url: ${inspectorUrl}`);
 }

@@ -1,34 +1,39 @@
-import { WebSocket, Server } from 'mock-socket';
+import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+import { WebSocket, Server } from '@opensumi/mock-socket';
 
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
-import { stringify, parse } from '../../src/common/utils';
+import { stringify, parse } from '../../src/common/ws-channel';
 (global as any).WebSocket = WebSocket;
+
+const randomPortFn = () => Math.floor(Math.random() * 10000) + 10000;
+
+const randomPort = randomPortFn();
 
 describe('connection browser', () => {
   it('init connection', async () => {
     jest.setTimeout(20000);
 
-    const fakeWSURL = 'ws://localhost:8089';
+    const fakeWSURL = `ws://localhost:${randomPort}`;
     const mockServer = new Server(fakeWSURL);
 
     let receivedHeartbeat = false;
     mockServer.on('connection', (socket) => {
       socket.on('message', (msg) => {
-        const msgObj = parse(msg as string);
+        const msgObj = parse(msg as Uint8Array);
         if (msgObj.kind === 'open') {
           socket.send(
             stringify({
               id: msgObj.id,
-              kind: 'ready',
+              kind: 'server-ready',
             }),
           );
-        } else if (msgObj.kind === 'heartbeat') {
+        } else if (msgObj.kind === 'ping') {
           receivedHeartbeat = true;
         }
       });
     });
 
-    const wsChannelHandler = new WSChannelHandler(fakeWSURL, console);
+    const wsChannelHandler = new WSChannelHandler(ReconnectingWebSocketConnection.forURL(fakeWSURL), console);
 
     await wsChannelHandler.initHandler();
     await new Promise<void>((resolve) => {

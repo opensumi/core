@@ -9,6 +9,7 @@ import { extensionHostManagerTester } from './extension.host.manager.common-test
 const PROXY_PORT = 10297;
 let extHostProxy: ExtHostProxy;
 
+// KTLOG_SHOW_DEBUG=1 yarn jest packages/extension/__tests__/node/extension.host.proxy.manager.test.ts --detectOpenHandles
 extensionHostManagerTester({
   providers: [
     {
@@ -36,5 +37,6 @@ extensionHostManagerTester({
     }),
   dispose: () => {
     extHostProxy.dispose();
+    extHostProxy = null as any;
   },
 });

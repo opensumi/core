@@ -1,7 +1,8 @@
 import { Injector, Provider } from '@opensumi/di';
-import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
+import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import {
   getDebugLogger,
   IReporterService,
@@ -15,12 +16,13 @@ import {
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
+import { createNetSocketConnection, fromWindowClientId } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
 const initialLogger = getDebugLogger();
 
-export async function createClientConnection2(
+export async function createClientConnection4Web(
   injector: Injector,
   modules: ModuleConstructor[],
   wsPath: UrlProvider,
@@ -28,50 +30,90 @@ export async function createClientConnection2(
   protocols?: string[],
   clientId?: string,
 ) {
+  return createConnectionService(
+    injector,
+    modules,
+    onReconnect,
+    ReconnectingWebSocketConnection.forURL(wsPath, protocols),
+    clientId,
+  );
+}
+
+export async function createClientConnection4Electron(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  clientId?: string,
+) {
+  const connection = createNetSocketConnection();
+  const channel = WSChannel.forClient(connection, {
+    id: clientId || fromWindowClientId('RPCService'),
+    logger: console,
+  });
+  return bindConnectionService(injector, modules, channel);
+}
+
+export async function createConnectionService(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  onReconnect: () => void,
+  connection: ReconnectingWebSocketConnection | NetSocketConnection,
+  clientId?: string,
+) {
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
   const stateService = injector.get(ClientAppStateService);
 
-  const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, clientId);
-  wsChannelHandler.setReporter(reporterService);
-  wsChannelHandler.connection.addEventListener('open', async () => {
-    await stateService.reachedState('core_module_initialized');
-    eventBus.fire(new BrowserConnectionOpenEvent());
+  const channelHandler = new WSChannelHandler(connection, initialLogger, clientId);
+  channelHandler.setReporter(reporterService);
+
+  const onOpen = () => {
+    stateService.reachedState('core_module_initialized').then(() => {
+      eventBus.fire(new BrowserConnectionOpenEvent());
+    });
+  };
+
+  if (channelHandler.connection.isOpen()) {
+    onOpen();
+  } else {
+    const dispose = channelHandler.connection.onOpen(() => {
+      onOpen();
+      dispose.dispose();
+    });
+  }
+
+  channelHandler.connection.onceClose(() => {
+    stateService.reachedState('core_module_initialized').then(() => {
+      eventBus.fire(new BrowserConnectionCloseEvent());
+    });
   });
 
-  wsChannelHandler.connection.addEventListener('close', async () => {
-    await stateService.reachedState('core_module_initialized');
-    eventBus.fire(new BrowserConnectionCloseEvent());
+  channelHandler.connection.onError((e) => {
+    stateService.reachedState('core_module_initialized').then(() => {
+      eventBus.fire(new BrowserConnectionErrorEvent(e));
+    });
   });
 
-  wsChannelHandler.connection.addEventListener('error', async (e) => {
-    await stateService.reachedState('core_module_initialized');
-    eventBus.fire(new BrowserConnectionErrorEvent(e));
-  });
-
-  await wsChannelHandler.initHandler();
+  await channelHandler.initHandler();
 
   injector.addProviders({
     token: WSChannelHandler,
-    useValue: wsChannelHandler,
+    useValue: channelHandler,
   });
-  // 重连不会执行后面的逻辑
-  const channel = await wsChannelHandler.openChannel('RPCService');
-  channel.onReOpen(() => onReconnect());
 
-  bindConnectionService(injector, modules, createWebSocketConnection(channel));
+  // 重连不会执行后面的逻辑
+  const channel = await channelHandler.openChannel('RPCService');
+  channel.onReopen(() => onReconnect());
+
+  bindConnectionService(injector, modules, channel);
 }
 
-export async function bindConnectionService(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  connection: RPCMessageConnection,
-) {
+export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
-  clientCenter.setConnection(connection);
+  const dispose = clientCenter.setChannel(channel);
 
-  connection.onClose(() => {
-    clientCenter.removeConnection(connection);
+  const toRemove = channel.onClose(() => {
+    dispose.dispose();
+    toRemove();
   });
 
   const { getRPCService } = initRPCService(clientCenter);

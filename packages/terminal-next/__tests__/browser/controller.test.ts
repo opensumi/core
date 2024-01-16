@@ -1,6 +1,3 @@
-/**
- * Terminal Controller Test
- */
 import WebSocket from 'ws';
 
 import { Uri } from '@opensumi/ide-core-common';

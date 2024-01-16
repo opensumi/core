@@ -1,7 +1,6 @@
 import path from 'path';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
+import { FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { ExtensionService } from '@opensumi/ide-extension';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
@@ -33,6 +32,7 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { mockExtensions } from '../../__mocks__/extensions';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 
 const extension = Object.assign({}, mockExtensions[0], {
@@ -64,20 +64,7 @@ class TestTaskProvider {
   }
 }
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 describe('MainThreadTask Test Suite', () => {
   const injector = createBrowserInjector([VariableModule]);

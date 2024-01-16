@@ -1,4 +1,3 @@
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 import {
@@ -27,6 +26,7 @@ import { IWebviewService, IWebview } from '@opensumi/ide-webview';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
 
 async function delay(ms: number) {
@@ -104,21 +104,7 @@ describe('Webview view tests ', () => {
     },
   );
 
-  const emitterA = new Emitter<any>();
-  const emitterB = new Emitter<any>();
-
-  const mockClientA = {
-    send: (msg) => emitterB.fire(msg),
-    onMessage: emitterA.event,
-  };
-  const mockClientB = {
-    send: (msg) => emitterA.fire(msg),
-    onMessage: emitterB.event,
-  };
-
-  const rpcProtocolExt = new RPCProtocol(mockClientA);
-
-  const rpcProtocolMain = new RPCProtocol(mockClientB);
+  const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
   beforeAll((done) => {
     extHostWebview = new ExtHostWebviewService(rpcProtocolExt);

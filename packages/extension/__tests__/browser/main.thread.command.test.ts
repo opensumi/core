@@ -1,9 +1,9 @@
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
+import { CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MonacoCommandService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { ICommandServiceToken } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
@@ -23,21 +23,7 @@ describe('MainThreadCommandAPI Test Suites ', () => {
     },
   );
 
-  const emitterA = new Emitter<any>();
-  const emitterB = new Emitter<any>();
-
-  const mockClientA = {
-    send: (msg) => emitterB.fire(msg),
-    onMessage: emitterA.event,
-  };
-  const mockClientB = {
-    send: (msg) => emitterA.fire(msg),
-    onMessage: emitterB.event,
-  };
-
-  const rpcProtocolExt = new RPCProtocol(mockClientA);
-
-  const rpcProtocolMain = new RPCProtocol(mockClientB);
+  const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
   beforeAll((done) => {
     extHostCommands = new ExtHostCommands(rpcProtocolExt);

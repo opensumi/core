@@ -1,4 +1,3 @@
-import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationTokenSource, Uri } from '@opensumi/ide-core-common';
 import { URI } from '@opensumi/ide-core-common';
 import {
@@ -19,22 +18,9 @@ import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vs
 import { ExtHostCustomEditorImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.custom-editor';
 
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 
-
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 let extHost: ExtHostCustomEditorImpl;
 let mainThread: IMainThreadCustomEditor;

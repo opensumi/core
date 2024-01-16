@@ -570,17 +570,18 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       const lstat = await fse.lstat(filePath);
 
       if (lstat.isSymbolicLink()) {
-        let realPath;
+        let realPath: string;
         try {
           realPath = await fse.realpath(FileUri.fsPath(new URI(uri)));
         } catch (e) {
+          this.logger.warn('Cannot resolve symbolic link', uri.toString(), e);
           return undefined;
         }
         const stat = await fse.stat(filePath);
         const realURI = FileUri.create(realPath);
         const realStat = await fse.lstat(realPath);
 
-        let realStatData;
+        let realStatData: FileStat;
         if (stat.isDirectory()) {
           realStatData = await this.doCreateDirectoryStat(realURI.codeUri, realStat, depth);
         } else {
@@ -603,6 +604,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         return fileStat;
       }
     } catch (error) {
+      this.logger.error('Error occurred when getting file stat', uri, error);
       if (options?.throwError) {
         handleError(error);
       }
