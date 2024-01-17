@@ -225,6 +225,8 @@ export function createAPIFactory(
       extHostCustomEditor,
       extHostEditorTabs,
     ),
+    InlineCompletionItem: workerExtTypes.InlineSuggestion,
+    InlineCompletionList: workerExtTypes.InlineSuggestionList,
     authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
     comments: createCommentsApiFactory(extension, extHostComments),
     // Sumi 扩展 API
