@@ -144,7 +144,7 @@ export const aiNativeBorderColorCommon = registerColor(
 
 export const aiNativeBorderColorNormal = registerColor(
   'ai.native.border.color.normal',
-  { dark: new Color(new RGBA(255, 255, 255, 0.25)), light: null, hcDark: null, hcLight: null },
+  { dark: new Color(new RGBA(255, 255, 255, 0.12)), light: null, hcDark: null, hcLight: null },
   '',
   true,
 );

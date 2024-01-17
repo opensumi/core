@@ -521,7 +521,9 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
           sessionId={relationId}
           prompt={prompt}
           onRegenerate={() => send()}
-          renderContent={(content) => <CodeBlockWrapper text={content} />}
+          renderContent={(content) => (
+            <CodeBlockWrapper text={content} renderText={(text) => <ChatMarkdown content={text} />} />
+          )}
         ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,
@@ -664,13 +666,15 @@ const AIWithCommandReply = async (
     relationId,
     text: (
       <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div className={styles.chat_excute_result}>
           <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
-          <ol style={{ margin: '8px 0' }}>
+          <ol className={styles.chat_result_list}>
             <li style={{ listStyle: 'inherit' }}>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
             <li style={{ listStyle: 'inherit' }}>输入：{labelLocalized?.localized || label}</li>
           </ol>
-          <Button onClick={excuteCommand}>点击执行命令</Button>
+          <Button className={styles.chat_excute_btn} onClick={excuteCommand}>
+            点击执行命令
+          </Button>
         </div>
       </ChatMoreActions>
     ),

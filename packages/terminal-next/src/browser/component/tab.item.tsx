@@ -94,7 +94,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         <div></div>
       ) : (
         <div
-          className={clx([getIcon('close'), styles.close_icon])}
+          className={clx([getIcon('window-close'), styles.close_icon])}
           onClick={(event) => {
             event.stopPropagation();
             handleClose();

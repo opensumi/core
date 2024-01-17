@@ -323,8 +323,7 @@
         font-size: 16px;
         width: 16px;
         height: 16px;
-        color: var(--ai-native-text-color-normal);
-
+        color: var(--ai-native-text-color-other);
         &.mask-mode {
           background-color: var(--ai-native-block-background-hover);
           -webkit-mask-size: 16px;
@@ -493,6 +492,10 @@
     border-radius: 4px;
   }
 
+  div[class*='debug_console_output___'] {
+    background-color: transparent;
+  }
+
   div[class*='markerFilterContent___'] {
     justify-content: start;
 
@@ -550,6 +553,36 @@
 
   div[class*='item_container__'] {
     border: 0 none;
+    background-color: transparent;
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 12px;
+      display: inline-block;
+      width: 1px;
+      height: 12px;
+      background-color: var(--ai-native-border-color-normal);
+    }
+    div[class*='item_info_name___'] {
+      min-width: 110px;
+      margin-right: 4px;
+    }
+    div[class*='close_icon___'] {
+      opacity: 1;
+      color: var(--ai-native-text-color-normal);
+      display: flex;
+      width: 22px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      &::before {
+        font-size: 14px;
+      }
+      &:hover {
+        color: var(--ai-native-text-color-hover);
+      }
+    }
   }
 
   div[class*='item_selected___'] {
