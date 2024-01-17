@@ -585,6 +585,22 @@
     }
   }
 
+  div[class*='item_wrapper___'] {
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border-radius: 4px;
+      &:hover {
+        color: var(--ai-native-text-color-hover);
+        background-color: var(--kt-icon-hoverBackground);
+      }
+    }
+  }
+
   div[class*='item_selected___'] {
     background-color: rgba(21, 27, 33, 1);
     &::after {
