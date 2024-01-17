@@ -2,6 +2,7 @@ import type * as vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
+import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
@@ -179,6 +180,7 @@ export function createAPIFactory(
     OverviewRulerLane,
     TextEditorCursorStyle,
     TextEditorSelectionChangeKind,
+    version: extHostEnv.getEnvValues()?.customVSCodeEngineVersion || DEFAULT_VSCODE_ENGINE_VERSION,
     // VS Code 纯前端插件 API
     // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
     env: createWorkerHostEnvAPIFactory(rpcProtocol, extHostEnv),

@@ -25,6 +25,12 @@ export interface AppConfig {
    * 可以传入自定义的名称
    */
   appHost?: string;
+
+  /**
+   * 默认的 VS Code Engine 版本，默认值为 `DEFAULT_VSCODE_ENGINE_VERSION`
+   * 可能会影响某些 Web Extension 启动
+   */
+  customVSCodeEngineVersion?: string;
   /**
    * 应用绝对安装路径
    *
