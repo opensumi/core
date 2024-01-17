@@ -1,5 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
+import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService } from '../../../common';
@@ -224,7 +225,7 @@ export function createApiFactory(
     ),
     env: createEnvApiFactory(rpcProtocol, extension, extHostEnv, extHostTerminal),
     debug: createDebugApiFactory(extHostDebug),
-    version: appConfig.customVSCodeEngineVersion || '1.68.0',
+    version: appConfig.customVSCodeEngineVersion || DEFAULT_VSCODE_ENGINE_VERSION,
     comments: createCommentsApiFactory(extension, extHostComments),
     extensions: createExtensionsApiFactory(extensionService),
     tasks: createTaskApiFactory(extHostTasks, extension),

@@ -24,6 +24,7 @@ export interface IExtHostEnv {
 }
 
 export interface ExtHostEnvValues {
+  customVSCodeEngineVersion?: string;
   appName: string;
   uriScheme: string;
   appRoot: string;
