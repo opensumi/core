@@ -21,7 +21,7 @@ class Invoker {
   private legacyInvokeProxy: any;
   private sumiInvokeProxy: any;
 
-  constructor(protected protocolRepo: ProtocolRepository) {}
+  constructor(protected repo: ProtocolRepository) {}
 
   setLegacyProxy(proxy: ProxyLegacy) {
     this.legacyProxy = proxy;
@@ -38,7 +38,7 @@ class Invoker {
       return Promise.resolve();
     }
 
-    if (this.protocolRepo.has(name)) {
+    if (this.repo.has(name)) {
       return this.sumiInvokeProxy[name](...args);
     }
 
