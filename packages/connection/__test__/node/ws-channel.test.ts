@@ -2,6 +2,7 @@ import net from 'net';
 
 import { WSChannel } from '@opensumi/ide-connection';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
+
 const total = 1000;
 
 describe('ws channel node', () => {

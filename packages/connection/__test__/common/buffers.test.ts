@@ -132,6 +132,7 @@ describe('Buffers', () => {
     }
 
     expect(count).toEqual(4);
+
     expect(cursor.offset).toEqual(5);
     expect(cursor.value).toEqual(list.get(cursor.offset));
     expect(cursor.line).toEqual(1);
@@ -146,14 +147,14 @@ describe('Buffers', () => {
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
 
     cursor.move(2);
-    expect(cursor.offset).toEqual(7);
+    expect(cursor.offset).toEqual(8);
     expect(cursor.value).toEqual(list.get(cursor.offset));
     expect(cursor.line).toEqual(1);
     expect(cursor.lineOffset).toEqual(4);
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
 
     cursor.move(3);
-    expect(cursor.offset).toEqual(10);
+    expect(cursor.offset).toEqual(11);
     expect(cursor.value).toEqual(list.get(cursor.offset));
     expect(cursor.line).toEqual(2);
     expect(cursor.lineOffset).toEqual(1);
