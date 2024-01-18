@@ -104,6 +104,14 @@ export const aiNativeBlockBackgroundHover = registerColor(
   true,
 );
 
+// Icon背景色
+export const aiNativeBlockBackgroundlight = registerColor(
+  'ai.native.block.background.light',
+  { dark: new Color(new RGBA(255, 255, 255, 0.45)), light: null, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
 // tag背景色，或者整块区域hover上去背景色
 export const inlineChatBlockBackgroundCommon = registerColor(
   'ai.native.block.background.common',
@@ -138,6 +146,13 @@ export const aiNativeBorderColor = registerColor(
 export const aiNativeBorderColorCommon = registerColor(
   'ai.native.border.color.common',
   { dark: new Color(new RGBA(255, 255, 255, 0.35)), light: null, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
+export const aiNativeBorderColorNormal = registerColor(
+  'ai.native.border.color.normal',
+  { dark: new Color(new RGBA(255, 255, 255, 0.12)), light: null, hcDark: null, hcLight: null },
   '',
   true,
 );

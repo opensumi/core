@@ -154,6 +154,7 @@
         overflow: auto;
         padding-top: 10px;
         margin-right: 2px;
+        border-bottom: 1px solid transparent;
 
         &::-webkit-scrollbar {
           width: 4px;
@@ -194,10 +195,28 @@
           }
         }
 
+        .chat_excute_result {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          padding-bottom: 4px;
+          .chat_result_list {
+            margin: 8px 0 12px;
+          }
+
+          .chat_excute_btn {
+            border-radius: 8px;
+          }
+        }
+
         .chat_message_code {
           margin-top: 40px;
           max-width: 100%;
         }
+      }
+
+      :global(.chat_scroll) {
+        border-color: var(--ai-native-border-color);
       }
 
       .chat_input_wrap {

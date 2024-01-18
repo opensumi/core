@@ -62,6 +62,7 @@ const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
 
 const AI_NAME = 'AI 研发助手';
+const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
 export const AiChatView = observer(() => {
@@ -74,6 +75,7 @@ export const AiChatView = observer(() => {
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const isAutoScroll = React.useRef<boolean>(false);
 
   const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -158,12 +160,32 @@ export const AiChatView = observer(() => {
   );
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
+      isAutoScroll.current = true;
       containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
     }
   }, [containerRef]);
 
   React.useEffect(() => {
     setMessageListData([firstMsg]);
+    let timerHandle;
+    containerRef.current?.addEventListener('scroll', () => {
+      clearTimeout(timerHandle);
+      // 排除自动滚动
+      if (isAutoScroll.current) {
+        isAutoScroll.current = false;
+        return;
+      }
+
+      containerRef.current?.classList.add(SCROLL_CLASSNAME);
+      isAutoScroll.current = false;
+      timerHandle = setTimeout(() => {
+        containerRef.current?.classList.remove(SCROLL_CLASSNAME);
+      }, 2000);
+    });
+
+    return () => {
+      containerRef.current?.removeEventListener('scroll', () => {});
+    };
   }, []);
 
   React.useEffect(() => {
@@ -497,7 +519,9 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
           sessionId={relationId}
           prompt={prompt}
           onRegenerate={() => send()}
-          renderContent={(content) => <CodeBlockWrapper text={content} />}
+          renderContent={(content) => (
+            <CodeBlockWrapper text={content} renderText={(text) => <ChatMarkdown content={text} />} />
+          )}
         ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,
@@ -640,13 +664,15 @@ const AIWithCommandReply = async (
     relationId,
     text: (
       <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div className={styles.chat_excute_result}>
           <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
-          <ol style={{ margin: '8px 0' }}>
+          <ol className={styles.chat_result_list}>
             <li style={{ listStyle: 'inherit' }}>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
             <li style={{ listStyle: 'inherit' }}>输入：{labelLocalized?.localized || label}</li>
           </ol>
-          <Button onClick={excuteCommand}>点击执行命令</Button>
+          <Button className={styles.chat_excute_btn} onClick={excuteCommand}>
+            点击执行命令
+          </Button>
         </div>
       </ChatMoreActions>
     ),
