@@ -64,7 +64,6 @@ purePackets.forEach((v) => {
 const packets = [...purePackets, ...mixedPackets];
 
 describe('stream-packet', () => {
-  jest.setTimeout(1000 * 60 * 10);
   it('can create sumi stream packet', () => {
     const content = new Uint8Array([1, 2, 3]);
     const packet = createStreamPacket(content);
@@ -80,14 +79,7 @@ describe('stream-packet', () => {
       const decoder = new StreamPacketDecoder();
 
       decoder.onData((data) => {
-        expect(data.byteLength).toEqual(expected.byteLength);
-        for (let i = 0; i < 10; i++) {
-          // 随机选一些数据(<= 100字节)，对比是否正确，对比整个数组的话，超大 buffer 会很耗时
-          const start = Math.floor(Math.random() * data.byteLength);
-          const end = Math.floor(Math.random() * 1024);
-
-          expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
-        }
+        fastExpectBufferEqual(data, expected);
         decoder.dispose();
         done();
       });
@@ -109,14 +101,8 @@ describe('stream-packet', () => {
     let count = 0;
     decoder.onData((data) => {
       const expected = purePackets[count][1];
-      expect(data.byteLength).toEqual(expected.byteLength);
-      for (let i = 0; i < 10; i++) {
-        // 随机选一些数据(<= 100字节)，对比是否正确，对比整个数组的话，超大 buffer 会很耗时
-        const start = Math.floor(Math.random() * data.byteLength);
-        const end = Math.floor(Math.random() * 1024);
+      fastExpectBufferEqual(data, expected);
 
-        expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
-      }
       count++;
       if (count === expectCount) {
         decoder.dispose();
@@ -144,4 +130,17 @@ function logMemoryUsage() {
   }
 
   console.log(text);
+}
+
+function fastExpectBufferEqual(data: Uint8Array, expected: Uint8Array, confidenceLevel = 10) {
+  expect(data.byteLength).toEqual(expected.byteLength);
+
+  for (let i = 0; i < confidenceLevel; i++) {
+    // 如果对比整个 Uint8Array 的话，超大 Uint8Array 会很耗时
+    // 随机选一些数据(<= 1024 字节)，对比是否正确，
+    const start = Math.floor(Math.random() * data.byteLength);
+    const end = Math.floor(Math.random() * 1024);
+
+    expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
+  }
 }
