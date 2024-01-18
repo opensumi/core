@@ -74,7 +74,7 @@ describe('Buffers', () => {
     expect(list.get(1)).toEqual(10);
   });
 
-  it.only('cursor should work', () => {
+  it('cursor should work', () => {
     const list = new Buffers();
     list.push(new Uint8Array([1, 2, 3, 4]));
     list.push(new Uint8Array([4, 5, 6, 7, 8, 9]));
