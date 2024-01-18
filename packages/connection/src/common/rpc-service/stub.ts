@@ -1,5 +1,4 @@
 import { RPCServiceMethod, ServiceType } from '../types';
-import { getServiceMethods } from '../utils';
 
 import { RPCServiceCenter } from './center';
 
@@ -17,10 +16,7 @@ export class RPCServiceStub {
   }
 
   onRequestService(service: any) {
-    const methods = getServiceMethods(service);
-    for (const method of methods) {
-      this.onRequest(method, service[method].bind(service));
-    }
+    this.center.onRequestService(this.serviceName, service);
   }
 
   onRequest(name: string, method: RPCServiceMethod) {

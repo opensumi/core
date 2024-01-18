@@ -10,6 +10,7 @@ import {
   FileSystemProvider,
   DiskFileServicePath,
 } from '../common';
+import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
 
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { getSafeFileservice } from './file-service';
@@ -37,6 +38,7 @@ export class FileServiceModule extends NodeModule {
     {
       servicePath: DiskFileServicePath,
       token: IDiskFileProvider,
+      protocol: DiskFileServiceProtocol,
     },
     {
       servicePath: ShadowFileServicePath,

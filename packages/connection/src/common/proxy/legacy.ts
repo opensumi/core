@@ -1,9 +1,6 @@
-import { uuid } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { IRPCServiceMap } from '../types';
-import { MessageType, ResponseStatus, getServiceMethods } from '../utils';
 
 import { ProxyBase } from './base';
 
@@ -15,7 +12,7 @@ interface IRPCResult {
 export class ProxyLegacy extends ProxyBase<MessageConnection> {
   engine = 'legacy' as const;
 
-  public getInvokeProxy(): any {
+  public getInvokeProxy<T = any>(): T {
     return new Proxy(this, this);
   }
 
@@ -36,11 +33,11 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
         } else {
           this.connection.sendNotification(prop, ...args);
         }
-        this.capture({ type: MessageType.SendNotification, serviceMethod: prop, arguments: args });
+        this.captureSendNotification(prop, args);
       } else {
         let requestResult: Promise<any>;
         // generate a unique requestId to associate request and requestResult
-        const requestId = uuid();
+        const requestId = this.nextRequestId();
 
         if (isSingleArray) {
           requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
@@ -48,7 +45,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
           requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
         }
 
-        this.capture({ type: MessageType.SendRequest, requestId, serviceMethod: prop, arguments: args });
+        this.captureSendRequest(requestId, prop, args);
 
         const result: IRPCResult = await requestResult;
 
@@ -57,75 +54,41 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
           if (result.data.stack) {
             error.stack = result.data.stack;
           }
-          this.capture({
-            type: MessageType.RequestResult,
-            status: ResponseStatus.Fail,
-            requestId,
-            serviceMethod: prop,
-            error: result.data,
-          });
+
+          this.captureSendRequestFail(requestId, prop, result.data);
           throw error;
         } else {
-          this.capture({
-            type: MessageType.RequestResult,
-            status: ResponseStatus.Success,
-            requestId,
-            serviceMethod: prop,
-            data: result.data,
-          });
+          this.captureSendRequestResult(requestId, prop, result.data);
           return result.data;
         }
       }
     };
   }
 
-  protected bindOnRequest(service: IRPCServiceMap, cb?: ((service: IRPCServiceMap, prop: string) => void) | undefined) {
-    if (this.connection) {
-      const connection = this.connection;
+  protected bindMethods(methods: string[]) {
+    methods.forEach((method) => {
+      if (method.startsWith('on')) {
+        this.connection.onNotification(method, (...args) => {
+          this.onNotification(method, ...args);
+          this.captureOnNotification(method, args);
+        });
+      } else {
+        this.connection.onRequest(method, (...args) => {
+          const requestId = this.nextRequestId();
+          const result = this.onRequest(method, ...args);
+          this.captureOnRequest(requestId, method, args);
+          result
+            .then((result) => {
+              this.captureOnRequestResult(requestId, method, result.data);
+            })
+            .catch((err) => {
+              this.captureOnRequestFail(requestId, method, err.data);
+            });
 
-      const methods = getServiceMethods(service);
-
-      methods.forEach((method) => {
-        if (method.startsWith('on')) {
-          connection.onNotification(method, (...args) => {
-            this.onNotification(method, ...args);
-            this.capture({ type: MessageType.OnNotification, serviceMethod: method, arguments: args });
-          });
-        } else {
-          connection.onRequest(method, (...args) => {
-            const requestId = uuid();
-            const result = this.onRequest(method, ...args);
-            this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method, arguments: args });
-
-            result
-              .then((result) => {
-                this.capture({
-                  type: MessageType.OnRequestResult,
-                  status: ResponseStatus.Success,
-                  requestId,
-                  serviceMethod: method,
-                  data: result.data,
-                });
-              })
-              .catch((err) => {
-                this.capture({
-                  type: MessageType.OnRequestResult,
-                  status: ResponseStatus.Fail,
-                  requestId,
-                  serviceMethod: method,
-                  error: err.data,
-                });
-              });
-
-            return result;
-          });
-        }
-
-        if (cb) {
-          cb(service, method);
-        }
-      });
-    }
+          return result;
+        });
+      }
+    });
   }
 
   /**
@@ -152,7 +115,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
 
   private async onRequest(prop: PropertyKey, ...args: any[]) {
     try {
-      const result = await this.proxyService[prop](...this.serializeArguments(args));
+      const result = await this.runner.run(prop, ...this.serializeArguments(args));
 
       return {
         error: false,
@@ -171,7 +134,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
 
   private onNotification(prop: PropertyKey, ...args: any[]) {
     try {
-      this.proxyService[prop](...this.serializeArguments(args));
+      this.runner.run(prop as any, ...this.serializeArguments(args));
     } catch (e) {
       this.logger.warn('notification', e);
     }
@@ -179,20 +142,15 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
 
   listen(connection: MessageConnection): void {
     super.listen(connection);
+
     connection.onRequest((method) => {
-      if (!this.proxyService[method]) {
-        const requestId = uuid();
-        this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method });
+      if (!this.runner.has(method)) {
+        const requestId = this.nextRequestId();
+        this.captureOnRequest(requestId, method, []);
         const result = {
           data: METHOD_NOT_REGISTERED,
         };
-        this.capture({
-          type: MessageType.OnRequestResult,
-          status: ResponseStatus.Fail,
-          requestId,
-          serviceMethod: method,
-          error: result.data,
-        });
+        this.captureOnRequestFail(requestId, method, result.data);
         return result;
       }
     });

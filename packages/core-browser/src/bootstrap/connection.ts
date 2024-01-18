@@ -127,6 +127,9 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     if (moduleInstance.backServices) {
       for (const backService of moduleInstance.backServices) {
         backServiceArr.push(backService);
+        if (backService.protocol) {
+          clientCenter.loadProtocol(backService.protocol);
+        }
       }
     }
   }

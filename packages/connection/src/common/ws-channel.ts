@@ -9,6 +9,7 @@ import { DisposableCollection } from '@opensumi/ide-core-common';
 import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { createWebSocketConnection } from './message';
+import { Connection } from './rpc/connection';
 import { ILogger } from './types';
 
 export interface IWebSocket {
@@ -68,6 +69,12 @@ export interface DataMessage {
   content: string;
 }
 
+export interface BinaryMessage {
+  kind: 'binary';
+  id: string;
+  binary: Uint8Array;
+}
+
 export interface CloseMessage {
   kind: 'close';
   id: string;
@@ -75,7 +82,14 @@ export interface CloseMessage {
   reason: string;
 }
 
-export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage =
+  | PingMessage
+  | PongMessage
+  | OpenMessage
+  | ServerReadyMessage
+  | DataMessage
+  | BinaryMessage
+  | CloseMessage;
 
 export interface IWSChannelCreateOptions {
   /**
@@ -92,6 +106,7 @@ export class WSChannel implements IWebSocket {
     open: [id: string];
     reopen: [];
     close: [code?: number, reason?: string];
+    binary: [data: Uint8Array];
   }>();
 
   public id: string;
@@ -142,9 +157,11 @@ export class WSChannel implements IWebSocket {
     this.LOG_TAG = `[WSChannel] [id:${id}]`;
   }
 
-  // server
   onMessage(cb: (data: string) => any) {
     return this.emitter.on('message', cb);
+  }
+  onBinary(cb: (data: Uint8Array) => any) {
+    return this.emitter.on('binary', cb);
   }
   onOpen(cb: (id: string) => void) {
     return this.emitter.on('open', cb);
@@ -152,6 +169,7 @@ export class WSChannel implements IWebSocket {
   onReopen(cb: () => void) {
     return this.emitter.on('reopen', cb);
   }
+
   serverReady() {
     this.connection.send(
       stringify({
@@ -166,10 +184,11 @@ export class WSChannel implements IWebSocket {
       this.emitter.emit('open', msg.id);
     } else if (msg.kind === 'data') {
       this.emitter.emit('message', msg.content);
+    } else if (msg.kind === 'binary') {
+      this.emitter.emit('binary', msg.binary);
     }
   }
 
-  // client
   open(path: string, clientId: string) {
     this.channelPath = path;
     this.connection.send(
@@ -181,6 +200,7 @@ export class WSChannel implements IWebSocket {
       }),
     );
   }
+
   send(content: string) {
     this.connection.send(
       stringify({
@@ -190,9 +210,24 @@ export class WSChannel implements IWebSocket {
       }),
     );
   }
+
+  sendBinary(data: Uint8Array) {
+    this.connection.send(
+      stringify({
+        kind: 'binary',
+        id: this.id,
+        binary: data,
+      }),
+    );
+  }
+
   hasMessageListener() {
     return this.emitter.hasListener('message');
   }
+  hasBinaryListener() {
+    return this.emitter.hasListener('binary');
+  }
+
   onError() {}
   close(code?: number, reason?: string) {
     this.emitter.emit('close', code, reason);
@@ -203,8 +238,34 @@ export class WSChannel implements IWebSocket {
   onClose(cb: (code: number, reason: string) => void) {
     return this.emitter.on('close', cb);
   }
+  onceClose(cb: (code: number, reason: string) => void) {
+    return this.emitter.once('close', cb);
+  }
   createMessageConnection() {
     return createWebSocketConnection(this);
+  }
+  createConnection() {
+    return new Connection({
+      onceClose: (cb) => {
+        const toRemove = this.onceClose(cb);
+        return {
+          dispose() {
+            toRemove();
+          },
+        };
+      },
+      onMessage: (cb) => {
+        const remove = this.onBinary(cb);
+        return {
+          dispose: () => {
+            remove();
+          },
+        };
+      },
+      send: (data) => {
+        this.sendBinary(data);
+      },
+    });
   }
   dispose() {
     this.emitter.dispose();
@@ -256,6 +317,7 @@ export const wsChannelProtocol = Type.object('ws-channel-protocol', {
   id: Type.string(),
   path: Type.string(),
   content: Type.string(),
+  binary: Type.binary(),
   code: Type.uint32(),
   reason: Type.string(),
 });

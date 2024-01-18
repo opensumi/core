@@ -1,6 +1,7 @@
 import net from 'net';
 
 import { WSChannel } from '@opensumi/ide-connection';
+import { copy } from '@opensumi/ide-connection/lib/common/connection/buffers';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 const total = 1000;
@@ -39,7 +40,7 @@ describe('ws channel node', () => {
     socket2.end();
   });
 
-  it(`互相通信 N 次(N = ${total})`, async () => {
+  it.only('[send text] 互相通信 N 次', async () => {
     jest.setTimeout(20 * 1000);
 
     let count = 0;
@@ -77,6 +78,58 @@ describe('ws channel node', () => {
       new Promise<void>((resolve) => {
         for (let i = 0; i < total; i++) {
           channel2.send('hello');
+        }
+        resolve();
+      }),
+    ]);
+
+    server.close();
+    socket2.destroy();
+    socket2.end();
+  });
+
+  it('[send binary] 互相通信 N 次', async () => {
+    jest.setTimeout(20 * 1000);
+
+    let count = 0;
+
+    const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
+
+    const server = new net.Server();
+
+    server.on('connection', (socket) => {
+      const channel1 = WSChannel.forNetSocket(socket, {
+        id: 'channel1',
+      });
+      channel1.onBinary((d) => {
+        const newBuffer = Buffer.alloc(d.length + 4);
+        newBuffer.writeUInt32BE(d.length, 0);
+        copy(d, newBuffer, 4);
+        channel1.sendBinary(newBuffer);
+      });
+    });
+
+    server.listen(ipcPath);
+
+    const socket2 = net.createConnection(ipcPath);
+
+    const channel2 = WSChannel.forNetSocket(socket2, {
+      id: 'channel2',
+    });
+    const helloBinary = Buffer.from('hello');
+
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        channel2.onBinary(() => {
+          count++;
+          if (count === total) {
+            resolve();
+          }
+        });
+      }),
+      new Promise<void>((resolve) => {
+        for (let i = 0; i < total; i++) {
+          channel2.sendBinary(helloBinary);
         }
         resolve();
       }),

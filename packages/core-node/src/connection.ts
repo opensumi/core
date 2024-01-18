@@ -93,42 +93,50 @@ export function bindModuleBackService(
 
   const childInjector = injector.createChild();
   for (const module of modules) {
-    if (module.backServices) {
-      for (const service of module.backServices) {
-        if (service.token) {
-          const serviceToken = service.token;
+    if (!module.backServices) {
+      continue;
+    }
 
-          if (!injector.creatorMap.has(serviceToken)) {
-            continue;
-          }
+    for (const service of module.backServices) {
+      if (!service.token) {
+        continue;
+      }
 
-          const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
+      const serviceToken = service.token;
 
-          if ((creator as FactoryCreator).useFactory) {
-            const serviceFactory = (creator as FactoryCreator).useFactory;
-            childInjector.addProviders({
-              token: serviceToken,
-              useValue: serviceFactory(childInjector),
-            });
-          } else {
-            const serviceClass = (creator as ClassCreator).useClass;
-            childInjector.addProviders({
-              token: serviceToken,
-              useClass: serviceClass,
-            });
-          }
-          const serviceInstance = childInjector.get(serviceToken);
+      if (!injector.creatorMap.has(serviceToken)) {
+        continue;
+      }
 
-          if (serviceInstance.setConnectionClientId && clientId) {
-            serviceInstance.setConnectionClientId(clientId);
-          }
-          const servicePath = service.servicePath;
-          const createService = createRPCService(servicePath, serviceInstance);
+      const creator = injector.creatorMap.get(serviceToken) as InstanceCreator;
 
-          if (!serviceInstance.rpcClient) {
-            serviceInstance.rpcClient = [createService];
-          }
-        }
+      if ((creator as FactoryCreator).useFactory) {
+        const serviceFactory = (creator as FactoryCreator).useFactory;
+        childInjector.addProviders({
+          token: serviceToken,
+          useValue: serviceFactory(childInjector),
+        });
+      } else {
+        const serviceClass = (creator as ClassCreator).useClass;
+        childInjector.addProviders({
+          token: serviceToken,
+          useClass: serviceClass,
+        });
+      }
+
+      const serviceInstance = childInjector.get(serviceToken);
+
+      if (serviceInstance.setConnectionClientId && clientId) {
+        serviceInstance.setConnectionClientId(clientId);
+      }
+      if (service.protocol) {
+        serviceCenter.loadProtocol(service.protocol);
+      }
+
+      const createService = createRPCService(service.servicePath, serviceInstance);
+
+      if (!serviceInstance.rpcClient) {
+        serviceInstance.rpcClient = [createService];
       }
     }
   }

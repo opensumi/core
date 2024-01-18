@@ -8,6 +8,7 @@ import {
   IShadowFileProvider,
   DiskFileServicePath,
 } from '../common/index';
+import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
 
 import { FileServiceClient, BrowserFileSystemRegistryImpl } from './file-service-client';
 import { FileServiceContribution } from './file-service-contribution';
@@ -41,6 +42,7 @@ export class FileServiceClientModule extends BrowserModule {
     {
       servicePath: DiskFileServicePath,
       clientToken: IDiskFileProvider,
+      protocol: DiskFileServiceProtocol,
     },
   ];
 }

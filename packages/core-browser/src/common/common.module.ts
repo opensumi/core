@@ -1,4 +1,5 @@
 import { Injectable, Provider } from '@opensumi/di';
+import { CommonServerProtocol } from '@opensumi/ide-connection/lib/common/protocols/common-server';
 import { CommonServerPath, CryptoServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
 
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
@@ -29,6 +30,7 @@ export class ClientCommonModule extends BrowserModule {
   backServices = [
     {
       servicePath: CommonServerPath,
+      protocol: CommonServerProtocol,
     },
     {
       servicePath: KeytarServicePath,
