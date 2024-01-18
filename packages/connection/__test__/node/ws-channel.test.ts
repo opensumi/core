@@ -40,7 +40,7 @@ describe('ws channel node', () => {
     socket2.end();
   });
 
-  it.only('[send text] 互相通信 N 次', async () => {
+  it('[send text] 互相通信 N 次', async () => {
     jest.setTimeout(20 * 1000);
 
     let count = 0;
