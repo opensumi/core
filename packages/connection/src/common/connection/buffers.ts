@@ -6,7 +6,13 @@
 
 const emptyBuffer = new Uint8Array(0);
 
-function copy(source: Uint8Array, target: Uint8Array, targetStart?: number, sourceStart?: number, sourceEnd?: number) {
+export function copy(
+  source: Uint8Array,
+  target: Uint8Array,
+  targetStart?: number,
+  sourceStart?: number,
+  sourceEnd?: number,
+) {
   target.set(source.subarray(sourceStart, sourceEnd), targetStart);
 }
 
@@ -68,7 +74,7 @@ export class Buffers {
 
   pos(i: number): { buf: number; offset: number } {
     if (i < 0 || i >= this.size) {
-      throw new Error('oob');
+      throw new Error(`out of range, ${i} not in [0, ${this.size})`);
     }
     let l = i;
     let bi = 0;
@@ -184,8 +190,100 @@ export class Buffers {
     return this.slice();
   }
 
+  cursor(offset = 0) {
+    return new Cursor(this, offset);
+  }
+
   dispose() {
     this.buffers = [];
     this.size = 0;
+  }
+}
+
+/**
+ * Remember the current position in a Buffers.
+ *
+ * The cursor will always point to the next byte to be read.
+ *
+ * The cursor is not safe to use after the Buffers is modified.
+ */
+export class Cursor {
+  protected chunkIndex = 0;
+  protected chunkOffset = 0;
+
+  constructor(protected buffers: Buffers, public offset = 0) {
+    this.updatePosition();
+  }
+
+  protected updatePosition() {
+    if (this.offset === 0) {
+      this.chunkIndex = 0;
+      this.chunkOffset = 0;
+      return;
+    }
+
+    const { buf, offset } = this.buffers.pos(this.offset);
+    this.chunkIndex = buf;
+    this.chunkOffset = offset;
+  }
+
+  /**
+   * Return this cursor's current line number.
+   */
+  get line() {
+    return this.chunkIndex;
+  }
+
+  get lineWidth() {
+    return this.buffers.buffers[this.chunkIndex].byteLength;
+  }
+
+  get value() {
+    return this.buffers.buffers[this.chunkIndex][this.chunkOffset];
+  }
+
+  /**
+   * Return the cursor offset in the current line.
+   */
+  get lineOffset() {
+    return this.chunkOffset;
+  }
+
+  *iterator() {
+    while (this.chunkIndex < this.buffers.buffers.length) {
+      const chunk = this.buffers.buffers[this.chunkIndex];
+      const chunkLength = chunk.byteLength;
+
+      while (this.chunkOffset < chunkLength) {
+        const num = chunk[this.chunkOffset];
+        this.chunkOffset++;
+        this.offset++;
+
+        yield num;
+      }
+      this.chunkOffset = 0;
+      this.chunkIndex++;
+    }
+  }
+
+  move(n: number) {
+    this.offset += n;
+    this.updatePosition();
+  }
+
+  moveTo(n: number) {
+    this.offset = n;
+    this.updatePosition();
+  }
+
+  dispose() {
+    this.buffers = null as any;
+    this.offset = 0;
+  }
+
+  reset() {
+    this.offset = 0;
+    this.chunkIndex = 0;
+    this.chunkOffset = 0;
   }
 }

@@ -51,9 +51,20 @@ const mixedPackets = [p1m, p5m].map((v) => {
   return [newPacket, v] as const;
 });
 
+const size = purePackets.reduce((acc, v) => acc + v[0].byteLength, 0);
+
+let offset = 0;
+const bigPayload = createPayload(size);
+purePackets.forEach((v) => {
+  const sumiPacket = v[0];
+  bigPayload.set(sumiPacket, offset);
+  offset += sumiPacket.byteLength;
+});
+
 const packets = [...purePackets, ...mixedPackets];
 
 describe('stream-packet', () => {
+  jest.setTimeout(1000 * 60 * 10);
   it('can create sumi stream packet', () => {
     const content = new Uint8Array([1, 2, 3]);
     const packet = createStreamPacket(content);
@@ -90,6 +101,37 @@ describe('stream-packet', () => {
 
       logMemoryUsage();
     });
+  });
+
+  it('can decode a stream payload contains multiple packets', (done) => {
+    const decoder = new StreamPacketDecoder();
+    const expectCount = purePackets.length;
+    let count = 0;
+    decoder.onData((data) => {
+      const expected = purePackets[count][1];
+      expect(data.byteLength).toEqual(expected.byteLength);
+      for (let i = 0; i < 10; i++) {
+        // 随机选一些数据(<= 100字节)，对比是否正确，对比整个数组的话，超大 buffer 会很耗时
+        const start = Math.floor(Math.random() * data.byteLength);
+        const end = Math.floor(Math.random() * 1024);
+
+        expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
+      }
+      count++;
+      if (count === expectCount) {
+        decoder.dispose();
+        done();
+      }
+    });
+
+    console.log('write chunk', bigPayload.byteLength);
+    // write chunk by ${pressure} bytes
+    for (let i = 0; i < bigPayload.byteLength; i += pressure) {
+      decoder.push(bigPayload.subarray(i, i + pressure));
+      logMemoryUsage();
+    }
+
+    logMemoryUsage();
   });
 });
 
