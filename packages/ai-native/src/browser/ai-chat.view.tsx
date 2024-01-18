@@ -64,7 +64,6 @@ const createMessageByAI = (message: AIMessageData, className?: string) =>
 const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
-let isAutoScroll = false;
 
 export const AiChatView = observer(() => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
@@ -76,6 +75,7 @@ export const AiChatView = observer(() => {
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const isAutoScroll = React.useRef<boolean>(false);
 
   const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -160,10 +160,8 @@ export const AiChatView = observer(() => {
   );
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
-      isAutoScroll = true;
-      containerRef.current.scrollTo({
-        top: 2000,
-      });
+      isAutoScroll.current = true;
+      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
     }
   }, [containerRef]);
 
@@ -173,13 +171,13 @@ export const AiChatView = observer(() => {
     containerRef.current?.addEventListener('scroll', () => {
       clearTimeout(timerHandle);
       // 排除自动滚动
-      if (isAutoScroll) {
-        isAutoScroll = false;
+      if (isAutoScroll.current) {
+        isAutoScroll.current = false;
         return;
       }
 
       containerRef.current?.classList.add(SCROLL_CLASSNAME);
-      isAutoScroll = false;
+      isAutoScroll.current = false;
       timerHandle = setTimeout(() => {
         containerRef.current?.classList.remove(SCROLL_CLASSNAME);
       }, 2000);
