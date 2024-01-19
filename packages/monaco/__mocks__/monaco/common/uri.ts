@@ -845,7 +845,6 @@ interface UriState extends UriComponents {
 
 const _pathSepMarker = isWindows ? 1 : undefined;
 
-// tslint:disable-next-line:class-name
 class _URI extends MockedMonacoUri {
   _formatted: string | null = null;
   _fsPath: string | null = null;

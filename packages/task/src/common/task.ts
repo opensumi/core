@@ -1123,7 +1123,6 @@ export namespace TaskEvent {
     task: Task,
     processIdOrExitCode?: number,
   ): TaskEvent;
-  // tslint:disable-next-line: unified-signatures
   export function create(kind: TaskEventKind.Start, task: Task, terminalId?: string): TaskEvent;
   export function create(kind: TaskEventKind.ProblemMatched, task: Task, problems?: ProblemMatch[]): TaskEvent;
   export function create(

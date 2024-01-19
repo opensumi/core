@@ -60,7 +60,6 @@ describe('main layout test', () => {
     window.cancelAnimationFrame = () => {
       // mock cancelAnimationFrame
     };
-    // tslint:disable-next-line: only-arrow-functions
     (window as any).ResizeObserver = function () {
       this.observe = () => {};
       this.disconnect = () => {};

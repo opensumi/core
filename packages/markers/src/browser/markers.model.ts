@@ -36,7 +36,6 @@ export class MarkerViewModel extends Disposable {
   private _onMarkerChanged(resources: string[]) {
     if (resources) {
       resources.forEach((resource) => {
-        // tslint:disable-next-line: no-bitwise
         this.updateMarker(
           resource,
           this._service

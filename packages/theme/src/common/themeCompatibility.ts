@@ -17,7 +17,6 @@ function addSettingMapping(settingId: string, colorId: string) {
 }
 
 // 旧的settings和新的ITokenColorizationRule的转换（主要是一些key的映射）
-// tslint:disable
 export function convertSettings(
   oldSettings: ITokenColorizationRule[],
   resultRules: ITokenColorizationRule[],

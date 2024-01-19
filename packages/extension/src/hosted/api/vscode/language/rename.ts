@@ -111,7 +111,6 @@ export class RenameAdapter {
     );
   }
 
-  /* tslint:disable-next-line:no-any */
   private static asMessage(err: any): string | undefined {
     if (typeof err === 'string') {
       return err;

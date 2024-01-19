@@ -31,7 +31,6 @@ export interface WorkspaceFolder {
   index: number;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export type IWorkspaceFolder = WorkspaceFolder;
 
 export interface WorkspaceFolderTaskResult extends WorkspaceTaskResult {

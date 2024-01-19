@@ -45,7 +45,6 @@ export class RangeFormattingAdapter {
     const doc = document.document;
     const ran = Converter.toRange(range);
 
-    // tslint:disable-next-line:no-any
     return Promise.resolve(
       this.provider.provideDocumentRangeFormattingEdits(doc, ran as any, options as any, createToken()),
     ).then((value) => {
@@ -74,7 +73,6 @@ export class FormattingAdapter {
 
     const doc = document.document;
 
-    // tslint:disable-next-line:no-any
     return Promise.resolve(this.provider.provideDocumentFormattingEdits(doc, options as any, createToken())).then(
       (value) => {
         if (Array.isArray(value)) {
