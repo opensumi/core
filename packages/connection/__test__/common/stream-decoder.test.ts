@@ -119,6 +119,25 @@ describe('stream-packet', () => {
 
     logMemoryUsage();
   });
+
+  it('can decode a stream it header and payload are separated', (done) => {
+    const v = createPayload(1024);
+    const sumiPacket = createStreamPacket(v);
+
+    const decoder = new StreamPacketDecoder();
+    decoder.onData((data) => {
+      fastExpectBufferEqual(data, v);
+      done();
+    });
+
+    console.log('write chunk', sumiPacket.byteLength);
+
+    // use pressure = 2 to simulate the header and payload are separated
+    const pressure = 2;
+    for (let i = 0; i < sumiPacket.byteLength; i += pressure) {
+      decoder.push(sumiPacket.subarray(i, i + pressure));
+    }
+  });
 });
 
 function logMemoryUsage() {

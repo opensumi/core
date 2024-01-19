@@ -1,7 +1,7 @@
-import { Buffers } from '../../src/common/connection/buffers';
+import { Buffers, copy } from '../../src/common/connection/buffers';
 
 describe('Buffers', () => {
-  it('can append and slice', () => {
+  it('can push and slice', () => {
     const list = new Buffers();
     list.push(new Uint8Array([1, 2, 3]));
     list.push(new Uint8Array([4, 5, 6]));
@@ -16,6 +16,25 @@ describe('Buffers', () => {
 
     expect(list.slice(2, 2)).toEqual(new Uint8Array(0));
     expect(list.slice(2, 6)).toEqual(new Uint8Array([3, 4, 5, 6]));
+  });
+
+  it('slice', () => {
+    const xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const splits = [[4, 2, 3, 1], [2, 2, 2, 2, 2], [1, 6, 3, 1], [9, 2], [10], [5, 5]];
+
+    splits.forEach(function (split) {
+      const bufs = create(xs, split);
+      expect(new Uint8Array(xs)).toEqual(bufs.slice());
+
+      for (let i = 0; i < xs.length; i++) {
+        for (let j = i; j < xs.length; j++) {
+          const a = bufs.slice(i, j);
+          const b = new Uint8Array(xs.slice(i, j));
+
+          expect(a).toEqual(b);
+        }
+      }
+    });
   });
 
   it('can splice', () => {
@@ -44,10 +63,54 @@ describe('Buffers', () => {
       new Uint8Array([4, 5, 6]),
     ]);
   });
+
+  it('splice', () => {
+    const xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const splits = [[4, 2, 3, 1], [2, 2, 2, 2, 2], [1, 6, 3, 1], [9, 2], [10], [5, 5]];
+
+    splits.forEach(function (split) {
+      for (let i = 0; i < xs.length; i++) {
+        for (let j = i; j < xs.length; j++) {
+          const bufs = create(xs, split);
+          const xs_ = xs.slice();
+
+          const a_ = bufs.splice(i, j);
+          const a = [].slice.call(a_.slice());
+          const b = xs_.splice(i, j);
+          expect(a).toEqual(b);
+          expect(bufs.slice()).toEqual(new Uint8Array(xs_));
+        }
+      }
+    });
+  });
+
+  it('spliceRep', () => {
+    const xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const splits = [[4, 2, 3, 1], [2, 2, 2, 2, 2], [1, 6, 3, 1], [9, 2], [10], [5, 5]];
+    const reps = [[], [1], [5, 6], [3, 1, 3, 3, 7], [9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5]];
+
+    splits.forEach(function (split) {
+      reps.forEach(function (rep) {
+        for (let i = 0; i < xs.length; i++) {
+          for (let j = i; j < xs.length; j++) {
+            const bufs = create(xs, split);
+            const xs_ = xs.slice();
+
+            const a_ = bufs.splice(i, j, new Uint8Array(rep));
+            const a = [].slice.call(a_.slice());
+            const b = xs_.splice(i, j, ...rep);
+
+            expect(a).toEqual(b);
+            expect(bufs.slice()).toEqual(new Uint8Array(xs_));
+          }
+        }
+      });
+    });
+  });
+
   it('can copy', () => {
     const list = new Buffers();
     list.push(new Uint8Array([1, 2, 3]));
-
     list.push(new Uint8Array([4, 5, 6]));
 
     const target = new Uint8Array(7);
@@ -72,6 +135,36 @@ describe('Buffers', () => {
     list.set(1, 10);
     expect(list.get(0)).toEqual(9);
     expect(list.get(1)).toEqual(10);
+
+    const xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const splits = [[4, 2, 3, 1], [2, 2, 2, 2, 2], [1, 6, 3, 1], [9, 2], [10], [5, 5]];
+
+    splits.forEach(function (split) {
+      const bufs = create(xs, split);
+      const buf = new Uint8Array(xs);
+
+      for (let i = 0; i < xs.length; i++) {
+        for (let j = i; j < xs.length; j++) {
+          const t0 = new Uint8Array(j - i);
+          const t1 = new Uint8Array(j - i);
+
+          expect(bufs.copy(t0, 0, i, j)).toEqual(copy(buf, t1, 0, i, j));
+          expect([].slice.call(t0)).toEqual([].slice.call(t1));
+        }
+      }
+    });
+  });
+
+  it('unshift', () => {
+    const bufs = new Buffers();
+    bufs.unshift(new Uint8Array([6, 7, 8, 9]));
+    bufs.unshift(new Uint8Array([4, 5]));
+    bufs.unshift(new Uint8Array([1, 2, 3]));
+    bufs.unshift(new Uint8Array([0]));
+
+    expect([].slice.call(bufs.slice())).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(bufs.buffers.length).toEqual(4);
+    expect(bufs.byteLength).toEqual(10);
   });
 
   it('cursor should work', () => {
@@ -161,3 +254,13 @@ describe('Buffers', () => {
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
   });
 });
+
+function create(xs: number[], split: number[]) {
+  const bufs = new Buffers();
+  let offset = 0;
+  split.forEach(function (i) {
+    bufs.push(new Uint8Array(xs.slice(offset, offset + i)));
+    offset += i;
+  });
+  return bufs;
+}

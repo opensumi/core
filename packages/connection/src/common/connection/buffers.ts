@@ -142,7 +142,6 @@ export class Buffers {
           reps = [];
         } else {
           buffers.splice(ii, 1, buf0, buf1);
-          // buffers[ii] = buf;
           ii += 2;
         }
       } else {
@@ -184,10 +183,6 @@ export class Buffers {
   set(i: number, v: number) {
     const { buf, offset } = this.pos(i);
     this.buffers[buf][offset] = v;
-  }
-
-  toUint8Array() {
-    return this.slice();
   }
 
   cursor(offset = 0) {

@@ -5,6 +5,9 @@ import { EventEmitter } from '@opensumi/events';
 
 import { Buffers } from '../buffers';
 
+/**
+ * You can use `Buffer.from('Sumi')` to get this magic number
+ */
 export const kMagicNumber = 0x53756d69;
 
 const writer = BinaryWriter({});
@@ -15,7 +18,6 @@ const writer = BinaryWriter({});
  * So we need to add a header to the data, so that the receiver can know the length of the data,
  * The header is 4 bytes, the first 4 bytes is a magic number, which is `Sumi` in little endian.
  * use magic number can help us to detect the start of the packet in the stream.
- * > You can use `Buffer.from('Sumi')` to get this magic number
  *
  * The next 4 bytes is a varUInt32, which means the length of the following data, and
  * the following data is the content.
@@ -38,12 +40,12 @@ export class StreamPacketDecoder {
 
   protected reader = BinaryReader({});
 
-  protected packetState = 0;
-  protected packetContentLength = 0;
+  protected state = 0;
+  protected contentLength = 0;
 
   reset() {
-    this.packetState = 0;
-    this.packetContentLength = 0;
+    this.state = 0;
+    this.contentLength = 0;
 
     this.cursor.reset();
   }
@@ -58,11 +60,11 @@ export class StreamPacketDecoder {
   }
 
   protected readPacket(): boolean {
-    const found = this.readPacketHeader();
+    const found = this.readHeader();
 
     if (found) {
       const start = this.cursor.offset;
-      const end = start + this.packetContentLength;
+      const end = start + this.contentLength;
 
       const binary = this.buffers.slice(start, end);
 
@@ -70,12 +72,13 @@ export class StreamPacketDecoder {
 
       if (this.buffers.byteLength > end) {
         this.cursor.moveTo(end);
-        this.packetState = 0;
-        this.packetContentLength = 0;
+        this.state = 0;
+        this.contentLength = 0;
         // has more data, continue to parse
         return false;
       }
 
+      // delete used buffers
       this.buffers.splice(0, end);
       this.reset();
     }
@@ -89,16 +92,16 @@ export class StreamPacketDecoder {
    * Then read the next byte, this is a varUint32, which means the length of the following data
    * Then read the following data, until we get the length of varUint32, then return this data and continue to read the next packet
    */
-  protected readPacketHeader() {
+  protected readHeader() {
     if (this.buffers.byteLength === 0) {
       return false;
     }
 
-    if (this.packetState !== 4) {
-      this.readPacketMagicNumber();
+    if (this.state !== 4) {
+      this.readMagicNumber();
     }
 
-    if (this.packetState !== 4) {
+    if (this.state !== 4) {
       // Not enough data yet, wait for more data
       return false;
     }
@@ -108,15 +111,15 @@ export class StreamPacketDecoder {
       return false;
     }
 
-    if (!this.packetContentLength) {
+    if (!this.contentLength) {
       // read the content length
       const buffers = this.buffers.slice(this.cursor.offset, this.cursor.offset + 4);
       this.reader.reset(buffers);
-      this.packetContentLength = this.reader.varUInt32();
+      this.contentLength = this.reader.varUInt32();
       this.cursor.move(this.reader.getCursor());
     }
 
-    if (this.cursor.offset + this.packetContentLength > this.buffers.byteLength) {
+    if (this.cursor.offset + this.contentLength > this.buffers.byteLength) {
       // Not enough data yet, wait for more data
       return false;
     }
@@ -124,7 +127,7 @@ export class StreamPacketDecoder {
     return true;
   }
 
-  protected readPacketMagicNumber() {
+  protected readMagicNumber() {
     const iter = this.cursor.iterator();
 
     let result = iter.next();
@@ -132,48 +135,48 @@ export class StreamPacketDecoder {
       // Fury use little endian to store data
       switch (result.value) {
         case 0x69:
-          switch (this.packetState) {
+          switch (this.state) {
             case 0:
-              this.packetState = 1;
+              this.state = 1;
               break;
             default:
-              this.packetState = 0;
+              this.state = 0;
               break;
           }
           break;
         case 0x6d:
-          switch (this.packetState) {
+          switch (this.state) {
             case 1:
-              this.packetState = 2;
+              this.state = 2;
               break;
             default:
-              this.packetState = 0;
+              this.state = 0;
               break;
           }
           break;
         case 0x75:
-          switch (this.packetState) {
+          switch (this.state) {
             case 2:
-              this.packetState = 3;
+              this.state = 3;
               break;
             default:
-              this.packetState = 0;
+              this.state = 0;
               break;
           }
           break;
         case 0x53:
-          switch (this.packetState) {
+          switch (this.state) {
             case 3:
-              this.packetState = 4;
+              this.state = 4;
               iter.return();
               break;
             default:
-              this.packetState = 0;
+              this.state = 0;
               break;
           }
           break;
         default:
-          this.packetState = 0;
+          this.state = 0;
           break;
       }
       result = iter.next();
@@ -188,5 +191,6 @@ export class StreamPacketDecoder {
     this.reader = BinaryReader({});
     this.emitter.dispose();
     this.buffers.dispose();
+    this.cursor.dispose();
   }
 }
