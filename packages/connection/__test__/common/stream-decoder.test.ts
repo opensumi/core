@@ -51,6 +51,16 @@ const mixedPackets = [p1m, p5m].map((v) => {
   return [newPacket, v] as const;
 });
 
+const size = purePackets.reduce((acc, v) => acc + v[0].byteLength, 0);
+
+let offset = 0;
+const bigPayload = createPayload(size);
+purePackets.forEach((v) => {
+  const sumiPacket = v[0];
+  bigPayload.set(sumiPacket, offset);
+  offset += sumiPacket.byteLength;
+});
+
 const packets = [...purePackets, ...mixedPackets];
 
 describe('stream-packet', () => {
@@ -69,14 +79,7 @@ describe('stream-packet', () => {
       const decoder = new StreamPacketDecoder();
 
       decoder.onData((data) => {
-        expect(data.byteLength).toEqual(expected.byteLength);
-        for (let i = 0; i < 10; i++) {
-          // 随机选一些数据(<= 100字节)，对比是否正确，对比整个数组的话，超大 buffer 会很耗时
-          const start = Math.floor(Math.random() * data.byteLength);
-          const end = Math.floor(Math.random() * 1024);
-
-          expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
-        }
+        fastExpectBufferEqual(data, expected);
         decoder.dispose();
         done();
       });
@@ -91,6 +94,50 @@ describe('stream-packet', () => {
       logMemoryUsage();
     });
   });
+
+  it('can decode a stream payload contains multiple packets', (done) => {
+    const decoder = new StreamPacketDecoder();
+    const expectCount = purePackets.length;
+    let count = 0;
+    decoder.onData((data) => {
+      const expected = purePackets[count][1];
+      fastExpectBufferEqual(data, expected);
+
+      count++;
+      if (count === expectCount) {
+        decoder.dispose();
+        done();
+      }
+    });
+
+    console.log('write chunk', bigPayload.byteLength);
+    // write chunk by ${pressure} bytes
+    for (let i = 0; i < bigPayload.byteLength; i += pressure) {
+      decoder.push(bigPayload.subarray(i, i + pressure));
+      logMemoryUsage();
+    }
+
+    logMemoryUsage();
+  });
+
+  it('can decode a stream it header and payload are separated', (done) => {
+    const v = createPayload(1024);
+    const sumiPacket = createStreamPacket(v);
+
+    const decoder = new StreamPacketDecoder();
+    decoder.onData((data) => {
+      fastExpectBufferEqual(data, v);
+      done();
+    });
+
+    console.log('write chunk', sumiPacket.byteLength);
+
+    // use pressure = 2 to simulate the header and payload are separated
+    const pressure = 2;
+    for (let i = 0; i < sumiPacket.byteLength; i += pressure) {
+      decoder.push(sumiPacket.subarray(i, i + pressure));
+    }
+  });
 });
 
 function logMemoryUsage() {
@@ -102,4 +149,17 @@ function logMemoryUsage() {
   }
 
   console.log(text);
+}
+
+function fastExpectBufferEqual(data: Uint8Array, expected: Uint8Array, confidenceLevel = 10) {
+  expect(data.byteLength).toEqual(expected.byteLength);
+
+  for (let i = 0; i < confidenceLevel; i++) {
+    // 如果对比整个 Uint8Array 的话，超大 Uint8Array 会很耗时
+    // 随机选一些数据(<= 1024 字节)，对比是否正确，
+    const start = Math.floor(Math.random() * data.byteLength);
+    const end = Math.floor(Math.random() * 1024);
+
+    expect(data.subarray(start, end)).toEqual(expected.subarray(start, end));
+  }
 }

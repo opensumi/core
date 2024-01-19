@@ -5,6 +5,9 @@ import { EventEmitter } from '@opensumi/events';
 
 import { Buffers } from '../buffers';
 
+/**
+ * You can use `Buffer.from('Sumi')` to get this magic number
+ */
 export const kMagicNumber = 0x53756d69;
 
 const writer = BinaryWriter({});
@@ -15,7 +18,6 @@ const writer = BinaryWriter({});
  * So we need to add a header to the data, so that the receiver can know the length of the data,
  * The header is 4 bytes, the first 4 bytes is a magic number, which is `Sumi` in little endian.
  * use magic number can help us to detect the start of the packet in the stream.
- * > You can use `Buffer.from('Sumi')` to get this magic number
  *
  * The next 4 bytes is a varUInt32, which means the length of the following data, and
  * the following data is the content.
@@ -33,47 +35,52 @@ export class StreamPacketDecoder {
     data: [Uint8Array];
   }>();
 
-  protected _buffers = new Buffers();
+  protected buffers = new Buffers();
+  protected cursor = this.buffers.cursor();
 
   protected reader = BinaryReader({});
 
-  protected _tmpChunksTotalBytesCursor: number;
-  protected _tmpPacketState: number;
-  protected _tmpContentLength: number;
-
-  constructor() {
-    this.reset();
-  }
+  protected state = 0;
+  protected contentLength = 0;
 
   reset() {
-    this._tmpChunksTotalBytesCursor = 0;
-    this._tmpPacketState = 0;
-    this._tmpContentLength = 0;
+    this.state = 0;
+    this.contentLength = 0;
+
+    this.cursor.reset();
   }
 
   push(chunk: Uint8Array): void {
-    this._buffers.push(chunk);
+    this.buffers.push(chunk);
     let done = false;
 
     while (!done) {
-      done = this._parsePacket();
+      done = this.readPacket();
     }
   }
 
-  _parsePacket(): boolean {
-    const found = this._detectPacketHeader();
-    if (found) {
-      const fullBinary = this._buffers.splice(0, this._tmpChunksTotalBytesCursor + this._tmpContentLength);
-      const binary = fullBinary.splice(this._tmpChunksTotalBytesCursor, this._tmpContentLength).slice();
-      this.emitter.emit('data', binary);
-      this.reset();
+  protected readPacket(): boolean {
+    const found = this.readHeader();
 
-      if (this._buffers.byteLength > 0) {
+    if (found) {
+      const start = this.cursor.offset;
+      const end = start + this.contentLength;
+
+      const binary = this.buffers.slice(start, end);
+
+      this.emitter.emit('data', binary);
+
+      if (this.buffers.byteLength > end) {
+        this.cursor.moveTo(end);
+        this.state = 0;
+        this.contentLength = 0;
         // has more data, continue to parse
         return false;
       }
 
-      return true;
+      // delete used buffers
+      this.buffers.splice(0, end);
+      this.reset();
     }
 
     return true;
@@ -85,34 +92,34 @@ export class StreamPacketDecoder {
    * Then read the next byte, this is a varUint32, which means the length of the following data
    * Then read the following data, until we get the length of varUint32, then return this data and continue to read the next packet
    */
-  _detectPacketHeader() {
-    if (this._buffers.byteLength === 0) {
+  protected readHeader() {
+    if (this.buffers.byteLength === 0) {
       return false;
     }
 
-    if (this._tmpPacketState !== 4) {
-      this._tmpChunksTotalBytesCursor = this._detectPacketMagicNumber();
+    if (this.state !== 4) {
+      this.readMagicNumber();
     }
 
-    if (this._tmpPacketState !== 4) {
+    if (this.state !== 4) {
       // Not enough data yet, wait for more data
       return false;
     }
 
-    if (this._tmpChunksTotalBytesCursor + 4 > this._buffers.byteLength) {
+    if (this.cursor.offset + 4 > this.buffers.byteLength) {
       // Not enough data yet, wait for more data
       return false;
     }
 
-    if (!this._tmpContentLength) {
+    if (!this.contentLength) {
       // read the content length
-      const buffers = this._buffers.slice(this._tmpChunksTotalBytesCursor, this._tmpChunksTotalBytesCursor + 4);
+      const buffers = this.buffers.slice(this.cursor.offset, this.cursor.offset + 4);
       this.reader.reset(buffers);
-      this._tmpContentLength = this.reader.varUInt32();
-      this._tmpChunksTotalBytesCursor += this.reader.getCursor();
+      this.contentLength = this.reader.varUInt32();
+      this.cursor.move(this.reader.getCursor());
     }
 
-    if (this._tmpChunksTotalBytesCursor + this._tmpContentLength > this._buffers.byteLength) {
+    if (this.cursor.offset + this.contentLength > this.buffers.byteLength) {
       // Not enough data yet, wait for more data
       return false;
     }
@@ -120,74 +127,60 @@ export class StreamPacketDecoder {
     return true;
   }
 
-  _detectPacketMagicNumber() {
-    let chunkIndex = 0;
-    let chunkCursor = 0;
+  protected readMagicNumber() {
+    const iter = this.cursor.iterator();
 
-    // try read the magic number
-    row: while (chunkIndex < this._buffers.buffers.length) {
-      const chunk = this._buffers.buffers[chunkIndex];
-      const chunkLength = chunk.byteLength;
-
-      let chunkOffset = 0;
-
-      while (chunkOffset < chunkLength) {
-        const num = chunk[chunkOffset];
-        chunkOffset++;
-        chunkCursor++;
-
-        // Fury use little endian to store data
-        switch (num) {
-          case 0x69:
-            switch (this._tmpPacketState) {
-              case 0:
-                this._tmpPacketState = 1;
-                break;
-              default:
-                this._tmpPacketState = 0;
-                break;
-            }
-            break;
-          case 0x6d:
-            switch (this._tmpPacketState) {
-              case 1:
-                this._tmpPacketState = 2;
-                break;
-              default:
-                this._tmpPacketState = 0;
-                break;
-            }
-            break;
-          case 0x75:
-            switch (this._tmpPacketState) {
-              case 2:
-                this._tmpPacketState = 3;
-                break;
-              default:
-                this._tmpPacketState = 0;
-                break;
-            }
-            break;
-          case 0x53:
-            switch (this._tmpPacketState) {
-              case 3:
-                this._tmpPacketState = 4;
-                break row;
-              default:
-                this._tmpPacketState = 0;
-                break;
-            }
-            break;
-          default:
-            this._tmpPacketState = 0;
-            break;
-        }
+    let result = iter.next();
+    while (!result.done) {
+      // Fury use little endian to store data
+      switch (result.value) {
+        case 0x69:
+          switch (this.state) {
+            case 0:
+              this.state = 1;
+              break;
+            default:
+              this.state = 0;
+              break;
+          }
+          break;
+        case 0x6d:
+          switch (this.state) {
+            case 1:
+              this.state = 2;
+              break;
+            default:
+              this.state = 0;
+              break;
+          }
+          break;
+        case 0x75:
+          switch (this.state) {
+            case 2:
+              this.state = 3;
+              break;
+            default:
+              this.state = 0;
+              break;
+          }
+          break;
+        case 0x53:
+          switch (this.state) {
+            case 3:
+              this.state = 4;
+              iter.return();
+              break;
+            default:
+              this.state = 0;
+              break;
+          }
+          break;
+        default:
+          this.state = 0;
+          break;
       }
-
-      chunkIndex++;
+      result = iter.next();
     }
-
-    return chunkCursor;
   }
 
   onData(cb: (data: Uint8Array) => void) {
@@ -197,6 +190,7 @@ export class StreamPacketDecoder {
   dispose() {
     this.reader = BinaryReader({});
     this.emitter.dispose();
-    this._buffers.dispose();
+    this.buffers.dispose();
+    this.cursor.dispose();
   }
 }
