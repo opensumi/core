@@ -1,5 +1,4 @@
 import { Deferred, isDefined } from '@opensumi/ide-core-common';
-import { uuid } from '@opensumi/ide-core-common';
 
 import { ILogger, IRPCServiceMap } from '../types';
 import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../utils';
@@ -9,6 +8,8 @@ import type { ServiceRunner } from './runner';
 interface IBaseConnection {
   listen(): void;
 }
+
+let requestId = 0;
 
 export abstract class ProxyBase<T extends IBaseConnection> {
   protected logger: ILogger;
@@ -40,7 +41,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   }
 
   protected nextRequestId() {
-    return uuid();
+    return String(requestId++);
   }
 
   protected captureOnRequest(requestId: string, serviceMethod: string, args: any[]): void {
