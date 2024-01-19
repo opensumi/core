@@ -275,6 +275,9 @@ export class WSChannel implements IWebSocket {
     channel.onMessage((data) => {
       this.send(data);
     });
+    channel.onBinary((binary) => {
+      this.sendBinary(binary);
+    });
     channel.onClose((code, reason) => {
       this.close(code, reason);
     });
