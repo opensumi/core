@@ -1,6 +1,6 @@
 import type net from 'net';
 
-import Fury, { Type } from '@furyjs/fury';
+import { Type } from '@furyjs/fury';
 import type WebSocket from 'ws';
 
 import { EventEmitter } from '@opensumi/events';
@@ -8,6 +8,7 @@ import { DisposableCollection } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
+import { oneOf } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
 import { Connection } from './rpc/connection';
 import { ILogger } from './types';
@@ -287,50 +288,56 @@ export class WSChannel implements IWebSocket {
   }
 }
 
-export type MessageString = string & {
-  origin?: any;
-};
+export const PingProtocol = Type.object('ping', {
+  clientId: Type.string(),
+  id: Type.string(),
+});
 
-/**
- * 路径信息 ${pre}-${index}
- */
-export class ChildConnectPath {
-  public pathPre = 'child_connect-';
+export const PongProtocol = Type.object('pong', {
+  clientId: Type.string(),
+  id: Type.string(),
+});
 
-  getConnectPath(index: number, clientId: string) {
-    return `${this.pathPre}${index + 1}`;
-  }
-
-  parseInfo(pathString: string) {
-    const list = pathString.split('-');
-
-    return {
-      pre: list[0],
-      index: list[1],
-      clientId: list[2],
-    };
-  }
-}
-
-const fury = new Fury({});
-
-export const wsChannelProtocol = Type.object('ws-channel-protocol', {
-  kind: Type.string(),
+export const OpenProtocol = Type.object('open', {
   clientId: Type.string(),
   id: Type.string(),
   path: Type.string(),
+});
+
+export const ServerReadyProtocol = Type.object('server-ready', {
+  id: Type.string(),
+});
+
+export const DataProtocol = Type.object('data', {
+  id: Type.string(),
   content: Type.string(),
+});
+
+export const BinaryProtocol = Type.object('binary', {
+  id: Type.string(),
   binary: Type.binary(),
+});
+
+export const CloseProtocol = Type.object('close', {
+  id: Type.string(),
   code: Type.uint32(),
   reason: Type.string(),
 });
 
-const wsChannelProtocolSerializer = fury.registerSerializer(wsChannelProtocol);
+const serializer = oneOf([
+  PingProtocol,
+  PongProtocol,
+  OpenProtocol,
+  ServerReadyProtocol,
+  DataProtocol,
+  BinaryProtocol,
+  CloseProtocol,
+]);
 
 export function stringify(obj: ChannelMessage): Uint8Array {
-  return wsChannelProtocolSerializer.serialize(obj);
+  return serializer.serialize(obj);
 }
 
 export function parse(input: Uint8Array): ChannelMessage {
-  return wsChannelProtocolSerializer.deserialize(input) as any;
+  return serializer.deserialize(input) as any;
 }
