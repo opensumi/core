@@ -24,8 +24,8 @@ export class ExtensionHostManager implements IExtensionHostManager {
 
   fork(modulePath: string, ...args: any[]) {
     const extProcess = cp.fork(modulePath, ...args);
-    this.processMap.set(extProcess.pid, extProcess);
-    return extProcess.pid;
+    this.processMap.set(extProcess.pid!, extProcess);
+    return extProcess.pid!;
   }
 
   send(pid: number, message: string) {
@@ -83,10 +83,10 @@ export class ExtensionHostManager implements IExtensionHostManager {
     if (!extProcess) {
       return;
     }
-    extProcess.stdout.setEncoding('utf8');
-    extProcess.stderr.setEncoding('utf8');
-    const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout, 'data');
-    const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr, 'data');
+    extProcess.stdout!.setEncoding('utf8');
+    extProcess.stderr!.setEncoding('utf8');
+    const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout!, 'data');
+    const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr!, 'data');
     const onOutput = Event.any(
       Event.map(onStdout, (o) => ({ type: OutputType.STDOUT, data: `%c${o}`, format: [''] })),
       Event.map(onStderr, (o) => ({ type: OutputType.STDERR, data: `%c${o}`, format: ['color: red'] })),

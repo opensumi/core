@@ -14,6 +14,8 @@ import { MarkdownString } from '../../../common/vscode/converter';
 import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
 import * as types from '../../../common/vscode/ext-types';
 
+type Timer = ReturnType<typeof global.setTimeout>;
+
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;
   protected readonly rpcProtocol: IRPCProtocol;
@@ -26,7 +28,7 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
   setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
     // step3
     this.proxy.$setStatusBarMessage(text);
-    let handle: NodeJS.Timer | undefined;
+    let handle: Timer | undefined;
 
     if (typeof arg === 'number') {
       handle = global.setTimeout(() => this.proxy.$dispose(), arg);
@@ -78,7 +80,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   private _command: string | vscode.Command | undefined;
 
   private _isVisible: boolean;
-  private _timeoutHandle: NodeJS.Timer | undefined;
+  private _timeoutHandle: Timer | undefined;
 
   private _proxy: IMainThreadStatusBar;
 

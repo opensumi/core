@@ -18,7 +18,7 @@ export interface IProcess {
   onExit: Event<IProcessExitEvent>;
   onError: Event<ProcessErrorEvent>;
   killed: boolean;
-  dispose(signal?: string);
+  dispose(signal?: NodeJS.Signals | number): void;
 }
 
 export interface IProcessFactory {

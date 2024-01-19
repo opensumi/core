@@ -94,7 +94,7 @@ export const getUInt8Buffer =
       }
     : (data: IDataType): Uint8Array => {
         if (typeof data === 'string') {
-          return textEncoder.encode(data);
+          return textEncoder!.encode(data);
         }
 
         if (ArrayBuffer.isView(data)) {

@@ -1887,9 +1887,9 @@ __metadata:
     "@opensumi/ide-startup": "workspace:*"
     "@types/ejs": ^3.0.2
     "@types/koa-mount": ^4.0.0
-    "@types/node": ^18.11.18
-    "@types/react": ^16.9.17
-    "@types/react-dom": ^16.9.4
+    "@types/node": ^18.19.8
+    "@types/react": ^18.0.0
+    "@types/react-dom": ^18.0.0
     "@types/read-pkg-up": ^6.0.0
     assets-webpack-plugin: ^3.9.12
     cache-loader: ^4.1.0
@@ -1944,7 +1944,7 @@ __metadata:
     "@types/jest": ^29.5.6
     "@types/jsdom": ^16.2.14
     "@types/lodash": ^4.14.202
-    "@types/node": ^10.14.6
+    "@types/node": ^18.19.8
     "@types/node-fetch": ^2.6.1
     "@types/react": ^18.0.0
     "@types/react-dom": ^18.0.0
@@ -3084,7 +3084,7 @@ __metadata:
   resolution: "@opensumi/sumi@workspace:packages/types"
   dependencies:
     "@opensumi/ide-components": "workspace:*"
-    "@types/react": ^16.9.33
+    "@types/react": ^18.0.0
     vscode-uri: 3.0.2
   languageName: unknown
   linkType: soft
@@ -3890,14 +3890,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^18.11.18":
+"@types/node@npm:*":
   version: 18.11.18
   resolution: "@types/node@npm:18.11.18"
   checksum: 03f17f9480f8d775c8a72da5ea7e9383db5f6d85aa5fefde90dd953a1449bd5e4ffde376f139da4f3744b4c83942166d2a7603969a6f8ea826edfb16e6e3b49d
   languageName: node
   linkType: hard
 
-"@types/node@npm:^10.12.0, @types/node@npm:^10.14.6":
+"@types/node@npm:^10.12.0":
   version: 10.17.60
   resolution: "@types/node@npm:10.17.60"
   checksum: 2cdb3a77d071ba8513e5e8306fa64bf50e3c3302390feeaeff1fd325dd25c8441369715dfc8e3701011a72fed5958c7dfa94eb9239a81b3c286caa4d97db6eef
@@ -3908,6 +3908,15 @@ __metadata:
   version: 16.18.11
   resolution: "@types/node@npm:16.18.11"
   checksum: 2a3b1da13063debe6e26f732defb5f03ef4ef732c3e08daba838d8850433bd00e537ce1a97ce9bcfc4b15db5218d701d1265fae94e0d6926906bec157e6b46e0
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.19.8":
+  version: 18.19.8
+  resolution: "@types/node@npm:18.19.8"
+  dependencies:
+    undici-types: ~5.26.4
+  checksum: fa291495d6157a9d9393b4c3bdbf1ce12a8f661dc9da6a4fa19bcdb19af1c62bb8dbf7fb66ae135f29cd788b618e9845b83e9c47edcf39f0953a8561fdacd9a3
   languageName: node
   linkType: hard
 
@@ -3967,12 +3976,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^16.9.17":
-  version: 16.9.17
-  resolution: "@types/react-dom@npm:16.9.17"
+"@types/react-dom@npm:^18.0.0":
+  version: 18.2.18
+  resolution: "@types/react-dom@npm:18.2.18"
   dependencies:
-    "@types/react": ^16
-  checksum: c9246eb4d35993463608de61111f2bdae5afbd22556c8b9918081516b67eafd1a9ef141c3ed459dd4c753dd7ea037b6a375a856e677c2586396c23732772831d
+    "@types/react": "*"
+  checksum: 8e3da404c980e2b2a76da3852f812ea6d8b9d0e7f5923fbaf3bfbbbfa1d59116ff91c129de8f68e9b7668a67ae34484fe9df74d5a7518cf8591ec07a0c4dad57
   languageName: node
   linkType: hard
 
@@ -3994,14 +4003,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^16.9.23":
-  version: 16.14.35
-  resolution: "@types/react@npm:16.14.35"
+"@types/react@npm:^18.0.0":
+  version: 18.2.48
+  resolution: "@types/react@npm:18.2.48"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: ed9c551a7d50d073a5fb0295c1d939536c66c3286d42b6c94c20749464492ed95a408e6d3694bf49df0012da69e22202065c8c2fac0406356972a7fcb4960dd3
+  checksum: c9ca43ed2995389b7e09492c24e6f911a8439bb8276dd17cc66a2fbebbf0b42daf7b2ad177043256533607c2ca644d7d928fdfce37a67af1f8646d2bac988900
   languageName: node
   linkType: hard
 
@@ -21832,6 +21841,13 @@ __metadata:
   version: 2.0.5
   resolution: "undefsafe@npm:2.0.5"
   checksum: f42ab3b5770fedd4ada175fc1b2eb775b78f609156f7c389106aafd231bfc210813ee49f54483d7191d7b76e483bc7f537b5d92d19ded27156baf57592eb02cc
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: 3192ef6f3fd5df652f2dc1cd782b49d6ff14dc98e5dced492aa8a8c65425227da5da6aafe22523c67f035a272c599bb89cfe803c1db6311e44bed3042fc25487
   languageName: node
   linkType: hard
 

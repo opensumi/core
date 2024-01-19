@@ -55,8 +55,8 @@ export function startDebugAdapter(
     throw new Error(`It is not possible to launch debug adapter with the command: ${JSON.stringify(executable)}`);
   }
   return {
-    input: childProcess.stdin,
-    output: childProcess.stdout,
+    input: childProcess.stdin!,
+    output: childProcess.stdout!,
     dispose: () => childProcess.kill(),
   };
 }

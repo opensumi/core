@@ -291,14 +291,14 @@ export class KTNodeProcess {
           this._process.on('error', (error) => {
             reject(error);
           });
-          this._process.stdout.on('data', (data) => {
+          this._process.stdout!.on('data', (data) => {
             data = data.toString();
             if (data.length > 500) {
               data = data.slice(0, 500) + '...';
             }
             process.stdout.write('[node]' + data);
           });
-          this._process.stderr.on('data', (data) => {
+          this._process.stderr!.on('data', (data) => {
             data = data.toString();
             if (data.length > 500) {
               data = data.slice(0, 500) + '...';
@@ -325,7 +325,7 @@ export class KTNodeProcess {
     logger.log('KTNodeProcess dispose', this._process.pid);
     if (this._process) {
       return new Promise<void>((resolve, reject) => {
-        treeKill(this._process.pid, 'SIGKILL', (err) => {
+        treeKill(this._process.pid!, 'SIGKILL', (err) => {
           if (err) {
             logger.error(`tree kill error \n ${err.message}`);
             reject(err);

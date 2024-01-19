@@ -19,8 +19,7 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
   }
 
   isOpen(): boolean {
-    // currently we use `@types/node@10`, 10.x does not have `readyState` property
-    return (this.socket as any).readyState === 'open';
+    return this.socket.readyState === 'open';
   }
 
   send(data: Uint8Array): void {

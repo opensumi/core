@@ -4,6 +4,8 @@ import { Injectable } from '@opensumi/di';
 
 import { IProgressIndicator, IProgressRunner, IProgressModel } from '.';
 
+type TimeOut = ReturnType<typeof setTimeout>;
+
 @Injectable({ multiple: true })
 export class ProgressIndicator implements IProgressIndicator {
   @observable
@@ -45,7 +47,7 @@ export class ProgressIndicator implements IProgressIndicator {
     this.doDone(false);
   }
 
-  private scheduled: NodeJS.Timer;
+  private scheduled: TimeOut;
   private showOnceScheduler(delay?: number) {
     if (typeof delay === 'number') {
       clearTimeout(this.scheduled);
