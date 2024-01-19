@@ -8,9 +8,15 @@ import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostEnv } from '../../../.
 export function createWorkerHostEnvAPIFactory(
   rpcProtocol: IRPCProtocol,
   extHostEnv: IExtHostEnv,
-): Pick<typeof vscode.env, 'clipboard' | 'openExternal' | 'language' | 'uriScheme'> {
+): Pick<typeof vscode.env, 'appName' | 'appRoot' | 'clipboard' | 'openExternal' | 'language' | 'uriScheme'> {
   const mainThreadEnvProxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
   return {
+    get appName() {
+      return extHostEnv.getEnvValues().appName;
+    },
+    get appRoot() {
+      return extHostEnv.getEnvValues().appRoot;
+    },
     get language() {
       return extHostEnv.getEnvValues().language;
     },
