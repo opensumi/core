@@ -25,6 +25,8 @@ export interface IProxyIdentifier {
   countId: number;
 }
 
+const CancellationTokenStr = 'add.cancellation.token';
+
 export class ProxyIdentifier<T = any> {
   public static count = 0;
 
@@ -261,7 +263,7 @@ export class RPCProtocol implements IRPCProtocol {
     const result = new Deferred();
 
     if (cancellationToken) {
-      args.push('add.cancellation.token');
+      args.push(CancellationTokenStr);
       cancellationToken.onCancellationRequested(() => this._protocol.send(MessageIO.cancel(callId)));
     }
     this._pendingRPCReplies.set(callId, result);
@@ -342,7 +344,7 @@ export class RPCProtocol implements IRPCProtocol {
     const method = msg.method;
     const args = msg.args.map((arg) => (arg === null ? undefined : arg));
 
-    const addToken = args.length && args[args.length - 1] === 'add.cancellation.token' ? args.pop() : false;
+    const addToken = args.length && args[args.length - 1] === CancellationTokenStr ? args.pop() : false;
     if (addToken) {
       const tokenSource = new CancellationTokenSource();
       this._cancellationTokenSources.set(callId, tokenSource);

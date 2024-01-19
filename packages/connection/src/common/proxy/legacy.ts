@@ -13,56 +13,61 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
   engine = 'legacy' as const;
 
   public getInvokeProxy<T = any>(): T {
-    return new Proxy(this, this);
-  }
+    return new Proxy(Object.create(null), {
+      get: (target: any, p: PropertyKey) => {
+        const prop = p.toString();
 
-  public get(target: any, p: PropertyKey) {
-    const prop = p.toString();
-    return async (...args: any[]) => {
-      await this.connectionPromise.promise;
+        if (!target[p]) {
+          target[p] = async (...args: any[]) => {
+            await this.connectionPromise.promise;
 
-      let isSingleArray = false;
-      if (args.length === 1 && Array.isArray(args[0])) {
-        isSingleArray = true;
-      }
+            let isSingleArray = false;
+            if (args.length === 1 && Array.isArray(args[0])) {
+              isSingleArray = true;
+            }
 
-      // 调用方法为 on 开头时，作为单项通知
-      if (prop.startsWith('on')) {
-        if (isSingleArray) {
-          this.connection.sendNotification(prop, [...args]);
-        } else {
-          this.connection.sendNotification(prop, ...args);
+            // 调用方法为 on 开头时，作为单项通知
+            if (prop.startsWith('on')) {
+              if (isSingleArray) {
+                this.connection.sendNotification(prop, [...args]);
+              } else {
+                this.connection.sendNotification(prop, ...args);
+              }
+              this.captureSendNotification(prop, args);
+            } else {
+              let requestResult: Promise<any>;
+              // generate a unique requestId to associate request and requestResult
+              const requestId = this.nextRequestId();
+
+              if (isSingleArray) {
+                requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
+              } else {
+                requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
+              }
+
+              this.captureSendRequest(requestId, prop, args);
+
+              const result: IRPCResult = await requestResult;
+
+              if (result.error) {
+                const error = new Error(result.data.message);
+                if (result.data.stack) {
+                  error.stack = result.data.stack;
+                }
+
+                this.captureSendRequestFail(requestId, prop, result.data);
+                throw error;
+              } else {
+                this.captureSendRequestResult(requestId, prop, result.data);
+                return result.data;
+              }
+            }
+          };
         }
-        this.captureSendNotification(prop, args);
-      } else {
-        let requestResult: Promise<any>;
-        // generate a unique requestId to associate request and requestResult
-        const requestId = this.nextRequestId();
 
-        if (isSingleArray) {
-          requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
-        } else {
-          requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
-        }
-
-        this.captureSendRequest(requestId, prop, args);
-
-        const result: IRPCResult = await requestResult;
-
-        if (result.error) {
-          const error = new Error(result.data.message);
-          if (result.data.stack) {
-            error.stack = result.data.stack;
-          }
-
-          this.captureSendRequestFail(requestId, prop, result.data);
-          throw error;
-        } else {
-          this.captureSendRequestResult(requestId, prop, result.data);
-          return result.data;
-        }
-      }
-    };
+        return target[p];
+      },
+    });
   }
 
   protected bindMethods(methods: string[]) {

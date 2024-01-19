@@ -37,30 +37,32 @@ export class ProxySumi extends ProxyBase<Connection> {
   }
 
   getInvokeProxy(): any {
-    return new Proxy(this, {
+    return new Proxy(Object.create(null), {
       get: (target, p: string | symbol) => {
         const prop = p.toString();
+        if (!target[prop]) {
+          target[prop] = async (...args: any[]) => {
+            await this.connectionPromise.promise;
 
-        return async (...args: any[]) => {
-          await this.connectionPromise.promise;
-
-          if (prop.startsWith('on')) {
-            this.captureSendNotification(prop, args);
-            this.connection.sendNotification(prop, ...args);
-          } else {
-            // generate a unique requestId to associate request and requestResult
-            const requestId = this.nextRequestId();
-            this.captureSendRequest(requestId, prop, args);
-            try {
-              const result = await this.connection.sendRequest(prop, ...args);
-              this.captureSendRequestResult(requestId, prop, result);
-              return result;
-            } catch (error) {
-              this.captureSendRequestFail(requestId, prop, error);
-              throw error;
+            if (prop.startsWith('on')) {
+              this.captureSendNotification(prop, args);
+              this.connection.sendNotification(prop, ...args);
+            } else {
+              // generate a unique requestId to associate request and requestResult
+              const requestId = this.nextRequestId();
+              this.captureSendRequest(requestId, prop, args);
+              try {
+                const result = await this.connection.sendRequest(prop, ...args);
+                this.captureSendRequestResult(requestId, prop, result);
+                return result;
+              } catch (error) {
+                this.captureSendRequestFail(requestId, prop, error);
+                throw error;
+              }
             }
-          }
-        };
+          };
+        }
+        return target[prop];
       },
     });
   }
