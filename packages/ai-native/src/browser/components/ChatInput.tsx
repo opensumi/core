@@ -4,13 +4,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { message } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 import { InstructionEnum } from '../../common';
 
 import * as styles from './components.module.less';
-import { EnhanceIcon } from './Icon';
 
 const MAX_WRAPPER_HEIGHT = 160;
 const SHOW_EXPEND_HEIGHT = 68;

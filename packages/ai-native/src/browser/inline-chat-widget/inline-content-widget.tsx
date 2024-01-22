@@ -1,9 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { IAiInlineChatService } from '@opensumi/ide-core-browser';
+import { BaseInlineContentWidget, ShowAiContentOptions } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -13,41 +13,15 @@ import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
 import { AiInlineChatController } from './inline-chat-controller';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
-export interface IInlineContentWidget extends monaco.editor.IContentWidget {
-  show: (options?: ShowAiContentOptions | undefined) => void;
-  hide: (options?: ShowAiContentOptions | undefined) => void;
-}
-
-export interface ShowAiContentOptions {
-  /**
-   * 选中区域
-   */
-  selection?: monaco.Selection;
-
-  /**
-   * 行列
-   */
-  position?: monaco.IPosition;
-}
-
 @Injectable({ multiple: true })
-export class AiInlineContentWidget extends Disposable implements IInlineContentWidget {
-  @Autowired(AppConfig)
-  private configContext: AppConfig;
-
+export class AiInlineContentWidget extends BaseInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(AiInlineChatService)
+  @Autowired(IAiInlineChatService)
   private aiInlineChatService: AiInlineChatService;
 
   private readonly aiNativeContextKey: AiNativeContextKey;
-
-  allowEditorOverflow?: boolean | undefined = false;
-  suppressMouseDown?: boolean | undefined = true;
-
-  private domNode: HTMLElement;
-  protected options: ShowAiContentOptions | undefined;
 
   // 记录最开始时的 top 值
   private originTop = 0;
@@ -55,14 +29,10 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   private readonly _onClickActions = new Emitter<string>();
   public readonly onClickActions: Event<string> = this._onClickActions.event;
 
-  constructor(private readonly editor: IMonacoCodeEditor) {
-    super();
+  constructor(protected readonly editor: IMonacoCodeEditor) {
+    super(editor);
 
     this.aiNativeContextKey = this.injector.get(AiNativeContextKey, [(this.editor as any)._contextKeyService]);
-
-    this.hide();
-    this.renderView();
-
     this.addDispose(
       this.editor.onDidLayoutChange(() => {
         if (this.isOutOfArea()) {
@@ -73,9 +43,30 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
   }
 
   override dispose(): void {
-    this.hide();
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
     super.dispose();
+  }
+
+  public renderView(): React.ReactNode {
+    return <AiInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />;
+  }
+
+  override async show(options?: ShowAiContentOptions | undefined): Promise<void> {
+    super.show(options);
+    this.aiNativeContextKey.inlineChatIsVisible.set(true);
+  }
+
+  override getDomNode(): HTMLElement {
+    const domNode = super.getDomNode();
+    domNode.style.padding = '6px';
+    domNode.style.zIndex = '999';
+    domNode.style.paddingRight = '50px';
+    return domNode;
+  }
+
+  override async hide(options?: ShowAiContentOptions | undefined): Promise<void> {
+    this.aiNativeContextKey.inlineChatIsVisible.set(false);
+    super.hide();
   }
 
   /**
@@ -92,42 +83,11 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     return false;
   }
 
-  private renderView(): void {
-    ReactDOM.render(
-      <ConfigProvider value={this.configContext}>
-        <AiInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />
-      </ConfigProvider>,
-      this.getDomNode(),
-    );
-    this.layoutContentWidget();
-  }
-
-  async show(options?: ShowAiContentOptions | undefined): Promise<void> {
-    if (!options) {
-      return;
-    }
-
-    if (this.options && this.options.selection && this.options.selection.equalsRange(options.selection!)) {
-      return;
-    }
-
-    this.options = options;
-    this.aiNativeContextKey.inlineChatIsVisible.set(true);
-    this.editor.addContentWidget(this);
-  }
-
-  setOptions(options: ShowAiContentOptions): void {
+  public setOptions(options: ShowAiContentOptions): void {
     this.options = options;
   }
 
-  hide: (options?: ShowAiContentOptions | undefined) => void = () => {
-    this.aiNativeContextKey.inlineChatIsVisible.set(false);
-    this.options = undefined;
-    this.editor.removeContentWidget(this);
-    ReactDOM.unmountComponentAtNode(this.getDomNode());
-  };
-
-  offsetTop(top: number): void {
+  public offsetTop(top: number): void {
     if (this.originTop === 0) {
       this.originTop = this.domNode.style.top ? parseInt(this.domNode.style.top, 10) : 0;
     }
@@ -135,44 +95,22 @@ export class AiInlineContentWidget extends Disposable implements IInlineContentW
     this.domNode.style.top = `${this.originTop + top}px`;
   }
 
-  getId(): string {
+  id(): string {
     return AiInlineChatContentWidget;
   }
 
-  layoutContentWidget(): void {
-    this.editor.layoutContentWidget(this);
-  }
+  override getPosition(): monaco.editor.IContentWidgetPosition | null {
+    const position = super.getPosition();
 
-  getDomNode(): HTMLElement {
-    if (!this.domNode) {
-      this.domNode = document.createElement('div');
-      this.domNode.classList.add(this.getId());
-
-      this.domNode.style.padding = '6px';
-      this.domNode.style.zIndex = '999';
-      this.domNode.style.paddingRight = '50px';
+    if (position) {
+      return position;
     }
-    return this.domNode;
-  }
 
-  getPosition(): monaco.editor.IContentWidgetPosition | null {
     if (!this.options) {
       return null;
     }
 
-    if (this.isOutOfArea()) {
-      return null;
-    }
-
-    const { position, selection } = this.options;
-
-    if (position) {
-      return {
-        position,
-        preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
-      };
-    }
-
+    const { selection } = this.options;
     return selection ? this.computerPosition(selection) : null;
   }
 

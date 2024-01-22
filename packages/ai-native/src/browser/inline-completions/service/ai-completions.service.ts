@@ -1,16 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
+import { CompletionRT, IAIReporter, IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import {
-  AiBackSerivcePath,
-  Completion,
-  IAiBackService,
-  IAiReportCompletionOption,
-  IAIReporter,
-  ReportInfo,
-} from '../../../common';
+import { AiBackSerivcePath, IAiBackService, IAiReportCompletionOption } from '../../../common';
 import { IAiMiddleware, IProvideInlineCompletionsSignature } from '../../types';
 import { CompletionRequestBean, CompletionResultModel } from '../model/competionModel';
 
@@ -88,7 +80,7 @@ export class AiCompletionsService extends Disposable {
     this.isVisibleCompletion = false;
   }
 
-  public async reporterEnd(relationId: string, data: Completion) {
+  public async reporterEnd(relationId: string, data: CompletionRT) {
     this.aiReporter.end(relationId, {
       ...data,
       isValid: typeof data.renderingTime === 'number' ? data.renderingTime > 750 : false,

@@ -3,6 +3,11 @@ import React, { useCallback } from 'react';
 
 import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection } from '@opensumi/ide-core-browser/lib/components';
+import {
+  EnhanceIcon,
+  EnhanceIconWithCtxMenu,
+  HorizontalVertical,
+} from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -16,8 +21,6 @@ import {
 import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
-import { EnhanceIcon, EnhanceIconWithCtxMenu } from '../../components/Icon';
-import { HorizontalVertical } from '../../components/lineVertical';
 import { EnhancePopover } from '../../components/Popover';
 
 import * as styles from './layout.module.less';

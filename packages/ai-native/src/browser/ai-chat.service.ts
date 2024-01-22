@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -12,7 +12,6 @@ import {
   IAiBackServiceOption,
   IChatMessageStructure,
   InstructionEnum,
-  IAIReporter,
 } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';

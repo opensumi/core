@@ -188,3 +188,8 @@ export interface IEditorMountParameter {
   resultView: BaseCodeEditor;
   incomingView: BaseCodeEditor;
 }
+
+/**
+ * 智能解决冲突 result 视图的 id
+ */
+export const AiResolveConflictContentWidget = 'ai-resolve-conflict-content-widget';

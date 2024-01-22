@@ -1,5 +1,11 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
-import { AiNativeConfigService, BrowserModule, URI } from '@opensumi/ide-core-browser';
+import {
+  AiNativeConfigService,
+  BrowserModule,
+  IAIReporter,
+  IAiInlineChatService,
+  URI,
+} from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
@@ -7,12 +13,13 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { AiBackSerivcePath, AiBackSerivceToken, IAiChatService, IAIReporter } from '../common';
+import { AiBackSerivcePath, AiBackSerivceToken, IAiChatService } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
 import { AIReporter } from './ai-reporter';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
+import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
@@ -42,6 +49,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IAIReporter,
       useClass: AIReporter,
+    },
+    {
+      token: IAiInlineChatService,
+      useClass: AiInlineChatService,
     },
   ];
 

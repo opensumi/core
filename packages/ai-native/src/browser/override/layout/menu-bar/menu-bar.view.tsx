@@ -11,13 +11,13 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { AILogoAvatar, EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { AILogoAvatar, EnhanceIcon } from '../../../components/Icon';
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
 import * as styles from './menu-bar.module.less';
