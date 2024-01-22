@@ -19,6 +19,10 @@ export interface IAiNativeCapabilities {
    * 使用代码智能补全能力
    */
   supportsInlineCompletion?: boolean;
+  /**
+   * 使用 ai 智能解决冲突的能力
+   */
+  supportsConflictResolve?: boolean;
 }
 
 export interface AiNativeConfig {

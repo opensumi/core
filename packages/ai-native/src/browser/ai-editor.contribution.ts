@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   IDisposable,
@@ -22,7 +22,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AiNativeSettingSectionsId, IAIReporter, AiInlineChatContentWidget } from '../common';
 
 import { AiChatService } from './ai-chat.service';
-import { AiNativeConfig } from './ai-config';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
@@ -44,8 +43,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(AiNativeConfig)
-  private readonly aiNativeConfig: AiNativeConfig;
+  @Autowired(AiNativeConfigService)
+  private readonly aiNativeConfigService: AiNativeConfigService;
 
   @Autowired(AiInlineChatService)
   private readonly aiInlineChatService: AiInlineChatService;
@@ -118,7 +117,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
-    if (this.aiNativeConfig.capabilities.supportsInlineCompletion) {
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
       this.contributions.getContributions().forEach((contribution) => {
         if (contribution.middleware) {
           this.latestMiddlewareCollector = contribution.middleware;
@@ -202,7 +201,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
    * 新版 inline chat（类似 cursor 那种）
    */
   private async registerInlineChat(editor: IEditor): Promise<void> {
-    if (this.aiNativeConfig.capabilities.supportsInlineChat === false) {
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat === false) {
       return;
     }
 

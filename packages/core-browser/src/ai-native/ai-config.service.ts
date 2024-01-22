@@ -3,7 +3,7 @@ import { AppConfig } from '@opensumi/ide-core-browser';
 import { IAiNativeCapabilities } from '@opensumi/ide-core-common';
 
 @Injectable({ multiple: false })
-export class AiNativeConfig {
+export class AiNativeConfigService {
   @Autowired(AppConfig)
   public readonly appConfig: AppConfig;
 
@@ -14,6 +14,7 @@ export class AiNativeConfig {
       supportsAiChatAssistant: value,
       supportsInlineChat: value,
       supportsInlineCompletion: value,
+      supportsConflictResolve: value,
     };
   }
 

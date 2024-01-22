@@ -384,4 +384,5 @@ export const WALKTHROUGHS_COMMAND_GET_STARTED: Command = {
 export const OPEN_MERGEEDITOR: Command = {
   id: '_open.mergeEditor',
   delegate: EDITOR_COMMANDS.OPEN_MERGEEDITOR.id,
+  label: 'Open Merge Editor',
 };

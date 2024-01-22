@@ -15,6 +15,7 @@ export * from './fs';
 export * from './toolbar';
 export * from './terminal';
 export * from './file-decoration';
+export * from './ai-native';
 
 // 前端工具方法
 export * from './logger';

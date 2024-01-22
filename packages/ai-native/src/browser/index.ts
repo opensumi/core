@@ -1,5 +1,5 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
-import { BrowserModule, URI } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, BrowserModule, URI } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
@@ -10,7 +10,6 @@ import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 import { AiBackSerivcePath, AiBackSerivceToken, IAiChatService, IAIReporter } from '../common';
 
 import { AiChatService } from './ai-chat.service';
-import { AiNativeConfig } from './ai-config';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
 import { AIReporter } from './ai-reporter';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
@@ -47,7 +46,7 @@ export class AiNativeModule extends BrowserModule {
   ];
 
   preferences = (injector: Injector) => {
-    const aiNativeConfig = injector.get(AiNativeConfig);
+    const aiNativeConfig = injector.get(AiNativeConfigService);
 
     const { layoutViewSize } = this.app.config;
     let layoutConfig = this.app.config.layoutConfig;

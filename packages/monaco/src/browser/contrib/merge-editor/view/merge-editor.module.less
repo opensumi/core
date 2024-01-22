@@ -164,6 +164,17 @@
     &.rotate_turn_right {
       transform: rotate(50deg);
     }
+
+    &.ai_resolve_icon,
+    &.ai_resolve_loading_icon {
+      background-image: linear-gradient(180deg, #19cfff, #8429ff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    &.ai_resolve_loading_icon {
+      animation: spin 1.5s infinite linear;
+    }
   }
 
   // conflict action 完成后的虚线框效果
@@ -202,6 +213,11 @@
 
     &.stretch_bottom {
       border-bottom: transparent;
+    }
+
+    &.ai_resolve_complete {
+      background-image: linear-gradient(270deg, #8429ff, #5f62ff, #5375ff, #19cfff);
+      opacity: 0.35;
     }
   }
 
@@ -257,5 +273,51 @@
         }
       }
     }
+  }
+}
+
+.skeleton_decoration {
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.15) 37%,
+    rgba(255, 255, 255, 0.08) 63%
+  );
+  background-size: 400% 100%;
+  animation-name: skeleton-loading;
+  animation-duration: 1.4s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+  border-radius: 4px;
+  top: 2px;
+  bottom: 2px;
+  left: 2px !important;
+  right: 0;
+  height: initial !important;
+}
+
+.skeleton_decoration_background {
+  background-color: #312f24;
+  z-index: 1;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
   }
 }

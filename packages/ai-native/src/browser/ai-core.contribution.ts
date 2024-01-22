@@ -18,7 +18,17 @@ import {
   KeybindingRegistry,
   KeybindingScope,
   CommandService,
+  AiNativeConfigService,
 } from '@opensumi/ide-core-browser';
+import {
+  AI_EXPLAIN_DEBUG_COMMANDS,
+  AI_EXPLAIN_TERMINAL_COMMANDS,
+  AI_INLINE_CHAT_VISIBLE,
+  AI_INLINE_COMPLETION_REPORTET,
+  AI_INLINE_COMPLETION_VISIBLE,
+  AI_RESOLVE_CONFLICT_COMMANDS,
+  AI_RUN_DEBUG_COMMANDS,
+} from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
@@ -38,20 +48,12 @@ import {
   AiNativeSettingSectionsId,
   Ai_CHAT_CONTAINER_VIEW_ID,
   InstructionEnum,
-  IAIReporter,
+  AiBackSerivcePath,
+  IAiBackService,
 } from '../common';
-import {
-  AI_EXPLAIN_DEBUG_COMMANDS,
-  AI_EXPLAIN_TERMINAL_COMMANDS,
-  AI_INLINE_CHAT_VISIBLE,
-  AI_INLINE_COMPLETION_REPORTET,
-  AI_INLINE_COMPLETION_VISIBLE,
-  AI_RUN_DEBUG_COMMANDS,
-} from '../common/command';
 
 import { AiChatService } from './ai-chat.service';
 import { AiChatView } from './ai-chat.view';
-import { AiNativeConfig } from './ai-config';
 import { AiEditorContribution } from './ai-editor.contribution';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
@@ -131,8 +133,11 @@ export class AiNativeBrowserContribution
   @Autowired(AiCompletionsService)
   private readonly aiCompletionsService: AiCompletionsService;
 
-  @Autowired(AiNativeConfig)
-  private readonly aiNativeConfig: AiNativeConfig;
+  @Autowired(AiNativeConfigService)
+  private readonly aiNativeConfigService: AiNativeConfigService;
+
+  @Autowired(AiBackSerivcePath)
+  private readonly aiBackService: IAiBackService;
 
   constructor() {
     this.registerFeature();
@@ -171,7 +176,7 @@ export class AiNativeBrowserContribution
   handleSettingSections(settingSections: { [key: string]: ISettingSection[] }) {
     const groups: ISettingSection[] = [];
 
-    if (this.aiNativeConfig.capabilities.supportsInlineChat) {
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       groups.push({
         title: 'Inline Chat',
         preferences: [
@@ -270,6 +275,11 @@ export class AiNativeBrowserContribution
         }
       },
     });
+
+    commands.registerCommand(AI_RESOLVE_CONFLICT_COMMANDS, {
+      execute: async (codePromptBean: string) =>
+        this.aiBackService.request(codePromptBean, { type: 'resolveConflict' }),
+    });
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
@@ -300,7 +310,7 @@ export class AiNativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    if (this.aiNativeConfig.capabilities.supportsOpenSumiDesign) {
+    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
       registry.registerSlotRenderer(SlotLocation.left, AiLeftTabRenderer);
       registry.registerSlotRenderer(SlotLocation.right, AiRightTabRenderer);
       registry.registerSlotRenderer(SlotLocation.bottom, AiBottomTabRenderer);
@@ -309,7 +319,7 @@ export class AiNativeBrowserContribution
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
-    if (this.aiNativeConfig.capabilities.supportsInlineChat) {
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       keybindings.registerKeybinding(
         {
           command: AI_INLINE_CHAT_VISIBLE.id,
@@ -328,7 +338,7 @@ export class AiNativeBrowserContribution
       });
     }
 
-    if (this.aiNativeConfig.capabilities.supportsInlineCompletion) {
+    if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
       keybindings.registerKeybinding({
         command: AI_INLINE_COMPLETION_VISIBLE.id,
         keybinding: 'esc',
