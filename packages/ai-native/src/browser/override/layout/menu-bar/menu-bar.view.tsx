@@ -1,7 +1,15 @@
 import clsx from 'classnames';
 import * as React from 'react';
 
-import { AppConfig, getIcon, useInjectable, SlotRenderer, SlotLocation } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  getIcon,
+  useInjectable,
+  SlotRenderer,
+  SlotLocation,
+  AiNativeConfigService,
+} from '@opensumi/ide-core-browser';
+import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -9,8 +17,6 @@ import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/
 import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { AI_RUN_DEBUG_COMMANDS } from '../../../../common/command';
-import { AiNativeConfig } from '../../../ai-config';
 import { AILogoAvatar, EnhanceIcon } from '../../../components/Icon';
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
@@ -76,7 +82,7 @@ export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const aiNativeConfig = useInjectable<AiNativeConfig>(AiNativeConfig);
+  const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
   const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
 
   const [isOpen, setIsOpen] = React.useState<boolean>(true);
@@ -112,8 +118,8 @@ export const AiMenuBarView = () => {
   }, []);
 
   const MENUBAR_HEIGHT = React.useMemo(
-    () => aiNativeConfig.appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
-    [aiNativeConfig],
+    () => aiNativeConfigService.appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
+    [aiNativeConfigService],
   );
 
   const handleLeftMenuVisiable = React.useCallback(() => {
@@ -155,7 +161,7 @@ export const AiMenuBarView = () => {
               placeholder='请搜索并选择指令'
             ></Input>
           </div> */}
-          {aiNativeConfig.capabilities.supportsAiChatAssistant && (
+          {aiNativeConfigService.capabilities.supportsAiChatAssistant && (
             <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
               <AILogoAvatar iconClassName={styles.avatar_icon_large} />
             </div>

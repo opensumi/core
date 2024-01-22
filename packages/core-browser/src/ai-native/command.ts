@@ -1,4 +1,4 @@
-import { TERMINAL_COMMANDS } from '@opensumi/ide-core-browser';
+import { TERMINAL_COMMANDS } from '../common/common.command';
 
 export const AI_EXPLAIN_TERMINAL_COMMANDS = {
   id: 'ai.explain.terminal',
@@ -30,4 +30,11 @@ export const AI_INLINE_COMPLETION_VISIBLE = {
 
 export const AI_INLINE_COMPLETION_REPORTET = {
   id: 'ai.inline.completion.reporter',
+};
+
+/**
+ * 调用 AI 智能解决冲突
+ */
+export const AI_RESOLVE_CONFLICT_COMMANDS = {
+  id: 'ai.conflict.resolve',
 };
