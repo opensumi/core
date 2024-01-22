@@ -8,11 +8,39 @@ import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
 
+class IntelligentStateModel {
+  private _isLoading: boolean;
+  private _isComplete: boolean;
+
+  public setLoading(v: boolean): this {
+    this._isLoading = v;
+    return this;
+  }
+
+  public setIsComplete(v: boolean): this {
+    this._isComplete = v;
+    return this;
+  }
+
+  public get isLoading(): boolean {
+    return this._isLoading;
+  }
+
+  public get isComplete(): boolean {
+    return this._isComplete;
+  }
+
+  public reset(): void {
+    this.setLoading(false);
+    this.setIsComplete(false);
+  }
+}
+
 /**
  * 如果 lineRange 是通过 merge 合并生成的
  * 则跟 merge 相关的数据状态都在该 model 来处理
  */
-export class MergeStateModel {
+class MergeStateModel {
   /**
    * 存储合并前的所有 lineRange 元数据
    */
@@ -114,12 +142,14 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   }
 
   private mergeStateModel: MergeStateModel;
+  private intelligentStateModel: IntelligentStateModel;
 
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
     this._isComplete = false;
     this._id = uuid(6);
     this.mergeStateModel = new MergeStateModel();
+    this.intelligentStateModel = new IntelligentStateModel();
   }
 
   private setId(id: string): this {
@@ -140,6 +170,15 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   private setMergeStateModel(state: MergeStateModel): this {
     this.mergeStateModel = state;
     return this;
+  }
+
+  public setIntelligentStateModel(state: IntelligentStateModel): this {
+    this.intelligentStateModel = state;
+    return this;
+  }
+
+  public getIntelligentStateModel(): IntelligentStateModel {
+    return this.intelligentStateModel;
   }
 
   public setType(v: LineRangeType): this {
@@ -256,7 +295,8 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
       .setType(this._type)
       .setTurnDirection(this._turnDirection)
       .setComplete(this._isComplete)
-      .setMergeStateModel(this.mergeStateModel);
+      .setMergeStateModel(this.mergeStateModel)
+      .setIntelligentStateModel(this.intelligentStateModel);
   }
 
   public override delta(offset: number): LineRange {

@@ -8,4 +8,8 @@ export const AI_INLINE_COMPLETION_VISIBLE = {
 
 export const AI_INLINE_COMPLETION_REPORTER = {
   id: 'ai.inline.completion.reporter',
+}
+
+export const AI_RESOLVE_CONFLICT_COMMANDS = {
+  id: 'ai.conflict.resolve',
 };

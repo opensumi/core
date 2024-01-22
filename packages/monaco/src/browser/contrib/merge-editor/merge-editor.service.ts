@@ -84,6 +84,12 @@ export class MergeEditorService extends Disposable {
         this.incomingView.launchChange();
       }),
     );
+
+    this.addDispose(
+      this.onDidInputNutrition((nutrition: IOpenMergeEditorArgs) => {
+        this.actionsManager.setNutrition(nutrition);
+      }),
+    );
   }
 
   public setNutritionAndLaunch(data: IOpenMergeEditorArgs): void {

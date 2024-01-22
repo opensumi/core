@@ -1,6 +1,10 @@
-import { Disposable, Event } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { AI_RESOLVE_CONFLICT_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 import { MappingManagerService } from '../mapping-manager.service';
 import { DocumentMapping } from '../model/document-mapping';
@@ -10,6 +14,7 @@ import {
   ACCEPT_COMBINATION_ACTIONS,
   ACCEPT_CURRENT_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
+  AI_RESOLVE_ACTIONS,
   APPEND_ACTIONS,
   ETurnDirection,
   IActionsProvider,
@@ -21,13 +26,19 @@ import {
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
+import styles from './merge-editor.module.less';
 
 type TLineRangeEdit = Array<{ range: LineRange; text: string | null }>;
 
+@Injectable({ multiple: false })
 export class ActionsManager extends Disposable {
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
   private currentView: BaseCodeEditor | undefined;
   private resultView: ResultCodeEditor | undefined;
   private incomingView: BaseCodeEditor | undefined;
+  private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor(private readonly mappingManagerService: MappingManagerService) {
     super();
@@ -164,6 +175,7 @@ export class ActionsManager extends Disposable {
    */
   private handleAcceptRevoke(range: LineRange): void {
     const { turnDirection } = range;
+    const intelligentModel = range.getIntelligentStateModel();
 
     const viewEditor = this.pickViewEditor(range);
     const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
@@ -191,6 +203,7 @@ export class ActionsManager extends Disposable {
     // 为 null 则说明是删除文本
     this.applyLineRangeEdits([{ range, text }]);
 
+    intelligentModel.reset();
     this.resultView?.updateActions();
 
     if (turnDirection === ETurnDirection.BOTH) {
@@ -256,6 +269,77 @@ export class ActionsManager extends Disposable {
     this.markComplete(reverseRightRange);
 
     this.resultView?.updateActions();
+  }
+
+  /**
+   * 处理 AI 智能解决冲突时的逻辑
+   */
+  private async handleAiConflictResolve(range: LineRange): Promise<void> {
+    if (!this.resultView) {
+      return;
+    }
+
+    const model = this.resultView.getModel();
+
+    if (!model) {
+      return;
+    }
+
+    const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
+    const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(range);
+
+    if (!reverseLeftRange || !reverseRightRange) {
+      return;
+    }
+
+    const intelligentModel = range.getIntelligentStateModel();
+
+    intelligentModel.setLoading(true);
+    this.resultView.updateActions();
+
+    const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
+      range: InnerRange.fromPositions(
+        new Position(range.startLineNumber, 1),
+        new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1),
+      ),
+      options: {
+        isWholeLine: true,
+        description: 'skeleton',
+        className,
+      },
+    });
+
+    const preDecorationsIds = model.deltaDecorations(
+      [],
+      [
+        renderSkeletonDecoration(styles.skeleton_decoration),
+        renderSkeletonDecoration(styles.skeleton_decoration_background),
+      ],
+    );
+
+    const baseValue = this.resultView?.getModel()?.getValueInRange(range.toRange());
+    const currentValue = this.currentView?.getModel()?.getValueInRange(reverseLeftRange.toRange());
+    const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toRange());
+
+    const codeAssemble = `<<<<<<< HEAD\n${currentValue}\n||||||| base\n${baseValue}\n>>>>>>>\n${incomingValue}`;
+    // await new Promise(resolve => setTimeout(() => resolve(true), 3000));
+    const resolveConflictResult: any = await this.commandService.executeCommand(
+      AI_RESOLVE_CONFLICT_COMMANDS.id,
+      codeAssemble,
+    );
+
+    intelligentModel.setLoading(false);
+    model.deltaDecorations(preDecorationsIds, []);
+
+    if (resolveConflictResult.data) {
+      intelligentModel.setIsComplete(true);
+      this.applyLineRangeEdits([{ range, text: resolveConflictResult.data }]);
+
+      this.resultView.getEditor().focus();
+      await this.commandService.executeCommand('editor.action.formatDocument', this.nutrition?.output.uri);
+    }
+
+    this.resultView.updateActions();
   }
 
   private markComplete(range: LineRange): void {
@@ -334,11 +418,22 @@ export class ActionsManager extends Disposable {
           ]);
         }
 
+        /**
+         * 处理 AI 智能解决冲突
+         */
+        if (action === AI_RESOLVE_ACTIONS) {
+          this.handleAiConflictResolve(range);
+        }
+
         this.resultView!.updateDecorations();
         this.currentView!.launchChange();
         this.incomingView!.launchChange();
       }),
     );
+  }
+
+  public setNutrition(data: IOpenMergeEditorArgs) {
+    this.nutrition = data;
   }
 
   public mount(currentView: BaseCodeEditor, resultView: ResultCodeEditor, incomingView: BaseCodeEditor): void {
@@ -397,6 +492,8 @@ export class ActionsManager extends Disposable {
             type = REVOKE_ACTIONS;
           } else if (classList.contains(APPEND_ACTIONS)) {
             type = APPEND_ACTIONS;
+          } else if (classList.contains(AI_RESOLVE_ACTIONS)) {
+            type = AI_RESOLVE_ACTIONS;
           }
 
           if (type && action) {

@@ -1,5 +1,5 @@
-import { Injectable, Injector } from '@opensumi/di';
-import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
+import { AINativeConfigService, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
@@ -11,6 +11,7 @@ import { TimeMachineDocument } from '../../model/time-machine';
 import {
   ACCEPT_COMBINATION_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
+  AI_RESOLVE_ACTIONS,
   CONFLICT_ACTIONS_ICON,
   DECORATIONS_CLASSNAME,
   ETurnDirection,
@@ -26,6 +27,9 @@ import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
   private readonly _onDidChangeContent = new Emitter<void>();
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
@@ -154,21 +158,45 @@ export class ResultCodeEditor extends BaseCodeEditor {
       return [];
     }
 
-    return ranges
-      .filter((r) => r.isComplete || r.isMerge)
-      .map((range) => ({
-        range,
-        decorationOptions: {
-          firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
-            range.isComplete
-              ? CONFLICT_ACTIONS_ICON.REVOKE
-              : range.isAllowCombination
-              ? CONFLICT_ACTIONS_ICON.WAND
-              : '',
-            `${ADDRESSING_TAG_CLASSNAME}${range.id}`,
-          ),
-        },
-      }));
+    const renderIconClassName = (range: LineRange) => {
+      const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+
+      if (range.isComplete) {
+        return CONFLICT_ACTIONS_ICON.REVOKE;
+      }
+
+      if (isAiConflictResolve && range.type === 'modify') {
+        const aiModel = range.getIntelligentStateModel();
+
+        if (aiModel.isComplete) {
+          return CONFLICT_ACTIONS_ICON.REVOKE;
+        }
+
+        if (aiModel.isLoading) {
+          return CONFLICT_ACTIONS_ICON.AI_RESOLVE_LOADING;
+        }
+
+        if (range.isMerge) {
+          return CONFLICT_ACTIONS_ICON.AI_RESOLVE;
+        }
+      }
+
+      if (range.isAllowCombination && range.isMerge) {
+        return CONFLICT_ACTIONS_ICON.WAND;
+      }
+
+      return '';
+    };
+
+    return ranges.map((range) => ({
+      range,
+      decorationOptions: {
+        firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
+          renderIconClassName(range),
+          `${ADDRESSING_TAG_CLASSNAME}${range.id}`,
+        ),
+      },
+    }));
   }
 
   /**
@@ -330,6 +358,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
+    const renderClassName = (range: LineRange) => {
+      const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+      const intelligentModel = range.getIntelligentStateModel();
+
+      if (isAiConflictResolve && intelligentModel.isComplete) {
+        return DECORATIONS_CLASSNAME.ai_resolve_complete;
+      }
+
+      return '';
+    };
+
     return {
       linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
@@ -340,6 +379,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
       ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
+        renderClassName(range),
         range.turnDirection === ETurnDirection.CURRENT
           ? DECORATIONS_CLASSNAME.stretch_left
           : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, DECORATIONS_CLASSNAME.stretch_right),
@@ -404,6 +444,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
           this.launchConflictActionsEvent({
             range,
             action: ACCEPT_COMBINATION_ACTIONS,
+          });
+        }
+
+        if (actionType === AI_RESOLVE_ACTIONS) {
+          this.launchConflictActionsEvent({
+            range,
+            action: AI_RESOLVE_ACTIONS,
           });
         }
       },

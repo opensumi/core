@@ -1,7 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
+  AIBackSerivcePath,
   AINativeConfigService,
   AINativeSettingSectionsId,
+  AI_NATIVE_SETTING_GROUP_ID,
   AppConfig,
   ClientAppContribution,
   CommandContribution,
@@ -10,12 +12,14 @@ import {
   ComponentRegistry,
   ContributionProvider,
   Domain,
+  IAIBackService,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
   SlotRendererContribution,
   SlotRendererRegistry,
   getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
 import {
   AI_INLINE_CHAT_VISIBLE,
@@ -23,8 +27,7 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { CommandService, localize } from '@opensumi/ide-core-common';
-import { AI_NATIVE_SETTING_GROUP_ID } from '@opensumi/ide-core-common/src/settings/ai-native';
+import { CommandService } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
@@ -51,14 +54,13 @@ import { AINativeCoreContribution, IChatFeatureRegistry, IInlineChatFeatureRegis
 )
 export class AINativeBrowserContribution
   implements
-    ClientAppContribution,
-    BrowserEditorContribution,
-    CommandContribution,
-    SettingContribution,
-    KeybindingContribution,
-    ComponentContribution,
-    SlotRendererContribution
-{
+  ClientAppContribution,
+  BrowserEditorContribution,
+  CommandContribution,
+  SettingContribution,
+  KeybindingContribution,
+  ComponentContribution,
+  SlotRendererContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -88,6 +90,9 @@ export class AINativeBrowserContribution
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
+
+  @Autowired(AIBackSerivcePath)
+  private readonly aiBackService: IAIBackService;
 
   constructor() {
     this.registerFeature();

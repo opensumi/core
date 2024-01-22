@@ -96,6 +96,10 @@ export namespace DECORATIONS_CLASSNAME {
   export const rotate_turn_left = styles.rotate_turn_left;
   export const rotate_turn_right = styles.rotate_turn_right;
 
+  export const ai_resolve_icon = styles.ai_resolve_icon;
+  export const ai_resolve_loading_icon = styles.ai_resolve_loading_icon;
+  export const ai_resolve_complete = styles.ai_resolve_complete;
+
   export const range_type: { [key in LineRangeType]: string } = {
     insert: styles.insert,
     modify: styles.modify,
@@ -110,13 +114,15 @@ export const ACCEPT_COMBINATION_ACTIONS = 'accpet_combination';
 export const IGNORE_ACTIONS = 'ignore';
 export const REVOKE_ACTIONS = 'revoke';
 export const APPEND_ACTIONS = 'append';
+export const AI_RESOLVE_ACTIONS = 'ai_resolve';
 
 export type TActionsType =
   | typeof ACCEPT_CURRENT_ACTIONS
   | typeof ACCEPT_COMBINATION_ACTIONS
   | typeof IGNORE_ACTIONS
   | typeof REVOKE_ACTIONS
-  | typeof APPEND_ACTIONS;
+  | typeof APPEND_ACTIONS
+  | typeof AI_RESOLVE_ACTIONS;
 
 export interface IActionsProvider {
   onActionsClick?: (range: LineRange, actionType: TActionsType) => void;
@@ -141,6 +147,12 @@ export namespace CONFLICT_ACTIONS_ICON {
   export const WAND = `${ACTIONS} ${ACCEPT_COMBINATION_ACTIONS} ${getExternalIcon('wand')}`;
   export const CLOSE = `${ACTIONS} ${IGNORE_ACTIONS} ${getIcon('close')}`;
   export const REVOKE = `${ACTIONS} ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
+
+  // AI 功能魔法棒
+  export const AI_RESOLVE = `${ACTIONS} ${AI_RESOLVE_ACTIONS} ${DECORATIONS_CLASSNAME.ai_resolve_icon} ${getIcon(
+    'magic-wand',
+  )}`;
+  export const AI_RESOLVE_LOADING = `${ACTIONS} ${DECORATIONS_CLASSNAME.ai_resolve_loading_icon} ${getIcon('loading')}`;
 }
 
 // 用来寻址点击事件时的标记
