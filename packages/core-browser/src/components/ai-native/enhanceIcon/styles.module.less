@@ -1,0 +1,40 @@
+.ai_enhance_icon {
+  border-radius: 6px;
+  padding: 2px 3px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  text-wrap: nowrap;
+
+  &:hover {
+    background-color: var(--activityBar-activeBorder);
+    span {
+      color: var(--ai-native-text-color-hover) !important;
+    }
+  }
+
+  > span {
+    &::before {
+      font-size: 14px;
+    }
+  }
+}
+
+.ai_logo_avatar_container {
+  .avatar_icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+    font-size: 12px !important;
+    background: url(https://mdn.alipayobjects.com/huamei_5nm5zc/afts/img/A*6ZoQRIRuFkcAAAAAAAAAAAAADlrAAQ/original)
+      center / 100% no-repeat;
+    color: var(--ai-native-text-color-highlight) !important;
+
+    &::before {
+      transform: scale(0.7);
+    }
+  }
+}

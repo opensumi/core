@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { IAIReporter } from '@opensumi/ide-core-browser';
 import { CancellationToken } from '@opensumi/ide-core-common';
 
-import { IAIReporter, AISerivceType } from '../../common';
+import { AISerivceType } from '../../common';
 import { IAiRunAnswerComponentProps, IAiRunFeatureRegistry } from '../types';
 
 import { AiRunFeatureRegistry } from './run.feature.registry';

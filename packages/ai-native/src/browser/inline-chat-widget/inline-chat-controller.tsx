@@ -2,21 +2,23 @@ import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { message } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { IAiInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
+import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { LineVertical } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
+import { AiInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
 
 import { AiResponseTips } from '../../common';
-import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../components/Icon';
-import { LineVertical } from '../components/lineVertical';
 import { Loading } from '../components/Loading';
 import { EnhancePopover } from '../components/Popover';
-import { Thumbs } from '../components/Thumbs';
 import { IInlineChatFeatureRegistry } from '../types';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import * as styles from './inline-chat.module.less';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
+
 
 export interface IAiInlineOperationProps {
   hanldeActions: (id: string) => void;
@@ -97,49 +99,6 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
   );
 };
 
-/**
- * 采纳、重新生成
- */
-const AiInlineResult = () => {
-  const aiInlineChatService: AiInlineChatService = useInjectable(AiInlineChatService);
-
-  const handleAdopt = useCallback(() => {
-    aiInlineChatService._onAccept.fire();
-  }, []);
-
-  const handleDiscard = useCallback(() => {
-    aiInlineChatService._onDiscard.fire();
-  }, []);
-
-  const handleRefresh = useCallback(() => {
-    aiInlineChatService._onRegenerate.fire();
-  }, []);
-
-  const handleThumbs = useCallback((islike: boolean) => {
-    aiInlineChatService._onThumbs.fire(islike);
-  }, []);
-
-  return (
-    <div className={styles.ai_inline_result_panel}>
-      <div className={styles.side}>
-        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'check'} onClick={handleAdopt}>
-          <span>采纳</span>
-        </EnhanceIcon>
-        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'diuqi'} onClick={handleDiscard}>
-          <span>丢弃</span>
-        </EnhanceIcon>
-        <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'zhongxin'} onClick={handleRefresh}>
-          <span>重新生成</span>
-        </EnhanceIcon>
-      </div>
-      <LineVertical height={'60%'} margin={'0px 6px 0 6px'} />
-      <div className={styles.side}>
-        <Thumbs wrapperClassName={styles.operate_icon} onClick={handleThumbs} />
-      </div>
-    </div>
-  );
-};
-
 export interface IAiInlineChatControllerProps {
   onClickActions: Emitter<string>;
   onClose?: () => void;
@@ -151,7 +110,7 @@ const debounceMessage = debounce(() => {
 
 export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
   const { onClickActions, onClose } = props;
-  const aiInlineChatService: AiInlineChatService = useInjectable(AiInlineChatService);
+  const aiInlineChatService: AiInlineChatService = useInjectable(IAiInlineChatService);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
 
   useEffect(() => {
@@ -177,9 +136,35 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
 
+  const iconResultItems = useMemo(() => [
+      {
+        icon: 'check',
+        text: '采纳',
+        onClick: () => {
+          aiInlineChatService._onAccept.fire();
+        },
+      },
+      {
+        icon: 'diuqi',
+        text: '丢弃',
+        onClick: () => {
+          aiInlineChatService._onDiscard.fire();
+        },
+      },
+      {
+        icon: 'zhongxin',
+        text: '重新生成',
+        onClick: () => {
+          aiInlineChatService._onRegenerate.fire();
+        },
+      },
+    ], []);
+
   const handleClickActions = useCallback(
     (id: string) => {
-      onClickActions.fire(id);
+      if (onClickActions) {
+        onClickActions.fire(id);
+      }
     },
     [onClickActions],
   );
@@ -199,7 +184,7 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     }
 
     if (isDone) {
-      return <AiInlineResult />;
+      return <AiInlineResult iconItems={iconResultItems} />;
     }
 
     if (isLoading) {
@@ -213,9 +198,5 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     return <AiInlineOperation hanldeActions={handleClickActions} onClose={onClose} />;
   }, [status]);
 
-  return (
-    <div className={styles.ai_inline_chat_controller_panel} style={translateY}>
-      {renderContent()}
-    </div>
-  );
+  return <ContentWidgetContainerPanel style={translateY}>{renderContent()}</ContentWidgetContainerPanel>;
 };

@@ -2,8 +2,9 @@ import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { MessageList, ITextMessageProps, SystemMessage } from 'react-chat-elements';
 
-import { getIcon, useInjectable, QUICK_OPEN_COMMANDS } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, QUICK_OPEN_COMMANDS, IAIReporter } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import 'react-chat-elements/dist/main.css';
@@ -12,7 +13,6 @@ import {
   AISerivceType,
   IChatMessageStructure,
   InstructionEnum,
-  IAIReporter,
   IAiBackServiceResponse,
   AiResponseTips,
 } from '../common';
@@ -25,7 +25,6 @@ import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
-import { AILogoAvatar, EnhanceIcon } from './components/Icon';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
 import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';

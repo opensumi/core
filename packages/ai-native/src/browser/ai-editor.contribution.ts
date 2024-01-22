@@ -1,5 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { AiNativeConfigService, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  AiNativeConfigService,
+  IAIReporter,
+  IAiInlineChatService,
+  PreferenceService,
+} from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   IDisposable,
@@ -19,7 +24,7 @@ import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiNativeSettingSectionsId, IAIReporter, AiInlineChatContentWidget } from '../common';
+import { AiNativeSettingSectionsId, AiInlineChatContentWidget } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';
@@ -46,7 +51,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(AiNativeConfigService)
   private readonly aiNativeConfigService: AiNativeConfigService;
 
-  @Autowired(AiInlineChatService)
+  @Autowired(IAiInlineChatService)
   private readonly aiInlineChatService: AiInlineChatService;
 
   @Autowired(AiChatService)

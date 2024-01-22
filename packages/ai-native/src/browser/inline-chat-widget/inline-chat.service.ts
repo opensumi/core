@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
 
 import { AiBackSerivcePath, IAiBackService } from '../../common/index';
@@ -12,15 +12,9 @@ export const enum EInlineChatStatus {
 }
 
 @Injectable({ multiple: false })
-export class AiInlineChatService {
+export class AiInlineChatService implements IAiInlineChatService {
   @Autowired(AiBackSerivcePath)
   aiBackService: IAiBackService;
-
-  @Autowired(CommandService)
-  protected readonly commandService: CommandService;
-
-  @Autowired(PreferenceService)
-  protected preferenceService: PreferenceService;
 
   private _status: EInlineChatStatus = EInlineChatStatus.READY;
 
@@ -44,8 +38,12 @@ export class AiInlineChatService {
   public readonly onRegenerate: Event<void> = this._onRegenerate.event;
 
   // 点赞点踩
-  public readonly _onThumbs = new Emitter<boolean>();
+  private readonly _onThumbs = new Emitter<boolean>();
   public readonly onThumbs: Event<boolean> = this._onThumbs.event;
+
+  public fireThumbsEvent(isThumbsUp: boolean) {
+    this._onThumbs.fire(isThumbsUp);
+  }
 
   public isLoading(): boolean {
     return this._status === EInlineChatStatus.THINKING;

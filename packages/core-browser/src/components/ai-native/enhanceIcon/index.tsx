@@ -6,9 +6,7 @@ import { Icon, IconProps } from '@opensumi/ide-core-browser/lib/components';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 
-import { AiBrowserCtxMenuService } from '../override/ai-menu.service';
-
-import * as styles from './components.module.less';
+import * as styles from './styles.module.less';
 
 interface IEnhanceIconProps extends IconProps {
   wrapperStyle?: React.CSSProperties;
@@ -46,7 +44,7 @@ interface IEnhanceIconWithCtxMenuProps extends IEnhanceIconProps {
 export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
   const { children, menuNodes, skew } = props;
 
-  const ctxMenuRenderer = useInjectable<AiBrowserCtxMenuService>(IBrowserCtxMenu);
+  const ctxMenuRenderer = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
   const iconRef = React.useRef<HTMLDivElement | null>(null);
 

@@ -1,6 +1,5 @@
 import { CancellationToken } from '@opensumi/ide-core-common';
 
-export * from './reporter';
 export const AiBackSerivceToken = Symbol('AiBackSerivceToken');
 export const AiBackSerivcePath = 'AiBackSerivcePath';
 

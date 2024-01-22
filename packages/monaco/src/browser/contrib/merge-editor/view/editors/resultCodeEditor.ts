@@ -1,7 +1,12 @@
+import debounce from 'lodash/debounce';
+
+
 import { Injectable, Injector, Autowired } from '@opensumi/di';
-import { AiNativeConfigService, AppConfig, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
+import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { DocumentMapping } from '../../model/document-mapping';
@@ -22,6 +27,7 @@ import {
   IConflictActionsEvent,
   AI_RESOLVE_ACTIONS,
 } from '../../types';
+import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -38,6 +44,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
+  private resolveResultWidget: ResolveResultWidget | undefined;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -57,8 +64,25 @@ export class ResultCodeEditor extends BaseCodeEditor {
     this.initListenEvent();
   }
 
+  public hideResolveResultWidget() {
+    if (this.resolveResultWidget) {
+      this.resolveResultWidget.hide();
+      this.resolveResultWidget = undefined;
+    }
+  }
+
   private initListenEvent(): void {
     let preLineCount = 0;
+
+    const showResultWidget = (range: LineRange) => {
+      if (this.resolveResultWidget) {
+        return;
+      }
+
+      const position = new Position(range.endLineNumberExclusive, 1);
+      this.resolveResultWidget = this.injector.get(ResolveResultWidget, [this, range]);
+      this.resolveResultWidget.show({ position });
+    };
 
     this.addDispose(
       this.editor.onDidChangeModel(() => {
@@ -66,7 +90,43 @@ export class ResultCodeEditor extends BaseCodeEditor {
         if (model) {
           preLineCount = model.getLineCount();
         }
+        this.hideResolveResultWidget();
       }),
+    );
+
+    this.addDispose(
+      this.editor.onMouseMove(
+        debounce((event: monaco.editor.IEditorMouseEvent) => {
+          const { target } = event;
+          const mousePosition = target.position;
+          if (!mousePosition) {
+            return;
+          }
+
+          const allRanges = this.getAllDiffRanges();
+          const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
+
+          const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
+
+          if (isTouches) {
+            const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
+
+            if (!targetInRange) {
+              return;
+            }
+
+            const intelligentStateModel = targetInRange.getIntelligentStateModel();
+
+            if (intelligentStateModel.isComplete) {
+              showResultWidget(targetInRange);
+            } else {
+              this.hideResolveResultWidget();
+            }
+          } else {
+            this.hideResolveResultWidget();
+          }
+        }, 30),
+      ),
     );
 
     this.addDispose(

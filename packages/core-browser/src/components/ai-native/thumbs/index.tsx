@@ -1,11 +1,16 @@
 import React, { useMemo, useCallback, useState } from 'react';
 
-import { getExternalIcon, uuid, KTICON_OWNER } from '@opensumi/ide-core-browser';
+import {
+  getExternalIcon,
+  uuid,
+  KTICON_OWNER,
+  IAIReporter,
+  useInjectable,
+  IAiInlineChatService,
+} from '@opensumi/ide-core-browser';
 import { Popover } from '@opensumi/ide-core-browser/lib/components';
 
-import { IAIReporter } from '../../common';
-
-import { EnhanceIcon } from './Icon';
+import { EnhanceIcon } from '../enhanceIcon';
 
 interface ThumbsProps {
   wrapperClassName?: string;
@@ -15,6 +20,7 @@ interface ThumbsProps {
 }
 
 export const Thumbs = (props: ThumbsProps) => {
+  const aiInlineChatService = useInjectable<IAiInlineChatService>(IAiInlineChatService);
   const { relationId, aiReporterService, onClick, wrapperClassName } = props;
 
   const [thumbsupIcon, setThumbsupIcon] = useState<boolean | string>('thumbs');
@@ -28,8 +34,11 @@ export const Thumbs = (props: ThumbsProps) => {
       if (onClick) {
         onClick(isLike);
       }
+      if (aiInlineChatService) {
+        aiInlineChatService.fireThumbsEvent(isLike);
+      }
     },
-    [relationId, aiReporterService],
+    [relationId, aiReporterService, aiInlineChatService],
   );
 
   const handleClick = useCallback(

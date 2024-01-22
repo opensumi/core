@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig } from '@opensumi/ide-core-browser';
 import { IAiNativeCapabilities } from '@opensumi/ide-core-common';
+
+import { AppConfig } from '../react-providers/config-provider';
 
 @Injectable({ multiple: false })
 export class AiNativeConfigService {

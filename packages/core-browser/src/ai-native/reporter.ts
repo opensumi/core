@@ -38,7 +38,7 @@ export interface RunInfo extends Partial<CommonLogInfo> {
   runSuccess: boolean;
 }
 
-export interface Completion extends Partial<CommonLogInfo> {
+export interface CompletionRT extends Partial<CommonLogInfo> {
   isReceive?: boolean;
   // 是否取消
   isStop?: boolean;
@@ -59,7 +59,7 @@ export type ReportInfo =
   | ({ type: AISerivceType.Generate } & GenerateInfo)
   | ({ type: AISerivceType.Sumi } & CommandInfo)
   | ({ type: AISerivceType.Run } & RunInfo)
-  | ({ type: AISerivceType.Completion } & Completion);
+  | ({ type: AISerivceType.Completion } & CompletionRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 
