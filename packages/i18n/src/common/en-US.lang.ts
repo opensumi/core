@@ -1401,9 +1401,13 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
     'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
     'mergeEditor.action.button.apply': 'Apply',
-    'mergeEditor.action.button.accept.left': 'Accept Left',
-    'mergeEditor.action.button.accept.right': 'Accept Right',
-    'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
+    'mergeEditor.action.button.accept.left': 'Accept left',
+    'mergeEditor.action.button.accept.right': 'Accept right',
+    'mergeEditor.open.3way': 'Resolve in 3-way editor',
+    'mergeEditor.conflict.prev': 'Previous conflict',
+    'mergeEditor.conflict.next': 'Next conflict',
+    'mergeEditor.conflict.resolve.all': 'AI one click solution',
+    'mergeEditor.open.tradition': 'Use tradition editor',
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',

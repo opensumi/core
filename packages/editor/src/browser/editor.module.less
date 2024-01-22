@@ -572,7 +572,49 @@
 // -------------- styles for merge editor component starts --------------
 .merge_editor_float_container {
   position: absolute;
-  right: 50px;
-  bottom: 30px;
+  right: 24px;
+  bottom: 16px;
+  display: flex;
+}
+
+.merge_conflict_bottom_btn {
+  border: 1px solid #1677ff;
+  border-radius: 8px;
+  padding: 5px 16px;
+  color: #1677ff;
+  background: var(--editor-background);
+  margin: 0 4px;
+  line-height: 22px;
+  cursor: pointer;
+  :global {
+    .kt-icon {
+      color: #1677ff;
+      font-size: 12px;
+    }
+  }
+}
+
+.magic_btn {
+  background-image: radial-gradient(circle at -21% -22%, #19cfff, #8429ff);
+  border: none;
+  font-weight: 500;
+  span {
+    color: #fff;
+  }
+  :global {
+    .kt-icon {
+      color: #fff;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+  }
+}
+
+.line_vertical {
+  background-color: var(--ai-native-border-color-common);
+  width: 1px;
+  min-width: 1px;
+  height: 24px;
+  margin: 4px;
 }
 // -------------- styles for merge editor component ends --------------

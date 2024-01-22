@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { URI, localize, useInjectable } from '@opensumi/ide-core-browser';
-import { Button, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
@@ -107,23 +107,35 @@ const MergeActions: React.FC = () => {
     mergeEditorService.acceptRight();
   }, [mergeEditorService]);
 
+  const handleOpenTradition = useCallback(() => {
+    // TODO
+  }, [mergeEditorService]);
+  const handleAIResolve = useCallback(() => {
+    // TODO
+  }, [mergeEditorService]);
   return (
-    <div className={styles.merge_actions_container}>
-      <div className={styles.actions}>
-        <div className={styles.left_side}>
-          <Button size='large' type='default' onClick={handleAcceptLeft}>
-            {localize('mergeEditor.action.button.accept.left')}
-          </Button>
-          <Button size='large' type='default' onClick={handleAcceptRight}>
-            {localize('mergeEditor.action.button.accept.right')}
-          </Button>
-        </div>
-        <div className={styles.right_side}>
-          <Button size='large' onClick={handleApply}>
-            {localize('mergeEditor.action.button.apply')}
-          </Button>
-        </div>
+    <div className={styles.merge_editor_float_container}>
+      <div className={styles.merge_conflict_bottom_btn} onClick={handleAcceptLeft}>
+        <Icon icon={'left'} />
+        <span style={{ marginLeft: '5px' }}>{localize('mergeEditor.action.button.accept.left')}</span>
       </div>
+      <div className={styles.merge_conflict_bottom_btn} onClick={handleAcceptRight}>
+        <span style={{ marginRight: '5px' }}>{localize('mergeEditor.action.button.accept.right')}</span>
+        <Icon icon={'right'} />
+      </div>
+      <span className={styles.line_vertical}></span>
+
+      <div className={styles.merge_conflict_bottom_btn} onClick={handleOpenTradition}>
+        <span>{localize('mergeEditor.open.tradition')}</span>
+      </div>
+      <div className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`} onClick={handleAIResolve}>
+        <Icon icon={'magic-wand'} />
+        <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+      </div>
+      <span className={styles.line_vertical}></span>
+      <Button size='large' className={styles.merge_editor_apply_btn} onClick={handleApply}>
+        {localize('mergeEditor.action.button.apply')}
+      </Button>
     </div>
   );
 };
