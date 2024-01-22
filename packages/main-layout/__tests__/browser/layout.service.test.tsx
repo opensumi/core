@@ -41,7 +41,7 @@ describe('main layout test', () => {
   const rendered = new Deferred<void>();
   document.getElementById('main')?.appendChild(layoutNode);
 
-  const timeoutIds: Set<NodeJS.Timer> = new Set();
+  const timeoutIds: Set<NodeJS.Timeout> = new Set();
 
   beforeAll(async () => {
     const defered = new Deferred();

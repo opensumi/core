@@ -6,8 +6,6 @@ import { ReconnectingWebSocketConnection } from '../common/connection/drivers/re
 import { WSCloseInfo, ConnectionInfo } from '../common/utils';
 import { WSChannel, stringify, parse } from '../common/ws-channel';
 
-type TimeOut = ReturnType<typeof setTimeout>;
-
 /**
  * Channel Handler in browser
  */
@@ -16,7 +14,7 @@ export class WSChannelHandler {
   private channelCloseEventMap: Map<string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
-  private heartbeatMessageTimer: TimeOut | null;
+  private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
 
   LOG_TAG = '[WSChannelHandler]';
