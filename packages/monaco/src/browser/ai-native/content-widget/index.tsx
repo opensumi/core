@@ -28,7 +28,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
-  private root: ReactDOMClient.Root | null;
+  private root?: ReactDOMClient.Root | null = null;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super();

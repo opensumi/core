@@ -26,10 +26,57 @@ import {
   TActionsType,
 } from '../../types';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
+import { StopWidget } from '../../widget/stop-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+interface IWidgetFactory {
+  hideWidget(lineNumber?: number): void;
+  addWidget(range: LineRange): void;
+}
+
+class WidgetFactory implements IWidgetFactory {
+  private widgetMap: Map<number, ResolveResultWidget>;
+
+  constructor(
+    private contentWidget: typeof ResolveResultWidget,
+    private editor: BaseCodeEditor,
+    private injector: Injector,
+  ) {
+    this.widgetMap = new Map();
+  }
+
+  public hideWidget(lineNumber?: number): void {
+    if (lineNumber) {
+      const widget = this.widgetMap.get(lineNumber);
+      if (widget) {
+        widget.hide();
+        this.widgetMap.delete(lineNumber);
+      }
+      return;
+    }
+
+    this.widgetMap.forEach((widget) => {
+      widget.hide();
+    });
+    this.widgetMap.clear();
+  }
+
+  public addWidget(range: LineRange): void {
+    const lineNumber = range.startLineNumber;
+    if (this.widgetMap.has(lineNumber)) {
+      return;
+    }
+
+    const position = new Position(range.endLineNumberExclusive, 1);
+
+    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
+    widget.show({ position });
+
+    this.widgetMap.set(lineNumber, widget);
+  }
+}
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
@@ -44,7 +91,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
-  private resolveResultWidget: ResolveResultWidget | undefined;
+
+  private resolveResultWidgetManager: IWidgetFactory;
+  private stopWidgetManager: IWidgetFactory;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -62,27 +111,21 @@ export class ResultCodeEditor extends BaseCodeEditor {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
     this.initListenEvent();
+
+    this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
+    this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
   }
 
-  public hideResolveResultWidget() {
-    if (this.resolveResultWidget) {
-      this.resolveResultWidget.hide();
-      this.resolveResultWidget = undefined;
-    }
+  public hideResolveResultWidget(lineNumber?: number) {
+    this.resolveResultWidgetManager.hideWidget(lineNumber);
+  }
+
+  public hideStopWidget(lineNumber?: number) {
+    this.stopWidgetManager.hideWidget(lineNumber);
   }
 
   private initListenEvent(): void {
     let preLineCount = 0;
-
-    const showResultWidget = (range: LineRange) => {
-      if (this.resolveResultWidget) {
-        return;
-      }
-
-      const position = new Position(range.endLineNumberExclusive, 1);
-      this.resolveResultWidget = this.injector.get(ResolveResultWidget, [this, range]);
-      this.resolveResultWidget.show({ position });
-    };
 
     this.addDispose(
       this.editor.onDidChangeModel(() => {
@@ -94,40 +137,42 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }),
     );
 
-    this.addDispose(
-      this.editor.onMouseMove(
-        debounce((event: monaco.editor.IEditorMouseEvent) => {
-          const { target } = event;
-          const mousePosition = target.position;
-          if (!mousePosition) {
-            return;
-          }
-
-          const allRanges = this.getAllDiffRanges();
-          const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
-
-          const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
-
-          if (isTouches) {
-            const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
-
-            if (!targetInRange) {
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      this.addDispose(
+        this.editor.onMouseMove(
+          debounce((event: monaco.editor.IEditorMouseEvent) => {
+            const { target } = event;
+            const mousePosition = target.position;
+            if (!mousePosition) {
               return;
             }
 
-            const intelligentStateModel = targetInRange.getIntelligentStateModel();
+            const allRanges = this.getAllDiffRanges();
+            const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
 
-            if (intelligentStateModel.isComplete) {
-              showResultWidget(targetInRange);
+            const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
+
+            if (isTouches) {
+              const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
+
+              if (!targetInRange) {
+                return;
+              }
+
+              const intelligentStateModel = targetInRange.getIntelligentStateModel();
+
+              if (intelligentStateModel.isComplete) {
+                this.resolveResultWidgetManager.addWidget(targetInRange);
+              } else {
+                this.hideResolveResultWidget(targetInRange.startLineNumber);
+              }
             } else {
               this.hideResolveResultWidget();
             }
-          } else {
-            this.hideResolveResultWidget();
-          }
-        }, 30),
-      ),
-    );
+          }, 30),
+        ),
+      );
+    }
 
     this.addDispose(
       this.editor.onDidChangeModelContent(async (e) => {
@@ -411,6 +456,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
      * 则需要重新获取一次
      */
     const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
+
+    const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+    if (isAiConflictResolve) {
+      changesResult.forEach((range) => {
+        const model = range.getIntelligentStateModel();
+
+        if (model.isLoading) {
+          this.stopWidgetManager.addWidget(range);
+        } else {
+          this.hideStopWidget(range.startLineNumber);
+        }
+      });
+    }
     return [changesResult, innerChangesResult];
   }
 

@@ -322,7 +322,6 @@ export class ActionsManager extends Disposable {
     const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toRange());
 
     const codeAssemble = `<<<<<<< HEAD\n${currentValue}\n||||||| base\n${baseValue}\n>>>>>>>\n${incomingValue}`;
-    // await new Promise(resolve => setTimeout(() => resolve(true), 3000));
     const resolveConflictResult: any = await this.commandService.executeCommand(
       AI_RESOLVE_CONFLICT_COMMANDS.id,
       codeAssemble,
