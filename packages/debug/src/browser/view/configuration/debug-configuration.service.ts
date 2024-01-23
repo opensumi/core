@@ -87,7 +87,7 @@ export class DebugConfigurationService {
     this.updateFloat(!!this.preferenceService.get<boolean>('debug.toolbar.float'));
   }
 
-  @action.bound
+  @action
   async updateWorkspaceState() {
     this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
     this.workspaceRoots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
