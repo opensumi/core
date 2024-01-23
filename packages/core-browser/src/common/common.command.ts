@@ -363,6 +363,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const OPEN_MERGEEDITOR_DEV: Command = {
+    id: 'editor.open.mergeEditor.dev',
+    category: 'Merge Editor (Dev)',
+    label: 'Open Merge Editor State from Json',
+  };
+
   export const MERGEEDITOR_RESET: Command = {
     id: 'editor.mergeEditor.reset',
     category: CATEGORY,

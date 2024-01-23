@@ -175,7 +175,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
         enabled: false,
       },
       codeLens: false,
-      scrollBeyondLastLine: false,
+      scrollBeyondLastLine: true,
       ...this.getMonacoEditorOptions(),
     });
   }
