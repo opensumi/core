@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -69,6 +69,7 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
   constructor() {
     super();
+    makeObservable(this);
     this.getInstalledExtensions();
     this.disposables.push(
       this.extensionInstanceService.onDidChange(() => {

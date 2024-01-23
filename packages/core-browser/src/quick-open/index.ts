@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import React from 'react';
 
 import type { VALIDATE_TYPE } from '@opensumi/ide-components';
@@ -165,6 +165,7 @@ export class QuickOpenItem {
   public checked = false;
 
   constructor(protected options: QuickOpenItemOptions) {
+    makeObservable(this);
     this.checked = options.checked || false;
   }
 

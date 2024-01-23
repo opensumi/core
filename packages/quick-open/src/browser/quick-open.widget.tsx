@@ -1,4 +1,4 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -138,7 +138,9 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
 
-  constructor(public callbacks: IQuickOpenCallbacks) {}
+  constructor(public callbacks: IQuickOpenCallbacks) {
+    makeObservable(this);
+  }
 
   @action
   show(prefix: string, options: QuickOpenInputOptions): void {

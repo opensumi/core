@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { observable, action, observe, computed, makeObservable } from 'mobx';
+import { observable, action, reaction, computed, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -57,12 +57,14 @@ const CONTAINER_NAME_MAP = {
 
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
+  @observable
   currentContainerId: string;
 
   previousContainerId = '';
 
   // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  @observable
   state: Map<string, TabState> = new Map();
 
   private storedState: { [containerId: string]: TabState } = {};
@@ -115,7 +117,8 @@ export class TabbarService extends WithEventBus {
   @Autowired(IProgressService)
   private progressService: IProgressService;
 
-  // 提供给Mobx强刷
+  // 提供给 Mobx 强刷刷新
+  @observable
   forceUpdate = 0;
 
   private accordionRestored: Set<string> = new Set();
@@ -140,11 +143,7 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
-    makeObservable(this, {
-      currentContainerId: observable,
-      state: observable,
-      forceUpdate: observable,
-    });
+    makeObservable(this);
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -278,7 +277,9 @@ export class TabbarService extends WithEventBus {
       const containerId = info.options?.containerId;
       if (containerId) {
         const prevState = this.storedState[containerId] || this.getContainerState(containerId) || {}; // 保留原有的hidden状态
-        this.state.set(containerId, { hidden: prevState.hidden, priority: i });
+        runInAction(() => {
+          this.state.set(containerId, { hidden: prevState.hidden, priority: i });
+        });
       }
     }
     disposables.push(this.registerSideEffects(componentInfo));
@@ -334,7 +335,9 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: () => {
-            this.currentContainerId = containerId;
+            runInAction(() => {
+              this.currentContainerId = containerId;
+            });
           },
         },
       ),
@@ -346,7 +349,9 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: () => {
-            this.currentContainerId = '';
+            runInAction(() => {
+              this.currentContainerId = '';
+            });
           },
         },
       ),
@@ -358,11 +363,13 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: () => {
-            if (this.currentContainerId === containerId) {
-              this.currentContainerId = '';
-            } else {
-              this.currentContainerId = containerId;
-            }
+            runInAction(() => {
+              if (this.currentContainerId === containerId) {
+                this.currentContainerId = '';
+              } else {
+                this.currentContainerId = containerId;
+              }
+            });
           },
         },
       ),
@@ -543,7 +550,9 @@ export class TabbarService extends WithEventBus {
     this.storedState = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
     for (const containerId of this.state.keys()) {
       if (this.storedState[containerId]) {
-        this.state.set(containerId, this.storedState[containerId]);
+        runInAction(() => {
+          this.state.set(containerId, this.storedState[containerId]);
+        });
       }
     }
     this.visibleContainers.forEach((container) => {
@@ -756,13 +765,15 @@ export class TabbarService extends WithEventBus {
   }
 
   protected listenCurrentChange() {
-    observe(this, 'currentContainerId', (change) => {
-      if (this.prevSize === undefined) {
-      }
-      this.previousContainerId = change.oldValue || '';
-      const currentId = change.newValue;
-      this.handleChange(currentId, this.previousContainerId);
-    });
+    reaction(
+      () => this.currentContainerId,
+      (currentId, previousId) => {
+        if (this.prevSize === undefined) {
+        }
+        this.previousContainerId = previousId || '';
+        this.handleChange(currentId, this.previousContainerId);
+      },
+    );
   }
 
   private handleChange(currentId, previousId) {

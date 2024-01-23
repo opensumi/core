@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
@@ -21,6 +21,10 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
 
   @observable
   menuNodes: MenuNode[] = observable.array([]);
+
+  constructor() {
+    makeObservable(this);
+  }
 
   @action
   public show(payload: CtxMenuRenderParams): void {

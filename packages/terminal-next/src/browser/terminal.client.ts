@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
@@ -160,6 +160,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   constructor() {
     super();
+    makeObservable(this);
     this.init();
   }
 

@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { debounce, Emitter, Event } from '@opensumi/ide-core-common';
@@ -22,6 +22,10 @@ export class TerminalSearchService implements ITerminalSearchService {
   protected _onOpen = new Emitter<void>();
 
   onOpen: Event<void> = this._onOpen.event;
+
+  constructor() {
+    makeObservable(this);
+  }
 
   get client(): ITerminalClient | undefined {
     return this.controller.findClientFromWidgetId(this.terminalView.currentWidget.id);

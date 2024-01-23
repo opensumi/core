@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
@@ -28,7 +28,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
 
   constructor() {
     super();
-
+    makeObservable(this);
     this.build();
     this.registerDispose(this.menubarService.onDidMenubarChange(this.handleMenubarChanged, this, this.disposables));
     this.registerDispose(this.menubarService.onDidMenuChange(this.handleMenuChanged, this, this.disposables));
@@ -45,6 +45,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     this.menuItems.set(menuId, menuItems);
   }
 
+  @action.bound
   private build() {
     const menubarItems = this.menubarService.getMenubarItems();
     this.menubarItems.splice(0, this.menubarItems.length, ...menubarItems);
@@ -58,6 +59,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     this.updateMenuNodes(menuId);
   }
 
+  @action.bound
   private handleMenubarChanged() {
     const menubarItems = this.menubarService.getMenubarItems();
     this.menubarItems.replace(menubarItems);

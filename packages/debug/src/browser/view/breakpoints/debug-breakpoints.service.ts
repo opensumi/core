@@ -1,4 +1,4 @@
-import { observable, action, runInAction } from 'mobx';
+import { observable, action, runInAction, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -88,6 +88,7 @@ export class DebugBreakpointsService extends WithEventBus {
 
   constructor() {
     super();
+    makeObservable(this);
     this.init();
   }
 

@@ -1,4 +1,4 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@opensumi/ide-core-browser';
@@ -45,6 +45,11 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   private layoutState: LayoutState;
 
   protected disposableCollection = new Map<string, IDisposable>();
+
+  constructor() {
+    super();
+    makeObservable(this);
+  }
 
   /**
    * 获取背景颜色

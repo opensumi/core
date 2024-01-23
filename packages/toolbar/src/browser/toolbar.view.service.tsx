@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -109,6 +109,7 @@ export class ToolBarElementHandle extends Disposable implements IToolBarElementH
 
   constructor(public readonly element: IToolBarAction | IToolBarComponent) {
     super();
+    makeObservable(this);
   }
 
   setVisible(visible: boolean) {

@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, memo } from 'react';
 
@@ -237,6 +237,10 @@ export const NavigationMenuContainer = observer(() => {
 export class NavigationBarViewService {
   @observable.ref current: NavigationMenuModel | undefined;
   @observable.ref editorGroup: EditorGroup;
+
+  constructor() {
+    makeObservable(this);
+  }
 
   showMenu(parts: IBreadCrumbPart[], x, y, currentIndex, uri, editorGroup) {
     this.current = new NavigationMenuModel(parts, x, y, currentIndex, uri);

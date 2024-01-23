@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
@@ -33,7 +33,7 @@ export class OutputService extends WithEventBus {
   readonly channels = observable.map<string, OutputChannel>();
 
   @observable.ref
-  selectedChannel: OutputChannel;
+  public selectedChannel: OutputChannel;
 
   @observable
   public keys: string = '' + Math.random();
@@ -46,7 +46,7 @@ export class OutputService extends WithEventBus {
 
   constructor() {
     super();
-
+    makeObservable(this);
     this.enableSmartScroll = Boolean(this.preferenceService.get<boolean>('output.enableSmartScroll'));
     this.addDispose(
       this.preferenceService.onPreferenceChanged((e) => {
@@ -90,6 +90,7 @@ export class OutputService extends WithEventBus {
     return this._viewHeight;
   }
 
+  @action
   getChannel(name: string): OutputChannel {
     const existing = this.channels.get(name);
     if (existing) {
@@ -103,6 +104,7 @@ export class OutputService extends WithEventBus {
     return channel;
   }
 
+  @action
   deleteChannel(name: string): void {
     this.channels.delete(name);
   }

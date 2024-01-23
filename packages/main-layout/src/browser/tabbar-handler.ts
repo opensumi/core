@@ -1,3 +1,5 @@
+import { runInAction } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
 
@@ -112,7 +114,9 @@ export class TabBarHandler {
    * 设置视图tab的徽标
    */
   setBadge(badge: string) {
-    this.tabbarService.getContainer(this.containerId)!.options!.badge = badge;
+    runInAction(() => {
+      this.tabbarService.getContainer(this.containerId)!.options!.badge = badge;
+    });
   }
   /**
    * 获取视图tab的徽标

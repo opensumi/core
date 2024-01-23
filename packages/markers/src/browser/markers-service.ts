@@ -1,5 +1,5 @@
 'use strict';
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -47,6 +47,7 @@ export class MarkerService extends Themable implements IMarkerService {
 
   constructor() {
     super();
+    makeObservable(this);
     this.markerViewModel = new MarkerViewModel(this, this.labelService);
   }
 

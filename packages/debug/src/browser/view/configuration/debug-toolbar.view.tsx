@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import { action, observable } from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -46,6 +46,7 @@ class FloatController {
   private _y: number;
 
   constructor() {
+    makeObservable(this);
     this.x = 0;
     this.line = 0;
     this.enable = false;

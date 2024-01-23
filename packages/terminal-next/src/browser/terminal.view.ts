@@ -1,4 +1,4 @@
-import { observable, computed } from 'mobx';
+import { observable, computed, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Disposable, Event } from '@opensumi/ide-core-browser';
@@ -33,6 +33,7 @@ export class Widget extends Disposable implements IWidget {
 
   constructor(id: string, public reuse: boolean = false) {
     super();
+    makeObservable(this);
     this._id = id;
   }
 
@@ -88,8 +89,10 @@ export class Widget extends Disposable implements IWidget {
   onError: Event<boolean> = this._onError.event;
 
   resize(dynamic?: number) {
-    this.dynamic = dynamic || this.shadowDynamic;
-    this.shadowDynamic = this.dynamic;
+    runInAction(() => {
+      this.dynamic = dynamic || this.shadowDynamic;
+      this.shadowDynamic = this.dynamic;
+    });
     this._onResize.fire();
   }
 

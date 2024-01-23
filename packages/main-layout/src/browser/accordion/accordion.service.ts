@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { action, observable } from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -125,6 +125,7 @@ export class AccordionService extends WithEventBus {
 
   constructor(public containerId: string, private noRestore?: boolean) {
     super();
+    makeObservable(this);
     this.splitPanelService = this.splitPanelManager.getService(containerId);
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithSection', true);
@@ -239,6 +240,7 @@ export class AccordionService extends WithEventBus {
     return menu;
   }
 
+  @action
   private updateView(view: View) {
     if (view.priority) {
       const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
@@ -248,6 +250,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
+  @action
   appendView(view: View, replace?: boolean) {
     if (this.appendedViewSet.has(view.id) && !replace) {
       return;
@@ -293,6 +296,7 @@ export class AccordionService extends WithEventBus {
     this.afterAppendViewEmitter.fire(view.id);
   }
 
+  @action
   disposeView(viewId: string) {
     const existIndex = this.views.findIndex((item) => item.id === viewId);
     if (existIndex > -1) {
@@ -314,6 +318,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
+  @action
   disposeAll() {
     this.views = [];
     this.toDispose.forEach((disposable) => {
@@ -337,6 +342,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
+  @action
   private doUpdateResize = debounce(() => {
     let largestViewId: string | undefined;
     Object.keys(this.state).forEach((id) => {
