@@ -1,6 +1,5 @@
 import debounce from 'lodash/debounce';
 
-
 import { Injectable, Injector, Autowired } from '@opensumi/di';
 import { AiNativeConfigService, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
@@ -28,6 +27,7 @@ import {
   AI_RESOLVE_ACTIONS,
 } from '../../types';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
+import { StopWidget } from '../../widget/stop-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -44,7 +44,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
-  private resolveResultWidget: ResolveResultWidget | undefined;
+
+  private resolveResultWidgetMap: Map<number, ResolveResultWidget> = new Map();
+  private stopWidgetMap: Map<number, StopWidget> = new Map();
+
+  private stopWidget: StopWidget | undefined;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -64,25 +68,72 @@ export class ResultCodeEditor extends BaseCodeEditor {
     this.initListenEvent();
   }
 
-  public hideResolveResultWidget() {
-    if (this.resolveResultWidget) {
-      this.resolveResultWidget.hide();
-      this.resolveResultWidget = undefined;
+  // private addWidgetFactory() {
+
+  // }
+
+  public hideResolveResultWidget(lineNumber?: number) {
+    if (lineNumber) {
+      const widget = this.resolveResultWidgetMap.get(lineNumber);
+      if (widget) {
+        widget.hide();
+        this.resolveResultWidgetMap.delete(lineNumber);
+      }
+      return;
     }
+
+    this.resolveResultWidgetMap.forEach((widget) => {
+      widget.hide();
+    });
+    this.resolveResultWidgetMap.clear();
   }
+
+  public hideStopWidget(lineNumber?: number) {
+    if (lineNumber) {
+      const widget = this.stopWidgetMap.get(lineNumber);
+      if (widget) {
+        widget.hide();
+        this.stopWidgetMap.delete(lineNumber);
+      }
+      return;
+    }
+
+    this.stopWidgetMap.forEach((widget) => {
+      widget.hide();
+    });
+    this.stopWidgetMap.clear();
+  }
+
+  private addResultWidget(range: LineRange) {
+    const lineNumber = range.startLineNumber;
+    if (this.resolveResultWidgetMap.has(lineNumber)) {
+      return;
+    }
+
+    const position = new Position(range.endLineNumberExclusive, 1);
+
+    const widget = this.injector.get(ResolveResultWidget, [this, range]);
+    widget.show({ position });
+
+    this.resolveResultWidgetMap.set(lineNumber, widget);
+  }
+
+  private addStopWidget = (range: LineRange) => {
+    const lineNumber = range.startLineNumber;
+    if (this.stopWidgetMap.has(lineNumber)) {
+      return;
+    }
+
+    const position = new Position(range.endLineNumberExclusive, 1);
+
+    const widget = this.injector.get(StopWidget, [this, range]);
+    widget.show({ position });
+
+    this.stopWidgetMap.set(lineNumber, widget);
+  };
 
   private initListenEvent(): void {
     let preLineCount = 0;
-
-    const showResultWidget = (range: LineRange) => {
-      if (this.resolveResultWidget) {
-        return;
-      }
-
-      const position = new Position(range.endLineNumberExclusive, 1);
-      this.resolveResultWidget = this.injector.get(ResolveResultWidget, [this, range]);
-      this.resolveResultWidget.show({ position });
-    };
 
     this.addDispose(
       this.editor.onDidChangeModel(() => {
@@ -118,9 +169,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
             const intelligentStateModel = targetInRange.getIntelligentStateModel();
 
             if (intelligentStateModel.isComplete) {
-              showResultWidget(targetInRange);
+              this.addResultWidget(targetInRange);
             } else {
-              this.hideResolveResultWidget();
+              this.hideResolveResultWidget(targetInRange.startLineNumber);
             }
           } else {
             this.hideResolveResultWidget();
@@ -411,6 +462,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
      * 则需要重新获取一次
      */
     const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
+
+    const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+    if (isAiConflictResolve) {
+      changesResult.forEach((range) => {
+        const model = range.getIntelligentStateModel();
+
+        if (model.isLoading) {
+          this.addStopWidget(range);
+        } else {
+          this.hideStopWidget(range.startLineNumber);
+        }
+      });
+    }
     return [changesResult, innerChangesResult];
   }
 
