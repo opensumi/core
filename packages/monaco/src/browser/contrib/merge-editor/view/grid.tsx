@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { URI, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -94,6 +94,9 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
 
 const MergeActions: React.FC = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+  const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
+
+  const isSupportAiResolve = useCallback(() => aiNativeConfigService.capabilities.supportsConflictResolve, [aiNativeConfigService]);
 
   const handleApply = useCallback(() => {
     mergeEditorService.accept();
@@ -113,6 +116,7 @@ const MergeActions: React.FC = () => {
   const handleAIResolve = useCallback(() => {
     // TODO
   }, [mergeEditorService]);
+
   return (
     <div className={styles.merge_editor_float_container}>
       <div className={styles.merge_conflict_bottom_btn} onClick={handleAcceptLeft}>
@@ -128,10 +132,12 @@ const MergeActions: React.FC = () => {
       <div className={styles.merge_conflict_bottom_btn} onClick={handleOpenTradition}>
         <span>{localize('mergeEditor.open.tradition')}</span>
       </div>
-      <div className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`} onClick={handleAIResolve}>
-        <Icon icon={'magic-wand'} />
-        <span>{localize('mergeEditor.conflict.resolve.all')}</span>
-      </div>
+      {isSupportAiResolve() && (
+        <div className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`} onClick={handleAIResolve}>
+          <Icon icon={'magic-wand'} />
+          <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+        </div>
+      )}
       <span className={styles.line_vertical}></span>
       <Button size='large' className={styles.merge_editor_apply_btn} onClick={handleApply}>
         {localize('mergeEditor.action.button.apply')}

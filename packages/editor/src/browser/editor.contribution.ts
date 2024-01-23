@@ -35,6 +35,7 @@ import {
   SUPPORTED_ENCODINGS,
   FILE_COMMANDS,
   CorePreferences,
+  IQuickInputService,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -42,7 +43,6 @@ import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { isWindows, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
-import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -174,6 +174,12 @@ export class EditorContribution
   @Autowired(IEditorDocumentModelContentRegistry)
   contentRegistry: IEditorDocumentModelContentRegistry;
 
+  @Autowired(IQuickInputService)
+  private readonly quickInputService: IQuickInputService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@opensumi/ide-editor', {
       id: 'ide-editor',
@@ -219,9 +225,6 @@ export class EditorContribution
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
-
-  @Autowired(IElectronMainUIService)
-  private readonly electronMainUIService: IElectronMainUIService;
 
   registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);
@@ -504,6 +507,35 @@ export class EditorContribution
           }),
           options,
         );
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR_DEV, {
+      execute: async () => {
+        try {
+          const value = await this.quickInputService.open({ value: '' });
+          if (!value) {
+            return;
+          }
+
+          const toArgs = JSON.parse(value);
+
+          /**
+           * @example
+           * {
+           *   input1: {
+           *     uri: 'current 分支的 uri'
+           *   },
+           *   input2: {
+           *     uri: 'incoming 分支的 uri'
+           *   },
+           *   output: '中间视图的文件 uri',
+           *   base: '共同祖先分支的文件 uri'
+           * }
+           */
+
+          this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR.id, toArgs);
+        } catch (error) {}
       },
     });
 
