@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/arrays.ts
+
 import { toCanonicalName, iconvDecode, UTF8 } from './encoding';
 import * as strings from './strings';
 
@@ -35,16 +36,7 @@ export class BinaryBuffer {
    * @param source source string
    */
   static fromString(source: string): BinaryBuffer {
-    if (hasBuffer) {
-      return new BinaryBuffer(Buffer.from(source));
-    } else if (hasTextEncoder) {
-      if (!textEncoder) {
-        textEncoder = new TextEncoder();
-      }
-      return new BinaryBuffer(textEncoder.encode(source));
-    } else {
-      return new BinaryBuffer(strings.encodeUTF8(source));
-    }
+    return new BinaryBuffer(getUInt8Buffer(source));
   }
 
   static concat(buffers: BinaryBuffer[], totalLength?: number): BinaryBuffer {
@@ -288,3 +280,42 @@ export function encodeBase64({ buffer }: BinaryBuffer, padded = true, urlSafe = 
 
   return output;
 }
+
+export type ITypedArray = Uint8Array | Uint16Array | Uint32Array;
+export type IDataType = string | Buffer | ITypedArray;
+
+export const getUInt8Buffer = hasBuffer
+  ? (data: IDataType): Uint8Array => {
+      if (typeof data === 'string') {
+        const buf = Buffer.from(data, 'utf8');
+        return new Uint8Array(buf.buffer, buf.byteOffset, buf.length);
+      }
+
+      if (Buffer.isBuffer(data)) {
+        return new Uint8Array(data.buffer, data.byteOffset, data.length);
+      }
+
+      if (ArrayBuffer.isView(data)) {
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      }
+
+      throw new Error('Invalid data type!');
+    }
+  : (data: IDataType): Uint8Array => {
+      if (typeof data === 'string') {
+        if (hasTextEncoder) {
+          if (!textEncoder) {
+            textEncoder = new TextEncoder();
+          }
+          return textEncoder.encode(data);
+        } else {
+          return strings.encodeUTF8(data);
+        }
+      }
+
+      if (ArrayBuffer.isView(data)) {
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      }
+
+      throw new Error('Invalid data type!');
+    };

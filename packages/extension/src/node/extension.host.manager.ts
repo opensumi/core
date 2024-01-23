@@ -1,3 +1,4 @@
+import assert from 'assert';
 import cp from 'child_process';
 
 import isRunning from 'is-running';
@@ -24,8 +25,9 @@ export class ExtensionHostManager implements IExtensionHostManager {
 
   fork(modulePath: string, ...args: any[]) {
     const extProcess = cp.fork(modulePath, ...args);
-    this.processMap.set(extProcess.pid!, extProcess);
-    return extProcess.pid!;
+    assert(extProcess.pid, `fork ${modulePath} error`);
+    this.processMap.set(extProcess.pid, extProcess);
+    return extProcess.pid;
   }
 
   send(pid: number, message: string) {
@@ -83,10 +85,14 @@ export class ExtensionHostManager implements IExtensionHostManager {
     if (!extProcess) {
       return;
     }
-    extProcess.stdout!.setEncoding('utf8');
-    extProcess.stderr!.setEncoding('utf8');
-    const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout!, 'data');
-    const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr!, 'data');
+
+    assert(extProcess.stdout, 'ext process spawn failed');
+    assert(extProcess.stderr, 'ext process spawn failed');
+
+    extProcess.stdout.setEncoding('utf8');
+    extProcess.stderr.setEncoding('utf8');
+    const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout, 'data');
+    const onStderr = Event.fromNodeEventEmitter<string>(extProcess.stderr, 'data');
     const onOutput = Event.any(
       Event.map(onStdout, (o) => ({ type: OutputType.STDOUT, data: `%c${o}`, format: [''] })),
       Event.map(onStderr, (o) => ({ type: OutputType.STDERR, data: `%c${o}`, format: ['color: red'] })),

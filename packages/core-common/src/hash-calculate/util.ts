@@ -6,28 +6,7 @@
 
 // copy and modified from https://github.com/Daninet/hash-wasm/blob/bd3a205ca5603fc80adf71d0966fc72e8d4fa0ef/lib/util.ts
 
-function getGlobal() {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis;
-  }
-  // eslint-disable-next-line no-restricted-globals
-  if (typeof self !== 'undefined') {
-    return self;
-  }
-  if (typeof window !== 'undefined') {
-    return window;
-  }
-  return global;
-}
-
-const globalObject = getGlobal();
-// @ts-ignore
-const nodeBuffer = globalObject.Buffer ?? null;
-// @ts-ignore
-const textEncoder = globalObject.TextEncoder ? new globalObject.TextEncoder() : null;
-
-export type ITypedArray = Uint8Array | Uint16Array | Uint32Array;
-export type IDataType = string | Buffer | ITypedArray;
+export { IDataType, ITypedArray, getUInt8Buffer } from '@opensumi/ide-utils/lib/buffer';
 
 export function intArrayToString(arr: Uint8Array, len: number): string {
   return String.fromCharCode(...arr.subarray(0, len));
@@ -73,36 +52,6 @@ export function getDigestHex(tmpBuffer: Uint8Array, input: Uint8Array, hashLengt
 
   return String.fromCharCode.apply(null, tmpBuffer as unknown as number[]);
 }
-
-export const getUInt8Buffer =
-  nodeBuffer !== null
-    ? (data: IDataType): Uint8Array => {
-        if (typeof data === 'string') {
-          const buf = nodeBuffer.from(data, 'utf8');
-          return new Uint8Array(buf.buffer, buf.byteOffset, buf.length);
-        }
-
-        if (nodeBuffer.isBuffer(data)) {
-          return new Uint8Array(data.buffer, data.byteOffset, data.length);
-        }
-
-        if (ArrayBuffer.isView(data)) {
-          return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        }
-
-        throw new Error('Invalid data type!');
-      }
-    : (data: IDataType): Uint8Array => {
-        if (typeof data === 'string') {
-          return textEncoder!.encode(data);
-        }
-
-        if (ArrayBuffer.isView(data)) {
-          return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        }
-
-        throw new Error('Invalid data type!');
-      };
 
 const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 const base64Lookup = new Uint8Array(256);
