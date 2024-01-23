@@ -36,7 +36,16 @@ export class BinaryBuffer {
    * @param source source string
    */
   static fromString(source: string): BinaryBuffer {
-    return new BinaryBuffer(getUInt8Buffer(source));
+    if (hasBuffer) {
+      return new BinaryBuffer(Buffer.from(source));
+    } else if (hasTextEncoder) {
+      if (!textEncoder) {
+        textEncoder = new TextEncoder();
+      }
+      return new BinaryBuffer(textEncoder.encode(source));
+    } else {
+      return new BinaryBuffer(strings.encodeUTF8(source));
+    }
   }
 
   static concat(buffers: BinaryBuffer[], totalLength?: number): BinaryBuffer {
