@@ -1,10 +1,10 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { Icon, IconProps } from '@opensumi/ide-core-browser/lib/components';
-import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
-import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { Icon, IconProps } from '../../../components';
+import { MenuNode } from '../../../menu/next/base';
+import { IBrowserCtxMenu } from '../../../menu/next/renderer/ctxmenu/browser';
+import { useInjectable } from '../../../react-hooks';
 
 import * as styles from './styles.module.less';
 

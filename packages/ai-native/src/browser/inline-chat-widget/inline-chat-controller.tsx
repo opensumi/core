@@ -5,10 +5,10 @@ import { message } from '@opensumi/ide-components';
 import { IAiInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { LineVertical } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { AiInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
+import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
 
 import { AiResponseTips } from '../../common';
 import { Loading } from '../components/Loading';
@@ -18,7 +18,6 @@ import { IInlineChatFeatureRegistry } from '../types';
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import * as styles from './inline-chat.module.less';
 import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
-
 
 export interface IAiInlineOperationProps {
   hanldeActions: (id: string) => void;
@@ -136,7 +135,8 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
   const isDone = useMemo(() => status === EInlineChatStatus.DONE, [status]);
   const isError = useMemo(() => status === EInlineChatStatus.ERROR, [status]);
 
-  const iconResultItems = useMemo(() => [
+  const iconResultItems = useMemo(
+    () => [
       {
         icon: 'check',
         text: '采纳',
@@ -158,7 +158,9 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
           aiInlineChatService._onRegenerate.fire();
         },
       },
-    ], []);
+    ],
+    [],
+  );
 
   const handleClickActions = useCallback(
     (id: string) => {

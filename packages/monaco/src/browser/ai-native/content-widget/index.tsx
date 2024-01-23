@@ -4,8 +4,9 @@ import ReactDOM from 'react-dom';
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import type { ICodeEditor as IMonacoCodeEditor } from '../../monaco-api/types';
 
 export interface IInlineContentWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowAiContentOptions | undefined) => void;

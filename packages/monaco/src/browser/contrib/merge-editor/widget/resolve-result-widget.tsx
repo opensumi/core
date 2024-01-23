@@ -2,11 +2,10 @@ import React from 'react';
 import { ReactNode } from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { BaseInlineContentWidget } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { AiInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
+import { BaseInlineContentWidget } from '../../../ai-native/content-widget';
+import { ContentWidgetContainerPanel } from '../../../ai-native/content-widget/containerPanel';
 import { LineRange } from '../model/line-range';
 import { AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';

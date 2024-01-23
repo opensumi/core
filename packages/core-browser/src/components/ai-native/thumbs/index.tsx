@@ -1,15 +1,11 @@
 import React, { useMemo, useCallback, useState } from 'react';
 
-import {
-  getExternalIcon,
-  uuid,
-  KTICON_OWNER,
-  IAIReporter,
-  useInjectable,
-  IAiInlineChatService,
-} from '@opensumi/ide-core-browser';
-import { Popover } from '@opensumi/ide-core-browser/lib/components';
+import { uuid } from '@opensumi/ide-core-common';
 
+import { IAIReporter, IAiInlineChatService } from '../../../ai-native';
+import { Popover } from '../../../components';
+import { useInjectable } from '../../../react-hooks';
+import { getExternalIcon, KTICON_OWNER } from '../../../style/icon/icon';
 import { EnhanceIcon } from '../enhanceIcon';
 
 interface ThumbsProps {

@@ -2,8 +2,11 @@ import React from 'react';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IAiInlineChatService } from '@opensumi/ide-core-browser';
-import { BaseInlineContentWidget, ShowAiContentOptions } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Emitter, Event } from '@opensumi/ide-core-common';
+import {
+  BaseInlineContentWidget,
+  ShowAiContentOptions,
+} from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
