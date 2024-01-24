@@ -132,8 +132,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     });
   }
 
-  setFloatSize(size: number) {}
-
   storeState(service: TabbarService, currentId: string) {
     this.state[service.location] = {
       currentId,
@@ -233,16 +231,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return;
     }
     if (show === true) {
-      tabbarService.currentContainerId =
+      tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId ||
-        tabbarService.previousContainerId ||
-        tabbarService.containersMap.keys().next().value;
+          tabbarService.previousContainerId ||
+          tabbarService.containersMap.keys().next().value,
+      );
     } else if (show === false) {
-      tabbarService.currentContainerId = '';
+      tabbarService.updateCurrentContainerId('');
     } else {
-      tabbarService.currentContainerId = tabbarService.currentContainerId
-        ? ''
-        : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
+      tabbarService.updateCurrentContainerId(
+        tabbarService.currentContainerId
+          ? ''
+          : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value,
+      );
     }
     if (tabbarService.currentContainerId && size) {
       tabbarService.resizeHandle?.setSize(size);
@@ -526,10 +527,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   expandBottom(expand: boolean): void {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
     if (!tabbarService.currentContainerId) {
-      tabbarService.currentContainerId =
+      tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId ||
-        tabbarService.previousContainerId ||
-        tabbarService.containersMap.keys().next().value;
+          tabbarService.previousContainerId ||
+          tabbarService.containersMap.keys().next().value,
+      );
     }
     tabbarService.doExpand(expand);
     this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);

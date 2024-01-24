@@ -161,6 +161,18 @@ export class TabbarService extends WithEventBus {
     }
   }
 
+  @action
+  updateCurrentContainerId(containerId: string) {
+    this.currentContainerId = containerId;
+  }
+
+  updateBadge(containerId: string, value: string) {
+    const component = this.getContainer(containerId);
+    if (component && component.options?.badge) {
+      component.options.badge = value;
+    }
+  }
+
   registerPanelCommands(): void {
     this.commandRegistry.registerCommand(EXPAND_BOTTOM_PANEL, {
       execute: () => {
@@ -182,6 +194,22 @@ export class TabbarService extends WithEventBus {
   public getContainerState(containerId: string) {
     const viewState = this.state.get(containerId);
     return viewState!;
+  }
+
+  @action
+  public hideContainer(containerId: string) {
+    const viewState = this.state.get(containerId);
+    if (viewState) {
+      viewState.hidden = true;
+    }
+  }
+
+  @action
+  public showContainer(containerId: string) {
+    const viewState = this.state.get(containerId);
+    if (viewState) {
+      viewState.hidden = false;
+    }
   }
 
   private updatePanel = debounce((show) => {
@@ -213,8 +241,6 @@ export class TabbarService extends WithEventBus {
         components.push(component);
       }
     });
-    // TODO: 使用object来存state的话，初始containersMap为空，貌似就无法实现这个监听（无法引用到一个observable的属性）
-    const size = this.state.size; // 监听state长度
     // 排序策略：默认根据priority来做一次排序，后续根据存储的index来排序，未存储过的（新插入的，比如插件）在渲染后（时序控制）始终放在最后
     // 排序为 state的 priority 从小到大 (注意和 componentInfo 中的 options 的 priority的含义不同，为了不breaking change，保留这种语义)
     return components.sort(
@@ -235,7 +261,7 @@ export class TabbarService extends WithEventBus {
       lockSize: (lock: boolean | undefined) => lockSize(lock, this.isLatter),
       hidePanel: (show) => hidePanel(show),
     };
-    this.listenCurrentChange();
+    return this.listenCurrentChange();
   }
 
   @action
@@ -492,7 +518,8 @@ export class TabbarService extends WithEventBus {
     return false;
   }
 
-  @action.bound handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
+  @action.bound
+  handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
     const containerId = e.currentTarget.id;
     if (containerId === this.currentContainerId && !forbidCollapse) {
       // 双击同一个 tab 时隐藏 panel
@@ -502,7 +529,8 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  @action.bound handleContextMenu(event: React.MouseEvent, containerId?: string) {
+  @action.bound
+  handleContextMenu(event: React.MouseEvent, containerId?: string) {
     event.preventDefault();
     event.stopPropagation();
     const menus = this.menuService.createMenu(
@@ -765,11 +793,9 @@ export class TabbarService extends WithEventBus {
   }
 
   protected listenCurrentChange() {
-    reaction(
+    return reaction(
       () => this.currentContainerId,
       (currentId, previousId) => {
-        if (this.prevSize === undefined) {
-        }
         this.previousContainerId = previousId || '';
         this.handleChange(currentId, this.previousContainerId);
       },
@@ -778,7 +804,6 @@ export class TabbarService extends WithEventBus {
 
   private handleChange(currentId, previousId) {
     // 这里的 handleChange 是会在 registerResizeHandle 后才会执行
-    // 这里的判断只是防御行为
     if (!this.resizeHandle) {
       return;
     }

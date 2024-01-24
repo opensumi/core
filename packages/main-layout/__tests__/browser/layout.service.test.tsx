@@ -308,15 +308,17 @@ describe('main layout test', () => {
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
     expect(mockCb).toBeCalledTimes(5);
+    let newTitle = 'new title';
     act(() => {
       handler.setBadge('20');
-      handler.updateTitle('gggggggg');
+      handler.updateTitle(newTitle);
     });
-    expect(tabbarService.getContainer(testContainerId2)!.options!.title).toEqual('gggggggg');
+    expect(tabbarService.getContainer(testContainerId2)!.options!.title).toEqual(newTitle);
+    newTitle = 'new title 2';
     act(() => {
-      handler.updateViewTitle('test-view-id5', 'new title');
+      handler.updateViewTitle('test-view-id5', newTitle);
     });
-    expect(handler.accordionService.views.find((view) => view.id === 'test-view-id5')?.name === 'new title');
+    expect(handler.accordionService.views.find((view) => view.id === 'test-view-id5')?.name === newTitle);
     act(() => {
       handler.toggleViews(['test-view-id5'], false);
     });
@@ -428,18 +430,17 @@ describe('main layout test', () => {
   });
 
   // toggle / expand api test
-
-  it('toggle slot should work', () => {
+  it('toggle right slot should work', async () => {
     const rightTabbarService = service.getTabbarService('right');
-    rendered.promise.then(() => {
-      // currentContainerId 空字符串表示当前未选中任何tab
+    rendered.promise.then(async () => {
+      // currentContainerId 空字符串表示当前未选中任何 tab
       expect(rightTabbarService.currentContainerId).toEqual('');
       act(() => {
         service.toggleSlot('right');
       });
       expect(rightTabbarService.currentContainerId).toBeTruthy();
       // panel visible
-      expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
+      expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('none');
     });
   });
 

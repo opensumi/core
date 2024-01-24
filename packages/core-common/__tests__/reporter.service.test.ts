@@ -1,7 +1,7 @@
+import { sleep } from '@opensumi/ide-utils';
+
 import { ReporterService } from '../src/reporter';
 import { REPORT_HOST } from '../src/types/reporter';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('packages/core-common/__tests__/reporter.test.ts', () => {
   let reporter;

@@ -73,8 +73,6 @@ export interface IMainLayoutService {
   disposeContainer(containerId: string): void;
   expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
-  // @deprecated 提供小程序使用的额外位置控制
-  setFloatSize(size: number): void;
   // force reveal a view ignoring its when clause
   revealView(viewId: string): void;
   getTabbarService(location: string): TabbarService;
