@@ -34,7 +34,7 @@ function parseEnv(env: string) {
 }
 
 async function createUpdateShellPathPromise(): Promise<void> {
-  let pid: number;
+  let pid: number | undefined;
   const timer = setTimeout(() => {
     if (pid) {
       try {

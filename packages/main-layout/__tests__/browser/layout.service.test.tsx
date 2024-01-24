@@ -41,7 +41,7 @@ describe('main layout test', () => {
   const rendered = new Deferred<void>();
   document.getElementById('main')?.appendChild(layoutNode);
 
-  const timeoutIds: Set<NodeJS.Timer> = new Set();
+  const timeoutIds: Set<NodeJS.Timeout> = new Set();
 
   beforeAll(async () => {
     const defered = new Deferred();
@@ -60,7 +60,6 @@ describe('main layout test', () => {
     window.cancelAnimationFrame = () => {
       // mock cancelAnimationFrame
     };
-    // tslint:disable-next-line: only-arrow-functions
     (window as any).ResizeObserver = function () {
       this.observe = () => {};
       this.disconnect = () => {};

@@ -36,7 +36,6 @@ export class IconThemeData implements IIconTheme {
   }
 }
 
-// tslint:disable: forin
 interface IconDefinition {
   iconPath: string;
   fontColor: string;

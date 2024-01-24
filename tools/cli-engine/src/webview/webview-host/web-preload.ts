@@ -45,6 +45,4 @@ class WebIframeChannel implements IWebviewChannel {
   }
 }
 
-/* tslint:disable */
 new WebviewPanelManager(new WebIframeChannel());
-/* tslint:enable */

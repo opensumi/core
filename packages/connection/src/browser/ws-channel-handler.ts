@@ -14,7 +14,7 @@ export class WSChannelHandler {
   private channelCloseEventMap: Map<string, WSCloseInfo> = new Map();
   private logger = console;
   public clientId: string;
-  private heartbeatMessageTimer: NodeJS.Timer | null;
+  private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
 
   LOG_TAG = '[WSChannelHandler]';

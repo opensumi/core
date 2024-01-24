@@ -378,7 +378,6 @@ export const enum FileOperationResult {
  * @throws [`FileExists`](#FileSystemProviderError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
  * @throws [`NoPermissions`](#FileSystemProviderError.NoPermissions) when permissions aren't sufficient.
  */
-/* tslint:disable callable-types */
 export type FileCopyFn = (
   source: Uri,
   destination: Uri,
@@ -389,17 +388,14 @@ export type FileCopyFn = (
  * @param {(string)} uri
  * @returns {Promise<boolean>}
  */
-/* tslint:disable callable-types */
 export type FileAccessFn = (uri: Uri, mode: number) => Promise<boolean>;
 
-/* tslint:disable callable-types */
 export type FileGetCurrentUserHomeFn = () => Promise<FileStat | undefined>;
 
 /**
  * 返回文件的后缀名，目录则返回 'directory'，找不到则返回 undefined
  * @param uri string
  */
-/* tslint:disable callable-types */
 export type FileGetFileTypeFn = (uri: string) => Promise<string | undefined>;
 
 interface ExtendedFileFns {
@@ -430,7 +426,6 @@ export interface IDiskFileProvider extends FileSystemProvider {
   getWatchFileExcludes(): string[] | Thenable<string[]>;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export type IShadowFileProvider = FileSystemProvider;
 
 /**

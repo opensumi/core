@@ -45,7 +45,7 @@ export class ProgressIndicator implements IProgressIndicator {
     this.doDone(false);
   }
 
-  private scheduled: NodeJS.Timer;
+  private scheduled: NodeJS.Timeout;
   private showOnceScheduler(delay?: number) {
     if (typeof delay === 'number') {
       clearTimeout(this.scheduled);

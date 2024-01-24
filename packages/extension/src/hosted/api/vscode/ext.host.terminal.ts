@@ -170,7 +170,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   get shellPath() {
-    return this._defaultProfile?.path || process.env.SHELL || userInfo().shell;
+    return this._defaultProfile?.path || process.env.SHELL || userInfo().shell!;
   }
 
   get onDidChangeTerminalState(): Event<Terminal> {

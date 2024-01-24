@@ -16,6 +16,6 @@
     "vscode-uri": "3.0.2"
   },
   "devDependencies": {
-    "@types/react": "^16.9.33"
+    "@types/react": "^18.0.0"
   }
 }

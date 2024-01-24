@@ -2175,7 +2175,6 @@ declare module 'vscode' {
      * @param line A line number in [0, lineCount).
      * @return A [line](#TextLine).
      */
-    /* tslint:disable-next-line */
     lineAt(line: number): TextLine;
 
     /**
@@ -2189,7 +2188,6 @@ declare module 'vscode' {
      * @param position A position.
      * @return A [line](#TextLine).
      */
-    /* tslint:disable-next-line */
     lineAt(position: Position): TextLine;
 
     /**
@@ -2489,7 +2487,6 @@ declare module 'vscode' {
      * @param disposables An array to which a [disposable](#Disposable) will be added.
      * @return A disposable which unsubscribes the event listener.
      */
-    /* tslint:disable-next-line */
     (listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]): Disposable;
   }
 
@@ -4285,6 +4282,5 @@ interface Thenable<T> {
   * @returns A Promise for the completion of which ever callback is executed.
   */
   then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => TResult | Thenable<TResult>): Thenable<TResult>;
-  /* tslint:disable-next-line */
   then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => void): Thenable<TResult>;
 }

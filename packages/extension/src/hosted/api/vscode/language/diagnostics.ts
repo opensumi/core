@@ -136,7 +136,6 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
     this.proxy.$clearDiagnostics(this.name);
   }
 
-  // tslint:disable-next-line:no-any
   forEach(
     callback: (uri: URI, diagnostics: vscode.Diagnostic[], collection: vscode.DiagnosticCollection) => any,
     thisArg?: any,

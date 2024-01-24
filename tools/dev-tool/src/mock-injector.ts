@@ -2,7 +2,6 @@ import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatu
 import { CommandRegistry } from '@opensumi/ide-core-common';
 
 export class MockInjector extends Injector {
-  // tslint:disable-next-line
   private mockMap = new Map<Token, [any, any][]>();
 
   mock<T extends Token, K extends keyof TokenResult<T>>(token: T, method: K, value: TokenResult<T>[K]) {

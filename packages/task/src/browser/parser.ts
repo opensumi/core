@@ -587,7 +587,6 @@ export class ProblemPatternParser extends Parser {
   }
 
   private validateProblemPattern(values: ProblemPattern[]): boolean {
-    // tslint:disable-next-line: one-variable-per-declaration
     let file = false;
     let message = false;
     let location = false;

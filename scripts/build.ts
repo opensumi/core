@@ -18,7 +18,7 @@ import chalk from 'chalk';
 
     const tscErrorRegex = /error TS\d+:/;
 
-    childProcess.stdout.on('data', (data) => {
+    childProcess.stdout!.on('data', (data) => {
       const str = data.toString();
       if (tscErrorRegex.test(str)) {
         process.stdout.write('\n');

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
 import net from 'net';
 
@@ -54,6 +55,10 @@ export function startDebugAdapter(
   } else {
     throw new Error(`It is not possible to launch debug adapter with the command: ${JSON.stringify(executable)}`);
   }
+
+  assert(childProcess.stdin, 'child process spawn failed');
+  assert(childProcess.stdout, 'child process spawn failed');
+
   return {
     input: childProcess.stdin,
     output: childProcess.stdout,

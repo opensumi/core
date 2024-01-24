@@ -13,7 +13,6 @@ import { FileSystemWatcherServer } from '../../lib/node/recursive/file-service-w
 import { IFileService, FileChangeType } from '../../src/common';
 import { FileServiceModule, FileService } from '../../src/node';
 
-// tslint:disable:variable-name
 describe('FileService', () => {
   let root: URI;
   let fileService: IFileService;
@@ -92,7 +91,6 @@ describe('FileService', () => {
       expect(fse.statSync(FileUri.fsPath(uri)).isFile()).toBe(true);
       expect(fse.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
 
-      // tslint:disable-next-line
       await expectThrowsAsync(
         fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }),
         /unknownencoding/,
