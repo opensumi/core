@@ -651,6 +651,11 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const FORMAT_DOCUMENT: Command = {
+    id: 'editor.action.formatDocument',
+    category: CATEGORY,
+  };
+
   export const FORMAT_DOCUMENT_WITH: Command = {
     id: 'editor.action.formatDocument.multiple',
     category: CATEGORY,

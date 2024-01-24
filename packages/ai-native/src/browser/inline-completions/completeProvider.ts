@@ -150,11 +150,6 @@ class RequestImp {
 
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
       promptCache.setCache(prompt, rs);
-      this.aiCompletionsService.reporterEnd(relationId, {
-        success: true,
-        replytime: +new Date() - beginAlgTime,
-        completionNum: rs.codeModelList.length,
-      });
     }
     let codeModelSize = 0;
     if (rs.codeModelList !== null) {

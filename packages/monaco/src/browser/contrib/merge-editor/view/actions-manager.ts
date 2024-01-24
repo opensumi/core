@@ -1,9 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
-import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 import { MappingManagerService } from '../mapping-manager.service';
 import { DocumentMapping } from '../model/document-mapping';
@@ -284,39 +284,26 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
-    const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(range);
+    let flushRange = this.resultView.flushRange(range) || range;
+
+    const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(flushRange);
+    const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(flushRange);
 
     if (!reverseLeftRange || !reverseRightRange) {
       return;
     }
 
-    const intelligentModel = range.getIntelligentStateModel();
+    const intelligentModel = flushRange.getIntelligentStateModel();
 
     intelligentModel.setLoading(true);
-    this.resultView.updateActions();
+    this.resultView.updateDecorations().updateActions();
 
-    const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
-      range: InnerRange.fromPositions(
-        new Position(range.startLineNumber, 1),
-        new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1),
-      ),
-      options: {
-        isWholeLine: true,
-        description: 'skeleton',
-        className,
-      },
-    });
+    const skeletonDecorationDispose = this.resultView.renderSkeletonDecoration(flushRange, [
+      styles.skeleton_decoration,
+      styles.skeleton_decoration_background,
+    ]);
 
-    const preDecorationsIds = model.deltaDecorations(
-      [],
-      [
-        renderSkeletonDecoration(styles.skeleton_decoration),
-        renderSkeletonDecoration(styles.skeleton_decoration_background),
-      ],
-    );
-
-    const baseValue = this.resultView?.getModel()?.getValueInRange(range.toRange());
+    const baseValue = this.resultView?.getModel()?.getValueInRange(flushRange.toRange());
     const currentValue = this.currentView?.getModel()?.getValueInRange(reverseLeftRange.toRange());
     const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toRange());
 
@@ -324,17 +311,21 @@ export class ActionsManager extends Disposable {
     const resolveConflictResult = await this.resultView.requestAiResolveConflict(codeAssemble);
 
     intelligentModel.setLoading(false);
-    model.deltaDecorations(preDecorationsIds, []);
+    skeletonDecorationDispose();
+
+    flushRange = this.resultView.flushRange(range) || range;
 
     if (resolveConflictResult && resolveConflictResult.data) {
       intelligentModel.setIsComplete(true);
-      this.applyLineRangeEdits([{ range, text: resolveConflictResult.data }]);
+      this.applyLineRangeEdits([{ range: flushRange, text: resolveConflictResult.data }]);
 
       this.resultView.getEditor().focus();
-      await this.commandService.executeCommand('editor.action.formatDocument', this.nutrition?.output.uri);
+      await this.commandService.executeCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT.id, this.nutrition?.output.uri);
+    } else {
+      // 说明 AI 解决冲突接口失败
     }
 
-    this.resultView.updateActions();
+    this.resultView.updateDecorations().updateActions();
   }
 
   private markComplete(range: LineRange): void {

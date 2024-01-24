@@ -96,7 +96,10 @@ const MergeActions: React.FC = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
 
-  const isSupportAiResolve = useCallback(() => aiNativeConfigService.capabilities.supportsConflictResolve, [aiNativeConfigService]);
+  const isSupportAiResolve = useCallback(
+    () => aiNativeConfigService.capabilities.supportsConflictResolve,
+    [aiNativeConfigService],
+  );
 
   const handleApply = useCallback(() => {
     mergeEditorService.accept();
@@ -114,7 +117,7 @@ const MergeActions: React.FC = () => {
     // TODO
   }, [mergeEditorService]);
   const handleAIResolve = useCallback(() => {
-    // TODO
+    mergeEditorService.handleAiResolveConflict();
   }, [mergeEditorService]);
 
   return (

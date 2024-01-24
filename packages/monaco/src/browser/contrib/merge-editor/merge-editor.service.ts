@@ -1,15 +1,15 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   CommandService,
   Disposable,
   EDITOR_COMMANDS,
   Emitter,
   Event,
-  localize,
   MonacoService,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { URI } from '@opensumi/ide-core-common';
+import { URI, runWhenIdle } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -19,7 +19,7 @@ import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
 import { LineRangeMapping } from './model/line-range-mapping';
-import { ACCEPT_CURRENT_ACTIONS, IEditorMountParameter } from './types';
+import { ACCEPT_CURRENT_ACTIONS, AI_RESOLVE_ACTIONS, IEditorMountParameter, REVOKE_ACTIONS } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -201,6 +201,34 @@ export class MergeEditorService extends Disposable {
     } else {
       await saveApply();
     }
+  }
+
+  public async handleAiResolveConflict(): Promise<void> {
+    const allRanges = this.resultView.getAllDiffRanges();
+    const conflictPointRanges = allRanges.filter((range) => range.isMerge && range.type === 'modify');
+
+    for (const range of conflictPointRanges) {
+      runWhenIdle(() => {
+        const newRange = this.resultView.flushRange(range);
+        if (!newRange) {
+          return;
+        }
+
+        this.resultView.launchConflictActionsEvent({
+          range: newRange,
+          action: REVOKE_ACTIONS,
+        });
+      });
+    }
+
+    runWhenIdle(() => {
+      conflictPointRanges.forEach((range) => {
+        this.resultView.launchConflictActionsEvent({
+          range,
+          action: AI_RESOLVE_ACTIONS,
+        });
+      });
+    });
   }
 
   public fireRestoreState(uri: URI): void {
