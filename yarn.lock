@@ -2130,7 +2130,7 @@ __metadata:
     "@opensumi/ide-connection": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/vscode-debugprotocol": 1.49.0-beta.1
-    "@vscode/codicons": 0.0.27
+    "@vscode/codicons": 0.0.35
     ajv: ^6.10.0
     classnames: 2.3.1
     font-awesome: ^4.7.0
@@ -4287,10 +4287,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vscode/codicons@npm:0.0.27":
-  version: 0.0.27
-  resolution: "@vscode/codicons@npm:0.0.27"
-  checksum: 6f79067e200d10a4bf312a5f0f03f51546160eeae13bd17aa6fa7c24739df069b0c1ae3885743da79d2ce3e1e5528fb5ec6d947bd12f7a25c46042b0f029b509
+"@vscode/codicons@npm:0.0.35":
+  version: 0.0.35
+  resolution: "@vscode/codicons@npm:0.0.35"
+  checksum: 7527ef7c1c56d53f931af4984640101bb4ddb7be5761ca5de3d1e5ae1d3ce56cdefb0fbe446d5cb84e6d45f6d9655a32bbc1e1c9e7e30aa78128bd8dcbd88858
   languageName: node
   linkType: hard
 
