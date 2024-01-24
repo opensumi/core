@@ -1,17 +1,17 @@
 import differenceWith from 'lodash/differenceWith';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  CommandService,
-  CommandRegistry,
   Command,
+  CommandRegistry,
+  CommandService,
   ILogServiceClient,
   ILoggerManagerClient,
   SupportLogNamespace,
 } from '@opensumi/ide-core-common';
+import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { SumiCommandPromptManager } from '../prompts/sumi.command';
 
@@ -645,7 +645,9 @@ export class AiSumiService {
   }
 
   async classifyCommand() {
-    const allCommand = this.commandRegistryService.getCommands().filter((command) => command.labelLocalized?.localized || command.label);
+    const allCommand = this.commandRegistryService
+      .getCommands()
+      .filter((command) => command.labelLocalized?.localized || command.label);
     const innerCommands = Object.keys(this.commandGroups).reduce(
       (array, curGroup) => array.concat(this.commandGroups[curGroup]),
       [] as string[],
@@ -705,7 +707,9 @@ export class AiSumiService {
   }
 
   private searchWithoutAI(input: string) {
-    return this.commandRegistryService.getCommands().find((command) => command.labelLocalized?.localized === input || command.label === input);
+    return this.commandRegistryService
+      .getCommands()
+      .find((command) => command.labelLocalized?.localized === input || command.label === input);
   }
 
   public async searchGroup(input: string) {
@@ -753,9 +757,7 @@ export class AiSumiService {
 
   private async requestCommand(commands: Command[], question: string) {
     const prompt = this.promptManager.findCommand({
-      commands: commands
-        .map((c) => `{${c.id}}-{${c.labelLocalized?.localized! || c.label || ''}}`)
-        .join('\n'),
+      commands: commands.map((c) => `{${c.id}}-{${c.labelLocalized?.localized! || c.label || ''}}`).join('\n'),
       question,
     });
 

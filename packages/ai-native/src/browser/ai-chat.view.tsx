@@ -1,21 +1,15 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { MessageList, ITextMessageProps, SystemMessage } from 'react-chat-elements';
+import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elements';
 
-import { getIcon, useInjectable, QUICK_OPEN_COMMANDS, IAIReporter } from '@opensumi/ide-core-browser';
+import { IAIReporter, QUICK_OPEN_COMMANDS, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
-import 'react-chat-elements/dist/main.css';
+import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
+import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import {
-  AISerivceType,
-  IChatMessageStructure,
-  InstructionEnum,
-  IAiBackServiceResponse,
-  AiResponseTips,
-} from '../common';
+import { AISerivceType, AiResponseTips, IChatMessageStructure, InstructionEnum } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -27,9 +21,11 @@ import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
-import { MsgStreamManager, EMsgStreamStatus } from './model/msg-stream-manager';
+import { EMsgStreamStatus, MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
+
+import 'react-chat-elements/dist/main.css';
 
 interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
   role: 'user' | 'ai';

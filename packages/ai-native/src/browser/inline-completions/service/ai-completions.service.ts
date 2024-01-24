@@ -1,10 +1,15 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { CompletionRT, IAIReporter, IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
+import {
+  AiBackSerivcePath,
+  CompletionResultModel,
+  IAiBackService,
+  IAiReportCompletionOption,
+} from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AiBackSerivcePath, IAiBackService, IAiReportCompletionOption } from '../../../common';
-import { IAiMiddleware, IProvideInlineCompletionsSignature } from '../../types';
-import { CompletionRequestBean, CompletionResultModel } from '../model/competionModel';
+import { IProvideInlineCompletionsSignature } from '../../types';
+import { CompletionRequestBean } from '../model/competionModel';
 
 @Injectable()
 export class AiCompletionsService extends Disposable {

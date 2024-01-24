@@ -1,7 +1,15 @@
 import debounce from 'lodash/debounce';
 
-import { Injectable, Injector, Autowired } from '@opensumi/di';
-import { AiNativeConfigService, ConstructorOf, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
+import {
+  AiNativeConfigService,
+  CancellationTokenSource,
+  ConstructorOf,
+  Emitter,
+  Event,
+  MonacoService,
+} from '@opensumi/ide-core-browser';
+import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -14,18 +22,18 @@ import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
-  EditorViewType,
-  DECORATIONS_CLASSNAME,
-  TActionsType,
-  ADDRESSING_TAG_CLASSNAME,
-  CONFLICT_ACTIONS_ICON,
-  IActionsDescription,
-  REVOKE_ACTIONS,
-  ITimeMachineMetaData,
-  ETurnDirection,
   ACCEPT_COMBINATION_ACTIONS,
-  IConflictActionsEvent,
+  ADDRESSING_TAG_CLASSNAME,
   AI_RESOLVE_ACTIONS,
+  CONFLICT_ACTIONS_ICON,
+  DECORATIONS_CLASSNAME,
+  ETurnDirection,
+  EditorViewType,
+  IActionsDescription,
+  IConflictActionsEvent,
+  ITimeMachineMetaData,
+  REVOKE_ACTIONS,
+  TActionsType,
 } from '../../types';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 import { StopWidget } from '../../widget/stop-widget';
@@ -92,9 +100,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
-
   private resolveResultWidgetManager: IWidgetFactory;
   private stopWidgetManager: IWidgetFactory;
+  private isFirstInputComputeDiff = true;
+  private cancelIndicator = new CancellationTokenSource();
+
+  protected aiBackService: IAiBackService;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -106,8 +117,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
-  private isFirstInputComputeDiff = true;
-
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
@@ -115,6 +124,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
     this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
+
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      this.aiBackService = injector.get(AiBackSerivcePath);
+    }
   }
 
   public hideResolveResultWidget(lineNumber?: number) {
@@ -123,6 +136,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public hideStopWidget(lineNumber?: number) {
     this.stopWidgetManager.hideWidget(lineNumber);
+  }
+
+  public async requestAiResolveConflict(codePromptBean: string): Promise<IAiBackServiceResponse | undefined> {
+    if (this.aiBackService) {
+      return this.aiBackService.request(codePromptBean, { type: 'resolveConflict' }, this.cancelIndicator.token);
+    }
+
+    return;
+  }
+
+  public cancelRequestToken() {
+    this.cancelIndicator.cancel();
+    this.cancelIndicator = new CancellationTokenSource();
   }
 
   private initListenEvent(): void {

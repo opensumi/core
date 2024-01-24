@@ -1,34 +1,19 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { AiBackSerivcePath, IAiBackService, IAiBackServiceOption } from '@opensumi/ide-core-common/lib/ai-native';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import {
-  AISerivceType,
-  AiBackSerivcePath,
-  IAiBackService,
-  IAiBackServiceResponse,
-  IAiBackServiceOption,
-  IChatMessageStructure,
-  InstructionEnum,
-} from '../common';
+import { AISerivceType, IChatMessageStructure, InstructionEnum } from '../common';
 
 import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 
-export interface IAiSearchResponse extends IAiBackServiceResponse {
-  answer?: string;
-}
-
-export interface IAiStreamMessageService<T extends IAiBackServiceResponse<string>> extends IAiBackService<T> {
-  destroyStreamRequest?: (sessionId: string) => Promise<void>;
-}
-
 @Injectable()
 export class AiChatService extends Disposable {
   @Autowired(AiBackSerivcePath)
-  public aiBackService: IAiStreamMessageService<IAiSearchResponse>;
+  public aiBackService: IAiBackService;
 
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;

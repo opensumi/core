@@ -1,19 +1,13 @@
 import { isDefined, uuid } from '@opensumi/ide-core-common';
+import { RPCService } from '@opensumi/ide-core-common/lib/proxy';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { MessageType, ResponseStatus, ICapturedMessage, getCapturer } from './utils';
+import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from './utils';
+
+export * from '@opensumi/ide-core-common/lib/proxy';
 
 export interface ILogger {
   warn(...args: any[]): void;
-}
-
-export abstract class RPCService<T = any> {
-  rpcClient?: T[];
-  rpcRegistered?: boolean;
-  register?(): () => Promise<T>;
-  get client() {
-    return this.rpcClient ? this.rpcClient[0] : undefined;
-  }
 }
 
 export const NOTREGISTERMETHOD = '$$NOTREGISTERMETHOD';
