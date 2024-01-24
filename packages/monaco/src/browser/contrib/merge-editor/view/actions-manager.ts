@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
@@ -10,17 +10,17 @@ import { DocumentMapping } from '../model/document-mapping';
 import { InnerRange } from '../model/inner-range';
 import { LineRange } from '../model/line-range';
 import {
-  IConflictActionsEvent,
-  ACCEPT_CURRENT_ACTIONS,
-  IGNORE_ACTIONS,
-  ADDRESSING_TAG_CLASSNAME,
-  TActionsType,
   ACCEPT_COMBINATION_ACTIONS,
-  REVOKE_ACTIONS,
-  IActionsProvider,
-  ETurnDirection,
-  APPEND_ACTIONS,
+  ACCEPT_CURRENT_ACTIONS,
+  ADDRESSING_TAG_CLASSNAME,
   AI_RESOLVE_ACTIONS,
+  APPEND_ACTIONS,
+  ETurnDirection,
+  IActionsProvider,
+  IConflictActionsEvent,
+  IGNORE_ACTIONS,
+  REVOKE_ACTIONS,
+  TActionsType,
 } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';

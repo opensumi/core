@@ -1,12 +1,9 @@
 import { CancellationToken, MaybePromise } from '@opensumi/ide-core-common';
-import { IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
-import { CompletionResultModel } from '@opensumi/ide-core-common/lib/ai-native';
+import { CompletionResultModel, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
-
 
 export type InlineChatOperationalRenderType = 'button' | 'dropdown';
 

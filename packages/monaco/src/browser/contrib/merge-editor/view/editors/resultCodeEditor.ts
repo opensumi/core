@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 
-import { Injectable, Injector, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
   AiNativeConfigService,
   CancellationTokenSource,
@@ -22,18 +22,18 @@ import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
-  EditorViewType,
-  DECORATIONS_CLASSNAME,
-  TActionsType,
-  ADDRESSING_TAG_CLASSNAME,
-  CONFLICT_ACTIONS_ICON,
-  IActionsDescription,
-  REVOKE_ACTIONS,
-  ITimeMachineMetaData,
-  ETurnDirection,
   ACCEPT_COMBINATION_ACTIONS,
-  IConflictActionsEvent,
+  ADDRESSING_TAG_CLASSNAME,
   AI_RESOLVE_ACTIONS,
+  CONFLICT_ACTIONS_ICON,
+  DECORATIONS_CLASSNAME,
+  ETurnDirection,
+  EditorViewType,
+  IActionsDescription,
+  IConflictActionsEvent,
+  ITimeMachineMetaData,
+  REVOKE_ACTIONS,
+  TActionsType,
 } from '../../types';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 import { StopWidget } from '../../widget/stop-widget';

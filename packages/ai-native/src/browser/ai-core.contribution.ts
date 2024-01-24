@@ -1,24 +1,24 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
+  AiNativeConfigService,
+  ClientAppContribution,
   CommandContribution,
   CommandRegistry,
+  CommandService,
   ComponentContribution,
   ComponentRegistry,
-  Domain,
-  URI,
-  getIcon,
-  SlotRendererContribution,
-  SlotRendererRegistry,
-  SlotLocation,
   ContributionProvider,
-  ClientAppContribution,
-  ISettingSection,
+  Domain,
   ISettingGroup,
+  ISettingSection,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
-  CommandService,
-  AiNativeConfigService,
+  SlotLocation,
+  SlotRendererContribution,
+  SlotRendererRegistry,
+  URI,
+  getIcon,
 } from '@opensumi/ide-core-browser';
 import {
   AI_EXPLAIN_DEBUG_COMMANDS,
@@ -30,12 +30,9 @@ import {
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { AiBackSerivcePath } from '@opensumi/ide-core-common/lib/ai-native';
-import { IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
+import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
-import { IEditor } from '@opensumi/ide-editor';
-import { ResourceService } from '@opensumi/ide-editor';
-import { IResource } from '@opensumi/ide-editor';
+import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
 import {
   BrowserEditorContribution,
   IEditorDocumentModelContentRegistry,

@@ -2,13 +2,13 @@ import { Autowired } from '@opensumi/di';
 import { InstructionEnum } from '@opensumi/ide-ai-native';
 import { AiChatService } from '@opensumi/ide-ai-native/lib/browser/ai-chat.service';
 import {
+  AiNativeCoreContribution,
+  CancelResponse,
+  ErrorResponse,
+  IAiMiddleware,
   IAiRunFeatureRegistry,
   IInlineChatFeatureRegistry,
-  AiNativeCoreContribution,
   ReplyResponse,
-  ErrorResponse,
-  CancelResponse,
-  IAiMiddleware,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { Domain } from '@opensumi/ide-core-browser';
 import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';

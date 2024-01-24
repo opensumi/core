@@ -2,7 +2,7 @@ import { isDefined, uuid } from '@opensumi/ide-core-common';
 import { RPCService } from '@opensumi/ide-core-common/lib/proxy';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { MessageType, ResponseStatus, ICapturedMessage, getCapturer } from './utils';
+import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from './utils';
 
 export * from '@opensumi/ide-core-common/lib/proxy';
 

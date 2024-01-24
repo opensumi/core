@@ -11,7 +11,7 @@ import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/render
 import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
+import { Color, IThemeData, IThemeStore, RGBA, ThemeContribution, registerColor } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import { IAiChatService } from '../common';

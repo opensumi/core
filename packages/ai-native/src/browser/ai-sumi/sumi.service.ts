@@ -1,17 +1,15 @@
 import differenceWith from 'lodash/differenceWith';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  CommandService,
-  CommandRegistry,
   Command,
+  CommandRegistry,
+  CommandService,
   ILogServiceClient,
   ILoggerManagerClient,
   SupportLogNamespace,
 } from '@opensumi/ide-core-common';
-import { AiBackSerivcePath } from '@opensumi/ide-core-common/lib/ai-native';
-import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
-import { IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
+import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { AiChatService } from '../ai-chat.service';
