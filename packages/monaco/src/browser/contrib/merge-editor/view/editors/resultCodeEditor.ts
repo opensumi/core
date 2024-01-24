@@ -1,7 +1,14 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable, Injector } from '@opensumi/di';
-import { AINativeConfigService, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  CancellationTokenSource,
+  Emitter,
+  Event,
+  MonacoService,
+} from '@opensumi/ide-core-browser';
+import { AIBackSerivcePath, IAIBackService, IAIBackServiceResponse } from '@opensumi/ide-core-common';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -91,9 +98,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
-
   private resolveResultWidgetManager: IWidgetFactory;
   private stopWidgetManager: IWidgetFactory;
+  private isFirstInputComputeDiff = true;
+  private cancelIndicator = new CancellationTokenSource();
+
+  protected aiBackService: IAIBackService;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -105,8 +115,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
-  private isFirstInputComputeDiff = true;
-
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
@@ -114,6 +122,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
     this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
+
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      this.aiBackService = injector.get(AIBackSerivcePath);
+    }
   }
 
   public hideResolveResultWidget(lineNumber?: number) {
@@ -122,6 +134,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public hideStopWidget(lineNumber?: number) {
     this.stopWidgetManager.hideWidget(lineNumber);
+  }
+
+  public async requestAiResolveConflict(codePromptBean: string): Promise<IAIBackServiceResponse | undefined> {
+    if (this.aiBackService) {
+      return this.aiBackService.request(codePromptBean, { type: 'resolveConflict' }, this.cancelIndicator.token);
+    }
+
+    return;
+  }
+
+  public cancelRequestToken() {
+    this.cancelIndicator.cancel();
+    this.cancelIndicator = new CancellationTokenSource();
   }
 
   private initListenEvent(): void {
