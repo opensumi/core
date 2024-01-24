@@ -1,19 +1,5 @@
+import { CompletionResultModel } from '@opensumi/ide-core-common/lib/ai-native';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
-/**
- * 补全模型
- */
-export interface CodeModel {
-  content: string;
-}
-/**
- * 补全返回结果对象
- */
-export interface CompletionResultModel {
-  sessionId: string;
-  codeModelList: Array<CodeModel>;
-  isCancel?: boolean;
-}
 
 /**
  * 缓存的结果

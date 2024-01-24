@@ -26,11 +26,12 @@ import {
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTET,
   AI_INLINE_COMPLETION_VISIBLE,
-  AI_RESOLVE_CONFLICT_COMMANDS,
   AI_RUN_DEBUG_COMMANDS,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AiBackSerivcePath } from '@opensumi/ide-core-common/lib/ai-native';
+import { IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor } from '@opensumi/ide-editor';
 import { ResourceService } from '@opensumi/ide-editor';
@@ -48,8 +49,6 @@ import {
   AiNativeSettingSectionsId,
   Ai_CHAT_CONTAINER_VIEW_ID,
   InstructionEnum,
-  AiBackSerivcePath,
-  IAiBackService,
 } from '../common';
 
 import { AiChatService } from './ai-chat.service';
@@ -274,11 +273,6 @@ export class AiNativeBrowserContribution
           this.aiCompletionsService.setVisibleCompletion(false);
         }
       },
-    });
-
-    commands.registerCommand(AI_RESOLVE_CONFLICT_COMMANDS, {
-      execute: async (codePromptBean: string) =>
-        this.aiBackService.request(codePromptBean, { type: 'resolveConflict' }),
     });
   }
   // TerminalClient

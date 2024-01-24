@@ -1,9 +1,7 @@
 import { Provider, Injectable } from '@opensumi/di';
+import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
+import { BaseAiBackService as AiBackService } from '@opensumi/ide-core-common/lib/ai-native/base-back.service';
 import { NodeModule } from '@opensumi/ide-core-node';
-
-import { AiBackSerivcePath, AiBackSerivceToken } from '../common';
-
-import { AiBackService } from './ai.service';
 // import { AiBackService } from './ai-gpt.back.service';
 
 @Injectable()

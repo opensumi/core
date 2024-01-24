@@ -31,10 +31,3 @@ export const AI_INLINE_COMPLETION_VISIBLE = {
 export const AI_INLINE_COMPLETION_REPORTET = {
   id: 'ai.inline.completion.reporter',
 };
-
-/**
- * 调用 AI 智能解决冲突
- */
-export const AI_RESOLVE_CONFLICT_COMMANDS = {
-  id: 'ai.conflict.resolve',
-};

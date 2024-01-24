@@ -18,7 +18,7 @@ import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
 export class ResolveResultWidget extends BaseInlineContentWidget {
   protected uid: string = uuid(4);
 
-  constructor(private readonly codeEditor: ResultCodeEditor, private readonly lineRange: LineRange) {
+  constructor(protected readonly codeEditor: ResultCodeEditor, protected readonly lineRange: LineRange) {
     super(codeEditor.editor);
   }
 

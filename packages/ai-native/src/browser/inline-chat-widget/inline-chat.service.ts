@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event, CommandService } from '@opensumi/ide-core-common';
-
-import { AiBackSerivcePath, IAiBackService } from '../../common/index';
+import { AiBackSerivcePath } from '@opensumi/ide-core-common/lib/ai-native';
+import { IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 
 export const enum EInlineChatStatus {
   READY,

@@ -14,7 +14,10 @@ export class StopWidget extends ResolveResultWidget {
       {
         icon: 'circle-pause',
         text: '停止',
-        onClick: () => {},
+        onClick: () => {
+          this.codeEditor.cancelRequestToken();
+          this.codeEditor.hideStopWidget(this.lineRange.startLineNumber);
+        },
       },
     ];
   }

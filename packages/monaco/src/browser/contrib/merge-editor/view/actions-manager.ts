@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { AI_RESOLVE_CONFLICT_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
@@ -322,15 +321,12 @@ export class ActionsManager extends Disposable {
     const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toRange());
 
     const codeAssemble = `<<<<<<< HEAD\n${currentValue}\n||||||| base\n${baseValue}\n>>>>>>>\n${incomingValue}`;
-    const resolveConflictResult: any = await this.commandService.executeCommand(
-      AI_RESOLVE_CONFLICT_COMMANDS.id,
-      codeAssemble,
-    );
+    const resolveConflictResult = await this.resultView.requestAiResolveConflict(codeAssemble);
 
     intelligentModel.setLoading(false);
     model.deltaDecorations(preDecorationsIds, []);
 
-    if (resolveConflictResult.data) {
+    if (resolveConflictResult && resolveConflictResult.data) {
       intelligentModel.setIsComplete(true);
       this.applyLineRangeEdits([{ range, text: resolveConflictResult.data }]);
 

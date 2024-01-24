@@ -8,12 +8,13 @@ import {
 } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { AiBackSerivcePath, AiBackSerivceToken, IAiChatService } from '../common';
+import { IAiChatService } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';

@@ -1,6 +1,6 @@
 import { Injectable } from '@opensumi/di';
+import { IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { IAiBackService } from '../../common';
 import { AiRunHandler, IAiRunAnswerComponentProps, IAiRunFeatureRegistry } from '../types';
 
 @Injectable()
