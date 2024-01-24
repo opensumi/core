@@ -11,6 +11,7 @@ import { IConnectionShape } from './connection/types';
 import { oneOf } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
 import { Connection } from './rpc/connection';
+import type { ProtocolRepository } from './rpc/protocol-repository';
 import { ILogger } from './types';
 
 export interface IWebSocket {
@@ -245,8 +246,8 @@ export class WSChannel implements IWebSocket {
   createMessageConnection() {
     return createWebSocketConnection(this);
   }
-  createConnection() {
-    return new Connection({
+  createConnection(protocolRepository: ProtocolRepository) {
+    const conn = new Connection({
       onceClose: (cb) => {
         const toRemove = this.onceClose(cb);
         return {
@@ -267,6 +268,8 @@ export class WSChannel implements IWebSocket {
         this.sendBinary(data);
       },
     });
+    conn.setProtocolRepository(protocolRepository);
+    return conn;
   }
   dispose() {
     this.emitter.dispose();

@@ -89,16 +89,17 @@ export class RPCServiceCenter {
 
     const invoker = new Invoker(this.protocolRepository);
 
-    const rpcProxy = new ProxyLegacy(this.serviceRunner, this.logger);
+    const legacy = new ProxyLegacy(this.serviceRunner, this.logger);
     const messageConnection = channel.createMessageConnection();
-    rpcProxy.listen(messageConnection);
+    legacy.listen(messageConnection);
 
-    const sumiRPC = new ProxySumi(this.serviceRunner, this.logger);
-    const connection = channel.createConnection();
-    sumiRPC.listen(connection);
+    const sumi = new ProxySumi(this.serviceRunner, this.logger);
+    const connection = channel.createConnection(this.protocolRepository);
 
-    invoker.setLegacyProxy(rpcProxy);
-    invoker.setSumiProxy(sumiRPC);
+    sumi.listen(connection);
+
+    invoker.setLegacyProxy(legacy);
+    invoker.setSumiProxy(sumi);
 
     this.invokers.push(invoker);
 
