@@ -1,0 +1,14 @@
+[build]
+
+builder = "NIXPACKS"
+buildCommand = "yarn build:all"
+
+nixpacksPlan = { "providers" = ["...", "python"] }
+nixpacksConfigPath = "nixpacks.toml"
+
+[deploy]
+numReplicas = 1
+startCommand = "yarn start"
+sleepApplication = false
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
