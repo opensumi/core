@@ -47,10 +47,9 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
   externals: [
-    (context, request, callback) => {
+    ({ request }, callback) => {
       if (['node-pty', '@parcel/watcher', 'spdlog', 'nsfw', 'electron'].includes(request)) {
         return callback(null, 'commonjs ' + request);
       }

@@ -1,11 +1,15 @@
 const path = require('path');
 
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const webpack = require('webpack');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const srcDir = path.join(__dirname, './src');
 const distDir = path.join(__dirname, './dist');
 
+/**
+ * @type {import('webpack').Configuration}
+ */
 module.exports = {
   entry: path.join(srcDir, './index.ts'),
   target: 'node',
@@ -13,7 +17,7 @@ module.exports = {
     filename: 'cli.js',
     path: distDir,
   },
-  devtool: 'null',
+  devtool: false,
   mode: 'production',
   node: false,
   resolve: {
@@ -40,6 +44,6 @@ module.exports = {
   resolveLoader: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
+  plugins: [!process.env.CI && new webpack.ProgressPlugin()].filter(Boolean),
 };

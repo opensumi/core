@@ -12,7 +12,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "webpack --config=webpack.config.js --progress"
+    "build": "webpack --config=webpack.config.js"
   },
   "repository": {
     "type": "git",
