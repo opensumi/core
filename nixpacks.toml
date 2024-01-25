@@ -1,6 +1,14 @@
+providers = ["...", "python"]
+
+[variables]
+NODE_ENV = 'production'
+
 [phases.setup]
 nixPkgs = ["..."]
 aptPkgs = ["...", "wget", "build-essential", "libsecret-1-dev"]
 
-[variables]
-NODE_ENV = 'production'
+[phases.build]
+cmds = ['yarn run build:all']
+
+[start]
+cmd = 'yarn run start:prod'
