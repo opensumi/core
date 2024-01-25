@@ -1,3 +1,3 @@
 [phases.setup]
-nixPkgs = ["...", "libsecret"]
-aptPkgs = ["...", "wget"]
+nixPkgs = ["..."]
+aptPkgs = ["...", "wget", "libsecret-1-dev"]
