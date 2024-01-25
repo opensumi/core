@@ -8,7 +8,7 @@ nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
 numReplicas = 1
-startCommand = "yarn start"
+startCommand = "yarn start:prod"
 sleepApplication = false
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

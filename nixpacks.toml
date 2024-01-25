@@ -1,3 +1,6 @@
 [phases.setup]
 nixPkgs = ["..."]
-aptPkgs = ["...", "wget", "libsecret-1-dev"]
+aptPkgs = ["...", "wget", "build-essential", "libsecret-1-dev"]
+
+[variables]
+NODE_ENV = 'production'
