@@ -16,7 +16,7 @@ export class StopWidget extends ResolveResultWidget {
         text: '停止',
         onClick: () => {
           this.codeEditor.cancelRequestToken();
-          this.codeEditor.hideStopWidget(this.lineRange.startLineNumber);
+          this.codeEditor.hideStopWidget(this.lineRange.id);
         },
       },
     ];

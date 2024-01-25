@@ -117,7 +117,7 @@ const MergeActions: React.FC = () => {
     // TODO
   }, [mergeEditorService]);
   const handleAIResolve = useCallback(() => {
-    // TODO
+    mergeEditorService.handleAiResolveConflict();
   }, [mergeEditorService]);
 
   return (

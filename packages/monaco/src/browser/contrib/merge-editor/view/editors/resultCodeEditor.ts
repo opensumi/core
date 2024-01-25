@@ -11,7 +11,10 @@ import {
 import { AIBackSerivcePath, IAIBackService, IAIBackServiceResponse } from '@opensumi/ide-core-common';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
-import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import {
+  IModelDecorationOptions,
+  IModelDeltaDecoration,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { DocumentMapping } from '../../model/document-mapping';
@@ -38,13 +41,15 @@ import { StopWidget } from '../../widget/stop-widget';
 import { BaseCodeEditor } from './baseCodeEditor';
 
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 interface IWidgetFactory {
-  hideWidget(lineNumber?: number): void;
+  hideWidget(id?: string): void;
   addWidget(range: LineRange): void;
+  hasWidget(range: LineRange): boolean;
 }
 
 class WidgetFactory implements IWidgetFactory {
-  private widgetMap: Map<number, ResolveResultWidget>;
+  private widgetMap: Map<string, ResolveResultWidget>;
 
   constructor(
     private contentWidget: typeof ResolveResultWidget,
@@ -54,12 +59,16 @@ class WidgetFactory implements IWidgetFactory {
     this.widgetMap = new Map();
   }
 
-  public hideWidget(lineNumber?: number): void {
-    if (lineNumber) {
-      const widget = this.widgetMap.get(lineNumber);
+  hasWidget(range: LineRange): boolean {
+    return this.widgetMap.get(range.id) !== undefined;
+  }
+
+  public hideWidget(id?: string): void {
+    if (id) {
+      const widget = this.widgetMap.get(id);
       if (widget) {
         widget.hide();
-        this.widgetMap.delete(lineNumber);
+        this.widgetMap.delete(id);
       }
       return;
     }
@@ -71,8 +80,8 @@ class WidgetFactory implements IWidgetFactory {
   }
 
   public addWidget(range: LineRange): void {
-    const lineNumber = range.startLineNumber;
-    if (this.widgetMap.has(lineNumber)) {
+    const id = range.id;
+    if (this.widgetMap.has(id)) {
       return;
     }
 
@@ -81,7 +90,7 @@ class WidgetFactory implements IWidgetFactory {
     const widget = this.injector.get(this.contentWidget, [this.editor, range]);
     widget.show({ position });
 
-    this.widgetMap.set(lineNumber, widget);
+    this.widgetMap.set(id, widget);
   }
 }
 
@@ -128,12 +137,35 @@ export class ResultCodeEditor extends BaseCodeEditor {
     }
   }
 
-  public hideResolveResultWidget(lineNumber?: number) {
-    this.resolveResultWidgetManager.hideWidget(lineNumber);
+  public hideResolveResultWidget(id?: string) {
+    this.resolveResultWidgetManager.hideWidget(id);
   }
 
-  public hideStopWidget(lineNumber?: number) {
-    this.stopWidgetManager.hideWidget(lineNumber);
+  public hideStopWidget(id?: string) {
+    this.stopWidgetManager.hideWidget(id);
+  }
+
+  public renderSkeletonDecoration(range: LineRange, classNames: string[]): () => void {
+    const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
+      range: InnerRange.fromPositions(
+        new Position(range.startLineNumber, 1),
+        new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1),
+      ),
+      options: {
+        isWholeLine: true,
+        description: 'skeleton',
+        className,
+      },
+    });
+
+    const preDecorationsIds = this.getModel()!.deltaDecorations(
+      [],
+      classNames.map((cls) => renderSkeletonDecoration(cls)),
+    );
+
+    return () => {
+      this.getModel()!.deltaDecorations(preDecorationsIds, []);
+    };
   }
 
   public async requestAiResolveConflict(codePromptBean: string): Promise<IAIBackServiceResponse | undefined> {
@@ -147,6 +179,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
   public cancelRequestToken() {
     this.cancelIndicator.cancel();
     this.cancelIndicator = new CancellationTokenSource();
+  }
+
+  /**
+   * 根据 id 获取最新的 range 数据
+   */
+  public flushRange(range: LineRange): LineRange | undefined {
+    const id = range.id;
+    const allRanges = this.getAllDiffRanges();
+    return allRanges.find((range) => range.id === id);
   }
 
   private initListenEvent(): void {
@@ -189,7 +230,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
               if (intelligentStateModel.isComplete) {
                 this.resolveResultWidgetManager.addWidget(targetInRange);
               } else {
-                this.hideResolveResultWidget(targetInRange.startLineNumber);
+                this.hideResolveResultWidget(targetInRange.id);
               }
             } else {
               this.hideResolveResultWidget();
@@ -275,7 +316,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
   }
 
-  private getAllDiffRanges(): LineRange[] {
+  public getAllDiffRanges(): LineRange[] {
     // 去重相同 id 或位置一样的 line range
     return distinct(
       this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
@@ -484,15 +525,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
     if (isAiConflictResolve) {
-      changesResult.forEach((range) => {
-        const model = range.getIntelligentStateModel();
+      changesResult
+        .filter((range) => range.isMerge && range.type === 'modify')
+        .forEach((range) => {
+          const model = range.getIntelligentStateModel();
 
-        if (model.isLoading) {
-          this.stopWidgetManager.addWidget(range);
-        } else {
-          this.hideStopWidget(range.startLineNumber);
-        }
-      });
+          this.hideStopWidget(range.id);
+
+          if (model.isLoading) {
+            this.stopWidgetManager.addWidget(range);
+          }
+        });
     }
     return [changesResult, innerChangesResult];
   }
@@ -501,28 +544,29 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
-    const renderClassName = (range: LineRange) => {
+    const isAiComplete = () => {
       const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
       const intelligentModel = range.getIntelligentStateModel();
 
       if (isAiConflictResolve && intelligentModel.isComplete) {
-        return DECORATIONS_CLASSNAME.ai_resolve_complete;
+        return true;
       }
 
-      return '';
+      return false;
     };
 
     return {
       linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         DECORATIONS_CLASSNAME.stretch_right,
+        isAiComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete_lines_decorations : '',
         range.turnDirection === ETurnDirection.CURRENT || range.turnDirection === ETurnDirection.BOTH
           ? DECORATIONS_CLASSNAME.stretch_left
           : '',
       ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
-        renderClassName(range),
+        isAiComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete : '',
         range.turnDirection === ETurnDirection.CURRENT
           ? DECORATIONS_CLASSNAME.stretch_left
           : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, DECORATIONS_CLASSNAME.stretch_right),
