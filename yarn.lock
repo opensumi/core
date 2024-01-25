@@ -2489,6 +2489,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-extension@workspace:packages/extension"
   dependencies:
+    "@opensumi/ide-ai-native": "workspace:*"
     "@opensumi/ide-comments": "workspace:*"
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-connection": "workspace:*"

@@ -2,14 +2,21 @@ import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elements';
 
-import { IAIReporter, QUICK_OPEN_COMMANDS, getIcon, useInjectable } from '@opensumi/ide-core-browser';
-import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import {
+  getIcon,
+  useInjectable,
+  QUICK_OPEN_COMMANDS,
+  getExternalIcon,
+  CODICON_OWNER,
+  IAIReporter,
+} from '@opensumi/ide-core-browser';
+import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
+import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AISerivceType, AiResponseTips, IChatMessageStructure, InstructionEnum } from '../common';
+import { AISerivceType, IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -19,6 +26,8 @@ import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
+import { ChatReply } from './components/ChatReply';
+import { Markdown } from './components/Markdown';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from './model/msg-stream-manager';
@@ -40,6 +49,7 @@ interface ReplayComponentParam {
   aiChatService: AiChatService;
   aiRunService: AiRunService;
   aiReporter: IAIReporter;
+  chatAgentService: IChatAgentService;
   relationId: string;
   startTime: number;
   isRetry?: boolean;
@@ -60,6 +70,92 @@ const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
+const InitMsgComponent = () => {
+  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+
+  const [sampleQuestions, setSampleQuestions] = React.useState<
+    { icon: string; title: string; message: string; tooltip?: string }[]
+  >(() => [
+    {
+      icon: getIcon('send2'),
+      title: '生成 Java 快速排序算法',
+      message: '生成 Java 快速排序算法',
+    },
+  ]);
+
+  React.useEffect(() => {
+    const disposer = chatAgentService.onDidChangeAgents(async () => {
+      const sampleQuestions = await chatAgentService.getAllSampleQuestions();
+      if (!sampleQuestions.length) {
+        return;
+      }
+      const lists = sampleQuestions.map((item) => {
+        let { title, message, tooltip } = item;
+        if (!title) {
+          return {
+            icon: '',
+            title: message,
+            message,
+            tooltip,
+          };
+        }
+        let icon = '';
+        const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
+        if (iconMatched) {
+          const [matchedStr, owner, name, modifier] = iconMatched;
+          const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
+          icon = getExternalIcon(name, iconOwner);
+          if (modifier) {
+            icon += ` ${modifier.slice(1)}`;
+          }
+          title = title.slice(matchedStr.length);
+        }
+        return {
+          icon,
+          title,
+          message,
+          tooltip,
+        };
+      });
+      setSampleQuestions((state) => [...state, ...lists]);
+    });
+    return () => disposer.dispose();
+  }, []);
+
+  return (
+    <div>
+      <span className={styles.chat_container_content}>
+        嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
+      </span>
+      <span className={styles.chat_container_content}>您可以提问我一些关于代码的问题</span>
+      <div className={styles.chat_container_content} style={{ display: 'flex', flexDirection: 'column' }}>
+        {sampleQuestions.map((data: any, index) => {
+          const node = (
+            <a
+              href='javascript:void(0)'
+              style={{ marginBottom: '4px' }}
+              onClick={() => {
+                aiChatService.launchChatMessage(chatAgentService.parseMessage(data.message));
+              }}
+            >
+              {data.icon ? <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} /> : ''}
+              <span>{data.title}</span>
+            </a>
+          );
+          return data.tooltip ? (
+            <Tooltip title={data.tooltip} key={index}>
+              {node}
+            </Tooltip>
+          ) : (
+            <React.Fragment key={index}>{node}</React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const AiChatView = observer(() => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
@@ -69,6 +165,7 @@ export const AiChatView = observer(() => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+  const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const isAutoScroll = React.useRef<boolean>(false);
 
@@ -76,9 +173,14 @@ export const AiChatView = observer(() => {
   const [loading, setLoading] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
 
+  // TODO: theme 基于 command 改造成 command 形式
+  const [agentId, setAgentId] = React.useState('');
+  const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
 
   const [state, updateState] = React.useState<any>();
+
+  const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
 
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
@@ -113,37 +215,6 @@ export const AiChatView = observer(() => {
     }
   }, [aiProjectGenerateService.requirements]);
 
-  const InitMsgComponent = () => {
-    const lists = [
-      { icon: getIcon('send2'), text: '生成 Java 快速排序算法', prompt: '生成 Java 快速排序算法' },
-      { icon: getIcon('branches'), text: '提交代码', prompt: `${InstructionEnum.aiSumiKey}提交代码` },
-    ];
-
-    return (
-      <div className={styles.chat_head}>
-        <div className={styles.chat_container_des}>
-          <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
-          嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
-        </div>
-        <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题，例如：</div>
-        <div className={styles.chat_container_content} style={{ display: 'flex', flexDirection: 'column' }}>
-          {lists.map((data: any) => (
-            <a
-              href='javascript:void(0)'
-              style={{ marginTop: '4px' }}
-              onClick={() => {
-                aiChatService.launchChatMessage({ message: data.prompt });
-              }}
-            >
-              <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} />
-              <span>{data.text}</span>
-            </a>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   const firstMsg = React.useMemo(
     () =>
       createMessageByAI({
@@ -151,7 +222,7 @@ export const AiChatView = observer(() => {
         relationId: '',
         text: <InitMsgComponent />,
       }),
-    [InitMsgComponent],
+    [],
   );
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
@@ -198,18 +269,85 @@ export const AiChatView = observer(() => {
 
   React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
-      if (loading) {
-        return;
+      if (message.immediate !== false) {
+        if (loading) {
+          return;
+        }
+        await handleSend(message);
+      } else {
+        if (message.agentId) {
+          setAgentId(message.agentId);
+        }
+        if (message.command) {
+          setCommand(message.command);
+        }
+        chatInputRef?.current?.setInputValue(message.message);
       }
-      await handleSend(message);
     });
     return () => dispose.dispose();
   }, [messageListData, loading]);
 
+  const handleAgentReply = React.useCallback(async (value: IChatMessageStructure) => {
+    const { message, agentId, command } = value;
+
+    const request = aiChatService.createRequest(message, agentId!, command);
+    if (!request) {
+      return;
+    }
+
+    const startTime = Date.now();
+    const relationId = aiReporter.start(AISerivceType.Agent, {
+      msgType: AISerivceType.Agent,
+      message: value.message,
+    });
+
+    const userMessage = createMessage({
+      id: uuid(6),
+      relationId,
+      position: 'right',
+      title: ME_NAME,
+      text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
+      className: styles.chat_message_code,
+      role: 'user',
+    });
+
+    const aiMessage = createMessageByAI({
+      id: uuid(6),
+      relationId,
+      className: styles.chat_with_more_actions,
+      text: (
+        <ChatReply
+          relationId={relationId}
+          request={request}
+          startTime={startTime}
+          onRegenerate={() => {
+            msgStreamManager.sendThinkingStatue();
+            aiChatService.sendRequest(request, true);
+          }}
+        />
+      ),
+    });
+
+    msgStreamManager.setCurrentSessionId(relationId);
+    msgStreamManager.sendThinkingStatue();
+    aiChatService.setLatestSessionId(relationId);
+    aiChatService.sendRequest(request);
+
+    setMessageListData((msgList) => [...msgList, userMessage, aiMessage]);
+
+    if (containerRef && containerRef.current) {
+      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+    }
+  }, []);
+
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, prompt, reportType } = value;
+      const { message, prompt, reportType, agentId, command } = value;
       const preMessagelist = messageListData;
+
+      if (agentId) {
+        return handleAgentReply({ message, agentId, command });
+      }
 
       setLoading(true);
 
@@ -226,7 +364,7 @@ export const AiChatView = observer(() => {
         relationId,
         position: 'right',
         title: ME_NAME,
-        text: <CodeBlockWrapperInput text={message} />,
+        text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
         className: styles.chat_message_code,
         role: 'user',
       });
@@ -239,6 +377,7 @@ export const AiChatView = observer(() => {
         aiChatService,
         aiReporter,
         aiRunService,
+        chatAgentService,
         relationId,
         startTime,
       };
@@ -304,6 +443,7 @@ export const AiChatView = observer(() => {
   const handleClear = React.useCallback(() => {
     aiChatService.cancelChatViewToken();
     aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
+    aiChatService.clearSessionModel();
     setMessageListData([firstMsg]);
   }, [messageListData]);
 
@@ -389,11 +529,16 @@ export const AiChatView = observer(() => {
               </div>
             </div>
             <ChatInput
-              onSend={(value) => handleSend({ message: value })}
+              onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
               disabled={loading || loading2}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
+              agentId={agentId}
+              setAgentId={setAgentId}
+              command={command}
+              setCommand={setCommand}
+              ref={chatInputRef}
             />
           </div>
         </div>
@@ -514,9 +659,7 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
           sessionId={relationId}
           prompt={prompt}
           onRegenerate={() => send()}
-          renderContent={(content) => (
-            <CodeBlockWrapper text={content} renderText={(text) => <ChatMarkdown content={text} />} />
-          )}
+          renderContent={(content) => <Markdown markdown={content} fillInIncompleteTokens />}
         ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,

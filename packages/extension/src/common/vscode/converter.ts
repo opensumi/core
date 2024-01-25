@@ -1,6 +1,13 @@
 import type vscode from 'vscode';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 
+import {
+  IChatFollowup,
+  IChatReplyFollowup,
+  IChatResponseCommandFollowup,
+  ChatMessageRole as ChatMessageRoleEnum,
+  IChatMessage,
+} from '@opensumi/ide-ai-native/lib/common';
 import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 import {
   URI,
@@ -1586,7 +1593,7 @@ export namespace InlayHint {
 export namespace InlayHintLabelPart {
   export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
     const result = new types.InlayHintLabelPart(part.label);
-    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : part.tooltip;
+    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : (part.tooltip as string);
     if (languages.Command.is(part.command)) {
       result.command = converter.fromInternal(part.command);
     }
@@ -1938,5 +1945,81 @@ export namespace DataTransfer {
     await Promise.all(promises);
 
     return newDTO;
+  }
+}
+
+export namespace ChatReplyFollowup {
+  export function from(
+    followup: vscode.InteractiveSessionReplyFollowup | vscode.InteractiveEditorReplyFollowup,
+  ): IChatReplyFollowup {
+    return {
+      kind: 'reply',
+      message: followup.message,
+      title: followup.title,
+      tooltip: followup.tooltip,
+    };
+  }
+}
+
+export namespace ChatFollowup {
+  export function from(followup: string | vscode.ChatAgentFollowup): IChatFollowup {
+    if (typeof followup === 'string') {
+      return { title: followup, message: followup, kind: 'reply' } as IChatReplyFollowup;
+    } else if ('commandId' in followup) {
+      return {
+        kind: 'command',
+        title: followup.title ?? '',
+        commandId: followup.commandId ?? '',
+        when: followup.when ?? '',
+        args: followup.args,
+      } as IChatResponseCommandFollowup;
+    } else {
+      return ChatReplyFollowup.from(followup);
+    }
+  }
+}
+
+export namespace ChatMessage {
+  export function to(message: IChatMessage): vscode.ChatMessage {
+    const res = new types.ChatMessage(ChatMessageRole.to(message.role), message.content);
+    res.name = message.name;
+    return res;
+  }
+
+  export function from(message: vscode.ChatMessage): IChatMessage {
+    return {
+      role: ChatMessageRole.from(message.role),
+      content: message.content,
+      name: message.name,
+    };
+  }
+}
+
+export namespace ChatMessageRole {
+  export function to(role: ChatMessageRoleEnum): vscode.ChatMessageRole {
+    switch (role) {
+      case ChatMessageRoleEnum.System:
+        return types.ChatMessageRole.System;
+      case ChatMessageRoleEnum.User:
+        return types.ChatMessageRole.User;
+      case ChatMessageRoleEnum.Assistant:
+        return types.ChatMessageRole.Assistant;
+      case ChatMessageRoleEnum.Function:
+        return types.ChatMessageRole.Function;
+    }
+  }
+
+  export function from(role: vscode.ChatMessageRole): ChatMessageRoleEnum {
+    switch (role) {
+      case types.ChatMessageRole.System:
+        return ChatMessageRoleEnum.System;
+      case types.ChatMessageRole.Assistant:
+        return ChatMessageRoleEnum.Assistant;
+      case types.ChatMessageRole.Function:
+        return ChatMessageRoleEnum.Function;
+      case types.ChatMessageRole.User:
+      default:
+        return ChatMessageRoleEnum.User;
+    }
   }
 }
