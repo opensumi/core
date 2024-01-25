@@ -252,7 +252,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
 
   useEffect(() => {
     if (enableOptions) {
-      if ((value === '/' || value === '@') && !isExpand) {
+      if ((value === '/' || (value === '@' && chatAgentService.getAgents().length > 0)) && !isExpand) {
         setIsShowOptions(true);
       } else {
         setIsShowOptions(false);
@@ -274,15 +274,17 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       }
     }
 
-    const parsedInfo = chatAgentService.parseMessage(value, currentAgentIdRef.current);
-    if (parsedInfo.agentId || parsedInfo.command) {
-      setTheme('');
-      setValue(parsedInfo.message);
-      if (parsedInfo.agentId) {
-        setAgentId(parsedInfo.agentId);
-      }
-      if (parsedInfo.command) {
-        setCommand(parsedInfo.command);
+    if (chatAgentService.getAgents().length) {
+      const parsedInfo = chatAgentService.parseMessage(value, currentAgentIdRef.current);
+      if (parsedInfo.agentId || parsedInfo.command) {
+        setTheme('');
+        setValue(parsedInfo.message);
+        if (parsedInfo.agentId) {
+          setAgentId(parsedInfo.agentId);
+        }
+        if (parsedInfo.command) {
+          setCommand(parsedInfo.command);
+        }
       }
     }
 

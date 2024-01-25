@@ -156,7 +156,10 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     const agentIdReg = new RegExp(`^@(${agents.map((a) => a.id).join('|')})(?:\\s+|$)`, 'i');
     const agentIdMatch = parsedInfo.message.match(agentIdReg);
     if (agentIdMatch) {
-      const matchedAgent = agents.find((a) => a.id.toLowerCase() === agentIdMatch[1].toLowerCase())!;
+      const matchedAgent = agents.find((a) => a.id.toLowerCase() === agentIdMatch[1].toLowerCase());
+      if (!matchedAgent) {
+        return parsedInfo;
+      }
       useAgentId = matchedAgent.id;
       parsedInfo.agentId = useAgentId;
       parsedInfo.message = parsedInfo.message.replace(agentIdMatch[0], '');
@@ -167,7 +170,10 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
         const commandReg = new RegExp(`^/\\s?(${commands.map((c) => c.name).join('|')})(?:\\s+|$)`, 'i');
         const commandMatch = parsedInfo.message.match(commandReg);
         if (commandMatch) {
-          const matchedCommand = commands.find((c) => c.name.toLowerCase() === commandMatch[1].toLowerCase())!;
+          const matchedCommand = commands.find((c) => c.name.toLowerCase() === commandMatch[1].toLowerCase());
+          if (!matchedCommand) {
+            return parsedInfo;
+          }
           parsedInfo.command = matchedCommand.name;
           parsedInfo.message = parsedInfo.message.replace(commandMatch[0], '');
         }
