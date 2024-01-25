@@ -47,12 +47,14 @@ export function isElectronEnv(): boolean {
   return isElectronRenderer() || isElectronNode();
 }
 
+const safeGlobal: any = typeof global === 'undefined' ? (typeof window === 'undefined' ? {} : window) : global;
+
 /**
  * @deprecated isElectronRenderer will be removed in v2.26, please use appConfig#isElectronRenderer instead.
  */
 export function isElectronRenderer() {
   return (
-    (global as any).isElectronRenderer ||
+    safeGlobal.isElectronRenderer ||
     (typeof navigator === 'object' &&
       typeof navigator.userAgent === 'string' &&
       navigator.userAgent.indexOf('Electron') >= 0)
@@ -60,11 +62,11 @@ export function isElectronRenderer() {
 }
 
 export function isElectronNode() {
-  return process && process.env && !!process.env.ELECTRON_RUN_AS_NODE;
+  return typeof process !== 'undefined' && process.env && !!process.env.ELECTRON_RUN_AS_NODE;
 }
 
 export function isDevelopment() {
-  return (global as any).isDev || (process && process.env.IS_DEV);
+  return safeGlobal.isDev || (typeof process !== 'undefined' && process.env.IS_DEV);
 }
 
 /**

@@ -18,25 +18,22 @@ module.exports = createWebpackConfig(baseDir, path.join(baseDir, 'app.tsx'), {
       bfsGlobal: require.resolve('browserfs'),
     },
   },
+  node: false,
   plugins: [
     // Expose BrowserFS, process, and Buffer globals.
     // NOTE: If you intend to use BrowserFS in a script tag, you do not need
     // to expose a BrowserFS global.
     new webpack.ProvidePlugin({ BrowserFS: 'bfsGlobal', process: 'processGlobal', Buffer: 'bufferGlobal' }),
-    // FIXME: not working
-    new CopyPlugin([
-      {
-        from: path.join(__dirname, '../extension/lib/worker-host.js'),
-        to: path.join(baseDir, './dist/worker-host.js'),
-      },
-    ]),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.join(__dirname, '../extension/lib/worker-host.js'),
+          to: path.join(baseDir, './dist/worker-host.js'),
+        },
+      ],
+    }),
     !process.env.CI && new webpack.ProgressPlugin(),
   ]
     .concat(process.env.analysis ? new BundleAnalyzerPlugin() : null)
     .filter(Boolean),
-  // DISABLE Webpack's built-in process and Buffer polyfills!
-  node: {
-    process: false,
-    Buffer: false,
-  },
 });

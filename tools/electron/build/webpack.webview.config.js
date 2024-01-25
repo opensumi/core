@@ -40,7 +40,7 @@ module.exports = {
     ],
   },
   externals: [
-    function (context, request, callback) {
+    function ({ request }, callback) {
       if (['node-pty', '@parcel/watcher', 'spdlog', 'nsfw', 'electron'].indexOf(request) !== -1) {
         return callback(null, 'commonjs ' + request);
       }
@@ -51,14 +51,15 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
   plugins: [
-    new CopyPlugin([
-      {
-        from: require.resolve('@opensumi/ide-webview/lib/electron-webview/plain-preload.js'),
-        to: path.join(distDir, 'plain-preload.js'),
-      },
-    ]),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: require.resolve('@opensumi/ide-webview/lib/electron-webview/plain-preload.js'),
+          to: path.join(distDir, 'plain-preload.js'),
+        },
+      ],
+    }),
   ],
 };

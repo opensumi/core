@@ -1,14 +1,14 @@
 const path = require('path');
 
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const threadLoader = require('thread-loader');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 threadLoader.warmup({}, ['ts-loader']);
 
@@ -31,18 +31,17 @@ console.log('front port', PORT);
 const styleLoader =
   process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : require.resolve('style-loader');
 
+/**
+ *
+ * @param {string} dir
+ * @param {string} entry
+ * @param {import('webpack').Configuration} extraConfig
+ * @returns {import('webpack').Configuration}
+ */
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
   const webpackConfig = merge(
     {
       entry,
-      node: {
-        net: 'empty',
-        child_process: 'empty',
-        path: 'empty',
-        url: false,
-        fs: 'empty',
-        process: 'mock',
-      },
       output: {
         filename: 'bundle.js',
         path: dir + '/dist',
@@ -57,6 +56,15 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         alias: {
           react: reactPath,
           'react-dom': reactDOMPath,
+        },
+        fallback: {
+          net: false,
+          path: false,
+          os: false,
+          crypto: false,
+          child_process: false,
+          url: false,
+          fs: false,
         },
       },
       bail: true,
@@ -101,7 +109,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           },
           {
             test: /\.png$/,
-            use: 'file-loader',
+            type: 'asset/resource',
           },
           {
             test: /\.css$/,
@@ -116,8 +124,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
                 options: {
                   importLoaders: 1,
                   sourceMap: true,
-                  modules: true,
-                  localIdentName: '[local]___[hash:base64:5]',
+                  modules: {
+                    localIdentName: '[local]___[hash:base64:5]',
+                  },
                 },
               },
               {
@@ -152,15 +161,11 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           },
           {
             test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-            use: [
-              {
-                loader: 'file-loader',
-                options: {
-                  name: '[name].[ext]',
-                  outputPath: 'fonts/',
-                },
-              },
-            ],
+            type: 'asset/resource',
+            generator: {
+              filename: './fonts/[name][ext][query]',
+              outputPath: 'fonts/',
+            },
           },
         ],
       },
@@ -172,7 +177,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         ],
         extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
         mainFields: ['loader', 'main'],
-        moduleExtensions: ['-loader'],
       },
       optimization: {
         nodeEnv: process.env.NODE_ENV,
@@ -204,13 +208,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.STATIC_SERVER_PATH': JSON.stringify(process.env.STATIC_SERVER_PATH || `http://${HOST}:8000/`),
           'process.env.HOST': JSON.stringify(process.env.HOST),
         }),
-        new FriendlyErrorsWebpackPlugin({
-          compilationSuccessInfo: {
-            messages: [`Your application is running here: http://${HOST}:${PORT}`],
-          },
-          onErrors: utils.createNotifierCallback(),
-          clearConsole: true,
-        }),
         new ForkTsCheckerWebpackPlugin({
           typescript: {
             diagnosticOptions: {
@@ -223,12 +220,22 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             exclude: (issue) => issue.file.includes('__test__'),
           },
         }),
-      ],
+        new NodePolyfillPlugin({
+          includeAliases: ['process', 'Buffer'],
+        }),
+        !process.env.CI && new webpack.ProgressPlugin(),
+        process.env.analysis && new BundleAnalyzerPlugin(),
+      ].filter(Boolean),
       devServer: {
-        contentBase: dir + '/dist',
-        port: PORT,
-        disableHostCheck: true,
+        static: {
+          directory: dir + '/dist',
+        },
         host: HOST,
+        port: PORT,
+        allowedHosts: 'all',
+        devMiddleware: {
+          stats: 'errors-only',
+        },
         proxy: {
           '/api': {
             target: `http://${HOST}:8000`,
@@ -247,30 +254,30 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             target: `ws://${HOST}:8000`,
           },
         },
-        stats: 'errors-only',
-        overlay: true,
         open: process.env.SUMI_DEV_OPEN_BROWSER ? true : false,
         hot: true,
+        client: {
+          overlay: {
+            errors: true,
+            warnings: false,
+            runtimeErrors: false,
+          },
+        },
       },
     },
-    extraConfig,
+    extraConfig || {},
   );
 
   return webpackConfig;
 };
 
+/**
+ * @returns {import('webpack').Configuration}
+ */
 exports.createWebviewWebpackConfig = (entry, dir) => {
   const port = 8899;
   return {
     entry,
-    node: {
-      net: 'empty',
-      child_process: 'empty',
-      path: 'empty',
-      url: false,
-      fs: 'empty',
-      process: 'mock',
-    },
     output: {
       filename: 'webview.js',
       path: dir + '/dist',
@@ -309,22 +316,31 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       ],
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
       mainFields: ['loader', 'main'],
-      moduleExtensions: ['-loader'],
     },
     plugins: [
       new HtmlWebpackPlugin({
         template: path.dirname(entry) + '/webview.html',
       }),
+      new NodePolyfillPlugin({
+        includeAliases: ['process', 'Buffer'],
+      }),
     ],
     devServer: {
-      contentBase: dir + '/public',
-      disableHostCheck: true,
+      static: {
+        directory: dir + '/public',
+      },
+      allowedHosts: 'all',
       port,
       host: HOST,
-      quiet: true,
-      overlay: true,
       open: false,
       hot: true,
+      client: {
+        overlay: {
+          errors: true,
+          warnings: false,
+          runtimeErrors: false,
+        },
+      },
     },
   };
 };
