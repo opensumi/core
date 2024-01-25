@@ -59,6 +59,8 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   }
 
   protected captureOnRequestFail(requestId: string, serviceMethod: string, error: any): void {
+    this.logger.warn(`request exec ${serviceMethod} error`, error);
+
     this.capture({
       type: MessageType.OnRequestResult,
       status: ResponseStatus.Fail,

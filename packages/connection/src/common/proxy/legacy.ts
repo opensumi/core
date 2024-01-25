@@ -10,15 +10,55 @@ interface IRPCResult {
 }
 
 export class ProxyLegacy extends ProxyBase<MessageConnection> {
-  engine = 'legacy' as const;
+  protected engine = 'legacy' as const;
+
+  protected bindMethods(methods: string[]): void {
+    for (const method of methods) {
+      if (method.startsWith('on')) {
+        this.connection.onNotification(method, async (...args: any[]) => {
+          this.captureOnNotification(method, args);
+          try {
+            await this.runner.run(method, ...this.serializeArguments(args));
+          } catch (e) {
+            this.logger.warn(`notification exec ${method} error`, e);
+          }
+        });
+      } else {
+        this.connection.onRequest(method, async (...args: any[]) => {
+          const requestId = this.nextRequestId();
+          this.captureOnRequest(requestId, method, args);
+
+          try {
+            const result = await this.runner.run(method, ...this.serializeArguments(args));
+
+            this.captureOnRequestResult(requestId, method, result);
+
+            return {
+              error: false,
+              data: result,
+            };
+          } catch (e) {
+            this.captureOnRequestFail(requestId, method, e);
+
+            return {
+              error: true,
+              data: {
+                message: e.message,
+                stack: e.stack,
+              },
+            };
+          }
+        });
+      }
+    }
+  }
 
   public getInvokeProxy<T = any>(): T {
     return new Proxy(Object.create(null), {
       get: (target: any, p: PropertyKey) => {
         const prop = p.toString();
-
-        if (!target[p]) {
-          target[p] = async (...args: any[]) => {
+        if (!target[prop]) {
+          target[prop] = async (...args: any[]) => {
             await this.connectionPromise.promise;
 
             let isSingleArray = false;
@@ -28,16 +68,17 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
 
             // 调用方法为 on 开头时，作为单项通知
             if (prop.startsWith('on')) {
+              this.captureSendNotification(prop, args);
               if (isSingleArray) {
                 this.connection.sendNotification(prop, [...args]);
               } else {
                 this.connection.sendNotification(prop, ...args);
               }
-              this.captureSendNotification(prop, args);
             } else {
-              let requestResult: Promise<any>;
               // generate a unique requestId to associate request and requestResult
               const requestId = this.nextRequestId();
+
+              let requestResult: Promise<any>;
 
               if (isSingleArray) {
                 requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
@@ -64,35 +105,8 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
             }
           };
         }
-
-        return target[p];
+        return target[prop];
       },
-    });
-  }
-
-  protected bindMethods(methods: string[]) {
-    methods.forEach((method) => {
-      if (method.startsWith('on')) {
-        this.connection.onNotification(method, (...args) => {
-          this.onNotification(method, ...args);
-          this.captureOnNotification(method, args);
-        });
-      } else {
-        this.connection.onRequest(method, (...args) => {
-          const requestId = this.nextRequestId();
-          const result = this.onRequest(method, ...args);
-          this.captureOnRequest(requestId, method, args);
-          result
-            .then((result) => {
-              this.captureOnRequestResult(requestId, method, result.data);
-            })
-            .catch((err) => {
-              this.captureOnRequestFail(requestId, method, err.data);
-            });
-
-          return result;
-        });
-      }
     });
   }
 
@@ -116,33 +130,6 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
     }
 
     return args;
-  }
-
-  private async onRequest(prop: PropertyKey, ...args: any[]) {
-    try {
-      const result = await this.runner.run(prop, ...this.serializeArguments(args));
-
-      return {
-        error: false,
-        data: result,
-      };
-    } catch (e) {
-      return {
-        error: true,
-        data: {
-          message: e.message,
-          stack: e.stack,
-        },
-      };
-    }
-  }
-
-  private onNotification(prop: PropertyKey, ...args: any[]) {
-    try {
-      this.runner.run(prop as any, ...this.serializeArguments(args));
-    } catch (e) {
-      this.logger.warn('notification', e);
-    }
   }
 
   listen(connection: MessageConnection): void {

@@ -3,15 +3,18 @@ import { EventEmitter } from '@opensumi/events';
 import { IRPCServiceMap, RPCServiceMethod } from '../types';
 import { getServiceMethods } from '../utils';
 
+/**
+ * Store all executable services
+ */
 export class ServiceRunner {
   protected emitter = new EventEmitter<{
     servicesUpdate: [services: string[]];
   }>();
 
-  private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
+  private serviceMethodMap = {} as unknown as IRPCServiceMap;
 
-  register(name: string, method: RPCServiceMethod) {
-    this.serviceMethodMap[name] = method;
+  register(name: string, methodFn: RPCServiceMethod) {
+    this.serviceMethodMap[name] = methodFn;
     this.emitter.emit('servicesUpdate', [name]);
   }
 

@@ -27,7 +27,6 @@ export class ProxySumi extends ProxyBase<Connection> {
             this.captureOnRequestResult(requestId, method, result);
             return result;
           } catch (e) {
-            this.logger.warn(`request exec ${method} error`, e);
             this.captureOnRequestFail(requestId, method, e);
             throw e;
           }
@@ -36,14 +35,15 @@ export class ProxySumi extends ProxyBase<Connection> {
     }
   }
 
-  getInvokeProxy(): any {
+  public getInvokeProxy<T = any>(): T {
     return new Proxy(Object.create(null), {
-      get: (target, p: string | symbol) => {
+      get: (target: any, p: PropertyKey) => {
         const prop = p.toString();
         if (!target[prop]) {
           target[prop] = async (...args: any[]) => {
             await this.connectionPromise.promise;
 
+            // 调用方法为 on 开头时，作为单项通知
             if (prop.startsWith('on')) {
               this.captureSendNotification(prop, args);
               this.connection.sendNotification(prop, ...args);
