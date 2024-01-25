@@ -200,13 +200,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     if (currentId === undefined) {
-      service.currentContainerId = defaultContainer;
+      service.updateCurrentContainerId(defaultContainer);
     } else {
-      service.currentContainerId = currentId
-        ? service.containersMap.has(currentId)
-          ? currentId
-          : defaultContainer
-        : '';
+      service.updateCurrentContainerId(
+        currentId ? (service.containersMap.has(currentId) ? currentId : defaultContainer) : '',
+      );
     }
   };
 

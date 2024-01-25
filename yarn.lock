@@ -2093,8 +2093,8 @@ __metadata:
     "@types/lodash": ^4.14.202
     "@types/node": ^18.19.8
     "@types/node-fetch": ^2.6.1
-    "@types/react": ^18.0.0
-    "@types/react-dom": ^18.0.0
+    "@types/react": ^18.2.0
+    "@types/react-dom": ^18.2.0
     "@types/react-is": ^18.2.4
     "@types/socket.io-client": ^1.4.32
     "@types/temp": ^0.9.1
@@ -2409,7 +2409,7 @@ __metadata:
     node-notifier: ^8.0.1
     null-loader: ^4.0.1
     optimize-css-assets-webpack-plugin: ^6.0.1
-    react-dom: ^18.0.0
+    react-dom: ^18.2.0
     style-loader: ^3.3.4
     ts-loader: ^9.5.1
     ts-node: ^10.9.1
@@ -2965,7 +2965,7 @@ __metadata:
     nodemon: ^2.0.15
     npm-run: ^5.0.1
     npm-run-all: ^4.1.5
-    react-dom: ^18.0.0
+    react-dom: ^18.2.0
     style-loader: ^3.3.4
     ts-loader: ^9.5.1
     ts-node: ^10.0.0
@@ -4228,7 +4228,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.0.0, @types/react-dom@npm:^18.2.0":
+"@types/react-dom@npm:^18.2.0":
   version: 18.2.18
   resolution: "@types/react-dom@npm:18.2.18"
   dependencies:
@@ -4255,7 +4255,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^18.0.0, @types/react@npm:^18.2.0":
+"@types/react@npm:*, @types/react@npm:^18.2.0":
   version: 18.2.48
   resolution: "@types/react@npm:18.2.48"
   dependencies:
@@ -17016,7 +17016,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.0.0, react-dom@npm:^18.2.0":
+"react-dom@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
   dependencies:

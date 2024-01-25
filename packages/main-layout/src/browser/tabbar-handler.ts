@@ -95,7 +95,7 @@ export class TabBarHandler {
     if (componentInfo) {
       componentInfo.options!.titleProps = props;
       componentInfo.options!.titleComponent = Fc;
-      this.tabbarService.forceUpdate++;
+      this.tabbarService.forceUpdateTabbar();
     }
   }
   /**
