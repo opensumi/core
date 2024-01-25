@@ -240,7 +240,15 @@ export const CodeBlockWrapper = ({
   </div>
 );
 
-export const CodeBlockWrapperInput = ({ text }: { text: string }) => {
+export const CodeBlockWrapperInput = ({
+  text,
+  agentId,
+  command,
+}: {
+  text: string;
+  agentId?: string;
+  command?: string;
+}) => {
   const [tag, setTag] = useState<string>('');
   const [txt, setTxt] = useState<string>(text);
 
@@ -262,6 +270,12 @@ export const CodeBlockWrapperInput = ({ text }: { text: string }) => {
             <span className={styles.tag}>{tag}</span>
           </div>
         )}
+        {agentId && (
+          <div className={styles.tag} style={{ marginRight: 4 }}>
+            @{agentId}
+          </div>
+        )}
+        {command && <div className={styles.tag}>/ {command}</div>}
         <CodeBlock content={txt} />
       </div>
     </div>

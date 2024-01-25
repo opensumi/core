@@ -14,6 +14,7 @@ interface IStreamMsgWrapperProps {
   prompt: string;
   renderContent: (content: string) => React.ReactNode;
   onRegenerate?: () => void;
+  onStop?: () => void;
   startTime?: number;
 }
 
@@ -108,6 +109,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
 
   const onStop = () => {
     report(false, true);
+    props.onStop?.();
   };
 
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (

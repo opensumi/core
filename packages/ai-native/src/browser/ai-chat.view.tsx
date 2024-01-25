@@ -6,10 +6,16 @@ import { IAIReporter, QUICK_OPEN_COMMANDS, getIcon, useInjectable } from '@opens
 import { Button, Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
+import { Command, isMacintosh, URI, uuid, CancellationTokenSource } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AISerivceType, AiResponseTips, IChatMessageStructure, InstructionEnum } from '../common';
+import {
+  AISerivceType,
+  IChatMessageStructure,
+  InstructionEnum,
+  AiResponseTips,
+  IChatAgentService,
+} from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -40,6 +46,9 @@ interface ReplayComponentParam {
   aiChatService: AiChatService;
   aiRunService: AiRunService;
   aiReporter: IAIReporter;
+  chatAgentService: IChatAgentService;
+  agentId?: string;
+  command?: string;
   relationId: string;
   startTime: number;
   isRetry?: boolean;
@@ -69,6 +78,7 @@ export const AiChatView = observer(() => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+  const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const isAutoScroll = React.useRef<boolean>(false);
 
@@ -76,6 +86,9 @@ export const AiChatView = observer(() => {
   const [loading, setLoading] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
 
+  // TODO: theme 基于 command 改造成 command 形式
+  const [agentId, setAgentId] = React.useState('');
+  const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
 
   const [state, updateState] = React.useState<any>();
@@ -208,12 +221,14 @@ export const AiChatView = observer(() => {
 
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
-      const { message, prompt, reportType } = value;
+      const { message, prompt, reportType, agentId, command } = value;
       const preMessagelist = messageListData;
 
       setLoading(true);
 
-      const userInput = await aiChatService.switchAIService(message as string, prompt);
+      const userInput = agentId
+        ? { type: AISerivceType.Agent, message }
+        : await aiChatService.switchAIService(message as string, prompt);
 
       const startTime = +new Date();
       const relationId = aiReporter.start(reportType || userInput.type, {
@@ -226,7 +241,7 @@ export const AiChatView = observer(() => {
         relationId,
         position: 'right',
         title: ME_NAME,
-        text: <CodeBlockWrapperInput text={message} />,
+        text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
         className: styles.chat_message_code,
         role: 'user',
       });
@@ -239,8 +254,11 @@ export const AiChatView = observer(() => {
         aiChatService,
         aiReporter,
         aiRunService,
+        chatAgentService,
         relationId,
         startTime,
+        agentId,
+        command,
       };
 
       await handleReply(userInput, replayCommandProps);
@@ -252,7 +270,9 @@ export const AiChatView = observer(() => {
     async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
       let aiMessage;
 
-      if (userInput.type === AISerivceType.SearchDoc) {
+      if (userInput.type === AISerivceType.Agent) {
+        aiMessage = await AIAgentStreamReply(userInput.message, replayCommandProps);
+      } else if (userInput.type === AISerivceType.SearchDoc) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
@@ -389,11 +409,15 @@ export const AiChatView = observer(() => {
               </div>
             </div>
             <ChatInput
-              onSend={(value) => handleSend({ message: value })}
+              onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
               disabled={loading || loading2}
               enableOptions={true}
               theme={theme}
               setTheme={setTheme}
+              agentId={agentId}
+              setAgentId={setAgentId}
+              command={command}
+              setCommand={setCommand}
             />
           </div>
         </div>
@@ -675,4 +699,45 @@ const AIWithCommandReply = async (
   });
 
   return aiMessage;
+};
+
+// agent 流式渲染
+const AIAgentStreamReply = async (prompt: string, params: ReplayComponentParam) => {
+  try {
+    const { aiChatService, relationId, chatAgentService, agentId, command } = params;
+
+    let tokenSource: CancellationTokenSource;
+    const invoke = () => {
+      tokenSource = new CancellationTokenSource();
+      aiChatService.setLatestSessionId(relationId);
+      chatAgentService.invokeAgent(
+        agentId!,
+        {
+          sessionId: uuid(),
+          requestId: relationId,
+          command,
+          message: prompt,
+        },
+        [],
+        tokenSource.token,
+      );
+    };
+    invoke();
+
+    const aiMessage = createMessageByAI({
+      id: uuid(6),
+      relationId,
+      text: (
+        <StreamMsgWrapper
+          sessionId={relationId}
+          prompt={prompt}
+          onRegenerate={invoke}
+          onStop={() => tokenSource.cancel()}
+          renderContent={(content) => <CodeBlockWrapper text={content} />}
+        ></StreamMsgWrapper>
+      ),
+      className: styles.chat_with_more_actions,
+    });
+    return aiMessage;
+  } catch (error) {}
 };

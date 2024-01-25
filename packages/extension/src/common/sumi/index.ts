@@ -1,5 +1,6 @@
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 
+import { IMainThreadChatAgents, IExtHostChatAgents } from './chat-agents';
 import { IMainThreadCommon, IExtHostCommon } from './common';
 import { IMainThreadLayout, IExtHostLayout } from './layout';
 import { IMainThreadLifeCycle, IExtHostLifeCycle } from './lifecycle';
@@ -14,6 +15,7 @@ export const MainThreadSumiAPIIdentifier = {
   MainThreadCommon: createMainContextProxyIdentifier<IMainThreadCommon>('MainThreadCommon'),
   MainThreadToolbar: createMainContextProxyIdentifier<IMainThreadToolbar>('MainThreadToolbar'),
   MainThreadIDEWindow: createMainContextProxyIdentifier<IMainThreadIDEWindow>('MainThreadIDEWindow'),
+  MainThreadChatAgents: createMainContextProxyIdentifier<IMainThreadChatAgents>('MainThreadChatAgents'),
 };
 
 export const ExtHostSumiAPIIdentifier = {
@@ -23,4 +25,5 @@ export const ExtHostSumiAPIIdentifier = {
   ExtHostCommon: createExtHostContextProxyIdentifier<IExtHostCommon>('ExtHostCommon'),
   ExtHostToolbar: createExtHostContextProxyIdentifier<IExtHostToolbar>('ExtHostToolbar'),
   ExtHostIDEWindow: createExtHostContextProxyIdentifier<IExtHostIDEWindow>('ExtHostIDEWindow'),
+  ExtHostChatAgents: createExtHostContextProxyIdentifier<IExtHostChatAgents>('ExtHostChatAgents'),
 };

@@ -16,6 +16,14 @@ export interface IChatMessageStructure {
    * 数据采集上报消息类型
    */
   reportType?: string;
+  /*
+   * agent id
+   */
+  agentId?: string;
+  /**
+   * slash command
+   */
+  command?: string;
 }
 
 /**
@@ -69,6 +77,7 @@ export enum AISerivceType {
   Optimize = 'optimize',
   Generate = 'generate',
   Completion = 'completion',
+  Agent = 'agent',
 }
 
 export enum AiNativeSettingSectionsId {
@@ -289,3 +298,84 @@ export const highLightLanguageSupport = [
   'xquery',
   'zephir',
 ];
+
+export const IChatAgentService = Symbol('IChatAgentService');
+
+export interface IChatAgentService {
+  readonly onDidChangeAgents: Event<void>;
+  registerAgent(agent: IChatAgent): IDisposable;
+  invokeAgent(
+    id: string,
+    request: IChatAgentRequest,
+    history: IChatMessage[],
+    token: CancellationToken,
+  ): Promise<IChatAgentResult>;
+  getAgents(): Array<IChatAgent>;
+  getAgent(id: string): IChatAgent | undefined;
+  hasAgent(id: string): boolean;
+  updateAgent(id: string, updateMetadata: IChatAgentMetadata): void;
+  getCommands(): Array<IChatAgentCommand & { agentId: string }>;
+}
+
+export interface IChatAgent extends IChatAgentData {
+  invoke(
+    request: IChatAgentRequest,
+    progress: (part: IChatProgress) => void,
+    history: IChatMessage[],
+    token: CancellationToken,
+  ): Promise<IChatAgentResult>;
+  provideSlashCommands(token: CancellationToken): Promise<IChatAgentCommand[]>;
+}
+
+export interface IChatAgentData {
+  id: string;
+  metadata: IChatAgentMetadata;
+}
+
+export interface IChatAgentMetadata {
+  description?: string;
+  isDefault?: boolean;
+  fullName?: string;
+  icon?: Uri;
+  iconDark?: Uri;
+}
+
+export interface IChatAgentRequest {
+  sessionId: string;
+  requestId: string;
+  command?: string;
+  message: string;
+}
+
+export const enum ChatMessageRole {
+  System,
+  User,
+  Assistant,
+  Function,
+}
+
+export interface IChatMessage {
+  readonly role: ChatMessageRole;
+  readonly content: string;
+  readonly name?: string;
+}
+
+export interface IChatContent {
+  content: string;
+  kind: 'content';
+}
+
+export type IChatProgress = IChatContent;
+
+export interface IChatResponseErrorDetails {
+  message: string;
+}
+
+export interface IChatAgentResult {
+  errorDetails?: IChatResponseErrorDetails;
+}
+
+export interface IChatAgentCommand {
+  name: string;
+  description: string;
+}
