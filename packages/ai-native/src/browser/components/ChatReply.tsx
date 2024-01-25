@@ -1,4 +1,3 @@
-import { memoize } from 'lodash';
 import React, { useCallback, useEffect, Fragment, useReducer, useState, ReactNode, useMemo, useRef } from 'react';
 
 import { Button } from '@opensumi/ide-components/lib/button';
