@@ -1,15 +1,14 @@
-providers = ["...", "python"]
+providers = ["..."]
 
 [variables]
 NODE_ENV = 'production'
 
 [phases.setup]
-nixPkgs = ["..."]
+nixPkgs = ["...", "libsecret"]
 aptPkgs = ["...", "wget", "build-essential", "libsecret-1-dev"]
 
 [phases.build]
 cmds = ['yarn run build:all']
-nixLibs = ['zlib', 'secret-1']
 
 [start]
 cmd = 'yarn run start:prod'
