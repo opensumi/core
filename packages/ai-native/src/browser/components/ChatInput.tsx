@@ -1,8 +1,8 @@
 import cls from 'classnames';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useImperativeHandle } from 'react';
 
 import { message } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { uuid } from '@opensumi/ide-core-common';
@@ -182,7 +182,7 @@ export interface IChatInputProps {
 }
 
 // 指令命令激活组件
-export const ChatInput = (props: IChatInputProps) => {
+export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const {
     onSend,
     onValueChange,
@@ -208,6 +208,16 @@ export const ChatInput = (props: IChatInputProps) => {
   const [placeholder, setPlaceHolder] = useState(PLACEHOLDER.DEFAULT);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const currentAgentIdRef = useLatest(agentId);
+
+  useImperativeHandle(ref, () => ({
+    setInputValue: (v: string) => {
+      setValue(v);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 120);
+    },
+  }));
 
   useEffect(() => {
     if (props.value !== value) {
@@ -263,45 +273,35 @@ export const ChatInput = (props: IChatInputProps) => {
         return;
       }
     }
-    const agents = chatAgentService.getAgents();
-    const commands = chatAgentService.getCommands();
-    const agentIdReg = new RegExp(`^@(${agents.map((a) => a.id).join('|')})\\s`, 'i');
-    const agentIdMatch = value.match(agentIdReg);
-    if (agentIdMatch) {
-      setValue(value.replace(agentIdMatch[0], ''));
-      const matchedAgent = agents.find((a) => a.id.toLowerCase() === agentIdMatch[1].toLowerCase())!;
-      setAgentId(matchedAgent.id);
-      setCommand('');
-      setTheme('');
-      return;
-    }
-    const commandReg = new RegExp(`^/\\s?(${commands.map((c) => c.name).join('|')})\\s`, 'i');
-    const commandMatch = value.match(commandReg);
-    if (commandMatch) {
-      setValue(value.replace(commandMatch[0], ''));
-      const matchedCommand = chatAgentService
-        .getCommands()
-        .find((c) => c.name.toLowerCase() === commandMatch[1].toLowerCase())!;
-      setAgentId(matchedCommand.agentId);
-      setCommand(matchedCommand.name);
-      setTheme('');
-      return;
-    }
 
-    // 自适应高度
-    if (inputRef && inputRef.current && value && !isExpand) {
-      inputRef.current.style.height = 0 + 'px';
-      const scrollHeight = inputRef.current.scrollHeight;
-      inputRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
-      const wapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
-
-      setWrapperHeight(wapperHeight);
-      if (wapperHeight > 68) {
-        setShowExpand(true);
-      } else {
-        setShowExpand(false);
+    const parsedInfo = chatAgentService.parseMessage(value, currentAgentIdRef.current);
+    if (parsedInfo.agentId || parsedInfo.command) {
+      setTheme('');
+      setValue(parsedInfo.message);
+      if (parsedInfo.agentId) {
+        setAgentId(parsedInfo.agentId);
+      }
+      if (parsedInfo.command) {
+        setCommand(parsedInfo.command);
       }
     }
+
+    setTimeout(() => {
+      // 自适应高度
+      if (inputRef && inputRef.current && value && !isExpand) {
+        inputRef.current.style.height = 0 + 'px';
+        const scrollHeight = inputRef.current.scrollHeight;
+        inputRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
+        const wapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
+
+        setWrapperHeight(wapperHeight);
+        if (wapperHeight > 68) {
+          setShowExpand(true);
+        } else {
+          setShowExpand(false);
+        }
+      }
+    });
   }, [inputRef, value, enableOptions]);
 
   useEffect(() => {
@@ -449,7 +449,7 @@ export const ChatInput = (props: IChatInputProps) => {
   };
   const handleBlur = useCallback(() => {
     setFocus(false);
-    // setIsShowOptions(false);
+    setIsShowOptions(false);
   }, [inputRef]);
 
   const handleExpandClick = useCallback(() => {
@@ -532,4 +532,4 @@ export const ChatInput = (props: IChatInputProps) => {
       />
     </div>
   );
-};
+});

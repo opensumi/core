@@ -1,5 +1,7 @@
 import { marked, Renderer } from 'marked';
 
+export { marked };
+
 export type IMarkedOptions = marked.MarkedOptions;
 
 export const createMarkedRenderer = () => new Renderer();

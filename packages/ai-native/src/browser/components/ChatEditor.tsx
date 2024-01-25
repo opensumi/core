@@ -123,7 +123,7 @@ const ChatEditor = ({ input, language }) => {
   );
 };
 
-const CodeEditorWithHighlight = ({ input, language }) => {
+export const CodeEditorWithHighlight = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);

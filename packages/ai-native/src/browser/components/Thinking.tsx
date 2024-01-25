@@ -13,21 +13,26 @@ import * as styles from './components.module.less';
 interface ITinkingProps {
   children?: React.ReactNode;
   status?: EMsgStreamStatus;
+  hasMessage?: boolean;
   message?: string;
   onRegenerate?: () => void;
   sessionId?: string;
   onStop?: () => void;
+  hasAgent?: boolean;
 }
 
-export const Thinking = ({ children, status, message, onStop }: ITinkingProps) => {
+export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessage }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   const handlePause = useCallback(async () => {
-    aiChatService.cancelChatViewToken();
-    const { currentSessionId } = msgStreamManager;
-    if (currentSessionId) {
-      await aiChatService.destroyStreamRequest(currentSessionId);
+    // agent 处理有另外的流程
+    if (!hasAgent) {
+      aiChatService.cancelChatViewToken();
+      const { currentSessionId } = msgStreamManager;
+      if (currentSessionId) {
+        await aiChatService.destroyStreamRequest(currentSessionId);
+      }
     }
     onStop && onStop();
   }, [msgStreamManager]);
@@ -61,7 +66,7 @@ export const Thinking = ({ children, status, message, onStop }: ITinkingProps) =
   );
 };
 
-export const ThinkingResult = ({ children, message, status, onRegenerate, sessionId }: ITinkingProps) => {
+export const ThinkingResult = ({ children, message, status, onRegenerate, sessionId, hasMessage }: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
@@ -81,7 +86,11 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
   }, [onRegenerate]);
 
   const renderContent = useCallback(() => {
-    if ((status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && !message?.trim()) {
+    if (
+      (status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && typeof hasMessage
+        ? !hasMessage
+        : !message?.trim()
+    ) {
       return <span>{AiResponseTips.STOP_IMMEDIATELY}</span>;
     }
 

@@ -24,6 +24,10 @@ export interface IChatMessageStructure {
    * slash command
    */
   command?: string;
+  /**
+   * 是否立即发送，默认为 true
+   */
+  immediate?: boolean;
 }
 
 /**
@@ -299,6 +303,8 @@ export const highLightLanguageSupport = [
   'zephir',
 ];
 
+export const IChatManagerService = Symbol('IChatManagerService');
+
 export const IChatAgentService = Symbol('IChatAgentService');
 
 export interface IChatAgentService {
@@ -307,6 +313,7 @@ export interface IChatAgentService {
   invokeAgent(
     id: string,
     request: IChatAgentRequest,
+    progress: (part: IChatProgress) => void,
     history: IChatMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
@@ -314,7 +321,12 @@ export interface IChatAgentService {
   getAgent(id: string): IChatAgent | undefined;
   hasAgent(id: string): boolean;
   updateAgent(id: string, updateMetadata: IChatAgentMetadata): void;
+  populateChatInput(id: string, message: IChatMessageStructure): void;
   getCommands(): Array<IChatAgentCommand & { agentId: string }>;
+  parseMessage(value: string, currentAgentId?: string): { agentId: string; command: string; message: string };
+  getFollowups(id: string, sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
+  getSampleQuestions(id: string, token: CancellationToken): Promise<IChatFollowup[]>;
+  getAllSampleQuestions(): Promise<IChatReplyFollowup[]>;
 }
 
 export interface IChatAgent extends IChatAgentData {
@@ -324,7 +336,9 @@ export interface IChatAgent extends IChatAgentData {
     history: IChatMessage[],
     token: CancellationToken,
   ): Promise<IChatAgentResult>;
+  provideFollowups?(sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
   provideSlashCommands(token: CancellationToken): Promise<IChatAgentCommand[]>;
+  provideSampleQuestions?(token: CancellationToken): Promise<IChatReplyFollowup[]>;
 }
 
 export interface IChatAgentData {
@@ -345,6 +359,7 @@ export interface IChatAgentRequest {
   requestId: string;
   command?: string;
   message: string;
+  regenerate?: boolean;
 }
 
 export const enum ChatMessageRole {
@@ -365,7 +380,35 @@ export interface IChatContent {
   kind: 'content';
 }
 
-export type IChatProgress = IChatContent;
+export interface IChatMarkdownContent {
+  content: IMarkdownString;
+  kind: 'markdownContent';
+}
+
+export interface IChatAsyncContent {
+  content: string;
+  resolvedContent: Promise<string | IMarkdownString | IChatTreeData>;
+  kind: 'asyncContent';
+}
+
+export interface IChatProgressMessage {
+  content: string;
+  kind: 'progressMessage';
+}
+
+export interface IChatResponseProgressFileTreeData {
+  label: string;
+  uri: Uri;
+  type?: FileType;
+  children?: IChatResponseProgressFileTreeData[];
+}
+
+export interface IChatTreeData {
+  treeData: IChatResponseProgressFileTreeData;
+  kind: 'treeData';
+}
+
+export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData;
 
 export interface IChatResponseErrorDetails {
   message: string;
@@ -378,4 +421,49 @@ export interface IChatAgentResult {
 export interface IChatAgentCommand {
   name: string;
   description: string;
+}
+
+export interface IChatReplyFollowup {
+  kind: 'reply';
+  message: string;
+  title?: string;
+  tooltip?: string;
+}
+
+export interface IChatResponseCommandFollowup {
+  kind: 'command';
+  commandId: string;
+  args?: any[];
+  title: string;
+  when?: string;
+}
+
+export type IChatFollowup = IChatReplyFollowup | IChatResponseCommandFollowup;
+
+export interface IChatMessage {
+  readonly role: ChatMessageRole;
+  readonly content: string;
+  readonly name?: string;
+}
+
+export interface IChatRequestMessage {
+  prompt: string;
+  agentId: string;
+  command?: string;
+}
+
+export interface IChatRequestModel {
+  readonly requestId: string;
+  session: IChatModel;
+  message: IChatRequestMessage;
+  response: IChatResponseModel;
+}
+
+export interface IChatResponseModel {
+  readonly requestId: string;
+  session: IChatModel;
+}
+
+export interface IChatModel {
+  readonly requests: IChatRequestModel[];
 }

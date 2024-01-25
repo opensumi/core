@@ -14,12 +14,13 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, RGBA, ThemeContribution, registerColor } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { IAiChatService, IChatAgentService } from '../common';
+import { IAiChatService, IChatAgentService, IChatManagerService } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
 import { AIReporter } from './ai-reporter';
 import { ChatAgentService } from './chat-agent.service';
+import { ChatManagerService } from './chat-manager.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
@@ -55,6 +56,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IAiInlineChatService,
       useClass: AiInlineChatService,
+    },
+    {
+      token: IChatManagerService,
+      useClass: ChatManagerService,
     },
     {
       token: IChatAgentService,

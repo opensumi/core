@@ -1,16 +1,30 @@
 import type * as vscode from 'vscode';
 
-import { IChatAgentCommand, IChatAgentRequest, IChatAgentResult, IChatMessage } from '@opensumi/ide-ai-native';
+import {
+  IChatAgentCommand,
+  IChatAgentRequest,
+  IChatAgentResult,
+  IChatMessage,
+  IChatFollowup,
+  IChatReplyFollowup,
+} from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationToken, Emitter, Progress, getDebugLogger, raceCancellation } from '@opensumi/ide-core-common';
 
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
-import { IMainThreadChatAgents, IExtHostChatAgents } from '../../../common/sumi/chat-agents';
+import {
+  IMainThreadChatAgents,
+  IExtHostChatAgents,
+  IChatProgressChunk,
+  ChatAgentHandler,
+  ChatAgentProgress,
+  ChatAgentSampleQuestionProvider,
+  ChatAgent,
+  ChatAgentRequest,
+  ChatInputParam,
+} from '../../../common/sumi/chat-agents';
 import { IExtensionDescription } from '../../../common/vscode';
-
-/**
- * ai native chat
- */
+import * as typeConverters from '../../../common/vscode/converter';
 
 export class ExtHostChatAgents implements IExtHostChatAgents {
   private static idPool = 0;
@@ -19,11 +33,14 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
   private readonly agents = new Map<number, ExtHostChatAgent>();
   private readonly logger = getDebugLogger();
 
+  private readonly previousResultMap: Map<string, vscode.ChatAgentResult2> = new Map();
+  private readonly resultsBySessionAndRequestId: Map<string, Map<string, vscode.ChatAgentResult2>> = new Map();
+
   constructor(private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadSumiAPIIdentifier.MainThreadChatAgents);
   }
 
-  createChatAgent(extension: IExtensionDescription, name: string, handler: vscode.ChatAgentExtendedHandler) {
+  createChatAgent(extension: IExtensionDescription, name: string, handler: ChatAgentHandler) {
     const handle = ExtHostChatAgents.idPool++;
     const agent = new ExtHostChatAgent(extension, name, this.proxy, handle, handler);
     this.agents.set(handle, agent);
@@ -33,12 +50,13 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
 
   async $invokeAgent(
     handle: number,
-    sessionId: string,
-    requestId: string,
     request: IChatAgentRequest,
     context: { history: IChatMessage[] },
     token: CancellationToken,
   ): Promise<IChatAgentResult | undefined> {
+    const { sessionId, requestId, command, message, regenerate } = request;
+    this.previousResultMap.delete(sessionId);
+
     const agent = this.agents.get(handle);
     if (!agent) {
       throw new Error(`[CHAT](${handle}) CANNOT invoke agent because the agent is not registered`);
@@ -51,33 +69,65 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
       }
     }
 
-    const slashCommand = request.command ? await agent.validateSlashCommand(request.command) : undefined;
+    const slashCommand = command ? await agent.validateSlashCommand(command) : undefined;
 
     try {
       const task = agent.invoke(
         {
-          prompt: request.message,
-          variables: {},
+          prompt: message,
+          variables: {}, // TODO: support # variables
           slashCommand,
+          regenerate,
         },
-        { history: [] },
+        { history: context.history.map(typeConverters.ChatMessage.to) },
         // 暂时只支持 { content: string } 格式的数据
-        new Progress<vscode.ChatAgentContent>((data) => {
+        new Progress<ChatAgentProgress>((progress) => {
           throwIfDone();
 
-          if (!data || !data.content) {
-            this.logger.error('Unknown progress type: ' + JSON.stringify(data));
+          const convertedProgress = convertProgress(progress);
+          if (!convertedProgress) {
+            this.logger.error('Unknown progress type: ' + JSON.stringify(progress));
             return;
           }
 
-          this.proxy.$handleProgressChunk(requestId, { content: data.content, kind: 'content' });
+          if ('placeholder' in progress && 'resolvedContent' in progress) {
+            const resolvedContent = Promise.all([
+              this.proxy.$handleProgressChunk(requestId, convertedProgress),
+              progress.resolvedContent,
+            ]);
+            raceCancellation(resolvedContent, token).then((res) => {
+              if (!res) {
+                return; /* Cancelled */
+              }
+              const [progressHandle, progressContent] = res;
+              const convertedContent = convertProgress(progressContent);
+              if (!convertedContent) {
+                this.logger.error('Unknown progress type: ' + JSON.stringify(progressContent));
+                return;
+              }
+
+              this.proxy.$handleProgressChunk(requestId, convertedContent, progressHandle ?? undefined);
+            });
+          } else {
+            this.proxy.$handleProgressChunk(requestId, convertedProgress);
+          }
         }),
         token,
       );
 
       const result = await raceCancellation(Promise.resolve(task), token);
       if (result) {
+        this.previousResultMap.set(sessionId, result);
+        let sessionResults = this.resultsBySessionAndRequestId.get(sessionId);
+        if (!sessionResults) {
+          sessionResults = new Map();
+          this.resultsBySessionAndRequestId.set(sessionId, sessionResults);
+        }
+        sessionResults.set(requestId, result);
+
         return { errorDetails: result.errorDetails };
+      } else {
+        this.previousResultMap.delete(sessionId);
       }
     } catch (e) {
       this.logger.error(e, agent.extension);
@@ -87,12 +137,39 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
     }
   }
 
+  $releaseSession(sessionId: string): void {
+    this.previousResultMap.delete(sessionId);
+    this.resultsBySessionAndRequestId.delete(sessionId);
+  }
+
   async $provideSlashCommands(handle: number, token: CancellationToken): Promise<IChatAgentCommand[]> {
     const agent = this.agents.get(handle);
     if (!agent) {
       return [];
     }
     return agent.provideSlashCommand(token);
+  }
+
+  $provideFollowups(handle: number, sessionId: string, token: CancellationToken): Promise<IChatFollowup[]> {
+    const agent = this.agents.get(handle);
+    if (!agent) {
+      return Promise.resolve([]);
+    }
+
+    const result = this.previousResultMap.get(sessionId);
+    if (!result) {
+      return Promise.resolve([]);
+    }
+
+    return agent.provideFollowups(result, token);
+  }
+
+  async $provideSampleQuestions(handle: number, token: CancellationToken): Promise<IChatReplyFollowup[]> {
+    const agent = this.agents.get(handle);
+    if (!agent) {
+      return [];
+    }
+    return agent.provideSampleQuestions(token);
   }
 }
 
@@ -107,6 +184,7 @@ class ExtHostChatAgent {
   private _onDidReceiveFeedback = new Emitter<vscode.ChatAgentResult2Feedback>();
   private _onDidPerformAction = new Emitter<vscode.ChatAgentUserActionEvent>();
   private _agentVariableProvider?: { provider: vscode.ChatAgentCompletionItemProvider; triggerCharacters: string[] };
+  private _sampleQuestionProvider: ChatAgentSampleQuestionProvider;
 
   constructor(
     public readonly extension: IExtensionDescription,
@@ -164,7 +242,29 @@ class ExtHostChatAgent {
     }));
   }
 
-  get apiAgent(): vscode.ChatAgent2 {
+  async provideFollowups(result: vscode.ChatAgentResult2, token: CancellationToken): Promise<IChatFollowup[]> {
+    if (!this._followupProvider) {
+      return [];
+    }
+    const followups = await this._followupProvider.provideFollowups(result, token);
+    if (!followups) {
+      return [];
+    }
+    return followups.map((f) => typeConverters.ChatFollowup.from(f));
+  }
+
+  async provideSampleQuestions(token: CancellationToken): Promise<IChatReplyFollowup[]> {
+    if (!this._sampleQuestionProvider) {
+      return [];
+    }
+    const result = await this._sampleQuestionProvider.provideSampleQuestions(token);
+    if (!result) {
+      return [];
+    }
+    return result.map((f) => typeConverters.ChatReplyFollowup.from(f));
+  }
+
+  get apiAgent(): ChatAgent {
     let disposed = false;
     let updateScheduled = false;
     const updateMetadataSoon = () => {
@@ -181,6 +281,7 @@ class ExtHostChatAgent {
           fullName: this._fullName,
           hasSlashCommands: this._slashCommandProvider !== undefined,
           hasFollowups: this._followupProvider !== undefined,
+          hasSampleQuestions: this._sampleQuestionProvider !== undefined,
           isDefault: this._isDefault,
         });
         updateScheduled = false;
@@ -227,10 +328,20 @@ class ExtHostChatAgent {
         that._followupProvider = v;
         updateMetadataSoon();
       },
+      get sampleQuestionProvider() {
+        return that._sampleQuestionProvider;
+      },
+      set sampleQuestionProvider(v) {
+        that._sampleQuestionProvider = v;
+        updateMetadataSoon();
+      },
       get onDidReceiveFeedback() {
         return that._onDidReceiveFeedback.event;
       },
       onDidPerformAction: this._onDidPerformAction.event,
+      populateChatInput: (param: ChatInputParam) => {
+        this._proxy.$populateChatInput(this._handle, param);
+      },
       dispose() {
         disposed = true;
         that._slashCommandProvider = undefined;
@@ -238,11 +349,11 @@ class ExtHostChatAgent {
         that._onDidReceiveFeedback.dispose();
         that._proxy.$unregisterAgent(that._handle);
       },
-    } satisfies vscode.ChatAgent2;
+    };
   }
 
   invoke(
-    request: vscode.ChatAgentRequest,
+    request: ChatAgentRequest,
     context: vscode.ChatAgentContext,
     progress: Progress<vscode.ChatAgentExtendedProgress>,
     token: CancellationToken,
@@ -257,4 +368,21 @@ export function createChatApiFactory(extension: IExtensionDescription, extHostCh
       return extHostChatAgents.createChatAgent(extension, name, handler);
     },
   };
+}
+
+export function convertProgress(progress: ChatAgentProgress): IChatProgressChunk | undefined {
+  if ('placeholder' in progress && 'resolvedContent' in progress) {
+    return { content: progress.placeholder, kind: 'asyncContent' };
+  } else if ('markdownContent' in progress) {
+    return { content: typeConverters.MarkdownString.from(progress.markdownContent), kind: 'markdownContent' };
+  } else if ('content' in progress) {
+    if (typeof progress.content === 'string') {
+      return { content: progress.content, kind: 'content' };
+    }
+    return { content: typeConverters.MarkdownString.from(progress.content), kind: 'markdownContent' };
+  } else if ('treeData' in progress) {
+    return { treeData: progress.treeData, kind: 'treeData' };
+  } else {
+    return undefined;
+  }
 }

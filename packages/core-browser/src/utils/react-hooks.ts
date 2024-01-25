@@ -1,5 +1,5 @@
 import _debounce from 'lodash/debounce';
-import { useState, useEffect, DependencyList } from 'react';
+import { useState, useEffect, DependencyList, useRef } from 'react';
 
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 
@@ -116,3 +116,9 @@ export function usePreference<T>(key: string, defaultValue: T) {
   }, []);
   return value;
 }
+
+export const useLatest = <T>(value: T): { readonly current: T } => {
+  const ref = useRef(value);
+  ref.current = value;
+  return ref;
+};

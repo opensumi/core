@@ -5,8 +5,15 @@ import { AiBackSerivcePath, IAiBackService, IAiBackServiceOption } from '@opensu
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum } from '../common';
+import {
+  AISerivceType,
+  IChatMessageStructure,
+  InstructionEnum,
+  IChatManagerService,
+} from '../common';
 
+import { ChatManagerService } from './chat-manager.service';
+import { ChatModel, ChatRequestModel } from './chat-model';
 import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 
@@ -30,6 +37,9 @@ export class AiChatService extends Disposable {
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
+  @Autowired(IChatManagerService)
+  chatManagerService: ChatManagerService;
+
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
@@ -46,6 +56,16 @@ export class AiChatService extends Disposable {
 
   private get currentEditor() {
     return this.editorService.currentEditor;
+  }
+
+  #sessionModel: ChatModel;
+  get sessionModel() {
+    return this.#sessionModel;
+  }
+
+  constructor() {
+    super();
+    this.#sessionModel = this.chatManagerService.startSession();
   }
 
   public launchChatMessage(data: IChatMessageStructure) {
@@ -267,5 +287,27 @@ export class AiChatService extends Disposable {
   public setLatestSessionId(id: string): void {
     this._latestSessionId = id;
     this._onChangeSessionId.fire(id);
+  }
+
+  createRequest(input: string, agentId: string, command?: string) {
+    return this.chatManagerService.createRequest(this.#sessionModel.sessionId, input, agentId, command);
+  }
+
+  sendRequest(request: ChatRequestModel, regenerate = false) {
+    return this.chatManagerService.sendRequest(this.#sessionModel.sessionId, request, regenerate);
+  }
+
+  cancelRequest() {
+    this.chatManagerService.cancelRequest(this.#sessionModel.sessionId);
+  }
+
+  clearSessionModel() {
+    this.chatManagerService.clearSession(this.#sessionModel.sessionId);
+    this.#sessionModel = this.chatManagerService.startSession();
+  }
+
+  override dispose(): void {
+    this.#sessionModel?.dispose();
+    super.dispose();
   }
 }
