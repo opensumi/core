@@ -1,5 +1,6 @@
 const path = require('path');
 
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const { ProgressPlugin } = require('webpack');
 
 const tsconfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.extension.json');
@@ -36,5 +37,10 @@ module.exports = {
       { test: /\.css$/, loader: 'null-loader' },
     ],
   },
-  plugins: [!process.env.CI && new ProgressPlugin()].filter(Boolean),
+  plugins: [
+    !process.env.CI && new ProgressPlugin(),
+    new NodePolyfillPlugin({
+      includeAliases: ['process', 'Buffer'],
+    }),
+  ].filter(Boolean),
 };
