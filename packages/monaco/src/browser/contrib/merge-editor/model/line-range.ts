@@ -7,7 +7,12 @@ import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
 
-class IntelligentStateModel {
+export interface IIntelligentState {
+  isLoading: boolean;
+  isComplete: boolean;
+}
+
+class IntelligentStateModel implements IIntelligentState {
   private _isLoading: boolean;
   private _isComplete: boolean;
 

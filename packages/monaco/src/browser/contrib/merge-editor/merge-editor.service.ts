@@ -66,6 +66,10 @@ export class MergeEditorService extends Disposable {
   private readonly _onRestoreState = new Emitter<URI>();
   public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
 
+  private loadingDispose = new Disposable();
+  private readonly _onHasIntelligentLoadingChange = new Emitter<boolean>();
+  public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
+
   private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {
@@ -88,6 +92,32 @@ export class MergeEditorService extends Disposable {
     this.addDispose(
       this.onDidInputNutrition((nutrition: IOpenMergeEditorArgs) => {
         this.actionsManager.setNutrition(nutrition);
+      }),
+    );
+  }
+
+  private listenIntelligentLoadingChange(): void {
+    this.loadingDispose.dispose();
+
+    let flag = false;
+
+    this.loadingDispose.addDispose(
+      this.resultView.onChangeRangeIntelligentState((range) => {
+        const intelligentState = range.getIntelligentStateModel();
+
+        if (intelligentState.isLoading) {
+          this._onHasIntelligentLoadingChange.fire(true);
+          flag = true;
+          return;
+        }
+
+        const conflictPointRanges = this.resultView
+          .getAllDiffRanges()
+          .filter((range) => range.isMerge && range.type === 'modify');
+        if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
+          this._onHasIntelligentLoadingChange.fire(false);
+          this.loadingDispose.dispose();
+        }
       }),
     );
   }
@@ -131,6 +161,7 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.dispose();
     this.stickinessConnectManager.dispose();
     this.actionsManager.dispose();
+    this.loadingDispose.dispose();
   }
 
   public async acceptLeft(): Promise<void> {
@@ -203,7 +234,14 @@ export class MergeEditorService extends Disposable {
     }
   }
 
+  public async stopAllAiResolveConflict(): Promise<void> {
+    this.resultView.cancelRequestToken();
+    this.resultView.hideStopWidget();
+  }
+
   public async handleAiResolveConflict(): Promise<void> {
+    this.listenIntelligentLoadingChange();
+
     const allRanges = this.resultView.getAllDiffRanges();
     const conflictPointRanges = allRanges.filter((range) => range.isMerge && range.type === 'modify');
 
@@ -213,7 +251,6 @@ export class MergeEditorService extends Disposable {
         if (!newRange) {
           return;
         }
-
         this.resultView.launchConflictActionsEvent({
           range: newRange,
           action: REVOKE_ACTIONS,

@@ -116,6 +116,7 @@ export const IGNORE_ACTIONS = 'ignore';
 export const REVOKE_ACTIONS = 'revoke';
 export const APPEND_ACTIONS = 'append';
 export const AI_RESOLVE_ACTIONS = 'ai_resolve';
+export const AI_RESOLVE_REGENERATE_ACTIONS = 'ai_regenerate_resolve';
 
 export type TActionsType =
   | typeof ACCEPT_CURRENT_ACTIONS
@@ -123,7 +124,8 @@ export type TActionsType =
   | typeof IGNORE_ACTIONS
   | typeof REVOKE_ACTIONS
   | typeof APPEND_ACTIONS
-  | typeof AI_RESOLVE_ACTIONS;
+  | typeof AI_RESOLVE_ACTIONS
+  | typeof AI_RESOLVE_REGENERATE_ACTIONS;
 
 export interface IActionsProvider {
   onActionsClick?: (range: LineRange, actionType: TActionsType) => void;

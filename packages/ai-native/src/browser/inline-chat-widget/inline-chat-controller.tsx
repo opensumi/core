@@ -1,4 +1,4 @@
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { message } from '@opensumi/ide-components';

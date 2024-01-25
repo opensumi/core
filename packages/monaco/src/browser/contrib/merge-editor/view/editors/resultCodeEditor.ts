@@ -16,18 +16,19 @@ import {
   IModelDecorationOptions,
   IModelDeltaDecoration,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { BaseInlineContentWidget } from '../../../../ai-native/content-widget';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
-import { LineRange } from '../../model/line-range';
+import { IIntelligentState, LineRange } from '../../model/line-range';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
   ACCEPT_COMBINATION_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
   AI_RESOLVE_ACTIONS,
+  AI_RESOLVE_REGENERATE_ACTIONS,
   CONFLICT_ACTIONS_ICON,
   DECORATIONS_CLASSNAME,
   ETurnDirection,
@@ -103,6 +104,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
   private readonly _onDidChangeContent = new Emitter<void>();
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
+  private readonly _onChangeRangeIntelligentState = new Emitter<LineRange>();
+  public readonly onChangeRangeIntelligentState: Event<LineRange> = this._onChangeRangeIntelligentState.event;
+
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { lineNumbersMinChars: 2, lineDecorationsWidth: 24 };
   }
@@ -111,7 +115,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   private resolveResultWidgetManager: IWidgetFactory;
   private stopWidgetManager: IWidgetFactory;
   private isFirstInputComputeDiff = true;
-  private cancelIndicator = new CancellationTokenSource();
+  private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
 
   protected aiBackService: IAiBackService;
 
@@ -169,17 +173,71 @@ export class ResultCodeEditor extends BaseCodeEditor {
     };
   }
 
-  public async requestAiResolveConflict(codePromptBean: string): Promise<IAiBackServiceResponse | undefined> {
+  public async requestAiResolveConflict(
+    codePromptBean: string,
+    range: LineRange,
+    isRegenerate = false,
+  ): Promise<IAiBackServiceResponse | undefined> {
     if (this.aiBackService) {
-      return this.aiBackService.request(codePromptBean, { type: 'resolveConflict' }, this.cancelIndicator.token);
+      let prompt = `你是一个智能解决代码冲突的专家，我遇到了一个代码的冲突，请仔细思考后给我解决冲突后最匹配的一个结果。注意，你需要理解代码语义后再给出答案。以下是代码中的冲突部分: \n ${codePromptBean}`;
+
+      if (isRegenerate) {
+        const newContent = this.getModel()!.getValueInRange(range.toRange());
+        prompt += `\n当前的解决冲突后的代码是 \n ${newContent}，但是我不够满意，希望给出另一种解决方案`;
+      }
+
+      return this.aiBackService.request(prompt, { type: 'resolveConflict' }, this.createRequestToken(range.id).token);
     }
 
     return;
   }
 
-  public cancelRequestToken() {
-    this.cancelIndicator.cancel();
-    this.cancelIndicator = new CancellationTokenSource();
+  // 生成 cancel token
+  public createRequestToken(id: string): CancellationTokenSource {
+    const token = new CancellationTokenSource();
+    this.cancelIndicatorMap.set(id, token);
+    return token;
+  }
+
+  public cancelRequestToken(id?: string) {
+    if (id) {
+      if (!this.cancelIndicatorMap.has(id)) {
+        return;
+      }
+
+      const token = this.cancelIndicatorMap.get(id);
+      token?.cancel();
+      return;
+    }
+
+    this.cancelIndicatorMap.forEach((token) => {
+      token.cancel();
+    });
+    this.cancelIndicatorMap.clear();
+  }
+
+  /**
+   * @param isFull 是否全量更新
+   */
+  public changeRangeIntelligentState(
+    range: LineRange,
+    state: Partial<IIntelligentState>,
+    isFull = true,
+  ): void {
+    const intelligentModel = range.getIntelligentStateModel();
+    if (isFull) {
+      intelligentModel.reset();
+      intelligentModel.setIsComplete(!!state.isComplete).setLoading(!!state.isLoading);
+    } else {
+      if (state.isComplete !== undefined) {
+        intelligentModel.setIsComplete(!!state.isComplete);
+      }
+
+      if (state.isLoading !== undefined) {
+        intelligentModel.setLoading(!!state.isLoading);
+      }
+    }
+    this._onChangeRangeIntelligentState.fire(range);
   }
 
   /**
@@ -209,6 +267,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
         this.editor.onMouseMove(
           debounce((event: monaco.editor.IEditorMouseEvent) => {
             const { target } = event;
+
+            if (target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
+              this.hideResolveResultWidget();
+              return;
+            }
+
             const mousePosition = target.position;
             if (!mousePosition) {
               return;
@@ -236,7 +300,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
             } else {
               this.hideResolveResultWidget();
             }
-          }, 30),
+          }, 10),
         ),
       );
     }
@@ -639,6 +703,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
           this.launchConflictActionsEvent({
             range,
             action: AI_RESOLVE_ACTIONS,
+          });
+        }
+
+        if (actionType === AI_RESOLVE_REGENERATE_ACTIONS) {
+          this.launchConflictActionsEvent({
+            range,
+            action: AI_RESOLVE_REGENERATE_ACTIONS,
           });
         }
       },
