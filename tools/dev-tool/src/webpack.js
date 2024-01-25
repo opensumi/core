@@ -12,20 +12,17 @@ const { merge } = require('webpack-merge');
 
 threadLoader.warmup({}, ['ts-loader']);
 
-const utils = require('./utils');
-
 const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
-const HOST = process.env.HOST || '127.0.0.1';
-const PORT = process.env.IDE_FRONT_PORT || 8080;
+const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.PORT || 8080;
 
 const defaultWorkspace = path.join(__dirname, '../../workspace');
 fse.mkdirpSync(defaultWorkspace);
 
 const withSlash = process.platform === 'win32' ? '/' : '';
 
-// eslint-disable-next-line no-console
 console.log('front port', PORT);
 
 const styleLoader =
