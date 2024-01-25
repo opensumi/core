@@ -9,6 +9,7 @@ aptPkgs = ["...", "wget", "build-essential", "libsecret-1-dev"]
 
 [phases.build]
 cmds = ['yarn run build:all']
+nixLibs = ['zlib', 'secret-1']
 
 [start]
 cmd = 'yarn run start:prod'
