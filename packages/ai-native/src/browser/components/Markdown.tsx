@@ -4,15 +4,15 @@ import ReactDOM from 'react-dom';
 
 import { marked, IMarkedOptions } from '@opensumi/ide-components/lib/utils';
 import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
-import { IMarkdownString } from '@opensumi/ide-core-common';
 import { defaultGenerator } from '@opensumi/ide-core-common/lib/id-generator';
 import { escape } from '@opensumi/ide-utils/lib/strings';
+import { MarkdownString, IMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
 import * as styles from './components.module.less';
 
 interface MarkdownProps {
-  markdown: IMarkdownString;
+  markdown: IMarkdownString | string;
   className?: string;
   fillInIncompleteTokens?: boolean; // 补齐不完整的 token，如代码块或表格
   markedOptions?: IMarkedOptions;
@@ -24,8 +24,13 @@ export const Markdown = (props: MarkdownProps) => {
 
   useEffect(() => {
     const element = ref.current;
-    if (!element) {return;}
+    if (!element) {
+      return;
+    }
     const codeBlocks: [string, HTMLDivElement][] = [];
+
+    const markdown: IMarkdownString =
+      typeof props.markdown === 'string' ? new MarkdownString(props.markdown) : props.markdown;
 
     const renderer = new marked.Renderer();
     renderer.link = (href: string | null, title: string | null, text: string): string =>
@@ -50,7 +55,7 @@ export const Markdown = (props: MarkdownProps) => {
     const markedOptions = props.markedOptions ?? {};
     markedOptions.renderer = renderer;
 
-    let value = props.markdown.value ?? '';
+    let value = markdown.value ?? '';
     if (value.length > 100_000) {
       value = `${value.slice(0, 100_000)}…`;
     }

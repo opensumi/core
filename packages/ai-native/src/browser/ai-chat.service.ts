@@ -5,12 +5,7 @@ import { AiBackSerivcePath, IAiBackService, IAiBackServiceOption } from '@opensu
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import {
-  AISerivceType,
-  IChatMessageStructure,
-  InstructionEnum,
-  IChatManagerService,
-} from '../common';
+import { AISerivceType, IChatMessageStructure, InstructionEnum, IChatManagerService } from '../common';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
@@ -244,7 +239,7 @@ export class AiChatService extends Disposable {
         });
       }
     } catch (error) {
-      new Error(`onMessage error: ${error}`);
+      throw new Error(`onMessage error: ${error}`);
     }
   }
 

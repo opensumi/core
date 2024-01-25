@@ -14,14 +14,9 @@ import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/c
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
+import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import {
-  AISerivceType,
-  IChatMessageStructure,
-  InstructionEnum,
-  AiResponseTips,
-  IChatAgentService,
-} from '../common';
+import { AISerivceType, IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -32,6 +27,7 @@ import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
 import { ChatReply } from './components/ChatReply';
+import { Markdown } from './components/Markdown';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from './model/msg-stream-manager';
@@ -663,9 +659,7 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
           sessionId={relationId}
           prompt={prompt}
           onRegenerate={() => send()}
-          renderContent={(content) => (
-            <CodeBlockWrapper text={content} renderText={(text) => <ChatMarkdown content={text} />} />
-          )}
+          renderContent={(content) => <Markdown markdown={content} fillInIncompleteTokens />}
         ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,
