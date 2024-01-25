@@ -178,7 +178,7 @@ export const ChatReply = (props: IChatReplyProps) => {
 
   const renderMarkdown = (markdown: IMarkdownString) => (
     // TODO: Markdown 属性限制
-    <Markdown markdown={markdown} fillInIncompleteTokens className={styles.markdown_container} />
+    <Markdown markdown={markdown} fillInIncompleteTokens />
   );
   const renderTreeData = (treeData: IChatResponseProgressFileTreeData) => <TreeRenderer treeData={treeData} />;
 

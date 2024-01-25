@@ -1,7 +1,12 @@
-import React, { ReactNode, useEffect, useState, Fragment } from 'react';
+import cls from 'classnames';
+import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 
 import { marked, IMarkedOptions } from '@opensumi/ide-components/lib/utils';
+import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
 import { IMarkdownString } from '@opensumi/ide-core-common';
+import { defaultGenerator } from '@opensumi/ide-core-common/lib/id-generator';
+import { escape } from '@opensumi/ide-utils/lib/strings';
 
 import { CodeEditorWithHighlight } from './ChatEditor';
 import * as styles from './components.module.less';
@@ -13,66 +18,89 @@ interface MarkdownProps {
   markedOptions?: IMarkedOptions;
 }
 
-const renderMarkdown = ({ markdown, markedOptions = {}, ...options }: MarkdownProps): Array<string | ReactNode> => {
-  const renderer = new marked.Renderer();
-  renderer.link = (href: string | null, title: string | null, text: string): string => `<a rel="noopener" target="_blank" href="${href}" target="${href}" title="${title || href}">${text}</a>`;
-  markedOptions.renderer = renderer;
-
-  let value = markdown.value ?? '';
-  if (value.length > 100_000) {
-    value = `${value.slice(0, 100_000)}…`;
-  }
-
-  const renderedMarkdown: Array<string | ReactNode> = [];
-
-  const opts = {
-    ...marked.defaults,
-    ...markedOptions,
-  };
-  let tokens = marked.lexer(value, opts);
-  if (options.fillInIncompleteTokens) {
-    tokens = fillInIncompleteTokens(tokens);
-  }
-
-  let start = 0;
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    if (token.type === 'code') {
-      renderedMarkdown.push(marked.parser(tokens.slice(start, i), opts));
-      renderedMarkdown.push(
-        <div className={styles.code_block}>
-          <div className={styles.code_language}>{token.lang}</div>
-          <CodeEditorWithHighlight input={token.text} language={token.lang} />
-        </div>,
-      );
-      start = i + 1;
-    }
-  }
-  if (start < tokens.length) {
-    renderedMarkdown.push(marked.parser(tokens.slice(start), opts));
-  }
-
-  return renderedMarkdown;
-};
-
 export const Markdown = (props: MarkdownProps) => {
-  const [nodes, setNodes] = useState<Array<string | ReactNode>>([]);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   useEffect(() => {
-    setNodes(renderMarkdown(props));
+    const element = ref.current;
+    if (!element) {return;}
+    const codeBlocks: [string, HTMLDivElement][] = [];
+
+    const renderer = new marked.Renderer();
+    renderer.link = (href: string | null, title: string | null, text: string): string =>
+      `<a rel="noopener" target="_blank" href="${href}" target="${href}" title="${title || href}">${text}</a>`;
+    renderer.code = (code, lang) => {
+      const id = defaultGenerator.nextId();
+      const container = document.createElement('div');
+      const language = postProcessCodeBlockLanguageId(lang);
+      ReactDOM.render(
+        <ConfigProvider value={appConfig}>
+          <div className={styles.code_block}>
+            <div className={styles.code_language}>{language}</div>
+            <CodeEditorWithHighlight input={code} language={language} />
+          </div>
+        </ConfigProvider>,
+        container,
+      );
+      codeBlocks.push([id, container]);
+      return `<div class="code" data-code="${id}">${escape(code)}</div>`;
+    };
+    renderer.codespan = (code) => `<code class=${styles.code_inline}>${code}</code>`;
+    const markedOptions = props.markedOptions ?? {};
+    markedOptions.renderer = renderer;
+
+    let value = props.markdown.value ?? '';
+    if (value.length > 100_000) {
+      value = `${value.slice(0, 100_000)}…`;
+    }
+
+    let renderedMarkdown: string;
+    if (props.fillInIncompleteTokens) {
+      const opts = {
+        ...marked.defaults,
+        ...markedOptions,
+      };
+      const tokens = marked.lexer(value, opts);
+      const newTokens = fillInIncompleteTokens(tokens);
+      renderedMarkdown = marked.parser(newTokens, opts);
+    } else {
+      renderedMarkdown = marked.parse(value, markedOptions);
+    }
+
+    element.innerHTML = renderedMarkdown;
+
+    const codeRenderedElements = new Map(codeBlocks);
+    const codePlaceholderElements = element.querySelectorAll<HTMLDivElement>('div[data-code]');
+    codePlaceholderElements.forEach((placeholderElement) => {
+      const renderedElement = codeRenderedElements.get(placeholderElement.dataset['code'] ?? '');
+      if (renderedElement) {
+        placeholderElement.innerText = '';
+        placeholderElement.append(renderedElement);
+      }
+    });
+
+    return () => {
+      codeBlocks.forEach(([, renderedElement]) => {
+        ReactDOM.unmountComponentAtNode(renderedElement);
+      });
+    };
   }, [props.markdown]);
 
-  return (
-    <div className={props.className}>
-      {nodes.map((node, index) => {
-        if (typeof node === 'string') {
-          return <div dangerouslySetInnerHTML={{ __html: node }} key={index}></div>;
-        }
-        return node;
-      })}
-    </div>
-  );
+  return <div className={cls(styles.markdown_container, props.className)} ref={ref} />;
 };
+
+export function postProcessCodeBlockLanguageId(lang: string | undefined): string {
+  if (!lang) {
+    return '';
+  }
+
+  const parts = lang.split(/[\s+|:|,|\{|\?]/, 1);
+  if (parts.length) {
+    return parts[0];
+  }
+  return lang;
+}
 
 export function fillInIncompleteTokens(tokens: marked.TokensList): marked.TokensList {
   let i: number;
@@ -192,7 +220,9 @@ function mergeRawTokenText(tokens: marked.Token[]): string {
 
 function completeSingleLinePattern(token: marked.Tokens.ListItem | marked.Tokens.Paragraph): marked.Token | undefined {
   for (const { type, raw } of token.tokens) {
-    if (type !== 'text') {continue;}
+    if (type !== 'text') {
+      continue;
+    }
 
     const lines = raw.split('\n');
     const lastLine = lines[lines.length - 1];
