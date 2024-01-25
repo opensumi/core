@@ -32,12 +32,20 @@ interface IBlockProps {
   onClick?: () => void;
 }
 
-const Block = ({ icon, name, onClick, text, agentId, command }: IBlockProps) => (
+const Block = ({
+  icon,
+  name,
+  onClick,
+  text,
+  agentId,
+  command,
+  selectedAgentId,
+}: IBlockProps & { selectedAgentId?: string }) => (
   <div className={styles.block} onClick={onClick}>
     {icon && <EnhanceIcon className={icon} />}
     {name && <span className={styles.name}>{name}</span>}
     {text && <span className={styles.text}>{text}</span>}
-    {agentId && command && <span className={styles.agent_label}>@{agentId}</span>}
+    {!selectedAgentId && agentId && command && <span className={styles.agent_label}>@{agentId}</span>}
   </div>
 );
 
@@ -70,7 +78,7 @@ const optionsList: IBlockProps[] = [
 ];
 
 // 指令命令激活组件
-const InstructionOptions = ({ onClick, bottom, trigger }) => {
+const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId }) => {
   const [commonlyUsed, setCommonlyUsed] = useState<IBlockProps[]>([]);
   const [options, setOptions] = useState<IBlockProps[]>([]);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
@@ -86,15 +94,17 @@ const InstructionOptions = ({ onClick, bottom, trigger }) => {
         })),
       );
     } else {
-      setOptions([
-        ...optionsList,
-        ...chatAgentService.getCommands().map((c) => ({
-          name: `/ ${c.name} `,
-          text: c.description,
-          command: c.name,
-          agentId: c.agentId,
-        })),
-      ]);
+      setOptions(
+        [
+          ...optionsList,
+          ...chatAgentService.getCommands().map((c) => ({
+            name: `/ ${c.name} `,
+            text: c.description,
+            command: c.name,
+            agentId: c.agentId,
+          })),
+        ].filter((item) => !selectedAgentId || item.agentId === selectedAgentId),
+      );
     }
   }, []);
 
@@ -113,7 +123,14 @@ const InstructionOptions = ({ onClick, bottom, trigger }) => {
         <ul>
           {options.map(({ icon, name, text, agentId, command }) => (
             <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(name, agentId, command)}>
-              <Block icon={icon} name={name} text={text} agentId={agentId} command={command} />
+              <Block
+                icon={icon}
+                name={name}
+                text={text}
+                agentId={agentId}
+                command={command}
+                selectedAgentId={selectedAgentId}
+              />
             </li>
           ))}
         </ul>
@@ -249,20 +266,22 @@ export const ChatInput = (props: IChatInputProps) => {
     const agents = chatAgentService.getAgents();
     const commands = chatAgentService.getCommands();
     const agentIdReg = new RegExp(`^@(${agents.map((a) => a.id).join('|')})\\s`, 'i');
-    const commandReg = new RegExp(`^/\\s?(${commands.map((c) => c.name).join('|')})\\s`, 'i');
     const agentIdMatch = value.match(agentIdReg);
     if (agentIdMatch) {
       setValue(value.replace(agentIdMatch[0], ''));
-      const matchedAgent = agents.find((a) => a.id.toLowerCase() === agentIdMatch[1])!;
+      const matchedAgent = agents.find((a) => a.id.toLowerCase() === agentIdMatch[1].toLowerCase())!;
       setAgentId(matchedAgent.id);
       setCommand('');
       setTheme('');
       return;
     }
+    const commandReg = new RegExp(`^/\\s?(${commands.map((c) => c.name).join('|')})\\s`, 'i');
     const commandMatch = value.match(commandReg);
     if (commandMatch) {
       setValue(value.replace(commandMatch[0], ''));
-      const matchedCommand = chatAgentService.getCommands().find((c) => c.name.toLowerCase() === commandMatch[1])!;
+      const matchedCommand = chatAgentService
+        .getCommands()
+        .find((c) => c.name.toLowerCase() === commandMatch[1].toLowerCase())!;
       setAgentId(matchedCommand.agentId);
       setCommand(matchedCommand.name);
       setTheme('');
@@ -451,7 +470,12 @@ export const ChatInput = (props: IChatInputProps) => {
     <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
         <div ref={instructionRef}>
-          <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} trigger={value} />
+          <InstructionOptions
+            onClick={acquireOptionsCheck}
+            bottom={optionsBottomPosition}
+            trigger={value}
+            agentId={agentId}
+          />
         </div>
       )}
       {theme && <ThemeWidget themeBlock={theme} />}
