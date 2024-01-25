@@ -20,6 +20,7 @@ import {
   Throttler,
   URI,
 } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { monaco, URI as MonacoURI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { EOL, EndOfLineSequence, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -686,7 +687,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
               reject(err);
             }, formatOnSaveTimeout);
           }),
-          this.commandService.executeCommand('editor.action.formatDocument'),
+          this.commandService.executeCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT.id),
         ]);
       } catch (err) {
         if (err.name === 'FormatOnSaveTimeoutError') {

@@ -99,6 +99,7 @@ export namespace DECORATIONS_CLASSNAME {
   export const ai_resolve_icon = styles.ai_resolve_icon;
   export const ai_resolve_loading_icon = styles.ai_resolve_loading_icon;
   export const ai_resolve_complete = styles.ai_resolve_complete;
+  export const ai_resolve_complete_lines_decorations = styles.ai_resolve_complete_lines_decorations;
 
   export const range_type: { [key in LineRangeType]: string } = {
     insert: styles.insert,
