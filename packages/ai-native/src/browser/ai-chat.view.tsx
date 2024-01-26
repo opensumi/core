@@ -700,7 +700,7 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          {RenderAnswer ? <RenderAnswer input={input} /> : <CodeBlockWrapper text={input} relationId={relationId} />}
+          {RenderAnswer ? <RenderAnswer input={input} relationId={relationId} /> : <CodeBlockWrapper text={input} relationId={relationId} />}
         </ChatMoreActions>
       ),
       className: styles.chat_with_more_actions,
