@@ -4,7 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
+import { CommandService, Disposable, Event, runWhenIdle } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
@@ -296,7 +296,7 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: true });
+    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: true }, false);
     this.resultView.updateDecorations().updateActions();
 
     const skeletonDecorationDispose = this.resultView.renderSkeletonDecoration(flushRange, [
@@ -320,7 +320,7 @@ export class ActionsManager extends Disposable {
       isRegenerate,
     );
 
-    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false });
+    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false }, false);
     skeletonDecorationDispose();
 
     flushRange = this.resultView.flushRange(range) || range;
@@ -330,6 +330,7 @@ export class ActionsManager extends Disposable {
       this.applyLineRangeEdits([{ range: flushRange, text: resolveConflictResult.data }]);
 
       this.resultView.getEditor().focus();
+      this.resultView.getEditor().revealRange(flushRange.toRange(), 1);
       await this.commandService.executeCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT.id, this.nutrition?.output.uri);
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {

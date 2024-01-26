@@ -219,11 +219,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   /**
    * @param isFull 是否全量更新
    */
-  public changeRangeIntelligentState(
-    range: LineRange,
-    state: Partial<IIntelligentState>,
-    isFull = true,
-  ): void {
+  public changeRangeIntelligentState(range: LineRange, state: Partial<IIntelligentState>, isFull = true): void {
     const intelligentModel = range.getIntelligentStateModel();
     if (isFull) {
       intelligentModel.reset();
@@ -404,12 +400,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
       if (isAiConflictResolve && range.type === 'modify') {
         const aiModel = range.getIntelligentStateModel();
 
-        if (aiModel.isComplete) {
-          return CONFLICT_ACTIONS_ICON.REVOKE;
-        }
-
         if (aiModel.isLoading) {
           return CONFLICT_ACTIONS_ICON.AI_RESOLVE_LOADING;
+        }
+
+        if (aiModel.isComplete) {
+          return CONFLICT_ACTIONS_ICON.REVOKE;
         }
 
         if (range.isMerge) {
@@ -591,7 +587,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
     if (isAiConflictResolve) {
       changesResult
-        .filter((range) => range.isMerge && range.type === 'modify')
+        .filter((range) => range.isAiConflict)
         .forEach((range) => {
           const model = range.getIntelligentStateModel();
 
@@ -613,7 +609,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
       const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
       const intelligentModel = range.getIntelligentStateModel();
 
-      if (isAiConflictResolve && intelligentModel.isComplete) {
+      if (isAiConflictResolve && intelligentModel.isComplete && !intelligentModel.isLoading) {
         return true;
       }
 
