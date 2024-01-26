@@ -57,11 +57,11 @@ export function App(props: AppProps) {
   );
 }
 
-export type IAppRenderer = (app: (props) => React.JSX.Element) => void;
+export type IAppRenderer = (app: (props) => JSX.Element) => void;
 
 const defaultAppRender =
   (dom: HTMLElement): IAppRenderer =>
-  (IDEApp: (props) => React.JSX.Element) => {
+  (IDEApp: (props) => JSX.Element) => {
     const root = ReactDom.createRoot(dom);
     root.render(<IDEApp />);
   };

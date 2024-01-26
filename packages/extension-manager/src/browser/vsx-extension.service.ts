@@ -1,4 +1,4 @@
-import { observable, action, makeObservable } from 'mobx';
+import { observable, action, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -49,7 +49,7 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
-  @observable
+  @observable.shallow
   public extensions: VSXExtension[] = [];
 
   @observable
@@ -193,7 +193,6 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
     });
   }
 
-  @action
   async search(keyword: string) {
     const param: VSXSearchParam = {
       query: keyword,
@@ -204,15 +203,17 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
     const res = await this.backService.search(param);
     if (res.extensions) {
-      this.extensions = res.extensions
-        .filter((ext) => !this.installedExtensions.find((e) => this.getExtensionId(e) === this.getExtensionId(ext)))
-        .map((ext) => ({
-          ...ext,
-          publisher: ext.namespace,
-          iconUrl: ext.files.icon,
-          downloadUrl: ext.files.download,
-          readme: ext.files.readme,
-        }));
+      runInAction(() => {
+        this.extensions = res.extensions
+          .filter((ext) => !this.installedExtensions.find((e) => this.getExtensionId(e) === this.getExtensionId(ext)))
+          .map((ext) => ({
+            ...ext,
+            publisher: ext.namespace,
+            iconUrl: ext.files.icon,
+            downloadUrl: ext.files.download,
+            readme: ext.files.readme,
+          }));
+      });
     }
   }
 

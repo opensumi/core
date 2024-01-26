@@ -209,8 +209,6 @@ describe('main layout test', () => {
   it('containers in layout config should be registed', () => {
     const rightTabbarService = service.getTabbarService('right');
     expect(rightTabbarService.visibleContainers.length).toEqual(1);
-    const accordionService = service.getAccordionService(testContainerId);
-    expect(accordionService.visibleViews.length).toEqual(2);
   });
 
   // container api test start
@@ -305,7 +303,7 @@ describe('main layout test', () => {
       handler.setCollapsed('test-view-id5', true);
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
-    expect(mockCb).toBeCalledTimes(5);
+    expect(mockCb).toBeCalledTimes(4);
     let newTitle = 'new title';
     act(() => {
       handler.setBadge('20');

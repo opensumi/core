@@ -1,4 +1,4 @@
-import { observable, action, makeObservable } from 'mobx';
+import { observable, action, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
@@ -52,7 +52,7 @@ export class DebugConfigurationService {
   @observable
   isMultiRootWorkspace: boolean;
 
-  @observable
+  @observable.shallow
   workspaceRoots: string[] = [];
 
   @observable.shallow
@@ -87,10 +87,12 @@ export class DebugConfigurationService {
     this.updateFloat(!!this.preferenceService.get<boolean>('debug.toolbar.float'));
   }
 
-  @action
   async updateWorkspaceState() {
-    this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
-    this.workspaceRoots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
+    const roots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
+    runInAction(() => {
+      this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
+      this.workspaceRoots = roots;
+    });
   }
 
   @action

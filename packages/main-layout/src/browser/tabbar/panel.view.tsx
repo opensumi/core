@@ -52,7 +52,6 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
     // panelSize = 384-1-48
     tabbarService.panelSize = customPanelSize || panelSize || 335;
   }, []);
-
   return (
     <div
       id={id}
