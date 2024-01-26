@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { observable, action, reaction, computed, makeObservable, runInAction } from 'mobx';
+import { observable, action, reaction, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -238,7 +238,6 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  @computed({ equals: visibleContainerEquals })
   get visibleContainers() {
     const components: ComponentRegistryInfo[] = [];
     this.containersMap.forEach((component) => {
@@ -275,30 +274,30 @@ export class TabbarService extends WithEventBus {
     if (this.containersMap.has(containerId)) {
       return;
     }
+
     const disposables = new DisposableCollection();
-    let options = componentInfo.options;
-    if (!options) {
-      options = {
-        containerId,
-      };
-      componentInfo.options = options;
-    }
+    const options = componentInfo.options || { containerId };
+    componentInfo.options = options;
     this.containersMap.set(containerId, {
       views: componentInfo.views,
       options: observable.object(options, undefined, { deep: false }),
     });
+
     disposables.push({
       dispose: () => {
         this.containersMap.delete(containerId);
         this.state.delete(containerId);
       },
     });
+
     this.updatePanelVisibility(this.containersMap.size > 0);
-    // 需要立刻设置state，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
-    // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
-    // 注册时直接根据priority排序，restoreState时恢复到记录的状态（对于集成侧在onDidStart之后注册的视图，不提供顺序状态恢复能力）
+
+    // 为了避免在计算 visibleContainers 时触发 MobX 不变错误，需要立即设置状态。
+    // 此外，由于 containersMap 不是可观察的，使用 setState 会触发 visibleContainers 的更新。
+    // 在注册过程中，根据优先级对组件进行排序。
+    // 在恢复状态时，组件将按照先前的顺序进行恢复（除了在 onDidStart 之后注册的视图，它们没有顺序恢复的能力）。
     let insertIndex = this.sortedContainers.findIndex(
-      (item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1),
+      (item) => (item.options?.priority || 1) <= (componentInfo.options?.priority || 1),
     );
     if (insertIndex === -1) {
       insertIndex = this.sortedContainers.length;
@@ -315,14 +314,17 @@ export class TabbarService extends WithEventBus {
       }
     }
     disposables.push(this.registerSideEffects(componentInfo));
+
     this.eventBus.fire(new TabBarRegistrationEvent({ tabBarId: containerId }));
+
     if (containerId === this.currentContainerId) {
-      // 需要重新触发currentChange副作用
       this.handleChange(containerId, '');
     }
+
     this.viewContextKeyRegistry
       .registerContextKeyService(containerId, this.contextKeyService.createScoped())
       .createKey('view', containerId);
+
     this.disposableMap.set(containerId, disposables);
   }
 
@@ -879,20 +881,5 @@ export class TabbarService extends WithEventBus {
     } else {
       setSize(this.barSize);
     }
-  }
-}
-
-function visibleContainerEquals(a: ComponentRegistryInfo[], b: ComponentRegistryInfo[]): boolean {
-  if (a.length !== b.length) {
-    return false;
-  } else {
-    let isEqual = true;
-    for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i]) {
-        isEqual = false;
-        break;
-      }
-    }
-    return isEqual;
   }
 }

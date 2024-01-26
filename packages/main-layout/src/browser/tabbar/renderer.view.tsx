@@ -43,7 +43,7 @@ export const TabRendererBase: FC<{
     });
     tabbarService.updatePanelVisibility();
     tabbarService.viewReady.resolve();
-  }, []);
+  }, [components]);
 
   useEffect(() => {
     if (rootRef.current) {

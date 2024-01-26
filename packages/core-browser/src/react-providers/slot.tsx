@@ -202,6 +202,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
     });
     setInfos(infos);
   }, []);
+
   React.useEffect(() => {
     // 对于嵌套在模块视图的SlotRenderer，渲染时应用已启动
     clientApp.appInitialized.promise.then(updateComponentInfos);

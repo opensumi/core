@@ -104,10 +104,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   public viewReady: Deferred<void> = new Deferred();
 
-  constructor() {
-    super();
-  }
-
   didMount() {
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
       views.forEach(({ view, props }) => {
