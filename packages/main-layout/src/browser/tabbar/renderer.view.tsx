@@ -44,7 +44,7 @@ export const TabRendererBase: React.FC<{
     });
     tabbarService.updatePanelVisibility();
     tabbarService.viewReady.resolve();
-  }, []);
+  }, [components]);
   React.useEffect(() => {
     if (rootRef.current) {
       setFullSize(rootRef.current[Layout.getDomSizeProperty(direction)]);

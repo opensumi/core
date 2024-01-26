@@ -46,6 +46,7 @@ export function App(props: AppProps) {
       window.removeEventListener('resize', handle);
     };
   }, []);
+
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <ConfigProvider value={props.app.config}>
@@ -56,11 +57,11 @@ export function App(props: AppProps) {
   );
 }
 
-export type IAppRenderer = (app: (props: any) => JSX.Element) => void;
+export type IAppRenderer = (app: (props) => React.JSX.Element) => void;
 
 const defaultAppRender =
   (dom: HTMLElement): IAppRenderer =>
-  (IDEApp: (props: any) => JSX.Element) => {
+  (IDEApp: (props) => React.JSX.Element) => {
     const root = ReactDom.createRoot(dom);
     root.render(<IDEApp />);
   };

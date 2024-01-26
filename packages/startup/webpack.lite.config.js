@@ -20,6 +20,9 @@ module.exports = createWebpackConfig(baseDir, path.join(baseDir, 'app.tsx'), {
   },
   node: false,
   plugins: [
+    new webpack.DefinePlugin({
+      global: 'window', // This will replace global with window
+    }),
     // Expose BrowserFS, process, and Buffer globals.
     // NOTE: If you intend to use BrowserFS in a script tag, you do not need
     // to expose a BrowserFS global.

@@ -208,11 +208,9 @@ describe('main layout test', () => {
   // main logic test
   it('containers in layout config should be registed', () => {
     const rightTabbarService = service.getTabbarService('right');
-    rendered.promise.then(() => {
-      expect(rightTabbarService.visibleContainers.length).toEqual(1);
-      const accordionService = service.getAccordionService(testContainerId);
-      expect(accordionService.visibleViews.length).toEqual(2);
-    });
+    expect(rightTabbarService.visibleContainers.length).toEqual(1);
+    const accordionService = service.getAccordionService(testContainerId);
+    expect(accordionService.visibleViews.length).toEqual(2);
   });
 
   // container api test start
@@ -308,15 +306,17 @@ describe('main layout test', () => {
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
     expect(mockCb).toBeCalledTimes(5);
+    let newTitle = 'new title';
     act(() => {
       handler.setBadge('20');
-      handler.updateTitle('gggggggg');
+      handler.updateTitle(newTitle);
     });
-    expect(tabbarService.getContainer(testContainerId2)!.options!.title).toEqual('gggggggg');
+    expect(tabbarService.getContainer(testContainerId2)!.options!.title).toEqual(newTitle);
+    newTitle = 'new title 2';
     act(() => {
-      handler.updateViewTitle('test-view-id5', 'new title');
+      handler.updateViewTitle('test-view-id5', newTitle);
     });
-    expect(handler.accordionService.views.find((view) => view.id === 'test-view-id5')?.name === 'new title');
+    expect(handler.accordionService.views.find((view) => view.id === 'test-view-id5')?.name === newTitle);
     act(() => {
       handler.toggleViews(['test-view-id5'], false);
     });
@@ -392,26 +392,24 @@ describe('main layout test', () => {
         { message: 'yes' },
       );
     });
-    rendered.promise.then(() => {
-      const accordionService = service.getAccordionService(testContainerId);
-      expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeDefined();
-      act(() => {
-        service.replaceViewComponent(
-          {
-            id: tmpViewId,
-            component: (props) => <h1 id={tmpDomId}>{props.id || 'no props'}</h1>,
-          },
-          { id: 'hello world' },
-        );
-      });
-      const newDom = document.getElementById(tmpDomId);
-      expect(newDom).toBeDefined();
-      expect(newDom!.innerHTML).toEqual('hello world');
-      act(() => {
-        service.disposeViewComponent(tmpViewId);
-      });
-      expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeUndefined();
+    const accordionService = service.getAccordionService(testContainerId);
+    expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeDefined();
+    act(() => {
+      service.replaceViewComponent(
+        {
+          id: tmpViewId,
+          component: (props) => <h1 id={tmpDomId}>{props.id || 'no props'}</h1>,
+        },
+        { id: 'hello world' },
+      );
     });
+    const newDom = document.getElementById(tmpDomId);
+    expect(newDom).toBeDefined();
+    expect(newDom!.innerHTML).toEqual('hello world');
+    act(() => {
+      service.disposeViewComponent(tmpViewId);
+    });
+    expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeUndefined();
   });
 
   it('shouldn`t register empty tabbar component with hideIfEmpty option until valid view collected', () => {
@@ -429,27 +427,23 @@ describe('main layout test', () => {
 
   // toggle / expand api test
 
-  it('toggle slot should work', () => {
+  it('toggle slot should work', async () => {
     const rightTabbarService = service.getTabbarService('right');
-    rendered.promise.then(() => {
-      // currentContainerId 空字符串表示当前未选中任何tab
-      expect(rightTabbarService.currentContainerId).toEqual('');
-      act(() => {
-        service.toggleSlot('right');
-      });
-      expect(rightTabbarService.currentContainerId).toBeTruthy();
-      // panel visible
-      expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
+    // currentContainerId 空字符串表示当前未选中任何tab
+    expect(rightTabbarService.currentContainerId).toEqual('');
+    act(() => {
+      service.toggleSlot('right');
     });
+    expect(rightTabbarService.currentContainerId).toBeTruthy();
+    // panel visible
+    expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.display).toEqual('block');
   });
 
   it('should be able to judge whether a tab panel is visible', () => {
-    rendered.promise.then(() => {
-      expect(service.isVisible('right')).toBeTruthy();
-      act(() => {
-        service.toggleSlot('right', false);
-      });
-      expect(service.isVisible('right')).toBeFalsy();
+    expect(service.isVisible('right')).toBeTruthy();
+    act(() => {
+      service.toggleSlot('right', false);
     });
+    expect(service.isVisible('right')).toBeFalsy();
   });
 });
