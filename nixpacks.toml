@@ -8,7 +8,7 @@ nixPkgs = ["...", "libsecret"]
 aptPkgs = ["...", "build-essential", "libsecret-1-dev"]
 
 [phases.build]
-cmds = ['yarn build:all']
+cmds = ['yarn build:all', 'yarn bundle:standard', 'yarn download-extension']
 
 [start]
-cmd = 'yarn start:prod'
+cmd = 'node packages/startup/dist-node/server/server.js'
