@@ -38,6 +38,7 @@
     "react-highlight": "^0.15.0"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "workspace:*"
+    "@opensumi/ide-core-browser": "workspace:*",
+    "abort-controller": "^3.0.0"
   }
 }

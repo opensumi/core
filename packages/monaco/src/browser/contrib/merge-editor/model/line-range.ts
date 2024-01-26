@@ -8,7 +8,12 @@ import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
 
-class IntelligentStateModel {
+export interface IIntelligentState {
+  isLoading: boolean;
+  isComplete: boolean;
+}
+
+class IntelligentStateModel implements IIntelligentState {
   private _isLoading: boolean;
   private _isComplete: boolean;
 
@@ -139,6 +144,10 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
 
   public get isAllowCombination(): boolean {
     return this.mergeStateModel.isAllowCombination;
+  }
+
+  public get isAiConflict(): boolean {
+    return this.isMerge && this.type === 'modify';
   }
 
   private mergeStateModel: MergeStateModel;

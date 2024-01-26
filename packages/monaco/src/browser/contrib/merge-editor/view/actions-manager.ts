@@ -1,4 +1,7 @@
+import debounce from 'lodash/debounce';
+
 import { Autowired, Injectable } from '@opensumi/di';
+import { message } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
@@ -14,6 +17,7 @@ import {
   ACCEPT_CURRENT_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
   AI_RESOLVE_ACTIONS,
+  AI_RESOLVE_REGENERATE_ACTIONS,
   APPEND_ACTIONS,
   ETurnDirection,
   IActionsProvider,
@@ -174,7 +178,6 @@ export class ActionsManager extends Disposable {
    */
   private handleAcceptRevoke(range: LineRange): void {
     const { turnDirection } = range;
-    const intelligentModel = range.getIntelligentStateModel();
 
     const viewEditor = this.pickViewEditor(range);
     const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
@@ -202,7 +205,7 @@ export class ActionsManager extends Disposable {
     // 为 null 则说明是删除文本
     this.applyLineRangeEdits([{ range, text }]);
 
-    intelligentModel.reset();
+    this.resultView?.changeRangeIntelligentState(range, { isLoading: false, isComplete: false });
     this.resultView?.updateActions();
 
     if (turnDirection === ETurnDirection.BOTH) {
@@ -273,7 +276,7 @@ export class ActionsManager extends Disposable {
   /**
    * 处理 AI 智能解决冲突时的逻辑
    */
-  private async handleAiConflictResolve(range: LineRange): Promise<void> {
+  private async handleAiConflictResolve(range: LineRange, isRegenerate = false): Promise<void> {
     if (!this.resultView) {
       return;
     }
@@ -293,9 +296,7 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    const intelligentModel = flushRange.getIntelligentStateModel();
-
-    intelligentModel.setLoading(true);
+    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: true }, false);
     this.resultView.updateDecorations().updateActions();
 
     const skeletonDecorationDispose = this.resultView.renderSkeletonDecoration(flushRange, [
@@ -303,30 +304,47 @@ export class ActionsManager extends Disposable {
       styles.skeleton_decoration_background,
     ]);
 
-    const baseValue = this.resultView?.getModel()?.getValueInRange(flushRange.toRange());
-    const currentValue = this.currentView?.getModel()?.getValueInRange(reverseLeftRange.toRange());
-    const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toRange());
+    const metaData = this.resultView!.getContentInTimeMachineDocument(flushRange.id);
+    if (!metaData) {
+      return;
+    }
+
+    const baseValue = metaData.text;
+    const currentValue = this.currentView?.getModel()?.getValueInRange(reverseLeftRange.toInclusiveRange());
+    const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toInclusiveRange());
 
     const codeAssemble = `<<<<<<< HEAD\n${currentValue}\n||||||| base\n${baseValue}\n>>>>>>>\n${incomingValue}`;
-    const resolveConflictResult = await this.resultView.requestAiResolveConflict(codeAssemble);
+    const resolveConflictResult = await this.resultView.requestAiResolveConflict(
+      codeAssemble,
+      flushRange,
+      isRegenerate,
+    );
 
-    intelligentModel.setLoading(false);
+    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false }, false);
     skeletonDecorationDispose();
 
     flushRange = this.resultView.flushRange(range) || range;
 
     if (resolveConflictResult && resolveConflictResult.data) {
-      intelligentModel.setIsComplete(true);
+      this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true });
       this.applyLineRangeEdits([{ range: flushRange, text: resolveConflictResult.data }]);
 
       this.resultView.getEditor().focus();
+      this.resultView.getEditor().revealRange(flushRange.toRange(), 1);
       await this.commandService.executeCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT.id, this.nutrition?.output.uri);
     } else {
-      // 说明 AI 解决冲突接口失败
+      if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
+        // 说明 AI 解决冲突接口失败
+        this.debounceMessageWraning();
+      }
     }
 
     this.resultView.updateDecorations().updateActions();
   }
+
+  private debounceMessageWraning = debounce(() => {
+    message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
+  }, 1000);
 
   private markComplete(range: LineRange): void {
     const { turnDirection } = range;
@@ -409,6 +427,13 @@ export class ActionsManager extends Disposable {
          */
         if (action === AI_RESOLVE_ACTIONS) {
           this.handleAiConflictResolve(range);
+        }
+
+        /**
+         * 处理 AI 智能解决冲突的重新生成(prompt 不同)
+         */
+        if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
+          this.handleAiConflictResolve(range, true);
         }
 
         this.resultView!.updateDecorations();
