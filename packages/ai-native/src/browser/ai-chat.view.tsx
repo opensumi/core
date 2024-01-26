@@ -659,7 +659,7 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
           sessionId={relationId}
           prompt={prompt}
           onRegenerate={() => send()}
-          renderContent={(content) => <Markdown markdown={content} fillInIncompleteTokens />}
+          renderContent={(content) => <Markdown markdown={content} fillInIncompleteTokens relationId={relationId} />}
         ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,

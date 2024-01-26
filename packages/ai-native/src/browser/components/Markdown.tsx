@@ -13,6 +13,7 @@ import * as styles from './components.module.less';
 
 interface MarkdownProps {
   markdown: IMarkdownString | string;
+  relationId: string;
   className?: string;
   fillInIncompleteTokens?: boolean; // 补齐不完整的 token，如代码块或表格
   markedOptions?: IMarkedOptions;
@@ -43,7 +44,7 @@ export const Markdown = (props: MarkdownProps) => {
         <ConfigProvider value={appConfig}>
           <div className={styles.code_block}>
             <div className={styles.code_language}>{language}</div>
-            <CodeEditorWithHighlight input={code} language={language} />
+            <CodeEditorWithHighlight input={code} language={language} relationId={props.relationId} />
           </div>
         </ConfigProvider>,
         container,
