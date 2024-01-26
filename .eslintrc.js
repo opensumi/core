@@ -1,3 +1,8 @@
+const path = require('path');
+
+const rulesDirPlugin = require('eslint-plugin-rulesdir');
+rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint_rules', 'rules');
+
 module.exports = {
   env: {
     browser: true,
@@ -5,7 +10,7 @@ module.exports = {
     node: true,
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'eslint-plugin-import', 'unused-imports'],
+  plugins: ['@typescript-eslint', 'rulesdir', 'import', 'unused-imports'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -188,5 +193,6 @@ module.exports = {
         ],
       },
     ],
+    'rulesdir/classnames-import-rule': ['error'],
   },
 };
