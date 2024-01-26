@@ -76,7 +76,9 @@ export class RPCServiceCenter {
   }
 
   loadProtocol(protocol: TSumiProtocol) {
-    this.protocolRepository.loadProtocol(protocol);
+    this.protocolRepository.loadProtocol(protocol, {
+      nameConverter: (name) => getMethodName(protocol.name, name),
+    });
   }
 
   setChannel(channel: WSChannel) {
@@ -113,8 +115,7 @@ export class RPCServiceCenter {
   }
 
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
-    const name = getMethodName(serviceName, _name);
-    this.serviceRunner.register(name, method);
+    this.serviceRunner.register(getMethodName(serviceName, _name), method);
   }
 
   onRequestService(serviceName: string, service: any) {

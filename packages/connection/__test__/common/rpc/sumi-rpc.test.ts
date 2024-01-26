@@ -54,7 +54,7 @@ describe('sumi rpc only', () => {
     await expect(invoker1.throwAString()).rejects.toThrow(MethodProtocolNotFoundError);
     await expect(invoker2.throwAString()).rejects.toThrow(MethodProtocolNotFoundError);
 
-    repo.loadProtocolMethod('throwAString', {
+    repo.loadProtocolMethod({
       method: 'throwAString',
       request: [],
       response: {
@@ -72,7 +72,7 @@ describe('sumi rpc only', () => {
 
   it('can throw error when method not found', async () => {
     const { invoker1, invoker2, repo } = createSumiRPCClientPair(pair);
-    repo.loadProtocolMethod('notFound', {
+    repo.loadProtocolMethod({
       method: 'notFound',
       request: [],
       response: {

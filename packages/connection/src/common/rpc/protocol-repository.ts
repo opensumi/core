@@ -2,8 +2,6 @@ import Fury, { Type, TypeDescription } from '@furyjs/fury';
 
 import { PlatformBuffer } from '@opensumi/ide-core-common/lib/types/rpc';
 
-import { getMethodName } from '../utils';
-
 import { TSumiProtocol, TSumiProtocolMethod } from './types';
 
 export interface ISerializableRequest {
@@ -50,28 +48,44 @@ export class ProtocolRepository {
     return !!this.serializerMap[name];
   }
 
-  loadProtocol(protocol: TSumiProtocol) {
-    const { methods, name } = protocol;
+  loadProtocol(
+    protocol: TSumiProtocol,
+    options?: {
+      nameConverter?: (str: string) => string;
+    },
+  ) {
+    const { methods } = protocol;
 
     for (const proto of methods) {
-      this.loadProtocolMethod(getMethodName(name, proto.method), proto);
+      let method = proto.method;
+      if (options?.nameConverter) {
+        method = options.nameConverter(method);
+      }
+
+      const copy = {
+        ...proto,
+        method,
+      };
+
+      this.loadProtocolMethod(copy);
     }
   }
 
-  loadProtocolMethod(name: string, protocol: TSumiProtocolMethod) {
+  loadProtocolMethod(methodProtocol: TSumiProtocolMethod) {
+    const methodName = methodProtocol.method;
     const argsTuple = [] as TypeDescription[];
 
-    for (const element of protocol.request) {
+    for (const element of methodProtocol.request) {
       argsTuple.push(element.type);
     }
 
-    const requestProto = Type.object(name + '^', {
+    const requestProto = Type.object(methodName + '^', {
       a: Type.tuple(argsTuple),
     });
 
-    const resultProto = createResultProto(name + 'v', protocol.response.type);
+    const resultProto = createResultProto(methodName + 'v', methodProtocol.response.type);
 
-    this.serializerMap[name] = {
+    this.serializerMap[methodName] = {
       request: this.fury.registerSerializer(requestProto),
       result: this.fury.registerSerializer(resultProto),
     };

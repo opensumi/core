@@ -109,9 +109,9 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
 
   const repo = new ProtocolRepository();
 
-  repo.loadProtocolMethod('shortUrl', protocols.shortUrl.protocol);
-  repo.loadProtocolMethod('returnUndefined', protocols.returnUndefined.protocol);
-  repo.loadProtocolMethod('add', protocols.add.protocol);
+  repo.loadProtocolMethod(protocols.shortUrl.protocol);
+  repo.loadProtocolMethod(protocols.returnUndefined.protocol);
+  repo.loadProtocolMethod(protocols.add.protocol);
 
   pair.connection1.setProtocolRepository(repo);
   pair.connection2.setProtocolRepository(repo);
