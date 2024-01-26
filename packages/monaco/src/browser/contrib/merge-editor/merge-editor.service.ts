@@ -19,7 +19,13 @@ import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
 import { LineRangeMapping } from './model/line-range-mapping';
-import { ACCEPT_CURRENT_ACTIONS, AI_RESOLVE_ACTIONS, IEditorMountParameter, REVOKE_ACTIONS } from './types';
+import {
+  ACCEPT_CURRENT_ACTIONS,
+  AI_RESOLVE_ACTIONS,
+  APPEND_ACTIONS,
+  IEditorMountParameter,
+  REVOKE_ACTIONS,
+} from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -66,6 +72,10 @@ export class MergeEditorService extends Disposable {
   private readonly _onRestoreState = new Emitter<URI>();
   public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
 
+  private loadingDispose = new Disposable();
+  private readonly _onHasIntelligentLoadingChange = new Emitter<boolean>();
+  public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
+
   private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {
@@ -88,6 +98,30 @@ export class MergeEditorService extends Disposable {
     this.addDispose(
       this.onDidInputNutrition((nutrition: IOpenMergeEditorArgs) => {
         this.actionsManager.setNutrition(nutrition);
+      }),
+    );
+  }
+
+  private listenIntelligentLoadingChange(): void {
+    this.loadingDispose.dispose();
+
+    let flag = false;
+
+    this.loadingDispose.addDispose(
+      this.resultView.onChangeRangeIntelligentState((range) => {
+        const intelligentState = range.getIntelligentStateModel();
+
+        if (intelligentState.isLoading) {
+          this._onHasIntelligentLoadingChange.fire(true);
+          flag = true;
+          return;
+        }
+
+        const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAiConflict);
+        if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
+          this._onHasIntelligentLoadingChange.fire(false);
+          this.loadingDispose.dispose();
+        }
       }),
     );
   }
@@ -131,28 +165,61 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.dispose();
     this.stickinessConnectManager.dispose();
     this.actionsManager.dispose();
+    this.loadingDispose.dispose();
   }
 
-  public async acceptLeft(): Promise<void> {
+  public async acceptLeft(isIgnoreAi = false): Promise<void> {
     const mappings = this.mappingManagerService.documentMappingTurnLeft;
     const lineRanges = mappings.getOriginalRange();
-    lineRanges.forEach((range) => {
-      this.currentView.launchConflictActionsEvent({
-        range,
-        action: ACCEPT_CURRENT_ACTIONS,
+    lineRanges
+      .filter((range) => range.isComplete === false)
+      .filter((range) => (isIgnoreAi && range.isAiConflict ? null : range))
+      .forEach((range) => {
+        if (range.isMerge) {
+          const oppositeRange = this.mappingManagerService.documentMappingTurnLeft.adjacentComputeRangeMap.get(
+            range.id,
+          );
+          if (oppositeRange && oppositeRange.isComplete) {
+            this.currentView.launchConflictActionsEvent({
+              range,
+              action: APPEND_ACTIONS,
+            });
+            return;
+          }
+        }
+
+        this.currentView.launchConflictActionsEvent({
+          range,
+          action: ACCEPT_CURRENT_ACTIONS,
+        });
       });
-    });
   }
 
-  public async acceptRight(): Promise<void> {
+  public async acceptRight(isIgnoreAi = false): Promise<void> {
     const mappings = this.mappingManagerService.documentMappingTurnRight;
     const lineRanges = mappings.getModifiedRange();
-    lineRanges.forEach((range) => {
-      this.incomingView.launchConflictActionsEvent({
-        range,
-        action: ACCEPT_CURRENT_ACTIONS,
+    lineRanges
+      .filter((range) => range.isComplete === false)
+      .filter((range) => (isIgnoreAi && range.isAiConflict ? null : range))
+      .forEach((range) => {
+        if (range.isMerge) {
+          const oppositeRange = this.mappingManagerService.documentMappingTurnRight.adjacentComputeRangeMap.get(
+            range.id,
+          );
+          if (oppositeRange && oppositeRange.isComplete) {
+            this.currentView.launchConflictActionsEvent({
+              range,
+              action: APPEND_ACTIONS,
+            });
+            return;
+          }
+        }
+
+        this.incomingView.launchConflictActionsEvent({
+          range,
+          action: ACCEPT_CURRENT_ACTIONS,
+        });
       });
-    });
   }
 
   public async accept(): Promise<void> {
@@ -203,23 +270,37 @@ export class MergeEditorService extends Disposable {
     }
   }
 
+  public async stopAllAiResolveConflict(): Promise<void> {
+    this.resultView.cancelRequestToken();
+    this.resultView.hideStopWidget();
+  }
+
   public async handleAiResolveConflict(): Promise<void> {
+    this.listenIntelligentLoadingChange();
+
+    runWhenIdle(() => {
+      this.acceptLeft(true);
+    }, 0);
+
+    runWhenIdle(() => {
+      this.acceptRight(true);
+    }, 1);
+
     const allRanges = this.resultView.getAllDiffRanges();
-    const conflictPointRanges = allRanges.filter((range) => range.isMerge && range.type === 'modify');
+    const conflictPointRanges = allRanges.filter((range) => range.isAiConflict);
 
-    for (const range of conflictPointRanges) {
-      runWhenIdle(() => {
-        const newRange = this.resultView.flushRange(range);
-        if (!newRange) {
-          return;
-        }
-
-        this.resultView.launchConflictActionsEvent({
-          range: newRange,
-          action: REVOKE_ACTIONS,
-        });
-      });
-    }
+    // for (const range of conflictPointRanges) {
+    //   runWhenIdle(() => {
+    //     const newRange = this.resultView.flushRange(range);
+    //     if (!newRange) {
+    //       return;
+    //     }
+    //     this.resultView.launchConflictActionsEvent({
+    //       range: newRange,
+    //       action: REVOKE_ACTIONS,
+    //     });
+    //   });
+    // }
 
     runWhenIdle(() => {
       conflictPointRanges.forEach((range) => {
@@ -228,7 +309,7 @@ export class MergeEditorService extends Disposable {
           action: AI_RESOLVE_ACTIONS,
         });
       });
-    });
+    }, 2);
   }
 
   public fireRestoreState(uri: URI): void {
