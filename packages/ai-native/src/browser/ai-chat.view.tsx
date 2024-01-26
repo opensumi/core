@@ -22,7 +22,7 @@ import { AiResponseTips, IChatAgentService, IChatMessageStructure, InstructionEn
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
-import { AiSumiService } from './ai-sumi/sumi.service';
+import { AiSumiService, ISumiModelResp, ISumiCommandModelResp, ISumiSettingModelResp } from './ai-sumi/sumi.service';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
@@ -169,6 +169,7 @@ export const AiChatView = observer(() => {
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -404,10 +405,10 @@ export const AiChatView = observer(() => {
       } else if (userInput.type === AISerivceType.SearchCode) {
         aiMessage = await AISearch(userInput.message, userInput.type, replayCommandProps);
       } else if (userInput.type === AISerivceType.Sumi) {
-        aiMessage = await aiSumiService.searchCommand(userInput.message);
-        aiMessage = await AIWithCommandReply(userInput.message, aiMessage, opener, replayCommandProps, async () =>
-          handleCommonRetry(userInput, replayCommandProps),
-        );
+        // 当用户输入内容 / IDE 开头时
+        const modeAnswer = await aiSumiService.getModelResp(userInput.message);
+
+        aiMessage = await AIWithIDEReply(userInput.message, modeAnswer, opener, commandService, replayCommandProps);
       } else if (
         userInput.type === AISerivceType.GPT ||
         userInput.type === AISerivceType.Explain ||
@@ -739,103 +740,62 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
   return aiMessage;
 };
 
-// 带有命令按钮的 AI 回复
-const AIWithCommandReply = async (
-  userInput: string,
-  commandRes: IAiBackServiceResponse<Command>,
+const AIWithIDEReply = async (
+  input: string,
+  modelAnswer: IAiBackServiceResponse<ISumiModelResp>,
   opener: CommandOpener,
+  commandService: CommandService,
   params: ReplayComponentParam,
-  onRetry: () => Promise<void>,
 ) => {
-  const { aiChatService, aiReporter, relationId, startTime, isRetry } = params;
+  const { aiRunService, aiReporter, relationId, aiChatService, startTime } = params;
+  const { data } = modelAnswer;
+  const { type, answer } = data ?? {};
 
-  aiChatService.setLatestSessionId(relationId);
+  function excute() {
+    if (type === 'command') {
+      const modelData = data as ISumiCommandModelResp;
+      opener.open(URI.parse(`command:${modelData.commandKey}`));
+      return;
+    }
 
-  const failedText = commandRes.errorCode
-    ? AiResponseTips.ERROR_RESPONSE
-    : !commandRes.data
-    ? AiResponseTips.NOTFOUND_COMMAND
-    : '';
+    if (type === 'setting') {
+      const modelData = data as ISumiSettingModelResp;
 
-  aiReporter.end(relationId, {
-    replytime: +new Date() - startTime,
-    success: !failedText,
-    msgType: AISerivceType.Sumi,
-    isRetry,
-  });
+      commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, modelData.settingKey);
+    }
+  }
 
-  if (failedText) {
-    return createMessageByAI({
+  let aiMessage: AIMessageData | undefined;
+  let success = true;
+  try {
+    const RenderAnswer = aiRunService.answerComponentRender();
+    aiChatService.setLatestSessionId(relationId);
+
+    aiMessage = createMessageByAI({
       id: uuid(6),
       relationId,
       text: (
-        <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
-          {failedText === AiResponseTips.NOTFOUND_COMMAND ? (
-            <div>
-              <p>{failedText}</p>
-              <p>{AiResponseTips.NOTFOUND_COMMAND_TIP}</p>
-              <Button
-                style={{ width: '100%' }}
-                onClick={() =>
-                  opener.open(
-                    URI.from({
-                      scheme: 'command',
-                      path: QUICK_OPEN_COMMANDS.OPEN_WITH_COMMAND.id,
-                      query: JSON.stringify([userInput]),
-                    }),
-                  )
-                }
-              >
-                打开命令面板
-              </Button>
-            </div>
+        <ChatMoreActions sessionId={relationId}>
+          {RenderAnswer ? (
+            <RenderAnswer input={answer!} />
           ) : (
-            failedText
+            <CodeBlockWrapper text={answer!} relationId={relationId} />
+          )}
+          {type !== 'null' && (
+            <Button onClick={excute}>{type === 'command' ? '点击执行' : '在设置编辑器中显示'}</Button>
           )}
         </ChatMoreActions>
       ),
+      className: styles.chat_with_more_actions,
     });
+  } catch (error) {
+    success = false;
   }
 
-  const { labelLocalized, label, delegate, id } = commandRes.data as Command;
-
-  function excuteCommand() {
-    let success = true;
-    try {
-      opener.open(URI.parse(`command:${delegate || id}`));
-    } catch {
-      success = false;
-    }
-
-    aiReporter.end(relationId, {
-      replytime: +new Date() - startTime,
-      success: true,
-      msgType: AISerivceType.Sumi,
-      message: id,
-      useCommand: true,
-      useCommandSuccess: success,
-      isRetry,
-    });
-  }
-
-  const aiMessage = createMessageByAI({
-    id: uuid(6),
-    relationId,
-    text: (
-      <ChatMoreActions sessionId={relationId} onRetry={onRetry}>
-        <div className={styles.chat_excute_result}>
-          <div>已在系统内找到适合功能: {labelLocalized?.localized || label}，可以按以下步骤尝试：</div>
-          <ol className={styles.chat_result_list}>
-            <li style={{ listStyle: 'inherit' }}>打开命令面板：({isMacintosh ? 'cmd' : 'ctrl'} + shift + p)</li>
-            <li style={{ listStyle: 'inherit' }}>输入：{labelLocalized?.localized || label}</li>
-          </ol>
-          <Button className={styles.chat_excute_btn} onClick={excuteCommand}>
-            点击执行命令
-          </Button>
-        </div>
-      </ChatMoreActions>
-    ),
-    className: styles.chat_with_more_actions,
+  aiReporter.end(relationId, {
+    replytime: +new Date() - startTime,
+    success,
+    message: input,
   });
 
   return aiMessage;

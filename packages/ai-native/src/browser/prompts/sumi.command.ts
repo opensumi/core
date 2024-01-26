@@ -7,28 +7,32 @@ import { PromptManager } from './prompt-manager';
 @Injectable()
 export class SumiCommandPromptManager extends PromptManager {
   groupCommand(commandString: string, option?: PromptOption) {
-    return this.removeExtraSpace(option?.language === 'zh' ? this.zhGroupCommandPrompt(commandString, option?.useCot) : this.enGroupCommandPrompt(commandString, option?.useCot));
+    return this.removeExtraSpace(
+      option?.language === 'zh'
+        ? this.zhGroupCommandPrompt(commandString, option?.useCot)
+        : this.enGroupCommandPrompt(commandString, option?.useCot),
+    );
   }
 
   private groupCommandCotPrompt = `
     Commands: git.commit,git.commitStaged,theme.toggle
     Output:
-    * [File and Editor Management]: 
+    * [File and Editor Management]:
     * [Version Control and Git]: git.commit,git.commitStaged
-    * [Debugging and Testing]: 
-    * [Terminal and Command Line]: 
+    * [Debugging and Testing]:
+    * [Terminal and Command Line]:
     * [User Interface and Layout Management]: theme.toggle
-    * [Code Editing and Refactoring]: 
-    * [Search and Navigation]: 
-    * [Extensions and Customization]: 
-    * [Data Science and Notebooks]: 
-    * [Accessibility and Help]: 
+    * [Code Editing and Refactoring]:
+    * [Search and Navigation]:
+    * [Extensions and Customization]:
+    * [Data Science and Notebooks]:
+    * [Accessibility and Help]:
   `;
 
   private enGroupCommandPrompt(commands: string, useCot = true) {
     return `
       In my software, there are some commands that can be categorized into different groups. I will provide all the groups, group descriptions, and the commands in the system. Please help me find the appropriate group for these commands, based on the command names or descriptions.
-      
+
       Groups:
       * [File and Editor Management]: Includes commands related to file operations such as creation, opening, saving, closing, and other file management functions.
       * [Version Control and Git]: Covers commands related to version control systems, especially Git, including committing changes, branch operations, pulling, and pushing.
@@ -40,7 +44,7 @@ export class SumiCommandPromptManager extends PromptManager {
       * [Extensions and Customization]: Pertains to commands for installing, managing, and configuring extensions and plugins, as well as extension-specific functionalities.
       * [Data Science and Notebooks]: Includes commands for operations with data science and Jupyter Notebooks, such as running cells, exporting notebooks, etc.
       * [Accessibility and Help]: Covers commands that enhance accessibility features and user support, such as accessing help documentation, enabling accessibility features, etc.
-      
+
       ${useCot ? this.groupCommandCotPrompt : ''}
 
       Commands: ${commands}
@@ -51,7 +55,7 @@ export class SumiCommandPromptManager extends PromptManager {
   private zhGroupCommandPrompt(commands: string, useCot = true) {
     return `
       在我的软件中有一些指令，这些指令可以被分类至不同的分组，我会给出全部的分组和分组简介，以及系统内的指令。请帮我将这些命令找到合适的分组，可以根据指令的命名或者描述
-      
+
       分组描述:
       * [File and Editor Management]: 包括所有与文件操作相关的指令，如文件的创建、打开、保存、关闭以及其他文件管理功能。
       * [Version Control and Git]: 涵盖与版本控制系统（尤其是Git）相关的指令，如提交更改、分支操作、拉取和推送等。
@@ -63,16 +67,20 @@ export class SumiCommandPromptManager extends PromptManager {
       * [Extensions and Customization]: 涉及扩展和插件的安装、管理和配置，以及扩展特定功能的指令。
       * [Data Science and Notebooks]: 包括数据科学和Jupyter Notebook操作的指令，如运行单元格、导出笔记本等。
       * [Accessibility and Help]: 涵盖提高辅助功能和用户支持的指令，如访问帮助文档、开启辅助功能等。
-      
+
       ${useCot ? this.groupCommandCotPrompt : ''}
-      
+
       Commands: ${commands}
       Output:
     `;
   }
 
   searchGroup(input: string, option?: PromptOption) {
-    return this.removeExtraSpace(option?.language === 'zh' ? this.zhSearchGroupPrompt(input, option?.useCot) : this.enSearchGroupPrompt(input, option?.useCot));
+    return this.removeExtraSpace(
+      option?.language === 'zh'
+        ? this.zhSearchGroupPrompt(input, option?.useCot)
+        : this.enSearchGroupPrompt(input, option?.useCot),
+    );
   }
 
   private searchGroupCotPrompt = `
@@ -97,7 +105,7 @@ export class SumiCommandPromptManager extends PromptManager {
       * [Extensions and Customization]: Pertains to commands for installing, managing, and configuring extensions and plugins, as well as extension-specific functionalities.
       * [Data Science and Notebooks]: Includes commands for operations with data science and Jupyter Notebooks, such as running cells, exporting notebooks, etc.
       * [Accessibility and Help]: Covers commands that enhance accessibility features and user support, such as accessing help documentation, enabling accessibility features, etc.
-      
+
       ${useCot ? this.searchGroupCotPrompt : ''}
       Input：${input}
       Output: [group name]
@@ -119,15 +127,23 @@ export class SumiCommandPromptManager extends PromptManager {
       * [Extensions and Customization]: 涉及扩展和插件的安装、管理和配置，以及扩展特定功能的指令。
       * [Data Science and Notebooks]: 包括数据科学和Jupyter Notebook操作的指令，如运行单元格、导出笔记本等。
       * [Accessibility and Help]: 涵盖提高辅助功能和用户支持的指令，如访问帮助文档、开启辅助功能等。
-      
+
       ${useCot ? this.searchGroupCotPrompt : ''}
       提问: ${input}
       回答: [分组名称]
     `;
   }
 
+  private zhIDEPrompt(input: string) {
+    return `你是 OpenSumi 专家。需要你针对用户遇到的问题，给出相应的解决方案。解决方案用 markdown 格式输出。当前用户问题是：${input}。`;
+  }
+
   findCommand(input: { commands: string; question: string }, option?: PromptOption) {
-    return this.removeExtraSpace(option?.language === 'zh' ? this.zhFindCommandPrompt(input, option?.useCot) : this.enFindCommandPrompt(input, option?.useCot));
+    return this.removeExtraSpace(
+      option?.language === 'zh'
+        ? this.zhFindCommandPrompt(input, option?.useCot)
+        : this.enFindCommandPrompt(input, option?.useCot),
+    );
   }
 
   private findCommandCotPrompt = `
@@ -146,7 +162,7 @@ export class SumiCommandPromptManager extends PromptManager {
       ${input.commands}
       {workbench.action.openGlobalKeybindings}-{Keybindings}
       {editor.action.setEncoding}-{set encoding}
-      
+
       ${useCot ? this.findCommandCotPrompt : ''}
       提问: ${input.question}
     `;
@@ -161,9 +177,13 @@ export class SumiCommandPromptManager extends PromptManager {
       ${input.commands}
       {workbench.action.openGlobalKeybindings}-{Keybindings}
       {editor.action.setEncoding}-{set encoding}
-      
+
       ${useCot ? this.findCommandCotPrompt : ''}
       提问: ${input.question}
     `;
+  }
+
+  findIDECapabilityPrompt(input: string) {
+    return this.removeExtraSpace(this.zhIDEPrompt(input));
   }
 }
