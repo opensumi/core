@@ -71,7 +71,8 @@ export interface IInlineChatFeatureRegistry {
 
 export type AiRunHandler = () => MaybePromise<void>;
 export interface IAiRunAnswerComponentProps {
-  input: string;
+  input: { data: string };
+  relationId: string;
 }
 
 export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
