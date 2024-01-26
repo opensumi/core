@@ -14,4 +14,8 @@ const node = createNodeWebpackConfig(
   path.join(__dirname, 'dist-node/server'),
 );
 
-module.exports = [web, node];
+if (process.env.ONLY_NODE) {
+  module.exports = [node];
+} else {
+  module.exports = [web, node];
+}

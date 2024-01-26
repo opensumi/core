@@ -424,6 +424,7 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
           '@opensumi/vscode-ripgrep',
           'vertx',
           'keytar',
+          'tsconfig-paths',
         ].indexOf(request) !== -1
       ) {
         return callback(null, `commonjs ${request}`);
