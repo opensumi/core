@@ -1,5 +1,6 @@
-import clx from 'classnames';
 import React from 'react';
+
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { _InternalIcon, IconProps } from './icon';
 import { getIconShapeClxList } from './util';
@@ -90,7 +91,7 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}) {
 
       const iconShapeClx = getIconShapeClxList(iconShapeOptions);
       return (
-        <_InternalIcon {...extraCommonProps} {...restProps} className={clx(className, iconShapeClx)} ref={ref}>
+        <_InternalIcon {...extraCommonProps} {...restProps} className={clxx(className, iconShapeClx)} ref={ref}>
           {content}
         </_InternalIcon>
       );

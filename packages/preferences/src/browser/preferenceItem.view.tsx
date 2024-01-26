@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -22,6 +21,7 @@ import {
   IOpenerService,
   IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { getPreferenceItemLabel, knownPrefIdMappings } from '../common';
 
@@ -131,7 +131,7 @@ export const NextPreferenceItem = ({
   if (!renderSchema) {
     return (
       <div
-        className={classnames({
+        className={clx({
           [styles.preference_item]: true,
         })}
       >
@@ -201,7 +201,7 @@ export const NextPreferenceItem = ({
 
   return (
     <div
-      className={classnames({
+      className={clx({
         [styles.preference_item]: true,
         [styles.modified]: isModified,
       })}
@@ -348,7 +348,7 @@ const SettingStatus = ({
       ) : undefined}
       {showReset ? (
         <span
-          className={classnames(styles.preference_reset, getIcon('rollback'))}
+          className={clxx(styles.preference_reset, getIcon('rollback'))}
           onClick={() => {
             settingsService.reset(preferenceName, scope);
           }}
@@ -398,7 +398,7 @@ function InputPreferenceItem({
 
   return (
     <>
-      <div className={classnames(styles.key, styles.item)}>
+      <div className={clxx(styles.key, styles.item)}>
         {localizedName}{' '}
         <SettingStatus
           preferenceName={preferenceName}
@@ -451,7 +451,7 @@ function CheckboxPreferenceItem({
 
   return (
     <>
-      <div className={classnames(styles.key)}>
+      <div className={styles.key}>
         {localizedName}{' '}
         <SettingStatus
           preferenceName={preferenceName}
@@ -696,7 +696,7 @@ function StringArrayPreferenceItem({
               onClick={() => {
                 editItem(idx);
               }}
-              className={classnames(getIcon('edit'), styles.array_item)}
+              className={clxx(getIcon('edit'), styles.array_item)}
             ></Button>
             <Button
               type='icon'
@@ -704,7 +704,7 @@ function StringArrayPreferenceItem({
               onClick={() => {
                 removeItem(idx);
               }}
-              className={classnames(getIcon('delete'), styles.array_item)}
+              className={clxx(getIcon('delete'), styles.array_item)}
             ></Button>
           </div>
         </li>

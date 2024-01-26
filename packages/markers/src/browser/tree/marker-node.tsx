@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, { useCallback, FC, ReactNode, memo } from 'react';
 
 import {
@@ -10,6 +9,7 @@ import {
   Badge,
 } from '@opensumi/ide-components';
 import { URI, getIcon, IMatch } from '@opensumi/ide-core-browser';
+import { clxx, clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
@@ -156,7 +156,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   const renderIcon = useCallback(
     (node: MarkerGroupNode | MarkerNode) => (
       <div
-        className={cls(styles.icon, MarkerGroupNode.is(node) && node.icon)}
+        className={clxx(styles.icon, MarkerGroupNode.is(node) && node.icon)}
         style={{
           height: MARKER_TREE_NODE_HEIGHT,
           lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
@@ -184,7 +184,9 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   }, []);
 
   const renderStatusTail = useCallback(
-    (node: MarkerGroupNode | MarkerNode) => <div className={cls(styles.segment, styles.tail)}>{renderBadge(node)}</div>,
+    (node: MarkerGroupNode | MarkerNode) => (
+      <div className={clxx(styles.segment, styles.tail)}>{renderBadge(node)}</div>
+    ),
     [],
   );
 
@@ -197,7 +199,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: MarkerGroupNode) => (
       <div
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={clx(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as MarkerGroupNode).expanded,
         })}
       />
@@ -218,7 +220,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(styles.marker_node, decorations ? decorations.classlist : null)}
+      className={clxx(styles.marker_node, decorations ? decorations.classlist : null)}
       style={renderedNodeStyle}
       data-id={item.id}
     >

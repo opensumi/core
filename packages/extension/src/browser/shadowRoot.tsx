@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import React, { useCallback } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -7,6 +6,7 @@ import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@op
 import { DisposableCollection, LabelService, TComponentCDNType, useInjectable } from '@opensumi/ide-core-browser';
 import { ExtensionBrowserStyleSheet, localize, URI } from '@opensumi/ide-core-common';
 import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IExtension } from '../common';
 import { AbstractViewExtProcessService } from '../common/extension.service';

@@ -1,4 +1,3 @@
-import clsx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -9,6 +8,7 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IMainLayoutService } from '../../common';
 
@@ -87,7 +87,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
     });
 
     return (
-      <div className={clsx([styles.tab_bar, className])}>
+      <div className={clx([styles.tab_bar, className])}>
         <div className={styles.bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
           {visibleContainers.map((component) => {
             const containerId = component.options?.containerId;
@@ -138,7 +138,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
                 // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
                 onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
                 ref={(el) => (ref = el)}
-                className={clsx({ active: currentContainerId === containerId }, tabClassName)}
+                className={clx({ active: currentContainerId === containerId }, tabClassName)}
               >
                 <TabView component={component} />
               </li>
@@ -180,7 +180,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = obser
 
   return (
     <div className={styles.icon_tab}>
-      <div className={clsx(component.options?.iconClass, 'activity-icon')} title={title}></div>
+      <div className={clx(component.options?.iconClass, 'activity-icon')} title={title}></div>
       {inProgress ? (
         <Badge className={styles.tab_badge}>
           <span className={styles.icon_wrapper}>
@@ -212,7 +212,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryInfo }> = obser
 export const IconElipses: React.FC = () => (
   <div className={styles.icon_tab}>
     {/* i18n */}
-    <div className={clsx(getIcon('ellipsis'), 'activity-icon')} title='extra tabs'></div>
+    <div className={clx(getIcon('ellipsis'), 'activity-icon')} title='extra tabs'></div>
   </div>
 );
 
@@ -259,7 +259,7 @@ export const LeftTabbarRenderer: React.FC = () => {
       className={styles.left_tab_bar}
       onContextMenu={tabbarService.handleContextMenu}
     >
-      <InlineMenuBar className={clsx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
+      <InlineMenuBar className={clx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
       <TabbarViewBase
         tabSize={48}
         MoreTabView={IconElipses}
@@ -282,7 +282,7 @@ export const BottomTabbarRenderer: React.FC = () => {
     <div
       id={VIEW_CONTAINERS.BOTTOM_TABBAR}
       onContextMenu={tabbarService.handleContextMenu}
-      className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}
+      className={clx(styles.bottom_bar_container, 'next_bottom_bar')}
     >
       <TabbarViewBase
         // TODO: 暂时通过预估值来计算是否超出可视范围，实际上需要通过dom尺寸的计算

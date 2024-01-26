@@ -1,10 +1,10 @@
-import clsx from 'classnames';
 import React from 'react';
 
 import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
 import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer } from './bar.view';
 import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer } from './panel.view';
@@ -66,7 +66,7 @@ export const TabRendererBase: React.FC<{
     <div
       ref={rootRef}
       id={id}
-      className={clsx(styles.tab_container, className)}
+      className={clx(styles.tab_container, className)}
       style={{ flexDirection: Layout.getFlexDirection(direction) }}
     >
       <TabbarConfig.Provider value={{ side, direction, fullSize }}>
@@ -88,7 +88,7 @@ export const RightTabRenderer = ({
     side='right'
     direction='right-to-left'
     id={VIEW_CONTAINERS.RIGHT_TABBAR}
-    className={clsx(className, 'right-slot')}
+    className={clx(className, 'right-slot')}
     components={components}
     TabbarView={RightTabbarRenderer}
     TabpanelView={RightTabPanelRenderer}
@@ -106,7 +106,7 @@ export const LeftTabRenderer = ({
     side='left'
     direction='left-to-right'
     id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
-    className={clsx(className, 'left-slot')}
+    className={clx(className, 'left-slot')}
     components={components}
     TabbarView={LeftTabbarRenderer}
     TabpanelView={LeftTabPanelRenderer}
@@ -124,7 +124,7 @@ export const BottomTabRenderer = ({
     side='bottom'
     id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL}
     direction='bottom-to-top'
-    className={clsx(className, 'bottom-slot')}
+    className={clx(className, 'bottom-slot')}
     components={components}
     TabbarView={BottomTabbarRenderer}
     TabpanelView={BottomTabPanelRenderer}

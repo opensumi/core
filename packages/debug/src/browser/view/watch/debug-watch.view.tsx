@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -15,6 +14,7 @@ import {
 import { Loading } from '@opensumi/ide-components';
 import { useInjectable, getIcon, DisposableCollection, Disposable } from '@opensumi/ide-core-browser';
 import { ViewState } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import {
   ExpressionContainer,
@@ -217,8 +217,8 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => {
     if (isPrompt && node instanceof PromptHandle) {
       return (
-        <div className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_inputbox)}>
-          <div className={cls('input-box', styles.debug_watch_node_prompt_box)}>
+        <div className={clx(styles.debug_watch_node_segment, styles.debug_watch_node_inputbox)}>
+          <div className={clx('input-box', styles.debug_watch_node_prompt_box)}>
             <node.ProxiedInput wrapperStyle={{ height: DEBUG_WATCH_TREE_NODE_HEIGHT, padding: '0 5px' }} />
           </div>
         </div>
@@ -226,7 +226,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     }
     return (
       <div
-        className={cls(
+        className={clx(
           styles.debug_watch_node_segment,
           styles.debug_watch_node_displayname,
           styles.debug_watch_variable,
@@ -259,14 +259,14 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
       addonClass.push(styles.string);
     }
     return (
-      <div className={cls(styles.debug_watch_node_segment_grow, styles.debug_watch_node_description, ...addonClass)}>
+      <div className={clx(styles.debug_watch_node_segment_grow, styles.debug_watch_node_description, ...addonClass)}>
         {description}
       </div>
     );
   };
 
   const renderStatusTail = () => (
-    <div className={cls(styles.debug_watch_node_segment, styles.debug_watch_node_tail)}>{renderBadge()}</div>
+    <div className={clx(styles.debug_watch_node_segment, styles.debug_watch_node_tail)}>{renderBadge()}</div>
   );
 
   const renderBadge = () => <div className={styles.debug_watch_node_status}>{item.badge}</div>;
@@ -282,7 +282,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_watch_node_segment, styles.expansion_toggle)}>
+        <div className={clx(styles.debug_watch_node_segment, styles.expansion_toggle)}>
           <Loading />
         </div>
       );
@@ -290,7 +290,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_watch_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={clx(styles.debug_watch_node_segment, styles.expansion_toggle, getIcon('right'), {
           [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
         })}
       />
@@ -315,11 +315,11 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(styles.debug_watch_node, decorations ? decorations.classlist : null)}
+      className={clx(styles.debug_watch_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >
-      <div className={cls(styles.debug_watch_node_content)}>
+      <div className={clx(styles.debug_watch_node_content)}>
         {renderTwice(item)}
         <div
           style={{ height: DEBUG_WATCH_TREE_NODE_HEIGHT }}

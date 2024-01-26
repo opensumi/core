@@ -1,7 +1,6 @@
 import { IChangeEvent, withTheme } from '@rjsf/core';
 import { GenericObjectType, RJSFSchema, StrictRJSFSchema, SubmitButtonProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv6';
-import cls from 'classnames';
 import lodashGet from 'lodash/get';
 import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -29,6 +28,7 @@ import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/action
 import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser/index';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { DebugConfiguration, MASSIVE_PROPERTY_FLAG } from '../../common/debug-configuration';
 import { JSON_SCHEMA_TYPE, launchExtensionSchemaUri } from '../../common/debug-schema';
@@ -263,7 +263,7 @@ const LaunchIndexs = ({
   const template = ({ data, index }) => (
     <div
       key={index}
-      className={cls(styles.configuration_item, currentConfigurationIndex === index ? styles.selected : '')}
+      className={clx(styles.configuration_item, currentConfigurationIndex === index ? styles.selected : '')}
       onClick={() => handleConfigurationItemsClick(data, index)}
     >
       <div className={styles.configuration_wrapper}>

@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
@@ -9,6 +8,7 @@ import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { ItemProps, ItemType } from '../../common';
 
@@ -88,7 +88,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         <div></div>
       ) : (
         <div
-          className={clx([getIcon('close'), styles.close_icon])}
+          className={clxx(getIcon('close'), styles.close_icon)}
           onClick={(event) => {
             event.stopPropagation();
             handleClose();

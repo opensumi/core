@@ -1,5 +1,6 @@
-import classNames from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { Dropdown } from '../dropdown';
 import { Placement } from '../dropdown/dropdown';
@@ -104,7 +105,7 @@ export const Button = React.memo(
     onVisibleChange,
     ...otherProps
   }: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
-    const classes = classNames('kt-button', className, {
+    const classes = clx('kt-button', className, {
       [`kt-${type}-button-loading`]: loading,
       [`ghost-${type}-button`]: ghost && !loading && type !== 'link',
       [`${type}-button`]: type,
@@ -112,7 +113,7 @@ export const Button = React.memo(
       ['ghost-button']: ghost && type !== 'link',
       ['block-button']: block,
     });
-    const iconClesses = classNames(className, {
+    const iconClesses = clx(className, {
       ['kt-clickable-icon']: !!onClick,
     });
 

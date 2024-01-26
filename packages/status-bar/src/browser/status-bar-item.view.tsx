@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, { useCallback, memo, useMemo } from 'react';
 
 import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
@@ -15,6 +14,7 @@ import {
   isString,
 } from '@opensumi/ide-core-common';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { clxx, clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './status-bar.module.less';
 
@@ -106,7 +106,7 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
   return (
     <div
       id={entryId}
-      className={cls(styles.element, className, {
+      className={clx(styles.element, className, {
         [styles.hasCommand]: command || onClick,
       })}
       onClick={onClick}
@@ -125,7 +125,7 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
         disable={disablePopover}
       >
         <div className={styles.popover_item}>
-          {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
+          {iconClass && <span key={-1} className={clxx(styles.icon, iconClass)}></span>}
           {text &&
             transformLabelWithCodicon(
               text,

@@ -1,8 +1,8 @@
-import cls from 'classnames';
 import React, { useCallback } from 'react';
 
 import { INodeRendererProps, ClasslistComposite } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { CommentContentNode, CommentFileNode, CommentReplyNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -61,7 +61,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
     if (CommentContentNode.is(node) || CommentFileNode.is(node)) {
       return (
         <div
-          className={cls(styles.icon, node.icon)}
+          className={clxx(styles.icon, node.icon)}
           style={{
             height: COMMENT_TREE_NODE_HEIGHT,
             lineHeight: `${COMMENT_TREE_NODE_HEIGHT}px`,
@@ -74,7 +74,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   const renderDisplayName = useCallback((node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     if (CommentContentNode.is(node)) {
       return (
-        <div className={cls(styles.segment, styles.displayname)}>
+        <div className={clxx(styles.segment, styles.displayname)}>
           {node.renderedLabel ? (
             node.renderedLabel
           ) : (
@@ -87,13 +87,13 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
         </div>
       );
     } else {
-      return <div className={cls(styles.segment, styles.displayname)}>{node.renderedLabel}</div>;
+      return <div className={clxx(styles.segment, styles.displayname)}>{node.renderedLabel}</div>;
     }
   }, []);
 
   const renderDescription = useCallback(
     (node: CommentFileNode | CommentContentNode | CommentReplyNode) => (
-      <div className={cls(styles.segment_grow, styles.description)}>{node.renderedDescription}</div>
+      <div className={clxx(styles.segment_grow, styles.description)}>{node.renderedDescription}</div>
     ),
     [],
   );
@@ -102,7 +102,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
     (node: CommentFileNode) => (
       <div
         onClick={handleTwistierClick}
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={clxx(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
         })}
       />
@@ -123,7 +123,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(styles.comment_node, decorations ? decorations.classlist : null)}
+      className={clxx(styles.comment_node, decorations ? decorations.classlist : null)}
       style={renderedNodeStyle}
       data-id={item.id}
     >

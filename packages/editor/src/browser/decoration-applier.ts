@@ -1,9 +1,8 @@
-import clsx from 'classnames';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, URI, IEventBus, IMarkdownString } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IThemeService } from '@opensumi/ide-theme';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IDecorationRenderOptions, IDecorationApplyOptions } from '../common';
@@ -210,19 +209,19 @@ function assignModelDecorationOptions(
 
 function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOptions, style: IThemedCssStyle) {
   if (style.className) {
-    target.className = clsx(target.className, style.className);
+    target.className = clx(target.className, style.className);
   }
   if (style.inlineClassName) {
-    target.inlineClassName = clsx(target.inlineClassName, style.inlineClassName);
+    target.inlineClassName = clx(target.inlineClassName, style.inlineClassName);
   }
   if (style.afterContentClassName) {
-    target.afterContentClassName = clsx(target.afterContentClassName, style.afterContentClassName);
+    target.afterContentClassName = clx(target.afterContentClassName, style.afterContentClassName);
   }
   if (style.beforeContentClassName) {
-    target.beforeContentClassName = clsx(target.beforeContentClassName, style.beforeContentClassName);
+    target.beforeContentClassName = clx(target.beforeContentClassName, style.beforeContentClassName);
   }
   if (style.glyphMarginClassName) {
-    target.glyphMarginClassName = clsx(target.glyphMarginClassName, style.glyphMarginClassName);
+    target.glyphMarginClassName = clx(target.glyphMarginClassName, style.glyphMarginClassName);
   }
   if (style.overviewRulerColor) {
     if (target.overviewRuler) {

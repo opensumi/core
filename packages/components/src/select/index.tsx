@@ -1,5 +1,6 @@
-import classNames from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import './style.less';
 import { getIcon, Icon } from '../icon';
@@ -103,7 +104,7 @@ export const Option: React.FC<
 > = ({ value, children, disabled, onClick, className, ...otherProps }) => (
   <span
     {...otherProps}
-    className={classNames(className, { 'kt-option-disabled': disabled })}
+    className={clx(className, { 'kt-option-disabled': disabled })}
     onClick={() => onClick && !disabled && onClick(value)}
   >
     {children}
@@ -196,7 +197,7 @@ function isDataOptionGroup<T = any>(option: any): option is IDataOptionGroup<T> 
 function defaultOptionRenderer<T>(v: { data: IDataOption<T>; isCurrent: boolean }) {
   return (
     <React.Fragment>
-      {v.data.iconClass ? <div className={classNames(v.data.iconClass, 'kt-select-option-icon')}></div> : undefined}
+      {v.data.iconClass ? <div className={clx(v.data.iconClass, 'kt-select-option-icon')}></div> : undefined}
       {v.data.label}
     </React.Fragment>
   );
@@ -205,7 +206,7 @@ function defaultOptionRenderer<T>(v: { data: IDataOption<T>; isCurrent: boolean 
 function defaultGroupTitleRenderer<T>({ group, index }: { group: IDataOptionGroup<T>; index: number }) {
   return (
     <div key={'header_' + index} className={'kt-select-group-header'}>
-      {group.iconClass ? <div className={classNames(group.iconClass, 'kt-select-option-icon')}></div> : undefined}
+      {group.iconClass ? <div className={clx(group.iconClass, 'kt-select-option-icon')}></div> : undefined}
       <div>{group.groupName}</div>
     </div>
   );
@@ -328,14 +329,14 @@ export function Select<T = string>({
 
   const selected = getSelectedValue();
 
-  const optionsContainerClasses = classNames('kt-select-options', {
+  const optionsContainerClasses = clx('kt-select-options', {
     ['kt-select-options-visible']: open,
     [`kt-select-options-${size}`]: size,
   });
 
   const showWarning = notMatchWarning && selected.notMatch;
 
-  const selectClasses = classNames('kt-select-value', {
+  const selectClasses = clx('kt-select-value', {
     ['kt-select-warning']: showWarning,
     ['kt-select-disabled']: disabled,
     ['kt-select-value-active']: open,
@@ -361,7 +362,7 @@ export function Select<T = string>({
     return (
       <div
         key={`${element.props.value}_${index}`}
-        className={classNames({
+        className={clx({
           ['kt-select-option-select']: value === element.props.value,
         })}
         onMouseEnter={() => onMouseEnter?.(element.props.value, index)}
@@ -448,9 +449,7 @@ export function Select<T = string>({
           <CustomSC data={selected} />
         ) : (
           <React.Fragment>
-            {selected.iconClass ? (
-              <div className={classNames(selected.iconClass, 'kt-select-option-icon')}></div>
-            ) : undefined}
+            {selected.iconClass ? <div className={clx(selected.iconClass, 'kt-select-option-icon')}></div> : undefined}
             <span className={'kt-select-option'}>{selected.label}</span>
           </React.Fragment>
         )}
@@ -461,7 +460,7 @@ export function Select<T = string>({
 
   const renderSearch = () => (
     <input
-      className={classNames('kt-select-search')}
+      className={clx('kt-select-search')}
       onChange={(e) => {
         setSearchInput(e.target.value);
       }}
@@ -472,7 +471,7 @@ export function Select<T = string>({
   );
 
   return (
-    <div className={classNames('kt-select-container', className)} ref={selectRef}>
+    <div className={clx('kt-select-container', className)} ref={selectRef}>
       <div className={selectClasses} onClick={toggleOpen} style={style}>
         {showSearch && open ? renderSearch() : renderSelected()}
       </div>
@@ -558,7 +557,7 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
     footerComponent: FC,
     emptyComponent: EC,
   } = props;
-  const optionsContainerClasses = classNames(
+  const optionsContainerClasses = clx(
     'kt-select-options',
     {
       [`kt-select-options-${size}`]: true,
@@ -587,7 +586,7 @@ export const SelectOptionsList = React.forwardRef(<T,>(props: ISelectOptionsList
           <Option
             value={index}
             key={index}
-            className={classNames({
+            className={clx({
               ['kt-select-option-select']: isCurrent,
               ['kt-select-option-default']: true,
               ['kt-option-with-check']: renderCheck,

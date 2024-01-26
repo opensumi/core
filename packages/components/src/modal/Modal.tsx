@@ -1,9 +1,10 @@
 import CloseOutlined from '@ant-design/icons/CloseOutlined';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import Dialog from 'rc-dialog';
 import addEventListener from 'rc-util/lib/Dom/addEventListener';
 import React, { PropsWithChildren } from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { Button } from '../button';
 import type { ButtonType, ButtonProps } from '../button';
@@ -212,7 +213,7 @@ export default class Modal extends React.Component<PropsWithChildren<ModalProps>
         {...restProps}
         getContainer={getContainer}
         prefixCls={prefixCls}
-        wrapClassName={classNames({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}
+        wrapClassName={clx({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}
         footer={footer === undefined ? defaultFooter : footer}
         visible={visible}
         mousePosition={mousePosition}

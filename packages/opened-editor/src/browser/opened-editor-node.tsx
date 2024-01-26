@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React from 'react';
 
 import {
@@ -11,6 +10,7 @@ import {
 } from '@opensumi/ide-components';
 import { URI, OPEN_EDITORS_COMMANDS, localize, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 import { EDITOR_WEBVIEW_SCHEME } from '@opensumi/ide-webview';
 
 import { EditorFileGroup, EditorFile } from './opened-editor-node.define';
@@ -85,7 +85,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     const iconClass = node.resource.icon || labelService.getIcon((node as EditorFile).uri, { isDirectory: false });
     return (
       <div
-        className={cls(styles.file_icon, iconClass)}
+        className={clxx(styles.file_icon, iconClass)}
         style={{ height: OPENED_EDITOR_TREE_NODE_HEIGHT, lineHeight: `${OPENED_EDITOR_TREE_NODE_HEIGHT}px` }}
       ></div>
     );
@@ -104,7 +104,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   };
 
   const renderDisplayName = (node: EditorFileGroup | EditorFile) => (
-    <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_displayname)}>
+    <div className={clxx(styles.opened_editor_node_segment, styles.opened_editor_node_displayname)}>
       {getNodeName(node)}
     </div>
   );
@@ -114,14 +114,14 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       return null;
     }
     return (
-      <div className={cls(styles.opened_editor_node_segment_grow, styles.opened_editor_node_description)}>
+      <div className={clxx(styles.opened_editor_node_segment_grow, styles.opened_editor_node_description)}>
         {node.tooltip}
       </div>
     );
   };
 
   const renderStatusTail = () => (
-    <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_tail)}>{renderBadge()}</div>
+    <div className={clxx(styles.opened_editor_node_segment, styles.opened_editor_node_tail)}>{renderBadge()}</div>
   );
 
   const renderBadge = () => {
@@ -166,7 +166,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
               <Button
                 type='icon'
                 key={`${item.id}-${action.command}`}
-                iconClass={cls(styles.action_icon, action.icon)}
+                iconClass={clxx(styles.action_icon, action.icon)}
                 title={action.title}
                 onClick={clickHandler}
               />
@@ -194,7 +194,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
               <Button
                 type='icon'
                 key={`${item.id}-${action.command}`}
-                iconClass={cls(styles.action_icon, action.icon)}
+                iconClass={clxx(styles.action_icon, action.icon)}
                 title={action.title}
                 onClick={clickHandler}
               />
@@ -212,7 +212,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(
+      className={clxx(
         styles.opened_editor_node,
         decorations ? decorations.classlist : null,
         EditorFile.is(item) && item.dirty && styles.dirty,
@@ -221,7 +221,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       data-id={item.id}
     >
       {renderActionBar()}
-      <div className={cls(styles.opened_editor_node_content)}>
+      <div className={styles.opened_editor_node_content}>
         {renderIcon(item)}
         <div className={styles.opened_editor_node_overflow_wrap}>
           {renderDisplayName(item)}

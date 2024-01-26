@@ -1,5 +1,6 @@
-import clsx from 'classnames';
 import React, { PropsWithChildren } from 'react';
+
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { Modal, ModalProps } from '../modal';
 
@@ -41,7 +42,7 @@ export const Overlay: React.FC<PropsWithChildren<IOverlayProps>> = ({
     onCancel={onClose}
     title={title}
     getContainer={getContainer}
-    className={clsx('kt-overlay', className)}
+    className={clxx('kt-overlay', className)}
     keyboard={keyboard}
     {...restProps}
   >

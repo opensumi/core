@@ -1,11 +1,7 @@
-import {
-  ArrayFieldTemplateItemType,
-  FormContextType,
-  RJSFSchema,
-  StrictRJSFSchema,
-} from '@rjsf/utils';
-import cls from 'classnames';
+import { ArrayFieldTemplateItemType, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
 import React, { useMemo } from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './json-templates.module.less';
 
@@ -48,7 +44,7 @@ export const ArrayFieldItemTemplate = <
   const onArrowDownClick = useMemo(() => onReorderClick(index, index + 1), [index, onReorderClick]);
 
   return (
-    <div key={`array-item-${index}`} className={cls(className, styles.array_field_item_template)}>
+    <div key={`array-item-${index}`} className={clx(className, styles.array_field_item_template)}>
       <div className={styles.control_field}>{React.cloneElement(children, { name: '' })}</div>
 
       {hasToolbar && (

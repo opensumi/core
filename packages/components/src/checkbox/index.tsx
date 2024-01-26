@@ -1,5 +1,6 @@
-import classNames from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { warning } from '../utils/warning';
 
@@ -24,7 +25,7 @@ export const CheckBox: React.FC<
 > = ({ insertClass, className, label, size = 'default', disabled, checked, wrapTabIndex, ...restProps }) => {
   warning(!insertClass, '`insertClass` was deprecated, please use `className` instead');
 
-  const cls = classNames('kt-checkbox', insertClass, className, {
+  const cls = clx('kt-checkbox', insertClass, className, {
     'kt-checkbox-large': size === 'large',
     'kt-checkbox-disabled': disabled,
   });

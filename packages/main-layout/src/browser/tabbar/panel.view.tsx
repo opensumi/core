@@ -1,4 +1,3 @@
-import clsx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -17,6 +16,7 @@ import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constant
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
 import { AccordionContainer } from '../accordion/accordion.view';
@@ -56,7 +56,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   return (
     <div
       id={id}
-      className={clsx(styles.tab_panel, {
+      className={clx(styles.tab_panel, {
         [styles.tab_panel_hidden]: !currentContainerId,
       })}
     >
@@ -69,7 +69,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
         return (
           <div
             key={containerId}
-            className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
+            className={clx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
             style={currentContainerId === containerId ? panelVisible : panelInVisible}
             id={id}

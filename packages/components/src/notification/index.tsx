@@ -1,8 +1,8 @@
-import clx from 'classnames';
 import React from 'react';
 
 import { IAction } from '@opensumi/ide-core-common';
 import { isUndefined } from '@opensumi/ide-utils';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { Button } from '../button';
 import { MessageType } from '../common';
@@ -50,26 +50,26 @@ export function open<T = string>(
       },
       btn: buttons
         ? buttons.map((button, index) => {
-          const isStringButton = typeof button === 'string';
-          const buttonProps = {
-            className: `${clx('kt-notification-button')}${isStringButton ? '' : button.class}`,
-            ghost: isStringButton ? index === 0 : !button.primary,
-            key: isStringButton ? button : button.id,
-            onClick: () => {
-              resolve(button as any);
+            const isStringButton = typeof button === 'string';
+            const buttonProps = {
+              className: clxx('kt-notification-button', isStringButton ? '' : button.class),
+              ghost: isStringButton ? index === 0 : !button.primary,
+              key: isStringButton ? button : button.id,
+              onClick: () => {
+                resolve(button as any);
                 antdNotification.close(key);
                 if (!isStringButton) {
                   button.run();
                 }
-            },
-          };
-          const text = isStringButton ? button : button.label;
-          return (
-            <Button size='small' {...buttonProps}>
-              {text}
-            </Button>
-          );
-        })
+              },
+            };
+            const text = isStringButton ? button : button.label;
+            return (
+              <Button size='small' {...buttonProps}>
+                {text}
+              </Button>
+            );
+          })
         : null,
       message,
       description,

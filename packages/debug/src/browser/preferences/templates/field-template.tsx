@@ -7,8 +7,9 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
 } from '@rjsf/utils';
-import cls from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 export const FieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: FieldTemplateProps<T, S, F>,
@@ -62,7 +63,7 @@ export const FieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, 
       {id === 'root' ? (
         children
       ) : (
-        <div className={cls(classNames)} style={wrapperStyle}>
+        <div className={clx(classNames)} style={wrapperStyle}>
           {children}
         </div>
       )}

@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 
@@ -11,6 +10,7 @@ import {
   DisposableCollection,
   getIcon,
 } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IDebugSessionManager } from '../../../common';
 import { DebugSession } from '../../debug-session';
@@ -251,7 +251,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         return (
           <>
             <span
-              className={cls(styles.debug_stack_frames_item_label, isLabel && styles.label, isSubtle && styles.subtle)}
+              className={clx(styles.debug_stack_frames_item_label, isLabel && styles.label, isSubtle && styles.subtle)}
             >
               {frame.raw && frame.raw.name}
             </span>
@@ -265,11 +265,11 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
                 <a
                   title=''
                   onClick={(event) => restartFrame(event)}
-                  className={cls(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))}
+                  className={clx(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))}
                 ></a>
               )}
               {!isLabel && !isDeemphasize && (
-                <div className={cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
+                <div className={clx(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
                   {frame.raw && frame.raw.line}
                   {!isUndefined(frame.raw.line) && ':'}
                   {frame.raw && frame.raw.column}
@@ -286,7 +286,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     return (
       <div
         style={frameItemStyle}
-        className={cls(
+        className={clx(
           styles.debug_stack_frames_item,
           isLabel && styles.is_label,
           DebugStackFrame.is(frame) && selected === frame.raw.id && styles.selected,

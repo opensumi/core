@@ -1,6 +1,4 @@
-import cls from 'classnames';
 import React from 'react';
-
 
 import {
   TreeNode,
@@ -15,6 +13,7 @@ import {
 import { Loading } from '@opensumi/ide-components';
 import { getIcon, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { Directory, File } from '../../common/file-tree-node.define';
 import styles from '../file-tree-node.module.less';
@@ -96,7 +95,7 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
       if (isDirectory) {
         return (
           <div
-            className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+            className={clx(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
               [`${styles.mod_collapsed}`]:
                 isNewPrompt ||
                 !(
@@ -112,7 +111,7 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          className={clx(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
             [`${styles.mod_collapsed}`]: !(node as Directory).expanded,
           })}
         />
@@ -138,7 +137,7 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
     const iconClass = labelService.getIcon(nodeUri, { isDirectory });
     return (
       <div
-        className={cls(styles.file_icon, iconClass, { expanded: isDirectory && (node as Directory).expanded })}
+        className={clx(styles.file_icon, iconClass, { expanded: isDirectory && (node as Directory).expanded })}
         style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px` }}
       ></div>
     );
@@ -150,18 +149,18 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
     }
     if (isPrompt && node instanceof PromptHandle) {
       return (
-        <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}>
-          <div className={cls('input-box', styles.file_tree_node_prompt_box)}>
+        <div className={clx(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}>
+          <div className={clx('input-box', styles.file_tree_node_prompt_box)}>
             <node.ProxiedInput wrapperStyle={{ height: FILE_TREE_NODE_HEIGHT, padding: '0 5px' }} />
           </div>
         </div>
       );
     }
-    return <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}>{node.name}</div>;
+    return <div className={clx(styles.file_tree_node_segment, styles.file_tree_node_displayname)}>{node.name}</div>;
   };
 
   const renderStatusTail = () => (
-    <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_tail)}>{renderBadge()}</div>
+    <div className={clx(styles.file_tree_node_segment, styles.file_tree_node_tail)}>{renderBadge()}</div>
   );
 
   const renderBadge = () => null;
@@ -184,11 +183,11 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(styles.file_tree_node, decorations ? decorations.classlist : null)}
+      className={clx(styles.file_tree_node, decorations ? decorations.classlist : null)}
       style={fileTreeNodeStyle}
       draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
     >
-      <div className={cls(styles.file_tree_node_content)}>
+      <div className={clx(styles.file_tree_node_content)}>
         {renderTwice(item)}
         {renderIcon(item)}
         <div className={isPrompt ? styles.file_tree_node_prompt_wrap : styles.file_tree_node_overflow_wrap}>

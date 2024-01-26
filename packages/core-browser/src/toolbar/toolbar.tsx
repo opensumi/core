@@ -1,9 +1,9 @@
-import classnames from 'classnames';
 import throttle from 'lodash/throttle';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { IEventBus, Disposable, Emitter } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { DomListener } from '../dom';
 import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
@@ -153,7 +153,7 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
   return (
     <div
       {...props}
-      className={classnames('kt-toolbar-location', props.className)}
+      className={clx('kt-toolbar-location', props.className)}
       id={'toolbar-location-' + location}
       ref={container as any}
       onContextMenu={(event: React.MouseEvent<HTMLElement>) => {

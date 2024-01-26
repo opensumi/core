@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, { CSSProperties, FC, MouseEvent, ReactNode, useCallback, useEffect, useState, DragEvent } from 'react';
 
 import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
@@ -10,6 +9,7 @@ import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/inject
 import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
 import { IDecorationsService } from '@opensumi/ide-decoration/lib/common/decorations';
 import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from '../vscode/api/tree-view/tree-view-node.module.less';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
@@ -155,7 +155,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     return (
       <div
         onClick={clickHandler}
-        className={cls(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={clx(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
         })}
       />
@@ -163,7 +163,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderIcon = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
-    <div className={cls(styles.file_icon, node.icon)} style={{ maxHeight: TREE_VIEW_NODE_HEIGHT }}></div>
+    <div className={clx(styles.file_icon, node.icon)} style={{ maxHeight: TREE_VIEW_NODE_HEIGHT }}></div>
   );
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
@@ -196,7 +196,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     };
     return (
       <div
-        className={cls(
+        className={clx(
           styles.tree_view_node_segment,
           styles.tree_view_node_displayname,
           node.strikethrough && styles.strikethrough,
@@ -208,7 +208,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderStatusTail = () => (
-    <div className={cls(styles.tree_view_node_segment, styles.tree_view_node_tail)}>{renderInlineActions()}</div>
+    <div className={clx(styles.tree_view_node_segment, styles.tree_view_node_tail)}>{renderInlineActions()}</div>
   );
 
   const renderInlineActions = () => {
@@ -238,7 +238,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderDescription = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
-    <div className={cls(styles.tree_view_node_segment_grow, styles.tree_view_node_description)}>
+    <div className={clx(styles.tree_view_node_segment_grow, styles.tree_view_node_description)}>
       {!node.name && !node.description ? '——' : node.description}
     </div>
   );
@@ -269,12 +269,12 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       title={getItemTooltip()}
-      className={cls(styles.tree_view_node, decorations ? decorations.classlist : null)}
+      className={clx(styles.tree_view_node, decorations ? decorations.classlist : null)}
       data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={draggable}
     >
-      <div className={cls(styles.tree_view_node_content)}>
+      <div className={clx(styles.tree_view_node_content)}>
         {renderTwice(item)}
         {renderIcon(item)}
         <div className={styles.tree_view_node_overflow_wrap}>

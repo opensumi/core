@@ -1,7 +1,7 @@
-import clx from 'classnames';
 import React from 'react';
 
 import { Keybinding, KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './styles.module.less';
 

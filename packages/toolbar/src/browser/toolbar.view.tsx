@@ -1,9 +1,9 @@
-import clx from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { ToolbarLocation, Disposable } from '@opensumi/ide-core-browser';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './toolbar.module.less';
 
@@ -53,7 +53,7 @@ export const ToolBar = observer<Pick<React.HTMLProps<HTMLElement>, 'className'>>
   }, []);
 
   return (
-    <div className={clx(styles['tool-bar'], className)} ref={toolbarRef as any}>
+    <div className={clxx(styles['tool-bar'], className)} ref={toolbarRef as any}>
       <ToolbarLocation className={styles.left} location='toolbar-left' preferences={{ noDropDown: true }} />
       <div id={styles.space1}></div>
       <ToolbarLocation className={styles.center} location='toolbar-center' preferences={{ noDropDown: true }} />

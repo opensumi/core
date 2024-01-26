@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, memo } from 'react';
 
@@ -7,6 +6,7 @@ import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { generateCtxMenu, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { StatusBarItem } from './status-bar-item.view';
 import styles from './status-bar.module.less';
@@ -37,14 +37,14 @@ export const StatusBarView = memo(
         style={{ backgroundColor }}
         onContextMenu={handleCtxMenu}
       >
-        <div className={cls(styles.area, styles.left)}>
+        <div className={clxx(styles.area, styles.left)}>
           {statusBar.leftEntries.length
             ? statusBar.leftEntries.map((entry: StatusBarEntry, index: number) => (
                 <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
               ))
             : null}
         </div>
-        <div className={cls(styles.area, styles.right)}>
+        <div className={clxx(styles.area, styles.right)}>
           {statusBar.rightEntries.length
             ? statusBar.rightEntries.map((entry: StatusBarEntry, index: number) => (
                 <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />

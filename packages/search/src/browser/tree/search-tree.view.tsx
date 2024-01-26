@@ -1,9 +1,9 @@
-import cls from 'classnames';
 import React, { useEffect, useState, RefObject, useRef, useCallback } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree, Button, TreeNodeEvent } from '@opensumi/ide-components';
 import { localize, formatLocalize, useInjectable, CommandService } from '@opensumi/ide-core-browser';
 import { ViewState } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { ResultTotal, SEARCH_STATE } from '../../common/content-search';
 import styles from '../search.module.less';
@@ -66,14 +66,14 @@ const ResultTotalContent = ({ total, state, model }: ISearchResultTotalContent) 
           {formatLocalize('search.files.result', String(total.resultNum), String(total.fileNum))}
         </span>
         <Button
-          className={cls(styles.result_fresh, { [styles.disabled]: state === SEARCH_STATE.doing })}
+          className={clx(styles.result_fresh, { [styles.disabled]: state === SEARCH_STATE.doing })}
           onClick={handleRefresh}
           type='icon'
           icon='refresh'
           title={localize('search.RefreshAction.label')}
         ></Button>
         <Button
-          className={cls(styles.result_fold, { [styles.disabled]: state === SEARCH_STATE.doing })}
+          className={clx(styles.result_fold, { [styles.disabled]: state === SEARCH_STATE.doing })}
           onClick={handleFold}
           type='icon'
           icon={!collapsed ? 'collapse-all' : 'expand-all'}

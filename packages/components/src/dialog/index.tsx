@@ -1,5 +1,6 @@
-import clx from 'classnames';
 import React from 'react';
+
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { Button } from '../button';
 import { MessageType } from '../common';
@@ -83,7 +84,7 @@ export const Dialog: React.FC<IDialogProps> = ({
           {icon && (
             <div
               style={{ color: icon.color }}
-              className={clx('kt-dialog-icon', getIcon(icon.className) || getContextIcon(icon.className))}
+              className={clxx('kt-dialog-icon', getIcon(icon.className) || getContextIcon(icon.className))}
             />
           )}
           <div className={'kt-dialog-content_area'}>
@@ -91,7 +92,7 @@ export const Dialog: React.FC<IDialogProps> = ({
             <span className={'kt-dialog-message'}>{message}</span>
           </div>
           {closable && type !== 'basic' && (
-            <button className={clx('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
+            <button className={clxx('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
           )}
         </div>
         {messageType !== MessageType.Empty && type !== 'basic' && (

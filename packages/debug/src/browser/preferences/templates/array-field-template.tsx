@@ -7,8 +7,9 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
 } from '@rjsf/utils';
-import cls from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './json-templates.module.less';
 
@@ -51,7 +52,7 @@ export const ArrayFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSch
   } = registry.templates;
 
   return (
-    <fieldset className={cls(className)} id={idSchema.$id}>
+    <fieldset className={clx(className)} id={idSchema.$id}>
       <div className={styles.array_field_template}>
         {(uiOptions.title || title) && (
           <div className={styles.array_item_label}>

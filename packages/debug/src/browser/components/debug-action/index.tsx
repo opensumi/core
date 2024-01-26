@@ -1,7 +1,7 @@
-import cls from 'classnames';
 import React from 'react';
 
 import { getIcon } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './index.module.less';
 
@@ -26,7 +26,7 @@ export const DebugAction = ({
   return (
     <div
       {...restProps}
-      className={cls(
+      className={clx(
         styles.debug_action,
         styles[icon],
         getIcon(icon) || icon,

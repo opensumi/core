@@ -1,7 +1,8 @@
-import classNames from 'classnames';
 import RcMenu, { Divider, ItemGroup } from 'rc-menu';
 import React from 'react';
 import { polyfill } from 'react-lifecycles-compat';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import collapseMotion from '../utils/motion';
 import raf from '../utils/raf';
@@ -264,7 +265,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     const menuOpenMotion = this.getOpenMotionProps(menuMode!);
 
     const prefixCls = customizePrefixCls || 'kt-inner-menu';
-    const menuClassName = classNames(className, {
+    const menuClassName = clx(className, {
       [`${prefixCls}-inline-collapsed`]: this.getInlineCollapsed(),
     });
 

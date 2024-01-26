@@ -1,8 +1,8 @@
-import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { useInjectable, getIcon, localize } from '@opensumi/ide-core-browser';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import {
   ITerminalController,
@@ -106,7 +106,7 @@ export default observer(() => {
               onKeyDown={searchKeyDown}
             />
           </div>
-          <div className={clx(styles.closeBtn, getIcon('close'))} onClick={() => searchService.close()}></div>
+          <div className={clxx(styles.closeBtn, getIcon('close'))} onClick={() => searchService.close()}></div>
         </div>
       )}
       {groups.map((group, index) => {

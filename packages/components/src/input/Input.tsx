@@ -1,5 +1,6 @@
-import clx from 'classnames';
 import React from 'react';
+
+import { clxx, clx } from '@opensumi/ide-utils/lib/clx';
 
 import { Icon } from '../icon';
 import warning from '../utils/warning';
@@ -187,7 +188,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
       return null;
     }
     return (
-      <div className={clx('kt-input-addon', klassName)} {...persistFocusProps}>
+      <div className={clxx('kt-input-addon', klassName)} {...persistFocusProps}>
         {React.Children.map(addonNodes, (child) =>
           React.isValidElement(child) ? React.cloneElement(child!, persistFocusProps) : null,
         )}

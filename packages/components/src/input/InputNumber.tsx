@@ -1,8 +1,9 @@
 import type { ValueType } from '@rc-component/mini-decimal';
-import clx from 'classnames';
 import type { InputNumberProps as RcInputNumberProps } from 'rc-input-number';
 import RcInputNumber from 'rc-input-number';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import './input.less';
 import './input-number.less';

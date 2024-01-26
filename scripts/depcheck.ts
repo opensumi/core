@@ -12,7 +12,6 @@ const ghostDepsWhiteLists = [
   'ajv',
   'fuzzy',
   'jsonc-parser',
-  'classnames',
   'react',
   'react-dom',
   'fs-extra',

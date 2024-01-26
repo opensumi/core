@@ -1,17 +1,17 @@
-import cls from 'classnames';
 import React from 'react';
 
 import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
 import { ConfigContext } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { IContentSearchClientService } from '../common/content-search';
 
 import styles from './search.module.less';
 
 const IncludeRuleContent = () => (
-  <div className={cls(styles.include_rule_content)}>
+  <div className={styles.include_rule_content}>
     <ul>
       <li>, : {localize('search.help.concatRule')}</li>
       <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
@@ -32,7 +32,7 @@ const ExcludeRuleContent = React.memo(() => {
   const excludeList = React.useMemo(() => searchBrowserService.getPreferenceSearchExcludes(), [searchBrowserService]);
 
   return (
-    <div className={cls(styles.exclude_rule_content)}>
+    <div className={styles.exclude_rule_content}>
       <div>
         {excludeList.map((exclude, index) => {
           if (index === excludeList.length - 1) {
@@ -69,10 +69,10 @@ const IncludeInput = React.memo(
     SearchRulesWidgetProps,
     'includeValue' | 'onSearch' | 'onChangeInclude' | 'isOnlyOpenEditors' | 'onOnlyOpenEditorsToggle'
   >) => (
-    <div className={cls(styles.glob_field)}>
-      <div className={cls(styles.label)}>
+    <div className={styles.glob_field}>
+      <div className={styles.label}>
         <span className={styles.limit}>{localize('search.includes')}</span>
-        <span className={cls(styles.include_rule)}>
+        <span className={styles.include_rule}>
           <Popover
             id={'show_include_rule'}
             title={localize('search.help.supportRule')}
@@ -95,7 +95,7 @@ const IncludeInput = React.memo(
         addonAfter={[
           <span
             key='onlyOpenEditors'
-            className={cls(getExternalIcon('book'), styles.search_option, { [styles.select]: isOnlyOpenEditors })}
+            className={clx(getExternalIcon('book'), styles.search_option, { [styles.select]: isOnlyOpenEditors })}
             title={localize('search.onlyOpenEditors')}
             onClick={onOnlyOpenEditorsToggle}
           />,
@@ -119,12 +119,12 @@ const ExcludeInput = React.memo(
     SearchRulesWidgetProps,
     'isIncludeIgnored' | 'onIncludeIgnoredToggle' | 'onOpenPreference' | 'excludeValue' | 'onSearch' | 'onChangeExclude'
   >) => (
-    <div className={cls(styles.glob_field, styles.search_excludes)}>
+    <div className={clxx(styles.glob_field, styles.search_excludes)}>
       <div className={styles.label}>
         <span className={styles.limit}>{localize('search.excludes')}</span>
         <div className={styles.use_default_excludes_wrapper}>
           <CheckBox
-            className={cls(styles.checkbox)}
+            className={styles.checkbox}
             label={localize('search.excludes.default.enable')}
             checked={!isIncludeIgnored}
             id='search-input-isIncludeIgnored'
@@ -132,7 +132,7 @@ const ExcludeInput = React.memo(
           />
           <Popover
             title={localize('search.help.excludeList')}
-            insertClass={cls(styles.search_excludes_description)}
+            insertClass={styles.search_excludes_description}
             id={'search_excludes'}
             action={localize('search.help.modify')}
             onClickAction={onOpenPreference}
@@ -141,7 +141,7 @@ const ExcludeInput = React.memo(
             delay={500}
             position={PopoverPosition.right}
           >
-            <span className={cls(getIcon('question-circle'))} style={{ opacity: '0.7', cursor: 'pointer' }} />
+            <span className={getIcon('question-circle')} style={{ opacity: '0.7', cursor: 'pointer' }} />
           </Popover>
         </div>
       </div>

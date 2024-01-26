@@ -1,9 +1,9 @@
-import cls from 'classnames';
 import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
 
 import { DisposableCollection } from '@opensumi/ide-utils';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 import './styles.less';
 
 export interface ICustomScrollbarProps {
@@ -144,7 +144,7 @@ export const Scrollbars = ({
     <CustomScrollbars
       ref={refSetter}
       style={{ ...style, overflow: 'hidden' }}
-      className={cls(className, 'kt-scrollbar')}
+      className={clx(className, 'kt-scrollbar')}
       onUpdate={handleUpdate}
       onScroll={onScroll}
       universal={universal}
@@ -167,14 +167,14 @@ export const Scrollbars = ({
         if (hiddenVertical) {
           newStyle.display = 'none';
         }
-        return <div {...props} style={newStyle} className={cls(className, 'scrollbar-thumb-vertical')} />;
+        return <div {...props} style={newStyle} className={clx(className, 'scrollbar-thumb-vertical')} />;
       }}
       renderThumbHorizontal={({ style, className, ...props }) => {
         const newStyle = { ...style, height: thumbSize, display: 'none' };
         if (hiddenHorizontal) {
           newStyle.display = 'none';
         }
-        return <div {...props} style={newStyle} className={cls(className, 'scrollbar-thumb-horizontal')} />;
+        return <div {...props} style={newStyle} className={clx(className, 'scrollbar-thumb-horizontal')} />;
       }}
     >
       <div

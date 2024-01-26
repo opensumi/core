@@ -1,12 +1,13 @@
-import cls from 'classnames';
 import React from 'react';
+
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 export * from './styles.less';
 
 // Native Select
 export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => {
   props = {
     ...props,
-    className: cls('kt_select', props.className),
+    className: clxx('kt_select', props.className),
   };
   return <select {...props} />;
 };

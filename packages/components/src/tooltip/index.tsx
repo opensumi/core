@@ -1,6 +1,7 @@
-import cxs from 'classnames';
 import React from 'react';
 import { useEffect, useState, useRef } from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import './style.less';
 
@@ -61,7 +62,7 @@ export const Tooltip: React.FC<{
     <p ref={targetRef} className={'kt-tooltip-wrapper'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {children}
       {visible && (
-        <span ref={tooltipRef} className={cxs('kt-tooltip-content')}>
+        <span ref={tooltipRef} className={clx('kt-tooltip-content')}>
           {title}
           <span ref={arrowRef} className={'kt-tooltip-arrow-placeholder'} />
         </span>

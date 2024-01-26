@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -15,6 +14,7 @@ import {
 import { Loading } from '@opensumi/ide-components';
 import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
 import { ViewState } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import {
   ExpressionContainer,
@@ -204,7 +204,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
 
   const renderDisplayName = (node: ExpressionContainer | ExpressionNode) => (
     <div
-      className={cls(
+      className={clx(
         styles.debug_variables_node_segment,
         styles.debug_variables_node_displayname,
         styles.debug_variables_variable,
@@ -234,7 +234,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     }
     return (
       <div
-        className={cls(
+        className={clx(
           styles.debug_variables_node_segment_grow,
           styles.debug_variables_node_description,
           ...addonClass,
@@ -246,7 +246,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   };
 
   const renderStatusTail = () => (
-    <div className={cls(styles.debug_variables_node_segment, styles.debug_variables_node_tail)}>{renderBadge()}</div>
+    <div className={clx(styles.debug_variables_node_segment, styles.debug_variables_node_tail)}>{renderBadge()}</div>
   );
 
   const renderBadge = () => <div className={styles.debug_variables_node_status}>{item.badge}</div>;
@@ -257,7 +257,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_variables_node_segment, styles.expansion_toggle)}>
+        <div className={clx(styles.debug_variables_node_segment, styles.expansion_toggle)}>
           <Loading />
         </div>
       );
@@ -265,7 +265,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_variables_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={clx(styles.debug_variables_node_segment, styles.expansion_toggle, getIcon('right'), {
           [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
         })}
       />
@@ -284,11 +284,11 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={item.description || ''}
-      className={cls(styles.debug_variables_node, decorations ? decorations.classlist : null)}
+      className={clx(styles.debug_variables_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >
-      <div className={cls(styles.debug_variables_node_content)}>
+      <div className={clx(styles.debug_variables_node_content)}>
         {renderTwice(item)}
         <div className={styles.debug_variables_node_overflow_wrap}>
           {renderDisplayName(item)}

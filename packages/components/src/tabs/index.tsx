@@ -1,5 +1,6 @@
-import clx from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import './style.less';
 

@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -10,6 +9,7 @@ import { InlineActionBar, MenuActionList } from '@opensumi/ide-core-browser/lib/
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { AbstractMenuService, IMenubarItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './menu-bar.module.less';
 import { MenubarStore } from './menu-bar.store';
@@ -136,7 +136,7 @@ MenuBar.displayName = 'MenuBar';
 type MenuBarMixToolbarActionProps = Pick<React.HTMLProps<HTMLElement>, 'className'>;
 
 export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (props) => (
-  <div className={clx(styles.menubarWrapper, props.className)}>
+  <div className={clxx(styles.menubarWrapper, props.className)}>
     <MenuBar />
     <SlotRenderer slot='action' flex={1} overflow={'initial'} />
   </div>

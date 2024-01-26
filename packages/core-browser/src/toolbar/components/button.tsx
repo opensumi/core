@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import React, { PropsWithChildren } from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
@@ -6,6 +5,7 @@ import ReactDOMClient from 'react-dom/client';
 import { Injectable, Autowired } from '@opensumi/di';
 import { Button } from '@opensumi/ide-components';
 import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { DomListener } from '../../dom';
 import { PreferenceService } from '../../preferences';
@@ -158,7 +158,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   if (props.inDropDown) {
     buttonElement = (
       <div
-        className={classnames({ 'kt-toolbar-action-btn': true, 'action-btn-in-dropdown': true })}
+        className={clx({ 'kt-toolbar-action-btn': true, 'action-btn-in-dropdown': true })}
         {...bindings}
         {...backgroundBindings}
         ref={ref as any}
@@ -182,7 +182,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       }
       buttonElement = (
         <div
-          className={classnames({
+          className={clx({
             'kt-toolbar-action-btn': true,
             'kt-toolbar-action-btn-button': styles.btnStyle === 'button',
             'kt-toolbar-action-btn-inline': styles.btnStyle !== 'button',

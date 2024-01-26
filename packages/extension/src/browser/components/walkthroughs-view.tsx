@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button, CheckBox } from '@opensumi/ide-components';
@@ -12,6 +11,7 @@ import {
 import { IResource } from '@opensumi/ide-editor';
 import { Markdown } from '@opensumi/ide-markdown';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { CompletionEventsType, IWalkthrough, IWalkthroughStep } from '../../common';
 import { WalkthroughsService } from '../walkthroughs.service';

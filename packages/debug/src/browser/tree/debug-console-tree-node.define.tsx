@@ -1,9 +1,9 @@
-import cls from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { TreeNode, ITree, CompositeTreeNode } from '@opensumi/ide-components';
 import { MessageType } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { LinkDetector } from '../debug-link-detector';
@@ -11,17 +11,17 @@ import debugConsoleStyles from '../view/console/debug-console.module.less';
 
 const getColor = (severity?: MessageType): string => {
   if (typeof severity === 'undefined') {
-    return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+    return clx(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
   }
   switch (severity) {
     case MessageType.Error:
-      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.error);
+      return clx(debugConsoleStyles.variable_repl_text, debugConsoleStyles.error);
     case MessageType.Warning:
-      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.warn);
+      return clx(debugConsoleStyles.variable_repl_text, debugConsoleStyles.warn);
     case MessageType.Info:
-      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+      return clx(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
     default:
-      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+      return clx(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
   }
 };
 

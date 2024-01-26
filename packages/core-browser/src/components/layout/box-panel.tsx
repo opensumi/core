@@ -1,5 +1,6 @@
-import clsx from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { useInjectable } from '../../react-hooks';
 import { AppConfig } from '../../react-providers';
@@ -69,14 +70,14 @@ export const BoxPanel: React.FC<{
         }
       }}
       {...restProps}
-      className={clsx(styles['box-panel'], className)}
+      className={clx(styles['box-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}
     >
       {arrayChildren.map((child, index) => (
         <div
           key={index}
           id={child['props']?.['data-wrapper-id']}
-          className={clsx(styles.wrapper, child['props']?.['data-wrapper-class'])}
+          className={clx(styles.wrapper, child['props']?.['data-wrapper-class'])}
           style={
             child['props']
               ? {

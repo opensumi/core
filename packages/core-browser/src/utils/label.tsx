@@ -1,8 +1,8 @@
-import clx from 'classnames';
 import React, { CSSProperties } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 import { isFunction } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 const SEPERATOR = ' ';
 

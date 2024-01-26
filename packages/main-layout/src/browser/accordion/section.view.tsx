@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React from 'react';
 
 import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
@@ -10,6 +9,7 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
 import { IIconService } from '@opensumi/ide-theme';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
@@ -154,13 +154,13 @@ export const AccordionSection = ({
           onFocus={headerFocusHandler}
           onBlur={headerBlurHandler}
           {...attrs}
-          className={cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
+          className={clxx(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
         >
           <div className={styles.label_wrap}>
-            <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
+            <i className={clxx(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
             <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
               {headerLabel}
             </div>
@@ -183,7 +183,7 @@ export const AccordionSection = ({
         </div>
       )}
       <div
-        className={cls([styles.kt_split_panel_body, { [styles.hide]: !expanded }])}
+        className={clx([styles.kt_split_panel_body, { [styles.hide]: !expanded }])}
         style={bodyStyle}
         ref={contentRef}
       >

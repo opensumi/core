@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import type { ListOnScrollProps } from 'react-window';
@@ -24,6 +23,7 @@ import {
   QuickTitleButton,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { KEY_CODE_MAP } from '@opensumi/ide-monaco/lib/browser/monaco.keycode-map';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 
 import { HighlightLabel } from './components/highlight-label';
@@ -256,21 +256,21 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}
       <div tabIndex={0} className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
-          {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
+          {iconClass && <span className={clxx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
             className={styles.item_label_name}
             labelClassName={styles.label_icon_container}
             labelIconClassName={styles.item_label_name_icon}
-            hightLightClassName={clx(styles.item_label_highlight)}
+            hightLightClassName={styles.item_label_highlight}
             text={label}
             highlights={labelHighlights}
           />
           {description && (
             <HighlightLabel
               className={styles.item_label_description}
-              labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
-              labelIconClassName={clx(styles.label_has_icon, styles.item_label_description_icon)}
-              hightLightClassName={clx(styles.item_label_description_highlight)}
+              labelClassName={clxx(styles.label_icon_container, styles.item_label_description_label)}
+              labelIconClassName={clxx(styles.label_has_icon, styles.item_label_description_icon)}
+              hightLightClassName={styles.item_label_description_highlight}
               text={description}
               highlights={descriptionHighlights}
             />
@@ -280,9 +280,9 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           <HighlightLabel
             OutElementType='div'
             className={styles.item_label_detail}
-            labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
-            labelIconClassName={clx(styles.label_has_icon, styles.item_label_detail_icon)}
-            hightLightClassName={clx(styles.item_label_description_highlight)}
+            labelClassName={clxx(styles.label_icon_container, styles.item_label_description_label)}
+            labelIconClassName={clxx(styles.label_has_icon, styles.item_label_detail_icon)}
+            hightLightClassName={styles.item_label_description_highlight}
             text={detail}
             highlights={detailHighlights}
           />
@@ -299,7 +299,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           key={action.id}
           onMouseDown={() => runQuickOpenItemAction(action)}
           title={action.tooltip || action.label}
-          className={clx(styles.item_action, action.class)}
+          className={clxx(styles.item_action, action.class)}
         ></span>
       ))}
       {(mouseOver || widget.selectIndex === index) &&

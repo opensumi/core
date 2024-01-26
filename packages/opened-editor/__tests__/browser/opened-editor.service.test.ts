@@ -1,5 +1,3 @@
-import cls from 'classnames';
-
 import { TreeNodeType } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { URI, IEventBus, Emitter } from '@opensumi/ide-core-browser';
@@ -11,6 +9,7 @@ import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mock
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IThemeService } from '@opensumi/ide-theme';
 import { MockThemeService } from '@opensumi/ide-theme/lib/common/mocks/theme.service';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
@@ -218,7 +217,7 @@ describe('OpenedEditorModelService should be work', () => {
       openedEditorModelService.handleItemClick(node as EditorFile, TreeNodeType.TreeNode);
       expect(openFile).toBeCalledTimes(1);
       expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
-        cls(styles.mod_selected, styles.mod_focused),
+        clxx(styles.mod_selected, styles.mod_focused),
       );
     });
 

@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import React, { useCallback, CSSProperties, FC } from 'react';
 
 import { Badge } from '@opensumi/ide-components';
@@ -7,6 +6,7 @@ import { ViewState } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IStatusBarService } from '@opensumi/ide-status-bar';
 import { StatusBarItem } from '@opensumi/ide-status-bar/lib/browser/status-bar-item.view';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';

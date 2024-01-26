@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, { useCallback } from 'react';
 
 import { INodeRendererProps, ClasslistComposite, Badge, Button } from '@opensumi/ide-components';
@@ -10,6 +9,7 @@ import {
   getExternalIcon,
   isDefined,
 } from '@opensumi/ide-core-browser';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { SearchContentNode, SearchFileNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -84,7 +84,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
     }
     return (
       <div
-        className={cls(styles.icon, SearchFileNode.is(node) ? node.icon : '')}
+        className={clxx(styles.icon, SearchFileNode.is(node) ? node.icon : '')}
         style={{
           height: SEARCH_TREE_NODE_HEIGHT,
           lineHeight: `${SEARCH_TREE_NODE_HEIGHT}px`,
@@ -95,7 +95,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
 
   const renderDisplayName = useCallback(
     (node: SearchFileNode | SearchContentNode) => (
-      <div className={cls(styles.segment, styles.displayname)}>{node.displayName}</div>
+      <div className={clxx(styles.segment, styles.displayname)}>{node.displayName}</div>
     ),
     [],
   );
@@ -103,7 +103,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   const renderDescription = useCallback(
     (node: SearchFileNode | SearchContentNode) => {
       if (SearchFileNode.is(node)) {
-        return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
+        return <div className={clxx(styles.segment_grow, styles.description)}>{node.description}</div>;
       } else {
         const { start, end } = node.highlight;
         if (isUseRegexp) {
@@ -116,15 +116,15 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
 
           const match = node.description.match(regexp);
           if (!regexp || !match) {
-            return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
+            return <div className={clxx(styles.segment_grow, styles.description)}>{node.description}</div>;
           }
           const matchText = match[0];
           if (matchText && isDefined(start)) {
             const replaceResult = matchText.replace(regexp, replace);
             return (
-              <div className={cls(styles.segment_grow, styles.description)}>
+              <div className={clxx(styles.segment_grow, styles.description)}>
                 {node.description.slice(0, start)}
-                <span className={cls(styles.match, replace && styles.replace)}>{matchText}</span>
+                <span className={clxx(styles.match, replace && styles.replace)}>{matchText}</span>
                 {replaceResult && <span className={styles.replace}>{replaceResult}</span>}
                 {node.description.slice(end)}
               </div>
@@ -139,9 +139,9 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
           }
           if (index >= 0) {
             return (
-              <div className={cls(styles.segment_grow, styles.description)}>
+              <div className={clxx(styles.segment_grow, styles.description)}>
                 {node.description.slice(0, start)}
-                <span className={cls(styles.match, replace && styles.replace)}>
+                <span className={clxx(styles.match, replace && styles.replace)}>
                   {node.description.slice(start, end)}
                 </span>
                 {replace && <span className={styles.replace}>{replace}</span>}
@@ -149,7 +149,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
               </div>
             );
           }
-          return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
+          return <div className={clxx(styles.segment_grow, styles.description)}>{node.description}</div>;
         }
       }
     },
@@ -158,7 +158,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
 
   const renderStatusTail = useCallback(
     (node: SearchFileNode | SearchContentNode) => (
-      <div className={cls(styles.segment, styles.tail)}>{renderBadge(node)}</div>
+      <div className={clxx(styles.segment, styles.tail)}>{renderBadge(node)}</div>
     ),
     [],
   );
@@ -172,7 +172,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: SearchFileNode) => (
       <div
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={clx(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as SearchFileNode).expanded,
         })}
       />
@@ -236,7 +236,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
             <Button
               type='icon'
               key={`${node.id}-${action.command}`}
-              iconClass={cls(styles.action_icon, action.icon)}
+              iconClass={clxx(styles.action_icon, action.icon)}
               title={action.title}
               onClick={clickHandler}
             />
@@ -253,7 +253,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(styles.search_node, decorations ? decorations.classlist : null)}
+      className={clxx(styles.search_node, decorations ? decorations.classlist : null)}
       style={renderedNodeStyle}
       data-id={item.id}
     >

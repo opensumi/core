@@ -1,10 +1,10 @@
-import clsx from 'classnames';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components/lib/button';
 import { getExternalIcon, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { parseLinkedText } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IViewContentDescriptor } from '../common';
 
@@ -105,7 +105,7 @@ const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
                 return (
                   <a
                     key={idx}
-                    className={clsx({ disabled: node.href.startsWith('command:') && disables[index] === false })}
+                    className={clx({ disabled: node.href.startsWith('command:') && disables[index] === false })}
                     title={node.title}
                     onClick={() => openerService.open(node.href)}
                   >

@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, { memo, useCallback, PropsWithChildren, useState, useMemo, useEffect, FormEvent, useRef } from 'react';
 
 import { ValidateMessage } from '@opensumi/ide-components';
@@ -254,7 +253,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           disabled={searchContent.total.fileNum <= 0}
         />
 
-        <div className={cls(styles.search_details)}>
+        <div className={styles.search_details}>
           {showDetail && (
             <SearchRulesWidget
               includeValue={searchBrowserService.includeValue}

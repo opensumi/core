@@ -1,8 +1,8 @@
-import clx from 'classnames';
 import React from 'react';
 
 import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { KeybindingView } from '../keybinding';
 

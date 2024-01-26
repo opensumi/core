@@ -1,10 +1,10 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { IDisposable } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import {
   ExpressionNode,
@@ -126,7 +126,7 @@ export const DebugHoverView = observer(() => {
     <div className={styles.debug_hover}>
       {model.treeModel ? (
         <div
-          className={cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value)}
+          className={clx(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value)}
           title={model.treeModel.root.name}
         >
           {model.treeModel.root.name}
@@ -134,7 +134,7 @@ export const DebugHoverView = observer(() => {
       ) : (
         model.variable && (
           <div
-            className={cls(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value)}
+            className={clx(styles.debug_hover_title, shouldRenderVariableTree && styles.has_complex_value)}
             title={model.variable.name}
           >
             {model.variable.value}

@@ -1,4 +1,3 @@
-import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -9,6 +8,7 @@ import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actio
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditor } from '@opensumi/ide-editor';
 import { ResizeZoneWidget, IOptions } from '@opensumi/ide-monaco-enhance';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import {
   ICommentReply,
@@ -81,8 +81,8 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   }, []);
 
   return (
-    <div className={clx(thread.options.threadClassName, styles.comment_container)}>
-      <div className={clx(thread.options.threadHeadClassName, styles.head)}>
+    <div className={clxx(thread.options.threadClassName, styles.comment_container)}>
+      <div className={clxx(thread.options.threadHeadClassName, styles.head)}>
         <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}

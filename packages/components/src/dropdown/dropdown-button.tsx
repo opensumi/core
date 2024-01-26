@@ -1,6 +1,7 @@
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
-import classNames from 'classnames';
 import * as React from 'react';
+
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { Button } from '../button';
 import type { ButtonSize, ButtonType } from '../button';
@@ -92,7 +93,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = (props) => {
   const [leftButtonToRender, rightButtonToRender] = buttonsRender([leftButton, rightButton]);
 
   return (
-    <div {...restProps} className={classNames(prefixCls, className)}>
+    <div {...restProps} className={clxx(prefixCls, className)}>
       {leftButtonToRender}
       <Dropdown {...dropdownProps}>{rightButtonToRender}</Dropdown>
     </div>

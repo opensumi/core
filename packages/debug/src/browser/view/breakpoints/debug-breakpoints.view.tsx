@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
@@ -18,6 +17,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -125,7 +125,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               twisterClassName: styles.tree_item_twister,
               twisterPlaceholderClassName: styles.tree_item_twister_placeholder,
               breakpoint: item.breakpoint,
-              iconClassName: cls(
+              iconClassName: clx(
                 getBreakpointClsState({
                   data: item.rawData,
                   inDebugMode: debugBreakpointsService.inDebugMode,
@@ -174,7 +174,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   }, [treeData]);
 
   return (
-    <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
+    <div className={clx(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
       <BasicRecycleTree
         onIconClick={(_, item) => {
           if (item.raw.breakpoint) {
@@ -233,15 +233,15 @@ export const BreakpointFileItem = ({ label, title, breakpointItems }: Breakpoint
     <div className={styles.debug_breakpoints_file_item}>
       <div className={styles.file_item_control}>
         <CheckBox
-          className={cls(styles.debug_breakpoints_icon, styles.file_item_checkbox)}
+          className={clx(styles.debug_breakpoints_icon, styles.file_item_checkbox)}
           onChange={() => handleCheckBoxChange(enabled)}
           checked={enabled}
         ></CheckBox>
-        <i className={cls(getIcon('file-text'), styles.file_item_icon, styles.debug_breakpoints_icon)}></i>
+        <i className={clx(getIcon('file-text'), styles.file_item_icon, styles.debug_breakpoints_icon)}></i>
         <span title={title}>{label}</span>
       </div>
       <div className={styles.file_item_control_right}>
-        <i className={cls(getIcon('close'), styles.close_icon)} onClick={(event) => removeBreakpoint(event)}></i>
+        <i className={clx(getIcon('close'), styles.close_icon)} onClick={(event) => removeBreakpoint(event)}></i>
       </div>
     </div>
   );
@@ -357,14 +357,14 @@ export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle:
     }
 
     return (
-      <span className={cls(styles.debug_breakpoints_description, styles.blank)}>{`< ${localize(
+      <span className={clx(styles.debug_breakpoints_description, styles.blank)}>{`< ${localize(
         'debug.breakpoint.blank',
       )} >`}</span>
     );
   }, [description, data.breakpoint]);
 
   return (
-    <div className={cls(styles.debug_breakpoints_item)}>
+    <div className={clx(styles.debug_breakpoints_item)}>
       <CheckBox
         className={styles.debug_breakpoints_icon}
         id={data.id}
@@ -382,13 +382,13 @@ export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle:
               <i
                 title={localize('debug.menu.edit.breakpoint')}
                 onClick={(event) => editBreakpoint(event)}
-                className={cls(styles.debug_edit_breakpoints_icon, getExternalIcon('edit'))}
+                className={clx(styles.debug_edit_breakpoints_icon, getExternalIcon('edit'))}
               ></i>
             )}
             <i
               title={localize('debug.menu.delete.breakpoint')}
               onClick={(event) => removeBreakpoint(event)}
-              className={cls(styles.debug_remove_breakpoints_icon, getIcon('close'))}
+              className={clx(styles.debug_remove_breakpoints_icon, getIcon('close'))}
             ></i>
           </div>
           <Badge className={styles.debug_breakpoints_badge}>

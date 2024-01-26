@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, {
   useRef,
   useEffect,
@@ -31,6 +30,7 @@ import {
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 import { IIconService } from '@opensumi/ide-theme/lib/common/index';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { FILE_EXPLORER_WELCOME_ID, IFileTreeService } from '../common';
 import { Directory, File } from '../common/file-tree-node.define';
@@ -350,7 +350,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
 
   return (
     <div
-      className={cls(styles.file_tree, outerDragOver && styles.outer_drag_over, outerActive && styles.outer_active)}
+      className={clx(styles.file_tree, outerDragOver && styles.outer_drag_over, outerActive && styles.outer_active)}
       tabIndex={-1}
       ref={wrapperRef}
       onClick={handleOuterClick}

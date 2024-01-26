@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -19,6 +18,7 @@ import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { DebugState } from '../../../common';
 import { DebugAction } from '../../components';
@@ -185,14 +185,14 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const renderSelections = useCallback((sessions: DebugSession[]) => {
     if (sessions.length > 1) {
       return (
-        <div className={cls(styles.debug_selection)}>
+        <div className={clx(styles.debug_selection)}>
           {isElectronRenderer ? (
             <NativeSelect value={currentSessionId} onChange={setCurrentSession}>
               {renderSessionOptions(sessions)}
             </NativeSelect>
           ) : (
             <Select
-              className={cls(styles.debug_selection, styles.special_radius)}
+              className={clx(styles.debug_selection, styles.special_radius)}
               size={props.float ? 'small' : 'default'}
               value={currentSessionId}
               options={sessions.map((s) => ({ label: s.label, value: s.id }))}
@@ -226,7 +226,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   );
 
   return (
-    <div className={cls(styles.debug_action_bar, props.className || '')}>
+    <div className={clx(styles.debug_action_bar, props.className || '')}>
       {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
       <div className={styles.debug_actions}>
         {renderContinue(state)}
@@ -309,7 +309,7 @@ const FloatDebugToolbarView = observer(() => {
 
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
 
-  const debugToolbarWrapperClass = cls({
+  const debugToolbarWrapperClass = clx({
     [styles.debug_toolbar_wrapper]: true,
     [styles.debug_toolbar_wrapper_electron]: isElectronRenderer,
   });
@@ -331,9 +331,9 @@ const FloatDebugToolbarView = observer(() => {
           }}
           className={debugToolbarWrapperClass}
         >
-          <div className={cls(styles.debug_toolbar_drag_wrapper)}>
+          <div className={clx(styles.debug_toolbar_drag_wrapper)}>
             <div
-              className={cls(getIcon('drag'), styles.debug_toolbar_drag)}
+              className={clx(getIcon('drag'), styles.debug_toolbar_drag)}
               onMouseDown={(e) => controller.onMouseDown(e)}
               onMouseMove={(e) => controller.onMouseMove(e)}
             ></div>

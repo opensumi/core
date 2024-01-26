@@ -1,7 +1,7 @@
-import cls from 'classnames';
 import React, { useCallback, useEffect } from 'react';
 
 import { Disposable, Event, useInjectable } from '@opensumi/ide-core-browser';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 
 import { MergeEditorService } from '../merge-editor.service';
@@ -80,7 +80,7 @@ export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastTy
   return (
     <div className={styles.minimap_content}>
       {blocks.map((block) => (
-        <span className={cls(styles.block, block.className)} style={{ top: block.top, height: block.height }}></span>
+        <span className={clxx(styles.block, block.className)} style={{ top: block.top, height: block.height }}></span>
       ))}
     </div>
   );

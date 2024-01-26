@@ -1,8 +1,8 @@
-import cls from 'classnames';
 import React from 'react';
 
 import { Input } from '@opensumi/ide-components';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
+import { clxx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './search.module.less';
 
@@ -28,7 +28,7 @@ export const SearchReplaceWidget = React.memo(
             onKeyUp={onSearch}
             onChange={onReplaceRuleChange}
           />
-          <div className={cls(styles.replace_all_button, disabled && styles.disabled)} onClick={replaceAll}>
+          <div className={clxx(styles.replace_all_button, disabled && styles.disabled)} onClick={replaceAll}>
             <span>{localize('search.replaceAll.label')}</span>
           </div>
         </div>

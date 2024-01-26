@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
@@ -14,6 +13,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IKeymapService, KeybindingItem } from '../common';
 
@@ -127,7 +127,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
       return (
         <div className={styles.keybinding_optional_actions} onMouseDown={preventMouseDown}>
           <span
-            className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)}
+            className={clx(getIcon('close-circle-fill'), styles.keybinding_optional_action)}
             onClick={clear}
             title={localize('keymaps.action.clear')}
           ></span>
@@ -155,7 +155,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
       if (source && getRaw(source) === getScope(KeybindingScope.USER)) {
         return (
           <span
-            className={cls(getIcon('rollback'), styles.keybinding_inline_action)}
+            className={clx(getIcon('rollback'), styles.keybinding_inline_action)}
             onClick={reset}
             title={localize('keymaps.action.reset')}
           ></span>
@@ -222,7 +222,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
           <div className={styles.keybinding_key} title={getRaw(keybinding)} onDoubleClick={clickHandler}>
             <div className={styles.keybinding_action} onClick={clickHandler}>
               <span
-                className={cls(keybinding ? getIcon('edit') : getIcon('plus'), styles.keybinding_inline_action)}
+                className={clx(keybinding ? getIcon('edit') : getIcon('plus'), styles.keybinding_inline_action)}
                 title={keybinding ? localize('keymaps.action.edit') : localize('keymaps.action.add')}
               ></span>
               {renderReset(source)}
@@ -262,20 +262,20 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
     }, [value]);
 
     return (
-      <div className={cls(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
-        <div className={cls(styles.keybinding_list_item_box, styles.keybinding_command)}>
+      <div className={clx(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
+        <div className={clx(styles.keybinding_list_item_box, styles.keybinding_command)}>
           <div
             className={styles.command_name}
             title={getRaw(command)}
             dangerouslySetInnerHTML={{ __html: command }}
           ></div>
           <div
-            className={cls(styles.limit_warp, styles.command_id)}
+            className={clx(styles.limit_warp, styles.command_id)}
             title={getRaw(id)}
             dangerouslySetInnerHTML={{ __html: formatLocalize('keymaps.commandId.title', id) }}
           ></div>
         </div>
-        <div className={cls(styles.keybinding_list_item_box)}>{renderKeybinding()}</div>
+        <div className={clx(styles.keybinding_list_item_box)}>{renderKeybinding()}</div>
         <div className={styles.keybinding_list_item_box}>
           <div
             className={styles.limit_warp}
@@ -297,7 +297,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
     return (
       <div className={styles.search_inline_action}>
         <span
-          className={cls(getIcon('keyboard'), styles.search_inline_action_icon, activeKeyboardSearch && styles.active)}
+          className={clx(getIcon('keyboard'), styles.search_inline_action_icon, activeKeyboardSearch && styles.active)}
           onClick={activeKeyboard}
         ></span>
       </div>
@@ -344,7 +344,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
   const renderOptionalActions = () => (
     <div className={styles.keybinding_optional_actions}>
       <span
-        className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)}
+        className={clx(getIcon('close-circle-fill'), styles.keybinding_optional_action)}
         onClick={clearSearch}
         title={localize('keymaps.action.reset')}
       ></span>

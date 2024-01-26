@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -15,6 +14,7 @@ import { getIcon } from '@opensumi/ide-core-browser';
 import { isMacintosh, Disposable } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IElectronHeaderService } from '../../common/header';
 
@@ -113,13 +113,13 @@ export const HeaderBarRightComponent = () => {
         height: defaultHeight(),
       }}
     >
-      <div className={cls(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
+      <div className={clx(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
       {maximized ? (
-        <div className={cls(styles.icon, getIcon('max'))} onClick={() => windowService.unmaximize()} />
+        <div className={clx(styles.icon, getIcon('max'))} onClick={() => windowService.unmaximize()} />
       ) : (
-        <div className={cls(styles.icon, getIcon('unmax'))} onClick={() => windowService.maximize()} />
+        <div className={clx(styles.icon, getIcon('unmax'))} onClick={() => windowService.maximize()} />
       )}
-      <div className={cls(styles.icon, getIcon('close1'))} onClick={() => windowService.close()} />
+      <div className={clx(styles.icon, getIcon('close1'))} onClick={() => windowService.close()} />
     </div>
   );
 };

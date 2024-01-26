@@ -1,10 +1,10 @@
-import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { FC, useState, useRef, useEffect, useCallback, memo } from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
 import { isOSX } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { ViewModelContext } from '../../scm-model';
 

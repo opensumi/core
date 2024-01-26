@@ -11,12 +11,12 @@ import {
   ADDITIONAL_PROPERTY_FLAG,
   ObjectFieldTemplatePropertyType,
 } from '@rjsf/utils';
-import cls from 'classnames';
 import React, { useCallback, useMemo } from 'react';
 
 import { getIcon } from '@opensumi/ide-components';
 import { IJSONSchema, useInjectable } from '@opensumi/ide-core-browser';
 import { Key } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { ILaunchService } from '../../../common/debug-service';
 import { LaunchService } from '../launch.service';
@@ -64,19 +64,22 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
     ButtonTemplates: { AddButton },
   } = registry.templates;
 
-  const description = useMemo(() => props.description ?? (schema as IJSONSchema).markdownDescription, [props.description, schema]);
+  const description = useMemo(
+    () => props.description ?? (schema as IJSONSchema).markdownDescription,
+    [props.description, schema],
+  );
 
   const fieldContainerClass = useMemo(
     () =>
       idSchema.$id === 'root'
-        ? cls(styles.object_field_container, styles.root_object_field_container)
+        ? clx(styles.object_field_container, styles.root_object_field_container)
         : styles.object_field_container,
     [idSchema],
   );
 
   const propertyWrapperClass = useMemo(
     () =>
-      idSchema.$id === 'root' ? cls(styles.property_wrapper, styles.root_property_wrapper) : styles.property_wrapper,
+      idSchema.$id === 'root' ? clx(styles.property_wrapper, styles.root_property_wrapper) : styles.property_wrapper,
     [idSchema],
   );
 
@@ -109,7 +112,7 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
           {/* 非 root 节点不允许删除 */}
           {required.includes(node.name) || idSchema.$id !== 'root' ? null : (
             <div className={styles.wrapper_delete} onClick={() => handleDelProperties(node)}>
-              <span className={cls(getIcon('close-circle'), styles.close_icon)}></span>
+              <span className={clx(getIcon('close-circle'), styles.close_icon)}></span>
             </div>
           )}
         </div>

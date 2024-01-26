@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import React from 'react';
 
 import {
@@ -10,6 +9,7 @@ import {
 } from '@opensumi/ide-components';
 import { URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
 import { SymbolTag } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { IOutlineDecorationService } from '../common';
 
@@ -75,7 +75,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
 
   const renderIcon = (node: OutlineCompositeTreeNode | OutlineTreeNode) => (
     <div
-      className={cls(styles.icon, node.icon)}
+      className={clxx(styles.icon, node.icon)}
       style={{ height: OUTLINE_TREE_NODE_HEIGHT, lineHeight: `${OUTLINE_TREE_NODE_HEIGHT}px` }}
     ></div>
   );
@@ -84,7 +84,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
 
   const renderDisplayName = (node: OutlineCompositeTreeNode | OutlineTreeNode) => (
     <div
-      className={cls(styles.outline_node_segment, styles.outline_node_displayname, {
+      className={clx(styles.outline_node_segment, styles.outline_node_displayname, {
         [styles.deprecated]: node.raw.tags && node.raw.tags.indexOf(SymbolTag.Deprecated) >= 0,
       })}
     >
@@ -93,7 +93,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   );
 
   const renderStatusTail = () => (
-    <div className={cls(styles.outline_node_segment, styles.outline_node_tail)}>{renderBadge()}</div>
+    <div className={clxx(styles.outline_node_segment, styles.outline_node_tail)}>{renderBadge()}</div>
   );
 
   const renderBadge = () => {
@@ -106,7 +106,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   const renderFolderToggle = (node: OutlineCompositeTreeNode, clickHandler: any) => (
     <div
       onClick={clickHandler}
-      className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+      className={clx(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
         [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
       })}
     />
@@ -131,7 +131,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       return null;
     }
     return (
-      <div className={cls(styles.outline_node_segment_grow, styles.outline_node_description)}>{node.description}</div>
+      <div className={clxx(styles.outline_node_segment_grow, styles.outline_node_description)}>{node.description}</div>
     );
   };
 
@@ -140,7 +140,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(styles.outline_node, decorations ? decorations.classlist : null)}
+      className={clxx(styles.outline_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >

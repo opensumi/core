@@ -1,7 +1,8 @@
-import cls from 'classnames';
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { Scrollbars } from '../scrollbars';
 
@@ -408,7 +409,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
                 transform: 'translate3d(0px, 0px, 0px)',
                 ...style,
               }}
-              className={cls(className, 'kt-recycle-list')}
+              className={clx(className, 'kt-recycle-list')}
               innerElementType={innerElementType}
               outerElementType={outerElementType}
               estimatedItemSize={calcEstimatedSize}
@@ -433,7 +434,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
                 transform: 'translate3d(0px, 0px, 0px)',
                 ...style,
               }}
-              className={cls(className, 'recycle-list')}
+              className={clx(className, 'recycle-list')}
               innerElementType={innerElementType}
               outerElementType={outerElementType}
             >

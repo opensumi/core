@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import React from 'react';
 
 import {
@@ -10,6 +9,7 @@ import {
   isDataOptionGroups,
 } from '@opensumi/ide-components';
 import { Emitter } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { getIcon } from '../../style/icon/icon';
 import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionSelectProps } from '../types';
@@ -147,7 +147,7 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
     const selectDropDown = <SelectOptionsList {...selectDropDownProps} ref={dropdownRef} />;
     return (
       <div
-        className={classnames({
+        className={clx({
           'kt-toolbar-action-btn': true,
           'action-btn-in-dropdown': true,
           'kt-toolbar-action-select': true,
@@ -158,7 +158,7 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
         }}
       >
         {props.name || findCurrentValueLabel(value)}
-        <div className={classnames('kt-toolbar-action-btn-icon', getIcon('right'), 'kt-toolbar-action-select-right')} />
+        <div className={clx('kt-toolbar-action-btn-icon', getIcon('right'), 'kt-toolbar-action-select-right')} />
 
         {showDropdown ? selectDropDown : null}
       </div>

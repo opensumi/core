@@ -1,9 +1,9 @@
-import cls from 'classnames';
 import React, { FormEvent, memo, forwardRef } from 'react';
 
 import { ValidateInput, CheckBox, ValidateMessage } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './search.module.less';
 
@@ -30,7 +30,7 @@ const SearchRuleCheckout = memo(
     <p className={styles.search_input_title}>
       <span className={styles.search_title}>{localize('search.input.title')}</span>
       <CheckBox
-        className={cls(styles.checkbox)}
+        className={styles.checkbox}
         label={localize('search.input.checkbox')}
         checked={isDetailOpen}
         id='search-input'
@@ -95,7 +95,7 @@ export const SearchInputWidget = memo(
                 addonAfter={[
                   <span
                     key={localize('search.caseDescription')}
-                    className={cls(getIcon('ab'), styles['match-case'], styles.search_option, {
+                    className={clx(getIcon('ab'), styles['match-case'], styles.search_option, {
                       [styles.select]: isMatchCase,
                     })}
                     title={localize('search.caseDescription')}
@@ -103,7 +103,7 @@ export const SearchInputWidget = memo(
                   ></span>,
                   <span
                     key={localize('search.wordsDescription')}
-                    className={cls(getIcon('abl'), styles['whole-word'], styles.search_option, {
+                    className={clx(getIcon('abl'), styles['whole-word'], styles.search_option, {
                       [styles.select]: isWholeWord,
                     })}
                     title={localize('search.wordsDescription')}
@@ -111,7 +111,7 @@ export const SearchInputWidget = memo(
                   ></span>,
                   <span
                     key={localize('search.regexDescription')}
-                    className={cls(getIcon('regex'), styles['use-regexp'], styles.search_option, {
+                    className={clx(getIcon('regex'), styles['use-regexp'], styles.search_option, {
                       [styles.select]: isRegex,
                     })}
                     title={localize('search.regexDescription')}

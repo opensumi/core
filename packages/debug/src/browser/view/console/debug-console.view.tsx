@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -17,6 +16,7 @@ import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
 import { PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
@@ -349,7 +349,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     }
     return (
       <div
-        className={cls(
+        className={clx(
           styles.debug_console_node_segment,
           !DebugConsoleNode.is(node) && styles.debug_console_node_displayname,
           styles.debug_console_variable,
@@ -368,7 +368,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     const addonClass = [styles.debug_console_variable];
     if (AnsiConsoleNode.is(node)) {
       return (
-        <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_displayname)}>
+        <div className={clx(styles.debug_console_node_segment, styles.debug_console_node_displayname)}>
           {(node as AnsiConsoleNode).template()}
         </div>
       );
@@ -384,7 +384,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     }
     return (
       <div
-        className={cls(styles.debug_console_node_segment_grow, styles.debug_console_node_description, ...addonClass)}
+        className={clx(styles.debug_console_node_segment_grow, styles.debug_console_node_description, ...addonClass)}
       >
         <TreeWithLinkWrapper html={linkDetector.linkify(description)}></TreeWithLinkWrapper>
       </div>
@@ -392,7 +392,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   };
 
   const renderStatusTail = () => (
-    <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_tail)}>{renderBadge()}</div>
+    <div className={clx(styles.debug_console_node_segment, styles.debug_console_node_tail)}>{renderBadge()}</div>
   );
 
   const renderBadge = () => {
@@ -417,7 +417,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_console_node_segment, styles.expansion_toggle)}>
+        <div className={clx(styles.debug_console_node_segment, styles.expansion_toggle)}>
           <Loading />
         </div>
       );
@@ -429,7 +429,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_console_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={clx(styles.debug_console_node_segment, styles.expansion_toggle, getIcon('right'), {
           [`${styles.mod_collapsed}`]: !(node as DebugConsoleNode).expanded,
         })}
       />
@@ -448,13 +448,13 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(styles.debug_console_node, decorations ? decorations.classlist : null)}
+      className={clx(styles.debug_console_node, decorations ? decorations.classlist : null)}
       style={{
         paddingLeft: `${(defaultLeftPadding || 8) + (item.depth || 0) * (leftPadding || 0)}px`,
       }}
       data-id={item.id}
     >
-      <div className={cls(styles.debug_console_node_content)}>
+      <div className={clx(styles.debug_console_node_content)}>
         {renderTwice(item)}
         <div
           className={styles.debug_console_node_overflow_wrap}

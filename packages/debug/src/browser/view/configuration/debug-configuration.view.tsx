@@ -1,10 +1,10 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Option, Select } from '@opensumi/ide-components';
 import { AppConfig, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import {
   DEFAULT_ADD_CONFIGURATION_KEY,
@@ -148,7 +148,7 @@ const ConfigurationSelector = React.memo(
         <NativeSelect
           value={currentValue}
           onChange={onChangeConfiguration}
-          className={cls(styles.debug_selection, styles.special_radius)}
+          className={clx(styles.debug_selection, styles.special_radius)}
         >
           {renderConfigurationOptions(options)}
           {renderAddConfigurationOptions()}
@@ -160,7 +160,7 @@ const ConfigurationSelector = React.memo(
       <Select
         value={currentValue}
         onChange={onChangeConfiguration}
-        className={cls(styles.debug_selection, styles.special_radius)}
+        className={clx(styles.debug_selection, styles.special_radius)}
       >
         {renderConfigurationOptions(options)}
         {renderAddConfigurationOptions()}
@@ -255,7 +255,7 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
   }, []);
 
   return (
-    <div className={cls(styles.debug_configuration_toolbar, props.className || '')}>
+    <div className={clx(styles.debug_configuration_toolbar, props.className || '')}>
       <ConfigurationSelector
         currentValue={currentValue}
         options={configurationOptions}

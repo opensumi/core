@@ -1,7 +1,7 @@
-import cls from 'classnames';
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 
 import { ViewState, getIcon, useInjectable, DisposableCollection, localize } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { DebugState, IDebugSessionManager } from '../../../common';
 import { DebugSession } from '../../debug-session';
@@ -227,7 +227,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
                 className={unfold ? getIcon('arrow-down') : getIcon('arrow-right')}
                 onClick={() => setUnfold(!unfold)}
               ></div>
-              <div className={cls([getIcon('debug'), styles.debug_session_icon])}></div>
+              <div className={clx([getIcon('debug'), styles.debug_session_icon])}></div>
             </>
           ) : (
             <div style={{ width: 30 }}></div>

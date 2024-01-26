@@ -1,5 +1,6 @@
-import classnames from 'classnames';
 import React from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import styles from './resize.module.less';
 
@@ -373,7 +374,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       ref={(e) => {
         ref.current = e;
       }}
-      className={classnames({
+      className={clx({
         [styles['resize-handle-horizontal']]: true,
         [styles['with-color']]: !props.noColor,
         [props.className || '']: true,
@@ -679,7 +680,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   return (
     <div
       ref={(e) => e && (ref.current = e)}
-      className={classnames({
+      className={clx({
         [styles['resize-handle-vertical']]: true,
         [props.className || '']: true,
         [styles['with-color']]: !props.noColor,

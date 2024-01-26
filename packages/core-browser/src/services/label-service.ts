@@ -1,5 +1,3 @@
-import classnames from 'classnames';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   URI,
@@ -12,6 +10,7 @@ import {
   Disposable,
   LRUMap,
 } from '@opensumi/ide-core-common';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -322,7 +321,7 @@ const getIconClass = (
   // 统一的图标类
   classes.push('icon-label');
   return {
-    iconClass: classnames(classes),
+    iconClass: clx(classes),
     // 对于首次没找到的，添加一个检测新语言注册的 change 事件
     onDidChange: _onDidChange?.event,
   };

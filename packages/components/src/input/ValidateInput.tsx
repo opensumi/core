@@ -1,5 +1,6 @@
-import classNames from 'classnames';
 import React from 'react';
+
+import { clx, clxx } from '@opensumi/ide-utils/lib/clx';
 
 import { IInputBaseProps, Input } from './Input';
 
@@ -36,7 +37,7 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
       setValidateMessage(validateInfo);
     }, [validateInfo]);
 
-    const validateClx = classNames({
+    const validateClx = clx({
       'validate-error': validateMessage && validateMessage.type === VALIDATE_TYPE.ERROR,
       'validate-warning': validateMessage && validateMessage.type === VALIDATE_TYPE.WARNING,
       'validate-info': validateMessage && validateMessage.type === VALIDATE_TYPE.INFO,
@@ -44,7 +45,7 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
 
     const renderValidateMessage = () => {
       if (validateMessage && validateMessage.message) {
-        return <div className={classNames('validate-message', validateClx, { popup })}>{validateMessage.message}</div>;
+        return <div className={clx('validate-message', validateClx, { popup })}>{validateMessage.message}</div>;
       }
     };
 
@@ -78,14 +79,8 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
     };
 
     return (
-      <div className={classNames('input-box', { popup })}>
-        <Input
-          type={type}
-          ref={ref}
-          className={classNames(className, validateMessage, validateClx)}
-          onChange={handleChange}
-          {...restProps}
-        />
+      <div className={clx('input-box', { popup })}>
+        <Input type={type} ref={ref} className={clxx(className, validateClx)} onChange={handleChange} {...restProps} />
         {renderValidateMessage()}
       </div>
     );

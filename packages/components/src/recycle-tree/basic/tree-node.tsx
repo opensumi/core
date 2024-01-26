@@ -1,5 +1,6 @@
-import cls from 'classnames';
 import React, { useCallback } from 'react';
+
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { Button } from '../../button';
 import { Icon } from '../../icon';
@@ -101,7 +102,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderIcon = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <Icon onClick={handlerIconClick} icon={node.icon} className={cls('icon', node.iconClassName)} />
+      <Icon onClick={handlerIconClick} icon={node.icon} className={clx('icon', node.iconClassName)} />
     ),
     [],
   );
@@ -113,7 +114,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderDisplayName = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) =>
-      node.displayName && <div className={cls('segment', 'display_name')}>{getName(node)}</div>,
+      node.displayName && <div className={clx('segment', 'display_name')}>{getName(node)}</div>,
     [],
   );
 
@@ -125,7 +126,7 @@ export const BasicTreeNodeRenderer: React.FC<
     }
 
     if (typeof node.description === 'string') {
-      return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+      return <div className={clx('segment_grow', 'description')}>{node.description}</div>;
     }
 
     return node.description;
@@ -157,7 +158,7 @@ export const BasicTreeNodeRenderer: React.FC<
       inlineMenuActuator(item, action);
     }, []);
     return (
-      <div className={cls('segment', 'tail')}>
+      <div className={clx('segment', 'tail')}>
         {actions.map((action) => (
           <Button
             style={{ marginRight: '5px' }}
@@ -178,7 +179,7 @@ export const BasicTreeNodeRenderer: React.FC<
     }
     return (
       <Icon
-        className={cls('segment', 'expansion_toggle', node.twisterClassName, {
+        className={clx('segment', 'expansion_toggle', node.twisterClassName, {
           ['mod_collapsed']: !(node as BasicCompositeTreeNode).expanded,
         })}
         onClick={clickHandler}
@@ -190,7 +191,7 @@ export const BasicTreeNodeRenderer: React.FC<
   const renderTwistier = (item: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!(item as BasicCompositeTreeNode).expandable) {
       // a simple trick to make the tree node's padding-left is the same as the folder node's
-      return <div className={cls('segment', 'expansion_toggle', item.twisterPlaceholderClassName)}></div>;
+      return <div className={clx('segment', 'expansion_toggle', item.twisterPlaceholderClassName)}></div>;
     }
 
     if (BasicCompositeTreeNode.is(item)) {
@@ -204,7 +205,7 @@ export const BasicTreeNodeRenderer: React.FC<
       onClick={handleClick}
       onDoubleClick={handleDbClick}
       onContextMenu={handleContextMenu}
-      className={cls('tree_node', className, decorations ? decorations.classlist : null, item.className)}
+      className={clx('tree_node', className, decorations ? decorations.classlist : null, item.className)}
       style={treeNodeStyle}
       data-id={item.id}
     >

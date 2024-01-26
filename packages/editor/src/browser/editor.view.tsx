@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -26,6 +25,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { IResource, WorkbenchEditorService } from '../common';
 
@@ -188,7 +188,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
     }
     children.push(
       <div
-        className={classnames({
+        className={clx({
           [styles.kt_grid_vertical_child]: grid.splitDirection === SplitDirection.Vertical,
           [styles.kt_grid_horizontal_child]: grid.splitDirection === SplitDirection.Horizontal,
         })}
@@ -203,7 +203,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 
   return (
     <div
-      className={classnames({
+      className={clx({
         [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
         [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
       })}
@@ -365,7 +365,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
     components.push(
       <div
         key={component.uid}
-        className={classnames({
+        className={clx({
           [styles.kt_hidden]: !(group.currentOpenType && group.currentOpenType.componentId === component.uid),
         })}
       >
@@ -449,7 +449,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
       {!editorHasNoTab && <NavigationBar editorGroup={group} />}
       <div className={styles.kt_editor_components}>
         <div
-          className={classnames({
+          className={clx({
             [styles.kt_editor_component]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
           })}
@@ -457,7 +457,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
           {components}
         </div>
         <div
-          className={classnames({
+          className={clx({
             [styles.kt_editor_code_editor]: true,
             [styles.kt_editor_component]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
@@ -465,13 +465,13 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
           ref={codeEditorRef}
         />
         <div
-          className={classnames(styles.kt_editor_diff_editor, styles.kt_editor_component, {
+          className={clx(styles.kt_editor_diff_editor, styles.kt_editor_component, {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
           })}
           ref={diffEditorRef}
         />
         <div
-          className={classnames(styles.kt_editor_diff_3_editor, styles.kt_editor_component, {
+          className={clx(styles.kt_editor_diff_3_editor, styles.kt_editor_component, {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
           })}
           ref={mergeEditorRef}
@@ -537,7 +537,7 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
   return (
     <div
       key={resource.uri.toString()}
-      className={classnames({
+      className={clx({
         [styles.kt_hidden]: hidden,
       })}
     >
@@ -617,7 +617,7 @@ const EditorSideView = ({ side, resource }: { side: EditorSide; resource: IResou
   useDisposable(() => eventBus.on(RegisterEditorSideComponentEvent, forceUpdate), []);
 
   return (
-    <div className={classnames(styles['kt_editor_side_widgets'], styles['kt_editor_side_widgets_' + side])}>
+    <div className={clx(styles['kt_editor_side_widgets'], styles['kt_editor_side_widgets_' + side])}>
       {widgets.map((widget) => {
         const C = widget.component;
         return <C resource={resource} key={widget.id} {...(widget.initialProps || {})}></C>;

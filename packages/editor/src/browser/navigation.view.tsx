@@ -1,4 +1,3 @@
-import classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, memo } from 'react';
@@ -8,6 +7,7 @@ import { Icon } from '@opensumi/ide-components';
 import { Scrollbars } from '@opensumi/ide-components';
 import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { clx } from '@opensumi/ide-utils/lib/clx';
 
 import { BreadCrumbsMenuService } from './menu/breadcrumbs.menus';
 import styles from './navigation.module.less';
@@ -169,7 +169,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
             <div
               onClick={clickToNavigate || clickToGetChild}
               ref={(el) => (itemRef = el)}
-              className={classnames(styles.navigation_menu_item, {
+              className={clx(styles.navigation_menu_item, {
                 [styles.navigation_menu_item_current]: i === model.initialIndex,
               })}
               key={'menu-' + p.name}
