@@ -4,7 +4,7 @@ import net from 'net';
 import os from 'os';
 import path from 'path';
 
-import Koa from 'koa';
+import type Koa from 'koa';
 
 import { Injector } from '@opensumi/di';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';

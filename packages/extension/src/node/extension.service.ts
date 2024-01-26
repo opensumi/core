@@ -187,7 +187,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       if (notExistExtension) {
         // 进程未调用启动直接连接
-        this.logger.error(`${clientId} clientId process connection set error`, extProcessId);
+        this.logger.error(`${clientId} clientId process connection not exists`);
         /**
          * 如果前端与后端连接后发现没有对应的插件进程实例，那么通知前端重启插件进程
          * 一般这种情况出现在用户关闭电脑超过 ProcessCloseExitThreshold 设定的最大时间，插件进程被杀死后，前端再次建立连接时

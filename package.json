@@ -13,6 +13,7 @@
     "start:prod": "cross-env WS_PATH=ws://127.0.0.1:8000 ts-node ./scripts/start",
     "build:components": "cd packages/components && yarn run build:dist",
     "start:lite": "cross-env NODE_ENV=development ts-node ./scripts/start --script=start:lite",
+    "bundle:standard": "ts-node ./scripts/start --script=bundle:standard",
     "bundle:lite": "ts-node ./scripts/start --script=bundle:lite",
     "start:pty-service": "KTLOG_SHOW_DEBUG=1 npx ts-node packages/terminal-next/src/node/pty.proxy.remote.exec.ts",
     "create": "ts-node ./scripts/create",

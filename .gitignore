@@ -67,6 +67,7 @@ jspm_packages/
 .yarn-integrity
 
 dist
+dist-node
 lib
 
 .vscode/*

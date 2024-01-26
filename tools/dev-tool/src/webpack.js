@@ -355,7 +355,7 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
   node: false,
   mode: 'production',
   optimization: {
-    minimize: true,
+    minimize: false,
   },
   resolve: {
     modules: [
@@ -400,7 +400,7 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
                 transpileOnly: true,
                 configFile: tsConfigPath,
                 compilerOptions: {
-                  target: 'es2015',
+                  target: 'es2016',
                 },
               },
             },
