@@ -46,7 +46,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     },
   ]);
 
-  const port = process.env.IDE_SERVER_PORT || 8000;
+  const port = process.env.PORT || process.env.IDE_SERVER_PORT || 8000;
   let opts: IServerAppOpts = {
     webSocketHandler: [
       // new TerminalHandler(logger),

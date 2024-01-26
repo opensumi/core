@@ -16,14 +16,14 @@ const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const HOST = process.env.HOST || '0.0.0.0';
-const PORT = process.env.PORT || 8080;
+const IDE_FRONT_PORT = process.env.IDE_FRONT_PORT || 8080;
 
 const defaultWorkspace = path.join(__dirname, '../../workspace');
 fse.mkdirpSync(defaultWorkspace);
 
 const withSlash = process.platform === 'win32' ? '/' : '';
 
-console.log('front port', PORT);
+console.log('front port', IDE_FRONT_PORT);
 
 const styleLoader =
   process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : require.resolve('style-loader');
@@ -228,7 +228,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           directory: dir + '/dist',
         },
         host: HOST,
-        port: PORT,
+        port: IDE_FRONT_PORT,
         allowedHosts: 'all',
         devMiddleware: {
           stats: 'errors-only',
@@ -341,3 +341,103 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
     },
   };
 };
+
+/**
+ * @returns {import('webpack').Configuration}
+ */
+exports.createNodeWebpackConfig = (entry, distDir) => ({
+  entry,
+  target: 'node',
+  output: {
+    filename: 'server.js',
+    path: distDir,
+  },
+  node: false,
+  mode: 'production',
+  optimization: {
+    minimize: true,
+  },
+  resolve: {
+    modules: [
+      path.join(__dirname, '../../../node_modules'),
+      path.join(__dirname, '../node_modules'),
+      path.resolve('node_modules'),
+    ],
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigPath,
+      }),
+    ],
+  },
+  module: {
+    exprContextCritical: false,
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: [
+          process.env.NODE_ENV === 'production'
+            ? {
+                loader: 'cache-loader',
+                options: {
+                  cacheDirectory: path.resolve(__dirname, '../../../.cache'),
+                },
+              }
+            : null,
+        ]
+          .filter(Boolean)
+          .concat([
+            {
+              loader: 'thread-loader',
+              options: {
+                workers: require('os').cpus().length - 1,
+              },
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                happyPackMode: true,
+                transpileOnly: true,
+                configFile: tsConfigPath,
+                compilerOptions: {
+                  target: 'es2015',
+                },
+              },
+            },
+          ]),
+      },
+      { test: /\.css$/, loader: 'null-loader' },
+      { test: /\.less$/, loader: 'null-loader' },
+    ],
+  },
+  externals: [
+    function ({ request }, callback) {
+      if (
+        [
+          'node-pty',
+          'oniguruma',
+          '@parcel/watcher',
+          'nsfw',
+          'spdlog',
+          'vm2',
+          'canvas',
+          '@opensumi/vscode-ripgrep',
+          'vertx',
+          'keytar',
+        ].indexOf(request) !== -1
+      ) {
+        return callback(null, `commonjs ${request}`);
+      }
+      callback();
+    },
+  ],
+  resolveLoader: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    mainFields: ['loader', 'main'],
+    modules: [
+      path.join(__dirname, '../../../node_modules'),
+      path.join(__dirname, '../node_modules'),
+      path.resolve('node_modules'),
+    ],
+  },
+});
