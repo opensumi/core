@@ -5,12 +5,9 @@ const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const threadLoader = require('thread-loader');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
-
-threadLoader.warmup({}, ['ts-loader']);
 
 const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
@@ -23,8 +20,6 @@ fse.mkdirpSync(defaultWorkspace);
 
 const withSlash = process.platform === 'win32' ? '/' : '';
 
-console.log('front port', IDE_FRONT_PORT);
-
 const styleLoader =
   process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : require.resolve('style-loader');
 
@@ -36,12 +31,17 @@ const styleLoader =
  * @returns {import('webpack').Configuration}
  */
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
+  console.log('front port', IDE_FRONT_PORT);
+
   const webpackConfig = merge(
     {
       entry,
       output: {
         filename: 'bundle.js',
         path: dir + '/dist',
+      },
+      cache: {
+        type: 'filesystem',
       },
       resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -74,35 +74,18 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           {
             test: /\.tsx?$/,
             use: [
-              process.env.NODE_ENV === 'production'
-                ? {
-                    loader: 'cache-loader',
-                    options: {
-                      cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-                    },
-                  }
-                : null,
-            ]
-              .filter(Boolean)
-              .concat([
-                {
-                  loader: 'thread-loader',
-                  options: {
-                    workers: require('os').cpus().length - 1,
+              {
+                loader: 'ts-loader',
+                options: {
+                  happyPackMode: true,
+                  transpileOnly: true,
+                  configFile: tsConfigPath,
+                  compilerOptions: {
+                    target: 'es2015',
                   },
                 },
-                {
-                  loader: 'ts-loader',
-                  options: {
-                    happyPackMode: true,
-                    transpileOnly: true,
-                    configFile: tsConfigPath,
-                    compilerOptions: {
-                      target: 'es2015',
-                    },
-                  },
-                },
-              ]),
+              },
+            ],
           },
           {
             test: /\.png$/,
@@ -177,12 +160,12 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       },
       optimization: {
         nodeEnv: process.env.NODE_ENV,
+        minimize: false,
       },
       plugins: [
         new HtmlWebpackPlugin({
           template: __dirname + '/index.html',
         }),
-
         new MiniCssExtractPlugin({
           filename: '[name].[chunkhash:8].css',
           chunkFilename: '[id].css',
@@ -205,18 +188,19 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.STATIC_SERVER_PATH': JSON.stringify(process.env.STATIC_SERVER_PATH || `http://${HOST}:8000/`),
           'process.env.HOST': JSON.stringify(process.env.HOST),
         }),
-        new ForkTsCheckerWebpackPlugin({
-          typescript: {
-            diagnosticOptions: {
-              syntactic: true,
+        !process.env.SKIP_TS_CHECKER &&
+          new ForkTsCheckerWebpackPlugin({
+            typescript: {
+              diagnosticOptions: {
+                syntactic: true,
+              },
+              configFile: tsConfigPath,
             },
-            configFile: tsConfigPath,
-          },
-          issue: {
-            include: (issue) => issue.file.includes('src/packages/'),
-            exclude: (issue) => issue.file.includes('__test__'),
-          },
-        }),
+            issue: {
+              include: (issue) => issue.file.includes('src/packages/'),
+              exclude: (issue) => issue.file.includes('__test__'),
+            },
+          }),
         new NodePolyfillPlugin({
           includeAliases: ['process', 'Buffer'],
         }),
@@ -278,6 +262,9 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
     output: {
       filename: 'webview.js',
       path: dir + '/dist',
+    },
+    cache: {
+      type: 'filesystem',
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -357,6 +344,10 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
   optimization: {
     minimize: false,
   },
+  cache: {
+    type: 'filesystem',
+  },
+  watch: false,
   resolve: {
     modules: [
       path.join(__dirname, '../../../node_modules'),
@@ -376,38 +367,19 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
       {
         test: /\.tsx?$/,
         use: [
-          process.env.NODE_ENV === 'production'
-            ? {
-                loader: 'cache-loader',
-                options: {
-                  cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-                },
-              }
-            : null,
-        ]
-          .filter(Boolean)
-          .concat([
-            {
-              loader: 'thread-loader',
-              options: {
-                workers: require('os').cpus().length - 1,
+          {
+            loader: 'ts-loader',
+            options: {
+              happyPackMode: true,
+              transpileOnly: true,
+              configFile: tsConfigPath,
+              compilerOptions: {
+                target: 'es2016',
               },
             },
-            {
-              loader: 'ts-loader',
-              options: {
-                happyPackMode: true,
-                transpileOnly: true,
-                configFile: tsConfigPath,
-                compilerOptions: {
-                  target: 'es2016',
-                },
-              },
-            },
-          ]),
+          },
+        ],
       },
-      { test: /\.css$/, loader: 'null-loader' },
-      { test: /\.less$/, loader: 'null-loader' },
     ],
   },
   externals: [
@@ -441,4 +413,5 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
       path.resolve('node_modules'),
     ],
   },
+  plugins: [!process.env.CI && new webpack.ProgressPlugin()],
 });

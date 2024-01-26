@@ -4,8 +4,6 @@ const AssetsPlugin = require('assets-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserJSPlugin = require('terser-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const { lessLoader } = require('./webpack-util');
@@ -13,7 +11,6 @@ const { lessLoader } = require('./webpack-util');
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const dir = path.join(__dirname, '../src/browser');
 const distDir = path.join(__dirname, '../lib/browser');
-const port = 8080;
 const nodeEnv = process.env.NODE_ENV || 'development';
 
 /**
@@ -110,7 +107,7 @@ module.exports = {
   },
   optimization: {
     nodeEnv,
-    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+    minimizer: false,
   },
   plugins: [
     new AssetsPlugin({

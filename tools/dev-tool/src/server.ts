@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import 'tsconfig-paths/register';
 import http from 'http';
 import path from 'path';
 
