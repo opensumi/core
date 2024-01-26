@@ -5,7 +5,6 @@ import { registerColor, transparent, lighten, darken, lessProminent } from '../u
 
 import { badgeBackground, badgeForeground } from './badge';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
-import { listInactiveSelectionBackground } from './list-tree';
 
 // TODO COLOR 此处vscode内的editor error warning info颜色都有做修改
 export const editorErrorBackground = registerColor(
@@ -611,11 +610,12 @@ export const editorGutter = registerColor(
     'Background color of the editor gutter. The gutter contains the glyph margins and the line numbers.',
   ),
 );
+
 export const overviewRulerCommentingRangeForeground = registerColor(
   'editorGutter.commentRangeForeground',
   {
-    dark: listInactiveSelectionBackground,
-    light: darken(listInactiveSelectionBackground, 0.05),
+    dark: '#37373D',
+    light: darken('#E4E6F1', 0.05),
     hcDark: Color.white,
     hcLight: Color.black,
   },
