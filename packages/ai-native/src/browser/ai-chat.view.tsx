@@ -306,7 +306,7 @@ export const AiChatView = observer(() => {
       relationId,
       position: 'right',
       title: ME_NAME,
-      text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
+      text: <CodeBlockWrapperInput text={message} agentId={agentId} relationId={relationId} command={command} />,
       className: styles.chat_message_code,
       role: 'user',
     });
@@ -364,7 +364,7 @@ export const AiChatView = observer(() => {
         relationId,
         position: 'right',
         title: ME_NAME,
-        text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
+        text: <CodeBlockWrapperInput text={message} agentId={agentId} relationId={relationId} command={command} />,
         className: styles.chat_message_code,
         role: 'user',
       });
@@ -627,7 +627,7 @@ const AISearch = async (
           renderContent={(content) => (
             <div className={styles.ai_chat_search_container}>
               <div className={styles.ai_response_text}>
-                <CodeBlockWrapper text={content} renderText={(text) => <ChatMarkdown content={text} />} />
+                <CodeBlockWrapper text={content} relationId={relationId} renderText={(text) => <ChatMarkdown content={text} />} />
               </div>
             </div>
           )}
@@ -677,7 +677,7 @@ const AICodeReply = (input, aiChatService: AiChatService, relationId: string) =>
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          <CodeBlockWrapper text={input} />
+          <CodeBlockWrapper text={input} relationId={relationId} />
         </ChatMoreActions>
       ),
       className: styles.chat_with_more_actions,
@@ -700,7 +700,7 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          {RenderAnswer ? <RenderAnswer input={input} /> : <CodeBlockWrapper text={input} />}
+          {RenderAnswer ? <RenderAnswer input={input} /> : <CodeBlockWrapper text={input} relationId={relationId} />}
         </ChatMoreActions>
       ),
       className: styles.chat_with_more_actions,
