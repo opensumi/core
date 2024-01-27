@@ -28,12 +28,12 @@ export class DebugToolbarService {
   private readonly injector: Injector;
 
   @observable
-  state: DebugState;
+  state: DebugState = DebugState.Inactive;
 
   @observable
   sessionCount: number;
 
-  @observable
+  @observable.shallow
   currentSession: DebugSession | undefined;
 
   @observable.shallow
