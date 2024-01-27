@@ -45,6 +45,7 @@ export async function startServer(
   app.use(router.routes());
 
   if (options && options.mountStaticPath) {
+    console.log('mount static path:', options.mountStaticPath);
     app.use(Static(options.mountStaticPath));
   }
 
@@ -110,7 +111,7 @@ export async function startServer(
   });
 
   server.listen(port, () => {
-    console.log(`server listen on port ${port}`);
+    console.log(`server listen on http://localhost:${port}`);
     deferred.resolve(server);
   });
   return deferred.promise;

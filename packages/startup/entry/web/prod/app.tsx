@@ -11,9 +11,9 @@ setLocale(defaultLanguage);
 import '@opensumi/ide-i18n';
 import '@opensumi/ide-core-browser/lib/style/index.less';
 
-import { getDefaultClientAppOpts, renderApp } from './render-app';
+import { getDefaultClientAppOpts, renderApp } from '../render-app';
 
-import '../styles.less';
+import '../../styles.less';
 
 renderApp(
   getDefaultClientAppOpts({

@@ -24,7 +24,8 @@
     "bundle:standard:analysis": "cross-env analysis=1 yarn run bundle:standard",
     "bundle:lite": "cross-env NODE_ENV=production webpack --config webpack.lite.config.js",
     "bundle:lite:stats": "cross-env NODE_ENV=production webpack --profile --config webpack.lite.config.js --json > stats.json",
-    "bundle:lite:analysis": "cross-env analysis=1 yarn run bundle:lite"
+    "bundle:lite:analysis": "cross-env analysis=1 yarn run bundle:lite",
+    "bundle:prod": "cross-env SKIP_TS_CHECKER=1 NODE_ENV=production webpack --config webpack.prod.config.js"
   },
   "repository": {
     "type": "git",
