@@ -1,5 +1,4 @@
 [build]
-
 builder = "NIXPACKS"
 nixpacksConfigPath = "nixpacks.toml"
 
