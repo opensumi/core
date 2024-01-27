@@ -18,7 +18,7 @@
     "create": "ts-node ./scripts/create",
     "add:node": "ts-node ./scripts/add-node",
     "add:browser": "ts-node ./scripts/add-browser",
-    "build": "yarn run compile && yarn run rebuild:node",
+    "build": "yarn run compile",
     "build:all": "yarn run build && yarn run build:worker-host && yarn run build:ext-host && yarn run build:components",
     "compile": "cross-env NODE_ENV=production ts-node ./scripts/build",
     "build:worker-host": "cd packages/extension && yarn run compile:worker",
