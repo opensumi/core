@@ -255,13 +255,13 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
 /**
  * @returns {import('webpack').Configuration}
  */
-exports.createWebviewWebpackConfig = (entry, dir) => {
+exports.createWebviewWebpackConfig = (entry, dir, outputPath = '/dist') => {
   const port = 8899;
   return {
     entry,
     output: {
       filename: 'webview.js',
-      path: dir + '/dist',
+      path: dir + outputPath,
     },
     cache: {
       type: 'filesystem',

@@ -15,8 +15,14 @@ import { getDefaultClientAppOpts, renderApp } from '../render-app';
 
 import '../../styles.less';
 
+// const hostname = window.location.hostname;
+// const port = window.location.port;
+
 renderApp(
   getDefaultClientAppOpts({
     defaultLanguage,
+    opts: {
+      webviewEndpoint: '/webview',
+    },
   }),
 );

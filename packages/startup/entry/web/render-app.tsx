@@ -37,7 +37,7 @@ export async function renderApp(opts: IClientAppOpts) {
     (window.location.protocol === 'https:' ? `wss://${hostname}:${serverPort}` : `ws://${hostname}:${serverPort}`);
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
   const anotherHostName = process.env.WEBVIEW_HOST || hostname;
-  opts.webviewEndpoint = `http://${anotherHostName}:${webviewEndpointPort}`;
+  opts.webviewEndpoint = opts.webviewEndpoint || `http://${anotherHostName}:${webviewEndpointPort}`;
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
   opts.layoutComponent = DefaultLayout;
