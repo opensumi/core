@@ -2,9 +2,7 @@ const path = require('path');
 
 const { createWebpackConfig, createNodeWebpackConfig } = require('@opensumi/ide-dev-tool/src/webpack');
 
-const web = createWebpackConfig(__dirname, path.join(__dirname, 'entry/web/prod/app.tsx'), {
-  mode: process.env.NODE_ENV || 'development',
-});
+const web = createWebpackConfig(__dirname, path.join(__dirname, 'entry/web/prod/app.tsx'));
 
 const node = createNodeWebpackConfig(
   path.join(__dirname, 'entry/web/prod/server.ts'),

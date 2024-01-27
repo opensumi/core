@@ -7,7 +7,6 @@ const baseDir = path.join(__dirname, 'entry/web-lite');
 
 const { createWebpackConfig } = require('@opensumi/ide-dev-tool/src/webpack');
 module.exports = createWebpackConfig(baseDir, path.join(baseDir, 'app.tsx'), {
-  mode: process.env.NODE_ENV || 'development',
   resolve: {
     alias: {
       fs: 'browserfs/dist/shims/fs.js',
