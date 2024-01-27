@@ -93,7 +93,7 @@
     "@types/node-fetch": "^2.6.1",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@types/react-is": "^16.7.1",
+    "@types/react-is": "^18.2.4",
     "@types/socket.io-client": "^1.4.32",
     "@types/temp": "^0.9.1",
     "@types/ws": "^8.5.10",
@@ -144,8 +144,6 @@
     "tools/cli-engine"
   ],
   "resolutions": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
     "classnames": "2.3.1",
     "node-gyp": "9.3.1"
   },
