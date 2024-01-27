@@ -33,6 +33,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.injector = injector;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.wsPath =
+    opts.wsPath ||
     process.env.WS_PATH ||
     (window.location.protocol === 'https:' ? `wss://${hostname}:${serverPort}` : `ws://${hostname}:${serverPort}`);
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;

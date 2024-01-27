@@ -1,12 +1,25 @@
 const path = require('path');
 
+const CopyPlugin = require('copy-webpack-plugin');
+
 const {
   createWebpackConfig,
   createNodeWebpackConfig,
   createWebviewWebpackConfig,
 } = require('@opensumi/ide-dev-tool/src/webpack');
 
-const web = createWebpackConfig(__dirname, path.join(__dirname, 'entry/web/prod/app.tsx'));
+const web = createWebpackConfig(__dirname, path.join(__dirname, 'entry/web/prod/app.tsx'), {
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.join(__dirname, '../extension/lib/worker-host.js'),
+          to: path.join(__dirname, './dist/worker-host.js'),
+        },
+      ],
+    }),
+  ],
+});
 
 const node = createNodeWebpackConfig(
   path.join(__dirname, 'entry/web/prod/server.ts'),
