@@ -92,12 +92,18 @@ module.exports = {
         ],
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        test: /\.svg$/,
         type: 'asset/resource',
         generator: {
-          filename: '[name][ext]',
+          filename: 'images/[hash][ext][query]',
+        },
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
+        type: 'asset/resource',
+        generator: {
+          filename: './fonts/[name][ext][query]',
           outputPath: 'fonts/',
-          publicPath: 'http://localhost:8080/fonts',
         },
       },
     ],
