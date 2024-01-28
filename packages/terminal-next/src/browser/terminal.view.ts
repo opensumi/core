@@ -95,11 +95,13 @@ export class Widget extends Disposable implements IWidget {
     this._onResize.fire();
   }
 
+  @action
   increase(increment: number) {
     this.shadowDynamic += increment;
     this._onResize.fire();
   }
 
+  @action
   rename(name: string) {
     this.name = name;
   }
@@ -172,6 +174,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return this.current?.processName;
   }
 
+  @action
   addWidget(widget: Widget) {
     this.widgets.push(widget);
     this.widgetsMap.set(widget.id, widget);
@@ -186,6 +189,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return this.widgets.findIndex((item) => item.id === widget.id);
   }
 
+  @action
   selectWidget(widget: Widget) {
     this.currentId = widget.id;
   }
@@ -202,14 +206,17 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return widget[0];
   }
 
+  @action
   edit() {
     this.editable = true;
   }
 
+  @action
   unedit() {
     this.editable = false;
   }
 
+  @action
   rename(name: string) {
     this.name = name;
     this.editable = false;
@@ -239,13 +246,13 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   groups: WidgetGroup[] = observable.array([]);
 
   @observable
-  currentGroupId: string;
+  currentGroupId = '';
 
   @observable
-  currentGroupIndex: number;
+  currentGroupIndex = -1;
 
   @Autowired(ITerminalInternalService)
-  service: ITerminalInternalService;
+  private readonly service: ITerminalInternalService;
 
   protected _onWidgetCreated = new Emitter<Widget>();
   protected _onWidgetSelected = new Emitter<Widget>();
@@ -253,6 +260,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   protected _onWidgetEmpty = new Emitter<void>();
 
   constructor() {
+    makeObservable(this);
     this._widgets = new Map();
   }
 
@@ -282,6 +290,9 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
 
   @action
   private _doSelectGroup(index: number) {
+    if (this.currentGroupIndex === index) {
+      return;
+    }
     const group = this.getGroup(index);
     this.currentGroupIndex = index;
     this.currentGroupId = group.id;
