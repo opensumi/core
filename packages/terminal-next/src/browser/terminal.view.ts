@@ -1,4 +1,4 @@
-import { observable, computed, makeObservable, runInAction } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Disposable, Event } from '@opensumi/ide-core-browser';
@@ -88,11 +88,10 @@ export class Widget extends Disposable implements IWidget {
   onShow: Event<boolean> = this._onShow.event;
   onError: Event<boolean> = this._onError.event;
 
+  @action
   resize(dynamic?: number) {
-    runInAction(() => {
-      this.dynamic = dynamic || this.shadowDynamic;
-      this.shadowDynamic = this.dynamic;
-    });
+    this.dynamic = dynamic || this.shadowDynamic;
+    this.shadowDynamic = this.dynamic;
     this._onResize.fire();
   }
 
@@ -236,8 +235,8 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 export class TerminalGroupViewService implements ITerminalGroupViewService {
   protected _widgets: Map<string, Widget>;
 
-  @observable
-  groups: WidgetGroup[] = [];
+  @observable.shallow
+  groups: WidgetGroup[] = observable.array([]);
 
   @observable
   currentGroupId: string;
@@ -281,6 +280,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     return this.groups[index];
   }
 
+  @action
   private _doSelectGroup(index: number) {
     const group = this.getGroup(index);
     this.currentGroupIndex = index;
@@ -300,6 +300,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this._doSelectGroup(index);
   }
 
+  @action
   private _doCreateGroup(id?: string, options?: IShellLaunchConfig) {
     const group = new WidgetGroup(id, options);
     this.groups.push(group);
@@ -325,6 +326,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     }
   }
 
+  @action
   private _doRemoveGroup(index: number) {
     const [group] = this.groups.splice(index, 1);
 
@@ -407,6 +409,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     return this._widgets.size === 0;
   }
 
+  @action
   clear() {
     this.groups = observable.array([]);
     this._widgets.clear();
