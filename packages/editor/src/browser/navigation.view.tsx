@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import { observable, makeObservable } from 'mobx';
+import { observable, makeObservable, action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, memo } from 'react';
 
@@ -154,7 +154,8 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
                     // 放左边
                     nextLeft = left - width - 5;
                   }
-                  model.showSubMenu(await p.getChildren!(), nextLeft, top, model);
+                  const parts = await p.getChildren!();
+                  model.showSubMenu(parts, nextLeft, top, model);
                 }
               }
             : undefined;
@@ -235,28 +236,30 @@ export const NavigationMenuContainer = observer(() => {
 
 @Injectable()
 export class NavigationBarViewService {
-  @observable.ref current: NavigationMenuModel | undefined;
-  @observable.ref editorGroup: EditorGroup;
+  @observable.ref current: NavigationMenuModel | null = null;
+  @observable.ref editorGroup: EditorGroup | null = null;
 
   constructor() {
     makeObservable(this);
   }
 
+  @action
   showMenu(parts: IBreadCrumbPart[], x, y, currentIndex, uri, editorGroup) {
     this.current = new NavigationMenuModel(parts, x, y, currentIndex, uri);
     this.editorGroup = editorGroup;
   }
 
+  @action
   dispose() {
     if (this.current) {
       this.current.dispose();
     }
-    this.current = undefined;
+    this.current = null;
   }
 }
 
 export class NavigationMenuModel {
-  @observable.ref subMenu?: NavigationMenuModel;
+  @observable.ref subMenu: NavigationMenuModel | null = null;
 
   constructor(
     public readonly parts: IBreadCrumbPart[],
@@ -264,16 +267,20 @@ export class NavigationMenuModel {
     public readonly y,
     public readonly initialIndex: number = -1,
     public readonly uri,
-  ) {}
+  ) {
+    makeObservable(this);
+  }
 
+  @action
   showSubMenu(parts: IBreadCrumbPart[], x, y, uri) {
     this.subMenu = new NavigationMenuModel(parts, x, y, -1, uri);
   }
 
+  @action
   dispose() {
     if (this.subMenu) {
       this.subMenu.dispose();
     }
-    this.subMenu = undefined;
+    this.subMenu = null;
   }
 }
