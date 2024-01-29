@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React, { useMemo, useState } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
@@ -32,7 +32,7 @@ const MenuAction: React.FC<{
   iconService?: IMenubarIconService;
 }> = ({ data, hasSubmenu, disabled, iconService }) => (
   // 这里遵循 native menu 的原则，保留一个 icon 位置
-  <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
+  <div className={cls(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
     <div className={styles.icon}>{data.checked ? <Icon icon='check' /> : null}</div>
     <div className={styles.label}>
       {data.label
@@ -236,7 +236,7 @@ const InlineActionWidget: React.FC<
     return (
       <Button
         type={data.icon ? 'icon' : 'link'}
-        className={clsx(styles.iconAction, className, {
+        className={cls(styles.iconAction, className, {
           [styles.disabled]: data.disabled,
           [styles.submenuIconAction]: isSubmenuNode,
         })}
@@ -253,7 +253,7 @@ const InlineActionWidget: React.FC<
   if (data.type === 'checkbox') {
     return (
       <CheckBox
-        className={clsx(className, styles.btnAction)}
+        className={cls(className, styles.btnAction)}
         disabled={data.disabled}
         label={data.label}
         title={title}
@@ -267,7 +267,7 @@ const InlineActionWidget: React.FC<
   return (
     <Button
       loading={loading}
-      className={clsx(className, styles.btnAction)}
+      className={cls(className, styles.btnAction)}
       disabled={data.disabled}
       onClick={handleClick}
       size='small'
@@ -406,7 +406,7 @@ export const TitleActionList: React.FC<
       ) : null;
 
     return (
-      <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>
+      <div className={cls([styles.titleActions, className])} data-menu-id={menuId}>
         {moreAtFirst && moreAction}
         {primary.map((item) => {
           if (item.id === ComponentMenuItemNode.ID) {
@@ -438,7 +438,7 @@ export const TitleActionList: React.FC<
             <InlineActionWidget
               id={id}
               key={id}
-              className={clsx({ [styles.selected]: item.checked })}
+              className={cls({ [styles.selected]: item.checked })}
               type={type}
               data={item}
               afterClick={afterClick}

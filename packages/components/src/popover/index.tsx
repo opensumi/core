@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import './styles.less';
@@ -175,13 +175,13 @@ export const Popover: React.FC<{
   return (
     <div
       {...Object.assign({}, restProps)}
-      className={clx('kt-popover', insertClass)}
+      className={cls('kt-popover', insertClass)}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={clx(popoverClass || '', 'kt-popover-content', `kt-popover-${position}`)} ref={contentEl} id={id}>
+      <div className={cls(popoverClass || '', 'kt-popover-content', `kt-popover-${position}`)} ref={contentEl} id={id}>
         {title && (
-          <p className={clx('kt-popover-title', titleClassName)}>
+          <p className={cls('kt-popover-title', titleClassName)}>
             {title}
             {action && (
               <Button size='small' type='link' onClick={onClickAction || noop}>

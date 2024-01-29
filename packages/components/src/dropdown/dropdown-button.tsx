@@ -1,5 +1,5 @@
 import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
-import classNames from 'classnames';
+import cls from 'classnames';
 import * as React from 'react';
 
 import { Button } from '../button';
@@ -92,7 +92,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = (props) => {
   const [leftButtonToRender, rightButtonToRender] = buttonsRender([leftButton, rightButton]);
 
   return (
-    <div {...restProps} className={classNames(prefixCls, className)}>
+    <div {...restProps} className={cls(prefixCls, className)}>
       {leftButtonToRender}
       <Dropdown {...dropdownProps}>{rightButtonToRender}</Dropdown>
     </div>

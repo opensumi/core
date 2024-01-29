@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, memo } from 'react';
@@ -169,7 +169,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
             <div
               onClick={clickToNavigate || clickToGetChild}
               ref={(el) => (itemRef = el)}
-              className={classnames(styles.navigation_menu_item, {
+              className={cls(styles.navigation_menu_item, {
                 [styles.navigation_menu_item_current]: i === model.initialIndex,
               })}
               key={'menu-' + p.name}

@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -66,7 +66,7 @@ const MenubarItem = observer<
       trigger={focusMode ? ['click', 'hover'] : ['click']}
     >
       <div
-        className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
+        className={cls(styles.menubar, { [styles['menu-open']]: menuOpen })}
         onMouseOver={handleMouseOver}
         onClick={handleMenubarItemClick}
       >
@@ -136,7 +136,7 @@ MenuBar.displayName = 'MenuBar';
 type MenuBarMixToolbarActionProps = Pick<React.HTMLProps<HTMLElement>, 'className'>;
 
 export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (props) => (
-  <div className={clx(styles.menubarWrapper, props.className)}>
+  <div className={cls(styles.menubarWrapper, props.className)}>
     <MenuBar />
     <SlotRenderer slot='action' flex={1} overflow={'initial'} />
   </div>

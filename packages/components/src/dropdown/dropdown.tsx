@@ -1,5 +1,5 @@
 import RightOutlined from '@ant-design/icons/RightOutlined';
-import classNames from 'classnames';
+import cls from 'classnames';
 import RCDropdown from 'rc-dropdown';
 import React, { PropsWithChildren } from 'react';
 
@@ -113,7 +113,7 @@ export default class Dropdown extends React.Component<PropsWithChildren<DropDown
     const child = React.Children.only(children) as React.ReactElement<any>;
 
     const dropdownTrigger = React.cloneElement(child, {
-      className: classNames(child.props.className, `${prefixCls}-trigger`),
+      className: cls(child.props.className, `${prefixCls}-trigger`),
       disabled,
     });
 

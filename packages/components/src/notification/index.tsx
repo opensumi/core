@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { IAction } from '@opensumi/ide-core-common';
@@ -37,7 +37,7 @@ export function open<T = string>(
   return new Promise((resolve) => {
     const args: ArgsProps = {
       key,
-      className: clx('kt-notification-wrapper', {
+      className: cls('kt-notification-wrapper', {
         ['kt-notification-info']: type === MessageType.Info,
         ['kt-notification-error']: type === MessageType.Error,
         ['kt-notification-warn']: type === MessageType.Warning,
@@ -50,26 +50,26 @@ export function open<T = string>(
       },
       btn: buttons
         ? buttons.map((button, index) => {
-          const isStringButton = typeof button === 'string';
-          const buttonProps = {
-            className: `${clx('kt-notification-button')}${isStringButton ? '' : button.class}`,
-            ghost: isStringButton ? index === 0 : !button.primary,
-            key: isStringButton ? button : button.id,
-            onClick: () => {
-              resolve(button as any);
+            const isStringButton = typeof button === 'string';
+            const buttonProps = {
+              className: `${cls('kt-notification-button')}${isStringButton ? '' : button.class}`,
+              ghost: isStringButton ? index === 0 : !button.primary,
+              key: isStringButton ? button : button.id,
+              onClick: () => {
+                resolve(button as any);
                 antdNotification.close(key);
                 if (!isStringButton) {
                   button.run();
                 }
-            },
-          };
-          const text = isStringButton ? button : button.label;
-          return (
-            <Button size='small' {...buttonProps}>
-              {text}
-            </Button>
-          );
-        })
+              },
+            };
+            const text = isStringButton ? button : button.label;
+            return (
+              <Button size='small' {...buttonProps}>
+                {text}
+              </Button>
+            );
+          })
         : null,
       message,
       description,

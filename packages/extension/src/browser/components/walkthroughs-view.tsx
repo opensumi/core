@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button, CheckBox } from '@opensumi/ide-components';
@@ -174,7 +174,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
 
   return (
     <div
-      className={clx(styles.getting_started_step, isExpanded && styles.expanded)}
+      className={cls(styles.getting_started_step, isExpanded && styles.expanded)}
       onClick={() => onSelected(step.id)}
     >
       <div className={styles.checkbox}>

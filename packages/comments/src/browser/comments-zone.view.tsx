@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -81,8 +81,8 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   }, []);
 
   return (
-    <div className={clx(thread.options.threadClassName, styles.comment_container)}>
-      <div className={clx(thread.options.threadHeadClassName, styles.head)}>
+    <div className={cls(thread.options.threadClassName, styles.comment_container)}>
+      <div className={cls(thread.options.threadHeadClassName, styles.head)}>
         <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}

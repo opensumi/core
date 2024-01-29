@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import cls from 'classnames';
 import RcMenu, { Divider, ItemGroup } from 'rc-menu';
 import React from 'react';
 import { polyfill } from 'react-lifecycles-compat';
@@ -264,7 +264,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     const menuOpenMotion = this.getOpenMotionProps(menuMode!);
 
     const prefixCls = customizePrefixCls || 'kt-inner-menu';
-    const menuClassName = classNames(className, {
+    const menuClassName = cls(className, {
       [`${prefixCls}-inline-collapsed`]: this.getInlineCollapsed(),
     });
 

@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { IEventBus } from '@opensumi/ide-core-common';
@@ -341,7 +341,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
     <div
       ref={(ele) => (rootRef.current = ele!)}
       {...restProps}
-      className={clsx(styles['split-panel'], className)}
+      className={cls(styles['split-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
     >
       {elements}

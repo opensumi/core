@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
@@ -66,7 +66,7 @@ export const TabRendererBase: React.FC<{
     <div
       ref={rootRef}
       id={id}
-      className={clsx(styles.tab_container, className)}
+      className={cls(styles.tab_container, className)}
       style={{ flexDirection: Layout.getFlexDirection(direction) }}
     >
       <TabbarConfig.Provider value={{ side, direction, fullSize }}>
@@ -88,7 +88,7 @@ export const RightTabRenderer = ({
     side='right'
     direction='right-to-left'
     id={VIEW_CONTAINERS.RIGHT_TABBAR}
-    className={clsx(className, 'right-slot')}
+    className={cls(className, 'right-slot')}
     components={components}
     TabbarView={RightTabbarRenderer}
     TabpanelView={RightTabPanelRenderer}
@@ -106,7 +106,7 @@ export const LeftTabRenderer = ({
     side='left'
     direction='left-to-right'
     id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
-    className={clsx(className, 'left-slot')}
+    className={cls(className, 'left-slot')}
     components={components}
     TabbarView={LeftTabbarRenderer}
     TabpanelView={LeftTabPanelRenderer}
@@ -124,7 +124,7 @@ export const BottomTabRenderer = ({
     side='bottom'
     id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL}
     direction='bottom-to-top'
-    className={clsx(className, 'bottom-slot')}
+    className={cls(className, 'bottom-slot')}
     components={components}
     TabbarView={BottomTabbarRenderer}
     TabpanelView={BottomTabPanelRenderer}

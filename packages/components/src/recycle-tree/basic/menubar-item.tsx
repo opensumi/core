@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { IBasicTreeMenu } from './types';
@@ -27,7 +27,7 @@ export const BasicMenuItem: React.FC<
   }
   return (
     <div
-      className={clx('basic_menu_item', { ['menu-open']: menuOpen })}
+      className={cls('basic_menu_item', { ['menu-open']: menuOpen })}
       onMouseOver={handleMouseOver}
       onClick={handleMenuItemClick}
     >

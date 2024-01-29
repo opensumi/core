@@ -1,11 +1,10 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { ToolbarLocation } from '@opensumi/ide-core-browser';
 
 import styles from './toolbar-action.module.less';
-
 
 // const ActionGroup = observer(({ group, id }: { group: IToolbarActionGroup; id: string }) => {
 //   return (<div className={styles.actionGroup} key={id}>
@@ -38,8 +37,8 @@ export const ToolbarAction = observer(() => (
     <ToolbarLocation
       location='menu-left'
       preferences={{ noDropDown: true }}
-      className={classnames(styles.toolbarActions, styles.toolbarActionsLeft)}
+      className={cls(styles.toolbarActions, styles.toolbarActionsLeft)}
     />
-    <ToolbarLocation location='menu-right' className={classnames(styles.toolbarActions, styles.toolbarActionsRight)} />
+    <ToolbarLocation location='menu-right' className={cls(styles.toolbarActions, styles.toolbarActionsRight)} />
   </div>
 ));
