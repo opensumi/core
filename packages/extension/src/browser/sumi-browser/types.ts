@@ -35,6 +35,9 @@ export interface ISumiBrowserContributions {
     position?: ToolBarPosition; // @deprecated
     view: IToolBarViewContribution[];
   };
+  chat?: {
+    view: IChatViewContribution[];
+  };
 }
 
 export interface IToolBarViewContribution {
@@ -196,6 +199,18 @@ export interface IEditorSideViewContribution {
    */
   when?: string | ContextKeyExpr;
 }
+
+export interface IChatViewContribution {
+  /**
+   * id
+   */
+  id: string;
+  /**
+   * Chat 组件主体
+   */
+  component: React.FC;
+}
+
 export interface IRunTimeParams {
   getExtensionExtendService: (
     extension: IExtension,

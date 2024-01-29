@@ -1,14 +1,14 @@
 import cls from 'classnames';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useImperativeHandle } from 'react';
 
 import { message } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { InstructionEnum } from '../../common';
+import { InstructionEnum, IChatAgentService } from '../../common';
 
 import * as styles from './components.module.less';
 
@@ -27,14 +27,25 @@ interface IBlockProps {
   icon?: string;
   name: string;
   text?: string;
+  command?: string;
+  agentId?: string;
   onClick?: () => void;
 }
 
-const Block = ({ icon, name, onClick, text }: IBlockProps) => (
+const Block = ({
+  icon,
+  name,
+  onClick,
+  text,
+  agentId,
+  command,
+  selectedAgentId,
+}: IBlockProps & { selectedAgentId?: string }) => (
   <div className={styles.block} onClick={onClick}>
     {icon && <EnhanceIcon className={icon} />}
     {name && <span className={styles.name}>{name}</span>}
     {text && <span className={styles.text}>{text}</span>}
+    {!selectedAgentId && agentId && command && <span className={styles.agent_label}>@{agentId}</span>}
   </div>
 );
 
@@ -67,18 +78,40 @@ const optionsList: IBlockProps[] = [
 ];
 
 // 指令命令激活组件
-const InstructionOptions = ({ onClick, bottom }) => {
+const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId }) => {
   const [commonlyUsed, setCommonlyUsed] = useState<IBlockProps[]>([]);
   const [options, setOptions] = useState<IBlockProps[]>([]);
+  const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
   useEffect(() => {
-    setOptions(optionsList);
+    if (trigger === '@') {
+      setOptions(
+        chatAgentService.getAgents().map((a) => ({
+          name: `@${a.id} `,
+          text: a.metadata.description,
+          command: '',
+          agentId: a.id,
+        })),
+      );
+    } else {
+      setOptions(
+        [
+          ...optionsList,
+          ...chatAgentService.getCommands().map((c) => ({
+            name: `/ ${c.name} `,
+            text: c.description,
+            command: c.name,
+            agentId: c.agentId,
+          })),
+        ].filter((item) => !selectedAgentId || item.agentId === selectedAgentId),
+      );
+    }
   }, []);
 
   const handleClick = useCallback(
-    (name: string | undefined) => {
+    (name: string | undefined, agentId?: string, command?: string) => {
       if (onClick) {
-        onClick(name || '');
+        onClick(name || '', agentId, command);
       }
     },
     [onClick],
@@ -88,9 +121,16 @@ const InstructionOptions = ({ onClick, bottom }) => {
     <div className={styles.instruction_options_container} style={{ bottom: bottom + 'px' }}>
       <div className={styles.options}>
         <ul>
-          {options.map(({ icon, name, text }) => (
-            <li key={name} onMouseDown={() => handleClick(name)}>
-              <Block icon={icon} name={name} text={text} />
+          {options.map(({ icon, name, text, agentId, command }) => (
+            <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(name, agentId, command)}>
+              <Block
+                icon={icon}
+                name={name}
+                text={text}
+                agentId={agentId}
+                command={command}
+                selectedAgentId={selectedAgentId}
+              />
             </li>
           ))}
         </ul>
@@ -113,8 +153,17 @@ const ThemeWidget = ({ themeBlock }) => (
   </div>
 );
 
+const AgentWidget = ({ agentId, command }) => (
+  <div className={styles.theme_container}>
+    <div className={styles.theme_block} style={{ marginRight: 4 }}>
+      @{agentId}
+    </div>
+    {command && <div className={styles.theme_block}>/ {command}</div>}
+  </div>
+);
+
 export interface IChatInputProps {
-  onSend: (value: string) => void;
+  onSend: (value: string, agentId?: string, command?: string) => void;
   onValueChange?: (value: string) => void;
   onExpand?: (value: boolean) => void;
   placeholder?: string;
@@ -126,10 +175,14 @@ export interface IChatInputProps {
   autoFocus?: boolean;
   theme?: string | null;
   setTheme: (theme: string | null) => void;
+  agentId: string;
+  setAgentId: (theme: string) => void;
+  command: string;
+  setCommand: (theme: string) => void;
 }
 
 // 指令命令激活组件
-export const ChatInput = (props: IChatInputProps) => {
+export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const {
     onSend,
     onValueChange,
@@ -139,6 +192,10 @@ export const ChatInput = (props: IChatInputProps) => {
     autoFocus,
     setTheme,
     theme,
+    setAgentId,
+    agentId,
+    setCommand,
+    command,
   } = props;
   const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
@@ -150,6 +207,17 @@ export const ChatInput = (props: IChatInputProps) => {
   const instructionRef = useRef<HTMLDivElement | null>(null);
   const [placeholder, setPlaceHolder] = useState(PLACEHOLDER.DEFAULT);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
+  const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const currentAgentIdRef = useLatest(agentId);
+
+  useImperativeHandle(ref, () => ({
+    setInputValue: (v: string) => {
+      setValue(v);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 120);
+    },
+  }));
 
   useEffect(() => {
     if (props.value !== value) {
@@ -184,7 +252,7 @@ export const ChatInput = (props: IChatInputProps) => {
 
   useEffect(() => {
     if (enableOptions) {
-      if (value.length === 1 && value.startsWith('/') && !isExpand) {
+      if ((value === '/' || (value === '@' && chatAgentService.getAgents().length > 0)) && !isExpand) {
         setIsShowOptions(true);
       } else {
         setIsShowOptions(false);
@@ -206,20 +274,36 @@ export const ChatInput = (props: IChatInputProps) => {
       }
     }
 
-    // 自适应高度
-    if (inputRef && inputRef.current && value && !isExpand) {
-      inputRef.current.style.height = 0 + 'px';
-      const scrollHeight = inputRef.current.scrollHeight;
-      inputRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
-      const wapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
-
-      setWrapperHeight(wapperHeight);
-      if (wapperHeight > 68) {
-        setShowExpand(true);
-      } else {
-        setShowExpand(false);
+    if (chatAgentService.getAgents().length) {
+      const parsedInfo = chatAgentService.parseMessage(value, currentAgentIdRef.current);
+      if (parsedInfo.agentId || parsedInfo.command) {
+        setTheme('');
+        setValue(parsedInfo.message);
+        if (parsedInfo.agentId) {
+          setAgentId(parsedInfo.agentId);
+        }
+        if (parsedInfo.command) {
+          setCommand(parsedInfo.command);
+        }
       }
     }
+
+    setTimeout(() => {
+      // 自适应高度
+      if (inputRef && inputRef.current && value && !isExpand) {
+        inputRef.current.style.height = 0 + 'px';
+        const scrollHeight = inputRef.current.scrollHeight;
+        inputRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
+        const wapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
+
+        setWrapperHeight(wapperHeight);
+        if (wapperHeight > 68) {
+          setShowExpand(true);
+        } else {
+          setShowExpand(false);
+        }
+      }
+    });
   }, [inputRef, value, enableOptions]);
 
   useEffect(() => {
@@ -239,6 +323,16 @@ export const ChatInput = (props: IChatInputProps) => {
 
   const handleSend = useCallback(() => {
     if (disabled) {
+      return;
+    }
+
+    // 支持 command 不传内容
+    if (agentId && (value.trim() || command)) {
+      onSend(value, agentId, command);
+      setValue('');
+      setTheme('');
+      setAgentId('');
+      setCommand('');
       return;
     }
 
@@ -278,12 +372,27 @@ export const ChatInput = (props: IChatInputProps) => {
     if (theme && !value.trim() && !selectCode) {
       message.info('很抱歉，您并未选中或输入任何代码，请先选中或输入代码');
     }
-  }, [onSend, value]);
+  }, [onSend, value, agentId, command]);
 
   const acquireOptionsCheck = useCallback(
-    (themeValue: string) => {
-      if (themeValue) {
+    (themeValue: string, agentId?: string, command?: string) => {
+      // 目前仅 ext 的 command 有 agentId，因此有 agentId，则说明是 ext 注册的
+      if (agentId) {
         setIsShowOptions(false);
+        setTheme('');
+        setAgentId(agentId);
+        setCommand(command || '');
+        if (inputRef?.current) {
+          const inputValue = inputRef.current.value;
+          if (inputValue === '@' || (command && inputValue === '/')) {
+            setValue('');
+          }
+          setTimeout(() => inputRef.current?.focus());
+        }
+      } else if (themeValue) {
+        setIsShowOptions(false);
+        setAgentId('');
+        setCommand('');
 
         // 设置 slash widget 块
         const regex = /\/\s(\w+)\s/;
@@ -326,6 +435,13 @@ export const ChatInput = (props: IChatInputProps) => {
     } else if (event.key === 'Backspace') {
       if (inputRef.current?.selectionEnd === 0 && inputRef.current?.selectionStart === 0) {
         setTheme('');
+        if (agentId) {
+          if (command) {
+            setCommand('');
+          } else {
+            setAgentId('');
+          }
+        }
       }
     }
   };
@@ -356,10 +472,16 @@ export const ChatInput = (props: IChatInputProps) => {
     <div className={cls(styles.chat_input_container, focus ? styles.active : null)}>
       {isShowOptions && (
         <div ref={instructionRef}>
-          <InstructionOptions onClick={acquireOptionsCheck} bottom={optionsBottomPosition} />
+          <InstructionOptions
+            onClick={acquireOptionsCheck}
+            bottom={optionsBottomPosition}
+            trigger={value}
+            agentId={agentId}
+          />
         </div>
       )}
       {theme && <ThemeWidget themeBlock={theme} />}
+      {agentId && <AgentWidget agentId={agentId} command={command} />}
       {showExpand && (
         <div className={styles.expand_icon} onClick={() => handleExpandClick()}>
           <Popover id={'ai_chat_input_expand'} title={isExpand ? '收起' : '展开全屏'}>
@@ -412,4 +534,4 @@ export const ChatInput = (props: IChatInputProps) => {
       />
     </div>
   );
-};
+});

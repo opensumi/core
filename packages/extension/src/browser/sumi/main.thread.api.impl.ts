@@ -4,6 +4,7 @@ import { Disposable } from '@opensumi/ide-core-common';
 
 import { MainThreadSumiAPIIdentifier } from '../../common/sumi';
 
+import { MainThreadChatAgents } from './main.thread.chat-agents';
 import { MainThreadCommon } from './main.thread.common';
 import { MainThreadLayout } from './main.thread.layout';
 import { MainThreadLifeCycle } from './main.thread.lifecycle';
@@ -30,12 +31,16 @@ export function createSumiApiFactory(rpcProtocol: IRPCProtocol, injector: Inject
   const window = injector.get(MainThreadIDEWindow, [rpcProtocol]);
   disposer.addDispose(window);
 
+  const chatAgents = injector.get(MainThreadChatAgents, [rpcProtocol, injector]);
+  disposer.addDispose(chatAgents);
+
   rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadLifecycle, lifeCycle);
   rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadTheme, mainThreadTheme);
   rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadLayout, layout);
   rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadCommon, common);
   rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadToolbar, toolbar);
   rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadIDEWindow, window);
+  rpcProtocol.set(MainThreadSumiAPIIdentifier.MainThreadChatAgents, chatAgents);
 
   return () => {
     disposer.dispose();

@@ -14,6 +14,18 @@ declare module 'sumi' {
     TextEditor,
     TextEditorEdit,
     ExtensionKind,
+    CancellationToken,
+    ChatAgent2,
+    ProviderResult,
+    ChatAgentReplyFollowup,
+    ChatAgentRequest,
+    ChatAgentContext,
+    Progress,
+    ChatAgentResult2,
+    ChatAgentContent,
+    ChatAgentMarkdownContent,
+    ChatAgentFileTree,
+    ChatAgentTask,
   } from 'vscode';
 
   /**
@@ -840,5 +852,45 @@ declare module 'sumi' {
      * @param id
      */
     export function getToolbarActionSelectHandle<T = any>(id: string): Promise<IToolbarSelectActionHandle<T>>;
+  }
+
+  export interface ChatAgentSampleQuestionProvider {
+    provideSampleQuestions(token: CancellationToken): ProviderResult<ChatAgentReplyFollowup[]>;
+  }
+
+  export interface ChatAgentPopulateInputParam {
+    command?: string;
+    prompt: string;
+  }
+
+  export interface ChatAgentComponent {
+    component: string;
+    value?: unknown;
+  }
+
+  export type ChatAgentProgress =
+    | ChatAgentContent
+    | ChatAgentMarkdownContent
+    | ChatAgentFileTree
+    | ChatAgentTask
+    | ChatAgentComponent;
+
+  export type ChatAgentHandler = (
+    request: ChatAgentRequest,
+    context: ChatAgentContext,
+    progress: Progress<ChatAgentProgress>,
+    token: CancellationToken,
+  ) => ProviderResult<ChatAgentResult2>;
+
+  export interface ChatAgent extends ChatAgent2 {
+    sampleQuestionProvider?: ChatAgentSampleQuestionProvider;
+    populateChatInput?: (param: ChatAgentPopulateInputParam) => void;
+  }
+
+  export namespace chat {
+    /**
+     * create chat agent
+     */
+    export function createChatAgent(name: string, handler: ChatAgentHandler): ChatAgent;
   }
 }

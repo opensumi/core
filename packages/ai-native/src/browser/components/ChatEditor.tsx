@@ -2,7 +2,7 @@ import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
-import { IClipboardService, Schemes, URI, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { IClipboardService, Schemes, URI, getIcon, useInjectable, uuid, IAIReporter } from '@opensumi/ide-core-browser';
 import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
@@ -123,10 +123,11 @@ const ChatEditor = ({ input, language }) => {
   );
 };
 
-const CodeEditorWithHighlight = ({ input, language }) => {
+export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const clipboardService = useInjectable<IClipboardService>(IClipboardService);
+  const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
   const [isCoping, setIsCoping] = useState<boolean>(false);
   const useUUID = useMemo(() => uuid(12), [ref, ref.current]);
@@ -134,10 +135,11 @@ const CodeEditorWithHighlight = ({ input, language }) => {
   const handleCopy = useCallback(async () => {
     setIsCoping(true);
     await clipboardService.writeText(input);
+    aiReporter.end(relationId, { copy: true });
     setTimeout(() => {
       setIsCoping(false);
     }, 1000);
-  }, [clipboardService, input]);
+  }, [clipboardService, input, relationId]);
 
   const handleInsert = useCallback(() => {
     const editor = monacoCommandRegistry.getActiveCodeEditor();
@@ -145,6 +147,7 @@ const CodeEditorWithHighlight = ({ input, language }) => {
       const selection = editor.getSelection();
       if (selection) {
         insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
+        aiReporter.end(relationId, { insert: true });
       }
     }
   }, [monacoCommandRegistry]);
@@ -166,7 +169,7 @@ const CodeEditorWithHighlight = ({ input, language }) => {
   );
 };
 
-const CodeBlock = ({ content = '', renderText }: { content?: string; renderText?: (t: string) => React.ReactNode }) => {
+const CodeBlock = ({ content = '', relationId, renderText }: { content?: string; relationId: string; renderText?: (t: string) => React.ReactNode }) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;
@@ -180,7 +183,7 @@ const CodeBlock = ({ content = '', renderText }: { content?: string; renderText?
     return (
       <div className={styles.code_block}>
         <div className={styles.code_language}>{capitalize(heighLightLang)}</div>
-        <CodeEditorWithHighlight input={content} language={language} />
+        <CodeEditorWithHighlight input={content} language={language} relationId={relationId} />
       </div>
     );
   };
@@ -229,18 +232,30 @@ const CodeBlock = ({ content = '', renderText }: { content?: string; renderText?
 export const CodeBlockWrapper = ({
   text,
   renderText,
+  relationId,
 }: {
   text?: string;
+  relationId: string;
   renderText?: (t: string) => React.ReactNode;
 }) => (
   <div className={styles.ai_chat_code_wrapper}>
     <div className={styles.render_text}>
-      <CodeBlock content={text} renderText={renderText} />
+      <CodeBlock content={text} renderText={renderText} relationId={relationId} />
     </div>
   </div>
 );
 
-export const CodeBlockWrapperInput = ({ text }: { text: string }) => {
+export const CodeBlockWrapperInput = ({
+  text,
+  relationId,
+  agentId,
+  command,
+}: {
+  text: string;
+  relationId: string;
+  agentId?: string;
+  command?: string;
+}) => {
   const [tag, setTag] = useState<string>('');
   const [txt, setTxt] = useState<string>(text);
 
@@ -262,7 +277,13 @@ export const CodeBlockWrapperInput = ({ text }: { text: string }) => {
             <span className={styles.tag}>{tag}</span>
           </div>
         )}
-        <CodeBlock content={txt} />
+        {agentId && (
+          <div className={styles.tag} style={{ marginRight: 4 }}>
+            @{agentId}
+          </div>
+        )}
+        {command && <div className={styles.tag}>/ {command}</div>}
+        <CodeBlock content={txt} relationId={relationId} />
       </div>
     </div>
   );

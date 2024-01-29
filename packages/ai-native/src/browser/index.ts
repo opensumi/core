@@ -14,11 +14,14 @@ import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, RGBA, ThemeContribution, registerColor } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { IAiChatService } from '../common';
+import { IAiChatService, IChatAgentService, IChatManagerService } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
 import { AIReporter } from './ai-reporter';
+import { ChatAgentService } from './chat-agent.service';
+import { ChatAgentViewService } from './chat-agent.view.service';
+import { ChatManagerService } from './chat-manager.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
@@ -29,7 +32,12 @@ import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contr
 import defaultTheme from './override/theme/default-theme';
 import lightTheme from './override/theme/light-theme';
 import { AiRunFeatureRegistry } from './run/run.feature.registry';
-import { AiNativeCoreContribution, IAiRunFeatureRegistry, IInlineChatFeatureRegistry } from './types';
+import {
+  AiNativeCoreContribution,
+  IAiRunFeatureRegistry,
+  IInlineChatFeatureRegistry,
+  IChatAgentViewService,
+} from './types';
 
 @Injectable()
 export class AiNativeModule extends BrowserModule {
@@ -55,6 +63,18 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IAiInlineChatService,
       useClass: AiInlineChatService,
+    },
+    {
+      token: IChatManagerService,
+      useClass: ChatManagerService,
+    },
+    {
+      token: IChatAgentService,
+      useClass: ChatAgentService,
+    },
+    {
+      token: IChatAgentViewService,
+      useClass: ChatAgentViewService,
     },
   ];
 

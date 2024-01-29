@@ -12,6 +12,8 @@ export interface CommonLogInfo {
   // 是否有效
   isValid: boolean;
   model: string;
+  copy: boolean;
+  insert: boolean;
 }
 
 export interface QuestionInfo extends Partial<CommonLogInfo> {
