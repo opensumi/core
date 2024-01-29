@@ -90,7 +90,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
           />
         )}
         <div className={styles.close_container}>
-          <LineVertical height={'60%'} margin={'0px 6px 0 6px'} />
+          <LineVertical height={'60%'} margin={'0px 4px 0 4px'} />
           <EnhanceIcon icon={'window-close'} onClick={handleClose} wrapperClassName={styles.operate_item} />
         </div>
       </div>
