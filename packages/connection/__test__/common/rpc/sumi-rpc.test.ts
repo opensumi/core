@@ -7,8 +7,6 @@ import { MethodProtocolNotFoundError } from '../../../src/common/rpc/connection'
 import { test } from './common-tester';
 import { createConnectionPair, createSumiRPCClientPair } from './utils';
 
-jest.setTimeout(1000000);
-
 test('sumi rpc', {
   factory: createSumiRPCClientPair,
   pairFactory: createConnectionPair,
