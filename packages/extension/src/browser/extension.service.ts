@@ -44,7 +44,6 @@ import {
 } from '../common/extension.service';
 import { MainThreadAPIIdentifier } from '../common/vscode';
 
-import { ActivatedExtension } from './../common/activator';
 import { Extension } from './extension';
 import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import {
