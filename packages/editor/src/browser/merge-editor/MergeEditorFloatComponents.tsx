@@ -1,16 +1,24 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { Button, Icon } from '@opensumi/ide-components';
-import { CommandRegistry, CommandService, SCM_COMMANDS, URI, localize } from '@opensumi/ide-core-browser';
+import {
+  AiNativeConfigService,
+  CommandRegistry,
+  CommandService,
+  SCM_COMMANDS,
+  URI,
+  localize,
+} from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser';
 
 import styles from '../editor.module.less';
 import { ReactEditorComponent } from '../types';
 
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
+  const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
-
+  const [isAiResolving, setIsAiResolving] = useState(false);
   const handleOpenMergeEditor = useCallback(async () => {
     const { uri } = resource;
 
@@ -21,6 +29,11 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
     });
   }, [resource]);
 
+  const isSupportAiResolve = useCallback(
+    () => aiNativeConfigService.capabilities.supportsConflictResolve,
+    [aiNativeConfigService],
+  );
+
   const handlePrev = () => {
     commandService.tryExecuteCommand('merge-conflict.previous');
   };
@@ -29,27 +42,58 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
     commandService.tryExecuteCommand('merge-conflict.next');
   };
 
-  const handleAIResolve = () => {
-    // TODO
+  const handleAIResolve = async () => {
+    setIsAiResolving(true);
+
+    if (isAiResolving) {
+      await commandService.executeCommand('merge-conflict.ai.all-accept-stop', resource.uri);
+    } else {
+      await commandService.executeCommand('merge-conflict.ai.all-accept', resource.uri);
+    }
+    setIsAiResolving(false);
   };
+
+  const handleReset = useCallback(() => {
+    commandService.executeCommand('merge-conflict.ai.all-reset', resource.uri);
+  }, []);
   return (
     <div className={styles.merge_editor_float_container}>
-      <div className={styles.merge_conflict_bottom_btn} onClick={handlePrev}>
+      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handlePrev}>
         <Icon icon={'left'} />
-        <span style={{ marginLeft: '5px' }}>{localize('mergeEditor.conflict.prev')}</span>
-      </div>
-      <div className={styles.merge_conflict_bottom_btn} onClick={handleNext}>
-        <span style={{ marginRight: '5px' }}>{localize('mergeEditor.conflict.next')}</span>
+        <span>{localize('mergeEditor.conflict.prev')}</span>
+      </Button>
+      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleNext}>
+        <span>{localize('mergeEditor.conflict.next')}</span>
         <Icon icon={'right'} />
-      </div>
+      </Button>
       <span className={styles.line_vertical}></span>
-      <div className={styles.merge_conflict_bottom_btn} onClick={handleOpenMergeEditor}>
+      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleOpenMergeEditor}>
+        <Icon icon={'swap'} />
         <span>{localize('mergeEditor.open.3way')}</span>
-      </div>
-      <div className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`} onClick={handleAIResolve}>
-        <Icon icon={'magic-wand'} />
-        <span>{localize('mergeEditor.conflict.resolve.all')}</span>
-      </div>
+      </Button>
+      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
+        <Icon icon={'diuqi'} />
+        <span>{localize('mergeEditor.reset')}</span>
+      </Button>
+      {isSupportAiResolve() && (
+        <Button
+          size='large'
+          className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
+          onClick={handleAIResolve}
+        >
+          {isAiResolving ? (
+            <>
+              <Icon icon={'circle-pause'} />
+              <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
+            </>
+          ) : (
+            <>
+              <Icon icon={'magic-wand'} />
+              <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 };

@@ -24,6 +24,7 @@ import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
+import { MergeConflictContribution } from './merge-conflict';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
@@ -84,7 +85,8 @@ export class AiNativeModule extends BrowserModule {
     let layoutConfig = this.app.config.layoutConfig;
 
     const { capabilities } = aiNativeConfig;
-    const { supportsOpenSumiDesign, supportsAiMarkers, supportsAiChatAssistant } = capabilities;
+    const { supportsOpenSumiDesign, supportsAiMarkers, supportsAiChatAssistant, supportsConflictResolve } =
+      capabilities;
 
     if (supportsOpenSumiDesign) {
       injector.addProviders(AiMenuBarContribution);
@@ -176,6 +178,9 @@ export class AiNativeModule extends BrowserModule {
         ...layoutConfig,
         ...AiChatLayoutConfig,
       };
+    }
+    if (supportsConflictResolve) {
+      injector.addProviders(MergeConflictContribution);
     }
 
     this.app.config.layoutConfig = layoutConfig;
