@@ -14,7 +14,7 @@ import {
   IMainThreadChatAgents,
   IExtHostChatAgents,
   IExtensionChatAgentMetadata,
-  ChatInputParam,
+  IChatInputParam,
 } from '../../common/sumi/chat-agents';
 
 interface AgentData {
@@ -139,7 +139,7 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
     this.agents.delete(handle);
   }
 
-  $populateChatInput(handle: number, param: ChatInputParam) {
+  $populateChatInput(handle: number, param: IChatInputParam) {
     if (!this.chatAgentService) {
       return;
     }

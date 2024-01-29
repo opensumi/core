@@ -20,6 +20,7 @@ import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
 import { AIReporter } from './ai-reporter';
 import { ChatAgentService } from './chat-agent.service';
+import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
@@ -30,7 +31,12 @@ import { AiChatLayoutConfig, AiTopLayoutConfig } from './override/layout/layout-
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
 import { AiRunFeatureRegistry } from './run/run.feature.registry';
-import { AiNativeCoreContribution, IAiRunFeatureRegistry, IInlineChatFeatureRegistry } from './types';
+import {
+  AiNativeCoreContribution,
+  IAiRunFeatureRegistry,
+  IInlineChatFeatureRegistry,
+  IChatAgentViewService,
+} from './types';
 
 @Injectable()
 export class AiNativeModule extends BrowserModule {
@@ -64,6 +70,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IChatAgentService,
       useClass: ChatAgentService,
+    },
+    {
+      token: IChatAgentViewService,
+      useClass: ChatAgentViewService,
     },
   ];
 

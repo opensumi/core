@@ -1,4 +1,6 @@
-import { CancellationToken, MaybePromise } from '@opensumi/ide-core-common';
+import React from 'react';
+
+import { CancellationToken, MaybePromise, IDisposable } from '@opensumi/ide-core-common';
 import { CompletionResultModel, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -132,4 +134,17 @@ export interface AiNativeCoreContribution {
    * 通过中间件扩展部分 ai 能力
    */
   middleware?: IAiMiddleware;
+}
+
+export interface IChatComponentConfig {
+  id: string;
+  component: React.ComponentType<Record<string, unknown>>;
+  initialProps: Record<string, unknown>;
+}
+
+export const IChatAgentViewService = Symbol('IChatAgentViewService');
+
+export interface IChatAgentViewService {
+  registerChatComponent(component: IChatComponentConfig): IDisposable;
+  getChatComponent(componentId: string): IChatComponentConfig | null;
 }
