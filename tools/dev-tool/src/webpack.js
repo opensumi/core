@@ -143,7 +143,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             test: /\.svg$/,
             type: 'asset/resource',
             generator: {
-              filename: 'images/[hash][ext][query]',
+              filename: 'images/[name][ext][query]',
             },
           },
           {

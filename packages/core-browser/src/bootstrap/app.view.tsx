@@ -57,7 +57,7 @@ export function App(props: AppProps) {
   );
 }
 
-export type IAppRenderer = (app: (props) => JSX.Element) => void;
+export type IAppRenderer = (app: (props: any) => JSX.Element) => void;
 
 const defaultAppRender =
   (dom: HTMLElement): IAppRenderer =>
