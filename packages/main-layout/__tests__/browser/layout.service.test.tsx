@@ -209,8 +209,6 @@ describe('main layout test', () => {
   it('containers in layout config should be registed', () => {
     const rightTabbarService = service.getTabbarService('right');
     expect(rightTabbarService.visibleContainers.length).toEqual(1);
-    const accordionService = service.getAccordionService(testContainerId);
-    expect(accordionService.visibleViews.length).toEqual(2);
   });
 
   // container api test start

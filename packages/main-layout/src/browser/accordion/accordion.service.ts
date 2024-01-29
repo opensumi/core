@@ -97,7 +97,7 @@ export class AccordionService extends WithEventBus {
   // 所有带contextKey视图
   private viewsWithContextKey = new Set<View>();
 
-  @observable.shallow views: View[] = [];
+  @observable.shallow views: View[] = observable.array([]);
 
   @observable state: { [viewId: string]: SectionState } = {};
 
@@ -320,7 +320,7 @@ export class AccordionService extends WithEventBus {
 
   @action
   disposeAll() {
-    this.views = [];
+    this.views = observable.array([]);
     this.toDispose.forEach((disposable) => {
       disposable.dispose();
     });
