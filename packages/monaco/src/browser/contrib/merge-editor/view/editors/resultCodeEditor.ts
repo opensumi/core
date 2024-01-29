@@ -3,11 +3,13 @@ import debounce from 'lodash/debounce';
 import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
   AiNativeConfigService,
+  CancellationToken,
   CancellationTokenSource,
   ConstructorOf,
   Emitter,
   Event,
   MonacoService,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
@@ -16,8 +18,15 @@ import {
   IModelDecorationOptions,
   IModelDeltaDecoration,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import {
+  FormattingMode,
+  formatDocumentRangesWithSelectedProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
+import { Progress } from '@opensumi/monaco-editor-core/esm/vs/platform/progress/common/progress';
 
 import { BaseInlineContentWidget } from '../../../../ai-native/content-widget';
 import { DocumentMapping } from '../../model/document-mapping';
@@ -41,6 +50,7 @@ import {
 } from '../../types';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 import { StopWidget } from '../../widget/stop-widget';
+
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -87,7 +97,7 @@ class WidgetFactory implements IWidgetFactory {
       return;
     }
 
-    const position = new Position(range.endLineNumberExclusive, 1);
+    const position = new Position(Math.max(1, range.endLineNumberExclusive - 1), 1);
 
     const widget = this.injector.get(this.contentWidget, [this.editor, range]);
     widget.show({ position });
@@ -243,6 +253,27 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const id = range.id;
     const allRanges = this.getAllDiffRanges();
     return allRanges.find((range) => range.id === id);
+  }
+
+  public async formatDocument(range: LineRange): Promise<void> {
+    const scrollPosition = {
+      scrollTop: this.editor.getScrollTop(),
+      scrollLeft: this.editor.getScrollLeft(),
+    };
+
+    const instaService = StandaloneServices.get(IInstantiationService);
+    // monaco 内部的 format 无法通过 command 或 api 来指定 range，所以这里需要像这样调用，手动传入 range
+    await instaService.invokeFunction(
+      formatDocumentRangesWithSelectedProvider,
+      this.editor as any,
+      range.toInclusiveRange() as monaco.Range,
+      FormattingMode.Explicit,
+      Progress.None,
+      CancellationToken.None,
+    );
+    runWhenIdle(() => {
+      this.editor.setScrollPosition(scrollPosition);
+    });
   }
 
   private initListenEvent(): void {
@@ -587,7 +618,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
     if (isAiConflictResolve) {
       changesResult
-        .filter((range) => range.isAiConflict)
+        .filter((range) => range.isAiConflictPoint)
         .forEach((range) => {
           const model = range.getIntelligentStateModel();
 
@@ -654,7 +685,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public completeSituation(): { completeCount: number; shouldCount: number } {
     const allRanges = this.getAllDiffRanges();
-    const completeCount = allRanges.reduce((pre: number, cur: LineRange) => pre + (cur.isComplete ? 1 : 0), 0);
+    let completeCount = 0;
+
+    for (const range of allRanges) {
+      if (range.isComplete) {
+        completeCount += 1;
+      } else if (range.getIntelligentStateModel().isComplete) {
+        completeCount += 1;
+      }
+    }
 
     return {
       completeCount,
@@ -695,6 +734,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
           });
         }
 
+        /**
+         * AI 解决冲突
+         */
         if (actionType === AI_RESOLVE_ACTIONS) {
           this.launchConflictActionsEvent({
             range,
@@ -702,6 +744,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
           });
         }
 
+        /**
+         * AI 解决冲突重新生成
+         */
         if (actionType === AI_RESOLVE_REGENERATE_ACTIONS) {
           this.launchConflictActionsEvent({
             range,
