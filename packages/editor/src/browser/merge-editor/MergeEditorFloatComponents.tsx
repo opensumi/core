@@ -8,11 +8,11 @@ import {
   SCM_COMMANDS,
   URI,
   localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
-import { useInjectable } from '@opensumi/ide-core-browser';
 
 import styles from '../editor.module.less';
-import { ReactEditorComponent, WorkbenchEditorService } from '../types';
+import { ReactEditorComponent } from '../types';
 
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
   const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
@@ -58,25 +58,33 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   }, [resource]);
   return (
     <div className={styles.merge_editor_float_container}>
-      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handlePrev}>
-        <Icon icon={'left'} />
-        <span>{localize('mergeEditor.conflict.prev')}</span>
-      </Button>
-      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleNext}>
-        <span>{localize('mergeEditor.conflict.next')}</span>
-        <Icon icon={'right'} />
-      </Button>
+      <div id='merge.editor.action.button.accept'>
+        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handlePrev}>
+          <Icon icon={'left'} />
+          <span>{localize('mergeEditor.conflict.prev')}</span>
+        </Button>
+        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleNext}>
+          <span>{localize('mergeEditor.conflict.next')}</span>
+          <Icon icon={'right'} />
+        </Button>
+      </div>
       <span className={styles.line_vertical}></span>
-      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleOpenMergeEditor}>
+      <Button
+        id='merge.editor.open.tradition'
+        className={styles.merge_conflict_bottom_btn}
+        size='large'
+        onClick={handleOpenMergeEditor}
+      >
         <Icon icon={'swap'} />
         <span>{localize('mergeEditor.open.3way')}</span>
       </Button>
-      <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
+      <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
         <Icon icon={'diuqi'} />
         <span>{localize('mergeEditor.reset')}</span>
       </Button>
       {isSupportAiResolve() && (
         <Button
+          id='merge.editor.conflict.resolve.all'
           size='large'
           className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
           onClick={handleAIResolve}
