@@ -9,6 +9,11 @@ import { LineRangeMapping } from './model/line-range-mapping';
 import { BaseCodeEditor } from './view/editors/baseCodeEditor';
 import styles from './view/merge-editor.module.less';
 
+export const IMergeEditorService = Symbol('IMergeEditorService');
+export interface IMergeEditorService {
+  compare(memoryMapping1?: LineRangeMapping[], memoryMapping2?: LineRangeMapping[]): Promise<void>;
+}
+
 export interface IRangeContrast {
   type: LineRangeType;
   /**

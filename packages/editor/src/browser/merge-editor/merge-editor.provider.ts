@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, WithEventBus, MaybePromise, LabelService } from '@opensumi/ide-core-browser';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
+import { IMergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 
 import { IResourceProvider, IResource } from '../../common';
 
@@ -11,7 +12,7 @@ export class MergeEditorResourceProvider extends WithEventBus implements IResour
   @Autowired(LabelService)
   private readonly labelService: LabelService;
 
-  @Autowired(MergeEditorService)
+  @Autowired(IMergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
 
   public provideResource(uri: URI): MaybePromise<IResource<any>> {

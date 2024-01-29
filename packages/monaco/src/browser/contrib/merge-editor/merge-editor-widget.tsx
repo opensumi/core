@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor, IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { Disposable, IRange, ISelection, URI } from '@opensumi/ide-core-common';
@@ -21,7 +21,7 @@ import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration 
 import { IPosition, Position } from '../../monaco-api/types';
 
 import { MergeEditorService } from './merge-editor.service';
-import { EditorViewType, IMergeEditorViewState } from './types';
+import { EditorViewType, IMergeEditorService, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
 
 export interface IMergeEditorModel {
@@ -40,7 +40,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   @Autowired(AppConfig)
   private readonly configContext: AppConfig;
 
-  @Autowired(MergeEditorService)
+  @Autowired(IMergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
 
   private readonly _id: number;
