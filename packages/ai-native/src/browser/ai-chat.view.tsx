@@ -312,6 +312,7 @@ export const AiChatView = observer(() => {
   }, [aiMenubarService]);
 
   const handleThemeClick = (value) => {
+    if (loading || loading2) {return;}
     setTheme(value);
   };
 

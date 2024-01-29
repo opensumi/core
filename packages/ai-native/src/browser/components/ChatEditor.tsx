@@ -114,7 +114,7 @@ const ChatEditor = ({ input, language }) => {
         <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
           <Icon className={getIcon('insert')} onClick={handleInsert} />
         </Popover>
-        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功！' : '复制代码'}>
+        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功' : '复制代码'}>
           <Icon className={getIcon('copy')} onClick={handleCopy} />
         </Popover>
       </div>
@@ -155,7 +155,7 @@ const CodeEditorWithHighlight = ({ input, language }) => {
         <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
           <Icon className={getIcon('insert')} onClick={handleInsert} />
         </Popover>
-        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功！' : '复制代码'}>
+        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功' : '复制代码'}>
           <Icon className={getIcon('copy')} onClick={handleCopy} />
         </Popover>
       </div>
