@@ -21,45 +21,9 @@ export interface IExtensionChatAgentMetadata extends IChatAgentMetadata {
 
 export type IChatProgressChunk = Exclude<IChatProgress, IChatAsyncContent> | Omit<IChatAsyncContent, 'resolvedContent'>;
 
-export interface ChatAgentContent {
-  content: string;
-}
-
-interface ChatAgentTask {
-  placeholder: string;
-  resolvedContent: Thenable<ChatAgentContent | vscode.ChatAgentFileTree>;
-}
-
-// progress 暂时只支持这些类型，后续需支持更多的类型
-export type ChatAgentProgress =
-  | ChatAgentContent
-  | ChatAgentTask
-  | vscode.ChatAgentMarkdownContent
-  | vscode.ChatAgentFileTree;
-
-export interface ChatAgentRequest extends vscode.ChatAgentRequest {
-  regenerate?: boolean;
-}
-
-export type ChatAgentHandler = (
-  request: ChatAgentRequest,
-  context: vscode.ChatAgentContext,
-  progress: vscode.Progress<ChatAgentProgress>,
-  token: vscode.CancellationToken,
-) => vscode.ProviderResult<vscode.ChatAgentResult2>;
-
-export interface ChatAgentSampleQuestionProvider {
-  provideSampleQuestions(token: CancellationToken): vscode.ProviderResult<vscode.ChatAgentReplyFollowup[]>;
-}
-
-export interface ChatInputParam {
+export interface IChatInputParam {
   command?: string;
   prompt: string;
-}
-
-export interface ChatAgent extends vscode.ChatAgent2 {
-  sampleQuestionProvider?: ChatAgentSampleQuestionProvider;
-  populateChatInput?: (param: ChatInputParam) => void;
 }
 
 export interface IMainThreadChatAgents {
@@ -71,7 +35,7 @@ export interface IMainThreadChatAgents {
     chunk: IChatProgressChunk,
     responsePartHandle?: number,
   ): Promise<number | void>;
-  $populateChatInput: (handle: number, param: ChatInputParam) => void;
+  $populateChatInput: (handle: number, param: IChatInputParam) => void;
 }
 
 export interface IExtHostChatAgents {

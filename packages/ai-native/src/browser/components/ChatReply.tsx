@@ -24,7 +24,8 @@ import { MarkdownString, IMarkdownString } from '@opensumi/monaco-editor-core/es
 import { IChatAgentService, IChatResponseProgressFileTreeData } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { ChatRequestModel } from '../chat-model';
-import { MsgStreamManager } from '../model/msg-stream-manager';
+import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
+import { IChatAgentViewService } from '../types';
 
 import * as styles from './components.module.less';
 import { Markdown } from './Markdown';
@@ -126,6 +127,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatAgentViewService = useInjectable<IChatAgentViewService>(IChatAgentViewService);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;
 
@@ -188,6 +190,16 @@ export const ChatReply = (props: IChatReplyProps) => {
     </div>
   );
 
+  const renderComponent = (componentId: string, value: unknown) => {
+    const config = chatAgentViewService.getChatComponent(componentId);
+    if (!config) {
+      return <div>组件不存在</div>;
+    }
+    const { component: Component, initialProps } = config;
+
+    return <Component {...initialProps} value={value} />;
+  };
+
   const contentNode = React.useMemo(
     () =>
       request.response.responseContents.map((item, index) => {
@@ -196,6 +208,8 @@ export const ChatReply = (props: IChatReplyProps) => {
           node = renderPlaceholder(new MarkdownString(item.content));
         } else if (item.kind === 'treeData') {
           node = renderTreeData(item.treeData);
+        } else if (item.kind === 'component') {
+          node = renderComponent(item.component, item.value);
         } else {
           node = renderMarkdown(item.content);
         }
@@ -237,7 +251,7 @@ export const ChatReply = (props: IChatReplyProps) => {
 
   return (
     <ThinkingResult
-      status={msgStreamManager.status}
+      status={EMsgStreamStatus.DONE}
       hasMessage={request.response.responseParts.length > 0 || !!request.response.errorDetails?.message}
       onRegenerate={handleRegenerate}
       sessionId={relationId}
