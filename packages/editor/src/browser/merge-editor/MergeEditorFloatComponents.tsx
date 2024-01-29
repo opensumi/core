@@ -12,12 +12,13 @@ import {
 import { useInjectable } from '@opensumi/ide-core-browser';
 
 import styles from '../editor.module.less';
-import { ReactEditorComponent } from '../types';
+import { ReactEditorComponent, WorkbenchEditorService } from '../types';
 
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
   const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
+
   const [isAiResolving, setIsAiResolving] = useState(false);
   const handleOpenMergeEditor = useCallback(async () => {
     const { uri } = resource;
@@ -42,20 +43,19 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
     commandService.tryExecuteCommand('merge-conflict.next');
   };
 
-  const handleAIResolve = async () => {
+  const handleAIResolve = useCallback(async () => {
     setIsAiResolving(true);
-
     if (isAiResolving) {
       await commandService.executeCommand('merge-conflict.ai.all-accept-stop', resource.uri);
     } else {
       await commandService.executeCommand('merge-conflict.ai.all-accept', resource.uri);
     }
     setIsAiResolving(false);
-  };
+  }, [resource]);
 
   const handleReset = useCallback(() => {
     commandService.executeCommand('merge-conflict.ai.all-reset', resource.uri);
-  }, []);
+  }, [resource]);
   return (
     <div className={styles.merge_editor_float_container}>
       <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handlePrev}>

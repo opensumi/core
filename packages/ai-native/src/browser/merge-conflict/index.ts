@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
-import { AiNativeConfigService, ClientAppContribution, PreferenceService } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, ClientAppContribution } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   Schemes,
@@ -39,11 +39,11 @@ import { ResolveResultWidget } from '@opensumi/ide-monaco/lib/browser/contrib/me
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { CacheConflict, DocumentMergeConflict } from './cacheConflicts';
 import { CommitType } from './types';
-
 export namespace MERGE_CONFLICT {
   const CATEGORY = 'MergeConflict';
   export const AI_ACCEPT: Command = {
@@ -115,6 +115,10 @@ interface IWidgetFactory {
   hasWidget(range: LineRange): boolean;
 }
 
+interface ICacheResolvedConflicts extends IValidEditOperation {
+  newRange: IRange;
+}
+
 class WidgetFactory implements IWidgetFactory {
   private widgetMap: Map<string, BaseInlineContentWidget>;
 
@@ -176,9 +180,6 @@ export class MergeConflictContribution
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
 
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
-
   @Autowired(AiNativeConfigService)
   private readonly aiNativeConfigService: AiNativeConfigService;
 
@@ -191,6 +192,7 @@ export class MergeConflictContribution
   private resolveResultWidgetManager: IWidgetFactory;
   private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
   private stopWidgetManager: IWidgetFactory;
+  private cacheResolvedConflicts: Map<string, ICacheResolvedConflicts> = new Map();
 
   private editor: ICodeEditor;
   constructor() {
@@ -209,46 +211,39 @@ export class MergeConflictContribution
         this.editor.onMouseMove(
           debounce((event: monaco.editor.IEditorMouseEvent) => {
             const { target } = event;
-
             if (target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
               this.hideResolveResultWidget();
               return;
             }
-
             const mousePosition = target.position;
             if (!mousePosition) {
               return;
             }
 
-            // const allRanges = this.getAllDiffRanges();
-            // const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
+            const allRanges = this.getAllDiffRanges();
+            const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
 
-            // const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
-
-            // if (isTouches) {
-            //   const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
-
-            //   if (!targetInRange) {
-            //     return;
-            //   }
-
-            //   const intelligentStateModel = targetInRange.getIntelligentStateModel();
-
-            //   if (intelligentStateModel.isComplete) {
-            //     this.resolveResultWidgetManager.addWidget(targetInRange);
-            //   } else {
-            //     this.hideResolveResultWidget(targetInRange.id);
-            //   }
-            // } else {
-            //   this.hideResolveResultWidget();
-            // }
+            const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
+            if (isTouches) {
+              const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
+              if (!targetInRange) {
+                return;
+              }
+              this.resolveResultWidgetManager.addWidget(targetInRange);
+            } else {
+              this.hideResolveResultWidget();
+            }
           }, 10),
         ),
       );
     }
   }
   getAllDiffRanges() {
-    throw new Error('Method not implemented.');
+    const rangeLines: LineRange[] = [];
+    for (const [key, value] of this.cacheResolvedConflicts.entries()) {
+      rangeLines.push(this.toLineRange(value.newRange));
+    }
+    return rangeLines;
   }
 
   private getModel() {
@@ -304,6 +299,7 @@ export class MergeConflictContribution
                 this.cacheConflicts.deleteConflict(uri.toString());
                 this.hideResolveResultWidget();
                 this.hideStopWidget();
+                this.cacheResolvedConflicts.clear();
               }
             }
           }
@@ -316,16 +312,8 @@ export class MergeConflictContribution
           if (!document) {
             return;
           }
-          const conflicts = this.cacheConflicts.scanDocument(document);
-          if (!conflicts?.length) {
-            return;
-          }
-          const promiseAll: Promise<void>[] = [];
-          conflicts.forEach((conflict) => {
-            promiseAll.push(this.conflictAIAccept(conflict));
-          });
-
-          await Promise.all(promiseAll);
+          // 上一个位置影响下一个冲突位置 只能一个个解决
+          await this.acceptAllConflict();
         },
       }),
       commands.registerCommand(MERGE_CONFLICT.AI_ALL_ACCEPT_STOP, {
@@ -406,21 +394,32 @@ export class MergeConflictContribution
     return Promise.resolve(items);
   }
 
-  private async conflictAIAccept(conflict: DocumentMergeConflict) {
+  private async conflictAIAccept(conflict?: DocumentMergeConflict, lineRan?: LineRange, isRegenerate?: boolean) {
     if (!this.editorService.currentEditor?.monacoEditor) {
       return;
     }
-    const lineRange = this.toLineRange(conflict.range);
+    let lineRange: LineRange;
+    if (conflict) {
+      lineRange = this.toLineRange(conflict.range);
+    } else {
+      lineRange = lineRan!;
+    }
+    const range = lineRange.toRange();
+
     const skeletonDecorationDispose = this.renderSkeletonDecoration(lineRange, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background,
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
-    const codeAssemble = this.getModel()?.getValueInRange(conflict.range) ?? '';
-    let resolveConflictResult;
+    let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange()) ?? '';
+    if (isRegenerate) {
+      codeAssemble = this.cacheResolvedConflicts.get(lineRange.id)?.textChange.oldText ?? '';
+    }
+
+    let resolveConflictResult: IAiBackServiceResponse | undefined;
     try {
-      resolveConflictResult = await this.requestAiResolveConflict(codeAssemble, lineRange, false);
+      resolveConflictResult = await this.requestAiResolveConflict(codeAssemble, lineRange, isRegenerate);
     } catch (error) {
       throw new Error(`AI resolve conflict error: ${error}`);
     } finally {
@@ -429,23 +428,45 @@ export class MergeConflictContribution
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
-      // console.log('resolveConflictResult.data', resolveConflictResult.data);
+      const resultLines = resolveConflictResult.data.split('\n');
+      const lastLens = resultLines[resultLines.length - 1];
 
-      // const
-
+      const newRange = new monaco.Range(
+        lineRange.startLineNumber,
+        1,
+        lineRange.startLineNumber + resultLines.length - 1,
+        lastLens.length,
+      );
       const edit = {
-        range: conflict.range,
+        range,
         text: resolveConflictResult.data,
       };
-
-      this.getModel()?.applyEdits([edit], true);
-
-      this.resolveResultWidgetManager.addWidget(lineRange);
+      const validEditOperation = this.getModel()?.applyEdits([edit], true) || [];
+      const newLineRange = this.toLineRange(newRange);
+      this.resolveResultWidgetManager.addWidget(newLineRange);
+      this.cacheResolvedConflicts.set(newLineRange.id, {
+        ...validEditOperation[0],
+        newRange,
+      });
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
-        this.debounceMessageWraning();
+        this.debounceMessageWarning();
       }
     }
+  }
+
+  private async acceptAllConflict() {
+    // 每一次改动range 都会变化 需要一次次 scanDocument
+    const document = this.getModel() as monaco.editor.ITextModel;
+    if (!document) {
+      return Promise.resolve();
+    }
+    const conflicts = this.cacheConflicts.scanDocument(document);
+    if (!conflicts?.length) {
+      return Promise.resolve();
+    }
+    await this.conflictAIAccept(conflicts[0]);
+    return this.acceptAllConflict();
   }
 
   private registerCodeLensProvider() {
@@ -472,10 +493,8 @@ export class MergeConflictContribution
         const newContent = this.getModel()!.getValueInRange(range.toRange());
         prompt += `\n当前的解决冲突后的代码是 \n ${newContent}，但是我不够满意，希望给出另一种解决方案`;
       }
-
       return this.aiBackService.request(prompt, { type: 'resolveConflict' }, this.createRequestToken(range.id).token);
     }
-
     return;
   }
 
@@ -488,6 +507,9 @@ export class MergeConflictContribution
 
   public hideResolveResultWidget(id?: string) {
     this.resolveResultWidgetManager.hideWidget(id);
+    if (id) {
+      this.cacheResolvedConflicts.delete(id);
+    }
   }
 
   public hideStopWidget(id?: string) {
@@ -512,19 +534,28 @@ export class MergeConflictContribution
 
   public launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
     const { range, action } = eventData;
-    // console.log('launchConflictActionsEvent', eventData);
     if (action === REVOKE_ACTIONS) {
-      // this.cancelRequestToken(range.id);
-      // this.hideResolveResultWidget(range.id);
-      // this.hideStopWidget(range.id);
+      this.hideResolveResultWidget(range.id);
+      this.hideStopWidget(range.id);
+
+      const cache = this.cacheResolvedConflicts.get(range.id);
+
+      if (cache) {
+        const edit = {
+          range: cache.newRange,
+          text: cache.text,
+        };
+        this.getModel()?.applyEdits([edit], true);
+      }
     } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      // this.hideResolveResultWidget(range.id);
-      // this.hideStopWidget(range.id);
-      // this.conflictAIAccept(eventData.conflict);
+      this.hideResolveResultWidget(range.id);
+      this.hideStopWidget(range.id);
+      this.cacheResolvedConflicts.delete(range.id);
+      this.conflictAIAccept(undefined, range, true);
     }
   }
 
-  private debounceMessageWraning = debounce(() => {
+  private debounceMessageWarning = debounce(() => {
     message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
   }, 1000);
 }
