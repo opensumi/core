@@ -8,6 +8,7 @@ import {
   MonacoService,
   localize,
 } from '@opensumi/ide-core-browser';
+import { message } from '@opensumi/ide-core-browser/lib/components';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { URI, runWhenIdle } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -19,7 +20,7 @@ import { ICodeEditor } from '../../monaco-api/editor';
 import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
-import { ACCEPT_CURRENT_ACTIONS, AI_RESOLVE_ACTIONS, APPEND_ACTIONS, IEditorMountParameter } from './types';
+import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, IEditorMountParameter, IMergeEditorService } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -28,7 +29,7 @@ import { ScrollSynchronizer } from './view/scroll-synchronizer';
 import { StickinessConnectManager } from './view/stickiness-connect-manager';
 
 @Injectable()
-export class MergeEditorService extends Disposable {
+export class MergeEditorService extends Disposable implements IMergeEditorService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -88,12 +89,6 @@ export class MergeEditorService extends Disposable {
         this.incomingView.launchChange();
       }),
     );
-
-    this.addDispose(
-      this.onDidInputNutrition((nutrition: IOpenMergeEditorArgs) => {
-        this.actionsManager.setNutrition(nutrition);
-      }),
-    );
   }
 
   private listenIntelligentLoadingChange(): void {
@@ -111,7 +106,7 @@ export class MergeEditorService extends Disposable {
           return;
         }
 
-        const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAiConflict);
+        const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAiConflictPoint);
         if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
           this._onHasIntelligentLoadingChange.fire(false);
           this.loadingDispose.dispose();
@@ -167,7 +162,7 @@ export class MergeEditorService extends Disposable {
     const lineRanges = mappings.getOriginalRange();
     lineRanges
       .filter((range) => range.isComplete === false)
-      .filter((range) => (isIgnoreAi && range.isAiConflict ? null : range))
+      .filter((range) => (isIgnoreAi && range.isAiConflictPoint ? null : range))
       .forEach((range) => {
         if (range.isMerge) {
           const oppositeRange = this.mappingManagerService.documentMappingTurnLeft.adjacentComputeRangeMap.get(
@@ -194,7 +189,7 @@ export class MergeEditorService extends Disposable {
     const lineRanges = mappings.getModifiedRange();
     lineRanges
       .filter((range) => range.isComplete === false)
-      .filter((range) => (isIgnoreAi && range.isAiConflict ? null : range))
+      .filter((range) => (isIgnoreAi && range.isAiConflictPoint ? null : range))
       .forEach((range) => {
         if (range.isMerge) {
           const oppositeRange = this.mappingManagerService.documentMappingTurnRight.adjacentComputeRangeMap.get(
@@ -280,28 +275,31 @@ export class MergeEditorService extends Disposable {
       this.acceptRight(true);
     }, 1);
 
-    const allRanges = this.resultView.getAllDiffRanges();
-    const conflictPointRanges = allRanges.filter((range) => range.isAiConflict);
-
-    // for (const range of conflictPointRanges) {
-    //   runWhenIdle(() => {
-    //     const newRange = this.resultView.flushRange(range);
-    //     if (!newRange) {
-    //       return;
-    //     }
-    //     this.resultView.launchConflictActionsEvent({
-    //       range: newRange,
-    //       action: REVOKE_ACTIONS,
-    //     });
-    //   });
-    // }
-
     runWhenIdle(() => {
-      conflictPointRanges.forEach((range) => {
-        this.resultView.launchConflictActionsEvent({
-          range,
-          action: AI_RESOLVE_ACTIONS,
+      const allRanges = this.resultView.getAllDiffRanges();
+      const conflictPointRanges = allRanges.filter((range) => range.isAiConflictPoint);
+
+      let resolveLen = 0;
+      let pointLen = conflictPointRanges.length;
+
+      Promise.all(
+        conflictPointRanges.map((range) => this.actionsManager.handleAiConflictResolve(range, false, true)),
+      ).then((results) => {
+        results.filter(Boolean).forEach((result) => {
+          if (result!.isCancel) {
+            pointLen -= 1;
+          }
+
+          if (result!.isSuccess) {
+            resolveLen += 1;
+          }
         });
+
+        if (resolveLen !== pointLen) {
+          message.warning(
+            `AI 已处理 ${resolveLen} 处冲突，${pointLen - resolveLen} 处冲突暂未处理（仍标记为黄色部分），需人工处理`,
+          );
+        }
       });
     }, 2);
   }

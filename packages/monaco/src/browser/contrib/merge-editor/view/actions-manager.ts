@@ -1,10 +1,8 @@
 import debounce from 'lodash/debounce';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Injectable } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
-import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { CommandService, Disposable, Event } from '@opensumi/ide-core-common';
+import { Disposable, Event, runWhenIdle } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
@@ -35,13 +33,9 @@ type TLineRangeEdit = Array<{ range: LineRange; text: string | null }>;
 
 @Injectable({ multiple: false })
 export class ActionsManager extends Disposable {
-  @Autowired(CommandService)
-  private readonly commandService: CommandService;
-
   private currentView: BaseCodeEditor | undefined;
   private resultView: ResultCodeEditor | undefined;
   private incomingView: BaseCodeEditor | undefined;
-  private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor(private readonly mappingManagerService: MappingManagerService) {
     super();
@@ -276,7 +270,11 @@ export class ActionsManager extends Disposable {
   /**
    * 处理 AI 智能解决冲突时的逻辑
    */
-  private async handleAiConflictResolve(range: LineRange, isRegenerate = false): Promise<void> {
+  public async handleAiConflictResolve(
+    flushRange: LineRange,
+    isRegenerate = false,
+    isFormat = false,
+  ): Promise<{ isSuccess: boolean; isCancel: boolean } | undefined> {
     if (!this.resultView) {
       return;
     }
@@ -286,8 +284,6 @@ export class ActionsManager extends Disposable {
     if (!model) {
       return;
     }
-
-    let flushRange = this.resultView.flushRange(range) || range;
 
     const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(flushRange);
     const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(flushRange);
@@ -323,23 +319,37 @@ export class ActionsManager extends Disposable {
     this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false }, false);
     skeletonDecorationDispose();
 
-    flushRange = this.resultView.flushRange(range) || range;
-
     if (resolveConflictResult && resolveConflictResult.data) {
       this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true });
       this.applyLineRangeEdits([{ range: flushRange, text: resolveConflictResult.data }]);
 
-      this.resultView.getEditor().focus();
-      this.resultView.getEditor().revealRange(flushRange.toRange(), 1);
-      await this.commandService.executeCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT.id, this.nutrition?.output.uri);
-    } else {
-      if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
-        // 说明 AI 解决冲突接口失败
-        this.debounceMessageWraning();
+      if (isFormat) {
+        runWhenIdle(async () => {
+          flushRange = this.resultView!.flushRange(flushRange) || flushRange;
+          await this.resultView!.formatDocument(flushRange);
+        });
       }
+
+      this.resultView!.updateDecorations().updateActions();
+      return {
+        isSuccess: true,
+        isCancel: false,
+      };
     }
 
-    this.resultView.updateDecorations().updateActions();
+    this.resultView!.updateDecorations().updateActions();
+
+    if (resolveConflictResult?.isCancel) {
+      return {
+        isSuccess: false,
+        isCancel: true,
+      };
+    }
+
+    return {
+      isSuccess: false,
+      isCancel: false,
+    };
   }
 
   private debounceMessageWraning = debounce(() => {
@@ -384,7 +394,7 @@ export class ActionsManager extends Disposable {
         this.currentView.onDidConflictActions,
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
-      )(({ range, action }) => {
+      )(async ({ range, action }) => {
         if (action === ACCEPT_CURRENT_ACTIONS) {
           this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [
             { range: oppositeRange, text: applyText },
@@ -425,15 +435,27 @@ export class ActionsManager extends Disposable {
         /**
          * 处理 AI 智能解决冲突
          */
-        if (action === AI_RESOLVE_ACTIONS) {
-          this.handleAiConflictResolve(range);
+        if (action === AI_RESOLVE_ACTIONS && this.resultView) {
+          const flushRange = this.resultView.flushRange(range) || range;
+
+          const result = await this.handleAiConflictResolve(flushRange, false, true);
+
+          if (result && !result.isSuccess && !result.isCancel) {
+            this.debounceMessageWraning();
+          }
         }
 
         /**
          * 处理 AI 智能解决冲突的重新生成(prompt 不同)
          */
-        if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
-          this.handleAiConflictResolve(range, true);
+        if (action === AI_RESOLVE_REGENERATE_ACTIONS && this.resultView) {
+          const flushRange = this.resultView.flushRange(range) || range;
+
+          const result = await this.handleAiConflictResolve(flushRange, true, true);
+
+          if (result && !result.isSuccess && !result.isCancel) {
+            this.debounceMessageWraning();
+          }
         }
 
         this.resultView!.updateDecorations();
@@ -441,10 +463,6 @@ export class ActionsManager extends Disposable {
         this.incomingView!.launchChange();
       }),
     );
-  }
-
-  public setNutrition(data: IOpenMergeEditorArgs) {
-    this.nutrition = data;
   }
 
   public mount(currentView: BaseCodeEditor, resultView: ResultCodeEditor, incomingView: BaseCodeEditor): void {

@@ -6,7 +6,7 @@ import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 
 import { MergeEditorService } from '../merge-editor.service';
 import { LineRange } from '../model/line-range';
-import { EditorViewType } from '../types';
+import { EditorViewType, IMergeEditorService } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import styles from './merge-editor.module.less';
@@ -18,7 +18,7 @@ interface BlockPiece {
 }
 
 export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
-  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
   const [blocks, setBlocks] = React.useState<BlockPiece[]>([]);
 
   useEffect(() => {

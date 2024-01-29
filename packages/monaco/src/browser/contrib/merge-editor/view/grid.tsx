@@ -19,7 +19,7 @@ import {
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeEditorService } from '../merge-editor.service';
-import { EditorViewType } from '../types';
+import { EditorViewType, IMergeEditorService } from '../types';
 
 import styles from './merge-editor.module.less';
 import { MiniMap } from './mini-map';
@@ -28,7 +28,7 @@ import { WithViewStickinessConnectComponent } from './stickiness-connect-manager
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
 
-  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const [head, setHead] = useState<IMergeEditorInputData>();
 
@@ -100,8 +100,8 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
 };
 
 const MergeActions: React.FC = () => {
-  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [isAiResolving, setIsAiResolving] = useState(false);
 
@@ -149,27 +149,35 @@ const MergeActions: React.FC = () => {
   return (
     <div className={styles.merge_editor_float_container}>
       <div className={styles.container_box}>
-        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptLeft}>
-          <Icon icon={'left'} />
-          <span>{localize('mergeEditor.action.button.accept.left')}</span>
-        </Button>
-        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptRight}>
-          <span>{localize('mergeEditor.action.button.accept.right')}</span>
-          <Icon icon={'right'} />
-        </Button>
+        <div id='merge.editor.action.button.accept'>
+          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptLeft}>
+            <Icon icon={'left'} />
+            <span>{localize('mergeEditor.action.button.accept.left')}</span>
+          </Button>
+          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptRight}>
+            <span>{localize('mergeEditor.action.button.accept.right')}</span>
+            <Icon icon={'right'} />
+          </Button>
+        </div>
 
         <span className={styles.line_vertical}></span>
 
-        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleOpenTradition}>
+        <Button
+          id='merge.editor.open.tradition'
+          className={styles.merge_conflict_bottom_btn}
+          size='large'
+          onClick={handleOpenTradition}
+        >
           <Icon icon={'swap'} />
           <span>{localize('mergeEditor.open.tradition')}</span>
         </Button>
-        <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
+        <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
           <Icon icon={'diuqi'} />
           <span>{localize('mergeEditor.reset')}</span>
         </Button>
         {isSupportAiResolve() && (
           <Button
+            id='merge.editor.conflict.resolve.all'
             size='large'
             className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
             onClick={handleAIResolve}
@@ -188,7 +196,12 @@ const MergeActions: React.FC = () => {
           </Button>
         )}
         <span className={styles.line_vertical}></span>
-        <Button size='large' className={styles.merge_editor_apply_btn} onClick={handleApply}>
+        <Button
+          id='merge.editor.action.button.apply'
+          size='large'
+          className={styles.merge_editor_apply_btn}
+          onClick={handleApply}
+        >
           {localize('mergeEditor.action.button.apply')}
         </Button>
       </div>
@@ -197,7 +210,7 @@ const MergeActions: React.FC = () => {
 };
 
 export const Grid = () => {
-  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
 
   const incomingEditorContainer = React.useRef<HTMLDivElement | null>(null);
   const currentEditorContainer = React.useRef<HTMLDivElement | null>(null);

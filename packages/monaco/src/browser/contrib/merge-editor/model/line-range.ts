@@ -146,7 +146,7 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.mergeStateModel.isAllowCombination;
   }
 
-  public get isAiConflict(): boolean {
+  public get isAiConflictPoint(): boolean {
     return this.isMerge && this.type === 'modify';
   }
 

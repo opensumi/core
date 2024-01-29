@@ -44,6 +44,7 @@ import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/rende
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
+import { IMergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
@@ -167,7 +168,7 @@ export class EditorContribution
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
-  @Autowired(MergeEditorService)
+  @Autowired(IMergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
 
   @Autowired(IEditorDocumentModelContentRegistry)

@@ -24,7 +24,7 @@ import { StandaloneServices } from '../../monaco-api/services';
 import { IPosition, Position } from '../../monaco-api/types';
 
 import { MergeEditorService } from './merge-editor.service';
-import { EditorViewType, IMergeEditorViewState } from './types';
+import { EditorViewType, IMergeEditorService, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
 
 export interface IMergeEditorModel {
@@ -43,7 +43,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   @Autowired(AppConfig)
   private readonly configContext: AppConfig;
 
-  @Autowired(MergeEditorService)
+  @Autowired(IMergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
 
   private readonly _id: number;

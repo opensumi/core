@@ -55,7 +55,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
     const isRenderThumbs = this.isRenderThumbs();
 
     return (
-      <ContentWidgetContainerPanel style={{ transform: 'translateY(-15px)' }}>
+      <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
         <AIInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />
       </ContentWidgetContainerPanel>
     );
