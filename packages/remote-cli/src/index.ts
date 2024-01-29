@@ -3,6 +3,7 @@ import { statSync, existsSync } from 'fs';
 import { join } from 'path';
 
 import { green, red } from 'chalk';
+import fetch from 'node-fetch';
 
 import { ArgvFactory } from '@opensumi/ide-utils/lib/argv';
 
@@ -45,12 +46,10 @@ function openPathOrUrl(pathOrUrl: string): void {
   }
 
   const query = `?type=${type}&${type}=${encodeURIComponent(fullPathOrUrl)}&clientId=${CLIENT_ID}`;
-  import('got').then(({ default: got }) => {
-    got(`${SUMI_SERVER_HOST}/${OPENER_ROUTE}${query}`).catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error(red(`Open ${type} ${fullPathOrUrl} error: \n ${err.message}`));
-      process.exit(1);
-    });
+  fetch(`${SUMI_SERVER_HOST}/${OPENER_ROUTE}${query}`).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error(red(`Open ${type} ${fullPathOrUrl} error: \n ${err.message}`));
+    process.exit(1);
   });
 }
 

@@ -19,6 +19,9 @@ module.exports = {
   optimization: {
     minimizer: [new OptimizeCSSAssetsPlugin({})],
   },
+  cache: {
+    type: 'filesystem',
+  },
   plugins: [
     new MiniCssExtractPlugin({
       filename: 'index.css',
@@ -53,18 +56,6 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: [
-          {
-            loader: 'cache-loader',
-            options: {
-              cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-            },
-          },
-          {
-            loader: 'thread-loader',
-            options: {
-              workers: require('os').cpus().length - 1,
-            },
-          },
           {
             loader: 'ts-loader',
             options: {

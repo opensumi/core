@@ -11,12 +11,20 @@ setLocale(defaultLanguage);
 import '@opensumi/ide-i18n';
 import '@opensumi/ide-core-browser/lib/style/index.less';
 
-import { getDefaultClientAppOpts, renderApp } from './render-app';
+import { getDefaultClientAppOpts, renderApp } from '../render-app';
 
-import '../styles.less';
+import '../../styles.less';
+
+const hostname = window.location.hostname;
+const port = window.location.port;
 
 renderApp(
   getDefaultClientAppOpts({
     defaultLanguage,
+    opts: {
+      webviewEndpoint: '/webview',
+      extWorkerHost: '/worker-host.js',
+      wsPath: window.location.protocol === 'https:' ? `wss://${hostname}:${port}` : `ws://${hostname}:${port}`,
+    },
   }),
 );

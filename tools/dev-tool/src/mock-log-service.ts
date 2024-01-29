@@ -7,18 +7,18 @@ export default class LogServiceClass {
   }
 
   debug(...args) {
-    console.log('LogServiceClass debug', args);
+    console.log('LogServiceClass debug', ...args);
   }
 
   error(...args) {
-    console.log('LogServiceClass error', args);
+    console.log('LogServiceClass error', ...args);
   }
 
   log(...args) {
-    console.log('LogServiceClass log', args);
+    console.log('LogServiceClass log', ...args);
   }
 
   warn(...args) {
-    console.log('LogServiceClass warn', args);
+    console.log('LogServiceClass warn', ...args);
   }
 }

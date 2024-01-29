@@ -5,25 +5,20 @@ const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const threadLoader = require('thread-loader');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
-
-threadLoader.warmup({}, ['ts-loader']);
 
 const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const HOST = process.env.HOST || '0.0.0.0';
-const PORT = process.env.PORT || 8080;
+const IDE_FRONT_PORT = process.env.IDE_FRONT_PORT || 8080;
 
 const defaultWorkspace = path.join(__dirname, '../../workspace');
 fse.mkdirpSync(defaultWorkspace);
 
 const withSlash = process.platform === 'win32' ? '/' : '';
-
-console.log('front port', PORT);
 
 const styleLoader =
   process.env.NODE_ENV === 'production' ? MiniCssExtractPlugin.loader : require.resolve('style-loader');
@@ -36,12 +31,17 @@ const styleLoader =
  * @returns {import('webpack').Configuration}
  */
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
+  console.log('front port', IDE_FRONT_PORT);
+
   const webpackConfig = merge(
     {
       entry,
       output: {
         filename: 'bundle.js',
         path: dir + '/dist',
+      },
+      cache: {
+        type: 'filesystem',
       },
       resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -74,35 +74,18 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           {
             test: /\.tsx?$/,
             use: [
-              process.env.NODE_ENV === 'production'
-                ? {
-                    loader: 'cache-loader',
-                    options: {
-                      cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-                    },
-                  }
-                : null,
-            ]
-              .filter(Boolean)
-              .concat([
-                {
-                  loader: 'thread-loader',
-                  options: {
-                    workers: require('os').cpus().length - 1,
+              {
+                loader: 'ts-loader',
+                options: {
+                  happyPackMode: true,
+                  transpileOnly: true,
+                  configFile: tsConfigPath,
+                  compilerOptions: {
+                    target: 'es2015',
                   },
                 },
-                {
-                  loader: 'ts-loader',
-                  options: {
-                    happyPackMode: true,
-                    transpileOnly: true,
-                    configFile: tsConfigPath,
-                    compilerOptions: {
-                      target: 'es2015',
-                    },
-                  },
-                },
-              ]),
+              },
+            ],
           },
           {
             test: /\.png$/,
@@ -177,12 +160,12 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       },
       optimization: {
         nodeEnv: process.env.NODE_ENV,
+        minimize: false,
       },
       plugins: [
         new HtmlWebpackPlugin({
           template: __dirname + '/index.html',
         }),
-
         new MiniCssExtractPlugin({
           filename: '[name].[chunkhash:8].css',
           chunkFilename: '[id].css',
@@ -205,18 +188,19 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.STATIC_SERVER_PATH': JSON.stringify(process.env.STATIC_SERVER_PATH || `http://${HOST}:8000/`),
           'process.env.HOST': JSON.stringify(process.env.HOST),
         }),
-        new ForkTsCheckerWebpackPlugin({
-          typescript: {
-            diagnosticOptions: {
-              syntactic: true,
+        !process.env.SKIP_TS_CHECKER &&
+          new ForkTsCheckerWebpackPlugin({
+            typescript: {
+              diagnosticOptions: {
+                syntactic: true,
+              },
+              configFile: tsConfigPath,
             },
-            configFile: tsConfigPath,
-          },
-          issue: {
-            include: (issue) => issue.file.includes('src/packages/'),
-            exclude: (issue) => issue.file.includes('__test__'),
-          },
-        }),
+            issue: {
+              include: (issue) => issue.file.includes('src/packages/'),
+              exclude: (issue) => issue.file.includes('__test__'),
+            },
+          }),
         new NodePolyfillPlugin({
           includeAliases: ['process', 'Buffer'],
         }),
@@ -228,7 +212,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           directory: dir + '/dist',
         },
         host: HOST,
-        port: PORT,
+        port: IDE_FRONT_PORT,
         allowedHosts: 'all',
         devMiddleware: {
           stats: 'errors-only',
@@ -271,13 +255,16 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
 /**
  * @returns {import('webpack').Configuration}
  */
-exports.createWebviewWebpackConfig = (entry, dir) => {
+exports.createWebviewWebpackConfig = (entry, dir, outputPath = '/dist') => {
   const port = 8899;
   return {
     entry,
     output: {
       filename: 'webview.js',
-      path: dir + '/dist',
+      path: dir + outputPath,
+    },
+    cache: {
+      type: 'filesystem',
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -341,3 +328,90 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
     },
   };
 };
+
+/**
+ * @returns {import('webpack').Configuration}
+ */
+exports.createNodeWebpackConfig = (entry, distDir) => ({
+  entry,
+  target: 'node',
+  output: {
+    filename: 'server.js',
+    path: distDir,
+  },
+  node: false,
+  mode: 'production',
+  optimization: {
+    minimize: false,
+  },
+  cache: {
+    type: 'filesystem',
+  },
+  watch: false,
+  resolve: {
+    modules: [
+      path.join(__dirname, '../../../node_modules'),
+      path.join(__dirname, '../node_modules'),
+      path.resolve('node_modules'),
+    ],
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: tsConfigPath,
+      }),
+    ],
+  },
+  module: {
+    exprContextCritical: false,
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              happyPackMode: true,
+              transpileOnly: true,
+              configFile: tsConfigPath,
+              compilerOptions: {
+                target: 'es2016',
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+  externals: [
+    function ({ request }, callback) {
+      if (
+        [
+          'node-pty',
+          'oniguruma',
+          '@parcel/watcher',
+          'nsfw',
+          'spdlog',
+          'vm2',
+          'canvas',
+          '@opensumi/vscode-ripgrep',
+          'vertx',
+          'keytar',
+          'tsconfig-paths',
+        ].indexOf(request) !== -1
+      ) {
+        return callback(null, `commonjs ${request}`);
+      }
+      callback();
+    },
+  ],
+  resolveLoader: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    mainFields: ['loader', 'main'],
+    modules: [
+      path.join(__dirname, '../../../node_modules'),
+      path.join(__dirname, '../node_modules'),
+      path.resolve('node_modules'),
+    ],
+  },
+  plugins: [!process.env.CI && new webpack.ProgressPlugin()],
+});

@@ -13,7 +13,6 @@ const { lessLoader } = require('./webpack-util');
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const dir = path.join(__dirname, '../src/browser');
 const distDir = path.join(__dirname, '../lib/browser');
-const port = 8080;
 const nodeEnv = process.env.NODE_ENV || 'development';
 
 /**
@@ -110,7 +109,12 @@ module.exports = {
   },
   optimization: {
     nodeEnv,
-    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+    minimizer: [
+      new TerserJSPlugin({
+        minify: TerserJSPlugin.esbuildMinify,
+      }),
+      new OptimizeCSSAssetsPlugin({}),
+    ],
   },
   plugins: [
     new AssetsPlugin({
