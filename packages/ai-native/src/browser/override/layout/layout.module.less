@@ -36,6 +36,7 @@
         padding: 0;
         min-width: initial;
         align-items: center;
+        background-color: transparent;
 
         // 最有一个元素分割线隐藏
         &:last-child {
@@ -300,11 +301,6 @@
 
     &:hover {
       background-color: var(--activityBar-activeBorder);
-      :global {
-        .activity-icon {
-          color: var(--ai-native-text-color-hover);
-        }
-      }
     }
 
     :global {
@@ -312,13 +308,8 @@
         font-size: 16px;
         width: 16px;
         height: 16px;
-        color: var(--ai-native-text-color-other);
         &.mask-mode {
-          background-color: var(--ai-native-block-background-light);
           -webkit-mask-size: 16px;
-          &:hover {
-            background-color: var(--ai-native-text-color-highlight);
-          }
         }
       }
     }
@@ -356,13 +347,6 @@
         .active {
           div[class*='icon_tab___'] {
             background-color: var(--activityBar-activeBorder);
-            .activity-icon {
-              color: var(--ai-native-text-color-highlight);
-              // 小icon颜色
-              &.mask-mode {
-                background-color: var(--ai-native-text-color-highlight);
-              }
-            }
 
             &::before {
               content: none;
