@@ -329,7 +329,10 @@ export class MergeConflictContribution
       this.disposables.push(
         this.eventBus.on(ExtensionActivatedEvent, (e) => {
           // 当插件注册完毕 再初始化 codelens 使其位置正确
-          if (e.payload.topic === 'onExtensionActivated' && e.payload.data?.id === 'vscode.merge-conflict') {
+          if (
+            e.payload.topic === 'onExtensionActivated' &&
+            (e.payload.data?.id as string).endsWith('.merge-conflict')
+          ) {
             if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
               this.registerCodeLensProvider();
               loadStyleString(true);
