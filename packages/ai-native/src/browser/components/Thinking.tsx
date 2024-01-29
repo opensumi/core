@@ -87,7 +87,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
 
   const renderContent = useCallback(() => {
     if (
-      (status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && typeof hasMessage
+      (status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && typeof hasMessage === 'boolean'
         ? !hasMessage
         : !message?.trim()
     ) {
