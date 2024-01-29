@@ -48,7 +48,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
     TabView,
     MoreTabView,
     forbidCollapse,
-    barSize = 48,
+    barSize = 49,
     panelBorderSize = 0,
     tabClassName,
     className,

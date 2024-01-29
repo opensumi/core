@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { action, observable, makeObservable } from 'mobx';
+import { action, observable, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -99,7 +99,7 @@ export class AccordionService extends WithEventBus {
 
   @observable.shallow views: View[] = observable.array([]);
 
-  @observable state: { [viewId: string]: SectionState } = {};
+  @observable.shallow state: { [viewId: string]: SectionState } = observable.object({});
 
   rendered = false;
 
@@ -174,6 +174,7 @@ export class AccordionService extends WithEventBus {
     this.doUpdateResize();
   }
 
+  @action
   restoreState() {
     if (this.noRestore) {
       return;
@@ -190,6 +191,7 @@ export class AccordionService extends WithEventBus {
   }
 
   // 调用时需要保证dom可见
+  @action
   restoreSize() {
     // 计算存储总高度与当前窗口总高度差，加到最后一个展开的面板
     let availableSize = this.splitPanelService.rootNode?.clientHeight || 0;
@@ -326,6 +328,7 @@ export class AccordionService extends WithEventBus {
     });
   }
 
+  @action
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     // 监听来自resize组件的事件
@@ -342,7 +345,6 @@ export class AccordionService extends WithEventBus {
     }
   }
 
-  @action
   private doUpdateResize = debounce(() => {
     let largestViewId: string | undefined;
     Object.keys(this.state).forEach((id) => {
@@ -360,7 +362,9 @@ export class AccordionService extends WithEventBus {
       // 需要过滤掉没有实际注册的视图
       const diffSize = this.splitPanelService.rootNode!.clientHeight - this.getPanelFullHeight();
       if (diffSize) {
-        this.state[largestViewId].size! += diffSize;
+        runInAction(() => {
+          this.state[largestViewId!].size! += diffSize;
+        });
         this.toggleOpen(largestViewId!, false);
       }
     }
@@ -514,6 +518,7 @@ export class AccordionService extends WithEventBus {
     });
   }
 
+  @action
   public getViewState(viewId: string) {
     let viewState = this.state[viewId];
     const view = this.views.find((item) => item.id === viewId);
@@ -524,6 +529,7 @@ export class AccordionService extends WithEventBus {
     return viewState;
   }
 
+  @action
   protected doToggleOpen(viewId: string, collapsed: boolean, index: number, noAnimation?: boolean) {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;

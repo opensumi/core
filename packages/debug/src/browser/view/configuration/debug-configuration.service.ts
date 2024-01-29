@@ -53,10 +53,10 @@ export class DebugConfigurationService {
   isMultiRootWorkspace: boolean;
 
   @observable.shallow
-  workspaceRoots: string[] = [];
+  workspaceRoots: string[] = observable.array([]);
 
   @observable.shallow
-  configurationOptions: DebugSessionOptions[] = [];
+  configurationOptions: DebugSessionOptions[] = observable.array([]);
 
   get whenReady() {
     return this._whenReady;

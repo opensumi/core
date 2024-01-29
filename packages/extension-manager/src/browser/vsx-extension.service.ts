@@ -50,13 +50,13 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
   protected readonly commandService: CommandService;
 
   @observable.shallow
-  public extensions: VSXExtension[] = [];
+  public extensions: VSXExtension[] = observable.array([]);
 
   @observable
-  public installedExtensions: VSXExtension[] = [];
+  public installedExtensions: VSXExtension[] = observable.array([]);
 
   @observable
-  public openVSXRegistry: string;
+  public openVSXRegistry = '';
 
   @Autowired(IStatusBarService)
   protected readonly statusBarService: IStatusBarService;
