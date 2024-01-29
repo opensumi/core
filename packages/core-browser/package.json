@@ -22,7 +22,7 @@
     "@opensumi/ide-connection": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
-    "@vscode/codicons": "0.0.27",
+    "@vscode/codicons": "0.0.35",
     "ajv": "^6.10.0",
     "classnames": "2.3.1",
     "font-awesome": "^4.7.0",
