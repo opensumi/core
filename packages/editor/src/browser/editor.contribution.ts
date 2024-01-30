@@ -1,49 +1,50 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  IClientApp,
+  AppConfig,
   ClientAppContribution,
-  KeybindingContribution,
-  KeybindingRegistry,
-  EDITOR_COMMANDS,
   CommandContribution,
   CommandRegistry,
-  URI,
-  Domain,
-  localize,
-  formatLocalize,
-  MonacoService,
-  ServiceNames,
-  MonacoContribution,
   CommandService,
-  QuickPickService,
-  IEventBus,
-  Schemes,
-  PreferenceService,
-  Disposable,
-  IPreferenceSettingsService,
-  OpenerContribution,
-  IOpenerService,
-  IClipboardService,
-  QuickOpenContribution,
-  IQuickOpenHandlerRegistry,
-  PrefixQuickOpenService,
-  MonacoOverrideServiceRegistry,
-  IContextKeyService,
-  getLanguageIdFromMonaco,
-  QuickPickItem,
-  AppConfig,
-  SUPPORTED_ENCODINGS,
-  FILE_COMMANDS,
   CorePreferences,
+  Disposable,
+  Domain,
+  EDITOR_COMMANDS,
+  FILE_COMMANDS,
+  IClientApp,
+  IClipboardService,
+  IContextKeyService,
+  IEventBus,
+  IOpenerService,
+  IPreferenceSettingsService,
   IQuickInputService,
+  IQuickOpenHandlerRegistry,
+  KeybindingContribution,
+  KeybindingRegistry,
+  MonacoContribution,
+  MonacoOverrideServiceRegistry,
+  MonacoService,
+  OpenerContribution,
+  PreferenceService,
+  PrefixQuickOpenService,
+  QuickOpenContribution,
+  QuickPickItem,
+  QuickPickService,
+  SUPPORTED_ENCODINGS,
+  Schemes,
+  ServiceNames,
+  URI,
+  formatLocalize,
+  getLanguageIdFromMonaco,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { isWindows, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
+import { ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
+import { IMergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
@@ -52,20 +53,19 @@ import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/con
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
-  WorkbenchEditorService,
-  IResourceOpenOptions,
-  EditorGroupSplitAction,
-  ILanguageService,
   Direction,
+  EditorGroupSplitAction,
   IDocPersistentCacheProvider,
   IEditor,
+  ILanguageService,
+  IResourceOpenOptions,
   SaveReason,
+  WorkbenchEditorService,
 } from '../common';
 import { AUTO_SAVE_MODE } from '../common/editor';
 
 import { MonacoTextModelService } from './doc-model/override';
-import { IEditorDocumentModelService } from './doc-model/types';
-import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
 import { EditorOpener } from './editor-opener';
 import { MonacoCodeService, MonacoContextViewService } from './editor.override';
 import { EditorStatusBarService } from './editor.status-bar.service';
@@ -77,10 +77,10 @@ import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
+import { BrowserEditorContribution, EditorGroupsResetSizeEvent, IEditorFeatureRegistry } from './types';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
-import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
+import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -168,7 +168,7 @@ export class EditorContribution
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
-  @Autowired(MergeEditorService)
+  @Autowired(IMergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
 
   @Autowired(IEditorDocumentModelContentRegistry)

@@ -20,6 +20,7 @@ import {
   getLanguageId,
   URI,
   GeneralSettingsId,
+  ExtensionActivatedEvent,
 } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -619,6 +620,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     ]);
 
     await this.viewExtensionService.activeExtension(extension, this.nodeExtensionService.protocol);
+    this.eventBus.fire(new ExtensionActivatedEvent({ topic: 'onExtensionActivated', data: { id: extension.id } }));
   }
 
   private resetExtensionInstances() {
