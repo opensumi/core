@@ -45,9 +45,6 @@
     "strip-json-comments": "3.0.1",
     "vscode-textmate": "7.0.1"
   },
-  "devDependencies": {
-    "react": "^18.2.0"
-  },
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
