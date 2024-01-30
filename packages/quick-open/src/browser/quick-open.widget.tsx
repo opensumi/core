@@ -208,7 +208,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   @action
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void {
     this._items = model.items;
-    this._actionProvider = model.actionProvider;
+    this._actionProvider = model.actionProvider || null;
     this._autoFocus = autoFocus;
   }
 
