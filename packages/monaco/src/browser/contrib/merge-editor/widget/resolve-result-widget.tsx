@@ -20,10 +20,12 @@ interface IWapperAiInlineResultProps {
   isRenderThumbs: boolean;
   codeEditor: ResultCodeEditor;
   range: LineRange;
+  closeClick?: () => void;
+  isRenderClose?: boolean;
 }
 
-const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
-  const { iconItems, isRenderThumbs, codeEditor, range } = props;
+export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
+  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
 
@@ -56,27 +58,25 @@ const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
 
   const popoverContent = useMemo(
     () => (
-      <div style={{ padding: '8px 12px' }}>
-        <DialogContent
-          type='confirm'
-          buttons={[
-            <Button size='small' onClick={onCancel} type='secondary'>
-              {localize('ButtonCancel')}
-            </Button>,
-            <Button size='small' onClick={onOk}>
-              {localize('ButtonOK')}
-            </Button>,
-          ]}
-          icon={{
-            color: 'var(--notificationsWarningIcon-foreground)',
-            className: 'question-circle',
-          }}
-          title={'你确定要重新生成吗？'}
-          message={'检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。'}
-          visible={true}
-          messageType={MessageType.Warning}
-        />
-      </div>
+      <DialogContent
+        type='confirm'
+        buttons={[
+          <Button size='small' onClick={onCancel} type='secondary'>
+            {localize('ButtonCancel')}
+          </Button>,
+          <Button size='small' onClick={onOk}>
+            {localize('ButtonOK')}
+          </Button>,
+        ]}
+        icon={{
+          color: 'var(--notificationsWarningIcon-foreground)',
+          className: 'question-circle',
+        }}
+        title={'你确定要重新生成吗？'}
+        message={'检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。'}
+        visible={true}
+        messageType={MessageType.Warning}
+      />
     ),
     [isVisiablePopover],
   );
@@ -121,7 +121,14 @@ const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
     [iconItems, isVisiablePopover],
   );
 
-  return <AiInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />;
+  return (
+    <AiInlineResult
+      iconItems={iconResultItems}
+      isRenderThumbs={isRenderThumbs}
+      isRenderClose={isRenderClose}
+      closeClick={closeClick}
+    />
+  );
 };
 
 @Injectable({ multiple: true })
