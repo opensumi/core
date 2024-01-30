@@ -313,6 +313,10 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
           resolveLen += 1;
         }
 
+        if (result.errorCode !== 0) {
+          this.actionsManager.debounceMessageWraning(result.errorCode);
+        }
+
         if (errorCodesToStop.includes(result.errorCode)) {
           break;
         }

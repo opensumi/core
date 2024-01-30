@@ -9,7 +9,6 @@ import {
 } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
 
-
 import { BaseInlineContentWidget } from '../../../ai-native/content-widget';
 import { ContentWidgetContainerPanel } from '../../../ai-native/content-widget/containerPanel';
 import { LineRange } from '../model/line-range';
@@ -55,29 +54,35 @@ const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
     codeEditor.hideResolveResultWidget();
   }, [range, codeEditor]);
 
-  const popoverContent = useMemo(() => (
-      <DialogContent
-        type='confirm'
-        buttons={[
-          <Button size='small' onClick={onCancel} type='secondary'>
-            {localize('ButtonCancel')}
-          </Button>,
-          <Button size='small' onClick={onOk}>
-            {localize('ButtonOK')}
-          </Button>,
-        ]}
-        icon={{
-          color: 'var(--notificationsWarningIcon-foreground)',
-          className: 'question-circle',
-        }}
-        title={'你确定要重新生成吗？'}
-        message={'检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。'}
-        visible={true}
-        messageType={MessageType.Warning}
-      />
-    ), [isVisiablePopover]);
+  const popoverContent = useMemo(
+    () => (
+      <div style={{ padding: '8px 12px' }}>
+        <DialogContent
+          type='confirm'
+          buttons={[
+            <Button size='small' onClick={onCancel} type='secondary'>
+              {localize('ButtonCancel')}
+            </Button>,
+            <Button size='small' onClick={onOk}>
+              {localize('ButtonOK')}
+            </Button>,
+          ]}
+          icon={{
+            color: 'var(--notificationsWarningIcon-foreground)',
+            className: 'question-circle',
+          }}
+          title={'你确定要重新生成吗？'}
+          message={'检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。'}
+          visible={true}
+          messageType={MessageType.Warning}
+        />
+      </div>
+    ),
+    [isVisiablePopover],
+  );
 
-  const renderGenerate = useCallback(() => (
+  const renderGenerate = useCallback(
+    () => (
       <Popover
         trigger={PopoverTriggerType.program}
         display={isVisiablePopover}
@@ -87,7 +92,9 @@ const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
       >
         重新生成
       </Popover>
-    ), [isVisiablePopover]);
+    ),
+    [isVisiablePopover],
+  );
 
   const handleRenerate = useCallback(() => {
     const intelligentStateModel = range.getIntelligentStateModel();
@@ -102,13 +109,17 @@ const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
     }
   }, [range, codeEditor, isVisiablePopover]);
 
-  const iconResultItems: IAiInlineResultIconItemsProps[] = useMemo(() => iconItems.concat([
-      {
-        icon: 'zhongxin',
-        text: renderGenerate(),
-        onClick: handleRenerate,
-      },
-    ]), [iconItems, isVisiablePopover]);
+  const iconResultItems: IAiInlineResultIconItemsProps[] = useMemo(
+    () =>
+      iconItems.concat([
+        {
+          icon: 'zhongxin',
+          text: renderGenerate(),
+          onClick: handleRenerate,
+        },
+      ]),
+    [iconItems, isVisiablePopover],
+  );
 
   return <AiInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />;
 };

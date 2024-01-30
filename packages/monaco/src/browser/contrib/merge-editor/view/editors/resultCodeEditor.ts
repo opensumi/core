@@ -96,7 +96,7 @@ class WidgetFactory implements IWidgetFactory {
       return;
     }
 
-    const position = new Position(Math.max(1, range.endLineNumberExclusive - 1), 1);
+    const position = new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
 
     const widget = this.injector.get(this.contentWidget, [this.editor, range]);
     widget.show({ position });

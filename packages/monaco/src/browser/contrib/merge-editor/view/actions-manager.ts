@@ -357,8 +357,12 @@ export class ActionsManager extends Disposable {
     };
   }
 
-  private debounceMessageWraning = debounce(() => {
-    message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
+  public debounceMessageWraning = debounce((errorCode: number) => {
+    if (errorCode === 52) {
+      message.warning('本段冲突代码过长，暂无法通过AI解决。');
+    } else {
+      message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
+    }
   }, 1000);
 
   private markComplete(range: LineRange): void {
@@ -446,7 +450,7 @@ export class ActionsManager extends Disposable {
           const result = await this.handleAiConflictResolve(flushRange, false, true);
 
           if (result && !result.isSuccess && !result.isCancel) {
-            this.debounceMessageWraning();
+            this.debounceMessageWraning(result.errorCode);
           }
         }
 
@@ -459,7 +463,7 @@ export class ActionsManager extends Disposable {
           const result = await this.handleAiConflictResolve(flushRange, true, true);
 
           if (result && !result.isSuccess && !result.isCancel) {
-            this.debounceMessageWraning();
+            this.debounceMessageWraning(result.errorCode);
           }
         }
 
