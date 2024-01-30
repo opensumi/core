@@ -51,7 +51,6 @@ import {
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 import { StopWidget } from '../../widget/stop-widget';
 
-
 import { BaseCodeEditor } from './baseCodeEditor';
 
 interface IWidgetFactory {
@@ -231,25 +230,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
    */
   public changeRangeIntelligentState(range: LineRange, state: Partial<IIntelligentState>, isFull = true): void {
     const intelligentModel = range.getIntelligentStateModel();
-    if (isFull) {
-      intelligentModel.reset();
-      intelligentModel.setIsComplete(!!state.isComplete).setLoading(!!state.isLoading);
-    } else {
-      if (state.isComplete !== undefined) {
-        intelligentModel.setIsComplete(!!state.isComplete);
-      }
-
-      if (state.isLoading !== undefined) {
-        intelligentModel.setLoading(!!state.isLoading);
-      }
-    }
+    intelligentModel.setAll(state, isFull);
     this._onChangeRangeIntelligentState.fire(range);
   }
 
   /**
    * 根据 id 获取最新的 range 数据
    */
-  public flushRange(range: LineRange): LineRange | undefined {
+  public getFlushRange(range: LineRange): LineRange | undefined {
     const id = range.id;
     const allRanges = this.getAllDiffRanges();
     return allRanges.find((range) => range.id === id);
@@ -516,12 +504,20 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const pickMapping = (range: LineRange) =>
       range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
-    for (const { rawRanges, mergeRange } of needMergeRanges) {
+    for (let { rawRanges, mergeRange } of needMergeRanges) {
       // 需要合并的 range 一定多于两个
       const length = rawRanges.length;
       if (length <= 1) {
         continue;
       }
+
+      // 将 rawRanges 按照 startLineNumber 从小到大排序，如果 startLineNumber 相同，则按照 endLineNumberExclusive 从小到大排序。保证 merge 的 range 是合理的
+      rawRanges = rawRanges.sort((a, b) => {
+        if (a.startLineNumber === b.startLineNumber) {
+          return a.endLineNumberExclusive - b.endLineNumberExclusive;
+        }
+        return a.startLineNumber - b.startLineNumber;
+      });
 
       /**
        * 取第二个 range 和倒数第二个 range，来对齐最终要合并的 range 的高度
@@ -546,14 +542,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
       for (const range of rawRanges) {
         const mapping = pickMapping(range);
         const rawReverse = mapping.reverse(range);
-        let reverse = mapping.reverse(range);
-        if (!reverse || !rawReverse) {
+
+        let reverse = rawReverse;
+        if (!reverse) {
           continue;
         }
 
         if (range.id === secondRange.id) {
           // start 要补齐的差值不会是正数
-          reverse = reverse.deltaStart(Math.min(0, rawRanges[0].startLineNumber - secondRange.startLineNumber));
+          reverse = reverse
+            .deltaStart(Math.min(0, rawRanges[0].startLineNumber - secondRange.startLineNumber))
+            .deltaEnd(
+              Math.max(0, secondLastRange.endLineNumberExclusive - rawRanges[length - 1].endLineNumberExclusive),
+            );
         }
 
         if (range.id === secondLastRange.id) {
@@ -570,13 +571,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
         if (range.turnDirection === ETurnDirection.CURRENT) {
           mergeRangeTurnLeft = (
             !mergeRangeTurnLeft ? reverse : mergeRangeTurnLeft.merge(reverse, false)
-          ).recordMergeRange(rawReverse);
+          ).recordMergeRange(rawReverse!);
         }
 
         if (range.turnDirection === ETurnDirection.INCOMING) {
           mergeRangeTurnRight = (
             !mergeRangeTurnRight ? reverse : mergeRangeTurnRight.merge(reverse, false)
-          ).recordMergeRange(rawReverse);
+          ).recordMergeRange(rawReverse!);
         }
 
         mapping.deleteRange(reverse);

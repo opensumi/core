@@ -35,6 +35,7 @@
     .container_box {
       display: flex;
       float: right;
+      white-space: nowrap;
 
       .merge_conflict_bottom_btn {
         border: 1px solid var(--kt-button-disableForeground);
@@ -46,6 +47,10 @@
         // 第一个子元素
         :first-child {
           margin-right: 8px;
+        }
+
+        span {
+          white-space: nowrap;
         }
       }
 
