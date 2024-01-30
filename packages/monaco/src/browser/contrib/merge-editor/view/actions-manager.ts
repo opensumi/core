@@ -274,7 +274,7 @@ export class ActionsManager extends Disposable {
     flushRange: LineRange,
     isRegenerate = false,
     isFormat = false,
-  ): Promise<{ isSuccess: boolean; isCancel: boolean } | undefined> {
+  ): Promise<{ isSuccess: boolean; isCancel: boolean; errorCode: number } | undefined> {
     if (!this.resultView) {
       return;
     }
@@ -327,7 +327,7 @@ export class ActionsManager extends Disposable {
 
       if (isFormat) {
         runWhenIdle(async () => {
-          flushRange = this.resultView!.flushRange(flushRange) || flushRange;
+          flushRange = this.resultView!.getFlushRange(flushRange) || flushRange;
           await this.resultView!.formatDocument(flushRange);
         });
       }
@@ -336,6 +336,7 @@ export class ActionsManager extends Disposable {
       return {
         isSuccess: true,
         isCancel: false,
+        errorCode: 0,
       };
     }
 
@@ -345,12 +346,14 @@ export class ActionsManager extends Disposable {
       return {
         isSuccess: false,
         isCancel: true,
+        errorCode: resolveConflictResult.errorCode || 0,
       };
     }
 
     return {
       isSuccess: false,
       isCancel: false,
+      errorCode: 0,
     };
   }
 
@@ -438,7 +441,7 @@ export class ActionsManager extends Disposable {
          * 处理 AI 智能解决冲突
          */
         if (action === AI_RESOLVE_ACTIONS && this.resultView) {
-          const flushRange = this.resultView.flushRange(range) || range;
+          const flushRange = this.resultView.getFlushRange(range) || range;
 
           const result = await this.handleAiConflictResolve(flushRange, false, true);
 
@@ -451,7 +454,7 @@ export class ActionsManager extends Disposable {
          * 处理 AI 智能解决冲突的重新生成(prompt 不同)
          */
         if (action === AI_RESOLVE_REGENERATE_ACTIONS && this.resultView) {
-          const flushRange = this.resultView.flushRange(range) || range;
+          const flushRange = this.resultView.getFlushRange(range) || range;
 
           const result = await this.handleAiConflictResolve(flushRange, true, true);
 

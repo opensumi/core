@@ -237,7 +237,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   /**
    * 根据 id 获取最新的 range 数据
    */
-  public flushRange(range: LineRange): LineRange | undefined {
+  public getFlushRange(range: LineRange): LineRange | undefined {
     const id = range.id;
     const allRanges = this.getAllDiffRanges();
     return allRanges.find((range) => range.id === id);

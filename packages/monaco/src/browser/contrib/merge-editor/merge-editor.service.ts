@@ -55,6 +55,8 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   private computerDiffModel: ComputerDiffModel;
   private actionsManager: ActionsManager;
 
+  private isCancelAllAiResolveConflict = false;
+
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
 
@@ -106,11 +108,13 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
           return;
         }
 
-        const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAiConflictPoint);
-        if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
-          this._onHasIntelligentLoadingChange.fire(false);
-          this.loadingDispose.dispose();
-        }
+        runWhenIdle(() => {
+          const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAiConflictPoint);
+          if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
+            this._onHasIntelligentLoadingChange.fire(false);
+            this.loadingDispose.dispose();
+          }
+        }, 1);
       }),
     );
   }
@@ -260,6 +264,7 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   }
 
   public async stopAllAiResolveConflict(): Promise<void> {
+    this.isCancelAllAiResolveConflict = true;
     this.resultView.cancelRequestToken();
     this.resultView.hideStopWidget();
   }
@@ -275,7 +280,9 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       this.acceptRight(true);
     }, 1);
 
-    runWhenIdle(() => {
+    runWhenIdle(async () => {
+      this.isCancelAllAiResolveConflict = false;
+
       const allRanges = this.resultView.getAllDiffRanges();
       const conflictPointRanges = allRanges.filter(
         (range) => range.isAiConflictPoint && !!range.getIntelligentStateModel().isLoading === false,
@@ -284,25 +291,38 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       let resolveLen = 0;
       let pointLen = conflictPointRanges.length;
 
-      Promise.all(
-        conflictPointRanges.map((range) => this.actionsManager.handleAiConflictResolve(range, false, true)),
-      ).then((results) => {
-        results.filter(Boolean).forEach((result) => {
-          if (result!.isCancel) {
-            pointLen -= 1;
-          }
-
-          if (result!.isSuccess) {
-            resolveLen += 1;
-          }
-        });
-
-        if (resolveLen !== pointLen) {
-          message.warning(
-            `AI 已处理 ${resolveLen} 处冲突，${pointLen - resolveLen} 处冲突暂未处理（仍标记为黄色部分），需人工处理`,
-          );
+      // 错误码列表，如果出现以下错误码，AI 将停止处理
+      const errorCodesToStop = [20, 42, 46, 51, 53, 54, 999];
+      for await (const range of conflictPointRanges) {
+        const flushRange = this.resultView.getFlushRange(range) || range;
+        const result = await this.actionsManager.handleAiConflictResolve(flushRange, false, true);
+        if (this.isCancelAllAiResolveConflict) {
+          this.isCancelAllAiResolveConflict = false;
+          return;
         }
-      });
+
+        if (!result) {
+          continue;
+        }
+
+        if (result.isCancel) {
+          pointLen -= 1;
+        }
+
+        if (result.isSuccess) {
+          resolveLen += 1;
+        }
+
+        if (errorCodesToStop.includes(result.errorCode)) {
+          break;
+        }
+      }
+
+      if (resolveLen !== pointLen) {
+        message.warning(
+          `AI 已处理 ${resolveLen} 处冲突，${pointLen - resolveLen} 处冲突暂未处理（仍标记为黄色部分），需人工处理`,
+        );
+      }
     }, 2);
   }
 
