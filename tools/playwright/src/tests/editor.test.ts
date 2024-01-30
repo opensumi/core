@@ -96,6 +96,7 @@ console.log(a);`,
     await copyPath?.click();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js');
     await editor.addTextToNewLineAfterLineByLineNumber(1, 'File Path: ');
+    await app.page.waitForTimeout(400);
     let editorMenu = await editor.openLineContextMenuByLineNumber(2);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     let paste = await editorMenu?.menuItemByName('Paste');
@@ -112,6 +113,7 @@ console.log(a);`,
     await copyRelativePath?.click();
     await app.page.waitForTimeout(200);
     await editor.addTextToNewLineAfterLineByLineNumber(2, 'File Relative Path: ');
+    await app.page.waitForTimeout(400);
     editorMenu = await editor.openLineContextMenuByLineNumber(3);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     paste = await editorMenu?.menuItemByName('Paste');
