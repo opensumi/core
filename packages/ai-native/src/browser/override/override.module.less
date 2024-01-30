@@ -25,7 +25,7 @@
     display: inline-block;
     width: 1px;
     height: 12px;
-    background-color: var(--ai-native-block-background-common);
+    background-color: var(--editorGroup-border);
   }
 
   > div:first-child {
@@ -145,6 +145,14 @@
   .submenuIcon {
     span {
       font-size: 16px;
+    }
+  }
+}
+
+:global(.ai-hight) {
+  .ai_sub_menu_action_container {
+    .icon {
+      filter: grayscale(0.8);
     }
   }
 }

@@ -124,11 +124,12 @@ const InitMsgComponent = () => {
   }, []);
 
   return (
-    <div>
-      <span className={styles.chat_container_content}>
+    <div className={styles.chat_head}>
+      <span className={styles.chat_container_des}>
+        <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
         嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
       </span>
-      <span className={styles.chat_container_content}>您可以提问我一些关于代码的问题</span>
+      <span className={styles.chat_container_title}>您可以提问我一些关于代码的问题</span>
       <div className={styles.chat_container_content} style={{ display: 'flex', flexDirection: 'column' }}>
         {sampleQuestions.map((data: any, index) => {
           const node = (
@@ -452,7 +453,9 @@ export const AiChatView = observer(() => {
   }, [aiMenubarService]);
 
   const handleThemeClick = (value) => {
-    if (loading || loading2) {return;}
+    if (loading || loading2) {
+      return;
+    }
     setTheme(value);
   };
 
@@ -628,7 +631,11 @@ const AISearch = async (
           renderContent={(content) => (
             <div className={styles.ai_chat_search_container}>
               <div className={styles.ai_response_text}>
-                <CodeBlockWrapper text={content} relationId={relationId} renderText={(text) => <ChatMarkdown content={text} />} />
+                <CodeBlockWrapper
+                  text={content}
+                  relationId={relationId}
+                  renderText={(text) => <ChatMarkdown content={text} />}
+                />
               </div>
             </div>
           )}
@@ -701,7 +708,11 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          {RenderAnswer ? <RenderAnswer input={input} relationId={relationId} /> : <CodeBlockWrapper text={input} relationId={relationId} />}
+          {RenderAnswer ? (
+            <RenderAnswer input={input} relationId={relationId} />
+          ) : (
+            <CodeBlockWrapper text={input} relationId={relationId} />
+          )}
         </ChatMoreActions>
       ),
       className: styles.chat_with_more_actions,

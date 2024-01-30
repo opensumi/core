@@ -13,7 +13,7 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 import { highLightLanguageSupport, InstructionEnum } from '../../common/index';
 
 import * as styles from './components.module.less';
-import 'highlight.js/styles/a11y-dark.css';
+import './highlightTheme.less';
 
 const ChatEditor = ({ input, language }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
@@ -169,7 +169,15 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
   );
 };
 
-const CodeBlock = ({ content = '', relationId, renderText }: { content?: string; relationId: string; renderText?: (t: string) => React.ReactNode }) => {
+const CodeBlock = ({
+  content = '',
+  relationId,
+  renderText,
+}: {
+  content?: string;
+  relationId: string;
+  renderText?: (t: string) => React.ReactNode;
+}) => {
   const rgInlineCode = /`([^`]+)`/g;
   const rgBlockCode = /```([^]+?)```/g;
   const rgBlockCodeBefore = /```([^]+)?/g;

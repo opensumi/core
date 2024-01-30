@@ -257,3 +257,10 @@ export const aiNativeTagForeground = registerColor(
   '',
   true,
 );
+
+export const aiNativeLanguageBackground = registerColor(
+  'ai.native.language.background',
+  { dark: '#2b333d', light: '#dbe4ee', hcDark: null, hcLight: null },
+  '',
+  true,
+);

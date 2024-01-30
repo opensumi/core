@@ -201,7 +201,7 @@
     }
 
     .commonly_used {
-      border-top: 1px solid #363940;
+      border-top: 1px solid var(--editorGroup-border);
       padding: 12px 16px;
       display: flex;
       align-items: center;
@@ -248,10 +248,6 @@
       justify-content: center;
       cursor: pointer;
       border-radius: 6px;
-
-      // span {
-      //   color: rgba(60, 141, 255, 0.65);
-      // }
 
       &.active {
         span {
@@ -347,11 +343,10 @@
         align-items: center;
         justify-content: center;
         font-size: 12px;
-        color: var(--ai-native-text-color-normal);
         border-radius: 4px;
         &:hover {
-          color: var(--ai-native-text-color-hover);
-          background: var(--ai-native-block-background-common);
+          color: var(--activityBar-foreground);
+          background: var(--activityBar-activeBorder);
         }
       }
     }
@@ -370,7 +365,7 @@
     z-index: 1;
     line-height: 22px;
     padding: 0 8px;
-    background-color: #2b333d;
+    background-color: var(--ai-native-language-background);
     border-radius: 8px 0px 8px 0;
     color: var(--ai-native-text-color-normal);
   }
