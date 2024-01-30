@@ -6,6 +6,7 @@ import {
   EDITOR_COMMANDS,
   URI,
   localize,
+  runWhenIdle,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
@@ -134,8 +135,11 @@ const MergeActions: React.FC = () => {
     // TODO
   }, [mergeEditorService]);
 
-  const handleReset = useCallback(() => {
-    commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
+  const handleReset = useCallback(async () => {
+    await mergeEditorService.stopAllAiResolveConflict();
+    runWhenIdle(() => {
+      commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
+    });
   }, [mergeEditorService]);
 
   const handleAIResolve = useCallback(() => {
