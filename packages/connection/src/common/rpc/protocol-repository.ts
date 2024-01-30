@@ -1,7 +1,5 @@
 import Fury, { Type, TypeDescription } from '@furyjs/fury';
 
-import { PlatformBuffer } from '@opensumi/ide-core-common/lib/types/rpc';
-
 import { TSumiProtocol, TSumiProtocolMethod } from './types';
 
 export interface ISerializableRequest {
@@ -91,7 +89,7 @@ export class ProtocolRepository {
     };
   }
 
-  serializeRequest(name: string, args: any[]): PlatformBuffer {
+  serializeRequest(name: string, args: any[]): Uint8Array {
     const newArray = new Array(args.length);
     for (let i = 0; i < args.length; i++) {
       newArray[i] = args[i];
@@ -104,12 +102,12 @@ export class ProtocolRepository {
     return this.serializerMap[name].request.serialize(payload);
   }
 
-  deserializeRequest(name: string, buffer: PlatformBuffer): any[] {
+  deserializeRequest(name: string, buffer: Uint8Array): any[] {
     const { a: argsArray } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
     return argsArray;
   }
 
-  serializeResult<T = any>(name: string, result: T): PlatformBuffer {
+  serializeResult<T = any>(name: string, result: T): Uint8Array {
     const payload = {
       r: result,
     } as ISerializableResult;
@@ -119,7 +117,7 @@ export class ProtocolRepository {
     return this.serializerMap[name].result.serialize(payload);
   }
 
-  deserializeResult<T = any>(name: string, buffer: PlatformBuffer): T {
+  deserializeResult<T = any>(name: string, buffer: Uint8Array): T {
     const payload = this.serializerMap[name].result.deserialize(buffer) as ISerializableResult;
 
     if (payload.$) {

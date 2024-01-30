@@ -26,5 +26,3 @@ export interface RPCProtocol<T> {
   name: string;
   methods: RPCProtocolMethod<T>[];
 }
-
-export type PlatformBuffer = Uint8Array;
