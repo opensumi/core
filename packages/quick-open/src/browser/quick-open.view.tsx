@@ -101,7 +101,7 @@ export const QuickOpenInput = observer(() => {
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
-      widget.inputValue = value;
+      widget.setInputValue(value);
       widget.callbacks.onType(value);
     },
     [widget],
@@ -445,24 +445,24 @@ export const QuickOpenView = observer(() => {
       const entryToFocus = caseSensitiveMatch || caseInsensitiveMatch;
       if (entryToFocus) {
         const index = items.indexOf(entryToFocus);
-        widget.selectIndex = index;
+        widget.setSelectIndex(index);
         return;
       }
     }
 
     if (autoFocus.autoFocusFirstEntry) {
-      widget.selectIndex = 0;
+      widget.setSelectIndex(0);
     } else if (typeof autoFocus.autoFocusIndex === 'number') {
       if (items.length > autoFocus.autoFocusIndex) {
-        widget.selectIndex = autoFocus.autoFocusIndex;
+        widget.setSelectIndex(autoFocus.autoFocusIndex);
       }
     } else if (autoFocus.autoFocusSecondEntry) {
       if (items.length > 1) {
-        widget.selectIndex = 1;
+        widget.setSelectIndex(1);
       }
     } else if (autoFocus.autoFocusLastEntry) {
       if (items.length > 1) {
-        widget.selectIndex = items.length - 1;
+        widget.setSelectIndex(items.length - 1);
       }
     }
   }, [widget.items, widget.autoFocus]);
@@ -502,14 +502,14 @@ export const QuickOpenView = observer(() => {
         event.preventDefault();
         event.stopPropagation();
         const selectIndex = widget.selectIndex - 1;
-        widget.selectIndex = (length + (selectIndex % length)) % length;
+        widget.setSelectIndex((length + (selectIndex % length)) % length);
         break;
       }
       case Key.ARROW_DOWN.keyCode: {
         event.preventDefault();
         event.stopPropagation();
         const selectIndex = widget.selectIndex + 1;
-        widget.selectIndex = selectIndex % length;
+        widget.setSelectIndex(selectIndex % length);
         break;
       }
       case Key.ESCAPE.keyCode: {
