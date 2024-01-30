@@ -1,5 +1,5 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, CommandRegistry, Delayer, IDisposable } from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
+import { Disposable, IRange } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ICacheDocumentMergeConflict, IDocumentMergeConflictDescriptor, IMergeRegion } from './types';
@@ -29,9 +29,9 @@ export class TextLine {
     }
     this.text = document.getLineContent(line);
     this.firstNonWhitespaceCharacterIndex = /^(\s*)/.exec(this.text)![1].length;
-    this.range = new monaco.Range(line, 0, line, this.text.length);
+    this.range = new monaco.Range(line, 1, line, this.text.length);
     this.rangeIncludingLineBreak =
-      line <= document.getLineCount() ? new monaco.Range(line, 0, line + 1, 0) : this.range;
+      line <= document.getLineCount() ? new monaco.Range(line, 1, line + 1, 1) : this.range;
     this.lineNumber = line;
     this.isEmptyOrWhitespace = this.firstNonWhitespaceCharacterIndex === this.text.length;
   }

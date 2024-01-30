@@ -51,7 +51,7 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
       await commandService.executeCommand('merge-conflict.ai.all-accept', resource.uri);
     }
     setIsAiResolving(false);
-  }, [resource]);
+  }, [resource, isAiResolving]);
 
   const handleReset = useCallback(() => {
     commandService.executeCommand('merge-conflict.ai.all-reset', resource.uri);
