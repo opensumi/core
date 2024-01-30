@@ -1,64 +1,7 @@
 /* eslint-disable no-console */
-import { Type } from '@furyjs/fury';
-
-import { oneOf } from '@opensumi/ide-connection/src/common/fury-extends/one-of';
 
 import { PongMessage } from '../../../lib';
-import { ChannelMessage, PingMessage } from '../../../src/common/ws-channel';
-
-export const PingProtocol = Type.object('ping', {
-  clientId: Type.string(),
-  id: Type.string(),
-});
-
-export const PongProtocol = Type.object('pong', {
-  clientId: Type.string(),
-  id: Type.string(),
-});
-
-export const OpenProtocol = Type.object('open', {
-  clientId: Type.string(),
-  id: Type.string(),
-  path: Type.string(),
-});
-
-export const ServerReadyProtocol = Type.object('server-ready', {
-  id: Type.string(),
-});
-
-export const DataProtocol = Type.object('data', {
-  id: Type.string(),
-  content: Type.string(),
-});
-
-export const BinaryProtocol = Type.object('binary', {
-  id: Type.string(),
-  binary: Type.binary(),
-});
-
-export const CloseProtocol = Type.object('close', {
-  id: Type.string(),
-  code: Type.uint32(),
-  reason: Type.string(),
-});
-
-const serializer = oneOf([
-  PingProtocol,
-  PongProtocol,
-  OpenProtocol,
-  ServerReadyProtocol,
-  DataProtocol,
-  BinaryProtocol,
-  CloseProtocol,
-]);
-
-function stringify(obj: ChannelMessage): Uint8Array {
-  return serializer.serialize(obj);
-}
-
-function parse(input: Uint8Array): ChannelMessage {
-  return serializer.deserialize(input) as any;
-}
+import { PingMessage, parse, stringify } from '../../../src/common/ws-channel';
 
 describe('oneOf', () => {
   function testIt(obj: any) {
