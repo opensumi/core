@@ -144,7 +144,7 @@ export class TabBarHandler {
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const viewState = this.accordionService.getViewState(viewId);
-      viewState.hidden = !show;
+      this.accordionService.setViewState(viewId, { ...viewState, hidden: !show });
     }
   }
   /**

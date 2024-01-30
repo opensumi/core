@@ -97,9 +97,11 @@ export class AccordionService extends WithEventBus {
   // 所有带contextKey视图
   private viewsWithContextKey = new Set<View>();
 
-  @observable.shallow views: View[] = observable.array([]);
+  @observable.shallow
+  views: View[] = observable.array([]);
 
-  @observable.shallow state: { [viewId: string]: SectionState } = observable.object({});
+  @observable.shallow
+  state: { [viewId: string]: SectionState } = {};
 
   rendered = false;
 
@@ -454,6 +456,7 @@ export class AccordionService extends WithEventBus {
       nextState = !forceShow;
     }
     state.hidden = nextState;
+    this.setViewState(viewId, state);
     this.popViewKeyIfOnlyOneViewVisible();
     this.storeState();
   }
@@ -518,15 +521,24 @@ export class AccordionService extends WithEventBus {
     });
   }
 
-  @action
   public getViewState(viewId: string) {
     let viewState = this.state[viewId];
     const view = this.views.find((item) => item.id === viewId);
     if (!viewState) {
-      this.state[viewId] = { collapsed: view?.collapsed || false, hidden: view?.hidden || false };
-      viewState = this.state[viewId]!;
+      runInAction(() => {
+        this.state[viewId] = { collapsed: view?.collapsed || false, hidden: view?.hidden || false };
+        viewState = this.state[viewId]!;
+      });
     }
     return viewState;
+  }
+
+  @action
+  public setViewState(viewId: string, state: SectionState) {
+    this.state = {
+      ...this.state,
+      [viewId]: state,
+    };
   }
 
   @action
