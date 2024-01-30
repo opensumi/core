@@ -2402,7 +2402,7 @@ __metadata:
     koa-router: ^10.1.1
     koa-static: ^5.0.0
     less: ^3.9.0
-    less-loader: ^6.0.0
+    less-loader: ^12.1.0
     mini-css-extract-plugin: ^2.7.7
     mobx: ^6.12.0
     mobx-react-lite: ^4.0.5
@@ -3969,7 +3969,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/json-schema@npm:*, @types/json-schema@npm:^7.0.5":
+"@types/json-schema@npm:*":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 97ed0cb44d4070aecea772b7b2e2ed971e10c81ec87dd4ecc160322ffa55ff330dace1793489540e3e318d90942064bb697cc0f8989391797792d919737b3b98
@@ -6494,13 +6494,6 @@ __metadata:
   version: 1.0.4
   resolution: "clone@npm:1.0.4"
   checksum: d06418b7335897209e77bdd430d04f882189582e67bd1f75a04565f3f07f5b3f119a9d670c943b6697d0afb100f03b866b3b8a1f91d4d02d72c4ecf2bb64b5dd
-  languageName: node
-  linkType: hard
-
-"clone@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "clone@npm:2.1.2"
-  checksum: aaf106e9bc025b21333e2f4c12da539b568db4925c0501a1bf4070836c9e848c892fa22c35548ce0d1132b08bbbfa17a00144fe58fccdab6fa900fec4250f67d
   languageName: node
   linkType: hard
 
@@ -12915,21 +12908,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"less-loader@npm:^6.0.0":
-  version: 6.2.0
-  resolution: "less-loader@npm:6.2.0"
-  dependencies:
-    clone: ^2.1.2
-    less: ^3.11.3
-    loader-utils: ^2.0.0
-    schema-utils: ^2.7.0
-  peerDependencies:
-    webpack: ^4.0.0 || ^5.0.0
-  checksum: 2903a7aa73bd9d46a05f1a1cf9eee4495c89c74095a27ac1b66394bca801b52bfb39d97014367686f32209c853a2b0ae475f4e79ed3a7f17508abd32d46fbdf2
-  languageName: node
-  linkType: hard
-
-"less@npm:^3.11.3, less@npm:^3.9.0":
+"less@npm:^3.9.0":
   version: 3.13.1
   resolution: "less@npm:3.13.1"
   dependencies:
@@ -17733,17 +17712,6 @@ __metadata:
   dependencies:
     loose-envify: ^1.1.0
   checksum: d79192eeaa12abef860c195ea45d37cbf2bbf5f66e3c4dcd16f54a7da53b17788a70d109ee3d3dde1a0fd50e6a8fc171f4300356c5aee4fc0171de526bf35f8a
-  languageName: node
-  linkType: hard
-
-"schema-utils@npm:^2.7.0":
-  version: 2.7.1
-  resolution: "schema-utils@npm:2.7.1"
-  dependencies:
-    "@types/json-schema": ^7.0.5
-    ajv: ^6.12.4
-    ajv-keywords: ^3.5.2
-  checksum: 32c62fc9e28edd101e1bd83453a4216eb9bd875cc4d3775e4452b541908fa8f61a7bbac8ffde57484f01d7096279d3ba0337078e85a918ecbeb72872fb09fb2b
   languageName: node
   linkType: hard
 
