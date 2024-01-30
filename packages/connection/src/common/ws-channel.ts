@@ -223,13 +223,6 @@ export class WSChannel implements IWebSocket {
     );
   }
 
-  hasMessageListener() {
-    return this.emitter.hasListener('message');
-  }
-  hasBinaryListener() {
-    return this.emitter.hasListener('binary');
-  }
-
   onError() {}
   close(code?: number, reason?: string) {
     this.emitter.emit('close', code, reason);

@@ -72,10 +72,6 @@ export class WSChannelHandler {
 
       const channel = this.channelMap.get(msg.id);
       if (channel) {
-        if (!channel.hasMessageListener()) {
-          // 要求前端发送初始化消息，但后端最先发送消息时，前端并未准备好
-          this.logger.error(this.LOG_TAG, 'channel not ready!', msg);
-        }
         channel.handleMessage(msg);
       } else {
         this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
