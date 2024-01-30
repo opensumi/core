@@ -15,10 +15,12 @@ export interface IAiInlineResultIconItemsProps {
 export interface IAiInlineResultProps {
   iconItems: IAiInlineResultIconItemsProps[];
   isRenderThumbs?: boolean;
+  isRenderClose?: boolean;
+  closeClick?: () => void;
 }
 
 export const AiInlineResult = (props: IAiInlineResultProps) => {
-  const { iconItems, isRenderThumbs = true } = props;
+  const { iconItems, isRenderThumbs = true, isRenderClose = false, closeClick } = props;
 
   return (
     <div className={styles.ai_inline_result_panel}>
@@ -35,6 +37,11 @@ export const AiInlineResult = (props: IAiInlineResultProps) => {
           <div className={styles.side}>
             <Thumbs wrapperClassName={styles.operate_icon} />
           </div>
+        </>
+      )}
+      {isRenderClose && (
+        <>
+          <EnhanceIcon wrapperClassName={styles.operate_btn} icon='close' onClick={closeClick}></EnhanceIcon>
         </>
       )}
     </div>

@@ -33,7 +33,7 @@ import {
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
-import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
+import * as styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
@@ -117,6 +117,8 @@ interface IWidgetFactory {
 
 interface ICacheResolvedConflicts extends IValidEditOperation {
   newRange: IRange;
+  id: string;
+  conflictText: string;
 }
 
 interface IRequestCancel {
@@ -210,16 +212,93 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private initListenEvent(): void {
     this.disposables.push(
       this.editor.onDidChangeModel(() => {
-        this.hideResolveResultWidget();
+        this.updateAllWidgets();
       }),
     );
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      this.disposables.push(
+        this.editor.onDidChangeModelContent(({ changes, eol }) => {
+          const deltaEdits: Array<{ startLineNumber: number; endLineNumber: number; offset: number }> = [];
+          changes.forEach((change) => {
+            const { text, range } = change;
+            const textLineCount = (text.match(new RegExp(eol, 'ig')) ?? []).length;
+            const { startLineNumber, endLineNumber } = range;
+
+            /**
+             * startLineNumber 与 endLineNumber 的差值表示选区选了多少行
+             * textLineCount 则表示文本出现的换行符数量
+             * 两者相加就得出此次文本变更最终新增或减少了多少行
+             */
+            const offset = startLineNumber - endLineNumber + textLineCount;
+            if (offset === 0) {
+              return;
+            }
+
+            deltaEdits.push({
+              startLineNumber,
+              endLineNumber,
+              offset,
+            });
+          });
+          deltaEdits.forEach((edits) => {
+            const map: Map<string, ICacheResolvedConflicts> = new Map();
+            const { startLineNumber, endLineNumber, offset } = edits;
+
+            for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
+              const { newRange } = value;
+              const { startLineNumber: newStartLineNumber, endLineNumber: newEndLineNumber } = newRange;
+
+              // 在冲突位置下方改动 不处理
+              if (newEndLineNumber < startLineNumber) {
+                map.set(id, value);
+                continue;
+              }
+              // 在冲突位置上方改动 偏移
+              if (startLineNumber < newStartLineNumber && endLineNumber < newEndLineNumber) {
+                const newRange = new monaco.Range(newStartLineNumber + offset, 1, newEndLineNumber + offset, 1);
+                map.set(id, {
+                  ...value,
+                  newRange,
+                });
+                continue;
+              }
+              // 包含冲突位置 删除
+              if (startLineNumber <= newStartLineNumber && endLineNumber >= newEndLineNumber) {
+                const newRangeOffset = newEndLineNumber - newStartLineNumber;
+                if (offset <= newRangeOffset) {
+                  continue;
+                }
+              }
+              // 内部改动
+              if (startLineNumber >= newStartLineNumber && endLineNumber <= newEndLineNumber) {
+                const newRange = new monaco.Range(newStartLineNumber, 1, newEndLineNumber + offset, 1);
+                map.set(id, {
+                  ...value,
+                  newRange,
+                });
+              }
+            }
+            this.resetCacheResolvedConflicts(map);
+          });
+          this.updateAllWidgets();
+        }),
+      );
+    }
   }
   getAllDiffRanges() {
-    const rangeLines: LineRange[] = [];
+    const rangeLines: IRange[] = [];
     for (const [, value] of this.getCacheResolvedConflicts().entries()) {
-      rangeLines.push(this.toLineRange(value.newRange));
+      rangeLines.push(value.newRange);
     }
     return rangeLines;
+  }
+
+  updateAllWidgets() {
+    this.hideResolveResultWidget();
+    for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
+      const lineRange = this.toLineRange(value.newRange, id);
+      this.resolveResultWidgetManager.addWidget(lineRange);
+    }
   }
 
   private getModel(): ITextModel {
@@ -239,7 +318,18 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
   }
 
-  private setCacheResolvedConflicts(id: string, cacheConflict: ICacheResolvedConflicts, currentUri?: string) {
+  private deleteCacheResolvedConflicts(id: string, currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+
+    const cache = this.cacheResolvedConflicts.get(currentUri);
+    if (cache) {
+      cache.delete(id);
+    }
+  }
+
+  private setCacheResolvedConflict(id: string, cacheConflict: ICacheResolvedConflicts, currentUri?: string) {
     if (!currentUri) {
       currentUri = this.getModel().uri.toString();
     }
@@ -247,17 +337,28 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     cache.set(id, cacheConflict);
   }
 
-  private toLineRange(range: IRange) {
-    return new LineRange(range.startLineNumber, range.endLineNumber);
+  private resetCacheResolvedConflicts(cacheConflicts: Map<string, ICacheResolvedConflicts>, currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+    if (this.cacheResolvedConflicts.has(currentUri)) {
+      this.cacheResolvedConflicts.set(currentUri, cacheConflicts);
+    }
+  }
+
+  private toLineRange(range: IRange, id?: string) {
+    const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
+    if (id) {
+      // @ts-ignore
+      lineRange.setId(id);
+    }
+    return lineRange;
   }
 
   public renderSkeletonDecoration(range: LineRange, classNames: string[]) {
     const model = this.getModel();
     const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
-      range: monaco.Range.fromPositions(
-        new Position(range.startLineNumber, 1),
-        new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1),
-      ),
+      range: range.toRange(),
       options: {
         isWholeLine: true,
         description: 'skeleton',
@@ -418,7 +519,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
     let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange()) ?? '';
     if (isRegenerate) {
-      codeAssemble = this.getCacheResolvedConflicts().get(lineRange.id)?.textChange.oldText ?? '';
+      codeAssemble = this.getCacheResolvedConflicts().get(lineRange.id)?.conflictText ?? '';
     }
 
     let resolveConflictResult: IAiBackServiceResponse | undefined;
@@ -436,7 +537,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     if (resolveConflictResult && resolveConflictResult.data) {
       const resultLines = resolveConflictResult.data.split('\n');
       const lastLens = resultLines[resultLines.length - 1];
-
       const newRange = new monaco.Range(
         lineRange.startLineNumber,
         1,
@@ -447,13 +547,20 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         range,
         text: resolveConflictResult.data,
       };
+      // this.getModel()?.pushStackElement();
       const validEditOperation = this.getModel()?.applyEdits([edit], true) || [];
-      const newLineRange = this.toLineRange(newRange);
+      // this.getModel()?.pushStackElement();
+      const newLineRange = this.toLineRange(newRange, lineRange?.id);
       this.resolveResultWidgetManager.addWidget(newLineRange);
-      this.setCacheResolvedConflicts(newLineRange.id, {
-        ...validEditOperation[0],
-        newRange,
-      });
+      // 记录每一次解决的位置
+      if (!isRegenerate) {
+        this.setCacheResolvedConflict(newLineRange.id, {
+          ...validEditOperation[0],
+          newRange,
+          id: newLineRange.id,
+          conflictText: validEditOperation[0].text,
+        });
+      }
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
         this.debounceMessageWarning();
@@ -556,17 +663,18 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   public launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
     const { range, action } = eventData;
     if (action === REVOKE_ACTIONS) {
-      const cache = this.getCacheResolvedConflicts();
-      const cacheConflict = cache.get(range.id);
+      const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+
       if (cacheConflict) {
         const edit = {
           range: cacheConflict.newRange,
-          text: cacheConflict.text,
+          text: cacheConflict.conflictText || cacheConflict.text,
         };
         this.getModel()?.applyEdits([edit], true);
       }
       this.hideResolveResultWidget(range.id);
       this.hideStopWidget(range.id);
+      this.deleteCacheResolvedConflicts(range.id);
     } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
       this.hideResolveResultWidget(range.id);
       this.hideStopWidget(range.id);
@@ -577,7 +685,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private cleanAllCache() {
     this.hideStopWidget();
     this.hideResolveResultWidget();
-    this.cacheResolvedConflicts.clear();
+    this.getCacheResolvedConflicts().clear();
   }
 
   private debounceMessageWarning = debounce(() => {
