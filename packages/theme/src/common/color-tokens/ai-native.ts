@@ -113,7 +113,7 @@ export const inlineChatBlockBackgroundCommon = registerColor(
   'ai.native.block.background.common',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.08)),
-    light: new Color(new RGBA(21, 27, 33, 0.12)),
+    light: new Color(new RGBA(21, 27, 33, 0.06)),
     hcDark: null,
     hcLight: null,
   },
@@ -124,7 +124,7 @@ export const inlineChatBlockBackgroundCommon = registerColor(
 // tag背景色，或者整块区域hover上去背景色
 export const inlineChatBlockBackgroundNormal = registerColor(
   'ai.native.block.background.normal',
-  { dark: new Color(new RGBA(255, 255, 255, 0.05)), light: '#151b210f', hcDark: null, hcLight: null },
+  { dark: new Color(new RGBA(255, 255, 255, 0.05)), light: '#F4F6F8', hcDark: null, hcLight: null },
   '',
   true,
 );
@@ -133,7 +133,7 @@ export const aiNativeIconColor = registerColor(
   'ai.native.icon.color',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.25)),
-    light: new Color(new RGBA(21, 27, 33, 0.85)),
+    light: '#90959A',
     hcDark: null,
     hcLight: null,
   },

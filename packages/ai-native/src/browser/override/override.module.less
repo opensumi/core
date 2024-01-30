@@ -149,10 +149,12 @@
   }
 }
 
-:global(.ai-hight) {
-  .ai_sub_menu_action_container {
-    .icon {
-      filter: grayscale(0.8);
+:global(.ai-light) {
+  .ai_editor_tab_block_container {
+    > div:first-child {
+      &::before {
+        filter: grayscale(0);
+      }
     }
   }
 }

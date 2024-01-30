@@ -531,7 +531,7 @@ export default {
     'activityBarBadge.foreground': '#FFFFFF',
     'badge.background': '#FFFFFF40',
     'badge.foreground': '#D7DBDE',
-    'breadcrumb.background': '#242526',
+    'breadcrumb.background': '#222830',
     'breadcrumb.foreground': '#ffffff73',
     'checkbox.background': '#ffffff14',
     'checkbox.border': '#ffffff1f',
@@ -779,6 +779,7 @@ export default {
     'scrollbarSlider.background': '#ffffff14',
     'editor.background': '#00000026',
     'quickInput.background': '#252526',
+    'list.focusBackground': '#ffffff1f',
   },
   semanticHighlighting: true,
   semanticTokenColors: {

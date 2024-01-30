@@ -226,7 +226,8 @@ html {
   border-radius: 4px;
 }
 
-.large-button-size {
+.large-button-size,
+.kt-dialog-buttonWrap button {
   border-radius: 6px;
 }
 
@@ -238,9 +239,16 @@ html {
   border-radius: 8px;
 }
 
+.kt-clickable-icon:hover {
+  transform: none;
+}
+
+.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-radius: 6px;
+}
+
 // debug、菜单弹层
-div[class*='debug_toolbar_wrapper___'],
-div[class*='navigation_menu___'] {
+div[class*='debug_toolbar_wrapper___'] {
   border-radius: 8px;
   backdrop-filter: saturate(150%) blur(20px) !important;
   -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
@@ -251,5 +259,8 @@ div[class*='navigation_menu___'] {
 }
 
 div[class*='navigation_menu___'] {
-  padding: 4px 0;
+  border-radius: 8px;
+  border: 0 none !important;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
 }
