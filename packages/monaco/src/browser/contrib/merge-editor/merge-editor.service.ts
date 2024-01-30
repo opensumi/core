@@ -277,7 +277,9 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
 
     runWhenIdle(() => {
       const allRanges = this.resultView.getAllDiffRanges();
-      const conflictPointRanges = allRanges.filter((range) => range.isAiConflictPoint);
+      const conflictPointRanges = allRanges.filter(
+        (range) => range.isAiConflictPoint && !!range.getIntelligentStateModel().isLoading === false,
+      );
 
       let resolveLen = 0;
       let pointLen = conflictPointRanges.length;

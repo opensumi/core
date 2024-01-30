@@ -199,7 +199,7 @@ export class ActionsManager extends Disposable {
     // 为 null 则说明是删除文本
     this.applyLineRangeEdits([{ range, text }]);
 
-    this.resultView?.changeRangeIntelligentState(range, { isLoading: false, isComplete: false });
+    this.resultView?.changeRangeIntelligentState(range, {}, true);
     this.resultView?.updateActions();
 
     if (turnDirection === ETurnDirection.BOTH) {
@@ -320,8 +320,10 @@ export class ActionsManager extends Disposable {
     skeletonDecorationDispose();
 
     if (resolveConflictResult && resolveConflictResult.data) {
-      this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true });
-      this.applyLineRangeEdits([{ range: flushRange, text: resolveConflictResult.data }]);
+      const answerCode = resolveConflictResult.data;
+
+      this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true, answerCode }, true);
+      this.applyLineRangeEdits([{ range: flushRange, text: answerCode }]);
 
       if (isFormat) {
         runWhenIdle(async () => {

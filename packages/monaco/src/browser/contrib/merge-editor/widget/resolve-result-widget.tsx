@@ -1,18 +1,117 @@
-import React from 'react';
-import { ReactNode } from 'react';
+import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Injectable } from '@opensumi/di';
+import { Button, MessageType, PopoverTriggerType } from '@opensumi/ide-components';
+import { DialogContent, Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import {
   AiInlineResult,
   IAiInlineResultIconItemsProps,
 } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
-import { uuid } from '@opensumi/ide-core-common';
+import { localize, uuid } from '@opensumi/ide-core-common';
+
 
 import { BaseInlineContentWidget } from '../../../ai-native/content-widget';
 import { ContentWidgetContainerPanel } from '../../../ai-native/content-widget/containerPanel';
 import { LineRange } from '../model/line-range';
 import { AI_RESOLVE_REGENERATE_ACTIONS, AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
+
+interface IWapperAiInlineResultProps {
+  iconItems: IAiInlineResultIconItemsProps[];
+  isRenderThumbs: boolean;
+  codeEditor: ResultCodeEditor;
+  range: LineRange;
+}
+
+const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
+  const { iconItems, isRenderThumbs, codeEditor, range } = props;
+  const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
+  const uid = useMemo(() => uuid(4), []);
+
+  const onCancel = useCallback(
+    (event) => {
+      setIsVisiablePopover(false);
+      event.stopPropagation();
+      event.preventDefault();
+    },
+    [isVisiablePopover],
+  );
+
+  const onOk = useCallback(
+    (event) => {
+      onCancel(event);
+      execGenerate();
+      event.stopPropagation();
+      event.preventDefault();
+    },
+    [isVisiablePopover],
+  );
+
+  const execGenerate = useCallback(() => {
+    codeEditor.launchConflictActionsEvent({
+      range,
+      action: AI_RESOLVE_REGENERATE_ACTIONS,
+    });
+    codeEditor.hideResolveResultWidget();
+  }, [range, codeEditor]);
+
+  const popoverContent = useMemo(() => (
+      <DialogContent
+        type='confirm'
+        buttons={[
+          <Button size='small' onClick={onCancel} type='secondary'>
+            {localize('ButtonCancel')}
+          </Button>,
+          <Button size='small' onClick={onOk}>
+            {localize('ButtonOK')}
+          </Button>,
+        ]}
+        icon={{
+          color: 'var(--notificationsWarningIcon-foreground)',
+          className: 'question-circle',
+        }}
+        title={'你确定要重新生成吗？'}
+        message={'检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。'}
+        visible={true}
+        messageType={MessageType.Warning}
+      />
+    ), [isVisiablePopover]);
+
+  const renderGenerate = useCallback(() => (
+      <Popover
+        trigger={PopoverTriggerType.program}
+        display={isVisiablePopover}
+        id={uid}
+        content={popoverContent}
+        position={PopoverPosition.bottom}
+      >
+        重新生成
+      </Popover>
+    ), [isVisiablePopover]);
+
+  const handleRenerate = useCallback(() => {
+    const intelligentStateModel = range.getIntelligentStateModel();
+    const preAnswerCode = intelligentStateModel.answerCode;
+    const currentCode = codeEditor.getModel()?.getValueInRange(range.toRange()) || '';
+
+    // 如果内容有变化，说明用户有修改，需要弹出确认框
+    if (preAnswerCode.trim() === currentCode.trim()) {
+      execGenerate();
+    } else {
+      setIsVisiablePopover(true);
+    }
+  }, [range, codeEditor, isVisiablePopover]);
+
+  const iconResultItems: IAiInlineResultIconItemsProps[] = useMemo(() => iconItems.concat([
+      {
+        icon: 'zhongxin',
+        text: renderGenerate(),
+        onClick: handleRenerate,
+      },
+    ]), [iconItems, isVisiablePopover]);
+
+  return <AiInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />;
+};
 
 @Injectable({ multiple: true })
 export class ResolveResultWidget extends BaseInlineContentWidget {
@@ -39,17 +138,6 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
           this.codeEditor.hideResolveResultWidget();
         },
       },
-      {
-        icon: 'zhongxin',
-        text: '重新生成',
-        onClick: () => {
-          this.codeEditor.launchConflictActionsEvent({
-            range: this.lineRange,
-            action: AI_RESOLVE_REGENERATE_ACTIONS,
-          });
-          this.codeEditor.hideResolveResultWidget();
-        },
-      },
     ];
   }
 
@@ -59,10 +147,16 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
 
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
-        <AiInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />
+        <WapperAiInlineResult
+          iconItems={iconResultItems}
+          isRenderThumbs={isRenderThumbs}
+          codeEditor={this.codeEditor}
+          range={this.lineRange}
+        />
       </ContentWidgetContainerPanel>
     );
   }
+
   public id(): string {
     return `${AiResolveConflictContentWidget}_${this.uid}`;
   }

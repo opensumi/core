@@ -7,9 +7,9 @@ import { Thumbs } from '../thumbs';
 import * as styles from './styles.module.less';
 
 export interface IAiInlineResultIconItemsProps {
-  icon: string;
-  text: string;
+  text: string | React.ReactNode;
   onClick: () => void;
+  icon?: string;
 }
 
 export interface IAiInlineResultProps {
