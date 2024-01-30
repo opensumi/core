@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import React, {
   useEffect,
   useState,
@@ -324,7 +324,7 @@ export const Tabs = ({ group }: ITabsProps) => {
           <div
             draggable={true}
             title={resource.title}
-            className={classnames({
+            className={cls({
               [styles.kt_editor_tab]: true,
               [styles.last_in_row]: tabMap.get(i),
               [styles.kt_editor_tab_current]: group.currentResource === resource,
@@ -387,17 +387,15 @@ export const Tabs = ({ group }: ITabsProps) => {
               e.dataTransfer.setData('uri-source-group', group.name);
             }}
           >
-            <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : classnames(resource.icon)}>
-              {' '}
-            </div>
+            <div className={tabsLoadingMap[resource.uri.toString()] ? 'loading_indicator' : cls(resource.icon)}> </div>
             <div>{resource.name}</div>
             {subname ? <div className={styles.subname}>{subname}</div> : null}
             {decoration.readOnly ? (
-              <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
+              <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
             ) : null}
             <div className={styles.tab_right}>
               <div
-                className={classnames({
+                className={cls({
                   [styles.kt_hidden]: !decoration.dirty,
                   [styles.dirty]: true,
                 })}
@@ -409,7 +407,7 @@ export const Tabs = ({ group }: ITabsProps) => {
                   group.close(resource.uri);
                 }}
               >
-                <div className={classnames(getIcon('close'), styles.kt_editor_close_icon)} />
+                <div className={cls(getIcon('close'), styles.kt_editor_close_icon)} />
               </div>
             </div>
           </div>
@@ -501,7 +499,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     return (
       <div
         ref={ref}
-        className={classnames(styles.editor_actions, className)}
+        className={cls(styles.editor_actions, className)}
         style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>

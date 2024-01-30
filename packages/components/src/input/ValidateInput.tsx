@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { IInputBaseProps, Input } from './Input';
@@ -36,7 +36,7 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
       setValidateMessage(validateInfo);
     }, [validateInfo]);
 
-    const validateClx = classNames({
+    const validateClx = cls({
       'validate-error': validateMessage && validateMessage.type === VALIDATE_TYPE.ERROR,
       'validate-warning': validateMessage && validateMessage.type === VALIDATE_TYPE.WARNING,
       'validate-info': validateMessage && validateMessage.type === VALIDATE_TYPE.INFO,
@@ -44,7 +44,7 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
 
     const renderValidateMessage = () => {
       if (validateMessage && validateMessage.message) {
-        return <div className={classNames('validate-message', validateClx, { popup })}>{validateMessage.message}</div>;
+        return <div className={cls('validate-message', validateClx, { popup })}>{validateMessage.message}</div>;
       }
     };
 
@@ -78,11 +78,11 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
     };
 
     return (
-      <div className={classNames('input-box', { popup })}>
+      <div className={cls('input-box', { popup })}>
         <Input
           type={type}
           ref={ref}
-          className={classNames(className, validateMessage, validateClx)}
+          className={cls(className, validateMessage, validateClx)}
           onChange={handleChange}
           {...restProps}
         />

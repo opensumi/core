@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 
 import { DropdownButton, DropDownProps } from '@opensumi/ide-components';
@@ -32,9 +32,10 @@ export const ToolbarActionDropdownButton = <T,>(
     selectEmitter.current.fire(value);
   }, []);
 
-  const menu = useMemo(() => (
+  const menu = useMemo(
+    () => (
       <Menu
-        className={classnames('kt-menu', style.menu)}
+        className={cls('kt-menu', style.menu)}
         selectable={false}
         motion={{ motionLeave: false, motionEnter: false }}
       >
@@ -44,7 +45,9 @@ export const ToolbarActionDropdownButton = <T,>(
           </Menu.Item>
         ))}
       </Menu>
-    ), []);
+    ),
+    [],
+  );
 
   return (
     <DropdownButton size='small' onClick={() => handleClick(firstOption.value)} overlay={menu} trigger={trigger}>

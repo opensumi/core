@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React, { CSSProperties } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
@@ -18,7 +18,7 @@ export function transformLabelWithCodicon(
   const ICON_ERROR_REGX = /\$\(([a-z.]+\/)?([a-z-]+)?(~[a-z]+)?\)/gi;
 
   const generateIconStyle = (icon?: string, styleProps?: CSSProperties | string) =>
-    typeof styleProps === 'string' ? { className: clx(icon, styleProps) } : { className: icon, style: styleProps };
+    typeof styleProps === 'string' ? { className: cls(icon, styleProps) } : { className: icon, style: styleProps };
 
   const splitLabel = label.split(SEPERATOR);
   const length = splitLabel.length;

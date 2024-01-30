@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { useInjectable } from '../../react-hooks';
@@ -69,14 +69,14 @@ export const BoxPanel: React.FC<{
         }
       }}
       {...restProps}
-      className={clsx(styles['box-panel'], className)}
+      className={cls(styles['box-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}
     >
       {arrayChildren.map((child, index) => (
         <div
           key={index}
           id={child['props']?.['data-wrapper-id']}
-          className={clsx(styles.wrapper, child['props']?.['data-wrapper-class'])}
+          className={cls(styles.wrapper, child['props']?.['data-wrapper-class'])}
           style={
             child['props']
               ? {

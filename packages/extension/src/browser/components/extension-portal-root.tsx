@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
@@ -36,7 +36,7 @@ export const PortalRoot = (props: IPortalRootProps) => {
   return (
     <OriginalComponent
       {...props.otherProps}
-      className={clx(props.otherProps?.className, getThemeTypeSelector(themeType!))}
+      className={cls(props.otherProps?.className, getThemeTypeSelector(themeType!))}
       getContainer={() => {
         const portalRoot = extensionService.getPortalShadowRoot(props.extensionId);
         return portalRoot;

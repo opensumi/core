@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import throttle from 'lodash/throttle';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -153,7 +153,7 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
   return (
     <div
       {...props}
-      className={classnames('kt-toolbar-location', props.className)}
+      className={cls('kt-toolbar-location', props.className)}
       id={'toolbar-location-' + location}
       ref={container as any}
       onContextMenu={(event: React.MouseEvent<HTMLElement>) => {

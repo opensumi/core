@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React, { useCallback, CSSProperties, FC } from 'react';
 
 import { Badge } from '@opensumi/ide-components';
@@ -36,7 +36,7 @@ const SCMProvider: FC<{
   );
 
   return (
-    <div className={clx(styles.provider, { [styles.selected]: selected })} {...restProps}>
+    <div className={cls(styles.provider, { [styles.selected]: selected })} {...restProps}>
       <div className={styles.info}>
         <div className={styles.title}>{title}&nbsp;</div>
         <div className={styles.type}>{type}&nbsp;</div>

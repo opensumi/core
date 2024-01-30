@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
@@ -49,7 +49,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
   return (
     <div
       ref={ref}
-      className={clx({
+      className={cls({
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,
       })}
@@ -88,7 +88,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         <div></div>
       ) : (
         <div
-          className={clx([getIcon('close'), styles.close_icon])}
+          className={cls([getIcon('close'), styles.close_icon])}
           onClick={(event) => {
             event.stopPropagation();
             handleClose();
@@ -109,7 +109,7 @@ export const renderAddItem = observer((props: ItemProps) => {
     <div className={styles.item_wrapper}>
       <div
         title={createTitle}
-        className={clx({
+        className={cls({
           [getIcon('plus')]: true,
           [styles.item_add]: true,
         })}
@@ -117,7 +117,7 @@ export const renderAddItem = observer((props: ItemProps) => {
       />
       <div
         title={localize('terminal.new.type')}
-        className={clx({
+        className={cls({
           [getIcon('down')]: true,
           [styles.item_more]: true,
         })}

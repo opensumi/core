@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -56,7 +56,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   return (
     <div
       id={id}
-      className={clsx(styles.tab_panel, {
+      className={cls(styles.tab_panel, {
         [styles.tab_panel_hidden]: !currentContainerId,
       })}
     >
@@ -69,7 +69,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
         return (
           <div
             key={containerId}
-            className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
+            className={cls(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
             style={currentContainerId === containerId ? panelVisible : panelInVisible}
             id={id}

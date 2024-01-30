@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React, { PropsWithChildren } from 'react';
 
 import { Modal, ModalProps } from '../modal';
@@ -41,7 +41,7 @@ export const Overlay: React.FC<PropsWithChildren<IOverlayProps>> = ({
     onCancel={onClose}
     title={title}
     getContainer={getContainer}
-    className={clsx('kt-overlay', className)}
+    className={cls('kt-overlay', className)}
     keyboard={keyboard}
     {...restProps}
   >

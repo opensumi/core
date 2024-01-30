@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import React, { PropsWithChildren } from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
@@ -158,7 +158,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
   if (props.inDropDown) {
     buttonElement = (
       <div
-        className={classnames({ 'kt-toolbar-action-btn': true, 'action-btn-in-dropdown': true })}
+        className={cls({ 'kt-toolbar-action-btn': true, 'action-btn-in-dropdown': true })}
         {...bindings}
         {...backgroundBindings}
         ref={ref as any}
@@ -182,7 +182,7 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       }
       buttonElement = (
         <div
-          className={classnames({
+          className={cls({
             'kt-toolbar-action-btn': true,
             'kt-toolbar-action-btn-button': styles.btnStyle === 'button',
             'kt-toolbar-action-btn-inline': styles.btnStyle !== 'button',

@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components/lib/button';
@@ -105,7 +105,7 @@ const WelcomeContent = (props: { contents: IViewContentDescriptor[] }) => {
                 return (
                   <a
                     key={idx}
-                    className={clsx({ disabled: node.href.startsWith('command:') && disables[index] === false })}
+                    className={cls({ disabled: node.href.startsWith('command:') && disables[index] === false })}
                     title={node.title}
                     onClick={() => openerService.open(node.href)}
                   >

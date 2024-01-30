@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
@@ -53,7 +53,7 @@ export const ToolBar = observer<Pick<React.HTMLProps<HTMLElement>, 'className'>>
   }, []);
 
   return (
-    <div className={clx(styles['tool-bar'], className)} ref={toolbarRef as any}>
+    <div className={cls(styles['tool-bar'], className)} ref={toolbarRef as any}>
       <ToolbarLocation className={styles.left} location='toolbar-left' preferences={{ noDropDown: true }} />
       <div id={styles.space1}></div>
       <ToolbarLocation className={styles.center} location='toolbar-center' preferences={{ noDropDown: true }} />
