@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Disposable, IRange } from '@opensumi/ide-core-common';
+import { Disposable, IRange, uuid } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ICacheDocumentMergeConflict, IDocumentMergeConflictDescriptor, IMergeRegion } from './types';
@@ -14,6 +14,13 @@ interface IScanMergedConflict {
   commonAncestors: TextLine[];
   splitter?: TextLine;
   endFooter?: TextLine;
+}
+
+export interface IConflictCache {
+  id: string;
+  range: monaco.Range;
+  text: string;
+  isResolved: boolean;
 }
 
 export class TextLine {
@@ -42,7 +49,9 @@ export class TextLine {
 export class CacheConflict extends Disposable {
   // @Autowired(WorkbenchEditorService)
   // private readonly editorService: WorkbenchEditorService;
-  private _conflictCaches = new Map<string, string>();
+  private _conflictTextCaches = new Map<string, string>();
+
+  private _conflictRangeCaches = new Map<string, IConflictCache[]>();
 
   scanDocument(document: monaco.editor.ITextModel) {
     // Scan each line in the document, we already know there is at least a <<<<<<< and
@@ -53,7 +62,7 @@ export class CacheConflict extends Disposable {
 
     let currentConflict: IScanMergedConflict | null = null;
     const conflictDescriptors: IDocumentMergeConflictDescriptor[] = [];
-    const cacheConflictDescriptors = this._conflictCaches.get(document.uri.toString());
+    const cacheConflictDescriptors = this._conflictTextCaches.get(document.uri.toString());
 
     for (let i = 0; i < document.getLineCount(); i++) {
       const line = new TextLine(document, i + 1);
@@ -102,20 +111,49 @@ export class CacheConflict extends Disposable {
       }
     }
     if (!cacheConflictDescriptors && conflictDescriptors.length) {
-      this._conflictCaches.set(document.uri.toString(), document.getValue());
+      this._conflictTextCaches.set(document.uri.toString(), document.getValue());
+      const conflictRanges: IConflictCache[] = [];
+      conflictDescriptors.filter(Boolean).forEach((descriptor) => {
+        const range = descriptor.range;
+        conflictRanges.push({
+          id: uuid(),
+          range,
+          text: document.getValueInRange(range),
+          isResolved: false,
+        });
+      });
+      this._conflictRangeCaches.set(document.uri.toString(), conflictRanges);
     }
 
     return conflictDescriptors?.filter(Boolean).map((descriptor) => new DocumentMergeConflict(descriptor));
   }
-  getConflict(uri: string) {
-    return this._conflictCaches.get(uri);
+  getConflictText(uri: string) {
+    return this._conflictTextCaches.get(uri);
   }
-  deleteConflict(uri: string) {
-    this._conflictCaches.delete(uri);
+  getAllConflictsByUri(uri: string) {
+    return this._conflictRangeCaches.get(uri);
   }
 
+  getAllConflicts() {
+    return this._conflictRangeCaches;
+  }
+
+  setConflictResolved(uri: string, id: string) {
+    const conflictRanges = this._conflictRangeCaches.get(uri);
+    if (conflictRanges) {
+      const conflictRange = conflictRanges.find((item) => item.id === id);
+      if (conflictRange) {
+        conflictRange.isResolved = true;
+      }
+    }
+  }
+
+  deleteConflictText(uri: string) {
+    this._conflictTextCaches.delete(uri);
+  }
   dispose() {
-    this._conflictCaches.clear();
+    this._conflictTextCaches.clear();
+    this._conflictRangeCaches.clear();
   }
 }
 

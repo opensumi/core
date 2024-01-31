@@ -2,7 +2,8 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
-import { AiNativeConfigService, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, ClientAppContribution, MergeConflictRT } from '@opensumi/ide-core-browser';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
   Disposable,
   Schemes,
@@ -44,7 +45,7 @@ import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { CacheConflict, DocumentMergeConflict } from './cache-conflicts';
+import { CacheConflict, DocumentMergeConflict, IConflictCache } from './cache-conflicts';
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
 import { CommitType } from './types';
 export namespace MERGE_CONFLICT {
@@ -127,6 +128,12 @@ interface ICacheResolvedConflicts extends IValidEditOperation {
   conflictText: string;
 }
 
+interface ICacheAIResolvedConflicts {
+  id: string;
+  range: IRange;
+  text: string;
+}
+
 interface IRequestCancel {
   id: string;
   type: 'cancel';
@@ -178,7 +185,6 @@ class WidgetFactory implements IWidgetFactory {
   }
 }
 
-// 内置 MergeConflict 插件 以支持AI交互
 @Domain(CommandContribution, ClientAppContribution)
 export class MergeConflictContribution extends Disposable implements CommandContribution, ClientAppContribution {
   @Autowired(INJECTOR_TOKEN)
@@ -197,15 +203,21 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private readonly cacheConflicts: CacheConflict;
 
   @Autowired(AiBackSerivcePath)
-  public aiBackService: IAiBackService;
+  private aiBackService: IAiBackService;
 
   @Autowired(CommandService)
-  public commandService: CommandService;
+  private commandService: CommandService;
+
+  @Autowired(MergeConflictReportService)
+  private readonly mergeConflictReportService: MergeConflictReportService;
 
   private resolveResultWidgetManager: IWidgetFactory;
-  private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
   private stopWidgetManager: IWidgetFactory;
+
+  private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
   private cacheResolvedConflicts: Map<string, Map<string, ICacheResolvedConflicts>> = new Map();
+
+  private cacheAIResolvedConflicts: Map<string, Map<string, IConflictCache>> = new Map();
 
   private readonly _onRequestCancel = new Emitter<IRequestCancel>();
   public readonly onRequestCancel: Event<IRequestCancel> = this._onRequestCancel.event;
@@ -213,18 +225,34 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private readonly _onRequestsCancel = new Emitter<IRequestCancel[]>();
   public readonly onRequestsCancel: Event<IRequestCancel[]> = this._onRequestsCancel.event;
 
+  // for widget
   private editor: ICodeEditor;
+  // for codelens loading
   private loadingRange: Set<IRange> = new Set();
+  // for report
+  private currentRelationId: string;
+
+  private _reportData: MergeConflictRT = {
+    conflictPointNum: 0,
+    useAiConflictPointNum: 0,
+    receiveNum: 0,
+    clickNum: 0,
+    isClickResolveAll: false,
+    editorMode: 'traditional',
+  };
+
   constructor() {
     super();
   }
 
+  dispose() {
+    super.dispose();
+    this.cancelRequestToken();
+    this.mergeConflictReportService.dispose();
+    this.cacheConflicts.dispose();
+  }
+
   private initListenEvent(): void {
-    this.disposables.push(
-      this.editor.onDidChangeModel(() => {
-        this.updateAllWidgets();
-      }),
-    );
     if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       this.disposables.push(
         this.editor.onDidChangeModelContent(({ changes, eol }) => {
@@ -294,9 +322,53 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           });
           this.updateAllWidgets();
         }),
+        this.editor.onDidChangeModel(() => {
+          this.updateAllWidgets();
+          this.updateReportData();
+        }),
       );
     }
   }
+
+  private init() {
+    this.initListenEvent();
+    if (!this.currentRelationId) {
+      this.currentRelationId = this.mergeConflictReportService.startPoint();
+    }
+  }
+
+  /* report */
+  get reportData() {
+    return this._reportData;
+  }
+
+  set reportData(data: Partial<MergeConflictRT>) {
+    this._reportData = {
+      ...this._reportData,
+      ...data,
+    };
+    // console.log('report Data AI ==>', this._reportData);
+  }
+
+  private updateReportData() {
+    const allConflictCache = this.cacheConflicts.getAllConflicts();
+    let conflictPointNum = 0;
+    let useAiConflictPointNum = 0;
+    for (const [, cacheConflicts] of allConflictCache.entries()) {
+      conflictPointNum += cacheConflicts.length;
+      cacheConflicts.forEach((cacheConflict) => {
+        if (cacheConflict.isResolved) {
+          useAiConflictPointNum += 1;
+        }
+      });
+    }
+    this.reportData = {
+      conflictPointNum,
+      useAiConflictPointNum,
+    };
+  }
+
+  /* report */
   getAllDiffRanges() {
     const rangeLines: IRange[] = [];
     for (const [, value] of this.getCacheResolvedConflicts().entries()) {
@@ -317,6 +389,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     return this.editor.getModel()!;
   }
 
+  /* cache widget */
   private getCacheResolvedConflicts(currentUri?: string) {
     if (!currentUri) {
       currentUri = this.getModel().uri.toString();
@@ -357,6 +430,27 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       this.cacheResolvedConflicts.set(currentUri, cacheConflicts);
     }
   }
+  /* cache ai resolve */
+  private getCacheAIResolvedConflicts(currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+    const cache = this.cacheAIResolvedConflicts.get(currentUri);
+    if (cache) {
+      return cache;
+    } else {
+      this.cacheAIResolvedConflicts.set(currentUri, new Map());
+      return this.cacheAIResolvedConflicts.get(currentUri)!;
+    }
+  }
+
+  private setCacheAIResolvedConflicts(id: string, cacheResolvedConflict: IConflictCache, currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+    const cache = this.getCacheAIResolvedConflicts(currentUri);
+    cache.set(id, cacheResolvedConflict);
+  }
 
   private toLineRange(range: IRange, id?: string) {
     const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
@@ -393,12 +487,15 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     this.disposables.push(
       commands.registerCommand(MERGE_CONFLICT.AI_ACCEPT, {
         execute: async (type: CommitType, conflict: DocumentMergeConflict) => {
+          this.reportData = {
+            clickNum: this.reportData.clickNum! + 1,
+          };
           this.conflictAIAccept(conflict);
         },
       }),
       commands.registerCommand(MERGE_CONFLICT.ALL_RESET, {
         execute: async (uri: Uri) => {
-          const content = this.cacheConflicts.getConflict(uri.toString());
+          const content = this.cacheConflicts.getConflictText(uri.toString());
           this.cancelRequestToken();
           if (content) {
             if (this.editorService.currentEditor?.currentUri?.toString() === uri.toString()) {
@@ -406,7 +503,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
               if (editor) {
                 const model = editor.getModel();
                 model?.setValue(content);
-                this.cacheConflicts.deleteConflict(uri.toString());
+                this.cacheConflicts.deleteConflictText(uri.toString());
                 this.cleanAllCache();
               }
             }
@@ -420,6 +517,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           if (!document) {
             return Promise.resolve();
           }
+          this.reportData = {
+            isClickResolveAll: true,
+          };
           //  一个个解决
           await this.acceptAllConflict();
         },
@@ -457,7 +557,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
   }
 
-  contribute(editor: IEditor): IDisposable {
+  private contribute(editor: IEditor) {
     if (!editor) {
       return this;
     }
@@ -475,9 +575,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         this.injector,
       );
       this.stopWidgetManager = new WidgetFactory(StopWidget, this as unknown as ResultCodeEditor, this.injector);
-      this.initListenEvent();
+      this.init();
     }
-    return this;
   }
 
   async provideCodeLens(
@@ -523,7 +622,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       lineRange = lineRan!;
     }
     const range = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
-
     const skeletonDecorationDispose = this.renderSkeletonDecoration(lineRange, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background_black,
@@ -549,6 +647,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
+      this.mergeConflictReportService.reportPoint(this.currentRelationId, this.reportData);
+
       const { text, lineNumber, lines } = this.resolveEndLineEOL(resolveConflictResult.data);
       const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
       const endColumn = lines[lines.length - 1].length + 1;
@@ -578,13 +678,26 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       const newLineRange = this.toLineRange(newRange, lineRange?.id);
       this.resolveResultWidgetManager.addWidget(newLineRange);
       // 记录每一次解决的位置
+      const oldCacheConflict = this.getCacheResolvedConflicts().get(newLineRange.id);
+      this.setCacheResolvedConflict(newLineRange.id, {
+        ...validEditOperation[0],
+        newRange,
+        id: newLineRange.id,
+        // 保留原始冲突文本
+        conflictText: oldCacheConflict?.conflictText || validEditOperation[0].text,
+      });
       if (!isRegenerate) {
-        this.setCacheResolvedConflict(newLineRange.id, {
-          ...validEditOperation[0],
-          newRange,
-          id: newLineRange.id,
-          conflictText: validEditOperation[0].text,
-        });
+        // 记录处理数量 非重新生成 conflict 存在
+        const uri = this.getModel().uri.toString();
+        const cacheConflictRanges = this.cacheConflicts.getAllConflictsByUri(uri);
+        if (cacheConflictRanges) {
+          const cacheConflict = cacheConflictRanges.find((cacheConflict) =>
+            cacheConflict.range.equalsRange(conflict!.range),
+          );
+          if (cacheConflict && !cacheConflict.isResolved) {
+            this.cacheConflicts.setConflictResolved(uri, cacheConflict.id);
+          }
+        }
       }
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
