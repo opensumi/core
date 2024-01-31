@@ -146,7 +146,7 @@ export const aiNativeBorderColor = registerColor(
   'ai.native.border.color',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.08)),
-    light: new Color(new RGBA(21, 27, 33, 0.12)),
+    light: new Color(new RGBA(21, 27, 33, 0.08)),
     hcDark: null,
     hcLight: null,
   },
@@ -213,7 +213,7 @@ export const aiNativeRceBackground = registerColor(
 
 export const aiNativeCharInputBackground = registerColor(
   'ai.native.charinput.background',
-  { dark: new Color(new RGBA(0, 0, 0, 0.25)), light: '#fff', hcDark: null, hcLight: null },
+  { dark: new Color(new RGBA(255, 255, 255, 0.08)), light: '#fff', hcDark: null, hcLight: null },
   '',
   true,
 );
