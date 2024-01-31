@@ -2295,7 +2295,6 @@ __metadata:
     react-custom-scrollbars: ^4.2.1
     react-dom: ^18.2.0
     react-is: ^16.8.6
-    react-sticky: ^6.0.3
     react-window: ^1.8.5
     resize-observer-polyfill: 1.5.1
     strip-json-comments: 3.0.1
@@ -16667,7 +16666,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"raf@npm:^3.1.0, raf@npm:^3.3.0, raf@npm:^3.4.0, raf@npm:^3.4.1":
+"raf@npm:^3.1.0, raf@npm:^3.4.0, raf@npm:^3.4.1":
   version: 3.4.1
   resolution: "raf@npm:3.4.1"
   dependencies:
@@ -17040,19 +17039,6 @@ __metadata:
     react: 16.x
     react-dom: 16.x
   checksum: 69590a6b6c9b42b5a6c2b6d574c73c1e3dcf69a2cbe50c888e6ca0bab22adf25aeb0dc4a2ad5ca5f6c22c828d0167827941bb033b9adc9cfae6177e421d97380
-  languageName: node
-  linkType: hard
-
-"react-sticky@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "react-sticky@npm:6.0.3"
-  dependencies:
-    prop-types: ^15.5.8
-    raf: ^3.3.0
-  peerDependencies:
-    react: ">=15"
-    react-dom: ">=15"
-  checksum: 7c270da6990b57b366cf7f34472039734fd3981c8ee1b0b6e82db58eef8ed1e06d7a69460c5787bd904c07b7753984d699e2394aab39a8c722bb3630ef6dde32
   languageName: node
   linkType: hard
 
