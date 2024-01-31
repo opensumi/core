@@ -33,7 +33,7 @@ import {
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
-import * as styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
+import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
@@ -91,6 +91,9 @@ const cssStyle = `
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
     -webkit-user-select: none;
+  }
+  .codicon-modifier-spin {
+    color: #00f6ff !important;
   }
 }
 `;
