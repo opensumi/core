@@ -72,20 +72,6 @@ export interface ChatCompletionRequestMessage {
   name?: string;
 }
 
-export enum AISerivceType {
-  SearchDoc = 'searchDoc',
-  SearchCode = 'searchCode',
-  Sumi = 'sumi',
-  GPT = 'chat',
-  Explain = 'explain',
-  Run = 'run',
-  Test = 'test',
-  Optimize = 'optimize',
-  Generate = 'generate',
-  Completion = 'completion',
-  Agent = 'agent',
-}
-
 export enum AiNativeSettingSectionsId {
   INLINE_CHAT_AUTO_VISIBLE = 'inlineChat.auto.visible',
 }
@@ -311,6 +297,7 @@ export const IChatAgentService = Symbol('IChatAgentService');
 
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
+  readonly onDidSendMessage: Event<IChatContent>;
   registerAgent(agent: IChatAgent): IDisposable;
   invokeAgent(
     id: string,
@@ -329,6 +316,7 @@ export interface IChatAgentService {
   getFollowups(id: string, sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getSampleQuestions(id: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getAllSampleQuestions(): Promise<IChatReplyFollowup[]>;
+  sendMessage(chunk: IChatContent): void;
 }
 
 export interface IChatAgent extends IChatAgentData {

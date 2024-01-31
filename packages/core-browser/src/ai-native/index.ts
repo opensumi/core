@@ -12,6 +12,8 @@ export enum AISerivceType {
   Optimize = 'optimize',
   Generate = 'generate',
   Completion = 'completion',
+  Agent = 'agent',
+  MergeConflict = 'mergeConflict',
 }
 
 export const IAiInlineChatService = Symbol('IAiInlineChatService');

@@ -16,27 +16,27 @@ export interface CommonLogInfo {
   insert: boolean;
 }
 
-export interface QuestionInfo extends Partial<CommonLogInfo> {
+export interface QuestionRT extends Partial<CommonLogInfo> {
   isRetry: boolean;
   isStop: boolean;
 }
 
-export interface CodeInfo extends Partial<CommonLogInfo> {
+export interface CodeRT extends Partial<CommonLogInfo> {
   isReceive: boolean;
   isDrop: boolean;
 }
 
-export interface GenerateInfo extends Partial<CommonLogInfo> {
+export interface GenerateRT extends Partial<CommonLogInfo> {
   fileCount: number;
   requirment: string;
 }
 
-export interface CommandInfo extends Partial<CommonLogInfo> {
+export interface CommandRT extends Partial<CommonLogInfo> {
   useCommand: boolean;
   useCommandSuccess: boolean;
 }
 
-export interface RunInfo extends Partial<CommonLogInfo> {
+export interface RunRT extends Partial<CommonLogInfo> {
   runSuccess: boolean;
 }
 
@@ -50,18 +50,34 @@ export interface CompletionRT extends Partial<CommonLogInfo> {
   renderingTime?: number;
 }
 
+export interface MergeConflictRT extends Partial<CommonLogInfo> {
+  // 解决冲突模式 （3-way 或 传统模式）
+  editorMode: '3way' | 'traditional';
+  // 冲突点数量（仅包含 AI 冲突点）
+  conflictPointNum: number;
+  // 使用了 ai 处理的冲突点数量
+  useAiConflictPointNum: number;
+  // 被用户采纳了的冲突点数量
+  receiveNum: number;
+  // 点击了 ai 解决冲突的数量
+  clickNum: number;
+  // 是否点击一键解决
+  isClickResolveAll: boolean;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
-  | ({ type: AISerivceType.GPT } & QuestionInfo)
-  | ({ type: AISerivceType.Explain } & QuestionInfo)
-  | ({ type: AISerivceType.SearchCode } & QuestionInfo)
-  | ({ type: AISerivceType.SearchDoc } & QuestionInfo)
-  | ({ type: AISerivceType.Test } & QuestionInfo)
-  | ({ type: AISerivceType.Optimize } & CodeInfo)
-  | ({ type: AISerivceType.Generate } & GenerateInfo)
-  | ({ type: AISerivceType.Sumi } & CommandInfo)
-  | ({ type: AISerivceType.Run } & RunInfo)
-  | ({ type: AISerivceType.Completion } & CompletionRT);
+  | ({ type: AISerivceType.GPT } & QuestionRT)
+  | ({ type: AISerivceType.Explain } & QuestionRT)
+  | ({ type: AISerivceType.SearchCode } & QuestionRT)
+  | ({ type: AISerivceType.SearchDoc } & QuestionRT)
+  | ({ type: AISerivceType.Test } & QuestionRT)
+  | ({ type: AISerivceType.Optimize } & CodeRT)
+  | ({ type: AISerivceType.Generate } & GenerateRT)
+  | ({ type: AISerivceType.Sumi } & CommandRT)
+  | ({ type: AISerivceType.Run } & RunRT)
+  | ({ type: AISerivceType.Completion } & CompletionRT)
+  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 

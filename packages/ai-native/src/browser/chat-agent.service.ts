@@ -14,6 +14,7 @@ import {
   IChatAgentCommand,
   IChatFollowup,
   IChatMessageStructure,
+  IChatContent,
 } from '../common';
 
 import { AiChatService } from './ai-chat.service';
@@ -24,6 +25,9 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   private readonly _onDidChangeAgents = new Emitter<void>();
   readonly onDidChangeAgents = this._onDidChangeAgents.event;
+
+  private readonly _onDidSendMessage = new Emitter<IChatContent>();
+  public readonly onDidSendMessage = this._onDidSendMessage.event;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -143,6 +147,10 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
       }),
     );
     return flatMap(result);
+  }
+
+  sendMessage(chunk: IChatContent): void {
+    this._onDidSendMessage.fire(chunk);
   }
 
   parseMessage(value: string, currentAgentId?: string) {

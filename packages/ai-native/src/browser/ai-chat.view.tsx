@@ -13,10 +13,11 @@ import {
 import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
+import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native';
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
+import { IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -26,7 +27,7 @@ import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
-import { ChatReply } from './components/ChatReply';
+import { ChatNotify, ChatReply } from './components/ChatReply';
 import { Markdown } from './components/Markdown';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
@@ -270,6 +271,29 @@ export const AiChatView = observer(() => {
     });
     return () => dispose.dispose();
   }, [messageListData, loading]);
+
+  React.useEffect(() => {
+    const disposer = chatAgentService.onDidSendMessage((chunk) => {
+      const relationId = aiReporter.start(AISerivceType.Agent, {
+        msgType: AISerivceType.Agent,
+        message: '',
+      });
+
+      const notifyMessage = createMessageByAI(
+        {
+          id: uuid(6),
+          relationId,
+          text: <ChatNotify relationId={relationId} chunk={chunk} />,
+        },
+        styles.chat_notify,
+      );
+      setMessageListData((msgList) => [...msgList, notifyMessage]);
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
+    return () => disposer.dispose();
+  }, []);
 
   const handleAgentReply = React.useCallback(async (value: IChatMessageStructure) => {
     const { message, agentId, command } = value;

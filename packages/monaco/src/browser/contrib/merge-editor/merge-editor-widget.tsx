@@ -79,6 +79,11 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     );
   }
 
+  dispose(): void {
+    super.dispose();
+    this.mergeEditorService.dispose();
+  }
+
   async open(args: IOpenMergeEditorArgs): Promise<void> {
     const { ancestor, input1, input2, output } = args;
     this.mergeEditorService.setNutritionAndLaunch(args);
