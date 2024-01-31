@@ -311,6 +311,7 @@ export const IChatAgentService = Symbol('IChatAgentService');
 
 export interface IChatAgentService {
   readonly onDidChangeAgents: Event<void>;
+  readonly onDidSendMessage: Event<IChatContent>;
   registerAgent(agent: IChatAgent): IDisposable;
   invokeAgent(
     id: string,
@@ -329,6 +330,7 @@ export interface IChatAgentService {
   getFollowups(id: string, sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getSampleQuestions(id: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getAllSampleQuestions(): Promise<IChatReplyFollowup[]>;
+  sendMessage(chunk: IChatContent): void;
 }
 
 export interface IChatAgent extends IChatAgentData {

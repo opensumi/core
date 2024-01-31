@@ -26,7 +26,7 @@ import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
 import { ChatMoreActions } from './components/ChatMoreActions';
-import { ChatReply } from './components/ChatReply';
+import { ChatNotify, ChatReply } from './components/ChatReply';
 import { Markdown } from './components/Markdown';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
@@ -286,6 +286,29 @@ export const AiChatView = observer(() => {
     });
     return () => dispose.dispose();
   }, [messageListData, loading]);
+
+  React.useEffect(() => {
+    const disposer = chatAgentService.onDidSendMessage((chunk) => {
+      const relationId = aiReporter.start(AISerivceType.Agent, {
+        msgType: AISerivceType.Agent,
+        message: '',
+      });
+
+      const notifyMessage = createMessageByAI(
+        {
+          id: uuid(6),
+          relationId,
+          text: <ChatNotify relationId={relationId} chunk={chunk} />,
+        },
+        styles.chat_notify,
+      );
+      setMessageListData((msgList) => [...msgList, notifyMessage]);
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
+    return () => disposer.dispose();
+  }, []);
 
   const handleAgentReply = React.useCallback(async (value: IChatMessageStructure) => {
     const { message, agentId, command } = value;
@@ -627,7 +650,11 @@ const AISearch = async (
           renderContent={(content) => (
             <div className={styles.ai_chat_search_container}>
               <div className={styles.ai_response_text}>
-                <CodeBlockWrapper text={content} relationId={relationId} renderText={(text) => <ChatMarkdown content={text} />} />
+                <CodeBlockWrapper
+                  text={content}
+                  relationId={relationId}
+                  renderText={(text) => <ChatMarkdown content={text} />}
+                />
               </div>
             </div>
           )}
@@ -700,7 +727,11 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          {RenderAnswer ? <RenderAnswer input={input} relationId={relationId} /> : <CodeBlockWrapper text={input} relationId={relationId} />}
+          {RenderAnswer ? (
+            <RenderAnswer input={input} relationId={relationId} />
+          ) : (
+            <CodeBlockWrapper text={input} relationId={relationId} />
+          )}
         </ChatMoreActions>
       ),
       className: styles.chat_with_more_actions,

@@ -17,17 +17,18 @@ import {
   IAIReporter,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { FileType, URI } from '@opensumi/ide-core-common';
+import { Deferred, FileType, URI } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { MarkdownString, IMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { IChatAgentService, IChatResponseProgressFileTreeData } from '../../common';
+import { IChatAgentService, IChatComponent, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { ChatRequestModel } from '../chat-model';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
-import { IChatAgentViewService } from '../types';
+import { IChatAgentViewService, IChatComponentConfig } from '../types';
 
 import * as styles from './components.module.less';
+import { Loading } from './Loading';
 import { Markdown } from './Markdown';
 import { Thinking, ThinkingResult } from './Thinking';
 
@@ -117,6 +118,32 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
   );
 };
 
+const ComponentRender = (props: { component: string; value?: unknown }) => {
+  const chatAgentViewService = useInjectable<IChatAgentViewService>(IChatAgentViewService);
+  const [node, setNode] = useState<React.JSX.Element | null>(null);
+
+  useEffect(() => {
+    const config = chatAgentViewService.getChatComponent(props.component);
+    if (config) {
+      const { component: Component, initialProps } = config;
+      setNode(<Component {...initialProps} value={props.value} />);
+      return;
+    }
+    setNode(
+      <div>
+        <Loading />
+        <span style={{ marginLeft: 4 }}>正在加载组件</span>
+      </div>,
+    );
+    const deferred = chatAgentViewService.getChatComponentDeferred(props.component)!;
+    deferred.promise.then(({ component: Component, initialProps }) => {
+      setNode(<Component {...initialProps} value={props.value} />);
+    });
+  }, []);
+
+  return node;
+};
+
 export const ChatReply = (props: IChatReplyProps) => {
   const { relationId, request, startTime = 0, onRegenerate } = props;
 
@@ -127,7 +154,6 @@ export const ChatReply = (props: IChatReplyProps) => {
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const chatAgentViewService = useInjectable<IChatAgentViewService>(IChatAgentViewService);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;
 
@@ -190,15 +216,7 @@ export const ChatReply = (props: IChatReplyProps) => {
     </div>
   );
 
-  const renderComponent = (componentId: string, value: unknown) => {
-    const config = chatAgentViewService.getChatComponent(componentId);
-    if (!config) {
-      return <div>组件不存在</div>;
-    }
-    const { component: Component, initialProps } = config;
-
-    return <Component {...initialProps} value={value} />;
-  };
+  const renderComponent = (componentId: string, value: unknown) => <ComponentRender component={componentId} value={value} />;
 
   const contentNode = React.useMemo(
     () =>
@@ -272,3 +290,13 @@ export const ChatReply = (props: IChatReplyProps) => {
     </ThinkingResult>
   );
 };
+
+interface IChatNotifyProps {
+  relationId: string;
+  chunk: IChatContent;
+}
+export const ChatNotify = (props: IChatNotifyProps) => (
+    <ThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
+      <Markdown markdown={props.chunk.content} relationId={props.relationId} />
+    </ThinkingResult>
+  );

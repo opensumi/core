@@ -15,6 +15,7 @@ interface ITinkingProps {
   status?: EMsgStreamStatus;
   hasMessage?: boolean;
   message?: string;
+  regenerateDisabled?: boolean;
   onRegenerate?: () => void;
   sessionId?: string;
   onStop?: () => void;
@@ -66,7 +67,15 @@ export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessa
   );
 };
 
-export const ThinkingResult = ({ children, message, status, onRegenerate, sessionId, hasMessage }: ITinkingProps) => {
+export const ThinkingResult = ({
+  children,
+  message,
+  status,
+  onRegenerate,
+  sessionId,
+  hasMessage,
+  regenerateDisabled,
+}: ITinkingProps) => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
@@ -105,7 +114,7 @@ export const ThinkingResult = ({ children, message, status, onRegenerate, sessio
       <div className={styles.thinking_container}>
         <div className={styles.bottom_container}>
           <div className={styles.reset}>
-            {isRenderRegenerate ? (
+            {isRenderRegenerate && !regenerateDisabled ? (
               <EnhanceIcon
                 icon={'refresh'}
                 wrapperClassName={styles.text_btn}

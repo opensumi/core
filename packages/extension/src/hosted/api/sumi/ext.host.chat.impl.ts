@@ -39,6 +39,13 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
     return agent.apiAgent;
   }
 
+  sendMessage(extension: IExtensionDescription, chunk: sumi.ChatAgentContent) {
+    this.proxy.$sendMessage({
+      kind: 'content',
+      content: chunk.content,
+    });
+  }
+
   async $invokeAgent(
     handle: number,
     request: IChatAgentRequest,
@@ -74,7 +81,7 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
         new Progress<sumi.ChatAgentProgress>((progress) => {
           throwIfDone();
 
-          const convertedProgress = convertProgress(progress);
+          const convertedProgress = convertProgress(progress, agent.extension);
           if (!convertedProgress) {
             this.logger.error('Unknown progress type: ' + JSON.stringify(progress));
             return;
@@ -90,7 +97,7 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
                 return; /* Cancelled */
               }
               const [progressHandle, progressContent] = res;
-              const convertedContent = convertProgress(progressContent);
+              const convertedContent = convertProgress(progressContent, agent.extension);
               if (!convertedContent) {
                 this.logger.error('Unknown progress type: ' + JSON.stringify(progressContent));
                 return;
@@ -360,10 +367,16 @@ export function createChatApiFactory(extension: IExtensionDescription, extHostCh
     createChatAgent(name: string, handler: sumi.ChatAgentHandler) {
       return extHostChatAgents.createChatAgent(extension, name, handler);
     },
+    sendMessage(chunk: sumi.ChatAgentContent) {
+      return extHostChatAgents.sendMessage(extension, chunk);
+    },
   };
 }
 
-export function convertProgress(progress: sumi.ChatAgentProgress): IChatProgressChunk | undefined {
+export function convertProgress(
+  progress: sumi.ChatAgentProgress,
+  extension: IExtensionDescription,
+): IChatProgressChunk | undefined {
   if ('placeholder' in progress && 'resolvedContent' in progress) {
     return { content: progress.placeholder, kind: 'asyncContent' };
   } else if ('markdownContent' in progress) {
@@ -376,7 +389,11 @@ export function convertProgress(progress: sumi.ChatAgentProgress): IChatProgress
   } else if ('treeData' in progress) {
     return { treeData: progress.treeData, kind: 'treeData' };
   } else if ('component' in progress) {
-    return { component: progress.component, value: progress.value, kind: 'component' };
+    return {
+      component: `${extension.identifier.value}:${progress.component}`,
+      value: progress.value,
+      kind: 'component',
+    };
   } else {
     return undefined;
   }

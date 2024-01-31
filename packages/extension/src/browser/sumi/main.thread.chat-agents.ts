@@ -5,6 +5,7 @@ import {
   IChatFollowup,
   IChatTreeData,
   IChatReplyFollowup,
+  IChatContent,
 } from '@opensumi/ide-ai-native/lib/common';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Deferred, IMarkdownString } from '@opensumi/ide-core-common';
@@ -151,6 +152,13 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
       command: param.command,
       message: param.prompt,
     });
+  }
+
+  $sendMessage(chunk: IChatContent) {
+    if (!this.chatAgentService) {
+      return;
+    }
+    this.chatAgentService.sendMessage(chunk);
   }
 
   dispose(): void {
