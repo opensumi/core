@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AISerivceType, AiNativeConfigService, IAIReporter, MergeConflictRT } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 
+import { AISerivceType, AiNativeConfigService, IAIReporter, MergeConflictRT } from './index';
 
 @Injectable()
 export class MergeConflictReportService extends Disposable {
