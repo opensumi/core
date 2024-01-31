@@ -91,19 +91,8 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: this.provideActionsItems,
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
-        if (actionType === ACCEPT_CURRENT_ACTIONS) {
-          this.launchConflictActionsEvent({
-            range,
-            action: ACCEPT_CURRENT_ACTIONS,
-          });
-        }
-
-        if (actionType === IGNORE_ACTIONS) {
-          this.launchConflictActionsEvent({ range, action: IGNORE_ACTIONS });
-        }
-
-        if (actionType === APPEND_ACTIONS) {
-          this.launchConflictActionsEvent({ range, action: APPEND_ACTIONS });
+        if (actionType === ACCEPT_CURRENT_ACTIONS || actionType === IGNORE_ACTIONS || actionType === APPEND_ACTIONS) {
+          this.launchConflictActionsEvent({ range, action: actionType });
         }
       },
     });

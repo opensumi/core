@@ -10,6 +10,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { message } from '@opensumi/ide-core-browser/lib/components';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
 import { URI, runWhenIdle } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
@@ -48,6 +49,9 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
+  @Autowired(MergeConflictReportService)
+  private readonly mergeConflictReportService: MergeConflictReportService;
+
   private currentView: CurrentCodeEditor;
   private resultView: ResultCodeEditor;
   private incomingView: IncomingCodeEditor;
@@ -74,6 +78,7 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
 
   private nutrition: IOpenMergeEditorArgs | undefined;
+  private currentRelationId: string;
 
   constructor() {
     super();
@@ -119,6 +124,10 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
     );
   }
 
+  public getRTRelationId(): string {
+    return this.currentRelationId;
+  }
+
   public setNutritionAndLaunch(data: IOpenMergeEditorArgs): void {
     this.nutrition = data;
     this._onDidInputNutrition.fire(data);
@@ -133,9 +142,28 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       return;
     }
 
-    this.currentView = this.injector.get(CurrentCodeEditor, [current, this.monacoService, this.injector]);
-    this.resultView = this.injector.get(ResultCodeEditor, [result, this.monacoService, this.injector]);
-    this.incomingView = this.injector.get(IncomingCodeEditor, [incoming, this.monacoService, this.injector]);
+    if (!this.currentRelationId) {
+      this.currentRelationId = this.mergeConflictReportService.startPoint('3way');
+    }
+
+    this.currentView = this.injector.get(CurrentCodeEditor, [
+      current,
+      this.monacoService,
+      this.injector,
+      this.currentRelationId,
+    ]);
+    this.resultView = this.injector.get(ResultCodeEditor, [
+      result,
+      this.monacoService,
+      this.injector,
+      this.currentRelationId,
+    ]);
+    this.incomingView = this.injector.get(IncomingCodeEditor, [
+      incoming,
+      this.monacoService,
+      this.injector,
+      this.currentRelationId,
+    ]);
 
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
     this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
@@ -159,6 +187,8 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
     this.stickinessConnectManager.dispose();
     this.actionsManager.dispose();
     this.loadingDispose.dispose();
+    this.mergeConflictReportService.dispose();
+    this.currentRelationId = '';
   }
 
   public async acceptLeft(isIgnoreAi = false): Promise<void> {
@@ -233,6 +263,33 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
         return;
       }
 
+      const model = this.resultView.getModel();
+
+      const allRanges = this.resultView.getAllDiffRanges();
+      // 使用了 ai 冲突点的数量
+      const useAiConflictPointNum = allRanges.filter(
+        (range) => range.getIntelligentStateModel().isComplete === true,
+      ).length;
+      let receiveNum = 0;
+
+      // 生成之后没有做二次修改才算采纳
+      allRanges
+        .filter((range) => range.isAiConflictPoint && range.getIntelligentStateModel().isComplete)
+        .forEach((range) => {
+          const intelligentStateModel = range.getIntelligentStateModel();
+          const preAnswerCode = intelligentStateModel.answerCode;
+          const currentCode = model!.getValueInRange(range.toRange()) || '';
+
+          if (preAnswerCode.trim() === currentCode.trim()) {
+            receiveNum += 1;
+          }
+        });
+
+      this.mergeConflictReportService.reportPoint(this.currentRelationId, {
+        useAiConflictPointNum,
+        receiveNum,
+      });
+
       /**
        * 将 result view editor 的文本直接覆写 output uri 的磁盘文件
        */
@@ -270,6 +327,8 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   }
 
   public async handleAiResolveConflict(): Promise<void> {
+    this.mergeConflictReportService.reportPoint(this.currentRelationId, { isClickResolveAll: true });
+
     this.listenIntelligentLoadingChange();
 
     runWhenIdle(() => {

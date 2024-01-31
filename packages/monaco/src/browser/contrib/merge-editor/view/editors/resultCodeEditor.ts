@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 
-import { Autowired, Injectable, Injector } from '@opensumi/di';
+import { Autowired, Injectable, Injector, Optional } from '@opensumi/di';
 import {
   AINativeConfigService,
   CancellationToken,
@@ -10,6 +10,7 @@ import {
   MonacoService,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
 import { AIBackSerivcePath, IAIBackService, IAIBackServiceResponse } from '@opensumi/ide-core-common';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
@@ -108,6 +109,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
+  @Autowired(MergeConflictReportService)
+  private readonly mergeConflictReportService: MergeConflictReportService;
+
   private readonly _onDidChangeContent = new Emitter<void>();
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
@@ -136,8 +140,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
-  constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
-    super(container, monacoService, injector);
+  constructor(
+    container: HTMLDivElement,
+    monacoService: MonacoService,
+    injector: Injector,
+    @Optional() relationId: string,
+  ) {
+    super(container, monacoService, injector, relationId);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
     this.initListenEvent();
 
@@ -720,38 +729,20 @@ export class ResultCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: () => this.provideActionsItems(diffRanges),
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
-        if (actionType === REVOKE_ACTIONS) {
+        if (
+          actionType === REVOKE_ACTIONS ||
+          actionType === ACCEPT_COMBINATION_ACTIONS ||
+          actionType === AI_RESOLVE_ACTIONS ||
+          actionType === AI_RESOLVE_REGENERATE_ACTIONS
+        ) {
           this.launchConflictActionsEvent({
             range,
-            action: REVOKE_ACTIONS,
+            action: actionType,
           });
         }
 
-        if (actionType === ACCEPT_COMBINATION_ACTIONS) {
-          this.launchConflictActionsEvent({
-            range,
-            action: ACCEPT_COMBINATION_ACTIONS,
-          });
-        }
-
-        /**
-         * AI 解决冲突
-         */
-        if (actionType === AI_RESOLVE_ACTIONS) {
-          this.launchConflictActionsEvent({
-            range,
-            action: AI_RESOLVE_ACTIONS,
-          });
-        }
-
-        /**
-         * AI 解决冲突重新生成
-         */
-        if (actionType === AI_RESOLVE_REGENERATE_ACTIONS) {
-          this.launchConflictActionsEvent({
-            range,
-            action: AI_RESOLVE_REGENERATE_ACTIONS,
-          });
+        if (actionType === AI_RESOLVE_ACTIONS || actionType === AI_RESOLVE_REGENERATE_ACTIONS) {
+          this.mergeConflictReportService.reportClickNum(this.relationId);
         }
       },
     });
@@ -761,6 +752,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
         range,
         text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toInclusiveRange()),
       });
+    });
+
+    runWhenIdle(() => {
+      const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
+      this.mergeConflictReportService.reportPoint(this.relationId, { conflictPointNum: aiConflictNum });
     });
   }
 }
