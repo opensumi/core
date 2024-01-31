@@ -30,6 +30,7 @@ import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor
 import {
   AI_RESOLVE_REGENERATE_ACTIONS,
   IConflictActionsEvent,
+  IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
@@ -675,13 +676,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         };
         this.getModel()?.applyEdits([edit], true);
       }
-      this.hideResolveResultWidget(range.id);
-      this.hideStopWidget(range.id);
+      this.cleanWidget(range.id);
       this.deleteCacheResolvedConflicts(range.id);
     } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      this.hideResolveResultWidget(range.id);
-      this.hideStopWidget(range.id);
+      this.cleanWidget(range.id);
       this.conflictAIAccept(undefined, range, true);
+    } else if (action === IGNORE_ACTIONS) {
+      this.cleanWidget(range.id);
+      this.deleteCacheResolvedConflicts(range.id);
     }
   }
 
@@ -689,6 +691,16 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     this.hideStopWidget();
     this.hideResolveResultWidget();
     this.getCacheResolvedConflicts().clear();
+  }
+
+  private cleanWidget(id: string) {
+    if (id) {
+      this.hideStopWidget(id);
+      this.hideResolveResultWidget(id);
+      return;
+    }
+    this.hideStopWidget();
+    this.hideResolveResultWidget();
   }
 
   private debounceMessageWarning = debounce(() => {
