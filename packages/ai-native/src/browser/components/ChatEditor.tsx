@@ -4,6 +4,7 @@ import Highlight from 'react-highlight';
 
 import { IClipboardService, Schemes, URI, getIcon, useInjectable, uuid, IAIReporter } from '@opensumi/ide-core-browser';
 import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
@@ -112,10 +113,11 @@ const ChatEditor = ({ input, language }) => {
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
         <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
-          <Icon className={getIcon('insert')} onClick={handleInsert} />
+          <EnhanceIcon className={getIcon('insert')} onClick={() => handleInsert()} />
         </Popover>
         <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功' : '复制代码'}>
-          <Icon className={getIcon('copy')} onClick={handleCopy} />
+          ·
+          <EnhanceIcon className={getIcon('copy')} onClick={() => handleCopy()} />
         </Popover>
       </div>
       <div ref={ref} className={styles.editor}></div>
@@ -156,10 +158,10 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
         <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
-          <Icon className={getIcon('insert')} onClick={handleInsert} />
+          <EnhanceIcon className={getIcon('insert')} onClick={() => handleInsert()} />
         </Popover>
         <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功' : '复制代码'}>
-          <Icon className={getIcon('copy')} onClick={handleCopy} />
+          <EnhanceIcon className={getIcon('copy')} onClick={() => handleCopy()} />
         </Popover>
       </div>
       <Highlight language={language} ref={ref} className={styles.editor}>

@@ -79,7 +79,7 @@ export const inlineChatTextNormal = registerColor(
   'ai.native.text.color.normal',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.65)),
-    light: new Color(new RGBA(21, 27, 33, 0.65)),
+    light: new Color(new RGBA(21, 27, 33, 0.85)),
     hcDark: null,
     hcLight: null,
   },
