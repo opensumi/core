@@ -10,11 +10,18 @@ import { InnerRange } from './inner-range';
 export interface IIntelligentState {
   isLoading: boolean;
   isComplete: boolean;
+  answerCode: string;
 }
 
 class IntelligentStateModel implements IIntelligentState {
-  private _isLoading: boolean;
-  private _isComplete: boolean;
+  private _isLoading = false;
+  private _isComplete = false;
+  private _answerCode = '';
+
+  public setAnswerCode(v: string) {
+    this._answerCode = v;
+    return this;
+  }
 
   public setLoading(v: boolean): this {
     this._isLoading = v;
@@ -26,6 +33,10 @@ class IntelligentStateModel implements IIntelligentState {
     return this;
   }
 
+  public get answerCode(): string {
+    return this._answerCode;
+  }
+
   public get isLoading(): boolean {
     return this._isLoading;
   }
@@ -34,9 +45,32 @@ class IntelligentStateModel implements IIntelligentState {
     return this._isComplete;
   }
 
+  public setAll(state: Partial<IIntelligentState>, isFull = true): this {
+    if (isFull) {
+      this.reset();
+      this.setIsComplete(!!state.isComplete)
+        .setLoading(!!state.isLoading)
+        .setAnswerCode(state.answerCode || '');
+    } else {
+      if (state.isComplete !== undefined) {
+        this.setIsComplete(!!state.isComplete);
+      }
+
+      if (state.isLoading !== undefined) {
+        this.setLoading(!!state.isLoading);
+      }
+
+      if (state.answerCode !== undefined) {
+        this.setAnswerCode(state.answerCode);
+      }
+    }
+    return this;
+  }
+
   public reset(): void {
     this.setLoading(false);
     this.setIsComplete(false);
+    this.setAnswerCode('');
   }
 }
 

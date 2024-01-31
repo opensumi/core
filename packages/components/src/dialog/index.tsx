@@ -4,7 +4,7 @@ import React from 'react';
 import { Button } from '../button';
 import { MessageType } from '../common';
 import { IconContext, getIcon } from '../icon';
-import { Overlay, IOverlayProps } from '../overlay';
+import { IOverlayProps, Overlay } from '../overlay';
 import './styles.less';
 
 export type ModalType = 'basic' | 'confirm' | 'info';
@@ -21,7 +21,7 @@ export interface IDialogProps extends IOverlayProps {
   type?: ModalType;
   icon?: IconDesc;
   message: string | React.ReactNode;
-  buttons: JSX.Element[] | JSX.Element;
+  buttons?: JSX.Element[] | JSX.Element;
   closable?: boolean;
   onOk?: () => void;
   onCancel?: () => void;
@@ -29,6 +29,11 @@ export interface IDialogProps extends IOverlayProps {
   cancelText?: string;
   getContainer?: string | HTMLElement | getContainerFunc | false | null;
   keyboard?: boolean;
+}
+
+export interface IDialogContentProps {
+  icon?: IconDesc;
+  type?: ModalType;
 }
 
 const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
@@ -41,6 +46,55 @@ const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
     </Button>
   </>
 );
+
+export const DialogContent: React.FC<IDialogProps> = ({
+  onClose,
+  closable,
+  messageType = MessageType.Info,
+  icon,
+  message,
+  buttons,
+  type = 'confirm',
+  title,
+  onOk,
+  onCancel,
+  okText,
+  cancelText,
+  ...restProps
+}) => {
+  const { getIcon: getContextIcon } = React.useContext(IconContext);
+
+  return (
+    <>
+      <div className={'kt-dialog-content'}>
+        {icon && (
+          <div
+            style={{ color: icon.color }}
+            className={clx('kt-dialog-icon', getIcon(icon.className) || getContextIcon(icon.className))}
+          />
+        )}
+        <div className={'kt-dialog-content_area'}>
+          {type !== 'basic' && title && <p className={'kt-dialog-content_title'}>{title}</p>}
+          <span className={'kt-dialog-message'}>{message}</span>
+        </div>
+        {closable && type !== 'basic' && (
+          <button className={clx('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
+        )}
+      </div>
+      {messageType !== MessageType.Empty && type !== 'basic' && (
+        <div className={'kt-dialog-buttonWrap'}>
+          {type === 'confirm' ? (
+            buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} />
+          ) : (
+            <Button size='large' onClick={onClose}>
+              OK
+            </Button>
+          )}
+        </div>
+      )}
+    </>
+  );
+};
 
 export const Dialog: React.FC<IDialogProps> = ({
   visible,
@@ -59,10 +113,8 @@ export const Dialog: React.FC<IDialogProps> = ({
   cancelText,
   getContainer,
   keyboard,
-  ...props
-}) => {
-  const { getIcon: getContextIcon } = React.useContext(IconContext);
-  return (
+  ...restProps
+}) => (
     <Overlay
       visible={visible}
       onClose={onClose}
@@ -76,36 +128,8 @@ export const Dialog: React.FC<IDialogProps> = ({
           : undefined
       }
       afterClose={afterClose}
-      {...props}
+      {...restProps}
     >
-      <>
-        <div className={'kt-dialog-content'}>
-          {icon && (
-            <div
-              style={{ color: icon.color }}
-              className={clx('kt-dialog-icon', getIcon(icon.className) || getContextIcon(icon.className))}
-            />
-          )}
-          <div className={'kt-dialog-content_area'}>
-            {type !== 'basic' && title && <p className={'kt-dialog-content_title'}>{title}</p>}
-            <span className={'kt-dialog-message'}>{message}</span>
-          </div>
-          {closable && type !== 'basic' && (
-            <button className={clx('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
-          )}
-        </div>
-        {messageType !== MessageType.Empty && type !== 'basic' && (
-          <div className={'kt-dialog-buttonWrap'}>
-            {type === 'confirm' ? (
-              buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} />
-            ) : (
-              <Button size='large' onClick={onClose}>
-                OK
-              </Button>
-            )}
-          </div>
-        )}
-      </>
+      <DialogContent message={message} buttons={buttons} visible={visible} {...restProps}></DialogContent>
     </Overlay>
   );
-};

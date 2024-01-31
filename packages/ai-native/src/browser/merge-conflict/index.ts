@@ -18,32 +18,33 @@ import {
   ConstructorOf,
   CancellationTokenSource,
   IRange,
+  IDisposable,
+  Emitter,
+  Event,
 } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
-import {
-  BrowserEditorContribution,
-  IEditor,
-  IEditorFeatureRegistry,
-  WorkbenchEditorService,
-} from '@opensumi/ide-editor/lib/browser';
+import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { ITextModel } from '@opensumi/ide-monaco';
 import { BaseInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AI_RESOLVE_REGENERATE_ACTIONS,
   IConflictActionsEvent,
+  IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
 import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
-import { ResolveResultWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/resolve-result-widget';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { CacheConflict, DocumentMergeConflict } from './cacheConflicts';
+import { CacheConflict, DocumentMergeConflict } from './cache-conflicts';
+import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
 import { CommitType } from './types';
+
 export namespace MERGE_CONFLICT {
   const CATEGORY = 'MergeConflict';
   export const AI_ACCEPT: Command = {
@@ -92,6 +93,9 @@ const cssStyle = `
     user-select: none;
     -webkit-user-select: none;
   }
+  .codicon-modifier-spin {
+    color: #00f6ff !important;
+  }
 }
 `;
 
@@ -117,6 +121,13 @@ interface IWidgetFactory {
 
 interface ICacheResolvedConflicts extends IValidEditOperation {
   newRange: IRange;
+  id: string;
+  conflictText: string;
+}
+
+interface IRequestCancel {
+  id: string;
+  type: 'cancel';
 }
 
 class WidgetFactory implements IWidgetFactory {
@@ -166,11 +177,8 @@ class WidgetFactory implements IWidgetFactory {
 }
 
 // 内置 MergeConflict 插件 以支持AI交互
-@Domain(BrowserEditorContribution, CommandContribution, ClientAppContribution)
-export class MergeConflictContribution
-  extends Disposable
-  implements BrowserEditorContribution, CommandContribution, ClientAppContribution
-{
+@Domain(CommandContribution, ClientAppContribution)
+export class MergeConflictContribution extends Disposable implements CommandContribution, ClientAppContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -192,76 +200,169 @@ export class MergeConflictContribution
   private resolveResultWidgetManager: IWidgetFactory;
   private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
   private stopWidgetManager: IWidgetFactory;
-  private cacheResolvedConflicts: Map<string, ICacheResolvedConflicts> = new Map();
+  private cacheResolvedConflicts: Map<string, Map<string, ICacheResolvedConflicts>> = new Map();
 
+  private readonly _onRequestCancel = new Emitter<IRequestCancel>();
+  public readonly onRequestCancel: Event<IRequestCancel> = this._onRequestCancel.event;
+
+  private readonly _onRequestsCancel = new Emitter<IRequestCancel[]>();
+  public readonly onRequestsCancel: Event<IRequestCancel[]> = this._onRequestsCancel.event;
   private editor: ICodeEditor;
+  private loadingRange: Set<IRange> = new Set();
   constructor() {
     super();
   }
 
   private initListenEvent(): void {
-    this.addDispose(
+    this.disposables.push(
       this.editor.onDidChangeModel(() => {
-        this.hideResolveResultWidget();
+        this.updateAllWidgets();
       }),
     );
-
     if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
-      this.addDispose(
-        this.editor.onMouseMove(
-          debounce((event: monaco.editor.IEditorMouseEvent) => {
-            const { target } = event;
-            if (target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
-              this.hideResolveResultWidget();
-              return;
-            }
-            const mousePosition = target.position;
-            if (!mousePosition) {
+      this.disposables.push(
+        this.editor.onDidChangeModelContent(({ changes, eol }) => {
+          const deltaEdits: Array<{ startLineNumber: number; endLineNumber: number; offset: number }> = [];
+          changes.forEach((change) => {
+            const { text, range } = change;
+            const textLineCount = (text.match(new RegExp(eol, 'ig')) ?? []).length;
+            const { startLineNumber, endLineNumber } = range;
+
+            /**
+             * startLineNumber 与 endLineNumber 的差值表示选区选了多少行
+             * textLineCount 则表示文本出现的换行符数量
+             * 两者相加就得出此次文本变更最终新增或减少了多少行
+             */
+            const offset = startLineNumber - endLineNumber + textLineCount;
+            if (offset === 0) {
               return;
             }
 
-            const allRanges = this.getAllDiffRanges();
-            const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
+            deltaEdits.push({
+              startLineNumber,
+              endLineNumber,
+              offset,
+            });
+          });
+          deltaEdits.forEach((edits) => {
+            const map: Map<string, ICacheResolvedConflicts> = new Map();
+            const { startLineNumber, endLineNumber, offset } = edits;
 
-            const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
-            if (isTouches) {
-              const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
-              if (!targetInRange) {
-                return;
+            for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
+              const { newRange } = value;
+              const { startLineNumber: newStartLineNumber, endLineNumber: newEndLineNumber } = newRange;
+
+              // 在冲突位置下方改动 不处理
+              if (newEndLineNumber < startLineNumber) {
+                map.set(id, value);
+                continue;
               }
-              this.resolveResultWidgetManager.addWidget(targetInRange);
-            } else {
-              this.hideResolveResultWidget();
+              // 在冲突位置上方改动 偏移
+              if (startLineNumber < newStartLineNumber && endLineNumber < newEndLineNumber) {
+                const newRange = new monaco.Range(newStartLineNumber + offset, 1, newEndLineNumber + offset, 1);
+                map.set(id, {
+                  ...value,
+                  newRange,
+                });
+                continue;
+              }
+              // 包含冲突位置 删除
+              if (startLineNumber <= newStartLineNumber && endLineNumber >= newEndLineNumber) {
+                const newRangeOffset = newEndLineNumber - newStartLineNumber;
+                if (offset <= newRangeOffset) {
+                  continue;
+                }
+              }
+              // 内部改动
+              if (startLineNumber >= newStartLineNumber && endLineNumber <= newEndLineNumber) {
+                const newRange = new monaco.Range(newStartLineNumber, 1, newEndLineNumber + offset, 1);
+                map.set(id, {
+                  ...value,
+                  newRange,
+                });
+              }
             }
-          }, 10),
-        ),
+            this.resetCacheResolvedConflicts(map);
+          });
+          this.updateAllWidgets();
+        }),
       );
     }
   }
   getAllDiffRanges() {
-    const rangeLines: LineRange[] = [];
-    for (const [key, value] of this.cacheResolvedConflicts.entries()) {
-      rangeLines.push(this.toLineRange(value.newRange));
+    const rangeLines: IRange[] = [];
+    for (const [, value] of this.getCacheResolvedConflicts().entries()) {
+      rangeLines.push(value.newRange);
     }
     return rangeLines;
   }
 
-  private getModel() {
-    return this.editorService.currentEditor?.monacoEditor?.getModel();
+  updateAllWidgets() {
+    this.hideResolveResultWidget();
+    for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
+      const lineRange = this.toLineRange(value.newRange, id);
+      this.resolveResultWidgetManager.addWidget(lineRange);
+    }
   }
 
-  private toLineRange(range: IRange) {
-    return new LineRange(range.startLineNumber, range.endLineNumber);
+  private getModel(): ITextModel {
+    return this.editor.getModel()!;
+  }
+
+  private getCacheResolvedConflicts(currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+    const cache = this.cacheResolvedConflicts.get(currentUri);
+    if (cache) {
+      return cache;
+    } else {
+      this.cacheResolvedConflicts.set(currentUri, new Map());
+      return this.cacheResolvedConflicts.get(currentUri)!;
+    }
+  }
+
+  private deleteCacheResolvedConflicts(id: string, currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+
+    const cache = this.cacheResolvedConflicts.get(currentUri);
+    if (cache) {
+      cache.delete(id);
+    }
+  }
+
+  private setCacheResolvedConflict(id: string, cacheConflict: ICacheResolvedConflicts, currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+    const cache = this.getCacheResolvedConflicts(currentUri);
+    cache.set(id, cacheConflict);
+  }
+
+  private resetCacheResolvedConflicts(cacheConflicts: Map<string, ICacheResolvedConflicts>, currentUri?: string) {
+    if (!currentUri) {
+      currentUri = this.getModel().uri.toString();
+    }
+    if (this.cacheResolvedConflicts.has(currentUri)) {
+      this.cacheResolvedConflicts.set(currentUri, cacheConflicts);
+    }
+  }
+
+  private toLineRange(range: IRange, id?: string) {
+    const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
+    if (id) {
+      // @ts-ignore
+      lineRange.setId(id);
+    }
+    return lineRange;
   }
 
   public renderSkeletonDecoration(range: LineRange, classNames: string[]) {
-    const model = this.editorService.currentEditor?.monacoEditor?.getModel();
-
+    const model = this.getModel();
     const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
-      range: monaco.Range.fromPositions(
-        new Position(range.startLineNumber, 1),
-        new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1),
-      ),
+      range: range.toRange(),
       options: {
         isWholeLine: true,
         description: 'skeleton',
@@ -297,9 +398,7 @@ export class MergeConflictContribution
                 const model = editor.getModel();
                 model?.setValue(content);
                 this.cacheConflicts.deleteConflict(uri.toString());
-                this.hideResolveResultWidget();
-                this.hideStopWidget();
-                this.cacheResolvedConflicts.clear();
+                this.cleanAllCache();
               }
             }
           }
@@ -308,11 +407,11 @@ export class MergeConflictContribution
 
       commands.registerCommand(MERGE_CONFLICT.AI_ALL_ACCEPT, {
         execute: async () => {
-          const document = this.getModel() as monaco.editor.ITextModel;
+          const document = this.getModel();
           if (!document) {
-            return;
+            return Promise.resolve();
           }
-          // 上一个位置影响下一个冲突位置 只能一个个解决
+          //  一个个解决
           await this.acceptAllConflict();
         },
       }),
@@ -339,35 +438,37 @@ export class MergeConflictContribution
             }
           }
         }),
+        // TODO 优化使用 registerEditorFeature
+        this.editorService.onActiveResourceChange(() => {
+          this.contribute(this.editorService.currentEditor!);
+        }),
       );
     } else {
       loadStyleString(false);
     }
   }
 
-  registerEditorFeature(registry: IEditorFeatureRegistry) {
-    registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => {
-        const disposer = new Disposable();
-        const { monacoEditor, currentUri } = editor;
-        if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
-          return disposer;
-        }
-        const currentEditor = editor;
-        if (currentEditor && monacoEditor) {
-          this.editor = monacoEditor;
-          this.resolveResultWidgetManager = new WidgetFactory(
-            ResolveResultWidget,
-            this as unknown as ResultCodeEditor,
-            this.injector,
-          );
-          this.stopWidgetManager = new WidgetFactory(StopWidget, this as unknown as ResultCodeEditor, this.injector);
+  contribute(editor: IEditor): IDisposable {
+    if (!editor) {
+      return this;
+    }
 
-          this.initListenEvent();
-        }
-        return disposer;
-      },
-    });
+    const { monacoEditor, currentUri } = editor;
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return this;
+    }
+    const currentEditor = editor;
+    if (currentEditor && monacoEditor && !this.editor) {
+      this.editor = monacoEditor;
+      this.resolveResultWidgetManager = new WidgetFactory(
+        ResolveResultWidget,
+        this as unknown as ResultCodeEditor,
+        this.injector,
+      );
+      this.stopWidgetManager = new WidgetFactory(StopWidget, this as unknown as ResultCodeEditor, this.injector);
+      this.initListenEvent();
+    }
+    return this;
   }
 
   async provideCodeLens(
@@ -381,16 +482,21 @@ export class MergeConflictContribution
     const items: monaco.languages.CodeLens[] = [];
     conflicts.forEach((conflict) => {
       const aiAcceptCommand = {
-        id: 'merge-conflict.ai.accept',
-        title: '$(ai-magic) AI 一键解决',
+        id: MERGE_CONFLICT.AI_ACCEPT.id,
+        title: `$(ai-magic) ${localize('mergeEditor.conflict.resolve.all')}`,
         arguments: ['know-conflict', conflict],
         tooltip: localize('mergeEditor.conflict.resolve.all'),
       };
-
+      // loading 效果
+      this.loadingRange.forEach((range) => {
+        if (conflict.range.equalsRange(range)) {
+          aiAcceptCommand.title = `$(loading~spin) ${localize('mergeEditor.conflict.resolve.all')}`;
+        }
+      });
       items.push({
         range: conflict.range,
         command: aiAcceptCommand,
-        id: 'merge-conflict.ai.accept',
+        id: MERGE_CONFLICT.AI_ACCEPT.id,
       });
     });
 
@@ -411,29 +517,30 @@ export class MergeConflictContribution
 
     const skeletonDecorationDispose = this.renderSkeletonDecoration(lineRange, [
       styles.skeleton_decoration,
-      styles.skeleton_decoration_background,
+      styles.skeleton_decoration_background_black,
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
     let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange()) ?? '';
     if (isRegenerate) {
-      codeAssemble = this.cacheResolvedConflicts.get(lineRange.id)?.textChange.oldText ?? '';
+      codeAssemble = this.getCacheResolvedConflicts().get(lineRange.id)?.conflictText ?? '';
     }
 
     let resolveConflictResult: IAiBackServiceResponse | undefined;
     try {
+      this.loadingRange.add(range);
       resolveConflictResult = await this.requestAiResolveConflict(codeAssemble, lineRange, isRegenerate);
     } catch (error) {
-      throw new Error(`AI resolve conflict error: ${error}`);
+      throw new Error(`AI resolve conflict error: ${error.toString()}`);
     } finally {
       skeletonDecorationDispose();
       this.stopWidgetManager.hideWidget(lineRange.id);
+      this.loadingRange.delete(range);
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
       const resultLines = resolveConflictResult.data.split('\n');
       const lastLens = resultLines[resultLines.length - 1];
-
       const newRange = new monaco.Range(
         lineRange.startLineNumber,
         1,
@@ -444,13 +551,20 @@ export class MergeConflictContribution
         range,
         text: resolveConflictResult.data,
       };
+      // this.getModel()?.pushStackElement();
       const validEditOperation = this.getModel()?.applyEdits([edit], true) || [];
-      const newLineRange = this.toLineRange(newRange);
+      // this.getModel()?.pushStackElement();
+      const newLineRange = this.toLineRange(newRange, lineRange?.id);
       this.resolveResultWidgetManager.addWidget(newLineRange);
-      this.cacheResolvedConflicts.set(newLineRange.id, {
-        ...validEditOperation[0],
-        newRange,
-      });
+      // 记录每一次解决的位置
+      if (!isRegenerate) {
+        this.setCacheResolvedConflict(newLineRange.id, {
+          ...validEditOperation[0],
+          newRange,
+          id: newLineRange.id,
+          conflictText: validEditOperation[0].text,
+        });
+      }
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
         this.debounceMessageWarning();
@@ -459,7 +573,6 @@ export class MergeConflictContribution
   }
 
   private async acceptAllConflict() {
-    // 每一次改动range 都会变化 需要一次次 scanDocument
     const document = this.getModel() as monaco.editor.ITextModel;
     if (!document) {
       return Promise.resolve();
@@ -468,8 +581,23 @@ export class MergeConflictContribution
     if (!conflicts?.length) {
       return Promise.resolve();
     }
-    await this.conflictAIAccept(conflicts[0]);
-    return this.acceptAllConflict();
+    let isCancelAll = false;
+    // TODO 优化
+    this.disposables.push(
+      this.onRequestsCancel(() => {
+        isCancelAll = true;
+        return;
+      }),
+    );
+    return this.conflictAIAccept(conflicts[0]).then(() => {
+      if (isCancelAll) {
+        return Promise.resolve();
+      }
+      if (!conflicts?.length) {
+        this.debounceMessageSuccess();
+      }
+      return this.acceptAllConflict();
+    });
   }
 
   private registerCodeLensProvider() {
@@ -510,55 +638,76 @@ export class MergeConflictContribution
 
   public hideResolveResultWidget(id?: string) {
     this.resolveResultWidgetManager.hideWidget(id);
-    if (id) {
-      this.cacheResolvedConflicts.delete(id);
-    }
   }
 
   public hideStopWidget(id?: string) {
     this.stopWidgetManager.hideWidget(id);
   }
+
   public cancelRequestToken(id?: string) {
     if (id) {
       if (!this.cancelIndicatorMap.has(id)) {
         return;
       }
-
       const token = this.cancelIndicatorMap.get(id);
       token?.cancel();
+      this._onRequestCancel.fire({ id, type: 'cancel' });
       return;
     }
+    const requestsCancel: IRequestCancel[] = [];
 
-    this.cancelIndicatorMap.forEach((token) => {
+    this.cancelIndicatorMap.forEach((token, id) => {
       token.cancel();
+      requestsCancel.push({ id, type: 'cancel' });
     });
+    this._onRequestsCancel.fire(requestsCancel);
     this.cancelIndicatorMap.clear();
   }
 
   public launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
     const { range, action } = eventData;
     if (action === REVOKE_ACTIONS) {
-      this.hideResolveResultWidget(range.id);
-      this.hideStopWidget(range.id);
+      const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
 
-      const cache = this.cacheResolvedConflicts.get(range.id);
-
-      if (cache) {
+      if (cacheConflict) {
         const edit = {
-          range: cache.newRange,
-          text: cache.text,
+          range: cacheConflict.newRange,
+          text: cacheConflict.conflictText || cacheConflict.text,
         };
         this.getModel()?.applyEdits([edit], true);
       }
+      this.cleanWidget(range.id);
+      this.deleteCacheResolvedConflicts(range.id);
     } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      this.hideResolveResultWidget(range.id);
-      this.hideStopWidget(range.id);
-      this.cacheResolvedConflicts.delete(range.id);
+      this.cleanWidget(range.id);
       this.conflictAIAccept(undefined, range, true);
+    } else if (action === IGNORE_ACTIONS) {
+      this.cleanWidget(range.id);
+      this.deleteCacheResolvedConflicts(range.id);
     }
+  }
+
+  private cleanAllCache() {
+    this.hideStopWidget();
+    this.hideResolveResultWidget();
+    this.getCacheResolvedConflicts().clear();
+  }
+
+  private cleanWidget(id: string) {
+    if (id) {
+      this.hideStopWidget(id);
+      this.hideResolveResultWidget(id);
+      return;
+    }
+    this.hideStopWidget();
+    this.hideResolveResultWidget();
   }
 
   private debounceMessageWarning = debounce(() => {
     message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
+  }, 1000);
+
+  private debounceMessageSuccess = debounce(() => {
+    message.warning('生成成功， AI 已完成冲突的处理');
   }, 1000);
 }
