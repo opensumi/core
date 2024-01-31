@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
@@ -250,6 +250,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   constructor() {
     super();
+    makeObservable(this);
     this._focus = false;
     this._clients = new Map();
   }

@@ -6,6 +6,7 @@ import { OpenSumiApp } from '../app';
 import { OPENSUMI_VIEW_CONTAINERS } from '../constans';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiTextEditor } from '../text-editor';
+import { keypressWithCmdCtrl } from '../utils';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
@@ -95,6 +96,7 @@ console.log(a);`,
     await copyPath?.click();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js');
     await editor.addTextToNewLineAfterLineByLineNumber(1, 'File Path: ');
+    await app.page.waitForTimeout(400);
     let editorMenu = await editor.openLineContextMenuByLineNumber(2);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     let paste = await editorMenu?.menuItemByName('Paste');
@@ -111,6 +113,7 @@ console.log(a);`,
     await copyRelativePath?.click();
     await app.page.waitForTimeout(200);
     await editor.addTextToNewLineAfterLineByLineNumber(2, 'File Relative Path: ');
+    await app.page.waitForTimeout(400);
     editorMenu = await editor.openLineContextMenuByLineNumber(3);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     paste = await editorMenu?.menuItemByName('Paste');
@@ -123,15 +126,15 @@ console.log(a);`,
   test('Go to Symbol... should be worked', async () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor2.js');
     // waiting for extHost process done.
-    await app.page.waitForTimeout(1000);
-    const editorMenu = await editor.openLineContextMenuByLineNumber(1);
+    await app.page.waitForTimeout(2000);
+    const editorMenu = await editor.openLineContextMenuByLineNumber(3);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     const goto = await editorMenu?.menuItemByName('Go to Symbol...');
     await goto?.click();
-    await app.page.waitForTimeout(1000);
-    const input = await app.page.waitForSelector(`#${OPENSUMI_VIEW_CONTAINERS.QUICKPICK_INPUT}`);
-    await input.focus();
-    await app.page.keyboard.press(' ');
+    await app.page.waitForSelector(`#${OPENSUMI_VIEW_CONTAINERS.QUICKPICK_INPUT}`);
+    await app.page.keyboard.press(keypressWithCmdCtrl('KeyA'));
+    await app.page.keyboard.press('Delete');
+    await app.page.keyboard.press('@');
     await app.page.keyboard.press('ArrowDown');
     await app.page.keyboard.press('ArrowDown');
     await app.page.keyboard.press('Enter');

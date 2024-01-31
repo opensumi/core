@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IContextKeyService, IReporterService, memoize } from '@opensumi/ide-core-browser';
@@ -28,12 +28,12 @@ export class DebugToolbarService {
   private readonly injector: Injector;
 
   @observable
-  state: DebugState;
+  state: DebugState = DebugState.Inactive;
 
   @observable
   sessionCount: number;
 
-  @observable
+  @observable.shallow
   currentSession: DebugSession | undefined;
 
   @observable.shallow
@@ -42,6 +42,7 @@ export class DebugToolbarService {
   public readonly toolBarMenuMap: Map<string, IContextMenu> = new Map();
 
   constructor() {
+    makeObservable(this);
     this.model.onDidChange(() => {
       this.updateToolBarMenu();
       this.updateModel();

@@ -1,4 +1,4 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickTitleButton, QuickTitleButtonSide } from '@opensumi/ide-core-browser/lib/quick-open';
@@ -41,6 +41,10 @@ export class QuickTitleBar {
 
   @observable.shallow
   private _buttons: QuickTitleButton[] = [];
+
+  constructor() {
+    makeObservable(this);
+  }
 
   get onDidTriggerButton(): Event<QuickTitleButton> {
     return this.onDidTriggerButtonEmitter.event;

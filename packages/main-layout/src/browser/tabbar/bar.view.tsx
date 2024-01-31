@@ -48,7 +48,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
     TabView,
     MoreTabView,
     forbidCollapse,
-    barSize = 48,
+    barSize = 49,
     panelBorderSize = 0,
     tabClassName,
     className,
@@ -63,6 +63,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
       // 内部只关注总的宽度
       tabbarService.barSize = barSize + panelBorderSize;
     }, []);
+
     const { currentContainerId, handleTabClick } = tabbarService;
 
     const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
@@ -82,6 +83,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
       tabSize,
       fullSize - (margin || 0),
     );
+
     hideContainers.forEach((componentInfo) => {
       tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
     });

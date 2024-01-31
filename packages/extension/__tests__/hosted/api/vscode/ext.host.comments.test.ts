@@ -5,7 +5,7 @@ import { ICommentsService, ICommentsFeatureRegistry, CommentReactionClick } from
 import { CommentsFeatureRegistry } from '@opensumi/ide-comments/lib/browser/comments-feature.registry';
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Uri, Disposable, IEventBus, URI, Deferred } from '@opensumi/ide-core-common';
+import { Uri, Disposable, IEventBus, URI, Deferred, sleep } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { MainthreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
@@ -27,8 +27,6 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () => {
   jest.setTimeout(10 * 1000);

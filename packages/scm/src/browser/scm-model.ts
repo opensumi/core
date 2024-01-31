@@ -1,4 +1,4 @@
-import { action, observable } from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
@@ -235,6 +235,7 @@ export class ViewModelContext extends Disposable {
 
   constructor() {
     super();
+    makeObservable(this);
     this.start();
 
     this.initTreeAlwaysShowActions();

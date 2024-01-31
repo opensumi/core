@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { toJS } from 'mobx';
+import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -55,7 +55,8 @@ const usePreferenceGroups = () => {
     const oldGroupKey = groups.map((n) => n.id).join(',');
     const newGroupKey = _groups.map((n) => n.id).join(',');
     if (oldGroupKey !== newGroupKey) {
-      setGroups(toJS(_groups, { recurseEverything: true }));
+      const groupsStore = observable(_groups);
+      setGroups(toJS(groupsStore));
     }
   }, 16);
 

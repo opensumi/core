@@ -2040,8 +2040,8 @@ __metadata:
     "@types/ejs": ^3.0.2
     "@types/koa-mount": ^4.0.0
     "@types/node": ^18.19.8
-    "@types/react": ^18.0.0
-    "@types/react-dom": ^18.0.0
+    "@types/react": ^18.2.0
+    "@types/react-dom": ^18.2.0
     assets-webpack-plugin: ^7.1.1
     chalk: ^4.0.0
     copy-webpack-plugin: ^12.0.2
@@ -2061,8 +2061,8 @@ __metadata:
     npm-run-all: ^4.1.5
     open: ^7.0.3
     optimize-css-assets-webpack-plugin: ^6.0.1
-    react: ^18.0.0
-    react-dom: ^18.0.0
+    react: ^18.2.0
+    react-dom: ^18.2.0
     shell-path: ^2.1.0
     style-loader: ^3.3.4
     terser-webpack-plugin: ^5.3.10
@@ -2093,8 +2093,8 @@ __metadata:
     "@types/lodash": ^4.14.202
     "@types/node": ^18.19.8
     "@types/node-fetch": ^2.6.1
-    "@types/react": ^18.0.0
-    "@types/react-dom": ^18.0.0
+    "@types/react": ^18.2.0
+    "@types/react-dom": ^18.2.0
     "@types/react-is": ^18.2.4
     "@types/socket.io-client": ^1.4.32
     "@types/temp": ^0.9.1
@@ -2286,20 +2286,22 @@ __metadata:
     jsonc-parser: ^2.1.0
     keycode: ^2.2.0
     lodash: ^4.17.21
-    mobx: ^5.9.4
-    mobx-react-lite: ^1.3.1
+    mobx: ^6.12.0
+    mobx-react-lite: ^4.0.5
     rc-menu: ^9.3.2
-    react: ^18.0.0
+    react: ^18.2.0
     react-autosize-textarea: ^7.0.0
     react-ctxmenu-trigger: ^1.0.0
     react-custom-scrollbars: ^4.2.1
+    react-dom: ^18.2.0
     react-is: ^18.2.0
     react-window: ^1.8.5
     resize-observer-polyfill: 1.5.1
     strip-json-comments: 3.0.1
     vscode-textmate: 7.0.1
   peerDependencies:
-    react: ">=18.0.0"
+    react: ^18.2.0
+    react-dom: ^18.2.0
   languageName: unknown
   linkType: soft
 
@@ -2401,12 +2403,12 @@ __metadata:
     less: ^3.9.0
     less-loader: ^12.1.0
     mini-css-extract-plugin: ^2.7.7
-    mobx: ^5.9.4
-    mobx-react-lite: ^1.3.1
+    mobx: ^6.12.0
+    mobx-react-lite: ^4.0.5
     node-notifier: ^8.0.1
     null-loader: ^4.0.1
     optimize-css-assets-webpack-plugin: ^6.0.1
-    react-dom: ^18.0.0
+    react-dom: ^18.2.0
     style-loader: ^3.3.4
     ts-loader: ^9.5.1
     ts-node: ^10.9.1
@@ -2962,7 +2964,7 @@ __metadata:
     nodemon: ^2.0.15
     npm-run: ^5.0.1
     npm-run-all: ^4.1.5
-    react-dom: ^18.0.0
+    react-dom: ^18.2.0
     style-loader: ^3.3.4
     ts-loader: ^9.5.1
     ts-node: ^10.0.0
@@ -3217,7 +3219,7 @@ __metadata:
   resolution: "@opensumi/sumi@workspace:packages/types"
   dependencies:
     "@opensumi/ide-components": "workspace:*"
-    "@types/react": ^18.0.0
+    "@types/react": ^18.2.0
     vscode-uri: 3.0.2
   languageName: unknown
   linkType: soft
@@ -4225,7 +4227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.0.0":
+"@types/react-dom@npm:^18.2.0":
   version: 18.2.18
   resolution: "@types/react-dom@npm:18.2.18"
   dependencies:
@@ -4252,7 +4254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^18.0.0":
+"@types/react@npm:*, @types/react@npm:^18.2.0":
   version: 18.2.48
   resolution: "@types/react@npm:18.2.48"
   dependencies:
@@ -14101,20 +14103,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-react-lite@npm:^1.3.1":
-  version: 1.5.2
-  resolution: "mobx-react-lite@npm:1.5.2"
+"mobx-react-lite@npm:^4.0.5":
+  version: 4.0.5
+  resolution: "mobx-react-lite@npm:4.0.5"
+  dependencies:
+    use-sync-external-store: ^1.2.0
   peerDependencies:
-    mobx: ^4.0.0 || ^5.0.0
-    react: ^16.8.0
-  checksum: 0f42927b4dad28d3c8973d7788caac359faaf44d396e4fd435c8811b5f8bc835094751719ecc838cd527cb8895d1a83788b70288757759686c19785f51d65e4a
+    mobx: ^6.9.0
+    react: ^16.8.0 || ^17 || ^18
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: b0a3e4345c1449eee7c0a6aa2369475024a0c8227e11305cc965229527e3ddede4ca7b8337912a7fe396e24bd83986f2a88a21813c51cabdc18330fa484023b5
   languageName: node
   linkType: hard
 
-"mobx@npm:^5.9.4":
-  version: 5.15.7
-  resolution: "mobx@npm:5.15.7"
-  checksum: 46aa00c330a256fdde1c030cf8bab0baebc7fdfb23709884400ac486c318ce650acc336fd8f1e629b5c8680d82051f2aed4737406c4ac6fe1b2d9f3d978c4339
+"mobx@npm:^6.12.0":
+  version: 6.12.0
+  resolution: "mobx@npm:6.12.0"
+  checksum: 482914d39199cadc8808907a2b9dbc634c74534d6c6d6cb34984c199aa94665ce07e7d183c0e97d54f4b06c8e42fec0a48c79484f4bbeac04a4dfd0f160290c6
   languageName: node
   linkType: hard
 
@@ -16985,7 +16994,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.0.0":
+"react-dom@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
   dependencies:
@@ -17069,7 +17078,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.0.0":
+"react@npm:^18.2.0":
   version: 18.2.0
   resolution: "react@npm:18.2.0"
   dependencies:
@@ -19809,6 +19818,15 @@ __metadata:
     punycode: ^1.4.1
     qs: ^6.11.2
   checksum: f9e7886f46a16f96d2e42fbcc5d682c231c55ef5442c1ff66150c0f6556f6e3a97d094a84f51be15ec2432711d212eb60426659ce418f5fcadeaa3f601532c4e
+  languageName: node
+  linkType: hard
+
+"use-sync-external-store@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "use-sync-external-store@npm:1.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 5c639e0f8da3521d605f59ce5be9e094ca772bd44a4ce7322b055a6f58eeed8dda3c94cabd90c7a41fb6fa852210092008afe48f7038792fd47501f33299116a
   languageName: node
   linkType: hard
 

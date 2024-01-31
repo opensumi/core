@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
@@ -39,6 +39,7 @@ export class DebugConfigurationService {
   private _whenReady: Promise<void>;
 
   constructor() {
+    makeObservable(this);
     this._whenReady = this.init();
   }
 
@@ -51,11 +52,11 @@ export class DebugConfigurationService {
   @observable
   isMultiRootWorkspace: boolean;
 
-  @observable
-  workspaceRoots: string[] = [];
+  @observable.shallow
+  workspaceRoots: string[] = observable.array([]);
 
   @observable.shallow
-  configurationOptions: DebugSessionOptions[];
+  configurationOptions: DebugSessionOptions[] = observable.array([]);
 
   get whenReady() {
     return this._whenReady;
@@ -86,10 +87,12 @@ export class DebugConfigurationService {
     this.updateFloat(!!this.preferenceService.get<boolean>('debug.toolbar.float'));
   }
 
-  @action
   async updateWorkspaceState() {
-    this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
-    this.workspaceRoots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
+    const roots = (await this.workspaceService.tryGetRoots()).map((root) => root.uri);
+    runInAction(() => {
+      this.isMultiRootWorkspace = this.workspaceService.isMultiRootWorkspaceOpened;
+      this.workspaceRoots = roots;
+    });
   }
 
   @action
@@ -145,6 +148,7 @@ export class DebugConfigurationService {
     this.debugConfigurationManager.current = this.debugConfigurationManager.find(name, workspaceFolderUri, index);
   };
 
+  @action.bound
   toValue({ configuration, workspaceFolderUri, index }: DebugSessionOptions) {
     if (!workspaceFolderUri) {
       return configuration.name;

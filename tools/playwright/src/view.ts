@@ -54,8 +54,8 @@ export class OpenSumiView extends OpenSumiViewBase {
   async activate(): Promise<void> {
     await this.page.waitForSelector(this.tabSelector, { state: 'visible' });
     if (!(await this.isActive())) {
-      const tab = await this.getTabElement();
-      await tab?.click();
+      const tabContainer = await this.getTabElement();
+      await tabContainer?.click();
     }
     return this.waitForVisible();
   }

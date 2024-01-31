@@ -125,7 +125,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
   splitPanelService.panels = [];
 
-  // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
+  // 获取 setSize 的handle，对于最右端或最底部的视图，取上一个位置的 handle
   const setSizeHandle = React.useCallback(
     (index) => (size?: number, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
@@ -272,7 +272,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
               );
             }
           }
-
           result.push(
             <PanelContext.Provider
               key={index}

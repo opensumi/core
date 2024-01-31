@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 
@@ -26,6 +26,7 @@ export class TerminalErrorService implements ITerminalErrorService {
   protected readonly view: ITerminalGroupViewService;
 
   constructor() {
+    makeObservable(this);
     this.service.onError((error) => {
       this.errors.set(error.id, error);
     });

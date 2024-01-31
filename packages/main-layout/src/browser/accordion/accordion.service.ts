@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import { action, observable } from 'mobx';
+import { action, observable, makeObservable, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -97,9 +97,11 @@ export class AccordionService extends WithEventBus {
   // 所有带contextKey视图
   private viewsWithContextKey = new Set<View>();
 
-  @observable.shallow views: View[] = [];
+  @observable.shallow
+  views: View[] = observable.array([]);
 
-  @observable state: { [viewId: string]: SectionState } = {};
+  @observable.shallow
+  state: { [viewId: string]: SectionState } = {};
 
   rendered = false;
 
@@ -125,6 +127,7 @@ export class AccordionService extends WithEventBus {
 
   constructor(public containerId: string, private noRestore?: boolean) {
     super();
+    makeObservable(this);
     this.splitPanelService = this.splitPanelManager.getService(containerId);
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithSection', true);
@@ -173,6 +176,7 @@ export class AccordionService extends WithEventBus {
     this.doUpdateResize();
   }
 
+  @action
   restoreState() {
     if (this.noRestore) {
       return;
@@ -189,6 +193,7 @@ export class AccordionService extends WithEventBus {
   }
 
   // 调用时需要保证dom可见
+  @action
   restoreSize() {
     // 计算存储总高度与当前窗口总高度差，加到最后一个展开的面板
     let availableSize = this.splitPanelService.rootNode?.clientHeight || 0;
@@ -239,6 +244,7 @@ export class AccordionService extends WithEventBus {
     return menu;
   }
 
+  @action
   private updateView(view: View) {
     if (view.priority) {
       const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
@@ -248,6 +254,7 @@ export class AccordionService extends WithEventBus {
     }
   }
 
+  @action
   appendView(view: View, replace?: boolean) {
     if (this.appendedViewSet.has(view.id) && !replace) {
       return;
@@ -293,6 +300,7 @@ export class AccordionService extends WithEventBus {
     this.afterAppendViewEmitter.fire(view.id);
   }
 
+  @action
   disposeView(viewId: string) {
     const existIndex = this.views.findIndex((item) => item.id === viewId);
     if (existIndex > -1) {
@@ -314,13 +322,15 @@ export class AccordionService extends WithEventBus {
     }
   }
 
+  @action
   disposeAll() {
-    this.views = [];
+    this.views = observable.array([]);
     this.toDispose.forEach((disposable) => {
       disposable.dispose();
     });
   }
 
+  @action
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     // 监听来自resize组件的事件
@@ -354,7 +364,9 @@ export class AccordionService extends WithEventBus {
       // 需要过滤掉没有实际注册的视图
       const diffSize = this.splitPanelService.rootNode!.clientHeight - this.getPanelFullHeight();
       if (diffSize) {
-        this.state[largestViewId].size! += diffSize;
+        runInAction(() => {
+          this.state[largestViewId!].size! += diffSize;
+        });
         this.toggleOpen(largestViewId!, false);
       }
     }
@@ -444,6 +456,7 @@ export class AccordionService extends WithEventBus {
       nextState = !forceShow;
     }
     state.hidden = nextState;
+    this.setViewState(viewId, state);
     this.popViewKeyIfOnlyOneViewVisible();
     this.storeState();
   }
@@ -512,12 +525,23 @@ export class AccordionService extends WithEventBus {
     let viewState = this.state[viewId];
     const view = this.views.find((item) => item.id === viewId);
     if (!viewState) {
-      this.state[viewId] = { collapsed: view?.collapsed || false, hidden: view?.hidden || false };
-      viewState = this.state[viewId]!;
+      runInAction(() => {
+        this.state[viewId] = { collapsed: view?.collapsed || false, hidden: view?.hidden || false };
+        viewState = this.state[viewId]!;
+      });
     }
     return viewState;
   }
 
+  @action
+  public setViewState(viewId: string, state: SectionState) {
+    this.state = {
+      ...this.state,
+      [viewId]: state,
+    };
+  }
+
+  @action
   protected doToggleOpen(viewId: string, collapsed: boolean, index: number, noAnimation?: boolean) {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;
