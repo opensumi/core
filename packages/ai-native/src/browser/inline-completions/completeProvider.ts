@@ -3,13 +3,13 @@ import { debounce } from 'lodash';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIReporter } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTET } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native';
 import { WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { CompletionResultModel } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AISerivceType } from '../../common';
 import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
 import { CompletionRequestBean, InlayList, InlineCompletionItem } from './model/competionModel';

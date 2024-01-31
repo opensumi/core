@@ -7,15 +7,15 @@ import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   ACCEPT_CURRENT_ACTIONS,
-  CONFLICT_ACTIONS_ICON,
-  EditorViewType,
-  IGNORE_ACTIONS,
-  DECORATIONS_CLASSNAME,
   ADDRESSING_TAG_CLASSNAME,
-  TActionsType,
-  IActionsDescription,
   APPEND_ACTIONS,
+  CONFLICT_ACTIONS_ICON,
+  DECORATIONS_CLASSNAME,
+  EditorViewType,
+  IActionsDescription,
   IConflictActionsEvent,
+  IGNORE_ACTIONS,
+  TActionsType,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -91,19 +91,8 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: this.provideActionsItems,
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
-        if (actionType === ACCEPT_CURRENT_ACTIONS) {
-          this.launchConflictActionsEvent({
-            range,
-            action: ACCEPT_CURRENT_ACTIONS,
-          });
-        }
-
-        if (actionType === IGNORE_ACTIONS) {
-          this.launchConflictActionsEvent({ range, action: IGNORE_ACTIONS });
-        }
-
-        if (actionType === APPEND_ACTIONS) {
-          this.launchConflictActionsEvent({ range, action: APPEND_ACTIONS });
+        if (actionType === ACCEPT_CURRENT_ACTIONS || actionType === IGNORE_ACTIONS || actionType === APPEND_ACTIONS) {
+          this.launchConflictActionsEvent({ range, action: actionType });
         }
       },
     });

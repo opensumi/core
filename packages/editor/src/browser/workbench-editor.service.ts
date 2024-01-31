@@ -1504,6 +1504,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const query = uri.getParsedQuery();
       this.doDisposeDocRef(new URI(query.original));
       this.doDisposeDocRef(new URI(query.modified));
+    } else if (uri.scheme === 'mergeEditor') {
+      this.mergeEditor.dispose();
     } else {
       this.doDisposeDocRef(uri);
     }

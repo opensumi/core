@@ -444,23 +444,10 @@ export class ActionsManager extends Disposable {
         /**
          * 处理 AI 智能解决冲突
          */
-        if (action === AI_RESOLVE_ACTIONS && this.resultView) {
+        if ((action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) && this.resultView) {
           const flushRange = this.resultView.getFlushRange(range) || range;
 
-          const result = await this.handleAiConflictResolve(flushRange, false, true);
-
-          if (result && !result.isSuccess && !result.isCancel) {
-            this.debounceMessageWraning(result.errorCode);
-          }
-        }
-
-        /**
-         * 处理 AI 智能解决冲突的重新生成(prompt 不同)
-         */
-        if (action === AI_RESOLVE_REGENERATE_ACTIONS && this.resultView) {
-          const flushRange = this.resultView.getFlushRange(range) || range;
-
-          const result = await this.handleAiConflictResolve(flushRange, true, true);
+          const result = await this.handleAiConflictResolve(flushRange, action === AI_RESOLVE_REGENERATE_ACTIONS, true);
 
           if (result && !result.isSuccess && !result.isCancel) {
             this.debounceMessageWraning(result.errorCode);
@@ -520,18 +507,20 @@ export class ActionsManager extends Disposable {
 
           let type: TActionsType | undefined;
 
-          if (classList.contains(ACCEPT_CURRENT_ACTIONS)) {
-            type = ACCEPT_CURRENT_ACTIONS;
-          } else if (classList.contains(ACCEPT_COMBINATION_ACTIONS)) {
-            type = ACCEPT_COMBINATION_ACTIONS;
-          } else if (classList.contains(IGNORE_ACTIONS)) {
-            type = IGNORE_ACTIONS;
-          } else if (classList.contains(REVOKE_ACTIONS)) {
-            type = REVOKE_ACTIONS;
-          } else if (classList.contains(APPEND_ACTIONS)) {
-            type = APPEND_ACTIONS;
-          } else if (classList.contains(AI_RESOLVE_ACTIONS)) {
-            type = AI_RESOLVE_ACTIONS;
+          const actions: TActionsType[] = [
+            ACCEPT_CURRENT_ACTIONS,
+            ACCEPT_COMBINATION_ACTIONS,
+            IGNORE_ACTIONS,
+            REVOKE_ACTIONS,
+            APPEND_ACTIONS,
+            AI_RESOLVE_ACTIONS,
+          ];
+
+          for (const action of actions) {
+            if (classList.contains(action)) {
+              type = action;
+              break;
+            }
           }
 
           if (type && action) {

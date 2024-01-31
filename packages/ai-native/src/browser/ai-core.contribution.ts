@@ -21,6 +21,7 @@ import {
   getIcon,
 } from '@opensumi/ide-core-browser';
 import {
+  AI_CHAT_PANEL_TOGGLE_VISIBLE,
   AI_EXPLAIN_DEBUG_COMMANDS,
   AI_EXPLAIN_TERMINAL_COMMANDS,
   AI_INLINE_CHAT_VISIBLE,
@@ -30,7 +31,6 @@ import {
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
 import {
@@ -56,6 +56,7 @@ import { AiSumiService } from './ai-sumi/sumi.service';
 import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 import { AiInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AiCompletionsService } from './inline-completions/service/ai-completions.service';
+import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import {
   AiBottomTabRenderer,
   AiChatTabRenderer,
@@ -132,8 +133,8 @@ export class AiNativeBrowserContribution
   @Autowired(AiNativeConfigService)
   private readonly aiNativeConfigService: AiNativeConfigService;
 
-  @Autowired(AiBackSerivcePath)
-  private readonly aiBackService: IAiBackService;
+  @Autowired(AiMenubarService)
+  private readonly aiMenubarService: AiMenubarService;
 
   constructor() {
     this.registerFeature();
@@ -271,6 +272,29 @@ export class AiNativeBrowserContribution
         }
       },
     });
+
+    commands.registerCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE, {
+      execute: (visible: boolean) => {
+        if (visible === true) {
+          if (this.aiMenubarService.getLatestWidth() !== 0) {
+            this.aiMenubarService.toggleRightPanel();
+          }
+          return;
+        }
+
+        if (visible === false) {
+          if (this.aiMenubarService.getLatestWidth() === 0) {
+            this.aiMenubarService.toggleRightPanel();
+          }
+          return;
+        }
+
+        this.aiMenubarService.toggleRightPanel();
+      },
+    });
+
+    // 拦截 git.stage 命令，来统计智能解决冲突的数据
+    commands.beforeExecuteCommand('git.stage', (args) => args);
   }
   // TerminalClient
   registerMenus(menus: IMenuRegistry): void {
