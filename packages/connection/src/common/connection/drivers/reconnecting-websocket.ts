@@ -76,6 +76,10 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     };
   }
 
+  dispose(): void {
+    // do nothing
+  }
+
   static forURL(url: UrlProvider, protocols?: string | string[], options?: ReconnectingWebSocketOptions) {
     const rawConnection = new ReconnectingWebSocket(url, protocols, options);
     rawConnection.binaryType = 'arraybuffer';

@@ -17,7 +17,7 @@ import { ILogger } from './types';
 export interface IWebSocket {
   send(content: string): void;
   close(...args: any[]): void;
-  onMessage(cb: (data: any) => void): void;
+  onMessage(cb: (data: string) => void): void;
   onError(cb: (reason: any) => void): void;
   onClose(cb: (code: number, reason: string) => void): void;
 }
@@ -260,6 +260,7 @@ export class WSChannel implements IWebSocket {
       send: (data) => {
         this.sendBinary(data);
       },
+      dispose() {},
     });
     conn.setProtocolRepository(protocolRepository);
     return conn;

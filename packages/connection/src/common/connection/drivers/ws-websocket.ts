@@ -28,4 +28,8 @@ export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
       },
     };
   }
+
+  dispose(): void {
+    this.socket.removeAllListeners();
+  }
 }

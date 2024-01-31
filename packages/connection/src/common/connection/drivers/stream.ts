@@ -1,29 +1,28 @@
-import type net from 'net';
+import type stream from 'stream';
 
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
 import { StreamPacketDecoder, createStreamPacket } from './stream-decoder';
 
-export class NetSocketConnection extends BaseConnection<Uint8Array> {
+export class StreamConnection extends BaseConnection<Uint8Array> {
   protected decoder = new StreamPacketDecoder();
 
-  constructor(private socket: net.Socket) {
+  constructor(protected output: stream.Readable, protected input: stream.Writable) {
     super();
-    this.socket.on('data', (chunk) => {
+    output.on('data', (chunk) => {
       this.decoder.push(chunk);
     });
-    this.socket.once('close', () => {
+    output.once('close', () => {
       this.decoder.dispose();
     });
   }
-
-  isOpen(): boolean {
-    return this.socket.readyState === 'open';
+  get writable(): boolean {
+    return this.input.writable;
   }
 
   send(data: Uint8Array): void {
-    this.socket.write(createStreamPacket(data));
+    this.input.write(createStreamPacket(data));
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
@@ -33,32 +32,29 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
     };
   }
 
+  /**
+   * once output stream closed
+   */
   onceClose(cb: () => void): IDisposable {
-    this.socket.once('close', cb);
+    this.output.once('close', cb);
     return {
       dispose: () => {
-        this.socket.off('close', cb);
-      },
-    };
-  }
-
-  onOpen(cb: () => void): IDisposable {
-    this.socket.on('connect', cb);
-    return {
-      dispose: () => {
-        this.socket.off('connect', cb);
+        this.output.off('close', cb);
       },
     };
   }
 
   onError(cb: (err: Error) => void): IDisposable {
-    this.socket.on('error', cb);
+    this.input.on('error', cb);
+    this.output.on('error', cb);
     return {
       dispose: () => {
-        this.socket.off('error', cb);
+        this.input.off('error', cb);
+        this.output.off('error', cb);
       },
     };
   }
+
   dispose(): void {
     this.decoder.dispose();
   }

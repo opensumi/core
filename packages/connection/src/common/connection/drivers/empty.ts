@@ -16,4 +16,7 @@ export class EmptyConnection extends BaseConnection<Uint8Array> {
       dispose: () => {},
     };
   }
+  dispose(): void {
+    // do nothing
+  }
 }
