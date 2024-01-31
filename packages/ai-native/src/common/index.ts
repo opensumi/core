@@ -72,20 +72,6 @@ export interface ChatCompletionRequestMessage {
   name?: string;
 }
 
-export enum AISerivceType {
-  SearchDoc = 'searchDoc',
-  SearchCode = 'searchCode',
-  Sumi = 'sumi',
-  GPT = 'chat',
-  Explain = 'explain',
-  Run = 'run',
-  Test = 'test',
-  Optimize = 'optimize',
-  Generate = 'generate',
-  Completion = 'completion',
-  Agent = 'agent',
-}
-
 export enum AiNativeSettingSectionsId {
   INLINE_CHAT_AUTO_VISIBLE = 'inlineChat.auto.visible',
 }

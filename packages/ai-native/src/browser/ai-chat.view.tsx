@@ -13,10 +13,11 @@ import {
 import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
+import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native';
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
+import { IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';

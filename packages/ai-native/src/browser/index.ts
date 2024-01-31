@@ -179,6 +179,7 @@ export class AiNativeModule extends BrowserModule {
         ...AiChatLayoutConfig,
       };
     }
+
     if (supportsConflictResolve) {
       injector.addProviders(MergeConflictContribution);
     }
