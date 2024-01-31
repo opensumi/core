@@ -236,30 +236,32 @@
     div[class*='actions_wrap___'] {
       margin: 0 8px;
     }
-    div[class*='titleActions___'] {
-      > span {
-        display: flex;
-        width: 22px;
-        height: 22px;
-        align-items: center;
-        justify-content: center;
-        margin-left: 0;
-        color: var(--ai-native-text-color-normal);
-        &::before {
-          font-size: 14px;
-        }
-        &:hover {
-          color: var(--ai-native-text-color-hover);
-          background-color: var(--activityBar-activeBorder);
-          opacity: 1;
-        }
+  }
+
+  // 标题右边Icon行动点
+  div[class*='titleActions___'] {
+    > span {
+      display: flex;
+      width: 22px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0;
+      color: var(--ai-native-text-color-normal);
+      &::before {
+        font-size: 14px;
       }
-      :global {
-        .background-mode {
-          opacity: 0.65;
-          background-size: 14px !important;
-          background-position: center;
-        }
+      &:hover {
+        color: var(--ai-native-text-color-hover);
+        background-color: var(--activityBar-activeBorder);
+        opacity: 1;
+      }
+    }
+    :global {
+      .background-mode {
+        opacity: 0.65;
+        background-size: 14px !important;
+        background-position: center;
       }
     }
   }
