@@ -1,16 +1,19 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
-import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { AI_CHAT_PANEL_TOGGLE_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native';
+import { CancellationTokenSource, CommandService, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceOption } from '@opensumi/ide-core-common/lib/ai-native';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum, IChatManagerService } from '../common';
+import { IChatMessageStructure, InstructionEnum, IChatManagerService } from '../common';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
+
 
 @Injectable()
 export class AiChatService extends Disposable {
@@ -28,6 +31,9 @@ export class AiChatService extends Disposable {
 
   @Autowired(AiMenubarService)
   private readonly aiMenubarService: AiMenubarService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
@@ -64,10 +70,7 @@ export class AiChatService extends Disposable {
   }
 
   public launchChatMessage(data: IChatMessageStructure) {
-    if (this.aiMenubarService.getLatestWidth() !== 0) {
-      this.aiMenubarService.toggleRightPanel();
-    }
-
+    this.commandService.executeCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE.id, true);
     this._onChatMessageLaunch.fire(data);
   }
 

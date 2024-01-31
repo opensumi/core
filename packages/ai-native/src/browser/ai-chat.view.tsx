@@ -13,10 +13,11 @@ import {
 import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
+import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native';
 import { Command, isMacintosh, URI, uuid } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AISerivceType, IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
+import { IChatMessageStructure, InstructionEnum, AiResponseTips, IChatAgentService } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -627,7 +628,11 @@ const AISearch = async (
           renderContent={(content) => (
             <div className={styles.ai_chat_search_container}>
               <div className={styles.ai_response_text}>
-                <CodeBlockWrapper text={content} relationId={relationId} renderText={(text) => <ChatMarkdown content={text} />} />
+                <CodeBlockWrapper
+                  text={content}
+                  relationId={relationId}
+                  renderText={(text) => <ChatMarkdown content={text} />}
+                />
               </div>
             </div>
           )}
@@ -700,7 +705,11 @@ const AIChatRunReply = async (input, params: ReplayComponentParam) => {
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          {RenderAnswer ? <RenderAnswer input={input} relationId={relationId} /> : <CodeBlockWrapper text={input} relationId={relationId} />}
+          {RenderAnswer ? (
+            <RenderAnswer input={input} relationId={relationId} />
+          ) : (
+            <CodeBlockWrapper text={input} relationId={relationId} />
+          )}
         </ChatMoreActions>
       ),
       className: styles.chat_with_more_actions,
