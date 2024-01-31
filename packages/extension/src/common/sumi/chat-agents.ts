@@ -10,6 +10,7 @@ import type {
   IChatAsyncContent,
   IChatFollowup,
   IChatReplyFollowup,
+  IChatContent,
 } from '@opensumi/ide-ai-native/lib/common';
 import { CancellationToken } from '@opensumi/ide-core-common';
 
@@ -36,6 +37,7 @@ export interface IMainThreadChatAgents {
     responsePartHandle?: number,
   ): Promise<number | void>;
   $populateChatInput: (handle: number, param: IChatInputParam) => void;
+  $sendMessage: (chunk: IChatContent) => void;
 }
 
 export interface IExtHostChatAgents {

@@ -892,5 +892,7 @@ declare module 'sumi' {
      * create chat agent
      */
     export function createChatAgent(name: string, handler: ChatAgentHandler): ChatAgent;
+
+    export function sendMessage(chunk: ChatAgentContent): void;
   }
 }

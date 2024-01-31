@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CancellationToken, MaybePromise, IDisposable } from '@opensumi/ide-core-common';
+import { CancellationToken, MaybePromise, IDisposable, Deferred } from '@opensumi/ide-core-common';
 import { CompletionResultModel, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -147,4 +147,5 @@ export const IChatAgentViewService = Symbol('IChatAgentViewService');
 export interface IChatAgentViewService {
   registerChatComponent(component: IChatComponentConfig): IDisposable;
   getChatComponent(componentId: string): IChatComponentConfig | null;
+  getChatComponentDeferred(componentId: string): Deferred<IChatComponentConfig> | null;
 }

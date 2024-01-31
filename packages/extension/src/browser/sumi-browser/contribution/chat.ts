@@ -23,15 +23,17 @@ export class ChatBrowserContributionRunner extends AbstractSumiBrowserContributi
     }
 
     const { chat } = this.contribution;
-    if (!chat) {
+    if (!chat || !Array.isArray(chat.view)) {
       return disposer;
     }
 
     chat.view.forEach((view) => {
+      if (!view.id || !view.component) {return;}
       const { extendProtocol, extendService } = param.getExtensionExtendService(this.extension, view.id);
+      const componentId = `${this.extension.id}:${view.id}`;
       disposer.addDispose(
         this.chatAgentViewService.registerChatComponent({
-          id: view.id,
+          id: componentId,
           component: view.component as React.ComponentType,
           initialProps: {
             kaitianExtendService: extendService,
