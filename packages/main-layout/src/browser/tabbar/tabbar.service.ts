@@ -808,9 +808,9 @@ export class TabbarService extends WithEventBus {
   protected listenCurrentChange() {
     return reaction(
       () => this.currentContainerId,
-      (nextContainerId) => {
-        this.previousContainerId = this.currentContainerId;
-        this.handleChange(nextContainerId, this.previousContainerId);
+      (nextContainerId, previousContainerId) => {
+        this.previousContainerId = previousContainerId;
+        this.handleChange(nextContainerId, previousContainerId);
       },
     );
   }
