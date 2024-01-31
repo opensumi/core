@@ -1,6 +1,19 @@
-import { AISerivceType } from '../index';
-
 export const AI_REPORTER_NAME = 'AI';
+
+export enum AISerivceType {
+  SearchDoc = 'searchDoc',
+  SearchCode = 'searchCode',
+  Sumi = 'sumi',
+  GPT = 'chat',
+  Explain = 'explain',
+  Run = 'run',
+  Test = 'test',
+  Optimize = 'optimize',
+  Generate = 'generate',
+  Completion = 'completion',
+  Agent = 'agent',
+  MergeConflict = 'mergeConflict',
+}
 
 export interface CommonLogInfo {
   replytime: number;

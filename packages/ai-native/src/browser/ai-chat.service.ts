@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_CHAT_PANEL_TOGGLE_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native';
+import { AISerivceType } from '@opensumi/ide-core-browser/src/ai-native/reporter';
 import { CancellationTokenSource, CommandService, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceOption } from '@opensumi/ide-core-common/lib/ai-native';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -13,7 +13,6 @@ import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
 import { MsgStreamManager } from './model/msg-stream-manager';
 import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
-
 
 @Injectable()
 export class AiChatService extends Disposable {
