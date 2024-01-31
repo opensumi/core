@@ -177,7 +177,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
     } else {
       actions = [
         {
-          icon: getIcon('close'),
+          icon: getIcon('window-close'),
           title: localize('file.close'),
           command: OPEN_EDITORS_COMMANDS.CLOSE.id,
         },

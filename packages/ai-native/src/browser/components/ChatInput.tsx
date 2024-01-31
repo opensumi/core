@@ -525,7 +525,11 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
                 </div>
               ) : (
                 <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
-                  <Icon className={cls(getIcon('send1'), styles.send_icon)} onClick={() => handleSend()} />
+                  <EnhanceIcon
+                    wrapperClassName={styles.send_icon}
+                    className={getIcon('send1')}
+                    onClick={() => handleSend()}
+                  />
                 </Popover>
               )}
             </div>

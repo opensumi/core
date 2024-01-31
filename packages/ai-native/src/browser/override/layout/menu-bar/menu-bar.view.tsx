@@ -146,7 +146,7 @@ export const AiMenuBarView = () => {
         </div>
         <div className={styles.center}>
           <div className={styles.run}>
-            <Button size={'default'} onClick={handleRun} className={styles.btn}>
+            <Button size={'default'} type='default' onClick={handleRun} className={styles.btn}>
               <Icon className={getIcon('run')} /> 运行
             </Button>
           </div>

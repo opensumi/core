@@ -24,10 +24,6 @@
     * ---------------- 覆盖 editor tab 样式 ---------------------
     */
 
-    div[class*='editorGroupHeader___'] {
-      background-color: var(--kt-panelTitle-background);
-    }
-
     div[class*='kt_editor_tabs_scroll_wrapper___'] {
       &:after {
         display: none;
@@ -36,12 +32,11 @@
 
     div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_content___'] {
       div[class*='kt_editor_tab___'] {
-        border-right: none;
-        border-top: none;
+        border: 0 none;
         padding: 0;
         min-width: initial;
         align-items: center;
-        padding-bottom: 1px;
+        background-color: transparent;
 
         // 最有一个元素分割线隐藏
         &:last-child {
@@ -86,7 +81,7 @@
       }
 
       div[class*='kt_editor_tab_current___'] {
-        background-color: var(--kt-panelTitle-background) !important;
+        // background-color: var(--kt-panelTitle-background) !important;
 
         div[class*='close_tab___'] {
           display: block;
@@ -124,6 +119,7 @@
           margin-left: 2px;
           &:not(.disabled):hover {
             color: var(--ai-native-text-color-hover);
+            opacity: 1;
           }
         }
 
@@ -172,7 +168,6 @@
     */
     div[class*='navigation_container___'] {
       height: 28px;
-      background: rgba(0, 0, 0, 0.15);
       border-bottom: 0 none;
       span[class*='navigation-part___'] {
         color: var(--ai-native-text-color-other);
@@ -225,7 +220,7 @@
   div[class*='file_tree_node___'] {
     border-radius: 4px;
     font-size: 12px;
-    color: var(--ai-native-text-color-normal);
+    // color: var(--ai-native-text-color-normal);
   }
 
   div[class*='kt_split_panel___'] {
@@ -241,22 +236,33 @@
     div[class*='actions_wrap___'] {
       margin: 0 8px;
     }
-    div[class*='titleActions___'] {
-      > span {
-        display: flex;
-        width: 22px;
-        height: 22px;
-        align-items: center;
-        justify-content: center;
-        margin-left: 0;
-        color: var(--ai-native-text-color-normal);
-        &::before {
-          font-size: 14px;
-        }
-        &:hover {
-          color: var(--ai-native-text-color-hover);
-          background-color: var(--activityBar-activeBorder);
-        }
+  }
+
+  // 标题右边Icon行动点
+  div[class*='titleActions___'] {
+    > span {
+      display: flex;
+      width: 22px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0;
+      color: var(--ai-native-text-color-normal);
+      &::before {
+        font-size: 14px;
+      }
+      &:hover {
+        color: var(--ai-native-text-color-hover);
+        background-color: var(--activityBar-activeBorder);
+        border-radius: 4px;
+        opacity: 1;
+      }
+    }
+    :global {
+      .background-mode {
+        opacity: 0.65;
+        background-size: 14px !important;
+        background-position: center;
       }
     }
   }
@@ -284,10 +290,6 @@
 
   div[class*='opened_editor_node___'] {
     border-radius: 4px;
-
-    div[class*='opened_editor_node_overflow_wrap___'] {
-      color: var(--ai-native-text-color-normal);
-    }
   }
 
   div[class*='expansion_toggle___'] {
@@ -295,8 +297,6 @@
   }
 
   div[class*='mod_selected___'] {
-    color: var(--ai-native-text-color-highlight) !important;
-
     div[class*='opened_editor_node_overflow_wrap__'] {
       color: var(--ai-native-text-color-highlight) !important;
     }
@@ -313,11 +313,6 @@
 
     &:hover {
       background-color: var(--activityBar-activeBorder);
-      :global {
-        .activity-icon {
-          color: var(--ai-native-text-color-hover);
-        }
-      }
     }
 
     :global {
@@ -325,13 +320,8 @@
         font-size: 16px;
         width: 16px;
         height: 16px;
-        color: var(--ai-native-text-color-other);
         &.mask-mode {
-          background-color: var(--ai-native-block-background-light);
           -webkit-mask-size: 16px;
-          &:hover {
-            background-color: var(--ai-native-text-color-highlight);
-          }
         }
       }
     }
@@ -369,13 +359,6 @@
         .active {
           div[class*='icon_tab___'] {
             background-color: var(--activityBar-activeBorder);
-            .activity-icon {
-              color: var(--ai-native-text-color-highlight);
-              // 小icon颜色
-              &.mask-mode {
-                background-color: var(--ai-native-text-color-highlight);
-              }
-            }
 
             &::before {
               content: none;
@@ -392,7 +375,6 @@
 
   // 底部菜单样式
   .extra_bottom_icon {
-    opacity: 0.45;
     &:hover {
       background-color: transparent !important;
       opacity: 1;
@@ -417,25 +399,9 @@
     border-radius: 4px;
   }
 
-  div[class*='welcome___'] {
-    :global {
-      .button-container .kt-button {
-        border-radius: 4px;
-      }
-    }
-  }
-
-  // 搜索输入框样式
-  :global {
-    // div[class*='search_container___'] {
-    .kt-input-default,
-    .input-box.popup .kt-input {
-      background-color: var(--ai-native-block-background-common);
-      border-radius: 8px;
-      color: var(--ai-native-input-color);
-    }
-
-    // }
+  // 插件面板
+  div[class*='extension_item___'] {
+    border-radius: 8px;
   }
 }
 
@@ -459,9 +425,13 @@
   }
 
   div[class*='bottom_bar_container___'] {
-    background-color: var(--kt-panelTitle-background);
+    // background-color: var(--kt-panelTitle-background);
     width: 100%;
     height: 32px;
+  }
+
+  div[class*='variable_repl_bar___'] {
+    background-color: transparent;
   }
 
   div[class*='panel_toolbar_container___'] {
@@ -516,13 +486,9 @@
       height: 24px;
       font-size: 12px;
       border-radius: 4px;
-      background-color: var(--ai-native-input-background);
       width: 240px;
       max-width: 240px;
       border: 0 none;
-      span[class*='kt-icon'] {
-        color: var(--ai-native-input-color);
-      }
     }
   }
 
@@ -533,7 +499,6 @@
       height: 24px;
       font-size: 12px;
       border-radius: 4px;
-      background-color: var(--ai-native-input-background);
       width: 240px;
       max-width: 240px;
       border: 0 none;
@@ -544,29 +509,21 @@
   }
 
   /* 过度方案 */
-  div[class*='tab_bar___'] {
-    background-color: var(--kt-panelTitle-background);
-  }
 
   li[class*='bottom_tab___'] {
     background-color: transparent;
   }
 
   div[class*='panel_title_bar___'] {
-    background-color: var(--kt-panelTitle-background);
+    background-color: var(--ai-native-title-background);
   }
 
   div[class*='panel_title_bar___']::before {
     content: none;
   }
 
-  div[class*='bottom_bar_container___'] {
-    border-top: none;
-  }
-
   div[class*='item_container__'] {
     border: 0 none;
-    background-color: transparent;
     &::after {
       content: '';
       position: absolute;
@@ -575,7 +532,7 @@
       display: inline-block;
       width: 1px;
       height: 12px;
-      background-color: var(--ai-native-border-color-normal);
+      background-color: var(--kt-panelTab-border);
     }
     div[class*='item_info_name___'] {
       min-width: 110px;
@@ -615,7 +572,8 @@
   }
 
   div[class*='item_selected___'] {
-    background-color: rgba(21, 27, 33, 1);
+    // background-color: rgba(21, 27, 33, 1);
+    &::before,
     &::after {
       display: none;
     }
@@ -625,7 +583,7 @@
     height: 35px;
     :first-child {
       &.item_container {
-        border-left: 1px solid var(--ai-native-border-color-normal);
+        border-left: 1px solid var(--editorGroup-border);
       }
     }
   }
@@ -637,11 +595,9 @@
       }
       .kt-select-options {
         padding: 4px 0;
-        background: #2b333d;
         border-radius: 8px;
-        box-shadow: 0px 8px 20px 6px rgba(0, 0, 0, 0.2), 0px 3px 6px -4px rgba(0, 0, 0, 0.4),
-          0px 6px 16px 0px rgba(0, 0, 0, 0.24);
-        color: var(--ai-native-text-color-common);
+        box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1),
+          0px 3px 6px -4px var(--ai-native-boxShadow-color2), 0px 6px 16px 0px var(--ai-native-boxShadow-color3);
         > div {
           line-height: 26px;
           height: 26px;
@@ -649,17 +605,6 @@
         span {
           margin: 0;
           width: 100%;
-          background-color: transparent;
-        }
-        span:hover {
-          background: var(--ai-native-block-background-common);
-          color: var(--ai-native-text-color-hover);
-        }
-        .kt-select-option-select {
-          span {
-            background: var(--ai-native-block-background-common);
-            color: var(--ai-native-text-color-highlight);
-          }
         }
         &::-webkit-scrollbar {
           width: 4px !important;
@@ -774,7 +719,7 @@
 
     .rce-user-msg {
       .rce-mbox-right {
-        background: rgba(60, 141, 255, 0.15);
+        background: var(--ai-native-rce-background);
         border-radius: 12px 12px 2px 12px;
         margin-right: 0;
         margin-left: 0;

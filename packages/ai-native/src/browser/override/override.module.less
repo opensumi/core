@@ -25,7 +25,7 @@
     display: inline-block;
     width: 1px;
     height: 12px;
-    background-color: var(--ai-native-block-background-common);
+    background-color: var(--editorGroup-border);
   }
 
   > div:first-child {
@@ -145,6 +145,16 @@
   .submenuIcon {
     span {
       font-size: 16px;
+    }
+  }
+}
+
+:global(.ai-light) {
+  .ai_editor_tab_block_container {
+    > div:first-child {
+      &::before {
+        filter: grayscale(0);
+      }
     }
   }
 }

@@ -31,6 +31,7 @@ import { AiBrowserCtxMenuService } from './override/ai-menu.service';
 import { AiChatLayoutConfig, AiTopLayoutConfig } from './override/layout/layout-config';
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
+import lightTheme from './override/theme/light-theme';
 import { AiRunFeatureRegistry } from './run/run.feature.registry';
 import {
   AiNativeCoreContribution,
@@ -119,7 +120,16 @@ export class AiNativeModule extends BrowserModule {
               const newTheme = await super.getThemeData(contribution, basePath);
 
               const theme = this.injector.get(IThemeData);
-              theme.initializeFromData(defaultTheme);
+              let themeToken;
+              if (contribution?.id?.includes('light')) {
+                themeToken = lightTheme;
+                document.body.classList.remove(defaultTheme.aiThemeType);
+              } else {
+                themeToken = defaultTheme;
+                document.body.classList.remove(lightTheme.aiThemeType);
+              }
+              document.body.classList.add(themeToken.aiThemeType);
+              theme.initializeFromData(themeToken);
 
               const colors = theme.colors;
               if (colors) {

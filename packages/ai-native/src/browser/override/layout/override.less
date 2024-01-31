@@ -4,6 +4,14 @@ div[class*='box-panel___'] {
   background-size: cover;
 }
 
+.ai-light {
+  div[class*='box-panel___'] {
+    background-image: url('https://mdn.alipayobjects.com/huamei_aj2sia/afts/img/A*6wRWRLd0RCMAAAAAAAAAAAAADoSNAQ/original');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+}
+
 #opensumi-left-tabbar {
   span[class*='tab_badge___'] {
     top: 0;
@@ -18,23 +26,28 @@ div[class*='box-panel___'] {
 }
 
 #opensumi-statusbar {
-  opacity: 0.35;
   border-top: 0;
 }
 
 /**
 * 覆盖菜单样式
 */
+.kt-menu {
+  &::-webkit-scrollbar {
+    width: 4px;
+    margin: 20px;
+  }
+}
 .kt-menu.kt-inner-menu-submenu {
   background-color: transparent !important;
+  border-radius: 8px !important ;
 
   ul.kt-inner-menu-sub {
     backdrop-filter: saturate(150%) blur(20px) !important;
     -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
-    background-color: rgba(34, 40, 48, 0.85) !important;
     border: 0 none !important;
-    box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 3px 6px -4px rgba(0, 0, 0, 0.4),
-      0px 6px 16px 0px rgba(0, 0, 0, 0.24) !important;
+    box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+      0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
     border-radius: 8px !important;
     margin-left: 2px;
     .kt-icon {
@@ -47,9 +60,9 @@ div[class*='box-panel___'] {
 .kt-menu .kt-inner-menu {
   backdrop-filter: saturate(150%) blur(20px) !important;
   -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
-  background-color: rgba(34, 40, 48, 0.85) !important;
   border: 0 none !important;
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36) !important;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
   border-radius: 8px !important;
   min-width: initial;
   padding: 4px 0 !important;
@@ -76,8 +89,7 @@ div[class*='box-panel___'] {
 .kt-menu.kt-inner-menu .kt-inner-menu-item-divider,
 .kt-menu .kt-inner-menu .kt-inner-menu-item-divider {
   pointer-events: none !important;
-  background-color: var(--menu-separatorBackground) !important;
-  opacity: 0.3;
+  opacity: 1 !important;
   margin: 4px 0 !important;
 }
 
@@ -85,30 +97,15 @@ div[class*='box-panel___'] {
 * 覆盖 popover 样式
 */
 .kt-popover-content {
-  box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 6px 16px 0px rgba(0, 0, 0, 0.24),
-    0px 3px 6px -4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3);
   padding: 5px 8px;
   border-radius: 6px;
-  color: var(--kt-popover-foreground);
-  background-color: var(--kt-popover-background);
   line-height: 18px;
   margin-top: -3px;
   .kt-popover-title {
     margin-bottom: 0;
     font-size: 12px;
-  }
-
-  &.kt-popover-top::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    margin-left: -7px;
-    width: 0;
-    height: 0;
-    border: 7px solid transparent;
-    top: 100%;
-    border-bottom-width: 0;
-    border-top-color: var(--kt-popover-border);
   }
 }
 
@@ -116,12 +113,10 @@ div[class*='box-panel___'] {
 html {
   ::-webkit-scrollbar-thumb {
     border-radius: 4px !important;
-    background: var(--scrollbarSlider-background) !important;
   }
 }
 
 /* 修改滚动条大小调整 */
-
 #workbench-editor .monaco-editor {
   .decorationsOverviewRuler {
     width: 4px !important;
@@ -130,7 +125,18 @@ html {
     left: auto !important;
     right: 4px !important;
   }
+
+  .monaco-hover {
+    background-color: var(--kt-modal-background) !important;
+    border: 0 none !important;
+    box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+      0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
+    border-radius: 8px !important;
+  }
   .monaco-scrollable-element {
+    > .scrollbar > .slider {
+      background: var(--scrollbarSlider-background);
+    }
     .vertical {
       width: 4px !important;
       .slider {
@@ -165,12 +171,89 @@ html {
 }
 
 #opensumi-quickpick {
-  backdrop-filter: saturate(150%) blur(20px) !important;
-  -webkit-backdrop-filter: saturate(150%) blur(20px) !important;
-  background-color: rgba(34, 40, 48, 0.85) !important;
   border: 0 none !important;
-  box-shadow: 0px 9px 28px 8px rgba(0, 0, 0, 0.2), 0px 3px 6px -4px rgba(0, 0, 0, 0.4),
-    0px 6px 16px 0px rgba(0, 0, 0, 0.24) !important;
-  border-radius: 8px !important;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
+  border-radius: 8px 8px 0 0 !important;
   padding: 4px 0;
+
+  div[class*='quickopen_list___'] {
+    border-radius: 0 0 8px 8px !important;
+    border: 0 none !important;
+    box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+      0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
+  }
+}
+
+// 对话框
+.kt-modal-content {
+  border-radius: 8px;
+  background-color: transparent;
+}
+.kt-overlay .kt-modal-body {
+  border-radius: 8px;
+  border: 0 none !important;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
+}
+.kt-dialog-buttonWrap button {
+  border-radius: 4px;
+}
+
+// 右下角弹框
+.kt-notification-notice {
+  border-radius: 8px;
+}
+
+// 全局按钮、下拉框、输入框设置调整
+.kt-input {
+  border-radius: 6px;
+}
+
+.default-button-size,
+.kt-button {
+  border-radius: 4px;
+}
+
+.large-button-size,
+.kt-dialog-buttonWrap button {
+  border-radius: 6px;
+}
+
+.kt-select-container .kt-select-value {
+  border-radius: 4px;
+}
+
+.kt-select-options {
+  border-radius: 8px;
+}
+
+.kt-clickable-icon:hover {
+  transform: none;
+}
+
+.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-radius: 6px;
+}
+
+div[class*='navigation_menu_item___'] {
+  .kaitian-icon {
+    font-size: 14px;
+  }
+}
+
+// debug、菜单弹层
+div[class*='debug_toolbar_wrapper___'] {
+  border-radius: 8px;
+  background-color: var(--kt-modal-background);
+  border: 0 none !important;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
+}
+
+div[class*='navigation_menu___'] {
+  border-radius: 8px;
+  border: 0 none !important;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3) !important;
 }
