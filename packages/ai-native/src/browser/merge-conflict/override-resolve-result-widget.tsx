@@ -8,6 +8,7 @@ import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AiResolveConflictContentWidget,
+  IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
@@ -48,6 +49,13 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
     const iconResultItems = this.iconItems();
     const isRenderThumbs = this.isRenderThumbs();
 
+    const handleCloseClick = () => {
+      this.codeEditor.launchConflictActionsEvent({
+        range: this.lineRange,
+        action: IGNORE_ACTIONS,
+      });
+    };
+
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
         <WapperAiInlineResult
@@ -55,7 +63,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
           isRenderThumbs={isRenderThumbs}
           codeEditor={this.codeEditor}
           range={this.lineRange}
-          closeClick={() => this.codeEditor.hideResolveResultWidget(this.lineRange.id)}
+          closeClick={handleCloseClick}
           isRenderClose={true}
         />
       </ContentWidgetContainerPanel>
