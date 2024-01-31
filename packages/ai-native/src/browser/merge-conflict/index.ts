@@ -21,6 +21,8 @@ import {
   IDisposable,
   Emitter,
   Event,
+  Constants,
+  CommandService,
 } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
@@ -37,6 +39,7 @@ import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge
 import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -44,7 +47,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { CacheConflict, DocumentMergeConflict } from './cache-conflicts';
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
 import { CommitType } from './types';
-
 export namespace MERGE_CONFLICT {
   const CATEGORY = 'MergeConflict';
   export const AI_ACCEPT: Command = {
@@ -197,6 +199,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   @Autowired(AiBackSerivcePath)
   public aiBackService: IAiBackService;
 
+  @Autowired(CommandService)
+  public commandService: CommandService;
+
   private resolveResultWidgetManager: IWidgetFactory;
   private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
   private stopWidgetManager: IWidgetFactory;
@@ -207,6 +212,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   private readonly _onRequestsCancel = new Emitter<IRequestCancel[]>();
   public readonly onRequestsCancel: Event<IRequestCancel[]> = this._onRequestsCancel.event;
+
   private editor: ICodeEditor;
   private loadingRange: Set<IRange> = new Set();
   constructor() {
@@ -275,11 +281,13 @@ export class MergeConflictContribution extends Disposable implements CommandCont
               }
               // 内部改动
               if (startLineNumber >= newStartLineNumber && endLineNumber <= newEndLineNumber) {
-                const newRange = new monaco.Range(newStartLineNumber, 1, newEndLineNumber + offset, 1);
-                map.set(id, {
-                  ...value,
-                  newRange,
-                });
+                // 内部改动删除
+                // TODO 二次提示
+                // const newRange = new monaco.Range(newStartLineNumber, 1, newEndLineNumber + offset, 1);
+                // map.set(id, {
+                //   ...value,
+                //   newRange,
+                // });
               }
             }
             this.resetCacheResolvedConflicts(map);
@@ -391,6 +399,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       commands.registerCommand(MERGE_CONFLICT.ALL_RESET, {
         execute: async (uri: Uri) => {
           const content = this.cacheConflicts.getConflict(uri.toString());
+          this.cancelRequestToken();
           if (content) {
             if (this.editorService.currentEditor?.currentUri?.toString() === uri.toString()) {
               const editor = this.editorService.currentEditor?.monacoEditor;
@@ -513,7 +522,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     } else {
       lineRange = lineRan!;
     }
-    const range = lineRange.toRange();
+    const range = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
 
     const skeletonDecorationDispose = this.renderSkeletonDecoration(lineRange, [
       styles.skeleton_decoration,
@@ -536,24 +545,36 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       skeletonDecorationDispose();
       this.stopWidgetManager.hideWidget(lineRange.id);
       this.loadingRange.delete(range);
+      // this.updateCodeLensProvider();
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
-      const resultLines = resolveConflictResult.data.split('\n');
-      const lastLens = resultLines[resultLines.length - 1];
-      const newRange = new monaco.Range(
-        lineRange.startLineNumber,
-        1,
-        lineRange.startLineNumber + resultLines.length - 1,
-        lastLens.length,
-      );
+      const { text, lineNumber, lines } = this.resolveEndLineEOL(resolveConflictResult.data);
+      const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
+      const endColumn = lines[lines.length - 1].length + 1;
+      const newRange = new monaco.Range(lineRange.startLineNumber, 1, endLineNumber, endColumn);
       const edit = {
         range,
-        text: resolveConflictResult.data,
+        text,
       };
-      // this.getModel()?.pushStackElement();
-      const validEditOperation = this.getModel()?.applyEdits([edit], true) || [];
-      // this.getModel()?.pushStackElement();
+      let validEditOperation: IValidEditOperation[] = [];
+      this.getModel()?.pushEditOperations(null, [edit], (operation) => {
+        validEditOperation = operation;
+        const selections: monaco.Selection[] = [];
+        operation.forEach((op) => {
+          selections.push(
+            new monaco.Selection(
+              op.range.startLineNumber,
+              op.range.startColumn,
+              op.range.endLineNumber,
+              op.range.endColumn,
+            ),
+          );
+        });
+        // 自动选中
+        // this.editor.setSelections(selections);
+        return selections;
+      });
       const newLineRange = this.toLineRange(newRange, lineRange?.id);
       this.resolveResultWidgetManager.addWidget(newLineRange);
       // 记录每一次解决的位置
@@ -568,8 +589,24 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
         this.debounceMessageWarning();
+        this.loadingRange.delete(range);
       }
     }
+  }
+
+  private resolveEndLineEOL(text: string): { text: string; lineNumber: number; lines: string[] } {
+    const eol = this.getModel()?.getEOL() ?? '\n';
+    const lines = text.split(eol);
+    const lastLine = lines[lines.length - 1];
+    // 最后一行去掉换行符
+    if (lastLine === '' && lines.length > 1) {
+      lines.pop();
+    }
+    return {
+      text: lines.join(eol),
+      lineNumber: lines.length,
+      lines,
+    };
   }
 
   private async acceptAllConflict() {
@@ -603,10 +640,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private registerCodeLensProvider() {
     return monaco.languages.registerCodeLensProvider([{ scheme: 'file' }], {
       provideCodeLenses: async (model, token) => {
-        const lens = await this.provideCodeLens(model, token);
+        let lens = await this.provideCodeLens(model, token);
         return {
           lenses: lens ?? [],
-          dispose: () => this.disposables,
+          dispose: () => {
+            lens = [];
+          },
         };
       },
     });
@@ -668,13 +707,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     const { range, action } = eventData;
     if (action === REVOKE_ACTIONS) {
       const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
-
       if (cacheConflict) {
         const edit = {
           range: cacheConflict.newRange,
           text: cacheConflict.conflictText || cacheConflict.text,
         };
-        this.getModel()?.applyEdits([edit], true);
+        this.getModel()?.pushEditOperations(null, [edit], () => null);
       }
       this.cleanWidget(range.id);
       this.deleteCacheResolvedConflicts(range.id);
@@ -701,6 +739,17 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
     this.hideStopWidget();
     this.hideResolveResultWidget();
+  }
+
+  // 强制刷新 codelens
+  private updateCodeLensProvider() {
+    debounce(() => {
+      if (this.getModel().uri) {
+        // @ts-ignore
+        languageFeaturesService.codeLensProvider._onDidChange.fire();
+        // this.commandService.executeCommand('_executeCodeLensProvider', this.getModel().uri);
+      }
+    }, 3000);
   }
 
   private debounceMessageWarning = debounce(() => {

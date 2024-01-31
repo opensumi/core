@@ -22,10 +22,11 @@ interface IWapperAiInlineResultProps {
   range: LineRange;
   closeClick?: () => void;
   isRenderClose?: boolean;
+  disablePopover?: boolean;
 }
 
 export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
-  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose } = props;
+  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose, disablePopover = false } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
 
@@ -105,6 +106,9 @@ export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
     if (preAnswerCode.trim() === currentCode.trim()) {
       execGenerate();
     } else {
+      if (disablePopover) {
+        return;
+      }
       setIsVisiablePopover(true);
     }
   }, [range, codeEditor, isVisiablePopover]);

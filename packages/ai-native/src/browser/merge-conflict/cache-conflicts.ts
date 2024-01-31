@@ -29,7 +29,7 @@ export class TextLine {
     }
     this.text = document.getLineContent(line);
     this.firstNonWhitespaceCharacterIndex = /^(\s*)/.exec(this.text)![1].length;
-    this.range = new monaco.Range(line, 1, line, this.text.length);
+    this.range = new monaco.Range(line, 1, line, this.text.length + 1);
     this.rangeIncludingLineBreak =
       line <= document.getLineCount() ? new monaco.Range(line, 1, line + 1, 1) : this.range;
     this.lineNumber = line;
@@ -221,8 +221,8 @@ function scanItemTolMergeConflictDescriptor(
     range: new monaco.Range(
       scanned.startHeader.range.startLineNumber,
       scanned.startHeader.range.startColumn,
-      scanned.endFooter.rangeIncludingLineBreak.endLineNumber,
-      scanned.endFooter.rangeIncludingLineBreak.endColumn,
+      scanned.endFooter.range.endLineNumber,
+      scanned.endFooter.range.endColumn,
     ),
   };
 }
