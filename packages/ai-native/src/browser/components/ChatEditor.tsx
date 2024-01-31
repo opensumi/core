@@ -13,7 +13,6 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 
 import { InstructionEnum, highLightLanguageSupport } from '../../common/index';
 
-
 import styles from './components.module.less';
 import './highlightTheme.less';
 

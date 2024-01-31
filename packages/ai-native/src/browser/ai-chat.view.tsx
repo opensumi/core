@@ -107,11 +107,12 @@ const InitMsgComponent = () => {
   }, []);
 
   return (
-    <div>
-      <span className={styles.chat_container_content}>
+    <div className={styles.chat_head}>
+      <span className={styles.chat_container_des}>
+        <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
         嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
       </span>
-      <span className={styles.chat_container_content}>您可以提问我一些关于代码的问题</span>
+      <span className={styles.chat_container_title}>您可以提问我一些关于代码的问题</span>
       <div className={styles.chat_container_content} style={{ display: 'flex', flexDirection: 'column' }}>
         {sampleQuestions.map((data: any, index) => {
           const node = (
@@ -145,7 +146,6 @@ export const AiChatView = observer(() => {
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const isAutoScroll = React.useRef<boolean>(false);
 
   const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -184,32 +184,16 @@ export const AiChatView = observer(() => {
   );
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
-      isAutoScroll.current = true;
       containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      // 出现滚动条时出现分割线
+      if (containerRef.current.scrollHeight > containerRef.current.clientHeight) {
+        containerRef.current.classList.add(SCROLL_CLASSNAME);
+      }
     }
   }, [containerRef]);
 
   React.useEffect(() => {
     setMessageListData([firstMsg]);
-    let timerHandle;
-    containerRef.current?.addEventListener('scroll', () => {
-      clearTimeout(timerHandle);
-      // 排除自动滚动
-      if (isAutoScroll.current) {
-        isAutoScroll.current = false;
-        return;
-      }
-
-      containerRef.current?.classList.add(SCROLL_CLASSNAME);
-      isAutoScroll.current = false;
-      timerHandle = setTimeout(() => {
-        containerRef.current?.classList.remove(SCROLL_CLASSNAME);
-      }, 2000);
-    });
-
-    return () => {
-      containerRef.current?.removeEventListener('scroll', () => {});
-    };
   }, []);
 
   React.useEffect(() => {
@@ -397,10 +381,15 @@ export const AiChatView = observer(() => {
     aiChatService.cancelChatViewToken();
     aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
     aiChatService.clearSessionModel();
+    // 清除滚动条出现时的分割线
+    containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
     setMessageListData([firstMsg]);
   }, [messageListData]);
 
   const handleThemeClick = (value) => {
+    if (loading || loading2) {
+      return;
+    }
     setTheme(value);
   };
 
