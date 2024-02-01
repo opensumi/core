@@ -218,13 +218,15 @@
   }
 
   div[class*='file_tree_node___'] {
-    border-radius: 4px;
     font-size: 12px;
   }
 
   div[class*='tree_view_node___'],
-  div[class*='scm_tree_node___'] {
+  div[class*='scm_tree_node___'],
+  div[class*='opened_editor_node___'],
+  div[class*='file_tree_node___'] {
     border-radius: 4px;
+    margin: 0 5px;
   }
 
   div[class*='kt_split_panel___'] {
@@ -290,10 +292,6 @@
     h1 {
       color: var(--ai-native-text-color-common);
     }
-  }
-
-  div[class*='opened_editor_node___'] {
-    border-radius: 4px;
   }
 
   div[class*='expansion_toggle___'] {
