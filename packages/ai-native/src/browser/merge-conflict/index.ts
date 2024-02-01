@@ -739,10 +739,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           clickNum: this.reportData.clickNum! + 1,
         };
       }
+      return Promise.resolve(resolveConflictResult);
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
         this.debounceMessageWarning();
         this.loadingRange.delete(range);
+        return Promise.resolve(resolveConflictResult);
       }
     }
   }
@@ -778,9 +780,17 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         isCancelAll = true;
         return;
       }),
+      // 取消一个后取消所有
+      this.onRequestCancel(() => {
+        isCancelAll = true;
+        return;
+      }),
     );
-    return this.conflictAIAccept(conflicts[0]).then(() => {
+    return this.conflictAIAccept(conflicts[0]).then((res) => {
       if (isCancelAll) {
+        return Promise.resolve();
+      }
+      if (res?.errorCode !== 0) {
         return Promise.resolve();
       }
       if (!conflicts?.length) {
