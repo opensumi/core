@@ -14,3 +14,14 @@ export const ktStatusBarOfflineBackground = registerColor(
   },
   localize('statusBarOfflineBackground', 'StatusBar background color when app is offline'),
 );
+
+export const ktStatusBarOfflineForeground = registerColor(
+  'kt.statusbar.offline.foreground',
+  {
+    dark: '#fff',
+    light: '#fff',
+    hcDark: '#fff',
+    hcLight: '#fff',
+  },
+  localize('statusBarOfflineForeground', 'StatusBar foreground color when app is offline'),
+);

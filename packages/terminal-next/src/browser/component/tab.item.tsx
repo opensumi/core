@@ -124,7 +124,7 @@ export const renderAddItem = observer((props: ItemProps) => {
       <div
         title={localize('terminal.new.type')}
         className={clx({
-          [getIcon('down')]: true,
+          [getIcon('down-arrow')]: true,
           [styles.item_more]: true,
         })}
         onClick={props.onDropdown}

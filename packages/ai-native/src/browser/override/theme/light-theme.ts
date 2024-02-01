@@ -627,7 +627,7 @@ export default {
     'kt.modalInfoIcon.foreground': '#3895EB',
     'kt.modalSuccessIcon.foreground': '#64B436',
     'kt.modalWarningIcon.foreground': '#DBA936',
-    'kt.panel.secondaryForeground': '#868C91',
+    'kt.panel.secondaryForeground': '#151b21a6',
     'kt.panelTab.activeBackground': '#fff',
     'kt.panelTab.activeForeground': '#151b21',
     'kt.panelTab.border': '#151b2114',

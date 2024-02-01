@@ -1,12 +1,14 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button, Icon } from '@opensumi/ide-components';
 import {
   AiNativeConfigService,
   CommandRegistry,
   CommandService,
+  IContextKeyService,
   SCM_COMMANDS,
   URI,
+  Uri,
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
@@ -18,6 +20,26 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
+  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
+
+  const [isVisiable, setIsVisiable] = useState(false);
+
+  const gitMergeChangesSet = new Set(['git.mergeChanges']);
+
+  useEffect(() => {
+    const run = () => {
+      const mergeChanges = contextKeyService.getValue<Uri[]>('git.mergeChanges') || [];
+      setIsVisiable(mergeChanges.some((value) => value.toString() === resource.uri.toString()));
+    };
+
+    const disposed = contextKeyService.onDidChangeContext(({ payload }) => {
+      if (payload.affectsSome(gitMergeChangesSet)) {
+        run();
+      }
+    });
+    run();
+    return () => disposed.dispose();
+  }, [resource]);
 
   const [isAiResolving, setIsAiResolving] = useState(false);
   const handleOpenMergeEditor = useCallback(async () => {
@@ -56,6 +78,11 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   const handleReset = useCallback(() => {
     commandService.executeCommand('merge-conflict.ai.all-reset', resource.uri);
   }, [resource]);
+
+  if (!isVisiable) {
+    return null;
+  }
+
   return (
     <div className={styles.merge_editor_float_container}>
       <div id='merge.editor.action.button.accept'>
