@@ -188,6 +188,9 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
     this.actionsManager.dispose();
     this.loadingDispose.dispose();
     this.mergeConflictReportService.dispose();
+  }
+
+  public close(): void {
     this.currentRelationId = '';
   }
 

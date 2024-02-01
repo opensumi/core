@@ -18,10 +18,13 @@ interface IWapperAiInlineResultProps {
   isRenderThumbs: boolean;
   codeEditor: ResultCodeEditor;
   range: LineRange;
+  closeClick?: () => void;
+  isRenderClose?: boolean;
+  disablePopover?: boolean;
 }
 
-const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
-  const { iconItems, isRenderThumbs, codeEditor, range } = props;
+export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
+  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose, disablePopover = false } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
 
@@ -103,6 +106,9 @@ const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
     if (preAnswerCode.trim() === currentCode.trim()) {
       execGenerate();
     } else {
+      if (disablePopover) {
+        return;
+      }
       setIsVisiablePopover(true);
     }
   }, [range, codeEditor, isVisiablePopover]);
