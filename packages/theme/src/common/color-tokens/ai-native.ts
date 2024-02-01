@@ -48,7 +48,7 @@ export const inlineChatTextCommon = registerColor(
 // 正在输入、hover高亮
 export const inlineChatTextHover = registerColor(
   'ai.native.text.color.hover',
-  { dark: '#fff', light: new Color(new RGBA(0, 0, 0, 0.85)), hcDark: null, hcLight: null },
+  { dark: '#fff', light: '#151b21', hcDark: null, hcLight: null },
   '',
   true,
 );

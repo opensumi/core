@@ -155,7 +155,7 @@
 
         :global {
           .background-mode {
-            opacity: 0.65;
+            opacity: 0.85;
             background-size: 14px !important;
             background-position: center;
           }
@@ -220,7 +220,11 @@
   div[class*='file_tree_node___'] {
     border-radius: 4px;
     font-size: 12px;
-    // color: var(--ai-native-text-color-normal);
+  }
+
+  div[class*='tree_view_node___'],
+  div[class*='scm_tree_node___'] {
+    border-radius: 4px;
   }
 
   div[class*='kt_split_panel___'] {
@@ -260,7 +264,7 @@
     }
     :global {
       .background-mode {
-        opacity: 0.65;
+        opacity: 0.85;
         background-size: 14px !important;
         background-position: center;
       }
@@ -562,8 +566,10 @@
       justify-content: center;
       width: 22px;
       height: 22px;
+      line-height: 22px;
       padding: 0;
       border-radius: 4px;
+      font-size: 16px;
       &:hover {
         color: var(--ai-native-text-color-hover);
         background-color: var(--kt-icon-hoverBackground);
