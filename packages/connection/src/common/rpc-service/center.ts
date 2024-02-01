@@ -125,6 +125,8 @@ export class RPCServiceCenter {
   }
 
   async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
+    await this.ready();
+
     const name = getMethodName(serviceName, _name);
     const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
 
