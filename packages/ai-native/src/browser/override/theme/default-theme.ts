@@ -745,7 +745,7 @@ export default {
     'sideBar.dropBackground': '#43484D',
     'sideBar.dropUpBackground': '#1F507D',
     'sideBarSectionHeader.background': '#00000000',
-    'sideBarSectionHeader.foreground': '#FFFFFF',
+    'sideBarSectionHeader.foreground': '#ffffffa6',
     'sideBarTitle.foreground': '#FFFFFF',
     'statusBar.background': '#00000000',
     'statusBar.debuggingBackground': '#D77915',
