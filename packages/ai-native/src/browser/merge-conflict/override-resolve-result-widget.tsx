@@ -65,6 +65,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
           range={this.lineRange}
           closeClick={handleCloseClick}
           isRenderClose={true}
+          disablePopover={true}
         />
       </ContentWidgetContainerPanel>
     );

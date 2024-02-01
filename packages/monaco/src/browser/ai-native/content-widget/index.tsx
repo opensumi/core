@@ -80,6 +80,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     if (!this.domNode) {
       this.domNode = document.createElement('div');
       this.domNode.classList.add(this.getId());
+      this.domNode.style.zIndex = '1';
     }
     return this.domNode;
   }
