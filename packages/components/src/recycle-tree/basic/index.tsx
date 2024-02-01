@@ -40,6 +40,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   contextMenus,
   contextMenuActuator,
   treeName,
+  leaveBottomBlank = true,
 }) => {
   const [showMenus, setShowMenus] = useState<{
     show: boolean;
@@ -310,7 +311,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
           model={model}
           onReady={handleTreeReady}
           className={containerClassname}
-          leaveBottomBlank
+          leaveBottomBlank={leaveBottomBlank}
         >
           {renderTreeNode}
         </RecycleTree>
