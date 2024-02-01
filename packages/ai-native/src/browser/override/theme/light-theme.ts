@@ -549,7 +549,7 @@ export default {
     'gitDecoration.modifiedResourceForeground': '#faad14',
     'gitDecoration.deletedResourceForeground': '#fa541c',
     'gitDecoration.untrackedResourceForeground': '#13c2c2',
-    'gitDecoration.ignoredResourceForeground': ' #666666',
+    'gitDecoration.ignoredResourceForeground': '#666666',
     'gitDecoration.conflictingResourceForeground': '#ff0000',
     'gitDecoration.submoduleResourceForeground': '#1785eb',
     'icon.foreground': '#151b21d9',
