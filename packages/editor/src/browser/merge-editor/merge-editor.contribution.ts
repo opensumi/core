@@ -36,9 +36,8 @@ export class MergeEditorContribution extends Disposable implements BrowserEditor
         if (uri.scheme !== Schemes.file) {
           return false;
         }
-
-        const mergeChanges = this.contextKeyService.getValue<Uri[]>('git.mergeChanges') || [];
-        return mergeChanges.some((value) => value.toString() === uri.toString());
+        // 由于存在时序问题，具体是否显示的逻辑由组件内部处理
+        return true;
       },
     });
   }
