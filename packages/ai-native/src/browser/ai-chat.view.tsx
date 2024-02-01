@@ -5,19 +5,20 @@ import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elemen
 import {
   CODICON_OWNER,
   IAIReporter,
-  QUICK_OPEN_COMMANDS,
+  CommandService,
   getExternalIcon,
   getIcon,
+  COMMON_COMMANDS,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { AISerivceType } from '@opensumi/ide-core-browser/lib/ai-native/reporter';
 import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
-import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
+import { URI, uuid } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 
-import { AiResponseTips, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../common';
+import { IChatAgentService, IChatMessageStructure, InstructionEnum } from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
@@ -768,7 +769,6 @@ const AIWithIDEReply = async (
   let aiMessage: AIMessageData | undefined;
   let success = true;
   try {
-    const RenderAnswer = aiRunService.answerComponentRender();
     aiChatService.setLatestSessionId(relationId);
 
     aiMessage = createMessageByAI({
@@ -776,11 +776,7 @@ const AIWithIDEReply = async (
       relationId,
       text: (
         <ChatMoreActions sessionId={relationId}>
-          {RenderAnswer ? (
-            <RenderAnswer input={answer!} />
-          ) : (
-            <CodeBlockWrapper text={answer!} relationId={relationId} />
-          )}
+          <CodeBlockWrapper text={answer!} relationId={relationId} />
           {type !== 'null' && (
             <Button onClick={excute}>{type === 'command' ? '点击执行' : '在设置编辑器中显示'}</Button>
           )}
