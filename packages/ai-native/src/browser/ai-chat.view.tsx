@@ -108,17 +108,17 @@ const InitMsgComponent = () => {
 
   return (
     <div className={styles.chat_head}>
-      <span className={styles.chat_container_des}>
+      <div className={styles.chat_container_des}>
         <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
         嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
-      </span>
-      <span className={styles.chat_container_title}>您可以提问我一些关于代码的问题</span>
-      <div className={styles.chat_container_content} style={{ display: 'flex', flexDirection: 'column' }}>
+      </div>
+      <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题</div>
+      <div className={styles.chat_container_content}>
         {sampleQuestions.map((data: any, index) => {
           const node = (
             <a
               href='javascript:void(0)'
-              style={{ marginBottom: '4px' }}
+              className={styles.link_item}
               onClick={() => {
                 aiChatService.launchChatMessage(chatAgentService.parseMessage(data.message));
               }}
