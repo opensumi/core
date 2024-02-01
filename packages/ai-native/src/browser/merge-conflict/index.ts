@@ -126,6 +126,7 @@ interface ICacheResolvedConflicts extends IValidEditOperation {
   newRange: IRange;
   id: string;
   conflictText: string;
+  isAccept?: boolean;
 }
 
 interface ICacheAIResolvedConflicts {
@@ -284,8 +285,11 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
             for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
               const { newRange } = value;
-              const { startLineNumber: newStartLineNumber, endLineNumber: newEndLineNumber } = newRange;
-
+              const {
+                startLineNumber: newStartLineNumber,
+                endLineNumber: newEndLineNumber,
+                endColumn: newEndColumn,
+              } = newRange;
               // 在冲突位置下方改动 不处理
               if (newEndLineNumber < startLineNumber) {
                 map.set(id, value);
@@ -293,7 +297,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
               }
               // 在冲突位置上方改动 偏移
               if (startLineNumber < newStartLineNumber && endLineNumber < newEndLineNumber) {
-                const newRange = new monaco.Range(newStartLineNumber + offset, 1, newEndLineNumber + offset, 1);
+                const newRange = new monaco.Range(
+                  newStartLineNumber + offset,
+                  1,
+                  newEndLineNumber + offset,
+                  newEndColumn,
+                );
                 map.set(id, {
                   ...value,
                   newRange,
@@ -310,7 +319,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
               // 内部改动
               if (startLineNumber >= newStartLineNumber && endLineNumber <= newEndLineNumber) {
                 // 内部改动删除
-                // TODO 二次提示
+                // TODO
                 // const newRange = new monaco.Range(newStartLineNumber, 1, newEndLineNumber + offset, 1);
                 // map.set(id, {
                 //   ...value,
@@ -321,6 +330,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             this.resetCacheResolvedConflicts(map);
           });
           this.updateAllWidgets();
+          this.updateReportData();
         }),
         this.editor.onDidChangeModel(() => {
           this.updateAllWidgets();
@@ -347,13 +357,13 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       ...this._reportData,
       ...data,
     };
-    // console.log('report Data AI ==>', this._reportData);
   }
 
   private updateReportData() {
     const allConflictCache = this.cacheConflicts.getAllConflicts();
     let conflictPointNum = 0;
     let useAiConflictPointNum = 0;
+    let receiveNum = 0;
     for (const [, cacheConflicts] of allConflictCache.entries()) {
       conflictPointNum += cacheConflicts.length;
       cacheConflicts.forEach((cacheConflict) => {
@@ -362,9 +372,30 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         }
       });
     }
+    // 内部修改 删除态无法统计
+    for (const [uri, cacheResolvedConflictsMap] of this.cacheResolvedConflicts.entries()) {
+      for (const [, cacheResolvedConflicts] of cacheResolvedConflictsMap.entries()) {
+        if (uri === this.getModel().uri.toString()) {
+          // 计算当前文件采纳数量
+          const aiResult = cacheResolvedConflicts.textChange.newText;
+          const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.newRange);
+          if (aiResult.trim() === currentResult.trim()) {
+            cacheResolvedConflicts.isAccept = true;
+            receiveNum += 1;
+          } else {
+            cacheResolvedConflicts.isAccept = false;
+          }
+        } else {
+          if (cacheResolvedConflicts.isAccept) {
+            receiveNum += 1;
+          }
+        }
+      }
+    }
     this.reportData = {
       conflictPointNum,
       useAiConflictPointNum,
+      receiveNum,
     };
   }
 
@@ -685,7 +716,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         id: newLineRange.id,
         // 保留原始冲突文本
         conflictText: oldCacheConflict?.conflictText || validEditOperation[0].text,
+        isAccept: true,
       });
+      this.updateReportData();
       if (!isRegenerate) {
         // 记录处理数量 非重新生成 conflict 存在
         const uri = this.getModel().uri.toString();
