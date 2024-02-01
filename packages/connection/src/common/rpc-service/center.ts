@@ -21,16 +21,22 @@ class Invoker {
   private legacyInvokeProxy: any;
   private sumiInvokeProxy: any;
 
-  constructor(protected repo: ProtocolRepository) {}
+  constructor(protected repo: ProtocolRepository, public runner: ServiceRunner, channel: WSChannel, logger?: ILogger) {
+    this.legacyProxy = new ProxyLegacy(runner, logger);
+    this.legacyInvokeProxy = this.legacyProxy.getInvokeProxy();
 
-  setLegacyProxy(proxy: ProxyLegacy) {
-    this.legacyProxy = proxy;
-    this.legacyInvokeProxy = proxy.getInvokeProxy();
+    this.sumiProxy = new ProxySumi(runner, logger);
+    this.sumiInvokeProxy = this.sumiProxy.getInvokeProxy();
+
+    this.listen(channel);
   }
 
-  setSumiProxy(proxy: ProxySumi) {
-    this.sumiProxy = proxy;
-    this.sumiInvokeProxy = proxy.getInvokeProxy();
+  listen(channel: WSChannel) {
+    const messageConnection = channel.createMessageConnection();
+    this.legacyProxy.listen(messageConnection);
+
+    const connection = channel.createConnection(this.repo);
+    this.sumiProxy.listen(connection);
   }
 
   invoke(name: string, ...args: any[]) {
@@ -44,18 +50,22 @@ class Invoker {
 
     return this.legacyInvokeProxy[name](...args);
   }
+
+  dispose() {
+    this.legacyProxy.dispose();
+    this.sumiProxy.dispose();
+  }
 }
 
 export class RPCServiceCenter {
   public uid: string;
 
   private invokers: Invoker[] = [];
-  private connection: Array<WSChannel> = [];
 
   private protocolRepository = new ProtocolRepository();
   private serviceRunner = new ServiceRunner();
 
-  private connectionDeferred = new Deferred<void>();
+  private readyDeferred = new Deferred<void>();
   private logger: ILogger;
 
   constructor(private bench?: IBench, logger?: ILogger) {
@@ -72,7 +82,7 @@ export class RPCServiceCenter {
   }
 
   ready() {
-    return this.connectionDeferred.promise;
+    return this.readyDeferred.promise;
   }
 
   loadProtocol(protocol: TSumiProtocol) {
@@ -82,34 +92,19 @@ export class RPCServiceCenter {
   }
 
   setChannel(channel: WSChannel) {
-    if (this.connection.length === 0) {
-      this.connectionDeferred.resolve();
+    if (this.invokers.length === 0) {
+      this.readyDeferred.resolve();
     }
 
-    this.connection.push(channel);
-    const index = this.connection.length - 1;
+    const index = this.invokers.length - 1;
 
-    const invoker = new Invoker(this.protocolRepository);
-
-    const legacy = new ProxyLegacy(this.serviceRunner, this.logger);
-    const messageConnection = channel.createMessageConnection();
-    legacy.listen(messageConnection);
-
-    const sumi = new ProxySumi(this.serviceRunner, this.logger);
-    const connection = channel.createConnection(this.protocolRepository);
-
-    sumi.listen(connection);
-
-    invoker.setLegacyProxy(legacy);
-    invoker.setSumiProxy(sumi);
-
+    const invoker = new Invoker(this.protocolRepository, this.serviceRunner, channel, this.logger);
     this.invokers.push(invoker);
 
     return {
       dispose: () => {
-        this.connection.splice(index, 1);
         this.invokers.splice(index, 1);
-        connection.dispose();
+        invoker.dispose();
       },
     };
   }

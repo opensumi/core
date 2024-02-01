@@ -5,15 +5,13 @@ import {
   Emitter,
   Event,
   SerializedError,
+  // exported from 'vscode-uri'
   Uri,
   transformErrorForSerialization,
 } from '@opensumi/ide-core-common';
 
 import { ILogger } from './types';
 import { WSChannel } from './ws-channel';
-
-// Uri: vscode 中的 uri
-// URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 
 export enum RPCProtocolEnv {
   MAIN,
@@ -25,7 +23,7 @@ export interface IProxyIdentifier {
   countId: number;
 }
 
-const CancellationTokenStr = 'add.cancellation.token';
+const CancellationTokenStr = '#cancellation.token#';
 
 export class ProxyIdentifier<T = any> {
   public static count = 0;
@@ -66,6 +64,7 @@ interface RequestMessage {
   method: string;
   args: any[];
 }
+
 interface CancelMessage {
   type: MessageType.Cancel;
   id: string;

@@ -14,14 +14,6 @@ import { Connection } from './rpc/connection';
 import type { ProtocolRepository } from './rpc/protocol-repository';
 import { ILogger } from './types';
 
-export interface IWebSocket {
-  send(content: string): void;
-  close(...args: any[]): void;
-  onMessage(cb: (data: string) => void): void;
-  onError(cb: (reason: any) => void): void;
-  onClose(cb: (code: number, reason: string) => void): void;
-}
-
 /**
  * `ping` and `pong` are used to detect whether the connection is alive.
  */
@@ -102,7 +94,7 @@ export interface IWSChannelCreateOptions {
   logger?: ILogger;
 }
 
-export class WSChannel implements IWebSocket {
+export class WSChannel {
   protected emitter = new EventEmitter<{
     message: [data: string];
     open: [id: string];

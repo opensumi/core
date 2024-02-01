@@ -54,7 +54,7 @@ import { ExtensionScanner } from './extension.scanner';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
-  private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
+  private instanceId = 'ExtensionNodeServiceImpl:' + Date.now();
   static MaxExtProcessCount = 5;
   // ws 断开 5 分钟后杀掉插件进程
   static ProcessCloseExitThreshold: number = 5 * 60 * 1000;

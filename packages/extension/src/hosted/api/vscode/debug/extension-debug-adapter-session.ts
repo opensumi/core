@@ -1,7 +1,8 @@
 import type vscode from 'vscode';
 
-import { IWebSocket } from '@opensumi/ide-connection';
 import { DebugStreamConnection, DebugConfiguration } from '@opensumi/ide-debug';
+
+import { ExtensionConnection } from '../../../../common/vscode';
 
 import { StreamDebugAdapter } from './abstract-debug-adapter-session';
 
@@ -28,11 +29,11 @@ export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements 
     return this.debugSession.parentSession;
   }
 
-  async start(channel: IWebSocket): Promise<void> {
+  async start(connection: ExtensionConnection): Promise<void> {
     if (this.tracker.onWillStartSession) {
       this.tracker.onWillStartSession();
     }
-    await super.start(channel);
+    await super.start(connection);
   }
 
   async stop(): Promise<void> {
@@ -57,9 +58,9 @@ export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements 
     super.onDebugAdapterError(error);
   }
 
-  protected send(message: string): void {
+  protected sendToFrontend(message: string): void {
     try {
-      super.send(message);
+      super.sendToFrontend(message);
     } finally {
       if (this.tracker.onDidSendMessage) {
         this.tracker.onDidSendMessage(message);

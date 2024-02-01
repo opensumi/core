@@ -7,6 +7,7 @@ import type { ServiceRunner } from './runner';
 
 interface IBaseConnection {
   listen(): void;
+  dispose(): void;
 }
 
 let requestId = 0;
@@ -112,6 +113,12 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   public listenService(service: IRPCServiceMap) {
     this.runner.registerService(service);
+  }
+
+  dispose(): void {
+    if (this.connection) {
+      this.connection.dispose();
+    }
   }
 
   abstract getInvokeProxy<T = any>(): T;

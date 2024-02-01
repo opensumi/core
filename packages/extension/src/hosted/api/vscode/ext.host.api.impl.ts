@@ -5,7 +5,7 @@ import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService } from '../../../common';
 import {
-  IExtHostConnectionService,
+  IInterProcessConnectionService,
   IExtHostDebugService,
   ExtHostAPIIdentifier,
   TextEditorCursorStyle,
@@ -142,7 +142,7 @@ export function createApiFactory(
   const extHostConnection = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostConnection,
     new ExtHostConnection(rpcProtocol),
-  ) as IExtHostConnectionService;
+  ) as IInterProcessConnectionService;
   const extHostDebug = rpcProtocol.set(
     ExtHostAPIIdentifier.ExtHostDebug,
     new ExtHostDebug(rpcProtocol, extHostConnection, extHostCommands, customDebugChildProcess),

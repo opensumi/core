@@ -49,7 +49,7 @@ describe('DebugSessionConnection', () => {
   const messageEmitter: Emitter<string> = new Emitter();
 
   const mockConnection = {
-    onClose: jest.fn(),
+    onceClose: jest.fn(),
     onMessage: messageEmitter.event,
     send: jest.fn((request) => {
       const requestData = JSON.parse(request);
@@ -91,7 +91,7 @@ describe('DebugSessionConnection', () => {
   });
 
   it('first, create connection', () => {
-    expect(mockConnection.onClose).toBeCalledTimes(1);
+    expect(mockConnection.onceClose).toBeCalledTimes(1);
   });
 
   it('send initialize command', async () => {
@@ -182,7 +182,7 @@ describe('DebugSessionConnection', () => {
       '10010',
       async (sessionId: string) =>
         ({
-          onClose: jest.fn(),
+          onceClose: jest.fn(),
           onMessage: messageEmitter.event,
           sessionId: 10010,
           send: jest.fn(async (request: string) => {

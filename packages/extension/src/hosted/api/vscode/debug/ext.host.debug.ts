@@ -13,8 +13,7 @@ import {
   IExtHostCommands,
   IExtHostDebugService,
   IMainThreadDebug,
-  ExtensionWSChannel,
-  IExtHostConnectionService,
+  IInterProcessConnectionService,
 } from '../../../../common/vscode';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode';
 import {
@@ -181,7 +180,7 @@ export class ExtHostDebug implements IExtHostDebugService {
 
   constructor(
     rpc: IRPCProtocol,
-    private extHostConnectionService: IExtHostConnectionService,
+    private extHostConnectionService: IInterProcessConnectionService,
     private extHostCommand: IExtHostCommands,
     private cp?: CustomChildProcessModule,
   ) {
@@ -429,7 +428,7 @@ export class ExtHostDebug implements IExtHostDebugService {
 
     const connection = await this.extHostConnectionService.ensureConnection(sessionId);
 
-    debugAdapterSession.start(new ExtensionWSChannel(connection));
+    debugAdapterSession.start(connection);
 
     return sessionId;
   }

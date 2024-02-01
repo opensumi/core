@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
-import { PongMessage } from '../../../lib';
-import { PingMessage, parse, stringify } from '../../../src/common/ws-channel';
+import { PingMessage, PongMessage, parse, stringify } from '../../../src/common/ws-channel';
 
 describe('oneOf', () => {
   function testIt(obj: any) {

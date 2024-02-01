@@ -5,6 +5,7 @@ import WebSocket from 'ws';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
+import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
@@ -205,20 +206,7 @@ describe('connection', () => {
   });
 
   it('RPCProtocol', async () => {
-    const emitterA = new Emitter<string>();
-    const emitterB = new Emitter<string>();
-
-    const mockClientB = {
-      onMessage: emitterB.event,
-      send: (msg) => emitterA.fire(msg),
-    };
-    const mockClientA = {
-      send: (msg) => emitterB.fire(msg),
-      onMessage: emitterA.event,
-    };
-
-    const aProtocol = new RPCProtocol(mockClientA);
-    const bProtocol = new RPCProtocol(mockClientB);
+    const { rpcProtocolExt: aProtocol, rpcProtocolMain: bProtocol } = createMockPairRPCProtocol();
 
     const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
     const mockMainIndetifierMethod = jest.fn();

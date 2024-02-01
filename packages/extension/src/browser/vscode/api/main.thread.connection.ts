@@ -4,17 +4,15 @@ import { Deferred } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableCollection, ILogger } from '@opensumi/ide-core-common';
 
 import {
-  IMainThreadConnectionService,
+  IInterProcessConnectionService,
   ExtensionConnection,
-  IExtHostConnection,
+  IInterProcessConnection,
   ExtHostAPIIdentifier,
-  ExtensionMessageReader,
-  ExtensionMessageWriter,
 } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
-export class MainThreadConnection implements IMainThreadConnectionService {
-  private proxy: IExtHostConnection;
+export class MainThreadConnection implements IInterProcessConnectionService {
+  private proxy: IInterProcessConnection;
   private connections = new Map<string, ExtensionConnection>();
   private connectionsReady = new Map<string, Deferred<void>>();
   private readonly toDispose = new DisposableCollection();
@@ -46,7 +44,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
       await ready.promise;
     }
     if (this.connections.has(id)) {
-      this.connections.get(id)!.reader.readMessage(message);
+      this.connections.get(id)!.readMessage(message);
     } else {
       this.logger.warn(`Do not found connection ${id}`);
     }
@@ -99,15 +97,12 @@ export class MainThreadConnection implements IMainThreadConnectionService {
   }
 
   protected async doCreateConnection(id: string): Promise<ExtensionConnection> {
-    const reader = new ExtensionMessageReader();
-    const writer = new ExtensionMessageWriter(id, this.proxy);
-    const connection = new ExtensionConnection(reader, writer, () => {
+    const connection = new ExtensionConnection(id, this.proxy, () => {
       this.connections.delete(id);
       this.proxy.$deleteConnection(id);
     });
 
-    const toClose = new DisposableCollection(Disposable.create(() => reader.fireClose()));
-    this.toDispose.push(toClose);
+    this.toDispose.push(Disposable.create(() => connection.fireClose()));
 
     return connection;
   }
