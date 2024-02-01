@@ -11,7 +11,7 @@ import {
   MonacoService,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
-import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
