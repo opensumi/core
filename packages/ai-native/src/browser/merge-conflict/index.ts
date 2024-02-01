@@ -125,6 +125,7 @@ interface ICacheResolvedConflicts extends IValidEditOperation {
   id: string;
   conflictText: string;
   isAccept?: boolean;
+  isClosed?: boolean;
 }
 
 interface ICacheAIResolvedConflicts {
@@ -184,6 +185,10 @@ class WidgetFactory implements IWidgetFactory {
   }
 }
 
+interface IReportData extends Partial<MergeConflictRT> {
+  relationId?: string;
+}
+
 @Domain(CommandContribution, ClientAppContribution)
 export class MergeConflictContribution extends Disposable implements CommandContribution, ClientAppContribution {
   @Autowired(INJECTOR_TOKEN)
@@ -224,16 +229,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   // for codelens loading
   private loadingRange: Set<IRange> = new Set();
   // for report
-  private currentRelationId: string;
-
-  private _reportData: MergeConflictRT = {
-    conflictPointNum: 0,
-    useAiConflictPointNum: 0,
-    receiveNum: 0,
-    clickNum: 0,
-    isClickResolveAll: false,
-    editorMode: 'traditional',
-  };
+  private currentReportMap = new Map<string, IReportData>();
+  private uri2RelationId = new Map<string, string>();
 
   constructor() {
     super();
@@ -335,39 +332,64 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   private init() {
     this.initListenEvent();
-    if (!this.currentRelationId) {
-      this.currentRelationId = this.mergeConflictReportService.startPoint();
-    }
   }
 
   /* report */
   get reportData() {
-    return this._reportData;
+    const uri = this.getUri();
+    const reportData = this.currentReportMap.get(uri);
+    if (reportData) {
+      return reportData;
+    } else {
+      const currentRelationId = this.mergeConflictReportService.startPoint();
+
+      this.currentReportMap.set(uri, {
+        conflictPointNum: 0,
+        useAiConflictPointNum: 0,
+        receiveNum: 0,
+        clickNum: 0,
+        isClickResolveAll: false,
+        editorMode: 'traditional',
+        relationId: currentRelationId,
+      });
+      this.uri2RelationId.set(uri, currentRelationId);
+      return this.currentReportMap.get(uri)!;
+    }
   }
 
-  set reportData(data: Partial<MergeConflictRT>) {
-    this._reportData = {
-      ...this._reportData,
+  set reportData(data: Partial<IReportData>) {
+    const uri = this.getUri();
+    const reportData = this.reportData;
+    this.currentReportMap.set(uri, {
+      ...reportData,
       ...data,
-    };
+    });
+  }
+
+  private reportConflictData() {
+    const uri = this.getUri();
+    const reportData = this.currentReportMap.get(uri);
+    const currentRelationId = this.uri2RelationId.get(uri)!;
+    if (reportData) {
+      this.mergeConflictReportService.reportPoint(currentRelationId, this.reportData);
+    }
   }
 
   private updateReportData() {
-    const allConflictCache = this.cacheConflicts.getAllConflicts();
+    const allConflictCache = this.cacheConflicts.getAllConflictsByUri(this.getUri());
     let conflictPointNum = 0;
     let useAiConflictPointNum = 0;
     let receiveNum = 0;
-    for (const [, cacheConflicts] of allConflictCache.entries()) {
-      conflictPointNum += cacheConflicts.length;
-      cacheConflicts.forEach((cacheConflict) => {
-        if (cacheConflict.isResolved) {
-          useAiConflictPointNum += 1;
-        }
-      });
-    }
+    conflictPointNum = allConflictCache?.length || 0;
+    allConflictCache?.forEach((cacheConflict) => {
+      if (cacheConflict.isResolved) {
+        useAiConflictPointNum += 1;
+      }
+    });
     // 内部修改 删除态无法统计
     for (const [uri, cacheResolvedConflictsMap] of this.cacheResolvedConflicts.entries()) {
       for (const [, cacheResolvedConflicts] of cacheResolvedConflictsMap.entries()) {
+        // 统计当前文件
         if (uri === this.getModel().uri.toString()) {
           // 计算当前文件采纳数量
           const aiResult = cacheResolvedConflicts.textChange.newText;
@@ -377,10 +399,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             receiveNum += 1;
           } else {
             cacheResolvedConflicts.isAccept = false;
-          }
-        } else {
-          if (cacheResolvedConflicts.isAccept) {
-            receiveNum += 1;
           }
         }
       }
@@ -404,13 +422,19 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   updateAllWidgets() {
     this.hideResolveResultWidget();
     for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
-      const lineRange = this.toLineRange(value.newRange, id);
-      this.resolveResultWidgetManager.addWidget(lineRange);
+      if (!value.isClosed) {
+        const lineRange = this.toLineRange(value.newRange, id);
+        this.resolveResultWidgetManager.addWidget(lineRange);
+      }
     }
   }
 
   private getModel(): ITextModel {
     return this.editor.getModel()!;
+  }
+
+  private getUri(): string {
+    return this.getModel().uri.toString();
   }
 
   /* cache widget */
@@ -533,11 +557,11 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         },
       }),
       commands.afterExecuteCommand('git.stage', (args) => {
-        this.mergeConflictReportService.reportPoint(this.currentRelationId, this.reportData);
+        this.reportConflictData();
         return args;
       }),
       commands.afterExecuteCommand('git.stageAllMerge', (args) => {
-        this.mergeConflictReportService.reportPoint(this.currentRelationId, this.reportData);
+        this.reportConflictData();
         return args;
       }),
     );
@@ -658,8 +682,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
-      this.mergeConflictReportService.reportPoint(this.currentRelationId, this.reportData);
-
       const { text, lineNumber, lines } = this.resolveEndLineEOL(resolveConflictResult.data);
       const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
       const endColumn = lines[lines.length - 1].length + 1;
@@ -699,6 +721,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         isAccept: true,
       });
       this.updateReportData();
+      this.reportConflictData();
       if (!isRegenerate) {
         // 记录处理数量 非重新生成 conflict 存在
         const uri = this.getModel().uri.toString();
@@ -707,10 +730,15 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           const cacheConflict = cacheConflictRanges.find((cacheConflict) =>
             cacheConflict.range.equalsRange(conflict!.range),
           );
+          // TODO 同步 scanDocument
           if (cacheConflict && !cacheConflict.isResolved) {
             this.cacheConflicts.setConflictResolved(uri, cacheConflict.id);
           }
         }
+      } else {
+        this.reportData = {
+          clickNum: this.reportData.clickNum! + 1,
+        };
       }
     } else {
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
@@ -847,7 +875,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       this.conflictAIAccept(undefined, range, true);
     } else if (action === IGNORE_ACTIONS) {
       this.cleanWidget(range.id);
-      this.deleteCacheResolvedConflicts(range.id);
+      // this.deleteCacheResolvedConflicts(range.id);
+      const resolvedConflict = this.getCacheResolvedConflicts().get(range.id)!;
+      this.setCacheResolvedConflict(range.id, {
+        ...resolvedConflict,
+        isClosed: true,
+      });
     }
   }
 
