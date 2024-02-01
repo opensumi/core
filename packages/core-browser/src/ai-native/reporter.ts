@@ -98,5 +98,5 @@ export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
   // 返回关联 ID
   start(msg: string, data: ReportInfo): string;
-  end(relationId: string, data: ReportInfo);
+  end(relationId: string, data: ReportInfo): void;
 }
