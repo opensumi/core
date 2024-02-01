@@ -709,16 +709,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         // this.editor.setSelections(selections);
         return selections;
       });
-      const newLineRange = this.toLineRange(newRange, lineRange?.id);
+      const newLineRange = this.toLineRange(newRange, lineRange.id);
       this.resolveResultWidgetManager.addWidget(newLineRange);
-      // 记录每一次解决的位置
-      const oldCacheConflict = this.getCacheResolvedConflicts().get(newLineRange.id);
       this.setCacheResolvedConflict(newLineRange.id, {
         ...validEditOperation[0],
         newRange,
         id: newLineRange.id,
         // 保留原始冲突文本
-        conflictText: oldCacheConflict?.conflictText || validEditOperation[0].text,
+        conflictText: (isRegenerate && codeAssemble) || validEditOperation[0].text,
         isAccept: true,
       });
       this.updateReportData();

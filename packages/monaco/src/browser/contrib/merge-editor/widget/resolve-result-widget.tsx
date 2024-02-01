@@ -101,14 +101,14 @@ export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
     const intelligentStateModel = range.getIntelligentStateModel();
     const preAnswerCode = intelligentStateModel.answerCode;
     const currentCode = codeEditor.getModel()?.getValueInRange(range.toRange()) || '';
-
+    if (disablePopover) {
+      execGenerate();
+      return;
+    }
     // 如果内容有变化，说明用户有修改，需要弹出确认框
     if (preAnswerCode.trim() === currentCode.trim()) {
       execGenerate();
     } else {
-      if (disablePopover) {
-        return;
-      }
       setIsVisiablePopover(true);
     }
   }, [range, codeEditor, isVisiablePopover]);
