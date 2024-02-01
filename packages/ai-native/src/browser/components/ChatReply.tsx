@@ -68,7 +68,7 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
     return (props.treeData.children || []).map(transform);
   }, [props.treeData]);
 
-  const [height, setHeight] = useState(132);
+  const [height, setHeight] = useState(22);
 
   const fileHandle = useRef<IBasicRecycleTreeHandle | null>(null);
 
@@ -76,12 +76,12 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
     fileHandle.current = handle;
     const calcHeight = () => {
       let size = handle.getModel().root.branchSize;
-      if (size < 5) {
-        size = 5;
+      if (size < 1) {
+        size = 1;
       } else if (size > 20) {
         size = 20;
       }
-      setHeight((size + 1) * 22);
+      setHeight(size * 22);
     };
     calcHeight();
     handle.onDidUpdate(calcHeight);
@@ -113,6 +113,7 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
         }}
         onReady={onReady}
         treeName={props.treeData.label}
+        leaveBottomBlank={false}
       />
     </div>
   );
@@ -216,7 +217,9 @@ export const ChatReply = (props: IChatReplyProps) => {
     </div>
   );
 
-  const renderComponent = (componentId: string, value: unknown) => <ComponentRender component={componentId} value={value} />;
+  const renderComponent = (componentId: string, value: unknown) => (
+    <ComponentRender component={componentId} value={value} />
+  );
 
   const contentNode = React.useMemo(
     () =>
@@ -296,7 +299,7 @@ interface IChatNotifyProps {
   chunk: IChatContent;
 }
 export const ChatNotify = (props: IChatNotifyProps) => (
-    <ThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
-      <Markdown markdown={props.chunk.content} relationId={props.relationId} />
-    </ThinkingResult>
-  );
+  <ThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
+    <Markdown markdown={props.chunk.content} relationId={props.relationId} />
+  </ThinkingResult>
+);
