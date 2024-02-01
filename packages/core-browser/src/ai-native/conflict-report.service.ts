@@ -42,7 +42,6 @@ export class MergeConflictReportService extends Disposable {
       ...rt,
     };
 
-    // console.log('AI Report ==>', relationId, newReportInfo);
     this.reportInfoMap.set(relationId, newReportInfo);
     this.aiReporter.end(relationId, newReportInfo);
   }
