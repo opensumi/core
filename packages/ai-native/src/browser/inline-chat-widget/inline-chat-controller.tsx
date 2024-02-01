@@ -82,6 +82,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
           <EnhanceIconWithCtxMenu
             icon={'more'}
             menuNodes={moreOperation}
+            wrapperClassName={styles.operate_btn}
             skew={{
               x: -83,
               y: 5,
@@ -90,7 +91,7 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
         )}
         <div className={styles.close_container}>
           <LineVertical height={'60%'} margin={'0px 4px 0 4px'} />
-          <EnhanceIcon icon={'window-close'} onClick={handleClose} />
+          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
         </div>
       </div>
     </div>

@@ -48,7 +48,7 @@ export const inlineChatTextCommon = registerColor(
 // 正在输入、hover高亮
 export const inlineChatTextHover = registerColor(
   'ai.native.text.color.hover',
-  { dark: '#fff', light: new Color(new RGBA(0, 0, 0, 0.85)), hcDark: null, hcLight: null },
+  { dark: '#fff', light: '#151b21', hcDark: null, hcLight: null },
   '',
   true,
 );
@@ -79,7 +79,7 @@ export const inlineChatTextNormal = registerColor(
   'ai.native.text.color.normal',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.65)),
-    light: new Color(new RGBA(21, 27, 33, 0.85)),
+    light: new Color(new RGBA(21, 27, 33, 0.65)),
     hcDark: null,
     hcLight: null,
   },
@@ -132,7 +132,7 @@ export const inlineChatBlockBackgroundNormal = registerColor(
 export const aiNativeIconColor = registerColor(
   'ai.native.icon.color',
   {
-    dark: new Color(new RGBA(255, 255, 255, 0.25)),
+    dark: new Color(new RGBA(255, 255, 255, 0.65)),
     light: '#90959A',
     hcDark: null,
     hcLight: null,
