@@ -8,9 +8,9 @@ import {
   MonacoService,
   localize,
 } from '@opensumi/ide-core-browser';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import { message } from '@opensumi/ide-core-browser/lib/components';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
 import { URI, runWhenIdle } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
