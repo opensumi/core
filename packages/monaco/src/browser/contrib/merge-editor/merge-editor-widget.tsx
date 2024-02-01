@@ -81,7 +81,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
   dispose(): void {
     super.dispose();
-    this.mergeEditorService.dispose();
+    this.mergeEditorService.close();
   }
 
   async open(args: IOpenMergeEditorArgs): Promise<void> {

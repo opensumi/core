@@ -325,12 +325,12 @@ export class ActionsManager extends Disposable {
       this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true, answerCode }, true);
       this.applyLineRangeEdits([{ range: flushRange, text: answerCode }]);
 
-      if (isFormat) {
-        runWhenIdle(async () => {
-          flushRange = this.resultView!.getFlushRange(flushRange) || flushRange;
-          await this.resultView!.formatDocument(flushRange);
-        });
-      }
+      // if (isFormat) {
+      //   runWhenIdle(async () => {
+      //     flushRange = this.resultView!.getFlushRange(flushRange) || flushRange;
+      //     await this.resultView!.formatDocument(flushRange);
+      //   });
+      // }
 
       this.resultView!.updateDecorations().updateActions();
       return {
