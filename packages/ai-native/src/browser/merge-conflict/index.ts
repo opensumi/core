@@ -19,11 +19,9 @@ import {
   ConstructorOf,
   CancellationTokenSource,
   IRange,
-  IDisposable,
   Emitter,
   Event,
   Constants,
-  CommandService,
 } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
@@ -206,9 +204,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   @Autowired(AiBackSerivcePath)
   private aiBackService: IAiBackService;
 
-  @Autowired(CommandService)
-  private commandService: CommandService;
-
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
 
@@ -217,8 +212,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
   private cacheResolvedConflicts: Map<string, Map<string, ICacheResolvedConflicts>> = new Map();
-
-  private cacheAIResolvedConflicts: Map<string, Map<string, IConflictCache>> = new Map();
 
   private readonly _onRequestCancel = new Emitter<IRequestCancel>();
   public readonly onRequestCancel: Event<IRequestCancel> = this._onRequestCancel.event;
@@ -461,27 +454,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       this.cacheResolvedConflicts.set(currentUri, cacheConflicts);
     }
   }
-  /* cache ai resolve */
-  private getCacheAIResolvedConflicts(currentUri?: string) {
-    if (!currentUri) {
-      currentUri = this.getModel().uri.toString();
-    }
-    const cache = this.cacheAIResolvedConflicts.get(currentUri);
-    if (cache) {
-      return cache;
-    } else {
-      this.cacheAIResolvedConflicts.set(currentUri, new Map());
-      return this.cacheAIResolvedConflicts.get(currentUri)!;
-    }
-  }
-
-  private setCacheAIResolvedConflicts(id: string, cacheResolvedConflict: IConflictCache, currentUri?: string) {
-    if (!currentUri) {
-      currentUri = this.getModel().uri.toString();
-    }
-    const cache = this.getCacheAIResolvedConflicts(currentUri);
-    cache.set(id, cacheResolvedConflict);
-  }
 
   private toLineRange(range: IRange, id?: string) {
     const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
@@ -559,6 +531,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         execute: async () => {
           this.cancelRequestToken();
         },
+      }),
+      commands.afterExecuteCommand('git.stage', (args) => {
+        this.mergeConflictReportService.reportPoint(this.currentRelationId, this.reportData);
+        return args;
+      }),
+      commands.afterExecuteCommand('git.stageAllMerge', (args) => {
+        this.mergeConflictReportService.reportPoint(this.currentRelationId, this.reportData);
+        return args;
       }),
     );
   }
