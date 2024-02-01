@@ -22,6 +22,7 @@ import {
   Emitter,
   Event,
   Constants,
+  CommandService,
 } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
@@ -678,7 +679,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       skeletonDecorationDispose();
       this.stopWidgetManager.hideWidget(lineRange.id);
       this.loadingRange.delete(range);
-      // this.updateCodeLensProvider();
+      this.updateCodeLensProvider();
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
@@ -902,13 +903,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   // 强制刷新 codelens
   private updateCodeLensProvider() {
-    debounce(() => {
+    setTimeout(() => {
       if (this.getModel().uri) {
         // @ts-ignore
         languageFeaturesService.codeLensProvider._onDidChange.fire();
-        // this.commandService.executeCommand('_executeCodeLensProvider', this.getModel().uri);
       }
-    }, 3000);
+    }, 2000);
   }
 
   private debounceMessageWarning = debounce(() => {

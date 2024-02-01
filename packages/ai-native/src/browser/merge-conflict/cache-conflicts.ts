@@ -47,8 +47,6 @@ export class TextLine {
 // 内置 MergeConflict 插件 以支持AI交互
 @Injectable()
 export class CacheConflict extends Disposable {
-  // @Autowired(WorkbenchEditorService)
-  // private readonly editorService: WorkbenchEditorService;
   private _conflictTextCaches = new Map<string, string>();
 
   private _conflictRangeCaches = new Map<string, IConflictCache[]>();
