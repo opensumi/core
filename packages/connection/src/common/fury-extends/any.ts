@@ -1,5 +1,7 @@
 import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
 
+import { Uri } from '@opensumi/ide-core-common';
+
 import { reader, writer } from './shared';
 
 export enum ProtocolType {
@@ -48,7 +50,7 @@ function serializeWorker(data: unknown, writer: BinaryWriter) {
     }
   } else if (typeof data === 'object') {
     writer.uint8(ProtocolType.JSONObject);
-    writer.stringOfVarUInt32(JSON.stringify(data));
+    writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
   }
 }
 
@@ -69,7 +71,7 @@ function deserializeWorker(reader: BinaryReader) {
       return reader.double();
     case ProtocolType.JSONObject: {
       const json = reader.stringOfVarUInt32();
-      return JSON.parse(json);
+      return JSON.parse(json, ObjectTransfer.reviver);
     }
     case ProtocolType.BigInt:
       return reader.int64();
@@ -112,3 +114,27 @@ export const anySerializer = {
   serialize,
   serializeVolatile,
 };
+
+class ObjectTransfer {
+  static replacer(key: string | undefined, value: any) {
+    if (value) {
+      if (value.$mid === 1) {
+        const uri = Uri.revive(value);
+        return {
+          $type: 'VSCODE_URI',
+          data: uri.toString(),
+        };
+      }
+    }
+
+    return value;
+  }
+  static reviver(key: string | undefined, value: any) {
+    if (value && value.$type !== undefined && value.data !== undefined) {
+      if (value.$type === 'VSCODE_URI') {
+        return Uri.parse(value.data);
+      }
+    }
+    return value;
+  }
+}

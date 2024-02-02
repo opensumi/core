@@ -4,34 +4,19 @@ import { anySerializer } from '../fury-extends/any';
 
 import { TSumiProtocol, TSumiProtocolMethod } from './types';
 
-export interface ISerializableRequest {
-  /**
-   * Arguments
-   */
-  a: any[];
-}
+export type TRequestTransferable = ITransferable[];
 
-export interface ISerializableResult {
+export interface ITransferable {
   /**
-   * function execute result
+   * transfer raw value
    */
   r: any;
 
   /**
-   * Function Return void or other type that protocol not defined
+   * value that cannot be transferred, use string instead
    */
   $?: string;
 }
-
-const createResultProto = (name: string, type?: TypeDescription) => {
-  const props = {
-    $: Type.string(),
-  } as Record<string, TypeDescription>;
-  if (type) {
-    props.r = type;
-  }
-  return Type.object(name, props);
-};
 
 type TSerializer = ReturnType<Fury['registerSerializer']>;
 
@@ -42,9 +27,20 @@ interface IProtocolProcessor {
   deserializeResult<T = any>(buffer: Uint8Array): T;
 }
 
+const createTransferable = (name: string, type?: TypeDescription) => {
+  const props = {
+    $: Type.string(),
+  } as Record<string, TypeDescription>;
+  if (type) {
+    props.r = type;
+  }
+  return Type.object(name, props);
+};
+
 class SumiProtocolProcessor implements IProtocolProcessor {
   request: TSerializer;
   result: TSerializer;
+  requestArgsLength: number;
 
   constructor(methodProtocol: TSumiProtocolMethod, public fury: Fury) {
     const methodName = methodProtocol.method;
@@ -52,55 +48,43 @@ class SumiProtocolProcessor implements IProtocolProcessor {
     const argsTuple = [] as TypeDescription[];
 
     for (const element of methodProtocol.request) {
-      argsTuple.push(element.type);
+      argsTuple.push(createTransferable(methodName + '^' + element.name, element.type));
     }
 
-    const requestProto = Type.object(methodName + '^', {
-      a: Type.tuple(argsTuple),
-    });
+    const requestProto = Type.tuple(argsTuple);
+    const resultProto = createTransferable(methodName + 'v', methodProtocol.response.type);
 
-    const resultProto = createResultProto(methodName + 'v', methodProtocol.response.type);
+    this.requestArgsLength = argsTuple.length;
 
     this.request = this.fury.registerSerializer(requestProto);
     this.result = this.fury.registerSerializer(resultProto);
   }
 
   serializeRequest(args: any[]): Uint8Array {
-    const newArray = new Array(args.length);
+    const newArray: TRequestTransferable = new Array(args.length);
     for (let i = 0; i < args.length; i++) {
-      newArray[i] = args[i];
+      newArray[i] = ObjectTransfer.replacer(args[i]);
     }
 
-    const payload: ISerializableRequest = {
-      a: newArray,
-    };
-
-    return this.request.serialize(payload);
+    return this.request.serialize(newArray);
   }
 
   deserializeRequest(buffer: Uint8Array): any[] {
-    const { a: argsArray } = this.request.deserialize(buffer) as ISerializableRequest;
-    return argsArray;
+    const result = new Array(this.requestArgsLength);
+    const argsArray = this.request.deserialize(buffer) as TRequestTransferable;
+    for (let i = 0; i < this.requestArgsLength; i++) {
+      result[i] = ObjectTransfer.reviver(argsArray[i]);
+    }
+    return result;
   }
 
   serializeResult<T = any>(result: T): Uint8Array {
-    const payload = {
-      r: result,
-    } as ISerializableResult;
-
-    payload.$ = ReturnValueTransfer.replacer(result);
-
-    return this.result.serialize(payload);
+    return this.result.serialize(ObjectTransfer.replacer(result));
   }
 
   deserializeResult<T = any>(buffer: Uint8Array): T {
-    const payload = this.result.deserialize(buffer) as ISerializableResult;
-
-    if (payload.$) {
-      return ReturnValueTransfer.reviver(payload.$);
-    }
-
-    return payload.r;
+    const payload = this.result.deserialize(buffer) as ITransferable;
+    return ObjectTransfer.reviver(payload);
   }
 }
 
@@ -169,21 +153,28 @@ export class ProtocolRepository {
   }
 }
 
-class ReturnValueTransfer {
+class ObjectTransfer {
   static TypeUndefined = '$undefined';
 
   static replacer(value: any) {
+    const payload = {} as ITransferable;
+
     if (typeof value === 'undefined') {
-      return ReturnValueTransfer.TypeUndefined;
+      payload.$ = ObjectTransfer.TypeUndefined;
     }
-    return undefined;
+
+    if (!payload.$) {
+      payload.r = value;
+    }
+
+    return payload;
   }
 
-  static reviver(value: any): any {
-    if (value === ReturnValueTransfer.TypeUndefined) {
+  static reviver(transferable: ITransferable): any {
+    if (transferable.$ === ObjectTransfer.TypeUndefined) {
       return undefined;
     }
 
-    throw new Error('Not implemented');
+    return transferable.r;
   }
 }
