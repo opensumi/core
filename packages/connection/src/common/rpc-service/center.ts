@@ -37,7 +37,8 @@ class Invoker {
     const messageConnection = channel.createMessageConnection();
     this.legacyProxy.listen(messageConnection);
 
-    const connection = channel.createConnection(this.repo);
+    const connection = channel.createConnection();
+    connection.setProtocolRepository(this.repo);
     this.sumiProxy.listen(connection);
   }
 

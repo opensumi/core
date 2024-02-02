@@ -10,8 +10,7 @@ import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { oneOf } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
-import { Connection } from './rpc/connection';
-import type { ProtocolRepository } from './rpc/protocol-repository';
+import { Connection, IConnectionOptions } from './rpc/connection';
 import { ILogger } from './types';
 
 /**
@@ -231,30 +230,33 @@ export class WSChannel {
   createMessageConnection() {
     return createWebSocketConnection(this);
   }
-  createConnection(protocolRepository: ProtocolRepository) {
-    const conn = new Connection({
-      onceClose: (cb) => {
-        const toRemove = this.onceClose(cb);
-        return {
-          dispose() {
-            toRemove();
-          },
-        };
+  createConnection(options: IConnectionOptions = {}) {
+    const conn = new Connection(
+      {
+        onceClose: (cb) => {
+          const toRemove = this.onceClose(cb);
+          return {
+            dispose() {
+              toRemove();
+            },
+          };
+        },
+        onMessage: (cb) => {
+          const remove = this.onBinary(cb);
+          return {
+            dispose: () => {
+              remove();
+            },
+          };
+        },
+        send: (data) => {
+          this.sendBinary(data);
+        },
+        dispose() {},
       },
-      onMessage: (cb) => {
-        const remove = this.onBinary(cb);
-        return {
-          dispose: () => {
-            remove();
-          },
-        };
-      },
-      send: (data) => {
-        this.sendBinary(data);
-      },
-      dispose() {},
-    });
-    conn.setProtocolRepository(protocolRepository);
+      options,
+    );
+
     return conn;
   }
   dispose() {

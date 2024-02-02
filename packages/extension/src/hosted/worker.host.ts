@@ -1,5 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
+import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-channel';
+import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import {
   Emitter,
   Deferred,
@@ -29,22 +31,13 @@ import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 
 export function initRPCProtocol() {
-  const onMessageEmitter = new Emitter<string>();
   const channel = new MessageChannel();
 
   self.postMessage(channel.port2, [channel.port2]);
 
-  channel.port1.onmessage = (e) => {
-    onMessageEmitter.fire(e.data);
-  };
-  const onMessage = onMessageEmitter.event;
+  const msgPortConnection = new MessagePortConnection(channel.port1);
 
-  const extProtocol = new RPCProtocol({
-    onMessage,
-    send: (data) => {
-      channel.port1.postMessage(data);
-    },
-  });
+  const extProtocol = new RPCProtocol(new Connection(msgPortConnection));
 
   return extProtocol;
 }

@@ -65,7 +65,7 @@ export class Connection implements IDisposable {
   private readonly _cancellationTokenSources = new Map<number, CancellationTokenSource>();
   private readonly _knownCanceledRequests = new Set<number>();
 
-  private protocolRepository: ProtocolRepository;
+  public protocolRepository = new ProtocolRepository();
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: IConnectionOptions = {}) {}
 
