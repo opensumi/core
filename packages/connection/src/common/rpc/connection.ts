@@ -12,6 +12,7 @@ import {
 
 import { BaseConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
+import { ILogger } from '../types';
 
 import {
   BODY_CODEC,
@@ -66,6 +67,7 @@ export class Connection implements IDisposable {
   private readonly _knownCanceledRequests = new Set<number>();
 
   public protocolRepository = new ProtocolRepository();
+  logger: ILogger = console;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: IConnectionOptions = {}) {}
 
@@ -96,6 +98,14 @@ export class Connection implements IDisposable {
         resolve(result);
       });
 
+      // Set timeout callback, -1 means no timeout configuration is set.
+      if (this.options.timeout && this.options.timeout !== -1) {
+        const timeoutHandle = setTimeout(() => {
+          this._handleTimeout(method, requestId);
+        }, this.options.timeout);
+        this._timeoutHandles.set(requestId, timeoutHandle);
+      }
+
       const payload = processor.serializeRequest(args);
 
       const cancellationToken: CancellationToken | undefined =
@@ -110,14 +120,6 @@ export class Connection implements IDisposable {
       }
 
       this.socket.send(createRequestPacket(requestId, RPC_TYPE.Request, method, {}, payload));
-
-      // Set timeout callback, -1 means no timeout configuration is set.
-      if (this.options.timeout && this.options.timeout !== -1) {
-        const timeoutHandle = setTimeout(() => {
-          this._handleTimeout(method, requestId);
-        }, this.options.timeout);
-        this._timeoutHandles.set(requestId, timeoutHandle);
-      }
     });
   }
 
@@ -215,12 +217,23 @@ export class Connection implements IDisposable {
       const requestId = reader.uint32();
       const codec = reader.uint8();
 
+      if (this._timeoutHandles.has(requestId)) {
+        // Ignore some jest test scenarios where clearTimeout is not defined.
+        if (typeof clearTimeout === 'function') {
+          // @ts-ignore
+          clearTimeout(this._timeoutHandles.get(requestId));
+        }
+        this._timeoutHandles.delete(requestId);
+      }
+
       switch (rpcType) {
         case RPC_TYPE.Response: {
           const callback = this._callbacks.get(requestId);
           if (!callback) {
-            throw new Error(`No callback for request id: ${requestId}`);
+            this.logger.error(`Cannot find callback for request ${requestId}`);
+            return;
           }
+
           this._callbacks.delete(requestId);
 
           const status = reader.uint16();

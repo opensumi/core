@@ -3,6 +3,8 @@ import http from 'http';
 import WebSocket from 'ws';
 
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
+import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
@@ -235,9 +237,9 @@ describe('connection', () => {
   });
 
   it('RPCProtocol Timeout', async () => {
-    const emitterTimeoutA = new Emitter<string>();
-    const emitterTimeoutB = new Emitter<string>();
-    const emitterTimeoutC = new Emitter<string>();
+    const emitterTimeoutA = new Emitter<any>();
+    const emitterTimeoutB = new Emitter<any>();
+    const emitterTimeoutC = new Emitter<any>();
 
     const mockClientTA = {
       onMessage: emitterTimeoutA.event,
@@ -250,19 +252,25 @@ describe('connection', () => {
     const mockClientTC = {
       onMessage: emitterTimeoutC.event,
       send: (msg) => emitterTimeoutA.fire(msg),
-      timeout: 1000,
     };
 
-    const timeoutAProtocol = new RPCProtocol(mockClientTA);
-    const timeoutBProtocol = new RPCProtocol(mockClientTB);
-    const timeoutCProtocol = new RPCProtocol(mockClientTC);
+    const timeoutAProtocol = new RPCProtocol(new Connection(new SimpleConnection(mockClientTA)));
+    const timeoutBProtocol = new RPCProtocol(new Connection(new SimpleConnection(mockClientTB)));
+    const timeoutCProtocol = new RPCProtocol(
+      new Connection(new SimpleConnection(mockClientTC), {
+        timeout: 1000,
+      }),
+    );
 
     const testTimeoutIdentifier = createMainContextProxyIdentifier('testTimeoutIdentifier');
     timeoutAProtocol.set(testTimeoutIdentifier, {
       $test: jest.fn(),
     });
 
-    await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(void 0);
-    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(new Error('RPC Timeout: 1'));
+    await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(undefined);
+
+    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(
+      'method testTimeoutIdentifier timeout',
+    );
   });
 });

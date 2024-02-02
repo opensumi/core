@@ -2,11 +2,22 @@ import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
 
-export class EmptyConnection extends BaseConnection<Uint8Array> {
+export class SimpleConnection extends BaseConnection<Uint8Array> {
+  constructor(
+    public options: {
+      send?: (data: Uint8Array) => void;
+      onMessage?: (cb: (data: Uint8Array) => void) => IDisposable;
+    } = {},
+  ) {
+    super();
+  }
   send(data: Uint8Array): void {
-    // do nothing
+    this.options.send?.(data);
   }
   onMessage(cb: (data: Uint8Array) => void): IDisposable {
+    if (this.options.onMessage) {
+      return this.options.onMessage(cb);
+    }
     return {
       dispose: () => {},
     };
