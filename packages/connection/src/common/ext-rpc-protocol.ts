@@ -40,17 +40,17 @@ export interface IRPCProtocol {
 }
 
 export class RPCProtocol implements IRPCProtocol {
-  private readonly _protocol: Connection;
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;
 
   private logger: ILogger;
 
   constructor(protected connection: Connection, logger?: ILogger) {
-    this._protocol = connection;
     this._locals = new Map();
     this._proxies = new Map();
     this.logger = logger || console;
+
+    connection.listen();
 
     this.connection.onRequestNotFound((rpcId: string, args: any[]) => this._doInvokeHandler(rpcId, args[0], args[1]));
   }
@@ -79,7 +79,7 @@ export class RPCProtocol implements IRPCProtocol {
           return null;
         }
         if (!target[name] && name.charCodeAt(0) === 36) {
-          target[name] = (...args: any[]) => this._protocol.sendRequest(rpcId, name, args);
+          target[name] = (...args: any[]) => this.connection.sendRequest(rpcId, name, args);
         }
 
         return target[name];

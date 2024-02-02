@@ -51,7 +51,7 @@ export interface IConnectionOptions {
 export class Connection implements IDisposable {
   protected disposable = new DisposableCollection();
 
-  private _binaryEmitter = new EventEmitter<{
+  private _requestEmitter = new EventEmitter<{
     [key: string]: [requestId: number, method: string, headers: Record<string, any>, args: any[]];
   }>();
   private _notificationEmitter = new EventEmitter<{
@@ -151,11 +151,10 @@ export class Connection implements IDisposable {
   }
 
   private runRequestHandler<T extends (...args: any[]) => any>(
-    method: string,
-    handler: T,
     requestId: number,
-    headers: Record<string, any>,
+    method: string,
     args: any[],
+    handler: T,
   ) {
     let result: any;
     let error: Error | undefined;
@@ -190,17 +189,17 @@ export class Connection implements IDisposable {
 
   onRequest<T = any>(method: string, handler: TGenericRequestHandler<T>): IDisposable {
     const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      this.runRequestHandler(method, handler, requestId, headers, args);
+      this.runRequestHandler(requestId, method, args, handler);
     };
-    return Disposable.create(this._binaryEmitter.on(method, handlerWrapper));
+    return Disposable.create(this._requestEmitter.on(method, handlerWrapper));
   }
 
   onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
     const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      this.runRequestHandler(method, handler, requestId, headers, args);
+      this.runRequestHandler(requestId, method, [method, args], handler);
     };
 
-    return Disposable.create(this._binaryEmitter.on(star, handlerWrapper));
+    return Disposable.create(this._requestEmitter.on(star, handlerWrapper));
   }
 
   setProtocolRepository(protocolRepository: ProtocolRepository) {
@@ -309,10 +308,10 @@ export class Connection implements IDisposable {
     }
 
     if (rpcType === RPC_TYPE.Request) {
-      if (this._binaryEmitter.hasListener(method)) {
-        this._binaryEmitter.emit(method, requestId, method, headers, args);
+      if (this._requestEmitter.hasListener(method)) {
+        this._requestEmitter.emit(method, requestId, method, headers, args);
       } else {
-        this._binaryEmitter.emit(star, requestId, method, headers, args);
+        this._requestEmitter.emit(star, requestId, method, headers, args);
       }
     } else {
       if (this._notificationEmitter.hasListener(method)) {
