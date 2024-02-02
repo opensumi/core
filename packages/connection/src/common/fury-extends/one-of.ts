@@ -1,12 +1,9 @@
 import { ObjectTypeDescription, Serializer, TypeDescription } from '@furyjs/fury';
-import Fury from '@furyjs/fury/dist/lib/fury';
 import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
-type Writable = Record<string, any> & { kind: string };
+import { fury, reader, writer } from './shared';
 
-const fury = Fury({});
-const reader = fury.binaryReader;
-const writer = fury.binaryWriter;
+type Writable = Record<string, any> & { kind: string };
 
 export const oneOf = (schemas: TypeDescription[]) => {
   const registry = new Map<string, Serializer>();

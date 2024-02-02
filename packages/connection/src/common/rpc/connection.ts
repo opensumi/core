@@ -76,10 +76,6 @@ export class Connection implements IDisposable {
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: IConnectionOptions = {}) {}
 
   sendNotification(method: string, ...args: any[]) {
-    if (!this.protocolRepository.has(method)) {
-      throw new MethodProtocolNotFoundError(method);
-    }
-
     const payload = this.protocolRepository.serializeRequest(method, args);
     this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, {}, payload));
   }
@@ -103,9 +99,6 @@ export class Connection implements IDisposable {
         resolve(result);
       });
 
-      if (!this.protocolRepository.has(method)) {
-        throw new MethodProtocolNotFoundError(method);
-      }
       const payload = this.protocolRepository.serializeRequest(method, args);
 
       const cancellationToken: CancellationToken | undefined =

@@ -21,6 +21,8 @@ class Invoker {
   private legacyInvokeProxy: any;
   private sumiInvokeProxy: any;
 
+  forceUseSumi = true;
+
   constructor(protected repo: ProtocolRepository, public runner: ServiceRunner, channel: WSChannel, logger?: ILogger) {
     this.legacyProxy = new ProxyLegacy(runner, logger);
     this.legacyInvokeProxy = this.legacyProxy.getInvokeProxy();
@@ -42,6 +44,10 @@ class Invoker {
   invoke(name: string, ...args: any[]) {
     if (defaultReservedWordSet.has(name) || typeof name === 'symbol') {
       return Promise.resolve();
+    }
+
+    if (this.forceUseSumi) {
+      return this.sumiInvokeProxy[name](...args);
     }
 
     if (this.repo.has(name)) {

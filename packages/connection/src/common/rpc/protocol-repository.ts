@@ -1,5 +1,7 @@
 import Fury, { Type, TypeDescription } from '@furyjs/fury';
 
+import { anySerializer } from '../fury-extends/any';
+
 import { TSumiProtocol, TSumiProtocolMethod } from './types';
 
 export interface ISerializableRequest {
@@ -90,41 +92,56 @@ export class ProtocolRepository {
   }
 
   serializeRequest(name: string, args: any[]): Uint8Array {
-    const newArray = new Array(args.length);
-    for (let i = 0; i < args.length; i++) {
-      newArray[i] = args[i];
+    if (this.serializerMap[name]) {
+      const newArray = new Array(args.length);
+      for (let i = 0; i < args.length; i++) {
+        newArray[i] = args[i];
+      }
+
+      const payload: ISerializableRequest = {
+        a: newArray,
+      };
+
+      return this.serializerMap[name].request.serialize(payload);
     }
 
-    const payload: ISerializableRequest = {
-      a: newArray,
-    };
-
-    return this.serializerMap[name].request.serialize(payload);
+    return anySerializer.serialize(args);
   }
 
   deserializeRequest(name: string, buffer: Uint8Array): any[] {
-    const { a: argsArray } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
-    return argsArray;
+    if (this.serializerMap[name]) {
+      const { a: argsArray } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
+      return argsArray;
+    }
+
+    return anySerializer.deserialize(buffer);
   }
 
   serializeResult<T = any>(name: string, result: T): Uint8Array {
-    const payload = {
-      r: result,
-    } as ISerializableResult;
+    if (this.serializerMap[name]) {
+      const payload = {
+        r: result,
+      } as ISerializableResult;
 
-    payload.$ = ReturnValueTransfer.replacer(result);
+      payload.$ = ReturnValueTransfer.replacer(result);
 
-    return this.serializerMap[name].result.serialize(payload);
+      return this.serializerMap[name].result.serialize(payload);
+    }
+
+    return anySerializer.serialize(result);
   }
 
   deserializeResult<T = any>(name: string, buffer: Uint8Array): T {
-    const payload = this.serializerMap[name].result.deserialize(buffer) as ISerializableResult;
+    if (this.serializerMap[name]) {
+      const payload = this.serializerMap[name].result.deserialize(buffer) as ISerializableResult;
 
-    if (payload.$) {
-      return ReturnValueTransfer.reviver(payload.$);
+      if (payload.$) {
+        return ReturnValueTransfer.reviver(payload.$);
+      }
+
+      return payload.r;
     }
-
-    return payload.r;
+    return anySerializer.deserialize(buffer);
   }
 }
 
