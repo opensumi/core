@@ -134,10 +134,3 @@ export class CancellationTokenSource {
     }
   }
 }
-
-export function canceled(message?: string): Error {
-  const error = new Error();
-  error.name = 'Canceled';
-  error.message = message ? message : 'Operation canceled';
-  return error;
-}

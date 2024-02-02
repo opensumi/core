@@ -212,3 +212,7 @@ export function mixin(destination: any, source: any, overwrite = true): any {
 export function withNullAsUndefined<T>(x: T | null): T | undefined {
   return x === null ? undefined : x;
 }
+
+export function isPromise<T = any>(obj: any): obj is Promise<T> {
+  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+}

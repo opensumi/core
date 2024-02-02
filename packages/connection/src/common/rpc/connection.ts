@@ -7,6 +7,7 @@ import {
   CancellationToken,
   canceled,
   CancellationTokenSource,
+  isPromise,
 } from '@opensumi/ide-utils';
 
 import { BaseConnection } from '../connection';
@@ -32,10 +33,6 @@ import {
 } from './types';
 
 const CancellationTokenStr = '#cancellation.token#';
-
-function isPromise<T = any>(obj: any): obj is Promise<T> {
-  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
-}
 
 const assert = (condition: any, message: string) => {
   if (!condition) {

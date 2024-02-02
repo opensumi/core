@@ -7,6 +7,7 @@ import {
   SerializedError,
   // exported from 'vscode-uri'
   Uri,
+  canceled,
   transformErrorForSerialization,
 } from '@opensumi/ide-core-common';
 
@@ -44,9 +45,10 @@ export function createMainContextProxyIdentifier<T>(identifier: string): ProxyId
   const result = new ProxyIdentifier<T>(identifier);
   return result;
 }
+
 export interface IMessagePassingProtocol {
-  send(msg: string): void;
-  onMessage: Event<string>;
+  send(msg: any): void;
+  onMessage: Event<any>;
   timeout?: number;
 }
 
@@ -186,12 +188,6 @@ export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
   get<T>(identifier: ProxyIdentifier<T>): T;
-}
-
-function canceled(): Error {
-  const error = new Error('Canceled');
-  error.name = error.message;
-  return error;
 }
 
 export class RPCProtocol implements IRPCProtocol {
