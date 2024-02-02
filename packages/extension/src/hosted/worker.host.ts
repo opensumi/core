@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
-import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-channel';
+import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import {
   Emitter,

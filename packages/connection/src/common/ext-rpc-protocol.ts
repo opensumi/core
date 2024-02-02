@@ -39,6 +39,17 @@ export interface IRPCProtocol {
   get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
+const SEP = '/';
+
+function getRPCName(serviceId: string, methodName: string) {
+  return `${serviceId}${SEP}${methodName}`;
+}
+
+function extractServiceAndMethod(rpcId: string): [string, string] {
+  const idx = rpcId.indexOf(SEP);
+  return [rpcId.substring(0, idx), rpcId.substring(idx + 1)];
+}
+
 export class RPCProtocol implements IRPCProtocol {
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;
@@ -52,7 +63,10 @@ export class RPCProtocol implements IRPCProtocol {
 
     connection.listen();
 
-    this.connection.onRequestNotFound((rpcId: string, args: any[]) => this._doInvokeHandler(rpcId, args[0], args[1]));
+    this.connection.onRequestNotFound((rpcName: string, args: any[]) => {
+      const [rpcId, methodName] = extractServiceAndMethod(rpcName);
+      return this._doInvokeHandler(rpcId, methodName, args);
+    });
   }
 
   public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
@@ -78,8 +92,10 @@ export class RPCProtocol implements IRPCProtocol {
         if (typeof name === 'symbol') {
           return null;
         }
+        // charCodeAt(0) === 36 means starts with $
         if (!target[name] && name.charCodeAt(0) === 36) {
-          target[name] = (...args: any[]) => this.connection.sendRequest(rpcId, name, args);
+          const rpcName = getRPCName(rpcId, name);
+          target[name] = (...args: any[]) => this.connection.sendRequest(rpcName, args);
         }
 
         return target[name];
@@ -112,6 +128,5 @@ export function createRPCProtocol(channel: WSChannel, options: RPCProtocolCreate
     timeout: options.timeout,
   });
 
-  const mainThreadProtocol = new RPCProtocol(connection);
-  return mainThreadProtocol;
+  return new RPCProtocol(connection);
 }

@@ -3,13 +3,13 @@ import http from 'http';
 import WebSocket from 'ws';
 
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
 import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
+import { SimpleConnection } from '../../src/common/connection/drivers/simple';
 import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
 import { WSChannel, parse } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
@@ -68,7 +68,7 @@ describe('connection', () => {
       const msgObj = parse(msg);
       if (msgObj.kind === 'server-ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
-          channel.handleMessage(msgObj);
+          channel.dispatchChannelMessage(msgObj);
         }
       }
     });
@@ -270,7 +270,7 @@ describe('connection', () => {
     await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(undefined);
 
     await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(
-      'method testTimeoutIdentifier timeout',
+      'method testTimeoutIdentifier/$test timeout',
     );
   });
 });

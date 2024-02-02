@@ -15,14 +15,16 @@ import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
 import {
-  BODY_CODEC,
-  ERROR_STATUS,
-  RPC_TYPE,
+  BodyCodec,
+  ErrorCode,
+  OperationType,
   createCancelPacket,
   createErrorResponsePacket,
   createRequestPacket,
   createResponsePacket,
+  requestHeadersSerializer,
   reader,
+  IRequestHeaders,
 } from './packet';
 import { ProtocolRepository } from './protocol-repository';
 import {
@@ -32,8 +34,6 @@ import {
   TOnRequestNotFoundHandler,
   TRequestCallback,
 } from './types';
-
-const CancellationTokenStr = '#cancellation.token#';
 
 const assert = (condition: any, message: string) => {
   if (!condition) {
@@ -74,7 +74,7 @@ export class Connection implements IDisposable {
   sendNotification(method: string, ...args: any[]) {
     const processor = this.protocolRepository.getProcessor(method);
     const payload = processor.serializeRequest(args);
-    this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, {}, payload));
+    this.socket.send(createRequestPacket(this._requestId++, OperationType.Notification, method, nullHeaders, payload));
   }
 
   sendRequest(method: string, ...args: any[]) {
@@ -106,8 +106,6 @@ export class Connection implements IDisposable {
         this._timeoutHandles.set(requestId, timeoutHandle);
       }
 
-      const payload = processor.serializeRequest(args);
-
       const cancellationToken: CancellationToken | undefined =
         args.length && CancellationToken.isCancellationToken(args[args.length - 1]) ? args.pop() : undefined;
       if (cancellationToken && cancellationToken.isCancellationRequested) {
@@ -115,11 +113,21 @@ export class Connection implements IDisposable {
       }
 
       if (cancellationToken) {
-        args.push(CancellationTokenStr);
         cancellationToken.onCancellationRequested(() => this.cancelRequest(requestId));
       }
 
-      this.socket.send(createRequestPacket(requestId, RPC_TYPE.Request, method, {}, payload));
+      const payload = processor.serializeRequest(args);
+      this.socket.send(
+        createRequestPacket(
+          requestId,
+          OperationType.Request,
+          method,
+          {
+            cancelable: cancellationToken ? true : false,
+          },
+          payload,
+        ),
+      );
     });
   }
 
@@ -169,7 +177,7 @@ export class Connection implements IDisposable {
     }
 
     if (error) {
-      this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, {}, error));
+      this.socket.send(createErrorResponsePacket(requestId, ErrorCode.Err, {}, error));
       this._cancellationTokenSources.delete(requestId);
     } else if (isPromise(result)) {
       result
@@ -179,7 +187,7 @@ export class Connection implements IDisposable {
           this._cancellationTokenSources.delete(requestId);
         })
         .catch((err) => {
-          this.socket.send(createErrorResponsePacket(requestId, ERROR_STATUS.EXEC_ERROR, {}, err));
+          this.socket.send(createErrorResponsePacket(requestId, ErrorCode.Err, {}, err));
           this._cancellationTokenSources.delete(requestId);
         });
     } else {
@@ -227,7 +235,7 @@ export class Connection implements IDisposable {
       }
 
       switch (rpcType) {
-        case RPC_TYPE.Response: {
+        case OperationType.Response: {
           const callback = this._callbacks.get(requestId);
           if (!callback) {
             this.logger.error(`Cannot find callback for request ${requestId}`);
@@ -240,16 +248,16 @@ export class Connection implements IDisposable {
           // const headers = headerSerializer.read();
 
           // if error code is not 0, it's an error
-          if (status === ERROR_STATUS.EXEC_ERROR) {
+          if (status === ErrorCode.Err) {
             // TODO: use binary codec
-            assert(codec === BODY_CODEC.JSON, 'Error response should be JSON encoded');
+            assert(codec === BodyCodec.JSON, 'Error response should be JSON encoded');
             const content = reader.stringOfVarUInt32();
             const error = parseError(content);
             callback(nullHeaders, error);
             return;
           }
 
-          if (codec === BODY_CODEC.Binary) {
+          if (codec === BodyCodec.Binary) {
             const contentLen = reader.varUInt32();
             const buffer = reader.buffer(contentLen);
             callback(nullHeaders, undefined, buffer);
@@ -257,18 +265,18 @@ export class Connection implements IDisposable {
           }
 
           const content = reader.stringOfVarUInt32();
-          if (codec === BODY_CODEC.JSON) {
+          if (codec === BodyCodec.JSON) {
             callback(nullHeaders, undefined, JSON.parse(content));
           } else {
             callback(nullHeaders, undefined, content);
           }
           break;
         }
-        case RPC_TYPE.Notification:
+        case OperationType.Notification:
         // fall through
-        case RPC_TYPE.Request: {
+        case OperationType.Request: {
           const method = reader.stringOfVarUInt32();
-          // const headers = headerSerializer.read();
+          const headers = requestHeadersSerializer.read() as IRequestHeaders;
 
           const contentLen = reader.varUInt32();
           const content = reader.buffer(contentLen);
@@ -276,10 +284,10 @@ export class Connection implements IDisposable {
 
           const args = processor.deserializeRequest(content);
 
-          this._receiveRequest(rpcType, requestId, method, nullHeaders, args);
+          this._receiveRequest(rpcType, requestId, method, headers, args);
           break;
         }
-        case RPC_TYPE.Cancel: {
+        case OperationType.Cancel: {
           const cancellationTokenSource = this._cancellationTokenSources.get(requestId);
           if (cancellationTokenSource) {
             cancellationTokenSource.cancel();
@@ -302,15 +310,9 @@ export class Connection implements IDisposable {
     this.disposable.dispose();
   }
 
-  protected _receiveRequest(
-    rpcType: number,
-    requestId: number,
-    method: string,
-    headers: Record<string, any>,
-    args: any[],
-  ) {
-    const hasCancellationToken = args.length && args[args.length - 1] === CancellationTokenStr ? args.pop() : false;
-    if (hasCancellationToken) {
+  protected _receiveRequest(rpcType: number, requestId: number, method: string, headers: IRequestHeaders, args: any[]) {
+    const cancelable = headers.cancelable;
+    if (cancelable) {
       const tokenSource = new CancellationTokenSource();
       this._cancellationTokenSources.set(requestId, tokenSource);
       args.push(tokenSource.token);
@@ -320,7 +322,7 @@ export class Connection implements IDisposable {
       }
     }
 
-    if (rpcType === RPC_TYPE.Request) {
+    if (rpcType === OperationType.Request) {
       if (this._requestEmitter.hasListener(method)) {
         this._requestEmitter.emit(method, requestId, method, headers, args);
       } else {

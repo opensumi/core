@@ -1,6 +1,6 @@
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
+import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
 import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import {

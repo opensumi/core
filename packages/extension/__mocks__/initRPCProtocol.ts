@@ -1,5 +1,5 @@
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
-import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
+import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Emitter } from '@opensumi/ide-core-common';

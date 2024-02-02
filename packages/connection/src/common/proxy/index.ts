@@ -1,4 +1,7 @@
 export * from './legacy';
+export * from './runner';
+export * from './sumi';
+export * from './invoker';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];

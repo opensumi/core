@@ -7,7 +7,7 @@ import { ICommentsService } from '@opensumi/ide-comments';
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
+import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
 import {
   IContextKeyService,
   StorageProvider,

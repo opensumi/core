@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
-import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-channel';
+import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';

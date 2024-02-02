@@ -4,9 +4,9 @@ import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
 import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
-const PROTO_VERSION = 1;
+const ProtoVersionV1 = 1;
 
-export enum RPC_TYPE {
+export enum OperationType {
   Request,
   Notification,
   Response,
@@ -14,7 +14,7 @@ export enum RPC_TYPE {
   Cancel,
 }
 
-export enum BODY_CODEC {
+export enum BodyCodec {
   /**
    * Means no body
    */
@@ -24,43 +24,45 @@ export enum BODY_CODEC {
   JSON,
 }
 
-export enum ERROR_STATUS {
+export enum ErrorCode {
   OK,
-  EXEC_ERROR,
+  Err,
 }
 
 export const fury = Fury({});
 export const reader = fury.binaryReader;
 export const writer = fury.binaryWriter;
 
-const headersProto = Type.object('headers', {
-  /**
-   * Transfer-Encoding
-   */
-  te: Type.string(),
-  /**
-   * Chunk Size
-   */
-  cs: Type.uint32(),
+const requestHeadersProto = Type.object('headers', {
+  cancelable: Type.bool(),
 });
 
-export const headerSerializer = generateSerializer(fury, headersProto) as Serializer;
+export interface IRequestHeaders {
+  /**
+   * If set to true, the request can be canceled.
+   *
+   * the server will push a `CancellationToken` to the request arguments.
+   */
+  cancelable?: boolean;
+}
+
+export const requestHeadersSerializer = generateSerializer(fury, requestHeadersProto) as Serializer;
 
 export const createRequestPacket = (
   requestId: number,
   rpcType: number,
   method: string,
-  headers: Record<string, any>,
+  headers: IRequestHeaders,
   payload: Uint8Array,
 ) => {
   writer.reset();
 
-  writer.uint8(PROTO_VERSION);
+  writer.uint8(ProtoVersionV1);
   writer.uint8(rpcType);
   writer.uint32(requestId);
-  writer.uint8(BODY_CODEC.Binary);
+  writer.uint8(BodyCodec.Binary);
   writer.stringOfVarUInt32(method);
-  // headerSerializer.write(headers);
+  requestHeadersSerializer.write(headers);
   writer.varUInt32(payload.length);
   writer.buffer(payload);
 
@@ -70,10 +72,10 @@ export const createRequestPacket = (
 export const createCancelPacket = (requestId: number) => {
   writer.reset();
 
-  writer.uint8(PROTO_VERSION);
-  writer.uint8(RPC_TYPE.Cancel);
+  writer.uint8(ProtoVersionV1);
+  writer.uint8(OperationType.Cancel);
   writer.uint32(requestId);
-  writer.uint8(BODY_CODEC.None);
+  writer.uint8(BodyCodec.None);
 
   return writer.dump();
 };
@@ -81,12 +83,12 @@ export const createCancelPacket = (requestId: number) => {
 export const createResponsePacket = (requestId: number, headers: Record<string, any>, payload: Uint8Array) => {
   writer.reset();
 
-  writer.uint8(PROTO_VERSION);
-  writer.uint8(RPC_TYPE.Response);
+  writer.uint8(ProtoVersionV1);
+  writer.uint8(OperationType.Response);
   writer.uint32(requestId);
-  writer.uint8(BODY_CODEC.Binary);
-  writer.uint16(ERROR_STATUS.OK);
-  // headerSerializer.write(headers);
+  writer.uint8(BodyCodec.Binary);
+  writer.uint16(ErrorCode.OK);
+  requestHeadersSerializer.write(headers);
   writer.varUInt32(payload.length);
   writer.buffer(payload);
 
@@ -101,10 +103,10 @@ export const createErrorResponsePacket = (
 ) => {
   writer.reset();
 
-  writer.uint8(PROTO_VERSION);
-  writer.uint8(RPC_TYPE.Response);
+  writer.uint8(ProtoVersionV1);
+  writer.uint8(OperationType.Response);
   writer.uint32(requestId);
-  writer.uint8(BODY_CODEC.JSON);
+  writer.uint8(BodyCodec.JSON);
   writer.uint16(status);
   // headerSerializer.write(headers);
   writer.stringOfVarUInt32(stringifyError(error));

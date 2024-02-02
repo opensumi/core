@@ -72,7 +72,7 @@ export class WSChannelHandler {
 
       const channel = this.channelMap.get(msg.id);
       if (channel) {
-        channel.handleMessage(msg);
+        channel.dispatchChannelMessage(msg);
       } else {
         this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
       }

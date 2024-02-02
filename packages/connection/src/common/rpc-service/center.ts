@@ -1,68 +1,13 @@
 import { Deferred } from '@opensumi/ide-core-common';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { ProxyLegacy } from '../proxy';
-import { ServiceRunner } from '../proxy/runner';
-import { ProxySumi } from '../proxy/sumi';
-import { TSumiProtocol } from '../rpc';
-import { ProtocolRepository } from '../rpc/protocol-repository';
+import { ServiceRunner, Invoker } from '../proxy';
+import { TSumiProtocol, ProtocolRepository } from '../rpc';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 import { WSChannel } from '../ws-channel';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
-
-const defaultReservedWordSet = new Set(['then']);
-
-class Invoker {
-  legacyProxy: ProxyLegacy;
-  sumiProxy: ProxySumi;
-
-  private legacyInvokeProxy: any;
-  private sumiInvokeProxy: any;
-
-  forceUseSumi = true;
-
-  constructor(protected repo: ProtocolRepository, public runner: ServiceRunner, channel: WSChannel, logger?: ILogger) {
-    this.legacyProxy = new ProxyLegacy(runner, logger);
-    this.legacyInvokeProxy = this.legacyProxy.getInvokeProxy();
-
-    this.sumiProxy = new ProxySumi(runner, logger);
-    this.sumiInvokeProxy = this.sumiProxy.getInvokeProxy();
-
-    this.listen(channel);
-  }
-
-  listen(channel: WSChannel) {
-    const messageConnection = channel.createMessageConnection();
-    this.legacyProxy.listen(messageConnection);
-
-    const connection = channel.createConnection();
-    connection.setProtocolRepository(this.repo);
-    this.sumiProxy.listen(connection);
-  }
-
-  invoke(name: string, ...args: any[]) {
-    if (defaultReservedWordSet.has(name) || typeof name === 'symbol') {
-      return Promise.resolve();
-    }
-
-    if (this.forceUseSumi) {
-      return this.sumiInvokeProxy[name](...args);
-    }
-
-    if (this.repo.has(name)) {
-      return this.sumiInvokeProxy[name](...args);
-    }
-
-    return this.legacyInvokeProxy[name](...args);
-  }
-
-  dispose() {
-    this.legacyProxy.dispose();
-    this.sumiProxy.dispose();
-  }
-}
 
 export class RPCServiceCenter {
   public uid: string;
@@ -151,8 +96,8 @@ export class RPCServiceCenter {
     }
 
     // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.
-    //        but actually we should throw an error to tell user that no remote service can handle this call.
-    //        or just return `undefined`.
+    // but actually we should throw an error to tell user that no remote service can handle this call.
+    // or just return `undefined`.
     return result.length === 1 ? result[0] : result;
   }
 }

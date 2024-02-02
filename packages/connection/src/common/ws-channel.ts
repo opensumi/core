@@ -115,7 +115,7 @@ export class WSChannel {
 
     disposable.push(
       connection.onMessage((data) => {
-        channel.handleMessage(parse(data));
+        channel.dispatchChannelMessage(parse(data));
       }),
     );
     disposable.push(channel);
@@ -172,13 +172,17 @@ export class WSChannel {
     );
   }
 
-  handleMessage(msg: ChannelMessage) {
-    if (msg.kind === 'server-ready') {
-      this.emitter.emit('open', msg.id);
-    } else if (msg.kind === 'data') {
-      this.emitter.emit('message', msg.content);
-    } else if (msg.kind === 'binary') {
-      this.emitter.emit('binary', msg.binary);
+  dispatchChannelMessage(msg: ChannelMessage) {
+    switch (msg.kind) {
+      case 'server-ready':
+        this.emitter.emit('open', msg.id);
+        break;
+      case 'data':
+        this.emitter.emit('message', msg.content);
+        break;
+      case 'binary':
+        this.emitter.emit('binary', msg.binary);
+        break;
     }
   }
 
@@ -213,7 +217,6 @@ export class WSChannel {
       }),
     );
   }
-
   onError() {}
   close(code?: number, reason?: string) {
     this.emitter.emit('close', code, reason);
