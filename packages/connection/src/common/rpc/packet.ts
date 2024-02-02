@@ -1,5 +1,6 @@
-import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
-import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
+import { Serializer, Type } from '@furyjs/fury';
+import Fury from '@furyjs/fury/dist/lib/fury';
+import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
 import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
@@ -28,8 +29,22 @@ export enum ERROR_STATUS {
   EXEC_ERROR,
 }
 
-export const reader = BinaryReader({});
-const writer = BinaryWriter({});
+export const fury = Fury({});
+export const reader = fury.binaryReader;
+export const writer = fury.binaryWriter;
+
+const headersProto = Type.object('headers', {
+  /**
+   * Transfer-Encoding
+   */
+  te: Type.string(),
+  /**
+   * Chunk Size
+   */
+  cs: Type.uint32(),
+});
+
+export const headerSerializer = generateSerializer(fury, headersProto) as Serializer;
 
 export const createRequestPacket = (
   requestId: number,
@@ -45,7 +60,7 @@ export const createRequestPacket = (
   writer.uint32(requestId);
   writer.uint8(BODY_CODEC.Binary);
   writer.stringOfVarUInt32(method);
-  writer.stringOfVarUInt32(JSON.stringify(headers));
+  // headerSerializer.write(headers);
   writer.varUInt32(payload.length);
   writer.buffer(payload);
 
@@ -71,7 +86,7 @@ export const createResponsePacket = (requestId: number, headers: Record<string, 
   writer.uint32(requestId);
   writer.uint8(BODY_CODEC.Binary);
   writer.uint16(ERROR_STATUS.OK);
-  writer.stringOfVarUInt32(JSON.stringify(headers));
+  // headerSerializer.write(headers);
   writer.varUInt32(payload.length);
   writer.buffer(payload);
 
@@ -91,7 +106,7 @@ export const createErrorResponsePacket = (
   writer.uint32(requestId);
   writer.uint8(BODY_CODEC.JSON);
   writer.uint16(status);
-  writer.stringOfVarUInt32(JSON.stringify(headers));
+  // headerSerializer.write(headers);
   writer.stringOfVarUInt32(stringifyError(error));
 
   return writer.dump();

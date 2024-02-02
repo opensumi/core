@@ -1,15 +1,17 @@
+export interface Headers {
+  transferEncoding?: 'chunked';
+  /**
+   * @default 4M
+   */
+  chunkSize?: number;
+}
+
 export interface Request<T> {
   name: string;
   type: T;
 }
 
 export interface Response<T> {
-  transferEncoding?: 'chunked';
-  /**
-   * @default 4M
-   */
-  chunkSize?: number;
-
   /**
    * If the method no return value, the response type is void.
    */

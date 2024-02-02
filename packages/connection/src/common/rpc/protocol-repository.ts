@@ -33,19 +33,104 @@ const createResultProto = (name: string, type?: TypeDescription) => {
   return Type.object(name, props);
 };
 
+type TSerializer = ReturnType<Fury['registerSerializer']>;
+
+interface IProtocolProcessor {
+  serializeRequest(args: any[]): Uint8Array;
+  deserializeRequest(buffer: Uint8Array): any[];
+  serializeResult<T = any>(result: T): Uint8Array;
+  deserializeResult<T = any>(buffer: Uint8Array): T;
+}
+
+class SumiProtocolProcessor implements IProtocolProcessor {
+  request: TSerializer;
+  result: TSerializer;
+
+  constructor(methodProtocol: TSumiProtocolMethod, public fury: Fury) {
+    const methodName = methodProtocol.method;
+
+    const argsTuple = [] as TypeDescription[];
+
+    for (const element of methodProtocol.request) {
+      argsTuple.push(element.type);
+    }
+
+    const requestProto = Type.object(methodName + '^', {
+      a: Type.tuple(argsTuple),
+    });
+
+    const resultProto = createResultProto(methodName + 'v', methodProtocol.response.type);
+
+    this.request = this.fury.registerSerializer(requestProto);
+    this.result = this.fury.registerSerializer(resultProto);
+  }
+
+  serializeRequest(args: any[]): Uint8Array {
+    const newArray = new Array(args.length);
+    for (let i = 0; i < args.length; i++) {
+      newArray[i] = args[i];
+    }
+
+    const payload: ISerializableRequest = {
+      a: newArray,
+    };
+
+    return this.request.serialize(payload);
+  }
+
+  deserializeRequest(buffer: Uint8Array): any[] {
+    const { a: argsArray } = this.request.deserialize(buffer) as ISerializableRequest;
+    return argsArray;
+  }
+
+  serializeResult<T = any>(result: T): Uint8Array {
+    const payload = {
+      r: result,
+    } as ISerializableResult;
+
+    payload.$ = ReturnValueTransfer.replacer(result);
+
+    return this.result.serialize(payload);
+  }
+
+  deserializeResult<T = any>(buffer: Uint8Array): T {
+    const payload = this.result.deserialize(buffer) as ISerializableResult;
+
+    if (payload.$) {
+      return ReturnValueTransfer.reviver(payload.$);
+    }
+
+    return payload.r;
+  }
+}
+
+class AnyProtocolProcessor implements IProtocolProcessor {
+  serializeRequest(args: any[]): Uint8Array {
+    return anySerializer.serialize(args);
+  }
+
+  deserializeRequest(buffer: Uint8Array): any[] {
+    return anySerializer.deserialize(buffer);
+  }
+
+  serializeResult<T = any>(result: T): Uint8Array {
+    return anySerializer.serialize(result);
+  }
+
+  deserializeResult<T = any>(buffer: Uint8Array): T {
+    return anySerializer.deserialize(buffer);
+  }
+}
+
 export class ProtocolRepository {
   fury = new Fury();
 
-  private serializerMap = {} as Record<
-    string,
-    {
-      request: ReturnType<Fury['registerSerializer']>;
-      result: ReturnType<Fury['registerSerializer']>;
-    }
-  >;
+  private processorMap = new Map<string, SumiProtocolProcessor>();
+
+  private anyProcessor = new AnyProtocolProcessor();
 
   has(name: string) {
-    return !!this.serializerMap[name];
+    return this.processorMap.has(name);
   }
 
   loadProtocol(
@@ -72,76 +157,15 @@ export class ProtocolRepository {
   }
 
   loadProtocolMethod(methodProtocol: TSumiProtocolMethod) {
-    const methodName = methodProtocol.method;
-    const argsTuple = [] as TypeDescription[];
-
-    for (const element of methodProtocol.request) {
-      argsTuple.push(element.type);
-    }
-
-    const requestProto = Type.object(methodName + '^', {
-      a: Type.tuple(argsTuple),
-    });
-
-    const resultProto = createResultProto(methodName + 'v', methodProtocol.response.type);
-
-    this.serializerMap[methodName] = {
-      request: this.fury.registerSerializer(requestProto),
-      result: this.fury.registerSerializer(resultProto),
-    };
+    this.processorMap.set(methodProtocol.method, new SumiProtocolProcessor(methodProtocol, this.fury));
   }
 
-  serializeRequest(name: string, args: any[]): Uint8Array {
-    if (this.serializerMap[name]) {
-      const newArray = new Array(args.length);
-      for (let i = 0; i < args.length; i++) {
-        newArray[i] = args[i];
-      }
-
-      const payload: ISerializableRequest = {
-        a: newArray,
-      };
-
-      return this.serializerMap[name].request.serialize(payload);
+  getProcessor(method: string): IProtocolProcessor {
+    const processor = this.processorMap.get(method);
+    if (processor) {
+      return processor;
     }
-
-    return anySerializer.serialize(args);
-  }
-
-  deserializeRequest(name: string, buffer: Uint8Array): any[] {
-    if (this.serializerMap[name]) {
-      const { a: argsArray } = this.serializerMap[name].request.deserialize(buffer) as ISerializableRequest;
-      return argsArray;
-    }
-
-    return anySerializer.deserialize(buffer);
-  }
-
-  serializeResult<T = any>(name: string, result: T): Uint8Array {
-    if (this.serializerMap[name]) {
-      const payload = {
-        r: result,
-      } as ISerializableResult;
-
-      payload.$ = ReturnValueTransfer.replacer(result);
-
-      return this.serializerMap[name].result.serialize(payload);
-    }
-
-    return anySerializer.serialize(result);
-  }
-
-  deserializeResult<T = any>(name: string, buffer: Uint8Array): T {
-    if (this.serializerMap[name]) {
-      const payload = this.serializerMap[name].result.deserialize(buffer) as ISerializableResult;
-
-      if (payload.$) {
-        return ReturnValueTransfer.reviver(payload.$);
-      }
-
-      return payload.r;
-    }
-    return anySerializer.deserialize(buffer);
+    return this.anyProcessor;
   }
 }
 

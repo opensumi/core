@@ -40,10 +40,9 @@ const assert = (condition: any, message: string) => {
   }
 };
 
-const innerEvents = {
-  onRequestNotFound: '##onRequestNotFound',
-  onNotificationNotFound: '##onNotificationNotFound',
-} as const;
+const nullHeaders = {};
+
+const star = '*';
 
 export interface IConnectionOptions {
   timeout?: number;
@@ -53,15 +52,10 @@ export class Connection implements IDisposable {
   protected disposable = new DisposableCollection();
 
   private _binaryEmitter = new EventEmitter<{
-    [key: string]: [requestId: number, headers: Record<string, any>, args: any[]];
+    [key: string]: [requestId: number, method: string, headers: Record<string, any>, args: any[]];
   }>();
   private _notificationEmitter = new EventEmitter<{
-    [key: string]: [headers: Record<string, any>, args: any[]];
-  }>();
-
-  private _innerEventEmitter = new EventEmitter<{
-    [innerEvents.onNotificationNotFound]: [method: string, headers: Record<string, any>, args: any[]];
-    [innerEvents.onRequestNotFound]: [requestId: number, method: string, headers: Record<string, any>, args: any[]];
+    [key: string]: [requestId: number, method: string, headers: Record<string, any>, args: any[]];
   }>();
 
   private _requestId = 0;
@@ -76,13 +70,16 @@ export class Connection implements IDisposable {
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: IConnectionOptions = {}) {}
 
   sendNotification(method: string, ...args: any[]) {
-    const payload = this.protocolRepository.serializeRequest(method, args);
+    const processor = this.protocolRepository.getProcessor(method);
+    const payload = processor.serializeRequest(args);
     this.socket.send(createRequestPacket(this._requestId++, RPC_TYPE.Notification, method, {}, payload));
   }
 
   sendRequest(method: string, ...args: any[]) {
     return new Promise<any>((resolve, reject) => {
       const requestId = this._requestId++;
+
+      const processor = this.protocolRepository.getProcessor(method);
 
       this._callbacks.set(requestId, (headers, error, buffer) => {
         if (error) {
@@ -95,11 +92,11 @@ export class Connection implements IDisposable {
           return;
         }
 
-        const result = this.protocolRepository.deserializeResult(method, buffer);
+        const result = processor.deserializeResult(buffer);
         resolve(result);
       });
 
-      const payload = this.protocolRepository.serializeRequest(method, args);
+      const payload = processor.serializeRequest(args);
 
       const cancellationToken: CancellationToken | undefined =
         args.length && CancellationToken.isCancellationToken(args[args.length - 1]) ? args.pop() : undefined;
@@ -125,17 +122,17 @@ export class Connection implements IDisposable {
   }
 
   onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
-    const handlerWrapper = (headers: Record<string, any>, args: any[]) => {
+    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
       handler(...args);
     };
     return Disposable.create(this._notificationEmitter.on(method, handlerWrapper));
   }
 
   onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
-    const handlerWrapper = (method: string, headers: Record<string, any>, args: any[]) => {
+    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
       handler(method, args);
     };
-    return Disposable.create(this._innerEventEmitter.on(innerEvents.onNotificationNotFound, handlerWrapper));
+    return Disposable.create(this._notificationEmitter.on(star, handlerWrapper));
   }
 
   cancelRequest(requestId: number) {
@@ -162,6 +159,7 @@ export class Connection implements IDisposable {
   ) {
     let result: any;
     let error: Error | undefined;
+    const processor = this.protocolRepository.getProcessor(method);
 
     try {
       result = handler(...args);
@@ -175,7 +173,7 @@ export class Connection implements IDisposable {
     } else if (isPromise(result)) {
       result
         .then((result) => {
-          const payload = this.protocolRepository.serializeResult(method, result);
+          const payload = processor.serializeResult(result);
           this.socket.send(createResponsePacket(requestId, {}, payload));
           this._cancellationTokenSources.delete(requestId);
         })
@@ -184,14 +182,14 @@ export class Connection implements IDisposable {
           this._cancellationTokenSources.delete(requestId);
         });
     } else {
-      const payload = this.protocolRepository.serializeResult(method, result);
+      const payload = processor.serializeResult(result);
       this.socket.send(createResponsePacket(requestId, {}, payload));
       this._cancellationTokenSources.delete(requestId);
     }
   }
 
   onRequest<T = any>(method: string, handler: TGenericRequestHandler<T>): IDisposable {
-    const handlerWrapper = (requestId: number, headers: Record<string, any>, args: any[]) => {
+    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
       this.runRequestHandler(method, handler, requestId, headers, args);
     };
     return Disposable.create(this._binaryEmitter.on(method, handlerWrapper));
@@ -202,7 +200,7 @@ export class Connection implements IDisposable {
       this.runRequestHandler(method, handler, requestId, headers, args);
     };
 
-    return Disposable.create(this._innerEventEmitter.on(innerEvents.onRequestNotFound, handlerWrapper));
+    return Disposable.create(this._binaryEmitter.on(star, handlerWrapper));
   }
 
   setProtocolRepository(protocolRepository: ProtocolRepository) {
@@ -227,30 +225,30 @@ export class Connection implements IDisposable {
           this._callbacks.delete(requestId);
 
           const status = reader.uint16();
-          const headers = readHeaders();
+          // const headers = headerSerializer.read();
 
           // if error code is not 0, it's an error
           if (status === ERROR_STATUS.EXEC_ERROR) {
-            // 错误信息用 JSON 格式，方便且兼容性好，可恢复成 Error
+            // TODO: use binary codec
             assert(codec === BODY_CODEC.JSON, 'Error response should be JSON encoded');
             const content = reader.stringOfVarUInt32();
             const error = parseError(content);
-            callback(headers, error);
+            callback(nullHeaders, error);
             return;
           }
 
           if (codec === BODY_CODEC.Binary) {
             const contentLen = reader.varUInt32();
             const buffer = reader.buffer(contentLen);
-            callback(headers, undefined, buffer);
+            callback(nullHeaders, undefined, buffer);
             return;
           }
 
           const content = reader.stringOfVarUInt32();
           if (codec === BODY_CODEC.JSON) {
-            callback(headers, undefined, JSON.parse(content));
+            callback(nullHeaders, undefined, JSON.parse(content));
           } else {
-            callback(headers, undefined, content);
+            callback(nullHeaders, undefined, content);
           }
           break;
         }
@@ -258,13 +256,15 @@ export class Connection implements IDisposable {
         // fall through
         case RPC_TYPE.Request: {
           const method = reader.stringOfVarUInt32();
-          const headers = readHeaders();
+          // const headers = headerSerializer.read();
 
           const contentLen = reader.varUInt32();
           const content = reader.buffer(contentLen);
-          const args = this.protocolRepository.deserializeRequest(method, content);
+          const processor = this.protocolRepository.getProcessor(method);
 
-          this._receiveRequest(rpcType, requestId, method, headers, args);
+          const args = processor.deserializeRequest(content);
+
+          this._receiveRequest(rpcType, requestId, method, nullHeaders, args);
           break;
         }
         case RPC_TYPE.Cancel: {
@@ -279,11 +279,6 @@ export class Connection implements IDisposable {
         default: {
           break;
         }
-      }
-
-      function readHeaders() {
-        const header = reader.stringOfVarUInt32();
-        return JSON.parse(header);
       }
     });
     if (toDispose) {
@@ -315,15 +310,15 @@ export class Connection implements IDisposable {
 
     if (rpcType === RPC_TYPE.Request) {
       if (this._binaryEmitter.hasListener(method)) {
-        this._binaryEmitter.emit(method, requestId, headers, args);
+        this._binaryEmitter.emit(method, requestId, method, headers, args);
       } else {
-        this._innerEventEmitter.emit(innerEvents.onRequestNotFound, requestId, method, headers, args);
+        this._binaryEmitter.emit(star, requestId, method, headers, args);
       }
     } else {
       if (this._notificationEmitter.hasListener(method)) {
-        this._notificationEmitter.emit(method, headers, args);
+        this._notificationEmitter.emit(method, requestId, method, headers, args);
       } else {
-        this._innerEventEmitter.emit(innerEvents.onNotificationNotFound, method, headers, args);
+        this._notificationEmitter.emit(star, requestId, method, headers, args);
       }
     }
   }
