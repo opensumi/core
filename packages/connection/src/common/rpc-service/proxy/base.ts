@@ -1,9 +1,9 @@
 import { Deferred, isDefined } from '@opensumi/ide-core-common';
 
-import { ILogger, IRPCServiceMap } from '../types';
-import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../utils';
+import { ILogger, IRPCServiceMap } from '../../types';
+import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../../utils';
 
-import type { ServiceRunner } from './runner';
+import type { ServiceRegistry } from './registry';
 
 interface IBaseConnection {
   listen(): void;
@@ -20,10 +20,10 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   protected abstract engine: 'legacy' | 'sumi';
 
-  constructor(public runner: ServiceRunner, logger?: ILogger) {
+  constructor(public registry: ServiceRegistry, logger?: ILogger) {
     this.logger = logger || console;
 
-    this.runner.onServicesUpdate((services) => {
+    this.registry.onServicesUpdate((services) => {
       if (this.connection) {
         this.bindMethods(services);
       }
@@ -105,14 +105,14 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   listen(connection: T): void {
     this.connection = connection;
-    this.bindMethods(this.runner.getServices());
+    this.bindMethods(this.registry.methods());
 
     connection.listen();
     this.connectionPromise.resolve();
   }
 
   public listenService(service: IRPCServiceMap) {
-    this.runner.registerService(service);
+    this.registry.registerService(service);
   }
 
   dispose(): void {
@@ -122,5 +122,5 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   }
 
   abstract getInvokeProxy<T = any>(): T;
-  protected abstract bindMethods(services: string[]): void;
+  protected abstract bindMethods(services: PropertyKey[]): void;
 }

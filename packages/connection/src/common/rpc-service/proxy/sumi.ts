@@ -1,5 +1,5 @@
-import { METHOD_NOT_REGISTERED } from '../constants';
-import { Connection } from '../rpc/connection';
+import { METHOD_NOT_REGISTERED } from '../../constants';
+import { Connection } from '../../rpc/connection';
 
 import { ProxyBase } from './base';
 
@@ -12,7 +12,7 @@ export class ProxySumi extends ProxyBase<Connection> {
         this.connection.onNotification(method, async (...args: any[]) => {
           this.captureOnNotification(method, args);
           try {
-            await this.runner.run(method, ...args);
+            await this.registry.invoke(method, ...args);
           } catch (e) {
             this.logger.warn(`notification exec ${method} error`, e);
           }
@@ -23,7 +23,7 @@ export class ProxySumi extends ProxyBase<Connection> {
           this.captureOnRequest(requestId, method, args);
 
           try {
-            const result = await this.runner.run(method, ...args);
+            const result = await this.registry.invoke(method, ...args);
             this.captureOnRequestResult(requestId, method, result);
             return result;
           } catch (e) {
@@ -38,10 +38,10 @@ export class ProxySumi extends ProxyBase<Connection> {
   public getInvokeProxy<T = any>(): T {
     return new Proxy(Object.create(null), {
       get: (target: any, p: PropertyKey) => {
-        const prop = p.toString();
-        if (!target[prop]) {
-          target[prop] = async (...args: any[]) => {
+        if (!target[p]) {
+          target[p] = async (...args: any[]) => {
             await this.connectionPromise.promise;
+            const prop = p.toString();
 
             // 调用方法为 on 开头时，作为单项通知
             if (prop.startsWith('on')) {
@@ -62,7 +62,7 @@ export class ProxySumi extends ProxyBase<Connection> {
             }
           };
         }
-        return target[prop];
+        return target[p];
       },
     });
   }
@@ -70,7 +70,7 @@ export class ProxySumi extends ProxyBase<Connection> {
   listen(connection: Connection): void {
     super.listen(connection);
     connection.onRequestNotFound((method) => {
-      if (!this.runner.has(method)) {
+      if (!this.registry.has(method)) {
         const requestId = this.nextRequestId();
         this.captureOnRequest(requestId, method, []);
         this.captureOnRequestFail(requestId, method, METHOD_NOT_REGISTERED);

@@ -1,6 +1,6 @@
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
-import { METHOD_NOT_REGISTERED } from '../constants';
+import { METHOD_NOT_REGISTERED } from '../../constants';
 
 import { ProxyBase } from './base';
 
@@ -18,7 +18,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
         this.connection.onNotification(method, async (...args: any[]) => {
           this.captureOnNotification(method, args);
           try {
-            await this.runner.run(method, ...this.serializeArguments(args));
+            await this.registry.invoke(method, ...this.serializeArguments(args));
           } catch (e) {
             this.logger.warn(`notification exec ${method} error`, e);
           }
@@ -29,7 +29,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
           this.captureOnRequest(requestId, method, args);
 
           try {
-            const result = await this.runner.run(method, ...this.serializeArguments(args));
+            const result = await this.registry.invoke(method, ...this.serializeArguments(args));
 
             this.captureOnRequestResult(requestId, method, result);
 
@@ -56,15 +56,15 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
   public getInvokeProxy<T = any>(): T {
     return new Proxy(Object.create(null), {
       get: (target: any, p: PropertyKey) => {
-        const prop = p.toString();
-        if (!target[prop]) {
-          target[prop] = async (...args: any[]) => {
+        if (!target[p]) {
+          target[p] = async (...args: any[]) => {
             await this.connectionPromise.promise;
 
             let isSingleArray = false;
             if (args.length === 1 && Array.isArray(args[0])) {
               isSingleArray = true;
             }
+            const prop = p.toString();
 
             // 调用方法为 on 开头时，作为单项通知
             if (prop.startsWith('on')) {
@@ -105,7 +105,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
             }
           };
         }
-        return target[prop];
+        return target[p];
       },
     });
   }
@@ -136,7 +136,7 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
     super.listen(connection);
 
     connection.onRequest((method) => {
-      if (!this.runner.has(method)) {
+      if (!this.registry.has(method)) {
         const requestId = this.nextRequestId();
         this.captureOnRequest(requestId, method, []);
         const result = {

@@ -1,8 +1,9 @@
 import net from 'net';
 
 import { WSChannel } from '@opensumi/ide-connection';
-import { copy } from '@opensumi/ide-connection/lib/common/connection/buffers';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
+
+import { copy } from '../../src/common/buffers/buffers';
 
 const total = 1000;
 

@@ -1,7 +1,8 @@
 import { ObjectTypeDescription, Serializer, TypeDescription } from '@furyjs/fury';
 import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
-import { fury, reader, writer } from './shared';
+import { furyFactory } from './shared';
+const { fury, reader, writer } = furyFactory();
 
 type Writable = Record<string, any> & { kind: string };
 

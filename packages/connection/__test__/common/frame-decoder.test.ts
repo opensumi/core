@@ -3,12 +3,10 @@
 import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
 
 import {
-  StreamPacketDecoder,
-  createStreamPacket,
-  kMagicNumber,
-} from '../../src/common/connection/drivers/stream-decoder';
-
-const reader = BinaryReader({});
+  LengthFieldBasedFrameDecoder,
+  indicator,
+  prependLengthField,
+} from '../../src/common/connection/drivers/frame-decoder';
 
 function round(x: number, count: number) {
   return Math.round(x * 10 ** count) / 10 ** count;
@@ -42,14 +40,7 @@ console.timeEnd('createPayload');
 // 1m
 const pressure = 1024 * 1024;
 
-const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [createStreamPacket(v), v] as const);
-
-const mixedPackets = [p1m, p5m].map((v) => {
-  const sumiPacket = createStreamPacket(v);
-  const newPacket = createPayload(1024 + sumiPacket.byteLength);
-  newPacket.set(sumiPacket, 1024);
-  return [newPacket, v] as const;
-});
+const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [prependLengthField(v), v] as const);
 
 const size = purePackets.reduce((acc, v) => acc + v[0].byteLength, 0);
 
@@ -61,22 +52,30 @@ purePackets.forEach((v) => {
   offset += sumiPacket.byteLength;
 });
 
+const mixedPackets = [p1m, p5m].map((v) => {
+  const sumiPacket = prependLengthField(v);
+  const newPacket = createPayload(1024 + sumiPacket.byteLength);
+  newPacket.set(sumiPacket, 1024);
+  return [newPacket, v] as const;
+});
+
 const packets = [...purePackets, ...mixedPackets];
 
-describe('stream-packet', () => {
-  it('can create sumi stream packet', () => {
+describe('frame decoder', () => {
+  it('can create frame', () => {
     const content = new Uint8Array([1, 2, 3]);
-    const packet = createStreamPacket(content);
+    const packet = prependLengthField(content);
+    const reader = BinaryReader({});
 
     reader.reset(packet);
-    expect(reader.uint32()).toBe(kMagicNumber);
-    expect(reader.varUInt32()).toBe(content.byteLength);
+    expect(Uint8Array.from(reader.buffer(4))).toEqual(indicator);
+    expect(reader.uint32()).toBe(content.byteLength);
     expect(Uint8Array.from(reader.buffer(content.byteLength))).toEqual(content);
   });
 
   packets.forEach(([packet, expected]) => {
-    it(`can decode stream packet: ${round(packet.byteLength / 1024 / 1024, 2)}m`, (done) => {
-      const decoder = new StreamPacketDecoder();
+    it(`can decode stream: ${round(packet.byteLength / 1024 / 1024, 2)}m`, (done) => {
+      const decoder = new LengthFieldBasedFrameDecoder();
 
       decoder.onData((data) => {
         fastExpectBufferEqual(data, expected);
@@ -95,8 +94,8 @@ describe('stream-packet', () => {
     });
   });
 
-  it('can decode a stream payload contains multiple packets', (done) => {
-    const decoder = new StreamPacketDecoder();
+  it('can decode a stream payload contains multiple frames', (done) => {
+    const decoder = new LengthFieldBasedFrameDecoder();
     const expectCount = purePackets.length;
     let count = 0;
     decoder.onData((data) => {
@@ -120,18 +119,17 @@ describe('stream-packet', () => {
     logMemoryUsage();
   });
 
-  it('can decode a stream it header and payload are separated', (done) => {
+  it('can decode a stream it has no valid length info', (done) => {
     const v = createPayload(1024);
-    const sumiPacket = createStreamPacket(v);
+    const sumiPacket = prependLengthField(v);
 
-    const decoder = new StreamPacketDecoder();
+    const decoder = new LengthFieldBasedFrameDecoder();
     decoder.onData((data) => {
       fastExpectBufferEqual(data, v);
       done();
     });
 
     console.log('write chunk', sumiPacket.byteLength);
-
     // use pressure = 2 to simulate the header and payload are separated
     const pressure = 2;
     for (let i = 0; i < sumiPacket.byteLength; i += pressure) {

@@ -1,13 +1,14 @@
 import { Deferred } from '@opensumi/ide-core-common';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { ServiceRunner, Invoker } from '../proxy';
 import { TSumiProtocol, ProtocolRepository } from '../rpc';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
-import { WSChannel } from '../ws-channel';
+import type { WSChannel } from '../ws-channel';
 
-const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
+import { ServiceRegistry, Invoker } from './proxy';
+
+const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 
 export class RPCServiceCenter {
   public uid: string;
@@ -15,9 +16,9 @@ export class RPCServiceCenter {
   private invokers: Invoker[] = [];
 
   private protocolRepository = new ProtocolRepository();
-  private serviceRunner = new ServiceRunner();
+  private registry = new ServiceRegistry();
 
-  private readyDeferred = new Deferred<void>();
+  private deferred = new Deferred<void>();
   private logger: ILogger;
 
   constructor(private bench?: IBench, logger?: ILogger) {
@@ -34,7 +35,7 @@ export class RPCServiceCenter {
   }
 
   ready() {
-    return this.readyDeferred.promise;
+    return this.deferred.promise;
   }
 
   loadProtocol(protocol: TSumiProtocol) {
@@ -45,12 +46,12 @@ export class RPCServiceCenter {
 
   setChannel(channel: WSChannel) {
     if (this.invokers.length === 0) {
-      this.readyDeferred.resolve();
+      this.deferred.resolve();
     }
 
     const index = this.invokers.length - 1;
 
-    const invoker = new Invoker(this.protocolRepository, this.serviceRunner, channel, this.logger);
+    const invoker = new Invoker(this.protocolRepository, this.registry, channel, this.logger);
     this.invokers.push(invoker);
 
     return {
@@ -62,11 +63,11 @@ export class RPCServiceCenter {
   }
 
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
-    this.serviceRunner.register(getMethodName(serviceName, _name), method);
+    this.registry.register(getMethodName(serviceName, _name), method);
   }
 
   onRequestService(serviceName: string, service: any) {
-    this.serviceRunner.registerService(service, {
+    this.registry.registerService(service, {
       nameConverter: (name) => getMethodName(serviceName, name),
     });
   }

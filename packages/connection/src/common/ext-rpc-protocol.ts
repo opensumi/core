@@ -2,16 +2,6 @@ import { Connection } from './rpc/connection';
 import { ILogger } from './types';
 import { WSChannel } from './ws-channel';
 
-export enum RPCProtocolEnv {
-  MAIN,
-  EXT,
-}
-
-export interface IProxyIdentifier {
-  serviceId: string;
-  countId: number;
-}
-
 export class ProxyIdentifier<T = any> {
   public static count = 0;
 
@@ -95,7 +85,7 @@ export class RPCProtocol implements IRPCProtocol {
         // charCodeAt(0) === 36 means starts with $
         if (!target[name] && name.charCodeAt(0) === 36) {
           const rpcName = getRPCName(rpcId, name);
-          target[name] = (...args: any[]) => this.connection.sendRequest(rpcName, args);
+          target[name] = (...args: any[]) => this.connection.sendRequest(rpcName, ...args);
         }
 
         return target[name];

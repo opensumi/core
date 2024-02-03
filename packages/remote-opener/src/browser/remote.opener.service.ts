@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { RPCService } from '@opensumi/ide-connection/lib/common/proxy';
+import { RPCService } from '@opensumi/ide-connection/lib/common/rpc-service';
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
 import { CommandService, Disposable, IDisposable, Uri, URI } from '@opensumi/ide-core-common';

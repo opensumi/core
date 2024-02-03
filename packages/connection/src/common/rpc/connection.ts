@@ -14,14 +14,12 @@ import { BaseConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
+import { MethodTimeoutError } from './errors';
 import {
   BodyCodec,
   ErrorCode,
   OperationType,
-  createCancelPacket,
-  createErrorResponsePacket,
-  createRequestPacket,
-  createResponsePacket,
+  MessageIO,
   requestHeadersSerializer,
   reader,
   IRequestHeaders,
@@ -34,12 +32,7 @@ import {
   TOnRequestNotFoundHandler,
   TRequestCallback,
 } from './types';
-
-const assert = (condition: any, message: string) => {
-  if (!condition) {
-    throw new Error(message);
-  }
-};
+import { assert } from './utils';
 
 const nullHeaders = {};
 
@@ -74,7 +67,7 @@ export class Connection implements IDisposable {
   sendNotification(method: string, ...args: any[]) {
     const processor = this.protocolRepository.getProcessor(method);
     const payload = processor.serializeRequest(args);
-    this.socket.send(createRequestPacket(this._requestId++, OperationType.Notification, method, nullHeaders, payload));
+    this.socket.send(MessageIO.Request(this._requestId++, OperationType.Notification, method, nullHeaders, payload));
   }
 
   sendRequest(method: string, ...args: any[]) {
@@ -118,7 +111,7 @@ export class Connection implements IDisposable {
 
       const payload = processor.serializeRequest(args);
       this.socket.send(
-        createRequestPacket(
+        MessageIO.Request(
           requestId,
           OperationType.Request,
           method,
@@ -146,7 +139,7 @@ export class Connection implements IDisposable {
   }
 
   cancelRequest(requestId: number) {
-    this.socket.send(createCancelPacket(requestId));
+    this.socket.send(MessageIO.Cancel(requestId));
   }
 
   private _handleTimeout(method: string, requestId: number) {
@@ -157,7 +150,7 @@ export class Connection implements IDisposable {
     const callback = this._callbacks.get(requestId)!;
     this._callbacks.delete(requestId);
     this._timeoutHandles.delete(requestId);
-    callback({}, new MethodTimeoutError(method));
+    callback(nullHeaders, new MethodTimeoutError(method));
   }
 
   private runRequestHandler<T extends (...args: any[]) => any>(
@@ -177,22 +170,22 @@ export class Connection implements IDisposable {
     }
 
     if (error) {
-      this.socket.send(createErrorResponsePacket(requestId, ErrorCode.Err, {}, error));
+      this.socket.send(MessageIO.Error(requestId, ErrorCode.Err, nullHeaders, error));
       this._cancellationTokenSources.delete(requestId);
     } else if (isPromise(result)) {
       result
         .then((result) => {
           const payload = processor.serializeResult(result);
-          this.socket.send(createResponsePacket(requestId, {}, payload));
+          this.socket.send(MessageIO.Response(requestId, nullHeaders, payload));
           this._cancellationTokenSources.delete(requestId);
         })
         .catch((err) => {
-          this.socket.send(createErrorResponsePacket(requestId, ErrorCode.Err, {}, err));
+          this.socket.send(MessageIO.Error(requestId, ErrorCode.Err, nullHeaders, err));
           this._cancellationTokenSources.delete(requestId);
         });
     } else {
       const payload = processor.serializeResult(result);
-      this.socket.send(createResponsePacket(requestId, {}, payload));
+      this.socket.send(MessageIO.Response(requestId, nullHeaders, payload));
       this._cancellationTokenSources.delete(requestId);
     }
   }
@@ -219,9 +212,11 @@ export class Connection implements IDisposable {
   listen() {
     const toDispose = this.socket.onMessage((data) => {
       reader.reset(data);
+      // skip version, currently only have version 1
       reader.skip(1);
 
       const rpcType = reader.uint8();
+
       const requestId = reader.uint32();
       const codec = reader.uint8();
 
@@ -316,6 +311,7 @@ export class Connection implements IDisposable {
       const tokenSource = new CancellationTokenSource();
       this._cancellationTokenSources.set(requestId, tokenSource);
       args.push(tokenSource.token);
+
       if (this._knownCanceledRequests.has(requestId)) {
         tokenSource.cancel();
         this._knownCanceledRequests.delete(requestId);
@@ -323,29 +319,11 @@ export class Connection implements IDisposable {
     }
 
     if (rpcType === OperationType.Request) {
-      if (this._requestEmitter.hasListener(method)) {
-        this._requestEmitter.emit(method, requestId, method, headers, args);
-      } else {
-        this._requestEmitter.emit(star, requestId, method, headers, args);
-      }
+      const eventName = this._requestEmitter.hasListener(method) ? method : star;
+      this._requestEmitter.emit(eventName, requestId, method, headers, args);
     } else {
-      if (this._notificationEmitter.hasListener(method)) {
-        this._notificationEmitter.emit(method, requestId, method, headers, args);
-      } else {
-        this._notificationEmitter.emit(star, requestId, method, headers, args);
-      }
+      const eventName = this._notificationEmitter.hasListener(method) ? method : star;
+      this._notificationEmitter.emit(eventName, requestId, method, headers, args);
     }
-  }
-}
-
-export class MethodProtocolNotFoundError extends Error {
-  constructor(method: string) {
-    super(`method ${method} not found`);
-  }
-}
-
-export class MethodTimeoutError extends Error {
-  constructor(method: string) {
-    super(`method ${method} timeout`);
   }
 }

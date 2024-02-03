@@ -2,8 +2,6 @@ import { Type } from '@furyjs/fury';
 
 import { METHOD_NOT_REGISTERED } from '@opensumi/ide-connection/lib/common/constants';
 
-import { MethodProtocolNotFoundError } from '../../../src/common/rpc/connection';
-
 import { test } from './common-tester';
 import { createConnectionPair, createSumiRPCClientPair } from './utils';
 
@@ -23,7 +21,7 @@ describe('sumi rpc only', () => {
   });
 
   it('can throw error', async () => {
-    const { invoker1, invoker2, client1, client2, repo } = createSumiRPCClientPair(pair);
+    const { invoker1, invoker2, client1, client2 } = createSumiRPCClientPair(pair);
 
     client1.listenService({
       shortUrl: (url: string) => {
@@ -40,23 +38,18 @@ describe('sumi rpc only', () => {
         }
         return a + b;
       },
-      throwAString: () => {
-        // eslint-disable-next-line no-throw-literal
-        throw 'a string';
-      },
     });
 
     await expect(invoker1.add(0, 2)).rejects.toThrow('a is zero');
     await expect(invoker2.shortUrl('')).rejects.toThrow('url is empty');
 
-    await expect(invoker1.throwAString()).rejects.toThrow(MethodProtocolNotFoundError);
-    await expect(invoker2.throwAString()).rejects.toThrow(MethodProtocolNotFoundError);
+    await expect(invoker1.throwAString()).resolves.toEqual(METHOD_NOT_REGISTERED);
+    await expect(invoker2.throwAString()).resolves.toEqual(METHOD_NOT_REGISTERED);
 
-    repo.loadProtocolMethod({
-      method: 'throwAString',
-      request: [],
-      response: {
-        type: Type.any(),
+    client2.listenService({
+      throwAString: () => {
+        // eslint-disable-next-line no-throw-literal
+        throw 'a string';
       },
     });
 

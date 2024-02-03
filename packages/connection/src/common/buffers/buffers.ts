@@ -261,9 +261,34 @@ export class Cursor {
     }
   }
 
-  move(n: number) {
-    this.offset += n;
-    this.updatePosition();
+  private skipCursor(n: number) {
+    let count = 0;
+    while (this.chunkIndex < this.buffers.buffers.length) {
+      const chunk = this.buffers.buffers[this.chunkIndex];
+      const chunkLength = chunk.byteLength;
+
+      while (this.chunkOffset < chunkLength) {
+        this.chunkOffset++;
+        this.offset++;
+
+        if (++count === n) {
+          return;
+        }
+      }
+      this.chunkOffset = 0;
+      this.chunkIndex++;
+    }
+  }
+
+  read(n: number) {
+    const end = this.offset + n;
+    const buffers = this.buffers.slice(this.offset, end);
+    this.skip(n);
+    return buffers;
+  }
+
+  skip(n: number) {
+    this.skipCursor(n);
   }
 
   moveTo(n: number) {

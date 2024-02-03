@@ -8,6 +8,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionHostManager } from '../../src';
 
 interface IExtensionHostManagerTesterOptions {
+  name: string;
   providers: Provider[];
   // 在 beforeEach 头部执行
   init: () => MaybePromise<void>;
@@ -16,7 +17,7 @@ interface IExtensionHostManagerTesterOptions {
 }
 
 export const extensionHostManagerTester = (options: IExtensionHostManagerTesterOptions) =>
-  describe('extension host manager test', () => {
+  describe(`extension host manager test for ${options.name}`, () => {
     jest.setTimeout(10 * 1000);
     let extensionHostManager: IExtensionHostManager;
     let injector: MockInjector;

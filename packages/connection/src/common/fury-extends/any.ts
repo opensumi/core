@@ -1,8 +1,8 @@
-import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
-
 import { Uri } from '@opensumi/ide-core-common';
 
-import { reader, writer } from './shared';
+import { furyFactory } from './shared';
+
+const { reader, writer } = furyFactory();
 
 export enum ProtocolType {
   String,
@@ -18,7 +18,7 @@ export enum ProtocolType {
   Boolean,
 }
 
-function serializeWorker(data: unknown, writer: BinaryWriter) {
+function serializeWorker(data: unknown) {
   if (typeof data === 'undefined') {
     writer.uint8(ProtocolType.Undefined);
   } else if (typeof data === 'boolean') {
@@ -46,15 +46,15 @@ function serializeWorker(data: unknown, writer: BinaryWriter) {
     writer.uint8(ProtocolType.Array);
     writer.varUInt32(data.length);
     for (const element of data) {
-      serializeWorker(element, writer);
+      serializeWorker(element);
     }
   } else if (typeof data === 'object') {
     writer.uint8(ProtocolType.JSONObject);
-    writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
+    writer.stringOfVarUInt32(JSON.stringify(data));
   }
 }
 
-function deserializeWorker(reader: BinaryReader) {
+function deserializeWorker() {
   const type = reader.uint8();
   switch (type) {
     case ProtocolType.Undefined:
@@ -79,7 +79,7 @@ function deserializeWorker(reader: BinaryReader) {
       const length = reader.varUInt32();
       const data = [] as unknown[];
       for (let i = 0; i < length; i++) {
-        data.push(deserializeWorker(reader));
+        data.push(deserializeWorker());
       }
       return data;
     }
@@ -92,19 +92,21 @@ function deserializeWorker(reader: BinaryReader) {
 
 const deserialize = (bytes: Uint8Array) => {
   reader.reset(bytes);
-  return deserializeWorker(reader);
+
+  return deserializeWorker();
 };
 
 const serializeVolatile = (v: any) => {
   writer.reset();
-  serializeWorker(v, writer);
+
+  serializeWorker(v);
 
   return writer.dumpAndOwn();
 };
 
 const serialize = (v: any) => {
   writer.reset();
-  serializeWorker(v, writer);
+  serializeWorker(v);
 
   return writer.dump();
 };
@@ -116,23 +118,10 @@ export const anySerializer = {
 };
 
 class ObjectTransfer {
-  static replacer(key: string | undefined, value: any) {
-    if (value) {
-      if (value.$mid === 1) {
-        const uri = Uri.revive(value);
-        return {
-          $type: 'VSCODE_URI',
-          data: uri.toString(),
-        };
-      }
-    }
-
-    return value;
-  }
   static reviver(key: string | undefined, value: any) {
-    if (value && value.$type !== undefined && value.data !== undefined) {
-      if (value.$type === 'VSCODE_URI') {
-        return Uri.parse(value.data);
+    if (value && value.$mid) {
+      if (value.$mid === 1) {
+        return Uri.revive(value);
       }
     }
     return value;

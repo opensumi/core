@@ -3,12 +3,12 @@ import { MessageChannel, MessagePort } from 'worker_threads';
 import { Type } from '@furyjs/fury';
 
 import { ProxyLegacy, WSChannel } from '@opensumi/ide-connection';
-import { ServiceRunner } from '@opensumi/ide-connection/lib/common/proxy/runner';
-import { ProxySumi } from '@opensumi/ide-connection/lib/common/proxy/sumi';
-import { ProtocolRepository } from '@opensumi/ide-connection/lib/common/rpc/protocol-repository';
+import { ProtocolRepository } from '@opensumi/ide-connection/src/common/rpc/protocol-repository';
 
 import { NodeMessagePortConnection } from '../../../src/common/connection/drivers/node-message-port';
 import { Connection } from '../../../src/common/rpc/connection';
+import { ServiceRegistry } from '../../../src/common/rpc-service/proxy/registry';
+import { ProxySumi } from '../../../src/common/rpc-service/proxy/sumi';
 
 export function createConnectionPair() {
   const channel = new MessageChannel();
@@ -116,23 +116,23 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   pair.connection1.setProtocolRepository(repo);
   pair.connection2.setProtocolRepository(repo);
 
-  const serviceRunner = new ServiceRunner();
-  serviceRunner.registerService({
+  const registry = new ServiceRegistry();
+  registry.registerService({
     shortUrl: (url: string) => url.slice(0, 10),
     returnUndefined: () => undefined,
   });
 
-  const client1 = new ProxySumi(serviceRunner);
+  const client1 = new ProxySumi(registry);
 
   client1.listen(pair.connection1);
   const invoker1 = client1.getInvokeProxy();
 
-  const serviceRunner2 = new ServiceRunner();
-  serviceRunner2.registerService({
+  const registry2 = new ServiceRegistry();
+  registry2.registerService({
     add: (a: number, b: number) => a + b,
   });
 
-  const client2 = new ProxySumi(serviceRunner2);
+  const client2 = new ProxySumi(registry2);
 
   client2.listen(pair.connection2);
 
@@ -148,22 +148,22 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
 }
 
 export function createLegacyRPCClientPair(pair: ReturnType<typeof createMessageConnectionPair>) {
-  const serviceRunner = new ServiceRunner();
-  serviceRunner.registerService({
+  const registry = new ServiceRegistry();
+  registry.registerService({
     shortUrl: (url: string) => url.slice(0, 10),
     returnUndefined: () => undefined,
   });
 
-  const client1 = new ProxyLegacy(serviceRunner);
+  const client1 = new ProxyLegacy(registry);
   client1.listen(pair.connection1);
   const invoker1 = client1.getInvokeProxy();
 
-  const serviceRunner2 = new ServiceRunner();
-  serviceRunner2.registerService({
+  const registry2 = new ServiceRegistry();
+  registry2.registerService({
     add: (a: number, b: number) => a + b,
   });
 
-  const client2 = new ProxyLegacy(serviceRunner2);
+  const client2 = new ProxyLegacy(registry2);
 
   client2.listen(pair.connection2);
 
