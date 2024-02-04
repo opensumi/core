@@ -13,50 +13,58 @@ export class MergeConflictReportService extends Disposable {
   private readonly aiReporter: IAIReporter;
 
   private reportInfoMap: Map<string, Partial<MergeConflictRT>> = new Map();
+  private unique2RelationMap: Map<string, string> = new Map();
 
-  public startPoint(mode: MergeConflictRT['editorMode'] = 'traditional'): string {
+  private startPoint(mode: MergeConflictRT['editorMode'] = 'traditional', isPoint = true): string {
     if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       return '';
     }
 
-    const relationId = this.aiReporter.start(AISerivceType.MergeConflict, {
-      msgType: AISerivceType.MergeConflict,
-      message: AISerivceType.MergeConflict,
-      editorMode: mode,
-    });
-
-    this.reportInfoMap.set(relationId, {});
+    const relationId = this.aiReporter.start(
+      AISerivceType.MergeConflict,
+      {
+        msgType: AISerivceType.MergeConflict,
+        message: AISerivceType.MergeConflict,
+        editorMode: mode,
+      },
+      isPoint,
+    );
 
     return relationId;
   }
 
-  public reportPoint(relationId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>): void {
-    let reportInfo = this.reportInfoMap.get(relationId);
-
-    if (!reportInfo) {
-      reportInfo = {};
+  public report(uniqueId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>, isPoint = true): void {
+    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      return;
     }
 
-    const newReportInfo = {
-      ...reportInfo,
-      ...rt,
-    };
+    let relationId = '';
 
-    this.reportInfoMap.set(relationId, newReportInfo);
-    this.aiReporter.end(relationId, newReportInfo);
+    if (this.unique2RelationMap.has(uniqueId)) {
+      relationId = this.unique2RelationMap.get(uniqueId)!;
+    } else {
+      relationId = this.startPoint(rt.editorMode, isPoint);
+      this.unique2RelationMap.set(uniqueId, relationId);
+    }
+    this.aiReporter.end(relationId, rt, isPoint);
   }
 
-  // 点击次数加 1
-  public reportClickNum(relationId: string): void {
-    let reportInfo = this.reportInfoMap.get(relationId);
+  public reportClickNum(uniqueId: string, type: 'clickAllNum' | 'clickNum', isPoint = true): void {
+    const relationId = this.unique2RelationMap.get(uniqueId)!;
 
-    if (!reportInfo) {
-      reportInfo = { clickNum: 0 };
+    if (!relationId) {
+      return;
     }
 
-    this.reportPoint(relationId, {
-      clickNum: (reportInfo.clickNum || 0) + 1,
-    });
+    const preClickNum = this.aiReporter.getCacheReportInfo<MergeConflictRT>(relationId)![type] || 0;
+
+    this.report(
+      uniqueId,
+      {
+        [type]: preClickNum + 1,
+      },
+      isPoint,
+    );
   }
 
   dispose(): void {

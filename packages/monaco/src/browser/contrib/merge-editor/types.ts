@@ -12,7 +12,6 @@ import styles from './view/merge-editor.module.less';
 export const IMergeEditorService = Symbol('IMergeEditorService');
 export interface IMergeEditorService {
   compare(memoryMapping1?: LineRangeMapping[], memoryMapping2?: LineRangeMapping[]): Promise<void>;
-  getRTRelationId(): string;
 }
 
 export interface IRangeContrast {

@@ -74,8 +74,8 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
   receiveNum: number;
   // 点击了 ai 解决冲突的数量
   clickNum: number;
-  // 是否点击一键解决
-  isClickResolveAll: boolean;
+  // 点击了一键解决的次数
+  clickAllNum: number;
 }
 
 export type ReportInfo =
@@ -96,7 +96,8 @@ export const IAIReporter = Symbol('IAIReporter');
 
 export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
+  getCacheReportInfo<T = ReportInfo>(relationId: string): T | undefined;
   // 返回关联 ID
-  start(msg: string, data: ReportInfo): string;
-  end(relationId: string, data: ReportInfo): void;
+  start(msg: string, data: ReportInfo, isPoint?: boolean): string;
+  end(relationId: string, data: ReportInfo, isPoint?: boolean): void;
 }

@@ -5,24 +5,23 @@ import { message } from '@opensumi/ide-components';
 import { AiNativeConfigService, ClientAppContribution, MergeConflictRT } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
-  Disposable,
-  Schemes,
-  Domain,
+  CancellationTokenSource,
+  Command,
   CommandContribution,
   CommandRegistry,
-  Command,
-  MaybePromise,
-  IEventBus,
-  ExtensionActivatedEvent,
-  localize,
-  Uri,
+  Constants,
   ConstructorOf,
-  CancellationTokenSource,
-  IRange,
+  Disposable,
+  Domain,
   Emitter,
   Event,
-  Constants,
-  CommandService,
+  ExtensionActivatedEvent,
+  IEventBus,
+  IRange,
+  MaybePromise,
+  Schemes,
+  Uri,
+  localize,
 } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
@@ -44,7 +43,7 @@ import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { CacheConflict, DocumentMergeConflict, IConflictCache } from './cache-conflicts';
+import { CacheConflict, DocumentMergeConflict } from './cache-conflicts';
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
 import { CommitType } from './types';
 export namespace MERGE_CONFLICT {
@@ -127,12 +126,6 @@ interface ICacheResolvedConflicts extends IValidEditOperation {
   conflictText: string;
   isAccept?: boolean;
   isClosed?: boolean;
-}
-
-interface ICacheAIResolvedConflicts {
-  id: string;
-  range: IRange;
-  text: string;
 }
 
 interface IRequestCancel {
@@ -231,7 +224,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private loadingRange: Set<IRange> = new Set();
   // for report
   private currentReportMap = new Map<string, IReportData>();
-  private uri2RelationId = new Map<string, string>();
 
   constructor() {
     super();
@@ -321,11 +313,11 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             this.resetCacheResolvedConflicts(map);
           });
           this.updateAllWidgets();
-          this.updateReportData();
+          // this.updateReportData();
         }),
         this.editor.onDidChangeModel(() => {
           this.updateAllWidgets();
-          this.updateReportData();
+          // this.updateReportData();
         }),
       );
     }
@@ -342,23 +334,22 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     if (reportData) {
       return reportData;
     } else {
-      const currentRelationId = this.mergeConflictReportService.startPoint();
-
-      this.currentReportMap.set(uri, {
+      const reportInfo: Partial<MergeConflictRT> = {
         conflictPointNum: 0,
         useAiConflictPointNum: 0,
         receiveNum: 0,
         clickNum: 0,
-        isClickResolveAll: false,
+        clickAllNum: 0,
         editorMode: 'traditional',
-        relationId: currentRelationId,
-      });
-      this.uri2RelationId.set(uri, currentRelationId);
-      return this.currentReportMap.get(uri)!;
+      };
+
+      this.currentReportMap.set(uri, reportInfo);
+      this.mergeConflictReportService.report(uri, reportInfo);
+      return reportInfo;
     }
   }
 
-  set reportData(data: Partial<IReportData>) {
+  set reportData(data: Partial<MergeConflictRT>) {
     const uri = this.getUri();
     const reportData = this.reportData;
     this.currentReportMap.set(uri, {
@@ -370,9 +361,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private reportConflictData() {
     const uri = this.getUri();
     const reportData = this.currentReportMap.get(uri);
-    const currentRelationId = this.uri2RelationId.get(uri)!;
     if (reportData) {
-      this.mergeConflictReportService.reportPoint(currentRelationId, this.reportData);
+      this.mergeConflictReportService.report(this.getUri(), this.reportData);
     }
   }
 
@@ -546,7 +536,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             return Promise.resolve();
           }
           this.reportData = {
-            isClickResolveAll: true,
+            clickAllNum: this.reportData.clickAllNum! + 1,
           };
           //  一个个解决
           await this.acceptAllConflict();
