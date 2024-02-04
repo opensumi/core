@@ -1,4 +1,5 @@
-import { CancellationToken, Uri, IDisposable, Event, IMarkdownString, FileType } from '@opensumi/ide-core-common';
+import { CancellationToken, Event, FileType, IDisposable, IMarkdownString, Uri } from '@opensumi/ide-core-common';
+import { AISerivceType } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
 
@@ -17,7 +18,7 @@ export interface IChatMessageStructure {
   /**
    * 数据采集上报消息类型
    */
-  reportType?: string;
+  reportType?: AISerivceType;
   /*
    * agent id
    */

@@ -1,7 +1,8 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { IAIReporter, useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable } from '@opensumi/ide-core-browser';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 import { AiChatService } from '../ai-chat.service';
 

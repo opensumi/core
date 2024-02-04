@@ -2,16 +2,16 @@ import capitalize from 'lodash/capitalize';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
-import { IClipboardService, Schemes, URI, getIcon, useInjectable, uuid, IAIReporter } from '@opensumi/ide-core-browser';
-import { Icon, Popover } from '@opensumi/ide-core-browser/lib/components';
+import { IClipboardService, Schemes, URI, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { getSimpleEditorOptions, ICodeEditor } from '@opensumi/ide-editor';
-import { EditorCollectionService } from '@opensumi/ide-editor';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
+import { EditorCollectionService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { IEditorDocumentModelService, ILanguageService } from '@opensumi/ide-editor/lib/browser/index';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { highLightLanguageSupport, InstructionEnum } from '../../common/index';
+import { InstructionEnum, highLightLanguageSupport } from '../../common/index';
 
 import * as styles from './components.module.less';
 import './highlightTheme.less';

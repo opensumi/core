@@ -1,9 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { AI_CHAT_PANEL_TOGGLE_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AISerivceType } from '@opensumi/ide-core-browser/lib/ai-native/reporter';
 import { CancellationTokenSource, CommandService, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceOption } from '@opensumi/ide-core-common/lib/ai-native';
+import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 

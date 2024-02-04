@@ -1,8 +1,9 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { uuid } from '@opensumi/ide-core-common';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
-import { IAIReporter, IAiInlineChatService } from '../../../ai-native';
+import { IAiInlineChatService } from '../../../ai-native';
 import { Popover } from '../../../components';
 import { useInjectable } from '../../../react-hooks';
 import { getExternalIcon, KTICON_OWNER } from '../../../style/icon/icon';

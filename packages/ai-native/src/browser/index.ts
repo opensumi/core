@@ -1,14 +1,9 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
-import {
-  AiNativeConfigService,
-  BrowserModule,
-  IAIReporter,
-  IAiInlineChatService,
-  URI,
-} from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, BrowserModule, IAiInlineChatService, URI } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, RGBA, ThemeContribution, registerColor } from '@opensumi/ide-theme';
@@ -36,8 +31,8 @@ import { AiRunFeatureRegistry } from './run/run.feature.registry';
 import {
   AiNativeCoreContribution,
   IAiRunFeatureRegistry,
-  IInlineChatFeatureRegistry,
   IChatAgentViewService,
+  IInlineChatFeatureRegistry,
 } from './types';
 
 @Injectable()

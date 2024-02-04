@@ -1,30 +1,26 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {
-  AiNativeConfigService,
-  IAIReporter,
-  IAiInlineChatService,
-  PreferenceService,
-} from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { AiNativeConfigService, IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
-  IDisposable,
-  URI,
-  MaybePromise,
-  Disposable,
-  Event,
-  ILoggerManagerClient,
-  SupportLogNamespace,
-  ILogServiceClient,
-  Schemes,
   CancellationToken,
   ContributionProvider,
+  Disposable,
+  Event,
+  IDisposable,
+  ILogServiceClient,
+  ILoggerManagerClient,
+  MaybePromise,
+  Schemes,
+  SupportLogNamespace,
+  URI,
 } from '@opensumi/ide-core-common';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiNativeSettingSectionsId, AiInlineChatContentWidget } from '../common';
+import { AiInlineChatContentWidget, AiNativeSettingSectionsId } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiDiffWidget } from './diff-widget/ai-diff-widget';

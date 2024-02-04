@@ -1,9 +1,9 @@
 import { computed, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAIReporter } from '@opensumi/ide-core-browser';
 import { ILogServiceClient, ILoggerManagerClient, SupportLogNamespace } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 @Injectable()
 export class AiProjectGenerateService {

@@ -1,31 +1,31 @@
-import React, { useCallback, useEffect, Fragment, useReducer, useState, ReactNode, useMemo, useRef } from 'react';
+import React, { Fragment, ReactNode, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { Button } from '@opensumi/ide-components/lib/button';
-import { BasicRecycleTree, IBasicTreeData, IBasicRecycleTreeHandle } from '@opensumi/ide-components/lib/recycle-tree';
+import { BasicRecycleTree, IBasicRecycleTreeHandle, IBasicTreeData } from '@opensumi/ide-components/lib/recycle-tree';
 import {
   BasicCompositeTreeNode,
   BasicTreeNode,
 } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
 import { Tooltip } from '@opensumi/ide-components/lib/tooltip';
 import {
+  CommandService,
   DisposableCollection,
-  useInjectable,
+  EDITOR_COMMANDS,
   IContextKeyService,
   LabelService,
-  EDITOR_COMMANDS,
-  CommandService,
-  IAIReporter,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
-import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { Deferred, FileType, URI } from '@opensumi/ide-core-common';
+import { getIcon, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { FileType, URI } from '@opensumi/ide-core-common';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IIconService } from '@opensumi/ide-theme';
-import { MarkdownString, IMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
+import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { IChatAgentService, IChatComponent, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
+import { IChatAgentService, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
 import { AiChatService } from '../ai-chat.service';
 import { ChatRequestModel } from '../chat-model';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
-import { IChatAgentViewService, IChatComponentConfig } from '../types';
+import { IChatAgentViewService } from '../types';
 
 import * as styles from './components.module.less';
 import { Loading } from './Loading';

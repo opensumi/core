@@ -1,11 +1,10 @@
 import { debounce } from 'lodash';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IAIReporter } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTET } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { AISerivceType } from '@opensumi/ide-core-browser/lib/ai-native/reporter';
 import { WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { CompletionResultModel } from '@opensumi/ide-core-common/lib/ai-native';
+import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

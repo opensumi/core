@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
-import { AiNativeConfigService, ClientAppContribution, MergeConflictRT } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
   CancellationTokenSource,
@@ -24,6 +24,7 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
+import { MergeConflictRT } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ITextModel } from '@opensumi/ide-monaco';
 import { BaseInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';

@@ -4,18 +4,17 @@ import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elemen
 
 import {
   CODICON_OWNER,
-  IAIReporter,
   QUICK_OPEN_COMMANDS,
   getExternalIcon,
   getIcon,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { AISerivceType } from '@opensumi/ide-core-browser/lib/ai-native/reporter';
 import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
+import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 import { AiResponseTips, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../common';
 

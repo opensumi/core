@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { CompletionRT, IAIReporter, IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
+import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
 import {
   AiBackSerivcePath,
@@ -7,6 +7,7 @@ import {
   IAiBackService,
   IAiReportCompletionOption,
 } from '@opensumi/ide-core-common/lib/ai-native';
+import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 import { IProvideInlineCompletionsSignature } from '../../types';
 import { CompletionRequestBean } from '../model/competionModel';

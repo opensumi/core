@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { IAIReporter, useInjectable } from '@opensumi/ide-core-browser';
+import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 import { AiResponseTips } from '../../common';
 import { AiChatService } from '../ai-chat.service';
-import { MsgStreamManager, EMsgStreamStatus } from '../model/msg-stream-manager';
+import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import * as styles from './components.module.less';
 interface ITinkingProps {
