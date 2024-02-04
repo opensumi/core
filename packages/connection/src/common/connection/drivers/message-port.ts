@@ -5,6 +5,7 @@ import { BaseConnection } from './base';
 export class MessagePortConnection extends BaseConnection<Uint8Array> {
   constructor(public port: MessagePort) {
     super();
+    this.port.start();
   }
 
   send(data: Uint8Array): void {
@@ -16,12 +17,10 @@ export class MessagePortConnection extends BaseConnection<Uint8Array> {
       cb(e.data);
     };
 
-    this.port.onmessage = listener;
-    // this.port.addEventListener('message', listener);
+    this.port.addEventListener('message', listener);
     return {
       dispose: () => {
-        this.port.onmessage = null;
-        // this.port.removeEventListener('message', listener);
+        this.port.removeEventListener('message', listener);
       },
     };
   }
