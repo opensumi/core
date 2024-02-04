@@ -9,12 +9,16 @@ export class AIReporter implements IAIReporter {
   readonly reporter: IReporterService;
 
   private reportInfoCache: Map<string, ReportInfo> = new Map();
-
   private reporterCancelHandler: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   private getRelationId() {
     return uuid();
   }
+
+  public getCacheReportInfo<ReportInfo>(relationId: string) {
+    return this.reportInfoCache.get(relationId) as ReportInfo;
+  }
+
   // 集成方自定义上报内容
   getCommonReportInfo() {
     return {};
@@ -44,7 +48,12 @@ export class AIReporter implements IAIReporter {
     this.report(relationId, { success: true, ...data, isStart: false });
   }
 
-  private report(relationId: string, data: ReportInfo) {
+  // 记录数据但不上报
+  public record(data: ReportInfo, relationId?: string): ReportInfo {
+    if (!relationId) {
+      relationId = this.getRelationId();
+    }
+
     const reportInfoCache = this.reportInfoCache.get(relationId) || {};
 
     const reportInfo = {
@@ -55,6 +64,11 @@ export class AIReporter implements IAIReporter {
     };
 
     this.reportInfoCache.set(relationId, reportInfo);
+    return reportInfo;
+  }
+
+  private report(relationId: string, data: ReportInfo) {
+    const reportInfo = this.record(data, relationId);
     this.reporter.point(AI_REPORTER_NAME, data.msgType || reportInfo.msgType, reportInfo);
   }
 }

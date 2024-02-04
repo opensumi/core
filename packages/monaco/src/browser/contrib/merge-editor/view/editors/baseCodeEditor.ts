@@ -45,7 +45,6 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     protected readonly container: HTMLDivElement,
     protected readonly monacoService: MonacoService,
     protected readonly injector: Injector,
-    protected readonly relationId: string,
   ) {
     super();
     this.mount();
@@ -222,6 +221,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   public clearDecorations(): void {
     this.decorations.clearDecorations();
+  }
+
+  public getUri(): string {
+    return this.getModel()?.uri.path.toString()!;
   }
 
   /**

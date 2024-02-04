@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 
-import { Autowired, Injectable, Injector, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
   AiNativeConfigService,
   CancellationToken,
@@ -142,13 +142,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
-  constructor(
-    container: HTMLDivElement,
-    monacoService: MonacoService,
-    injector: Injector,
-    @Optional() relationId: string,
-  ) {
-    super(container, monacoService, injector, relationId);
+  constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
+    super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
     this.initListenEvent();
 
@@ -718,6 +713,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
       action,
       withViewType: EditorViewType.RESULT,
     });
+
+    if (action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) {
+      this.mergeConflictReportService.reportClickNum(this.getUri(), 'clickNum');
+    }
   }
 
   /**
@@ -741,10 +740,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
             action: actionType,
           });
         }
-
-        if (actionType === AI_RESOLVE_ACTIONS || actionType === AI_RESOLVE_REGENERATE_ACTIONS) {
-          this.mergeConflictReportService.reportClickNum(this.relationId);
-        }
       },
     });
 
@@ -757,7 +752,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     runWhenIdle(() => {
       const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
-      this.mergeConflictReportService.reportPoint(this.relationId, { conflictPointNum: aiConflictNum });
+      this.mergeConflictReportService.record(this.getUri(), { conflictPointNum: aiConflictNum, editorMode: '3way' });
     });
   }
 }

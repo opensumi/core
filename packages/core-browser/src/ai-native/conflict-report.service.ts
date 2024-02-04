@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import { AiNativeConfigService } from './ai-config.service';
-import { AISerivceType, IAIReporter, MergeConflictRT } from './reporter';
+import { AISerivceType, IAIReporter, MergeConflictRT, ReportInfo } from './reporter';
 
 @Injectable()
 export class MergeConflictReportService extends Disposable {
@@ -13,49 +13,49 @@ export class MergeConflictReportService extends Disposable {
   private readonly aiReporter: IAIReporter;
 
   private reportInfoMap: Map<string, Partial<MergeConflictRT>> = new Map();
+  private unique2RelationMap: Map<string, string> = new Map();
 
-  public startPoint(mode: MergeConflictRT['editorMode'] = 'traditional'): string {
-    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
-      return '';
+  public record(
+    uniqueId: string,
+    rt: Partial<Exclude<MergeConflictRT, 'type'>>,
+  ): Partial<MergeConflictRT> & { relationId: string } {
+    let relationId = '';
+
+    if (this.unique2RelationMap.has(uniqueId)) {
+      relationId = this.unique2RelationMap.get(uniqueId)!;
+      this.aiReporter.record(rt, relationId);
+    } else {
+      relationId = this.aiReporter.record({
+        ...rt,
+        msgType: AISerivceType.MergeConflict,
+        message: AISerivceType.MergeConflict,
+        editorMode: rt.editorMode || 'traditional',
+      }).relationId!;
+      this.unique2RelationMap.set(uniqueId, relationId);
     }
 
-    const relationId = this.aiReporter.start(AISerivceType.MergeConflict, {
-      msgType: AISerivceType.MergeConflict,
-      message: AISerivceType.MergeConflict,
-      editorMode: mode,
-    });
-
-    this.reportInfoMap.set(relationId, {});
-
-    return relationId;
-  }
-
-  public reportPoint(relationId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>): void {
-    let reportInfo = this.reportInfoMap.get(relationId);
-
-    if (!reportInfo) {
-      reportInfo = {};
-    }
-
-    const newReportInfo = {
-      ...reportInfo,
+    return {
       ...rt,
+      relationId,
     };
-
-    this.reportInfoMap.set(relationId, newReportInfo);
-    this.aiReporter.end(relationId, newReportInfo);
   }
 
-  // 点击次数加 1
-  public reportClickNum(relationId: string): void {
-    let reportInfo = this.reportInfoMap.get(relationId);
+  public report(uniqueId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>): void {
+    const reportInfo = this.record(uniqueId, rt);
+    this.aiReporter.end(reportInfo.relationId, reportInfo);
+  }
 
-    if (!reportInfo) {
-      reportInfo = { clickNum: 0 };
+  public reportClickNum(uniqueId: string, type: 'clickAllNum' | 'clickNum'): void {
+    const relationId = this.unique2RelationMap.get(uniqueId)!;
+
+    if (!relationId) {
+      return;
     }
 
-    this.reportPoint(relationId, {
-      clickNum: (reportInfo.clickNum || 0) + 1,
+    const preClickNum = this.aiReporter.getCacheReportInfo<MergeConflictRT>(relationId)![type] || 0;
+
+    this.report(uniqueId, {
+      [type]: preClickNum + 1,
     });
   }
 
