@@ -322,7 +322,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
 
   React.useEffect(() => {
     if (rootRef.current) {
-      splitPanelService.rootNode = rootRef.current;
+      splitPanelService.setRootNode(rootRef.current);
     }
     const disposer = eventBus.on(ResizeEvent, (e) => {
       if (e.payload.slotLocation === id) {
