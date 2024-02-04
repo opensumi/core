@@ -752,11 +752,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     runWhenIdle(() => {
       const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
-      this.mergeConflictReportService.report(
-        this.getUri(),
-        { conflictPointNum: aiConflictNum, editorMode: '3way' },
-        false,
-      );
+      this.mergeConflictReportService.record(this.getUri(), { conflictPointNum: aiConflictNum, editorMode: '3way' });
     });
   }
 }

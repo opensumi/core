@@ -25,10 +25,10 @@ export class AIReporter implements IAIReporter {
   }
 
   // 返回关联 ID
-  start(msg: AISerivceType, data: ReportInfo, isPoint = true): string {
+  start(msg: AISerivceType, data: ReportInfo): string {
     const relationId = this.getRelationId();
 
-    this.report(relationId, { ...data, msgType: msg, isStart: true }, isPoint);
+    this.report(relationId, { ...data, msgType: msg, isStart: true });
 
     // 这里做个兜底，如果 60s 模型还没有返回结果，上报失败
     const cancleHanddler = setTimeout(() => {
@@ -39,16 +39,21 @@ export class AIReporter implements IAIReporter {
     return relationId;
   }
 
-  end(relationId: string, data: ReportInfo, isPoint = true) {
+  end(relationId: string, data: ReportInfo) {
     const cancleHanddler = this.reporterCancelHandler.get(relationId);
     if (cancleHanddler) {
       clearTimeout(cancleHanddler);
     }
 
-    this.report(relationId, { success: true, ...data, isStart: false }, isPoint);
+    this.report(relationId, { success: true, ...data, isStart: false });
   }
 
-  private report(relationId: string, data: ReportInfo, isPoint = true) {
+  // 记录数据但不上报
+  public record(data: ReportInfo, relationId?: string): ReportInfo {
+    if (!relationId) {
+      relationId = this.getRelationId();
+    }
+
     const reportInfoCache = this.reportInfoCache.get(relationId) || {};
 
     const reportInfo = {
@@ -59,8 +64,11 @@ export class AIReporter implements IAIReporter {
     };
 
     this.reportInfoCache.set(relationId, reportInfo);
-    if (isPoint) {
-      this.reporter.point(AI_REPORTER_NAME, data.msgType || reportInfo.msgType, reportInfo);
-    }
+    return reportInfo;
+  }
+
+  private report(relationId: string, data: ReportInfo) {
+    const reportInfo = this.record(data, relationId);
+    this.reporter.point(AI_REPORTER_NAME, data.msgType || reportInfo.msgType, reportInfo);
   }
 }

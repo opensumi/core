@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import { AiNativeConfigService } from './ai-config.service';
-import { AISerivceType, IAIReporter, MergeConflictRT } from './reporter';
+import { AISerivceType, IAIReporter, MergeConflictRT, ReportInfo } from './reporter';
 
 @Injectable()
 export class MergeConflictReportService extends Disposable {
@@ -15,41 +15,37 @@ export class MergeConflictReportService extends Disposable {
   private reportInfoMap: Map<string, Partial<MergeConflictRT>> = new Map();
   private unique2RelationMap: Map<string, string> = new Map();
 
-  private startPoint(mode: MergeConflictRT['editorMode'] = 'traditional', isPoint = true): string {
-    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
-      return '';
-    }
-
-    const relationId = this.aiReporter.start(
-      AISerivceType.MergeConflict,
-      {
-        msgType: AISerivceType.MergeConflict,
-        message: AISerivceType.MergeConflict,
-        editorMode: mode,
-      },
-      isPoint,
-    );
-
-    return relationId;
-  }
-
-  public report(uniqueId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>, isPoint = true): void {
-    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
-      return;
-    }
-
+  public record(
+    uniqueId: string,
+    rt: Partial<Exclude<MergeConflictRT, 'type'>>,
+  ): Partial<MergeConflictRT> & { relationId: string } {
     let relationId = '';
 
     if (this.unique2RelationMap.has(uniqueId)) {
       relationId = this.unique2RelationMap.get(uniqueId)!;
+      this.aiReporter.record(rt, relationId);
     } else {
-      relationId = this.startPoint(rt.editorMode, isPoint);
+      relationId = this.aiReporter.record({
+        ...rt,
+        msgType: AISerivceType.MergeConflict,
+        message: AISerivceType.MergeConflict,
+        editorMode: rt.editorMode || 'traditional',
+      }).relationId!;
       this.unique2RelationMap.set(uniqueId, relationId);
     }
-    this.aiReporter.end(relationId, rt, isPoint);
+
+    return {
+      ...rt,
+      relationId,
+    };
   }
 
-  public reportClickNum(uniqueId: string, type: 'clickAllNum' | 'clickNum', isPoint = true): void {
+  public report(uniqueId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>): void {
+    const reportInfo = this.record(uniqueId, rt);
+    this.aiReporter.end(reportInfo.relationId, reportInfo);
+  }
+
+  public reportClickNum(uniqueId: string, type: 'clickAllNum' | 'clickNum'): void {
     const relationId = this.unique2RelationMap.get(uniqueId)!;
 
     if (!relationId) {
@@ -58,13 +54,9 @@ export class MergeConflictReportService extends Disposable {
 
     const preClickNum = this.aiReporter.getCacheReportInfo<MergeConflictRT>(relationId)![type] || 0;
 
-    this.report(
-      uniqueId,
-      {
-        [type]: preClickNum + 1,
-      },
-      isPoint,
-    );
+    this.report(uniqueId, {
+      [type]: preClickNum + 1,
+    });
   }
 
   dispose(): void {

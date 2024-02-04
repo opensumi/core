@@ -16,9 +16,10 @@ export enum AISerivceType {
 }
 
 export interface CommonLogInfo {
+  msgType: AISerivceType;
+  relationId: string;
   replytime: number;
   success: boolean;
-  msgType: string;
   message: string;
   isStart: boolean;
   isLike: boolean;
@@ -97,7 +98,8 @@ export const IAIReporter = Symbol('IAIReporter');
 export interface IAIReporter {
   getCommonReportInfo(): Record<string, unknown>;
   getCacheReportInfo<T = ReportInfo>(relationId: string): T | undefined;
+  record(data: ReportInfo, relationId?: string): ReportInfo;
   // 返回关联 ID
-  start(msg: string, data: ReportInfo, isPoint?: boolean): string;
-  end(relationId: string, data: ReportInfo, isPoint?: boolean): void;
+  start(msg: string, data: ReportInfo): string;
+  end(relationId: string, data: ReportInfo): void;
 }
