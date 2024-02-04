@@ -1,6 +1,6 @@
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { IRPCServiceMap, RPCServiceMethod } from '../../types';
+import { RPCServiceMethod } from '../../types';
 import { getServiceMethods } from '../../utils';
 
 /**
@@ -9,7 +9,7 @@ import { getServiceMethods } from '../../utils';
 export class ServiceRegistry {
   protected emitter = new Emitter<string[]>();
 
-  private serviceMethodMap: IRPCServiceMap = new Map();
+  private serviceMethodMap = new Map<PropertyKey, RPCServiceMethod>();
 
   onServicesUpdate = this.emitter.event;
 
