@@ -38,7 +38,7 @@ function serializeWorker(data: unknown) {
   } else if (typeof data === 'string') {
     writer.uint8(ProtocolType.String);
     writer.stringOfVarUInt32(data);
-  } else if (Buffer.isBuffer(data)) {
+  } else if (data instanceof Uint8Array) {
     writer.uint8(ProtocolType.Buffer);
     writer.varUInt32(data.byteLength);
     writer.buffer(data);
@@ -50,7 +50,7 @@ function serializeWorker(data: unknown) {
     }
   } else if (typeof data === 'object') {
     writer.uint8(ProtocolType.JSONObject);
-    writer.stringOfVarUInt32(JSON.stringify(data));
+    writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
   }
 }
 
@@ -118,10 +118,23 @@ export const anySerializer = {
 };
 
 class ObjectTransfer {
-  static reviver(key: string | undefined, value: any) {
-    if (value && value.$mid) {
+  static replacer(key: string | undefined, value: any) {
+    if (value) {
       if (value.$mid === 1) {
-        return Uri.revive(value);
+        const uri = Uri.revive(value);
+        return {
+          $type: 'VSCODE_URI',
+          data: uri.toString(),
+        };
+      }
+    }
+
+    return value;
+  }
+  static reviver(key: string | undefined, value: any) {
+    if (value && value.$type !== undefined && value.data !== undefined) {
+      if (value.$type === 'VSCODE_URI') {
+        return Uri.parse(value.data);
       }
     }
     return value;
