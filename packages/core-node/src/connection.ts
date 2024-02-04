@@ -31,7 +31,7 @@ function handleClientChannel(
 
   const remove = serviceCenter.setChannel(channel);
 
-  channel.onClose(() => {
+  channel.onceClose(() => {
     remove.dispose();
     serviceChildInjector.disposeAll();
 

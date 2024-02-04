@@ -111,9 +111,9 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
   const clientCenter = new RPCServiceCenter();
   const dispose = clientCenter.setChannel(channel);
 
-  const toRemove = channel.onClose(() => {
+  const toDispose = channel.onClose(() => {
     dispose.dispose();
-    toRemove();
+    toDispose.dispose();
   });
 
   const { getRPCService } = initRPCService(clientCenter);

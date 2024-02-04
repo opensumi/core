@@ -236,22 +236,8 @@ export class WSChannel {
   createConnection(options: IConnectionOptions = {}) {
     const conn = new Connection(
       {
-        onceClose: (cb) => {
-          const toRemove = this.onceClose(cb);
-          return {
-            dispose() {
-              toRemove();
-            },
-          };
-        },
-        onMessage: (cb) => {
-          const remove = this.onBinary(cb);
-          return {
-            dispose: () => {
-              remove();
-            },
-          };
-        },
+        onceClose: (cb) => this.onceClose(cb),
+        onMessage: (cb) => this.onBinary(cb),
         send: (data) => {
           this.sendBinary(data);
         },

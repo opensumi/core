@@ -1,6 +1,6 @@
 import { EventEmitter } from '@opensumi/events';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { IDisposable, toDisposable } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common';
 
 export interface IInterProcessConnection {
   $createConnection(id: string): Promise<void>;
@@ -31,11 +31,11 @@ export class ExtensionConnection implements BaseConnection<string> {
     this.proxy.$sendMessage(this.id, data);
   }
   onMessage(cb: (data: string) => void): IDisposable {
-    return toDisposable(this.emitter.on('message', cb));
+    return this.emitter.on('message', cb);
   }
 
   onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
-    return toDisposable(this.emitter.on('close', () => cb(-1, 'closed')));
+    return this.emitter.on('close', () => cb(-1, 'closed'));
   }
 
   close() {

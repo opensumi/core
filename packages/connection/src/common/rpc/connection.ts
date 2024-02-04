@@ -2,7 +2,6 @@ import { EventEmitter } from '@opensumi/events';
 import {
   DisposableCollection,
   IDisposable,
-  Disposable,
   parseError,
   CancellationToken,
   canceled,
@@ -128,14 +127,14 @@ export class Connection implements IDisposable {
     const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
       handler(...args);
     };
-    return Disposable.create(this._notificationEmitter.on(method, handlerWrapper));
+    return this._notificationEmitter.on(method, handlerWrapper);
   }
 
   onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
     const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
       handler(method, args);
     };
-    return Disposable.create(this._notificationEmitter.on(star, handlerWrapper));
+    return this._notificationEmitter.on(star, handlerWrapper);
   }
 
   cancelRequest(requestId: number) {
@@ -194,7 +193,7 @@ export class Connection implements IDisposable {
     const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
       this.runRequestHandler(requestId, method, args, handler);
     };
-    return Disposable.create(this._requestEmitter.on(method, handlerWrapper));
+    return this._requestEmitter.on(method, handlerWrapper);
   }
 
   onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
@@ -202,7 +201,7 @@ export class Connection implements IDisposable {
       this.runRequestHandler(requestId, method, [method, args], handler);
     };
 
-    return Disposable.create(this._requestEmitter.on(star, handlerWrapper));
+    return this._requestEmitter.on(star, handlerWrapper);
   }
 
   setProtocolRepository(protocolRepository: ProtocolRepository) {

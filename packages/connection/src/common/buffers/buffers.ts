@@ -261,7 +261,14 @@ export class Cursor {
     }
   }
 
-  private skipCursor(n: number) {
+  read(n: number) {
+    const end = this.offset + n;
+    const buffers = this.buffers.slice(this.offset, end);
+    this.skip(n);
+    return buffers;
+  }
+
+  skip(n: number) {
     let count = 0;
     while (this.chunkIndex < this.buffers.buffers.length) {
       const chunk = this.buffers.buffers[this.chunkIndex];
@@ -278,17 +285,6 @@ export class Cursor {
       this.chunkOffset = 0;
       this.chunkIndex++;
     }
-  }
-
-  read(n: number) {
-    const end = this.offset + n;
-    const buffers = this.buffers.slice(this.offset, end);
-    this.skip(n);
-    return buffers;
-  }
-
-  skip(n: number) {
-    this.skipCursor(n);
   }
 
   moveTo(n: number) {

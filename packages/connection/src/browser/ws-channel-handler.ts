@@ -129,7 +129,7 @@ export class WSChannelHandler {
       channel.onOpen(() => {
         resolve();
       });
-      channel.onClose((code: number, reason: string) => {
+      channel.onceClose((code: number, reason: string) => {
         this.channelCloseEventMap.set(channelId, {
           channelPath,
           closeEvent: { code, reason },

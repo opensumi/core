@@ -524,7 +524,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
             clientId,
           });
 
-          channel.onClose(() => {
+          channel.onceClose(() => {
             channel.dispose();
             this.logger.log(`The connection client ${clientId} closed`);
 
