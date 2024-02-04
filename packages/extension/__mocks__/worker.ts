@@ -96,6 +96,8 @@ export class MessagePort {
 
   constructor() {}
 
+  start() {}
+
   dispatchEvent(event) {
     if (this.onmessage) {
       this.onmessage(event);

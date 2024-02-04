@@ -1257,7 +1257,7 @@ An error case:
       [{ $serialized: true, language: 'plaintext' }],
       false,
       undefined,
-      undefined,
+      '',
     );
   });
   // #endregion registerInlayHintsProvider
