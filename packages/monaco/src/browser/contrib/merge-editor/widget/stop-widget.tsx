@@ -1,10 +1,8 @@
 import React, { ReactNode } from 'react';
 
 import { Injectable } from '@opensumi/di';
-import {
-  AiInlineResult,
-  IAiInlineResultIconItemsProps,
-} from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
+import { AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 
 import { ContentWidgetContainerPanel } from '../../../ai-native/content-widget/containerPanel';
 
@@ -39,7 +37,7 @@ export class StopWidget extends ResolveResultWidget {
 
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
-        <AiInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />
+        <AIInlineResult iconItems={iconResultItems} isRenderThumbs={isRenderThumbs} />
       </ContentWidgetContainerPanel>
     );
   }

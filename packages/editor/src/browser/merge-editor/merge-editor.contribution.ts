@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Disposable, Domain, IContextKeyService, Schemes, Uri } from '@opensumi/ide-core-browser';
+import { Disposable, Domain, IContextKeyService, Schemes } from '@opensumi/ide-core-browser';
 
 import { ResourceService } from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';

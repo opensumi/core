@@ -111,7 +111,7 @@ export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
       }
       setIsVisiablePopover(true);
     }
-  }, [range, codeEditor, isVisiablePopover]);
+  }, [range, codeEditor, isVisiablePopover, disablePopover]);
 
   const iconResultItems: IAiInlineResultIconItemsProps[] = useMemo(
     () =>

@@ -78,14 +78,16 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
 
   private nutrition: IOpenMergeEditorArgs | undefined;
-  private currentRelationId: string;
 
   constructor() {
     super();
     this.computerDiffModel = new ComputerDiffModel();
     this.scrollSynchronizer = new ScrollSynchronizer();
     this.stickinessConnectManager = new StickinessConnectManager();
-    this.actionsManager = this.injector.get(ActionsManager, [this.mappingManagerService]);
+    this.actionsManager = this.injector.get(ActionsManager, [
+      this.mappingManagerService,
+      this.mergeConflictReportService,
+    ]);
   }
 
   private initListenEvent(): void {
@@ -124,10 +126,6 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
     );
   }
 
-  public getRTRelationId(): string {
-    return this.currentRelationId;
-  }
-
   public setNutritionAndLaunch(data: IOpenMergeEditorArgs): void {
     this.nutrition = data;
     this._onDidInputNutrition.fire(data);
@@ -142,28 +140,9 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       return;
     }
 
-    if (!this.currentRelationId) {
-      this.currentRelationId = this.mergeConflictReportService.startPoint('3way');
-    }
-
-    this.currentView = this.injector.get(CurrentCodeEditor, [
-      current,
-      this.monacoService,
-      this.injector,
-      this.currentRelationId,
-    ]);
-    this.resultView = this.injector.get(ResultCodeEditor, [
-      result,
-      this.monacoService,
-      this.injector,
-      this.currentRelationId,
-    ]);
-    this.incomingView = this.injector.get(IncomingCodeEditor, [
-      incoming,
-      this.monacoService,
-      this.injector,
-      this.currentRelationId,
-    ]);
+    this.currentView = this.injector.get(CurrentCodeEditor, [current, this.monacoService, this.injector]);
+    this.resultView = this.injector.get(ResultCodeEditor, [result, this.monacoService, this.injector]);
+    this.incomingView = this.injector.get(IncomingCodeEditor, [incoming, this.monacoService, this.injector]);
 
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
     this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
@@ -188,10 +167,6 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
     this.actionsManager.dispose();
     this.loadingDispose.dispose();
     this.mergeConflictReportService.dispose();
-  }
-
-  public close(): void {
-    this.currentRelationId = '';
   }
 
   public async acceptLeft(isIgnoreAi = false): Promise<void> {
@@ -288,7 +263,7 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
           }
         });
 
-      this.mergeConflictReportService.reportPoint(this.currentRelationId, {
+      this.mergeConflictReportService.report(this.resultView.getUri(), {
         useAiConflictPointNum,
         receiveNum,
       });
@@ -330,7 +305,7 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   }
 
   public async handleAiResolveConflict(): Promise<void> {
-    this.mergeConflictReportService.reportPoint(this.currentRelationId, { isClickResolveAll: true });
+    this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickAllNum');
 
     this.listenIntelligentLoadingChange();
 
