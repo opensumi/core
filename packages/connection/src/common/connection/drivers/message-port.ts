@@ -16,10 +16,12 @@ export class MessagePortConnection extends BaseConnection<Uint8Array> {
       cb(e.data);
     };
 
-    this.port.addEventListener('message', listener);
+    this.port.onmessage = listener;
+    // this.port.addEventListener('message', listener);
     return {
       dispose: () => {
-        this.port.removeEventListener('message', listener);
+        this.port.onmessage = null;
+        // this.port.removeEventListener('message', listener);
       },
     };
   }
