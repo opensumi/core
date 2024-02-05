@@ -6,7 +6,7 @@ import { ProxyLegacy, WSChannel } from '@opensumi/ide-connection';
 import { ProtocolRepository } from '@opensumi/ide-connection/src/common/rpc/protocol-repository';
 
 import { NodeMessagePortConnection } from '../../../src/common/connection/drivers/node-message-port';
-import { Connection } from '../../../src/common/rpc/connection';
+import { SumiConnection } from '../../../src/common/rpc/connection';
 import { ServiceRegistry } from '../../../src/common/rpc-service/proxy/registry';
 import { ProxySumi } from '../../../src/common/rpc-service/proxy/sumi';
 
@@ -15,8 +15,8 @@ export function createConnectionPair() {
 
   const { port1, port2 } = channel;
 
-  const connection1 = new Connection(new NodeMessagePortConnection(port1));
-  const connection2 = new Connection(new NodeMessagePortConnection(port2));
+  const connection1 = new SumiConnection(new NodeMessagePortConnection(port1));
+  const connection2 = new SumiConnection(new NodeMessagePortConnection(port2));
 
   return {
     connection1,

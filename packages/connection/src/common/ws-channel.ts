@@ -10,7 +10,7 @@ import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { oneOf } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
-import { Connection, IConnectionOptions } from './rpc/connection';
+import { SumiConnection, ISumiConnectionOptions } from './rpc/connection';
 import { ILogger } from './types';
 
 /**
@@ -233,8 +233,8 @@ export class WSChannel {
   createMessageConnection() {
     return createWebSocketConnection(this);
   }
-  createConnection(options: IConnectionOptions = {}) {
-    const conn = new Connection(
+  createSumiConnection(options: ISumiConnectionOptions = {}) {
+    const conn = new SumiConnection(
       {
         onceClose: (cb) => this.onceClose(cb),
         onMessage: (cb) => this.onBinary(cb),

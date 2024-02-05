@@ -1,9 +1,9 @@
 import { METHOD_NOT_REGISTERED } from '../../constants';
-import { Connection } from '../../rpc/connection';
+import { SumiConnection } from '../../rpc/connection';
 
 import { ProxyBase } from './base';
 
-export class ProxySumi extends ProxyBase<Connection> {
+export class ProxySumi extends ProxyBase<SumiConnection> {
   protected engine = 'sumi' as const;
 
   protected bindMethods(methods: string[]): void {
@@ -67,7 +67,7 @@ export class ProxySumi extends ProxyBase<Connection> {
     });
   }
 
-  listen(connection: Connection): void {
+  listen(connection: SumiConnection): void {
     super.listen(connection);
     connection.onRequestNotFound((method) => {
       if (!this.registry.has(method)) {

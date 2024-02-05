@@ -1,3 +1,7 @@
+import type net from 'net';
+
+import type { WebSocket } from 'ws';
+
 import { EventEmitter } from '@opensumi/events';
 import {
   DisposableCollection,
@@ -9,7 +13,7 @@ import {
   isPromise,
 } from '@opensumi/ide-utils';
 
-import { BaseConnection } from '../connection';
+import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
@@ -37,11 +41,12 @@ const nullHeaders = {};
 
 const star = '*';
 
-export interface IConnectionOptions {
+export interface ISumiConnectionOptions {
   timeout?: number;
+  logger?: ILogger;
 }
 
-export class Connection implements IDisposable {
+export class SumiConnection implements IDisposable {
   protected disposable = new DisposableCollection();
 
   private _requestEmitter = new EventEmitter<{
@@ -61,7 +66,11 @@ export class Connection implements IDisposable {
   public protocolRepository = new ProtocolRepository();
   logger: ILogger = console;
 
-  constructor(protected socket: BaseConnection<Uint8Array>, protected options: IConnectionOptions = {}) {}
+  constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
+    if (options.logger) {
+      this.logger = options.logger;
+    }
+  }
 
   sendNotification(method: string, ...args: any[]) {
     const processor = this.protocolRepository.getProcessor(method);
@@ -324,5 +333,15 @@ export class Connection implements IDisposable {
       const eventName = this._notificationEmitter.hasListener(method) ? method : star;
       this._notificationEmitter.emit(eventName, requestId, method, headers, args);
     }
+  }
+
+  static forWSWebSocket(socket: WebSocket, options: ISumiConnectionOptions = {}) {
+    const wsConnection = new WSWebSocketConnection(socket);
+    return new SumiConnection(wsConnection, options);
+  }
+
+  static forNetSocket(socket: net.Socket, options: ISumiConnectionOptions = {}) {
+    const wsConnection = new NetSocketConnection(socket);
+    return new SumiConnection(wsConnection, options);
   }
 }

@@ -3,7 +3,7 @@ import http from 'http';
 import WebSocket from 'ws';
 
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
+import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
@@ -136,12 +136,8 @@ describe('connection', () => {
       new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
-          const channel = WSChannel.forWebSocket(connection, {
-            id: 'test-wss',
-          });
-
-          serviceCenter.setChannel(channel);
-
+          const sumiConnection = SumiConnection.forWSWebSocket(connection, {});
+          serviceCenter.setSumiConnection(sumiConnection);
           resolve();
         });
       }),
@@ -164,11 +160,9 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    const channel = WSChannel.forWebSocket(clientConnection!, {
-      id: 'test',
-    });
 
-    const toDispose = clientCenter.setChannel(channel);
+    const connection = SumiConnection.forWSWebSocket(clientConnection!);
+    const toDispose = clientCenter.setSumiConnection(connection);
     clientConnection!.once('close', () => {
       toDispose.dispose();
     });
@@ -254,10 +248,10 @@ describe('connection', () => {
       send: (msg) => emitterTimeoutA.fire(msg),
     };
 
-    const timeoutAProtocol = new RPCProtocol(new Connection(new SimpleConnection(mockClientTA)));
-    const timeoutBProtocol = new RPCProtocol(new Connection(new SimpleConnection(mockClientTB)));
+    const timeoutAProtocol = new RPCProtocol(new SumiConnection(new SimpleConnection(mockClientTA)));
+    const timeoutBProtocol = new RPCProtocol(new SumiConnection(new SimpleConnection(mockClientTB)));
     const timeoutCProtocol = new RPCProtocol(
-      new Connection(new SimpleConnection(mockClientTC), {
+      new SumiConnection(new SimpleConnection(mockClientTC), {
         timeout: 1000,
       }),
     );

@@ -1,7 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
-import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
+import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import {
   Emitter,
   Deferred,
@@ -37,7 +37,7 @@ export function initRPCProtocol() {
 
   const msgPortConnection = new MessagePortConnection(channel.port1);
 
-  const extProtocol = new RPCProtocol(new Connection(msgPortConnection));
+  const extProtocol = new RPCProtocol(new SumiConnection(msgPortConnection));
 
   return extProtocol;
 }

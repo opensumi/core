@@ -1,7 +1,7 @@
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
-import { Connection } from '@opensumi/ide-connection/lib/common/rpc/connection';
+import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Emitter } from '@opensumi/ide-core-common';
 
 export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
@@ -13,7 +13,7 @@ export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
     console.log('service onmessage', msg);
   });
   const extProtocol = new RPCProtocol(
-    new Connection(
+    new SumiConnection(
       new SimpleConnection({
         onMessage: client.onMessage,
         send: client.send,
@@ -37,8 +37,8 @@ export function createMockPairRPCProtocol() {
     onMessage: emitterB.event,
   };
 
-  const rpcProtocolExt = new RPCProtocol(new Connection(new SimpleConnection(mockClientA)));
-  const rpcProtocolMain = new RPCProtocol(new Connection(new SimpleConnection(mockClientB)));
+  const rpcProtocolExt = new RPCProtocol(new SumiConnection(new SimpleConnection(mockClientA)));
+  const rpcProtocolMain = new RPCProtocol(new SumiConnection(new SimpleConnection(mockClientB)));
   return {
     rpcProtocolExt,
     rpcProtocolMain,

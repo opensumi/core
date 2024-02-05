@@ -35,7 +35,11 @@ export class Invoker {
   }
 
   dispose() {
-    this.legacyProxy.dispose();
-    this.sumiProxy.dispose();
+    if (this.legacyProxy) {
+      this.legacyProxy.dispose();
+    }
+    if (this.sumiProxy) {
+      this.sumiProxy.dispose();
+    }
   }
 }

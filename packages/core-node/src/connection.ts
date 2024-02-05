@@ -29,7 +29,7 @@ function handleClientChannel(
   const serviceCenter = new RPCServiceCenter(undefined, logger);
   const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
-  const remove = serviceCenter.setChannel(channel);
+  const remove = serviceCenter.setSumiConnection(channel.createSumiConnection());
 
   channel.onceClose(() => {
     remove.dispose();

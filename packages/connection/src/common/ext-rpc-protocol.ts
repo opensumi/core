@@ -1,6 +1,6 @@
 import { Event } from '@opensumi/ide-utils/lib/event';
 
-import { Connection } from './rpc/connection';
+import { SumiConnection } from './rpc/connection';
 import { ILogger } from './types';
 import { WSChannel } from './ws-channel';
 
@@ -54,7 +54,7 @@ export class RPCProtocol implements IRPCProtocol {
 
   private logger: ILogger;
 
-  constructor(protected connection: Connection, logger?: ILogger) {
+  constructor(protected connection: SumiConnection, logger?: ILogger) {
     this._locals = new Map();
     this._proxies = new Map();
     this.logger = logger || console;
@@ -122,7 +122,7 @@ interface RPCProtocolCreateOptions {
 }
 
 export function createRPCProtocol(channel: WSChannel, options: RPCProtocolCreateOptions = {}): RPCProtocol {
-  const connection = channel.createConnection({
+  const connection = channel.createSumiConnection({
     timeout: options.timeout,
   });
 

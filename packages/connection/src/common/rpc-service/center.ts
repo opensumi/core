@@ -3,9 +3,9 @@ import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { TSumiProtocol, ProtocolRepository } from '../rpc';
+import { SumiConnection } from '../rpc/connection';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
-import type { WSChannel } from '../ws-channel';
 
 import { ServiceRegistry, Invoker, ProxyLegacy, ProxySumi } from './proxy';
 
@@ -45,7 +45,7 @@ export class RPCServiceCenter {
     });
   }
 
-  setChannel(channel: WSChannel) {
+  setSumiConnection(connection: SumiConnection) {
     if (this.invokers.length === 0) {
       this.deferred.resolve();
     }
@@ -56,7 +56,6 @@ export class RPCServiceCenter {
 
     const sumiProxy = new ProxySumi(this.registry, this.logger);
     invoker.attachSumi(sumiProxy);
-    const connection = channel.createConnection();
     sumiProxy.listen(connection);
 
     this.invokers.push(invoker);
