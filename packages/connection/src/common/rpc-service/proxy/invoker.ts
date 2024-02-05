@@ -1,9 +1,4 @@
-import { ProtocolRepository } from '../../rpc/protocol-repository';
-import { ILogger } from '../../types';
-import { WSChannel } from '../../ws-channel';
-
 import { ProxyLegacy } from './legacy';
-import { ServiceRegistry } from './registry';
 import { ProxySumi } from './sumi';
 
 const defaultReservedWordSet = new Set(['then', 'finally']);
@@ -15,30 +10,16 @@ export class Invoker {
   private legacyInvokeProxy: any;
   private sumiInvokeProxy: any;
 
-  forceUseSumi = true;
+  constructor() {}
 
-  constructor(
-    protected repo: ProtocolRepository,
-    public registry: ServiceRegistry,
-    channel: WSChannel,
-    logger?: ILogger,
-  ) {
-    this.legacyProxy = new ProxyLegacy(registry, logger);
+  attachLegacy(legacyProxy: ProxyLegacy) {
+    this.legacyProxy = legacyProxy;
     this.legacyInvokeProxy = this.legacyProxy.getInvokeProxy();
-
-    this.sumiProxy = new ProxySumi(registry, logger);
-    this.sumiInvokeProxy = this.sumiProxy.getInvokeProxy();
-
-    this.listen(channel);
   }
 
-  listen(channel: WSChannel) {
-    const messageConnection = channel.createMessageConnection();
-    this.legacyProxy.listen(messageConnection);
-
-    const connection = channel.createConnection();
-    connection.setProtocolRepository(this.repo);
-    this.sumiProxy.listen(connection);
+  attachSumi(sumiProxy: ProxySumi) {
+    this.sumiProxy = sumiProxy;
+    this.sumiInvokeProxy = this.sumiProxy.getInvokeProxy();
   }
 
   invoke(name: string, ...args: any[]) {
@@ -46,11 +27,7 @@ export class Invoker {
       return Promise.resolve();
     }
 
-    if (this.forceUseSumi) {
-      return this.sumiInvokeProxy[name](...args);
-    }
-
-    if (this.repo.has(name)) {
+    if (this.sumiInvokeProxy) {
       return this.sumiInvokeProxy[name](...args);
     }
 

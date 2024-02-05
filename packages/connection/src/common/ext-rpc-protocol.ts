@@ -1,3 +1,5 @@
+import { Event } from '@opensumi/ide-utils/lib/event';
+
 import { Connection } from './rpc/connection';
 import { ILogger } from './types';
 import { WSChannel } from './ws-channel';
@@ -38,6 +40,12 @@ function getRPCName(serviceId: string, methodName: string) {
 function extractServiceAndMethod(rpcId: string): [string, string] {
   const idx = rpcId.indexOf(SEP);
   return [rpcId.substring(0, idx), rpcId.substring(idx + 1)];
+}
+
+export interface IMessagePassingProtocol<T = any> {
+  send(msg: T): void;
+  onMessage: Event<T>;
+  timeout?: number;
 }
 
 export class RPCProtocol implements IRPCProtocol {

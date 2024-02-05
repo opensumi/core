@@ -1,4 +1,5 @@
 import { Deferred } from '@opensumi/ide-core-common';
+import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { TSumiProtocol, ProtocolRepository } from '../rpc';
@@ -6,7 +7,7 @@ import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 import type { WSChannel } from '../ws-channel';
 
-import { ServiceRegistry, Invoker } from './proxy';
+import { ServiceRegistry, Invoker, ProxyLegacy, ProxySumi } from './proxy';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 
@@ -51,7 +52,37 @@ export class RPCServiceCenter {
 
     const index = this.invokers.length - 1;
 
-    const invoker = new Invoker(this.protocolRepository, this.registry, channel, this.logger);
+    const invoker = new Invoker();
+
+    const sumiProxy = new ProxySumi(this.registry, this.logger);
+    invoker.attachSumi(sumiProxy);
+    const connection = channel.createConnection();
+    sumiProxy.listen(connection);
+
+    this.invokers.push(invoker);
+
+    return {
+      dispose: () => {
+        this.invokers.splice(index, 1);
+        invoker.dispose();
+      },
+    };
+  }
+
+  setConnection(connection: MessageConnection) {
+    if (this.invokers.length === 0) {
+      this.deferred.resolve();
+    }
+
+    const index = this.invokers.length - 1;
+
+    const invoker = new Invoker();
+
+    const legacyProxy = new ProxyLegacy(this.registry, this.logger);
+    legacyProxy.listen(connection);
+
+    invoker.attachLegacy(legacyProxy);
+
     this.invokers.push(invoker);
 
     return {
