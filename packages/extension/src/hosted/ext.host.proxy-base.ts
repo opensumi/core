@@ -1,7 +1,8 @@
 import type { ForkOptions } from 'child_process';
 import net from 'net';
 
-import { RPCService, IRPCProtocol, WSChannel, createRPCProtocol } from '@opensumi/ide-connection';
+import { RPCService, IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Emitter, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-node';
 
 import { IExtensionHostManager } from '../common';
@@ -100,7 +101,6 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   public readonly onConnected = this.connectedEmitter.event;
 
   LOG_TAG = '[ExtHostProxy]';
-  channel: WSChannel;
   disposer: Disposable;
 
   constructor(options?: IExtHostProxyOptions) {
@@ -134,9 +134,15 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
   }
 
   private setRPCMethods() {
-    this.protocol = createRPCProtocol(this.channel, {
+    const connection = new NetSocketConnection(this.socket);
+
+    this.protocol = new SumiConnectionMultiplexer(connection, {
+      logger: this.logger,
       timeout: this.options.rpcMessageTimeout,
     });
+
+    this.disposer.addDispose(connection);
+
     this.extServerProxy = this.protocol.getProxy(EXT_SERVER_IDENTIFIER);
     const extHostProxyRPCService = new ExtHostProxyRPCService(this.extServerProxy);
     this.protocol.set(EXT_HOST_PROXY_IDENTIFIER, extHostProxyRPCService);
@@ -157,7 +163,6 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     this.logger.info(this.LOG_TAG, 'connect success');
     // this.previouslyConnected = true;
     global.clearTimeout(this.reconnectingTimer);
-    this.setConnection();
     this.setRPCMethods();
     this.connectedEmitter.fire();
   };
@@ -182,15 +187,6 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
         this.socket.off('close', this.reconnectOnEvent);
       },
     };
-  }
-
-  private setConnection() {
-    this.channel = WSChannel.forNetSocket(this.socket, {
-      id: 'EXT_HOST_PROXY',
-      logger: this.logger,
-    });
-
-    this.disposer.addDispose(this.channel);
   }
 
   private connect = (): IDisposable => {

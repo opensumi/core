@@ -253,21 +253,6 @@ export class WSChannel {
   dispose() {
     this.emitter.dispose();
   }
-
-  listen(channel: WSChannel) {
-    channel.onMessage((data) => {
-      this.send(data);
-    });
-    channel.onBinary((binary) => {
-      this.sendBinary(binary);
-    });
-    channel.onClose((code, reason) => {
-      this.close(code, reason);
-    });
-    channel.onReopen(() => {
-      this.fireReopen();
-    });
-  }
 }
 
 export const PingProtocol = Type.object('ping', {

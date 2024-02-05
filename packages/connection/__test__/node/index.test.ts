@@ -7,10 +7,11 @@ import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connecti
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
+import { ProxyIdentifier } from '../../src';
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
 import { SimpleConnection } from '../../src/common/connection/drivers/simple';
-import { SumiConnectionMultiplexer, createMainContextProxyIdentifier } from '../../src/common/rpc/multiplexer';
+import { SumiConnectionMultiplexer } from '../../src/common/rpc/multiplexer';
 import { WSChannel, parse } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
@@ -204,7 +205,7 @@ describe('connection', () => {
   it('RPCProtocol', async () => {
     const { rpcProtocolExt: aProtocol, rpcProtocolMain: bProtocol } = createMockPairRPCProtocol();
 
-    const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
+    const testMainIdentifier = ProxyIdentifier.for('testIendifier');
     const mockMainIndetifierMethod = jest.fn();
     const mockUriTestFn = jest.fn((uri) => uri);
     const mockErrorFn = jest.fn(() => {
@@ -254,7 +255,7 @@ describe('connection', () => {
       timeout: 1000,
     });
 
-    const testTimeoutIdentifier = createMainContextProxyIdentifier('testTimeoutIdentifier');
+    const testTimeoutIdentifier = ProxyIdentifier.for('testTimeoutIdentifier');
     timeoutAProtocol.set(testTimeoutIdentifier, {
       $test: jest.fn(),
     });

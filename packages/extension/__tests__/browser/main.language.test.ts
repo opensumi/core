@@ -1249,15 +1249,21 @@ An error case:
       }
     }
     const mockMainThreadFunc = jest.spyOn(mainThread, '$registerInlayHintsProvider');
-    extHost.registerInlayHintsProvider(mockService({}), 'plaintext', new TestInlayHintsProvider());
+    extHost.registerInlayHintsProvider(
+      mockService({
+        displayName: 'test',
+      }),
+      'plaintext',
+      new TestInlayHintsProvider(),
+    );
     await 0;
-    expect(mockMainThreadFunc).toBeCalled();
-    expect(mockMainThreadFunc).toBeCalledWith(
+    expect(mockMainThreadFunc).toHaveBeenCalled();
+    expect(mockMainThreadFunc).toHaveBeenCalledWith(
       expect.anything(),
       [{ $serialized: true, language: 'plaintext' }],
       false,
       undefined,
-      '',
+      'test',
     );
   });
   // #endregion registerInlayHintsProvider

@@ -5,13 +5,6 @@ import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connecti
 import { Emitter } from '@opensumi/ide-core-common';
 
 export async function initMockRPCProtocol(client): Promise<SumiConnectionMultiplexer> {
-  const extCenter = new RPCServiceCenter();
-  const { getRPCService } = initRPCService(extCenter);
-
-  const service = getRPCService('ExtProtocol');
-  service.on('onMessage', (msg) => {
-    console.log('service onmessage', msg);
-  });
   const extProtocol = new SumiConnectionMultiplexer(
     new SimpleConnection({
       onMessage: client.onMessage,

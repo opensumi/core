@@ -1,7 +1,7 @@
 import net from 'net';
 
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { IRPCProtocol, WSChannel, createRPCProtocol } from '@opensumi/ide-connection';
+import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { MaybePromise, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
 import { INodeLogger, AppConfig } from '@opensumi/ide-core-node';
@@ -25,7 +25,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
 
   private callId = 0;
 
-  private extHostProxyProtocol: IRPCProtocol;
+  private extHostProxyProtocol: SumiConnectionMultiplexer;
 
   private extHostProxy: IExtHostProxyRPCService;
 
@@ -36,7 +36,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
   private disposer = new Disposable();
 
   LOG_TAG = '[ExtensionHostProxyManager]';
-  channel: WSChannel;
+  connection: NetSocketConnection;
 
   constructor(
     @Optional()
@@ -67,7 +67,14 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
       server.on('connection', (socket) => {
         this.logger.log(this.LOG_TAG, 'there are new connections coming in');
         // 有新的连接时重新设置 RPCProtocol
-        this.setProxyConnection(socket);
+        this.connection = new NetSocketConnection(socket);
+        this.disposer.addDispose(
+          toDisposable(() => {
+            if (!socket.destroyed) {
+              socket.destroy();
+            }
+          }),
+        );
         this.setExtHostProxyRPCProtocol();
         resolve();
       });
@@ -75,23 +82,8 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     });
   }
 
-  private setProxyConnection(connection: net.Socket) {
-    this.channel = WSChannel.forClient(new NetSocketConnection(connection), {
-      id: 'EXT_HOST_PROXY',
-      logger: this.logger,
-    });
-
-    this.disposer.addDispose(
-      toDisposable(() => {
-        if (!connection.destroyed) {
-          connection.destroy();
-        }
-      }),
-    );
-  }
-
   private setExtHostProxyRPCProtocol() {
-    this.extHostProxyProtocol = createRPCProtocol(this.channel, {
+    this.extHostProxyProtocol = new SumiConnectionMultiplexer(this.connection, {
       timeout: this.appConfig.rpcMessageTimeout,
     });
 

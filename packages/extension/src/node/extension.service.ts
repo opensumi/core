@@ -79,13 +79,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessMap: Map<string, number> = new Map();
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
-  private clientExtProcessExtConnection: Map<
-    string,
-    {
-      connection: net.Socket;
-      channel?: WSChannel;
-    }
-  > = new Map();
+  private clientExtProcessExtConnection: Map<string, NetSocketConnection> = new Map();
   private clientExtProcessExtConnectionDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
@@ -198,24 +192,18 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
 
       const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
-      if (extConnection.channel) {
-        extConnection.channel.dispose();
-        extConnection.channel = undefined;
-      }
 
-      // 重新生成实例，避免 tcp 消息有残留的缓存，造成分包错误
-      const extChannel = WSChannel.forClient(new NetSocketConnection(extConnection.connection), {
-        id: 'ExtensionHostForward-' + clientId,
-        logger: this.logger,
+      extConnection.onMessage((data) => {
+        channel.sendBinary(data);
       });
 
-      this.clientExtProcessExtConnection.set(clientId, {
-        channel: extChannel,
-        connection: extConnection.connection,
+      extConnection.onceClose(() => {
+        channel.close();
       });
 
-      extChannel.listen(channel);
-      channel.listen(extChannel);
+      channel.onBinary((data) => {
+        extConnection.send(data);
+      });
 
       // 连接恢复后清除销毁的定时器
       if (this.clientExtProcessThresholdExitTimerMap.has(clientId)) {
@@ -253,9 +241,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     extServer.on('connection', (connection) => {
       this.logger.log('_setupExtHostConnection ext host connected');
-      this.clientExtProcessExtConnection.set(clientId, {
-        connection,
-      });
+
+      this.clientExtProcessExtConnection.set(clientId, new NetSocketConnection(connection));
       this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.resolve();
     });
 
@@ -530,8 +517,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
             if (this.clientExtProcessExtConnection.has(clientId)) {
               const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
-              if (extConnection.channel) {
-                extConnection.channel.dispose();
+              if (extConnection) {
+                this.clientExtProcessExtConnection.delete(clientId);
+                extConnection.dispose();
+                extConnection.destroy();
               }
             }
             this.closeExtProcessWhenConnectionClose(clientId);
@@ -595,17 +584,16 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       // extServer 关闭
       if (this.clientExtProcessExtConnectionServer.has(clientId)) {
-        this.clientExtProcessExtConnectionServer.get(clientId)?.close();
+        this.clientExtProcessExtConnectionServer.get(clientId)!.close();
+        this.clientExtProcessExtConnectionServer.delete(clientId);
       }
       // connect 关闭
       if (this.clientExtProcessExtConnection.has(clientId)) {
-        const connection = this.clientExtProcessExtConnection.get(clientId)!;
-        connection.connection.destroy();
+        this.clientExtProcessExtConnection.get(clientId)!.destroy();
+        this.clientExtProcessExtConnection.delete(clientId);
       }
 
-      this.clientExtProcessExtConnection.delete(clientId);
       this.clientExtProcessExtConnectionDeferredMap.delete(clientId);
-      this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
       this.clientExtProcessMap.delete(clientId);

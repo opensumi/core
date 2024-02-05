@@ -1,5 +1,4 @@
 import { BaseConnection } from '../connection';
-import { WSChannel } from '../ws-channel';
 
 import { ISumiConnectionOptions, SumiConnection } from './connection';
 
@@ -11,6 +10,10 @@ export class ProxyIdentifier<T = any> {
   constructor(serviceId: string) {
     this.serviceId = serviceId;
     this.countId = ++ProxyIdentifier.count;
+  }
+
+  static for(serviceId: string) {
+    return new ProxyIdentifier(serviceId);
   }
 }
 
@@ -45,6 +48,10 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
       const [rpcId, methodName] = extractServiceAndMethod(rpcName);
       return this._doInvokeHandler(rpcId, methodName, args);
     });
+
+    // call `listen` implicitly
+    // compatible behavior with the RPCProtocol
+    this.listen();
   }
 
   public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
@@ -95,17 +102,4 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
 
     return method.apply(actor, args);
   }
-}
-
-interface RPCProtocolCreateOptions {
-  timeout?: number;
-}
-
-export function createRPCProtocol(
-  channel: WSChannel,
-  options: RPCProtocolCreateOptions = {},
-): SumiConnectionMultiplexer {
-  return new SumiConnectionMultiplexer(channel.createConnection(), {
-    timeout: options.timeout,
-  });
 }

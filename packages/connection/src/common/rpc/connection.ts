@@ -336,12 +336,10 @@ export class SumiConnection implements IDisposable {
   }
 
   static forWSWebSocket(socket: WebSocket, options: ISumiConnectionOptions = {}) {
-    const wsConnection = new WSWebSocketConnection(socket);
-    return new SumiConnection(wsConnection, options);
+    return new SumiConnection(new WSWebSocketConnection(socket), options);
   }
 
   static forNetSocket(socket: net.Socket, options: ISumiConnectionOptions = {}) {
-    const wsConnection = new NetSocketConnection(socket);
-    return new SumiConnection(wsConnection, options);
+    return new SumiConnection(new NetSocketConnection(socket), options);
   }
 }

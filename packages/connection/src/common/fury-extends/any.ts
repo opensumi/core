@@ -21,12 +21,15 @@ export enum ProtocolType {
 function serializeWorker(data: unknown) {
   if (typeof data === 'undefined') {
     writer.uint8(ProtocolType.Undefined);
+  } else if (Array.isArray(data)) {
+    writer.uint8(ProtocolType.Array);
+    writer.varUInt32(data.length);
+    for (const element of data) {
+      serializeWorker(element);
+    }
   } else if (typeof data === 'boolean') {
     writer.uint8(ProtocolType.Boolean);
     writer.uint8(data ? 1 : 0);
-  } else if (typeof data === 'bigint') {
-    writer.uint8(ProtocolType.BigInt);
-    writer.int64(data);
   } else if (typeof data === 'number') {
     if ((data | 0) === data) {
       writer.uint8(ProtocolType.Int32);
@@ -42,15 +45,14 @@ function serializeWorker(data: unknown) {
     writer.uint8(ProtocolType.Buffer);
     writer.varUInt32(data.byteLength);
     writer.buffer(data);
-  } else if (Array.isArray(data)) {
-    writer.uint8(ProtocolType.Array);
-    writer.varUInt32(data.length);
-    for (const element of data) {
-      serializeWorker(element);
-    }
+  } else if (typeof data === 'bigint') {
+    writer.uint8(ProtocolType.BigInt);
+    writer.int64(data);
   } else if (typeof data === 'object') {
     writer.uint8(ProtocolType.JSONObject);
     writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
+  } else {
+    throw new Error(`Unknown type ${typeof data}`);
   }
 }
 

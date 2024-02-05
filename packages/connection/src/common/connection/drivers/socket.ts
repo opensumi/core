@@ -59,4 +59,8 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
   dispose(): void {
     this.decoder.dispose();
   }
+
+  destroy(): void {
+    this.socket.destroy();
+  }
 }
