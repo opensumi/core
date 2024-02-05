@@ -54,26 +54,24 @@ const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
+const defaultSampleQuestions = [
+  {
+    icon: getIcon('send2'),
+    title: '生成 Java 快速排序算法',
+    message: '生成 Java 快速排序算法',
+  },
+];
+
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
-  const [sampleQuestions, setSampleQuestions] = React.useState<
-    { icon: string; title: string; message: string; tooltip?: string }[]
-  >(() => [
-    {
-      icon: getIcon('send2'),
-      title: '生成 Java 快速排序算法',
-      message: '生成 Java 快速排序算法',
-    },
-  ]);
+  const [sampleQuestions, setSampleQuestions] =
+    React.useState<{ icon: string; title: string; message: string; tooltip?: string }[]>(defaultSampleQuestions);
 
   React.useEffect(() => {
     const disposer = chatAgentService.onDidChangeAgents(async () => {
       const sampleQuestions = await chatAgentService.getAllSampleQuestions();
-      if (!sampleQuestions.length) {
-        return;
-      }
       const lists = sampleQuestions.map((item) => {
         let { title, message, tooltip } = item;
         if (!title) {
@@ -102,7 +100,8 @@ const InitMsgComponent = () => {
           tooltip,
         };
       });
-      setSampleQuestions((state) => [...state, ...lists]);
+      // 每次全量更新数据，避免扩展卸载的问题
+      setSampleQuestions([...defaultSampleQuestions, ...lists]);
     });
     return () => disposer.dispose();
   }, []);
