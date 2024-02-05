@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { ProxyIdentifier } from '@opensumi/ide-connection';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
+import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
 
 import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';
@@ -26,7 +26,7 @@ const enum MessageType {
 
 describe('Extension Worker Thread Test Suites', () => {
   let extHostImpl: ExtensionWorkerHost;
-  let rpcProtocol: RPCProtocol;
+  let rpcProtocol: SumiConnectionMultiplexer;
 
   const proxyMaps = new Map();
   proxyMaps.set('MainThreadExtensionService', new MainThreadExtensionService());

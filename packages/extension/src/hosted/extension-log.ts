@@ -1,14 +1,14 @@
-import { RPCProtocol } from '@opensumi/ide-connection';
+import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { DebugLog, IExtensionLogger, SupportLogNamespace } from '@opensumi/ide-core-common';
 
 import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
 
 export class ExtensionLogger implements IExtensionLogger {
-  private rpcProtocol: RPCProtocol;
+  private rpcProtocol: SumiConnectionMultiplexer;
   private logger: IMainThreadExtensionLog;
   private debugLog: DebugLog;
 
-  constructor(rpcProtocol: RPCProtocol) {
+  constructor(rpcProtocol: SumiConnectionMultiplexer) {
     this.rpcProtocol = rpcProtocol;
     this.logger = this.rpcProtocol.getProxy(MainThreadExtensionLogIdentifier);
     this.debugLog = new DebugLog(SupportLogNamespace.ExtensionHost);

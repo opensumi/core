@@ -1,8 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
-import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
-import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
+import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable, toDisposable, path } from '@opensumi/ide-core-common';
 
@@ -198,11 +197,9 @@ export class WorkerExtProcessService
   private createProtocol(port: MessagePort) {
     const msgPortConnection = new MessagePortConnection(port);
 
-    const protocol = new RPCProtocol(
-      new SumiConnection(msgPortConnection, {
-        timeout: this.appConfig.rpcMessageTimeout,
-      }),
-    );
+    const protocol = new SumiConnectionMultiplexer(msgPortConnection, {
+      timeout: this.appConfig.rpcMessageTimeout,
+    });
 
     this.logger.log('[Worker Host] web worker extension host ready');
     return protocol;

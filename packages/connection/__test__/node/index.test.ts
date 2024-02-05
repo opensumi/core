@@ -10,7 +10,7 @@ import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCP
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
 import { SimpleConnection } from '../../src/common/connection/drivers/simple';
-import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
+import { SumiConnectionMultiplexer, createMainContextProxyIdentifier } from '../../src/common/rpc/multiplexer';
 import { WSChannel, parse } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
@@ -248,13 +248,11 @@ describe('connection', () => {
       send: (msg) => emitterTimeoutA.fire(msg),
     };
 
-    const timeoutAProtocol = new RPCProtocol(new SumiConnection(new SimpleConnection(mockClientTA)));
-    const timeoutBProtocol = new RPCProtocol(new SumiConnection(new SimpleConnection(mockClientTB)));
-    const timeoutCProtocol = new RPCProtocol(
-      new SumiConnection(new SimpleConnection(mockClientTC), {
-        timeout: 1000,
-      }),
-    );
+    const timeoutAProtocol = new SumiConnectionMultiplexer(new SimpleConnection(mockClientTA));
+    const timeoutBProtocol = new SumiConnectionMultiplexer(new SimpleConnection(mockClientTB));
+    const timeoutCProtocol = new SumiConnectionMultiplexer(new SimpleConnection(mockClientTC), {
+      timeout: 1000,
+    });
 
     const testTimeoutIdentifier = createMainContextProxyIdentifier('testTimeoutIdentifier');
     timeoutAProtocol.set(testTimeoutIdentifier, {

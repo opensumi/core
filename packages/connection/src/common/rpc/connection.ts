@@ -64,7 +64,7 @@ export class SumiConnection implements IDisposable {
   private readonly _knownCanceledRequests = new Set<number>();
 
   public protocolRepository = new ProtocolRepository();
-  logger: ILogger = console;
+  protected logger: ILogger = console;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
     if (options.logger) {

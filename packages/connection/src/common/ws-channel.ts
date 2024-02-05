@@ -233,21 +233,23 @@ export class WSChannel {
   createMessageConnection() {
     return createWebSocketConnection(this);
   }
-  createSumiConnection(options: ISumiConnectionOptions = {}) {
-    const conn = new SumiConnection(
-      {
-        onceClose: (cb) => this.onceClose(cb),
-        onMessage: (cb) => this.onBinary(cb),
-        send: (data) => {
-          this.sendBinary(data);
-        },
-        dispose() {},
-      },
-      options,
-    );
 
+  createConnection() {
+    return {
+      onceClose: (cb) => this.onceClose(cb),
+      onMessage: (cb) => this.onBinary(cb),
+      send: (data) => {
+        this.sendBinary(data);
+      },
+      dispose() {},
+    };
+  }
+
+  createSumiConnection(options: ISumiConnectionOptions = {}) {
+    const conn = new SumiConnection(this.createConnection(), options);
     return conn;
   }
+
   dispose() {
     this.emitter.dispose();
   }

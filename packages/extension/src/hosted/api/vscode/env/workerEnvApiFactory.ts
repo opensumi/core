@@ -1,6 +1,6 @@
 import type vscode from 'vscode';
 
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { Schemes } from '@opensumi/ide-core-common';
 
 import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostEnv } from '../../../../common/vscode';

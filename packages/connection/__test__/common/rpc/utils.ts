@@ -3,7 +3,7 @@ import { MessageChannel, MessagePort } from 'worker_threads';
 import { Type } from '@furyjs/fury';
 
 import { ProxyLegacy, WSChannel } from '@opensumi/ide-connection';
-import { ProtocolRepository } from '@opensumi/ide-connection/src/common/rpc/protocol-repository';
+import { ProtocolRepository } from '@opensumi/ide-connection/lib/common/rpc/protocol-repository';
 
 import { NodeMessagePortConnection } from '../../../src/common/connection/drivers/node-message-port';
 import { SumiConnection } from '../../../src/common/rpc/connection';
