@@ -207,7 +207,7 @@ describe('connection', () => {
     clientConnection!.close();
   });
 
-  it.only('RPCProtocol', async () => {
+  it('RPCProtocol', async () => {
     const { rpcProtocolExt: aProtocol, rpcProtocolMain: bProtocol } = createMockPairRPCProtocol();
 
     const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
