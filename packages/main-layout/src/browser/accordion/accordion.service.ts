@@ -17,6 +17,7 @@ import {
   Event,
   Emitter,
   IScopedContextKeyService,
+  isDefined,
 } from '@opensumi/ide-core-browser';
 import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
@@ -153,7 +154,9 @@ export class AccordionService extends WithEventBus {
         50,
       )((e) => e && this.handleContextKeyChange(), this),
     );
-    this.listenWindowResize();
+    this.splitPanelService.whenReady.then(() => {
+      this.listenWindowResize();
+    });
   }
 
   updateViewTitle(viewId: string, title: string) {
@@ -188,8 +191,10 @@ export class AccordionService extends WithEventBus {
       this.state = restoredState;
     }
     this.popViewKeyIfOnlyOneViewVisible();
-    this.restoreSize();
-    this.rendered = true;
+    this.splitPanelService.whenReady.then(() => {
+      this.restoreSize();
+      this.rendered = true;
+    });
   }
 
   // 调用时需要保证dom可见
@@ -362,12 +367,14 @@ export class AccordionService extends WithEventBus {
     });
     if (largestViewId && this.splitPanelService.isVisible && this.expandedViews.length > 1) {
       // 需要过滤掉没有实际注册的视图
-      const diffSize = this.splitPanelService.rootNode!.clientHeight - this.getPanelFullHeight();
-      if (diffSize) {
-        runInAction(() => {
-          this.state[largestViewId!].size! += diffSize;
-        });
-        this.toggleOpen(largestViewId!, false);
+      if (this.splitPanelService.rootNode?.clientHeight) {
+        const diffSize = this.splitPanelService.rootNode?.clientHeight - this.getPanelFullHeight();
+        if (diffSize) {
+          runInAction(() => {
+            this.state[largestViewId!].size! += diffSize;
+          });
+          this.toggleOpen(largestViewId!, false);
+        }
       }
     }
   }, 16);
@@ -588,7 +595,7 @@ export class AccordionService extends WithEventBus {
   }
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
-    const fullHeight = this.splitPanelService.rootNode!.clientHeight;
+    const fullHeight = this.splitPanelService.rootNode?.clientHeight;
     const panel = this.splitPanelService.panels[index];
     if (!noAnimation) {
       panel.classList.add('resize-ease');
@@ -607,7 +614,7 @@ export class AccordionService extends WithEventBus {
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
     }
-    if (index === this.expandedViews.length - 1) {
+    if (index === this.expandedViews.length - 1 && isDefined(fullHeight)) {
       // 最后一个视图需要兼容最大高度超出总视图高度及最大高度不足总视图高度的情况
       if (calcTargetSize + index * this.minSize > fullHeight) {
         calcTargetSize -= calcTargetSize + index * this.minSize - fullHeight;
@@ -643,8 +650,8 @@ export class AccordionService extends WithEventBus {
   }
 
   protected getAvailableSize() {
-    const fullHeight = this.splitPanelService.rootNode!.clientHeight;
-    return fullHeight - (this.visibleViews.length - 1) * this.headerSize;
+    const fullHeight = this.splitPanelService.rootNode?.clientHeight;
+    return fullHeight ? fullHeight - (this.visibleViews.length - 1) * this.headerSize : 0;
   }
 
   private handleContextKeyChange() {

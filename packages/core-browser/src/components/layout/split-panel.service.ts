@@ -1,9 +1,12 @@
 import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@opensumi/di';
+import { Deferred } from '@opensumi/ide-core-common';
 
 @Injectable({ multiple: true })
 export class SplitPanelService {
   private static MIN_SIZE = 120;
   constructor(public panelId: string) {}
+
+  private _whenReadyDeferred: Deferred<void> = new Deferred();
 
   panels: HTMLElement[] = [];
 
@@ -11,6 +14,15 @@ export class SplitPanelService {
 
   get isVisible(): boolean {
     return (this.rootNode && this.rootNode.clientHeight > 0) || false;
+  }
+
+  get whenReady() {
+    return this._whenReadyDeferred.promise;
+  }
+
+  setRootNode(node: HTMLElement) {
+    this.rootNode = node;
+    this._whenReadyDeferred.resolve();
   }
 
   getFirstResizablePanel(index: number, direction: boolean, isPrev?: boolean): HTMLElement | undefined {
