@@ -66,7 +66,7 @@ Here you can find some of our example projects and templates:
 - [Cloud IDE](https://github.com/opensumi/ide-startup)
 - [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
 - [CodeBlitz - A pure web IDE Framework](https://github.com/opensumi/codeblitz)
-- [Lite Web IDE - A pure web IDE based on the Browser](https://github.com/opensumi/ide-startup-lite)
+- [Lite Web IDE - A pure web IDE on the Browser](https://github.com/opensumi/ide-startup-lite)
 - [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
 
 ## 📕 Documentation
