@@ -1,64 +1,66 @@
-import { Provider, Injector } from '@opensumi/di';
+import { Injector, Provider } from '@opensumi/di';
 import {
-  IEventBus,
-  EventBusImpl,
-  CommandService,
-  CommandRegistryImpl,
+  AppLifeCycleServiceToken,
   CommandContribution,
-  createContributionProvider,
-  CommandServiceImpl,
   CommandRegistry,
-  ReporterMetadata,
-  IReporter,
-  IReporterService,
+  CommandRegistryImpl,
+  CommandService,
+  CommandServiceImpl,
+  createContributionProvider,
   DefaultReporter,
-  ReporterService,
-  REPORT_HOST,
-  IProblemPatternRegistry,
-  ProblemPatternRegistryImpl,
-  IProblemMatcherRegistry,
-  ProblemMatchersRegistryImpl,
-  ITaskDefinitionRegistry,
-  TaskDefinitionRegistryImpl,
+  EventBusImpl,
   IApplicationService,
   IAuthenticationService,
-  AppLifeCycleServiceToken,
+  IEventBus,
   IExtensionsSchemaService,
+  IProblemMatcherRegistry,
+  IProblemPatternRegistry,
+  IReporter,
+  IReporterService,
+  ITaskDefinitionRegistry,
+  ProblemMatchersRegistryImpl,
+  ProblemPatternRegistryImpl,
+  ReporterMetadata,
+  ReporterService,
+  REPORT_HOST,
+  TaskDefinitionRegistryImpl,
 } from '@opensumi/ide-core-common';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import {
-  KeyboardNativeLayoutService,
   KeyboardLayoutChangeNotifierService,
+  KeyboardNativeLayoutService,
 } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
+import { AIReporter } from '../ai-native/ai-reporter';
 import { ClientAppStateService } from '../application/application-state-service';
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
 import { ExtensionsPointServiceImpl } from '../extensions';
 import { FsProviderContribution } from '../fs';
-import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
+import { KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, KeybindingService } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
-import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
-import { Logger, ILogger } from '../logger';
+import { ComponentContribution, ComponentRegistry, ComponentRegistryImpl, TabBarToolbarContribution } from '../layout';
+import { ILogger, Logger } from '../logger';
 import {
-  AbstractMenuService,
-  MenuServiceImpl,
-  AbstractMenubarService,
-  MenubarServiceImpl,
-  IMenuRegistry,
-  MenuRegistryImpl,
-  MenuContribution,
   AbstractContextMenuService,
+  AbstractMenubarService,
+  AbstractMenuService,
   ContextMenuServiceImpl,
+  IMenuRegistry,
+  MenubarServiceImpl,
+  MenuContribution,
+  MenuRegistryImpl,
+  MenuServiceImpl,
 } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 import { ElectronCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/electron';
-import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
+import { IToolbarActionService, ToolbarActionService } from '../menu/next/toolbar-action.service';
 import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
 import { PreferenceContribution } from '../preferences';
@@ -66,16 +68,16 @@ import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
 import { AppConfig } from '../react-providers/config-provider';
 import { SlotRendererContribution } from '../react-providers/slot';
-import { CredentialsService, ICredentialsService, CryptoService, ICryptoService } from '../services';
-import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
-import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
+import { CredentialsService, CryptoService, ICredentialsService, ICryptoService } from '../services';
+import { BrowserClipboardService, IClipboardService } from '../services/clipboard.service';
+import { ExternalUriService, IExternalUriService } from '../services/external-uri.service';
 import { StaticResourceClientAppContribution } from '../static-resource/index';
 import { StaticResourceContribution, StaticResourceService } from '../static-resource/static.definition';
 import { StaticResourceServiceImpl } from '../static-resource/static.service';
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
-import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
+import { VariableContribution, VariableRegistry, VariableRegistryImpl } from '../variable';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 
@@ -256,6 +258,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: StaticResourceService,
       useClass: StaticResourceServiceImpl,
+    },
+    {
+      token: IAIReporter,
+      useClass: AIReporter,
     },
     StaticResourceClientAppContribution,
   ];

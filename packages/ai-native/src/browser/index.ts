@@ -3,17 +3,15 @@ import { AiNativeConfigService, BrowserModule, IAiInlineChatService, URI } from 
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
-import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
-import { Color, IThemeData, IThemeStore, RGBA, ThemeContribution, registerColor } from '@opensumi/ide-theme';
+import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import { IAiChatService, IChatAgentService, IChatManagerService } from '../common';
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
-import { AIReporter } from './ai-reporter';
 import { ChatAgentService } from './chat-agent.service';
 import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
@@ -53,10 +51,6 @@ export class AiNativeModule extends BrowserModule {
       useClass: AiChatService,
     },
     {
-      token: IAIReporter,
-      useClass: AIReporter,
-    },
-    {
       token: IAiInlineChatService,
       useClass: AiInlineChatService,
     },
@@ -79,6 +73,9 @@ export class AiNativeModule extends BrowserModule {
 
     const { layoutViewSize } = this.app.config;
     let layoutConfig = this.app.config.layoutConfig;
+
+    // 默认开启所有配置
+    aiNativeConfig.enable();
 
     const { capabilities } = aiNativeConfig;
     const { supportsOpenSumiDesign, supportsAiMarkers, supportsAiChatAssistant, supportsConflictResolve } =
