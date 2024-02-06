@@ -112,6 +112,10 @@ export class OutputService extends WithEventBus {
   }
 
   public async initOutputMonacoInstance(container: HTMLDivElement) {
+    if (this.outputEditor) {
+      this.outputEditor.dispose();
+    }
+
     this.outputEditor = this.editorCollectionService.createCodeEditor(container, {
       ...getSimpleEditorOptions(),
       lineDecorationsWidth: 20,
