@@ -53,7 +53,7 @@ export class MergeConflictReportService extends Disposable {
     this.aiReporter.end(reportInfo.relationId!, reportInfo);
   }
 
-  public reportClickNum(uniqueId: string, type: 'clickAllNum' | 'clickNum'): void {
+  public reportIncrementNum(uniqueId: string, type: 'clickAllNum' | 'clickNum' | 'aiOutputNum' | 'cancelNum'): void {
     if (this.aiNativeConfigService.capabilities.supportsConflictResolve === false) {
       return;
     }

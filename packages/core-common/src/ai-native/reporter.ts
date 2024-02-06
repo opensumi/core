@@ -77,6 +77,10 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
   clickNum: number;
   // 点击了一键解决的次数
   clickAllNum: number;
+  // ai 成功输出了的数量
+  aiOutputNum: number;
+  // 取消次数
+  cancelNum: number;
 }
 
 export type ReportInfo =

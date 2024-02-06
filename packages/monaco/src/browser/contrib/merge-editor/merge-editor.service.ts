@@ -84,7 +84,10 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
     this.computerDiffModel = new ComputerDiffModel();
     this.scrollSynchronizer = new ScrollSynchronizer();
     this.stickinessConnectManager = new StickinessConnectManager();
-    this.actionsManager = this.injector.get(ActionsManager, [this.mappingManagerService]);
+    this.actionsManager = this.injector.get(ActionsManager, [
+      this.mappingManagerService,
+      this.mergeConflictReportService,
+    ]);
   }
 
   private initListenEvent(): void {
@@ -302,7 +305,7 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
   }
 
   public async handleAiResolveConflict(): Promise<void> {
-    this.mergeConflictReportService.reportClickNum(this.resultView.getUri(), 'clickAllNum');
+    this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickAllNum');
 
     this.listenIntelligentLoadingChange();
 

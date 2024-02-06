@@ -715,7 +715,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     });
 
     if (action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      this.mergeConflictReportService.reportClickNum(this.getUri(), 'clickNum');
+      this.mergeConflictReportService.reportIncrementNum(this.getUri(), 'clickNum');
     }
   }
 

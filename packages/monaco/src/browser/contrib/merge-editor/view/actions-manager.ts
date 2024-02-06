@@ -2,7 +2,8 @@ import debounce from 'lodash/debounce';
 
 import { Injectable } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
-import { Disposable, Event, runWhenIdle } from '@opensumi/ide-core-common';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
+import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
@@ -37,7 +38,10 @@ export class ActionsManager extends Disposable {
   private resultView: ResultCodeEditor | undefined;
   private incomingView: BaseCodeEditor | undefined;
 
-  constructor(private readonly mappingManagerService: MappingManagerService) {
+  constructor(
+    private readonly mappingManagerService: MappingManagerService,
+    private readonly mergeConflictReportService: MergeConflictReportService,
+  ) {
     super();
   }
 
@@ -274,7 +278,7 @@ export class ActionsManager extends Disposable {
     flushRange: LineRange,
     isRegenerate = false,
     isFormat = false,
-  ): Promise<{ isSuccess: boolean; isCancel: boolean; errorCode: number } | undefined> {
+  ): Promise<{ isSuccess: boolean; isCancel: boolean; errorCode: number; errorMsg: string } | undefined> {
     if (!this.resultView) {
       return;
     }
@@ -331,22 +335,25 @@ export class ActionsManager extends Disposable {
       //     await this.resultView!.formatDocument(flushRange);
       //   });
       // }
-
+      this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'aiOutputNum');
       this.resultView!.updateDecorations().updateActions();
       return {
         isSuccess: true,
         isCancel: false,
         errorCode: 0,
+        errorMsg: '',
       };
     }
 
     this.resultView!.updateDecorations().updateActions();
 
     if (resolveConflictResult?.isCancel) {
+      this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'cancelNum');
       return {
         isSuccess: false,
         isCancel: true,
         errorCode: resolveConflictResult.errorCode || 0,
+        errorMsg: resolveConflictResult.errorMsg || '',
       };
     }
 
@@ -354,6 +361,7 @@ export class ActionsManager extends Disposable {
       isSuccess: false,
       isCancel: false,
       errorCode: 0,
+      errorMsg: '',
     };
   }
 

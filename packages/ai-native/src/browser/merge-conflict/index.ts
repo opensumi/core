@@ -336,12 +336,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       return reportData;
     } else {
       const reportInfo: Partial<MergeConflictRT> = {
+        editorMode: 'traditional',
         conflictPointNum: 0,
         useAiConflictPointNum: 0,
         receiveNum: 0,
         clickNum: 0,
         clickAllNum: 0,
-        editorMode: 'traditional',
+        aiOutputNum: 0,
+        cancelNum: 0,
       };
 
       this.currentReportMap.set(uri, reportInfo);
@@ -674,6 +676,10 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
 
     if (resolveConflictResult && resolveConflictResult.data) {
+      this.reportData = {
+        aiOutputNum: this.reportData.aiOutputNum! + 1,
+      };
+
       const { text, lineNumber, lines } = this.resolveEndLineEOL(resolveConflictResult.data);
       const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
       const endColumn = lines[lines.length - 1].length + 1;
@@ -732,6 +738,13 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       }
       return Promise.resolve(resolveConflictResult);
     } else {
+      if (resolveConflictResult?.isCancel) {
+        this.reportData = {
+          cancelNum: this.reportData.cancelNum! + 1,
+        };
+        this.reportConflictData();
+      }
+
       if (resolveConflictResult?.errorCode !== 0 && !resolveConflictResult?.isCancel) {
         this.debounceMessageWarning();
         this.loadingRange.delete(range);
