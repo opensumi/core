@@ -713,10 +713,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
       action,
       withViewType: EditorViewType.RESULT,
     });
-
-    if (action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      this.mergeConflictReportService.reportIncrementNum(this.getUri(), 'clickNum');
-    }
   }
 
   /**

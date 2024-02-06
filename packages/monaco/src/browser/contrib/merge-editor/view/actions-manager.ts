@@ -313,6 +313,8 @@ export class ActionsManager extends Disposable {
     const currentValue = this.currentView?.getModel()?.getValueInRange(reverseLeftRange.toInclusiveRange());
     const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toInclusiveRange());
 
+    this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickNum');
+
     const codeAssemble = `<<<<<<< HEAD\n${currentValue}\n||||||| base\n${baseValue}\n>>>>>>>\n${incomingValue}`;
     const resolveConflictResult = await this.resultView.requestAiResolveConflict(
       codeAssemble,

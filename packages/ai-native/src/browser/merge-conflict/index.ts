@@ -508,9 +508,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     this.disposables.push(
       commands.registerCommand(MERGE_CONFLICT.AI_ACCEPT, {
         execute: async (type: CommitType, conflict: DocumentMergeConflict) => {
-          this.reportData = {
-            clickNum: this.reportData.clickNum! + 1,
-          };
           this.conflictAIAccept(conflict);
         },
       }),
@@ -665,6 +662,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     let resolveConflictResult: IAiBackServiceResponse | undefined;
     try {
       this.loadingRange.add(range);
+      this.reportData = {
+        clickNum: this.reportData.clickNum! + 1,
+      };
       resolveConflictResult = await this.requestAiResolveConflict(codeAssemble, lineRange, isRegenerate);
     } catch (error) {
       throw new Error(`AI resolve conflict error: ${error.toString()}`);
@@ -731,10 +731,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             this.cacheConflicts.setConflictResolved(uri, cacheConflict.id);
           }
         }
-      } else {
-        this.reportData = {
-          clickNum: this.reportData.clickNum! + 1,
-        };
       }
       return Promise.resolve(resolveConflictResult);
     } else {
