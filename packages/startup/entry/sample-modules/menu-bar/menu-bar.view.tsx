@@ -17,7 +17,7 @@ export const MenuBarView = () => {
 
   const MENUBAR_HEIGHT = React.useMemo(
     () => appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
-    [appConfig],
+    [appConfig.layoutViewSize],
   );
 
   return (

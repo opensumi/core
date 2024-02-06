@@ -228,7 +228,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
 
   const PANEL_TITLEBAR_HEIGHT = React.useMemo(
     () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
-    [appConfig],
+    [appConfig.layoutViewSize],
   );
 
   return (

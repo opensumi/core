@@ -318,7 +318,7 @@ export const Tabs = ({ group }: ITabsProps) => {
 
   const EDITOR_TABS_HEIGHT = React.useMemo(
     () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
-    [appConfig],
+    [appConfig.layoutViewSize],
   );
 
   const renderTabContent = () => (
@@ -500,7 +500,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
 
     const EDITOR_TABS_HEIGHT = React.useMemo(
       () => appConfig.layoutViewSize?.EDITOR_TABS_HEIGHT || LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
-      [appConfig],
+      [appConfig.layoutViewSize],
     );
 
     // 第三个参数是当前编辑器的URI（如果有）

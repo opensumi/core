@@ -35,7 +35,7 @@ export const StatusBarView = memo(
 
     const STATUSBAR_HEIGHT = useMemo(
       () => appConfig.layoutViewSize?.STATUSBAR_HEIGHT || LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT,
-      [appConfig],
+      [appConfig.layoutViewSize],
     );
 
     return (
