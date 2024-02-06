@@ -3,7 +3,7 @@ import path from 'path';
 import { URI as Uri } from 'vscode-uri';
 
 import { Injector } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { IExtensionProps, isWindows, URI } from '@opensumi/ide-core-common';
 
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
@@ -36,7 +36,7 @@ const mockExtension = {
   defaultPkgNlsJSON: {},
 };
 
-describe(`test ${__filename}`, () => {
+describe('test ext host extension', () => {
   let rpcProtocol: RPCProtocol;
   let context: ExtensionContext;
   let extHostStorage: ExtHostStorage;

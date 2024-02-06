@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
-import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
+import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable, toDisposable, path } from '@opensumi/ide-core-common';
 
@@ -56,7 +56,6 @@ export class WorkerExtProcessService
     if (this.protocol) {
       this.ready.resolve();
       this.logger.log('[Worker Host] init worker thread api proxy');
-      this.logger.verbose(this.protocol);
       this.apiFactoryDisposable.push(
         toDisposable(await initWorkerThreadAPIProxy(this.protocol, this.injector, this)),
         toDisposable(createSumiApiFactory(this.protocol, this.injector)),

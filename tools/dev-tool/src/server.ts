@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
-import 'tsconfig-paths/register';
 import http from 'http';
 import path from 'path';
 
 import Koa from 'koa';
 import KoaRouter from 'koa-router';
+import Static from 'koa-static';
 
 import { Injector } from '@opensumi/di';
 import { Deferred } from '@opensumi/ide-core-common';
@@ -18,7 +18,12 @@ import {
 } from '@opensumi/ide-remote-opener/lib/common';
 import { RemoteOpenerServiceImpl } from '@opensumi/ide-remote-opener/lib/node';
 
-export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
+export async function startServer(
+  arg1: NodeModule[] | Partial<IServerAppOpts>,
+  options?: {
+    mountStaticPath?: string;
+  },
+) {
   const app = new Koa();
   const router = new KoaRouter();
   const deferred = new Deferred<http.Server>();
@@ -39,6 +44,11 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
 
   app.use(router.routes());
 
+  if (options && options.mountStaticPath) {
+    console.log('mount static path:', options.mountStaticPath);
+    app.use(Static(options.mountStaticPath));
+  }
+
   const injector = new Injector([
     {
       token: RemoteOpenerServiceToken,
@@ -46,7 +56,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     },
   ]);
 
-  const port = process.env.IDE_SERVER_PORT || 8000;
+  const port = process.env.PORT || process.env.IDE_SERVER_PORT || 8000;
   let opts: IServerAppOpts = {
     webSocketHandler: [
       // new TerminalHandler(logger),
@@ -70,11 +80,12 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
      *  extHost: path.join(__dirname, './ext-host.js') || process.env.EXTENSION_HOST_ENTRY,
      */
     extHost:
-      path.join(__dirname, '../../../packages/extension/lib/hosted/ext.process.js') || process.env.EXTENSION_HOST_ENTRY,
+      process.env.EXTENSION_HOST_ENTRY || path.join(__dirname, '../../../packages/extension/lib/hosted/ext.process.js'),
     onDidCreateExtensionHostProcess: (extHostProcess) => {
       console.log(`Extension host process ${extHostProcess.pid} created`);
     },
   };
+
   if (Array.isArray(arg1)) {
     opts = {
       ...opts,
@@ -100,7 +111,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   });
 
   server.listen(port, () => {
-    console.log(`server listen on port ${port}`);
+    console.log(`server listen on http://localhost:${port}`);
     deferred.resolve(server);
   });
   return deferred.promise;

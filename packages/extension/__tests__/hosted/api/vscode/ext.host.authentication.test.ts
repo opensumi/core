@@ -1,7 +1,6 @@
 import type vscode from 'vscode';
 
 import { Injector } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { IMenuRegistry, MenuId, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
 import { Emitter, StorageProvider, IAuthenticationService, CommandRegistry } from '@opensumi/ide-core-common';
@@ -22,6 +21,7 @@ import { QuickPickService } from '@opensumi/ide-quick-open';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts', () => {
   let injector: Injector;
@@ -30,20 +30,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
   let mainThreadAuthentication: IMainThreadAuthentication;
   let authenticationService: IAuthenticationService;
   const extensionId = 'vscode.vim';
-  const emitterExt = new Emitter<any>();
-  const emitterMain = new Emitter<any>();
+
   let authenticationProvider: vscode.AuthenticationProvider;
 
-  const mockClientExt = {
-    send: (msg) => emitterMain.fire(msg),
-    onMessage: emitterExt.event,
-  };
-  const mockClientMain = {
-    send: (msg) => emitterExt.fire(msg),
-    onMessage: emitterMain.event,
-  };
-  const rpcProtocolExt = new RPCProtocol(mockClientExt);
-  const rpcProtocolMain = new RPCProtocol(mockClientMain);
+  const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
   beforeEach(async () => {
     injector = createBrowserInjector([]);

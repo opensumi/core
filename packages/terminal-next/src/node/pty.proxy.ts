@@ -5,8 +5,8 @@ import { promisify } from 'util';
 
 import * as pty from 'node-pty';
 
-import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
 import { isMacintosh, isLinux } from '@opensumi/ide-utils/lib/platform';
 
@@ -248,16 +248,17 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
 export class PtyServiceProxyRPCProvider {
   private ptyServiceProxy: PtyServiceProxy;
   private readonly ptyServiceCenter: RPCServiceCenter;
-  private readonly debugLogger = getDebugLogger();
+  private readonly logger = getDebugLogger();
   private serverListenOptions: ListenOptions; // HOST + PORT or UNIX SOCK PATH
   private server: Server;
 
   constructor(listenOptions: ListenOptions = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
     this.serverListenOptions = listenOptions;
     this.ptyServiceCenter = new RPCServiceCenter();
-    const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
-    const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
-      .$callback;
+    const { createRPCService, getRPCService } = initRPCService<{
+      $callback: (callId: number, ...args: any[]) => void;
+    }>(this.ptyServiceCenter);
+    const $callback = getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL).$callback;
 
     this.ptyServiceProxy = new PtyServiceProxy($callback);
 
@@ -272,7 +273,7 @@ export class PtyServiceProxyRPCProvider {
   private createSocket() {
     this.server = net.createServer();
     this.server.on('connection', (connection) => {
-      this.debugLogger.log('ptyServiceCenter: new connections coming in');
+      this.logger.log('ptyServiceCenter: new connections coming in');
       this.setProxyConnection(connection);
     });
     // const ipcPath = normalizedIpcHandlerPath()
@@ -281,7 +282,7 @@ export class PtyServiceProxyRPCProvider {
       fs.unlinkSync(this.serverListenOptions.path); // 兜底逻辑，如果之前Server没有清除掉SOCK文件的话，那就先清除
     }
     this.server.listen(this.serverListenOptions);
-    this.debugLogger.log('ptyServiceCenter: listening on', this.serverListenOptions);
+    this.logger.log('ptyServiceCenter: listening on', this.serverListenOptions);
   }
 
   // Close Server, release UNIX DOMAIN SOCKET
@@ -300,11 +301,16 @@ export class PtyServiceProxyRPCProvider {
     });
   }
 
-  private setProxyConnection(connection: net.Socket) {
-    const serverConnection = createSocketConnection(connection);
-    this.ptyServiceCenter.setConnection(serverConnection);
-    connection.on('close', () => {
-      this.ptyServiceCenter.removeConnection(serverConnection);
+  private setProxyConnection(socket: net.Socket) {
+    const connection = new NetSocketConnection(socket);
+    const channel = WSChannel.forClient(connection, {
+      id: 'pty',
+      logger: this.logger,
+    });
+
+    const remove = this.ptyServiceCenter.setChannel(channel);
+    socket.on('close', () => {
+      remove.dispose();
     });
   }
 

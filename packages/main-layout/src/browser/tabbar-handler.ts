@@ -61,13 +61,13 @@ export class TabBarHandler {
    * 激活该视图
    */
   activate() {
-    this.tabbarService.currentContainerId = this.containerId;
+    this.tabbarService.updateCurrentContainerId(this.containerId);
   }
   /**
    * 取消激活该视图
    */
   deactivate() {
-    this.tabbarService.currentContainerId = '';
+    this.tabbarService.updateCurrentContainerId('');
   }
   /**
    * 当前视图激活状态
@@ -79,13 +79,13 @@ export class TabBarHandler {
    * 显示当前视图（区别于激活）
    */
   show() {
-    this.tabbarService.getContainerState(this.containerId).hidden = false;
+    this.tabbarService.showContainer(this.containerId);
   }
   /**
    * 隐藏当前视图（区别于取消激活，整个视图将不展示在 tabbar 上）
    */
   hide() {
-    this.tabbarService.getContainerState(this.containerId).hidden = true;
+    this.tabbarService.hideContainer(this.containerId);
   }
   /**
    * 设置视图的顶部标题组件
@@ -95,7 +95,7 @@ export class TabBarHandler {
     if (componentInfo) {
       componentInfo.options!.titleProps = props;
       componentInfo.options!.titleComponent = Fc;
-      this.tabbarService.forceUpdate++;
+      this.tabbarService.forceUpdateTabbar();
     }
   }
   /**
@@ -112,7 +112,7 @@ export class TabBarHandler {
    * 设置视图tab的徽标
    */
   setBadge(badge: string) {
-    this.tabbarService.getContainer(this.containerId)!.options!.badge = badge;
+    this.tabbarService.updateBadge(this.containerId, badge);
   }
   /**
    * 获取视图tab的徽标
@@ -144,7 +144,7 @@ export class TabBarHandler {
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const viewState = this.accordionService.getViewState(viewId);
-      viewState.hidden = !show;
+      this.accordionService.setViewState(viewId, { ...viewState, hidden: !show });
     }
   }
   /**

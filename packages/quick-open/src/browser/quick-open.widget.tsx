@@ -1,4 +1,4 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -36,7 +36,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   public validateType?: VALIDATE_TYPE;
 
   @observable.shallow
-  private _items: QuickOpenItem[];
+  private _items: QuickOpenItem[] = observable.array([]);
 
   @computed
   public get isShow() {
@@ -44,19 +44,19 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   }
 
   @observable.ref
-  private _actionProvider?: QuickOpenActionProvider;
+  private _actionProvider: QuickOpenActionProvider | null = null;
 
   @observable.ref
-  private _autoFocus?: IAutoFocus;
+  private _autoFocus: IAutoFocus | null = null;
 
   @observable
-  private _isPassword?: boolean;
+  private _isPassword = false;
 
   @observable
-  private _keepScrollPosition?: boolean;
+  private _keepScrollPosition = false;
 
   @observable
-  private _busy?: boolean;
+  private _busy = false;
 
   @computed
   get isPassword() {
@@ -138,19 +138,31 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
 
-  constructor(public callbacks: IQuickOpenCallbacks) {}
+  constructor(public callbacks: IQuickOpenCallbacks) {
+    makeObservable(this);
+  }
+
+  @action
+  setSelectIndex(index: number) {
+    this.selectIndex = index;
+  }
+
+  @action
+  setInputValue(value: string) {
+    this.inputValue = value;
+  }
 
   @action
   show(prefix: string, options: QuickOpenInputOptions): void {
     this._isShow = true;
     this.inputValue = prefix;
     this._inputPlaceholder = options.placeholder;
-    this._isPassword = options.password;
+    this._isPassword = !!options.password;
     this._inputEnable = options.inputEnable;
     this._valueSelection = options.valueSelection;
     this._canSelectMany = options.canSelectMany;
-    this._keepScrollPosition = options.keepScrollPosition;
-    this._busy = options.busy;
+    this._keepScrollPosition = !!options.keepScrollPosition;
+    this._busy = !!options.busy;
     this.renderTab = options.renderTab;
     this.toggleTab = options.toggleTab;
     // 获取第一次要展示的内容
@@ -196,7 +208,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   @action
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void {
     this._items = model.items;
-    this._actionProvider = model.actionProvider;
+    this._actionProvider = model.actionProvider || null;
     this._autoFocus = autoFocus;
   }
 

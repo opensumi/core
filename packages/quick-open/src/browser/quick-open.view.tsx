@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import type { ListOnScrollProps } from 'react-window';
@@ -101,7 +101,7 @@ export const QuickOpenInput = observer(() => {
   const onChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
-      widget.inputValue = value;
+      widget.setInputValue(value);
       widget.callbacks.onType(value);
     },
     [widget],
@@ -235,7 +235,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
     <div
       id={VIEW_CONTAINERS.QUICKPICK_ITEM}
       tabIndex={0}
-      className={clx(
+      className={cls(
         {
           [styles.item_selected]: widget.selectIndex === index,
           [styles.item_border]: showBorder,
@@ -256,21 +256,21 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
       {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}
       <div tabIndex={0} className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
-          {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
+          {iconClass && <span className={cls(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
             className={styles.item_label_name}
             labelClassName={styles.label_icon_container}
             labelIconClassName={styles.item_label_name_icon}
-            hightLightClassName={clx(styles.item_label_highlight)}
+            hightLightClassName={cls(styles.item_label_highlight)}
             text={label}
             highlights={labelHighlights}
           />
           {description && (
             <HighlightLabel
               className={styles.item_label_description}
-              labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
-              labelIconClassName={clx(styles.label_has_icon, styles.item_label_description_icon)}
-              hightLightClassName={clx(styles.item_label_description_highlight)}
+              labelClassName={cls(styles.label_icon_container, styles.item_label_description_label)}
+              labelIconClassName={cls(styles.label_has_icon, styles.item_label_description_icon)}
+              hightLightClassName={cls(styles.item_label_description_highlight)}
               text={description}
               highlights={descriptionHighlights}
             />
@@ -280,9 +280,9 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           <HighlightLabel
             OutElementType='div'
             className={styles.item_label_detail}
-            labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
-            labelIconClassName={clx(styles.label_has_icon, styles.item_label_detail_icon)}
-            hightLightClassName={clx(styles.item_label_description_highlight)}
+            labelClassName={cls(styles.label_icon_container, styles.item_label_description_label)}
+            labelIconClassName={cls(styles.label_has_icon, styles.item_label_detail_icon)}
+            hightLightClassName={cls(styles.item_label_description_highlight)}
             text={detail}
             highlights={detailHighlights}
           />
@@ -299,7 +299,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           key={action.id}
           onMouseDown={() => runQuickOpenItemAction(action)}
           title={action.tooltip || action.label}
-          className={clx(styles.item_action, action.class)}
+          className={cls(styles.item_action, action.class)}
         ></span>
       ))}
       {(mouseOver || widget.selectIndex === index) &&
@@ -328,7 +328,7 @@ export const QuickOpenList: React.FC<{
     <RecycleList
       onReady={onReady}
       onScroll={onScroll}
-      className={clx(styles.quickopen_list, {
+      className={cls(styles.quickopen_list, {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
         [styles.validate_warning]: widget.validateType === VALIDATE_TYPE.WARNING,
       })}
@@ -445,24 +445,24 @@ export const QuickOpenView = observer(() => {
       const entryToFocus = caseSensitiveMatch || caseInsensitiveMatch;
       if (entryToFocus) {
         const index = items.indexOf(entryToFocus);
-        widget.selectIndex = index;
+        widget.setSelectIndex(index);
         return;
       }
     }
 
     if (autoFocus.autoFocusFirstEntry) {
-      widget.selectIndex = 0;
+      widget.setSelectIndex(0);
     } else if (typeof autoFocus.autoFocusIndex === 'number') {
       if (items.length > autoFocus.autoFocusIndex) {
-        widget.selectIndex = autoFocus.autoFocusIndex;
+        widget.setSelectIndex(autoFocus.autoFocusIndex);
       }
     } else if (autoFocus.autoFocusSecondEntry) {
       if (items.length > 1) {
-        widget.selectIndex = 1;
+        widget.setSelectIndex(1);
       }
     } else if (autoFocus.autoFocusLastEntry) {
       if (items.length > 1) {
-        widget.selectIndex = items.length - 1;
+        widget.setSelectIndex(items.length - 1);
       }
     }
   }, [widget.items, widget.autoFocus]);
@@ -502,14 +502,14 @@ export const QuickOpenView = observer(() => {
         event.preventDefault();
         event.stopPropagation();
         const selectIndex = widget.selectIndex - 1;
-        widget.selectIndex = (length + (selectIndex % length)) % length;
+        widget.setSelectIndex((length + (selectIndex % length)) % length);
         break;
       }
       case Key.ARROW_DOWN.keyCode: {
         event.preventDefault();
         event.stopPropagation();
         const selectIndex = widget.selectIndex + 1;
-        widget.selectIndex = selectIndex % length;
+        widget.setSelectIndex(selectIndex % length);
         break;
       }
       case Key.ESCAPE.keyCode: {

@@ -105,8 +105,8 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   readonly isPassword?: boolean;
   readonly inputPlaceholder?: string;
   readonly inputEnable?: boolean;
-  readonly actionProvider?: QuickOpenActionProvider;
-  readonly autoFocus?: IAutoFocus;
+  readonly actionProvider: QuickOpenActionProvider | null;
+  readonly autoFocus: IAutoFocus | null;
   readonly valueSelection?: [number, number];
   readonly canSelectMany?: boolean;
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void;
@@ -114,4 +114,6 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   hide(reason?: HideReason): void;
   blur(): void;
   updateProgressStatus(visible: boolean): void;
+  setSelectIndex(index: number): void;
+  setInputValue(value: string): void;
 }

@@ -12,7 +12,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "webpack --config=webpack.config.js --progress"
+    "build": "webpack --config=webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,6 @@
   "dependencies": {
     "@opensumi/ide-utils": "workspace:*",
     "chalk": "^4.1.2",
-    "got": "^12.1.0",
     "mri": "^1.2.0"
   },
   "devDependencies": {

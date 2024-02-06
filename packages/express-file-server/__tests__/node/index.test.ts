@@ -2,7 +2,7 @@ import http from 'http';
 import path from 'path';
 
 import Koa from 'koa';
-import superagent from 'superagent';
+import fetch from 'node-fetch';
 
 import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -38,24 +38,18 @@ describe('template test', () => {
   });
 
   it('can get png if path in whitelist', async () => {
-    const res = await superagent.get(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.png')}`);
+    const res = await fetch(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.png')}`);
     expect(res.status === 200);
   });
 
   it('response 403 if not in whitelist', async () => {
-    try {
-      await superagent.get('http://0.0.0.0:50118/assets/test');
-    } catch (err) {
-      expect(err.status === 403);
-    }
+    const res = await fetch('http://0.0.0.0:50118/assets/test');
+    expect(res.status === 403);
   });
 
   it('response 403 if not allowed mime', async () => {
-    try {
-      await superagent.get(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.exe')}`);
-    } catch (err) {
-      expect(err.status === 403);
-    }
+    const res = await fetch(`http://0.0.0.0:50118/assets${path.join(resPath, 'icon.exe')}`);
+    expect(res.status === 403);
   });
 
   afterAll(() => {

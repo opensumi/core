@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { Dropdown } from '../dropdown';
@@ -104,7 +104,7 @@ export const Button = React.memo(
     onVisibleChange,
     ...otherProps
   }: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
-    const classes = classNames('kt-button', className, {
+    const classes = cls('kt-button', className, {
       [`kt-${type}-button-loading`]: loading,
       [`ghost-${type}-button`]: ghost && !loading && type !== 'link',
       [`${type}-button`]: type,
@@ -112,7 +112,7 @@ export const Button = React.memo(
       ['ghost-button']: ghost && type !== 'link',
       ['block-button']: block,
     });
-    const iconClesses = classNames(className, {
+    const iconClasses = cls(className, {
       ['kt-clickable-icon']: !!onClick,
     });
 
@@ -123,7 +123,7 @@ export const Button = React.memo(
           disabled={disabled}
           icon={icon}
           onClick={loading || disabled ? noop : onClick}
-          className={iconClesses}
+          className={iconClasses}
           iconClass={iconClass}
           {...otherProps}
         />

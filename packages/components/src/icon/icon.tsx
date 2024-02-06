@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { defaultIconMap, defaultIconfont } from './iconfont/iconManager';
@@ -116,7 +116,7 @@ const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElemen
       title={tooltip}
       onClick={onClick}
       ref={ref}
-      className={clx('kt-icon', iconClx, className, {
+      className={cls('kt-icon', iconClx, className, {
         'kt-icon-loading': loading,
         'kt-icon-disabled': !!disabled,
         [`kt-icon-${size}`]: !!size,

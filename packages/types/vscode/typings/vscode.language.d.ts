@@ -1539,7 +1539,6 @@ declare module 'vscode' {
   /**
    * Folding context (for future use)
    */
-  // tslint:disable-next-line: no-empty-interface
   export interface FoldingContext { }
 
   /**

@@ -1,6 +1,6 @@
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 
@@ -92,12 +92,18 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
   );
 }
 
+export interface IElectronEnvMetadata {
+  windowClientId: string;
+  [key: string]: any;
+}
+
 export const electronEnv: {
   currentWindowId: number;
   currentWebContentsId: number;
   ipcRenderer: IElectronIpcRenderer;
   webviewPreload: string;
   plainWebviewPreload: string;
+  metadata: IElectronEnvMetadata;
   [key: string]: any;
 } = (global as any) || {};
 
@@ -107,19 +113,21 @@ if (typeof ElectronIpcRenderer !== 'undefined') {
 
 export interface IElectronNativeDialogService {
   showOpenDialog(options: Electron.OpenDialogOptions): Promise<string[] | undefined>;
-
   showSaveDialog(options: Electron.SaveDialogOptions): Promise<string | undefined>;
 }
 
 export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');
 
-export function createElectronClientConnection(connectPath?: string): MessageConnection {
+export function createNetSocketConnection(connectPath?: string): NetSocketConnection {
   let socket;
   if (connectPath) {
     socket = electronEnv.createNetConnection(connectPath);
   } else {
     socket = electronEnv.createRPCNetConnection();
   }
-  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
-  return createSocketConnection(socket);
+  return new NetSocketConnection(socket);
+}
+
+export function fromWindowClientId(suffix: string) {
+  return `${suffix}-${electronEnv.metadata.windowClientId}`;
 }

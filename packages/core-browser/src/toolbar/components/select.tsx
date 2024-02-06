@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import {
@@ -147,7 +147,7 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
     const selectDropDown = <SelectOptionsList {...selectDropDownProps} ref={dropdownRef} />;
     return (
       <div
-        className={classnames({
+        className={cls({
           'kt-toolbar-action-btn': true,
           'action-btn-in-dropdown': true,
           'kt-toolbar-action-select': true,
@@ -158,7 +158,7 @@ export function ToolbarActionSelect<T>(props: IToolbarActionSelectProps<T> & ITo
         }}
       >
         {props.name || findCurrentValueLabel(value)}
-        <div className={classnames('kt-toolbar-action-btn-icon', getIcon('right'), 'kt-toolbar-action-select-right')} />
+        <div className={cls('kt-toolbar-action-btn-icon', getIcon('right'), 'kt-toolbar-action-select-right')} />
 
         {showDropdown ? selectDropDown : null}
       </div>

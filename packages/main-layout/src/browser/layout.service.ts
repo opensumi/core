@@ -104,10 +104,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   public viewReady: Deferred<void> = new Deferred();
 
-  constructor() {
-    super();
-  }
-
   didMount() {
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
       views.forEach(({ view, props }) => {
@@ -131,8 +127,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       this.viewReady.resolve();
     });
   }
-
-  setFloatSize(size: number) {}
 
   storeState(service: TabbarService, currentId: string) {
     this.state[service.location] = {
@@ -202,13 +196,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     if (currentId === undefined) {
-      service.currentContainerId = defaultContainer;
+      service.updateCurrentContainerId(defaultContainer);
     } else {
-      service.currentContainerId = currentId
-        ? service.containersMap.has(currentId)
-          ? currentId
-          : defaultContainer
-        : '';
+      service.updateCurrentContainerId(
+        currentId ? (service.containersMap.has(currentId) ? currentId : defaultContainer) : '',
+      );
     }
   };
 
@@ -233,16 +225,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       return;
     }
     if (show === true) {
-      tabbarService.currentContainerId =
+      tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId ||
-        tabbarService.previousContainerId ||
-        tabbarService.containersMap.keys().next().value;
+          tabbarService.previousContainerId ||
+          tabbarService.containersMap.keys().next().value,
+      );
     } else if (show === false) {
-      tabbarService.currentContainerId = '';
+      tabbarService.updateCurrentContainerId('');
     } else {
-      tabbarService.currentContainerId = tabbarService.currentContainerId
-        ? ''
-        : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
+      tabbarService.updateCurrentContainerId(
+        tabbarService.currentContainerId
+          ? ''
+          : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value,
+      );
     }
     if (tabbarService.currentContainerId && size) {
       tabbarService.resizeHandle?.setSize(size);
@@ -526,10 +521,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   expandBottom(expand: boolean): void {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
     if (!tabbarService.currentContainerId) {
-      tabbarService.currentContainerId =
+      tabbarService.updateCurrentContainerId(
         tabbarService.currentContainerId ||
-        tabbarService.previousContainerId ||
-        tabbarService.containersMap.keys().next().value;
+          tabbarService.previousContainerId ||
+          tabbarService.containersMap.keys().next().value,
+      );
     }
     tabbarService.doExpand(expand);
     this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);

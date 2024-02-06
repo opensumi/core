@@ -1,5 +1,4 @@
 import { Injectable, Injector } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { IContextKeyService, AppConfig } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
@@ -25,6 +24,7 @@ import { MockWorkbenchEditorService } from '../../../editor/src/common/mocks/wor
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 import { MainThreadExtensionLog } from '../../src/browser/vscode/api/main.thread.log';
 import { MainThreadStorage } from '../../src/browser/vscode/api/main.thread.storage';
@@ -56,22 +56,7 @@ class MockStaticResourceService {
   }
   resourceRoots: [] = [];
 }
-
-const emitterA = new ideCoreCommon.Emitter<any>();
-const emitterB = new ideCoreCommon.Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 describe('MainThreadExtensions Test Suites', () => {
   const extHostInjector = new Injector();

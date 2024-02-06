@@ -215,7 +215,8 @@ export class DebugLog implements IDebugLog {
   }
 
   private getPre(level: string, color: string) {
-    const text = this.namespace ? `[${this.namespace}:${level}]` : `[${level}]`;
+    let text = this.getColor('green', `[${new Date().toLocaleString('zh-CN')}] `);
+    text += this.namespace ? `[${this.namespace}:${level}]` : `[${level}]`;
     return this.getColor(color, text);
   }
 

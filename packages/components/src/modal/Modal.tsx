@@ -1,5 +1,5 @@
 import CloseOutlined from '@ant-design/icons/CloseOutlined';
-import classNames from 'classnames';
+import cls from 'classnames';
 import PropTypes from 'prop-types';
 import Dialog from 'rc-dialog';
 import addEventListener from 'rc-util/lib/Dom/addEventListener';
@@ -212,7 +212,7 @@ export default class Modal extends React.Component<PropsWithChildren<ModalProps>
         {...restProps}
         getContainer={getContainer}
         prefixCls={prefixCls}
-        wrapClassName={classNames({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}
+        wrapClassName={cls({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}
         footer={footer === undefined ? defaultFooter : footer}
         visible={visible}
         mousePosition={mousePosition}

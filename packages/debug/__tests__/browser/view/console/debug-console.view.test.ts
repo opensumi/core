@@ -1,5 +1,6 @@
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { EmptyConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
 import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import {
@@ -101,10 +102,7 @@ describe('Debug console component Test Suites', () => {
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel(id: string) {
-          const channelSend = (content) => {
-            //
-          };
-          return new WSChannel(channelSend, 'mock_wschannel' + id);
+          return new WSChannel(new EmptyConnection(), { id: 'mock_wschannel' + id });
         },
       },
     });

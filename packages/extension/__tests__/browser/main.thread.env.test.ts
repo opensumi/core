@@ -1,12 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import {
-  Emitter,
-  LogServiceForClientPath,
-  LogLevel,
-  getLanguageId,
-} from '@opensumi/ide-core-common';
+import { LogServiceForClientPath, LogLevel, getLanguageId } from '@opensumi/ide-core-common';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadStorage } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.storage';
 import {
@@ -23,22 +17,10 @@ import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.hos
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 @Injectable()
 class MockLogServiceForClient {

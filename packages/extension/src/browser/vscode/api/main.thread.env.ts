@@ -53,10 +53,11 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   async setEnvValues() {
-    const { appName, uriScheme, appHost, appRoot } = this.appConfig;
+    const { appName, uriScheme, appHost, appRoot, customVSCodeEngineVersion } = this.appConfig;
     const firstSessionDateValue = await this.storage.$getValue(true, firstSessionDateStorageKey);
 
     this.proxy.$setEnvValues({
+      customVSCodeEngineVersion,
       appName,
       uriScheme,
       appHost,

@@ -1,11 +1,5 @@
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import {
-  Emitter,
-  Disposable,
-  CancellationTokenSource,
-  uuid,
-  BinaryBuffer,
-} from '@opensumi/ide-core-common';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
+import { Emitter, Disposable, CancellationTokenSource, uuid, BinaryBuffer } from '@opensumi/ide-core-common';
 import { ExtHostTreeViews } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.treeview';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';

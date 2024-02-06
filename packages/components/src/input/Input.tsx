@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { Icon } from '../icon';
@@ -187,7 +187,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
       return null;
     }
     return (
-      <div className={clx('kt-input-addon', klassName)} {...persistFocusProps}>
+      <div className={cls('kt-input-addon', klassName)} {...persistFocusProps}>
         {React.Children.map(addonNodes, (child) =>
           React.isValidElement(child) ? React.cloneElement(child!, persistFocusProps) : null,
         )}
@@ -195,7 +195,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     );
   };
 
-  const inputClx = clx('kt-input', className, {
+  const inputClx = cls('kt-input', className, {
     [`kt-input-${size}`]: size,
     ['kt-input-disabled']: props.disabled,
   });

@@ -3,7 +3,7 @@ import React from 'react';
 
 import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { Layout, PanelContext } from '@opensumi/ide-core-browser/lib/components';
+import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -59,8 +59,6 @@ export const AccordionSection = ({
   noHeader,
   children,
   expanded,
-  onResize,
-  size,
   headerSize,
   viewId,
   initialProps,
@@ -73,30 +71,40 @@ export const AccordionSection = ({
   const iconService = useInjectable<IIconService>(IIconService);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
-  const [headerFocused, setHeaderFocused] = React.useState(false);
-  const [headerLabel, setHeaderLabel] = React.useState(header);
-  const [headerDescription, setHeaderDescription] = React.useState(description);
-  const [panelMessage, setPanelMessage] = React.useState(message);
-  const [headerBadge, setHeaderBadge] = React.useState(badge);
-
-  const { getSize, setSize } = React.useContext(PanelContext);
+  const [metadata, setMetadata] = React.useState({
+    header,
+    description,
+    message,
+    badge,
+  });
 
   React.useEffect(() => {
     const disposable = accordionService.onDidChangeViewTitle(({ id, title, description, message: msg, badge }) => {
-      if (viewId === id && title && title !== headerLabel) {
-        setHeaderLabel(title);
+      let changed = false;
+      const newMetadata = {
+        ...metadata,
+      };
+      if (viewId === id && title && title !== metadata.header) {
+        newMetadata.header = title;
+        changed = true;
       }
 
-      if (viewId === id && badge !== headerBadge) {
-        setHeaderBadge(badge);
+      if (viewId === id && badge !== metadata.badge) {
+        newMetadata.badge = badge;
+        changed = true;
       }
 
-      if (viewId === id && description && description !== headerDescription) {
-        setHeaderDescription(description);
+      if (viewId === id && description && description !== metadata.badge) {
+        newMetadata.description = description;
+        changed = true;
       }
 
-      if (viewId === id && msg && msg !== panelMessage) {
-        setPanelMessage(msg);
+      if (viewId === id && msg && msg !== metadata.message) {
+        newMetadata.message = msg;
+        changed = true;
+      }
+      if (changed) {
+        setMetadata(newMetadata);
       }
     });
 
@@ -106,10 +114,8 @@ export const AccordionSection = ({
   }, []);
 
   const clickHandler = React.useCallback(() => {
-    const currentSize = getSize(false);
-    // 不知道这里的 onItemClick 的第一个入参有什么用，看起来哪儿都没用到
-    onItemClick((targetSize) => setSize(targetSize, false), currentSize);
-  }, [getSize, setSize]);
+    onItemClick();
+  }, [onItemClick]);
 
   const bodyStyle = React.useMemo<React.CSSProperties>(
     () => ({
@@ -117,20 +123,6 @@ export const AccordionSection = ({
     }),
     [expanded],
   );
-
-  React.useEffect(() => {
-    if (onResize) {
-      onResize(size);
-    }
-  }, [size]);
-
-  const headerFocusHandler = React.useCallback(() => {
-    setHeaderFocused(true);
-  }, []);
-
-  const headerBlurHandler = React.useCallback(() => {
-    setHeaderFocused(false);
-  }, []);
 
   const viewState = useViewState(viewId, contentRef, true);
   const progressService: IProgressService = useInjectable(IProgressService);
@@ -151,10 +143,8 @@ export const AccordionSection = ({
     <div className={styles.kt_split_panel} data-view-id={viewId}>
       {!noHeader && (
         <div
-          onFocus={headerFocusHandler}
-          onBlur={headerBlurHandler}
           {...attrs}
-          className={cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
+          className={cls(styles.kt_split_panel_header, headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
@@ -162,14 +152,14 @@ export const AccordionSection = ({
           <div className={styles.label_wrap}>
             <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
             <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
-              {headerLabel}
+              {metadata.header}
             </div>
-            {headerDescription && (
+            {metadata.description && (
               <div className={styles.section_description} style={{ lineHeight: headerSize + 'px' }}>
-                {transformLabelWithCodicon(headerDescription, {}, iconService.fromString.bind(iconService))}
+                {transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
-            {headerBadge && <div className={styles.section_badge}>{headerBadge}</div>}
+            {metadata.badge && <div className={styles.section_badge}>{metadata.badge}</div>}
           </div>
           {expanded && titleMenu && (
             <div className={styles.actions_wrap}>
@@ -189,10 +179,10 @@ export const AccordionSection = ({
       >
         <ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />
         <ErrorBoundary>
-          {panelMessage && <div className={styles.kt_split_panel_message}>{panelMessage}</div>}
+          {metadata.message && <div className={styles.kt_split_panel_message}>{metadata.message}</div>}
           <Component
             {...initialProps}
-            viewState={{ height: viewState.height - (panelMessage ? 22 : 0), width: viewState.width }}
+            viewState={{ height: viewState.height - (metadata.message ? 22 : 0), width: viewState.width }}
           />
         </ErrorBoundary>
       </div>

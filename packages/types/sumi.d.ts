@@ -1,4 +1,3 @@
-/* tslint:disable callable-types */
 /**
  * @deprecated `kaitian` was deprecated, Please use `sumi` instead.
  */

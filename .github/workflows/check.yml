@@ -29,7 +29,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
@@ -50,6 +52,7 @@ jobs:
         run: |
           yarn run init
           yarn run bundle:lite
+          yarn run bundle:prod
 
       - name: Lint
         run: |
@@ -79,6 +82,7 @@ jobs:
           yarn install --immutable
           yarn run init
           yarn run bundle:lite
+          yarn run bundle:prod
 
       - name: Lint
         run: |

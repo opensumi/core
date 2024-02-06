@@ -4,4 +4,4 @@ export class BrowserConnectionCloseEvent extends BasicEvent<void> {}
 
 export class BrowserConnectionOpenEvent extends BasicEvent<void> {}
 
-export class BrowserConnectionErrorEvent extends BasicEvent<Event> {}
+export class BrowserConnectionErrorEvent extends BasicEvent<Error> {}

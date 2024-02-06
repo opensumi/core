@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { IEventBus } from '@opensumi/ide-core-common';
@@ -125,7 +125,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
   splitPanelService.panels = [];
 
-  // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
+  // 获取 setSize 的handle，对于最右端或最底部的视图，取上一个位置的 handle
   const setSizeHandle = React.useCallback(
     (index) => (size?: number, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
@@ -272,7 +272,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
               );
             }
           }
-
           result.push(
             <PanelContext.Provider
               key={index}
@@ -323,7 +322,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
 
   React.useEffect(() => {
     if (rootRef.current) {
-      splitPanelService.rootNode = rootRef.current;
+      splitPanelService.setRootNode(rootRef.current);
     }
     const disposer = eventBus.on(ResizeEvent, (e) => {
       if (e.payload.slotLocation === id) {
@@ -341,7 +340,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
     <div
       ref={(ele) => (rootRef.current = ele!)}
       {...restProps}
-      className={clsx(styles['split-panel'], className)}
+      className={cls(styles['split-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
     >
       {elements}

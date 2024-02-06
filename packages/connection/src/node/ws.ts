@@ -1,3 +1,4 @@
+import assert from 'assert';
 import http from 'http';
 import url from 'url';
 
@@ -5,7 +6,7 @@ import ws from 'ws';
 
 export abstract class WebSocketHandler {
   abstract handlerId: string;
-  abstract handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean;
+  abstract handleUpgrade(pathname: string, request: any, socket: any, head: any): boolean;
   init?(): void;
 }
 
@@ -88,6 +89,7 @@ export class WebSocketServerRoute {
     const wsServerHandlerArr = this.wsServerHandlerArr;
 
     server.on('upgrade', (request, socket, head) => {
+      assert(request.url, 'cannot parse url from http request');
       const wsPathname: string = url.parse(request.url).pathname as string;
 
       let wsHandlerIndex = 0;

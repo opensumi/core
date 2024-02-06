@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
 
@@ -14,6 +14,11 @@ export class ProgressIndicator implements IProgressIndicator {
     total: undefined,
   };
 
+  constructor() {
+    makeObservable(this);
+  }
+
+  @action
   show(totalOrInfinite: true | number, delay?: number | undefined): IProgressRunner {
     if (totalOrInfinite !== true) {
       this.progressModel.total = totalOrInfinite;
@@ -38,6 +43,7 @@ export class ProgressIndicator implements IProgressIndicator {
     };
   }
 
+  @action
   async showWhile(promise: Promise<unknown>, delay?: number | undefined): Promise<void> {
     this.progressModel.total = undefined;
     this.showOnceScheduler(delay);
@@ -45,7 +51,7 @@ export class ProgressIndicator implements IProgressIndicator {
     this.doDone(false);
   }
 
-  private scheduled: NodeJS.Timer;
+  private scheduled: NodeJS.Timeout;
   private showOnceScheduler(delay?: number) {
     if (typeof delay === 'number') {
       clearTimeout(this.scheduled);
@@ -55,6 +61,7 @@ export class ProgressIndicator implements IProgressIndicator {
     }
   }
 
+  @action
   private doDone(delayed?: boolean) {
     this.progressModel.fade = true;
     if (this.progressModel.total) {

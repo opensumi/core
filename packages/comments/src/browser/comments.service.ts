@@ -205,17 +205,17 @@ export class CommentsService extends Disposable implements ICommentsService {
             const { range } = target;
             // 如果已经存在一个待输入的评论组件，则不创建新的
             if (
-              this.commentsThreads.some(
+              !this.commentsThreads.some(
                 (thread) =>
                   thread.comments.length === 0 &&
                   thread.uri.isEqual(editor.currentUri!) &&
                   thread.range.startLineNumber === range.startLineNumber,
               )
             ) {
-              return;
+              const thread = this.createThread(editor.currentUri!, range);
+              thread.show(editor);
             }
-            const thread = this.createThread(editor.currentUri!, range);
-            thread.show(editor);
+            event.event.stopPropagation();
           }
         } else if (
           event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
@@ -240,6 +240,7 @@ export class CommentsService extends Disposable implements ICommentsService {
               }
             }
           }
+          event.event.stopPropagation();
         }
       }),
     );

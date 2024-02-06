@@ -1,4 +1,4 @@
-import { observable, action, computed } from 'mobx';
+import { observable, action, computed, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
@@ -116,6 +116,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   constructor() {
     super();
+    makeObservable(this);
     this.setEnumLabels(
       'general.language',
       new Proxy(

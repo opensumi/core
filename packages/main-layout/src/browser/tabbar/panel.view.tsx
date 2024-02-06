@@ -1,4 +1,4 @@
-import clsx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -46,18 +46,16 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
-  const { currentContainerId } = tabbarService;
 
   React.useEffect(() => {
     // panelSize = 384-1-48
     tabbarService.panelSize = customPanelSize || panelSize || 335;
   }, []);
-
   return (
     <div
       id={id}
-      className={clsx(styles.tab_panel, {
-        [styles.tab_panel_hidden]: !currentContainerId,
+      className={cls(styles.tab_panel, {
+        [styles.tab_panel_hidden]: !tabbarService.currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -69,13 +67,13 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
         return (
           <div
             key={containerId}
-            className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
+            className={cls(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
-            style={currentContainerId === containerId ? panelVisible : panelInVisible}
+            style={tabbarService.currentContainerId === containerId ? panelVisible : panelInVisible}
             id={id}
           >
             <ErrorBoundary>
-              <NoUpdateBoundary visible={currentContainerId === containerId}>
+              <NoUpdateBoundary visible={tabbarService.currentContainerId === containerId}>
                 <PanelView titleMenu={titleMenu} side={side} component={component} />
               </NoUpdateBoundary>
             </ErrorBoundary>

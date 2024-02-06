@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import cls from 'classnames';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
@@ -322,7 +322,7 @@ const getIconClass = (
   // 统一的图标类
   classes.push('icon-label');
   return {
-    iconClass: classnames(classes),
+    iconClass: cls(classes),
     // 对于首次没找到的，添加一个检测新语言注册的 change 事件
     onDidChange: _onDidChange?.event,
   };

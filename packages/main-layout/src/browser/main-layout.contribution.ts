@@ -106,9 +106,6 @@ export const IS_VISIBLE_LEFT_PANEL_COMMAND: Command = {
 export const IS_VISIBLE_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.is-visible',
 };
-export const SET_PANEL_SIZE_COMMAND: Command = {
-  id: 'main-layout.panel.size.set',
-};
 export const EXPAND_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.expand',
   label: '%layout.tabbar.expand%',
@@ -268,11 +265,6 @@ export class MainLayoutModuleContribution
     });
     commands.registerCommand(IS_VISIBLE_RIGHT_PANEL_COMMAND, {
       execute: () => this.mainLayoutService.isVisible(SlotLocation.left),
-    });
-    commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
-      execute: (size: number) => {
-        this.mainLayoutService.setFloatSize(size);
-      },
     });
 
     commands.registerCommand(

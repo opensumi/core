@@ -3,8 +3,7 @@ import { performance } from 'perf_hooks';
 import Stream from 'stream';
 
 import { ConstructorOf, Injector } from '@opensumi/di';
-import { RPCProtocol, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { WSChannel, createRPCProtocol } from '@opensumi/ide-connection';
 import {
   Emitter,
   ReporterProcessMessage,
@@ -78,35 +77,22 @@ export interface ExtProcessConfig {
 }
 
 async function initRPCProtocol(extInjector: Injector): Promise<any> {
-  const extCenter = new RPCServiceCenter();
-  const { getRPCService } = initRPCService<{
-    onMessage(msg: string): void;
-  }>(extCenter);
+  const extConnection = argv[KT_PROCESS_SOCK_OPTION_KEY];
 
-  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
+  logger = new ExtensionLogger2(extInjector);
+  logger.log('init rpc protocol for ext connection path', extConnection);
 
-  extCenter.setConnection(createSocketConnection(extConnection));
-
-  const service = getRPCService('ExtProtocol');
-
-  const onMessageEmitter = new Emitter<string>();
-  service.on('onMessage', (msg: string) => {
-    onMessageEmitter.fire(msg);
+  const socket = net.createConnection(JSON.parse(extConnection));
+  const channel = WSChannel.forNetSocket(socket, {
+    id: 'ExtProcessBaseRPCProtocol',
   });
-
-  const onMessage = onMessageEmitter.event;
-  const send = service.onMessage;
 
   const appConfig = extInjector.get(AppConfig);
 
-  const extProtocol = new RPCProtocol({
-    onMessage,
-    send,
+  const extProtocol = createRPCProtocol(channel, {
     timeout: appConfig.rpcMessageTimeout,
   });
 
-  logger = new ExtensionLogger2(extInjector);
-  logger.log('process extConnection path', argv[KT_PROCESS_SOCK_OPTION_KEY]);
   return { extProtocol, logger };
 }
 

@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IMarker, MarkerSeverity, URI, Disposable, compareRangesUsingStarts } from '@opensumi/ide-core-common';
@@ -27,6 +27,7 @@ export class MarkerViewModel extends Disposable {
 
   constructor(private _service: IMarkerService, private labelService: LabelService) {
     super();
+    makeObservable(this);
     this.addDispose([
       this._service.getManager().onMarkerChanged(this._onMarkerChanged, this),
       this._service.onMarkerFilterChanged(this._onMarkerFilterChanged, this),
@@ -36,7 +37,6 @@ export class MarkerViewModel extends Disposable {
   private _onMarkerChanged(resources: string[]) {
     if (resources) {
       resources.forEach((resource) => {
-        // tslint:disable-next-line: no-bitwise
         this.updateMarker(
           resource,
           this._service

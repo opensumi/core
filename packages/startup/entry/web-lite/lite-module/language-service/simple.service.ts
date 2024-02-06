@@ -98,7 +98,6 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     return callId;
   }
 
-  // tslint:disable-next-line:no-any
   private withAdapter<A, R>(
     handle: number,
     constructor: ConstructorOf<A>,

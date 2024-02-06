@@ -1,4 +1,4 @@
-import { observable, computed } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Disposable, Event } from '@opensumi/ide-core-browser';
@@ -33,6 +33,7 @@ export class Widget extends Disposable implements IWidget {
 
   constructor(id: string, public reuse: boolean = false) {
     super();
+    makeObservable(this);
     this._id = id;
   }
 
@@ -87,17 +88,20 @@ export class Widget extends Disposable implements IWidget {
   onShow: Event<boolean> = this._onShow.event;
   onError: Event<boolean> = this._onError.event;
 
+  @action
   resize(dynamic?: number) {
     this.dynamic = dynamic || this.shadowDynamic;
     this.shadowDynamic = this.dynamic;
     this._onResize.fire();
   }
 
+  @action
   increase(increment: number) {
     this.shadowDynamic += increment;
     this._onResize.fire();
   }
 
+  @action
   rename(name: string) {
     this.name = name;
   }
@@ -170,6 +174,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return this.current?.processName;
   }
 
+  @action
   addWidget(widget: Widget) {
     this.widgets.push(widget);
     this.widgetsMap.set(widget.id, widget);
@@ -184,6 +189,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return this.widgets.findIndex((item) => item.id === widget.id);
   }
 
+  @action
   selectWidget(widget: Widget) {
     this.currentId = widget.id;
   }
@@ -200,14 +206,17 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return widget[0];
   }
 
+  @action
   edit() {
     this.editable = true;
   }
 
+  @action
   unedit() {
     this.editable = false;
   }
 
+  @action
   rename(name: string) {
     this.name = name;
     this.editable = false;
@@ -233,17 +242,17 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 export class TerminalGroupViewService implements ITerminalGroupViewService {
   protected _widgets: Map<string, Widget>;
 
-  @observable
-  groups: WidgetGroup[] = [];
+  @observable.shallow
+  groups: WidgetGroup[] = observable.array([]);
 
   @observable
-  currentGroupId: string;
+  currentGroupId = '';
 
   @observable
-  currentGroupIndex: number;
+  currentGroupIndex = -1;
 
   @Autowired(ITerminalInternalService)
-  service: ITerminalInternalService;
+  private readonly service: ITerminalInternalService;
 
   protected _onWidgetCreated = new Emitter<Widget>();
   protected _onWidgetSelected = new Emitter<Widget>();
@@ -251,6 +260,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   protected _onWidgetEmpty = new Emitter<void>();
 
   constructor() {
+    makeObservable(this);
     this._widgets = new Map();
   }
 
@@ -278,7 +288,11 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     return this.groups[index];
   }
 
+  @action
   private _doSelectGroup(index: number) {
+    if (this.currentGroupIndex === index) {
+      return;
+    }
     const group = this.getGroup(index);
     this.currentGroupIndex = index;
     this.currentGroupId = group.id;
@@ -297,6 +311,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this._doSelectGroup(index);
   }
 
+  @action
   private _doCreateGroup(id?: string, options?: IShellLaunchConfig) {
     const group = new WidgetGroup(id, options);
     this.groups.push(group);
@@ -322,6 +337,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     }
   }
 
+  @action
   private _doRemoveGroup(index: number) {
     const [group] = this.groups.splice(index, 1);
 
@@ -404,6 +420,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     return this._widgets.size === 0;
   }
 
+  @action
   clear() {
     this.groups = observable.array([]);
     this._widgets.clear();

@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@opensumi/ide-core-browser';
@@ -39,7 +39,7 @@ export const QuickOpenTabs: React.FC<Props> = ({ tabs, activePrefix, onChange, t
               }}
             >
               <div
-                className={clx(styles.quickopen_tabs_left_item_text, { [styles.selected]: activePrefix === prefix })}
+                className={cls(styles.quickopen_tabs_left_item_text, { [styles.selected]: activePrefix === prefix })}
               >
                 {title}
               </div>

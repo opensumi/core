@@ -6,7 +6,6 @@ import util from 'util';
 import temp = require('temp');
 import vscode from 'vscode';
 
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import {
   PreferenceProviderProvider,
   PreferenceProvider,
@@ -95,26 +94,14 @@ import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/w
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { mockExtensions } from '../../__mocks__/extensions';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
 import { ExtHostFileSystemInfo } from '../../src/hosted/api/vscode/ext.host.file-system-info';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../../src/hosted/api/vscode/ext.host.workspace';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 function getFileStatType(stat: fs.Stats) {
   if (stat.isDirectory()) {

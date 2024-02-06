@@ -1,24 +1,18 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import {
-  initRPCService,
-  IRPCProtocol,
-  RPCProtocol,
-  RPCServiceCenter,
-  createWebSocketConnection,
-} from '@opensumi/ide-connection';
+import { createRPCProtocol, IRPCProtocol, WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   Deferred,
   electronEnv,
-  Emitter,
   IExtensionProps,
   ILogger,
   IDisposable,
   toDisposable,
-  createElectronClientConnection,
   IApplicationService,
+  fromWindowClientId,
 } from '@opensumi/ide-core-browser';
+import { createNetSocketConnection } from '@opensumi/ide-core-browser';
 
 import {
   CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
@@ -154,7 +148,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   private async initExtProtocol() {
-    const mainThreadCenter = new RPCServiceCenter();
+    let channel: WSChannel;
 
     // Electron 环境下，未指定 isRemote 时默认使用本地连接
     // 否则使用 WebSocket 连接
@@ -163,33 +157,18 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
         electronEnv.metadata.windowClientId,
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-
-      // electron 环境下要使用 Node 端的 connection
-      mainThreadCenter.setConnection(createElectronClientConnection(connectPath));
+      const connection = createNetSocketConnection(connectPath);
+      channel = WSChannel.forClient(connection, {
+        id: fromWindowClientId('NodeExtProcessService'),
+      });
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-      mainThreadCenter.setConnection(createWebSocketConnection(channel));
+      channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
     }
 
-    const { getRPCService } = initRPCService<{
-      onMessage: (msg: string) => void;
-    }>(mainThreadCenter);
-
-    const service = getRPCService('ExtProtocol');
-    const onMessageEmitter = new Emitter<string>();
-    service.on('onMessage', (msg) => {
-      onMessageEmitter.fire(msg);
-    });
-    const onMessage = onMessageEmitter.event;
-    const send = service.onMessage;
-
-    const mainThreadProtocol = new RPCProtocol({
-      onMessage,
-      send,
+    const mainThreadProtocol = createRPCProtocol(channel, {
       timeout: this.appConfig.rpcMessageTimeout,
     });
-
     // 重启/重连时直接覆盖前一个连接
     return mainThreadProtocol;
   }

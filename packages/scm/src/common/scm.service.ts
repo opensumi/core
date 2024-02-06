@@ -1,8 +1,8 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, makeObservable } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
 import { IInputBaseProps } from '@opensumi/ide-components';
-import { Event, Emitter, arrays, getDebugLogger, Deferred } from '@opensumi/ide-core-common';
+import { Event, Emitter, arrays, getDebugLogger } from '@opensumi/ide-core-common';
 import { IDisposable, toDisposable } from '@opensumi/ide-core-common';
 
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
@@ -116,7 +116,9 @@ class SCMRepository implements ISCMRepository {
 
   readonly input: ISCMInput = new SCMInput();
 
-  constructor(public readonly provider: ISCMProvider, private disposable: IDisposable) {}
+  constructor(public readonly provider: ISCMProvider, private disposable: IDisposable) {
+    makeObservable(this);
+  }
 
   focus(): void {
     this._onDidFocus.fire();

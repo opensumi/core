@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-browser';
+import { Emitter, sleep } from '@opensumi/ide-core-browser';
 import { CancellationToken, CancellationTokenSource, Deferred, Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser/debug-session-connection';
@@ -13,12 +13,6 @@ describe('DebugSessionConnection', () => {
 
   const cancellationRequestMap: Map<number, CancellationTokenSource[]> = new Map();
   const cancelationTokensMap = new Map<number, boolean>();
-  const sleep = (t: number) =>
-    new Promise<void>((res) => {
-      setTimeout(() => {
-        res();
-      }, t);
-    });
 
   const getNewCancellationToken = (threadId: number, token?: CancellationToken): CancellationToken => {
     const tokenSource = new CancellationTokenSource(token);

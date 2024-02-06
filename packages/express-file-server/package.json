@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-express-file-server",
-  "version": "2.27.1",
+  "version": "2.27.2",
   "files": [
     "lib",
     "src"
@@ -25,7 +25,6 @@
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-dev-tool": "workspace:*",
-    "@types/koa-mount": "^4.0.1",
-    "superagent": "^5.1.0"
+    "@types/koa-mount": "^4.0.1"
   }
 }

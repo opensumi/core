@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { FC, useState, useRef, useEffect, useCallback, memo } from 'react';
 
@@ -136,7 +136,7 @@ export const SCMResourceTree: FC<{
 
   return (
     <div
-      className={clx(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
+      className={cls(styles.scm_tree_container, { 'scm-show-actions': viewModel.alwaysShowActions })}
       tabIndex={-1}
       ref={wrapperRef}
       data-name={TREE_FIELD_NAME}

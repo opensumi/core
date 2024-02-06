@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { INodeLogger, Event, getDebugLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, Event, getDebugLogger, sleep } from '@opensumi/ide-core-node';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -13,8 +13,6 @@ import { MockEnvironmentVariableService } from './__mocks__/environmentVariableS
 
 // re-install RAL in `@opensumi/vscode-jsonrpc`
 import '@opensumi/vscode-jsonrpc/lib/node/main';
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PROXY_PORT = 10296;
 describe('ext host proxy test', () => {

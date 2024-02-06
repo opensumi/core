@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
@@ -125,6 +125,7 @@ export class SCMTreeModelService {
   > = new Map();
 
   constructor() {
+    makeObservable(this);
     this.showProgress((this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode)));
     this.disposableCollection.push(
       this.scmTreeService.onDidTreeModeChange((isTreeMode) => {

@@ -2,6 +2,8 @@ import WebSocket from 'ws';
 import { Terminal } from 'xterm';
 
 import { Injectable } from '@opensumi/di';
+import { WSChannel } from '@opensumi/ide-connection';
+import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { uuid, URI, Emitter, IDisposable, PreferenceScope, Deferred, OperatingSystem } from '@opensumi/ide-core-common';
@@ -44,14 +46,16 @@ Object.defineProperty(window, 'matchMedia', {
 export const defaultName = 'bash';
 
 @Injectable()
-export class MockSocketService implements ITerminalService {
+export class MockTerminalService implements ITerminalService {
   static resId = 1;
 
-  private _socks: Map<string, WebSocket>;
+  private channels: Map<string, WSChannel>;
+  private socks: Map<string, WebSocket>;
   private _response: Map<number, { resolve: (value: any) => void }>;
 
   constructor() {
-    this._socks = new Map();
+    this.channels = new Map();
+    this.socks = new Map();
     this._response = new Map();
   }
 
@@ -66,7 +70,12 @@ export class MockSocketService implements ITerminalService {
     launchConfig: IShellLaunchConfig,
   ): Promise<ITerminalConnection | undefined> {
     const sock = new WebSocket(localhost(getPort()));
-    this._socks.set(sessionId, sock);
+    const channel = WSChannel.forClient(new WSWebSocketConnection(sock), {
+      id: sessionId,
+    });
+
+    this.channels.set(sessionId, channel);
+    this.socks.set(sessionId, sock);
 
     await delay(2000);
     this._handleMethod(sessionId);
@@ -119,11 +128,12 @@ export class MockSocketService implements ITerminalService {
   }
 
   private _handleStdoutMessage(sessionId: string, handler: (json: any) => void) {
-    const socket = this._socks.get(sessionId);
-    if (!socket) {
+    const channel = this.channels.get(sessionId);
+    if (!channel) {
       return;
     }
-    socket.addEventListener('message', ({ data }) => {
+
+    channel.onMessage((data) => {
       const json = JSON.parse(data) as any;
       if (!json.method) {
         handler(json.data);
@@ -154,7 +164,7 @@ export class MockSocketService implements ITerminalService {
   }
 
   private _sendMessage(sessionId: string, json: any) {
-    const sock = this._socks.get(sessionId);
+    const sock = this.channels.get(sessionId);
     if (!sock) {
       return;
     }
@@ -163,7 +173,7 @@ export class MockSocketService implements ITerminalService {
 
   private async _doMethod(sessionId: string, method: string, params: any) {
     return new Promise((resolve) => {
-      const id = MockSocketService.resId++;
+      const id = MockTerminalService.resId++;
       this._sendMessage(sessionId, { id, method, params });
       if (id !== -1) {
         this._response.set(id, { resolve });
@@ -172,22 +182,20 @@ export class MockSocketService implements ITerminalService {
   }
 
   private _handleMethod(sessionId: string) {
-    const socket = this._socks.get(sessionId);
+    const socket = this.channels.get(sessionId);
 
     if (!socket) {
       return;
     }
 
-    const handleSocketMessage = (msg: MessageEvent) => {
-      const json = JSON.parse(msg.data);
+    socket.onMessage((data) => {
+      const json = JSON.parse(data);
       if (json.method) {
         const handler = this._response.get(json.id);
         handler && handler.resolve(json);
         this._response.delete(json.id);
       }
-    };
-
-    socket.addEventListener('message', handleSocketMessage as any);
+    });
   }
 
   async attach(sessionId: string, term: Terminal) {
@@ -204,7 +212,7 @@ export class MockSocketService implements ITerminalService {
   }
 
   disposeById(sessionId: string) {
-    const socket = this._socks.get(sessionId);
+    const socket = this.socks.get(sessionId);
 
     this._doMethod(sessionId, MessageMethod.resize, { id: sessionId });
 

@@ -380,7 +380,6 @@ class TaskExecutionImpl implements vscode.TaskExecution {
   public fireDidEndProcess(value: TaskProcessEndedDTO): void {}
 }
 
-// tslint:disable-next-line: no-unused-variable
 class CustomExecutionData implements IDisposable {
   private _cancellationSource?: CancellationTokenSource;
   private readonly _onTaskExecutionComplete: Emitter<CustomExecutionData> = new Emitter<CustomExecutionData>();
@@ -389,7 +388,6 @@ class CustomExecutionData implements IDisposable {
   public result: number | undefined;
 
   constructor(
-    // tslint:disable-next-line: no-unused-variable
     private readonly customExecution: vscode.CustomExecution,
     private readonly terminalService: IExtHostTerminal,
   ) {}

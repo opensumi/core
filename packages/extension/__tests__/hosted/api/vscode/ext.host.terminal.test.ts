@@ -1,4 +1,3 @@
-import { RPCProtocol } from '@opensumi/ide-connection';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Disposable, ILogger, OperatingSystem, Deferred } from '@opensumi/ide-core-common';
 import { IExtension } from '@opensumi/ide-extension';
@@ -19,6 +18,7 @@ import {
   MockProfileService,
   MockTerminalProfileInternalService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
+import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import {
@@ -28,20 +28,7 @@ import {
 } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { MockEnvironmentVariableService } from '../../__mocks__/environmentVariableService';
 
-const emitterA = new Emitter<any>();
-const emitterB = new Emitter<any>();
-
-const mockClientA = {
-  send: (msg) => emitterB.fire(msg),
-  onMessage: emitterA.event,
-};
-const mockClientB = {
-  send: (msg) => emitterA.fire(msg),
-  onMessage: emitterB.event,
-};
-
-const rpcProtocolExt = new RPCProtocol(mockClientA);
-const rpcProtocolMain = new RPCProtocol(mockClientB);
+const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
 let extHost: ExtHostTerminal;
 let mainThread: MainThreadTerminal;

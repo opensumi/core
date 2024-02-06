@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 import React from 'react';
 
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
@@ -47,6 +47,10 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   protected readonly injector: Injector;
 
   private previewDeferred: Deferred<Array<IWorkspaceTextEdit | IWorkspaceFileEdit>> | null;
+
+  constructor() {
+    makeObservable(this);
+  }
 
   private clear() {
     this.togglePreviewView(false);

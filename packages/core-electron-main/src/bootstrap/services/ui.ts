@@ -4,7 +4,6 @@ import qs from 'querystring';
 
 import { BrowserWindow, dialog, shell, webContents, clipboard } from 'electron';
 import { stat } from 'fs-extra';
-import semver from 'semver';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Domain, isWindows, IEventBus, URI } from '@opensumi/ide-core-common';

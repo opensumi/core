@@ -6,7 +6,7 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
-import { RPCMessageConnection } from '@opensumi/ide-connection';
+import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   CommandRegistry,
@@ -45,7 +45,6 @@ import {
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
-import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
@@ -71,7 +70,7 @@ import { electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
-import { createClientConnection2, bindConnectionService } from './connection';
+import { createClientConnection4Web, createClientConnection4Electron, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 
@@ -208,35 +207,33 @@ export class ClientApp implements IClientApp, IDisposable {
   public async start(
     container: HTMLElement | IAppRenderer,
     type?: 'electron' | 'web',
-    connection?: RPCMessageConnection,
+    channel?: WSChannel,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
-    if (connection) {
-      await bindConnectionService(this.injector, this.modules, connection);
-    } else {
-      if (type === 'electron') {
-        await bindConnectionService(this.injector, this.modules, createElectronClientConnection());
-      } else if (type === 'web') {
-        await createClientConnection2(
-          this.injector,
-          this.modules,
-          this.connectionPath,
-          () => {
-            this.onReconnectContributions();
-          },
-          this.connectionProtocols,
-          this.config.clientId,
-        );
-
-        this.logger = this.getLogger();
-        // Replace Logger
-        this.injector.get(WSChannelHandler).replaceLogger(this.logger);
-      }
+    if (channel) {
+      await bindConnectionService(this.injector, this.modules, channel);
+    } else if (type === 'electron') {
+      await createClientConnection4Electron(this.injector, this.modules, this.config.clientId);
+    } else if (type === 'web') {
+      await createClientConnection4Web(
+        this.injector,
+        this.modules,
+        this.connectionPath,
+        () => {
+          this.onReconnectContributions();
+        },
+        this.connectionProtocols,
+        this.config.clientId,
+      );
+      this.logger = this.getLogger();
+      // Replace Logger
+      this.injector.get(WSChannelHandler).replaceLogger(this.logger);
     }
+
     measureReporter.timeEnd('ClientApp.createConnection');
 
     this.logger = this.getLogger();
@@ -402,7 +399,6 @@ export class ClientApp implements IClientApp, IDisposable {
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
   }
-
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);

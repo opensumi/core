@@ -1,4 +1,4 @@
-import { observable, computed, autorun } from 'mobx';
+import { observable, computed, autorun, makeObservable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IRange, Disposable, URI, IContextKeyService, uuid, localize, Emitter } from '@opensumi/ide-core-browser';
@@ -72,6 +72,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     public options: ICommentsThreadOptions,
   ) {
     super();
+    makeObservable(this);
     this.comments = options.comments
       ? options.comments.map((comment) => ({
           ...comment,

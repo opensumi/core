@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
@@ -160,6 +160,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   constructor() {
     super();
+    makeObservable(this);
     this.init();
   }
 
@@ -576,7 +577,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   resolveConnection(connection: ITerminalConnection | undefined) {
     if (!connection) {
-      this._attached.resolve();
+      this._attached.reject('no connection while attaching terminal client');
       return;
     }
 
@@ -588,7 +589,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
     this._ready = true;
     this._attached.resolve();
-    this._widget.name = this.name;
+    this._widget.rename(this.name);
 
     this.eventBus.fire(new TerminalClientAttachEvent({ clientId: this.id }));
 
@@ -704,7 +705,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateTerminalName(options: { name: string }) {
     if (!this.name && !this._widget.name) {
-      this._widget.name = options.name || this.name;
+      this._widget.rename(options.name || this.name);
     }
   }
 

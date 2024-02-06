@@ -1,105 +1,188 @@
-import { stringify } from './utils';
+import type net from 'net';
+
+import Fury, { Type } from '@furyjs/fury';
+import type WebSocket from 'ws';
+
+import { EventEmitter } from '@opensumi/events';
+import { DisposableCollection } from '@opensumi/ide-core-common';
+
+import { NetSocketConnection, WSWebSocketConnection } from './connection';
+import { IConnectionShape } from './connection/types';
+import { createWebSocketConnection } from './message';
+import { ILogger } from './types';
 
 export interface IWebSocket {
   send(content: string): void;
-  close(...args): void;
+  close(...args: any[]): void;
   onMessage(cb: (data: any) => void): void;
   onError(cb: (reason: any) => void): void;
   onClose(cb: (code: number, reason: string) => void): void;
 }
 
-export interface ClientMessage {
-  kind: 'client';
+/**
+ * `ping` and `pong` are used to detect whether the connection is alive.
+ */
+export interface PingMessage {
+  kind: 'ping';
+  id: string;
   clientId: string;
 }
-export interface HeartbeatMessage {
-  kind: 'heartbeat';
+
+/**
+ * when server receive a `ping` message, it should reply a `pong` message, vice versa.
+ */
+export interface PongMessage {
+  kind: 'pong';
+  id: string;
   clientId: string;
 }
+
+/**
+ * `open` message is used to open a new channel.
+ * `path` is used to identify which handler should be used to handle the channel.
+ * `clientId` is used to identify the client.
+ */
 export interface OpenMessage {
   kind: 'open';
-  id: number;
+  id: string;
   path: string;
+  clientId: string;
 }
-export interface ReadyMessage {
-  kind: 'ready';
-  id: number;
+
+/**
+ * when server receive a `open` message, it should reply a `server-ready` message.
+ * this is indicate that the channel is ready to use.
+ */
+export interface ServerReadyMessage {
+  kind: 'server-ready';
+  id: string;
 }
+
+/**
+ * `data` message indicate that the channel has received some data.
+ * the `content` field is the data, it should be a string.
+ */
 export interface DataMessage {
   kind: 'data';
-  id: number;
+  id: string;
   content: string;
 }
+
 export interface CloseMessage {
   kind: 'close';
-  id: number;
+  id: string;
   code: number;
   reason: string;
 }
-export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+
+export type ChannelMessage = PingMessage | PongMessage | OpenMessage | ServerReadyMessage | DataMessage | CloseMessage;
+
+export interface IWSChannelCreateOptions {
+  /**
+   * every channel's unique id, it only used in client to server architecture.
+   * server will store this id and use it to identify which channel should be used.
+   */
+  id: string;
+  logger?: ILogger;
+}
 
 export class WSChannel implements IWebSocket {
-  public id: number | string;
+  protected emitter = new EventEmitter<{
+    message: [data: string];
+    open: [id: string];
+    reopen: [];
+    close: [code?: number, reason?: string];
+  }>();
+
+  public id: string;
+  public LOG_TAG = '[WSChannel]';
+
   public channelPath: string;
 
-  private connectionSend: (content: string) => void;
-  private fireMessage: (data: any) => void;
-  private fireOpen: (id: number) => void;
-  public fireReOpen: () => void;
-  private fireClose: (code: number, reason: string) => void;
+  logger: ILogger = console;
 
-  public messageConnection: any;
+  static forClient(connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
+    const disposable = new DisposableCollection();
+    const channel = new WSChannel(connection, options);
 
-  constructor(connectionSend: (content: string) => void, id?: number | string) {
-    this.connectionSend = connectionSend;
-    if (id) {
-      this.id = id;
-    }
+    disposable.push(
+      connection.onMessage((data) => {
+        channel.handleMessage(parse(data));
+      }),
+    );
+    disposable.push(channel);
+
+    disposable.push(
+      connection.onceClose(() => {
+        disposable.dispose();
+      }),
+    );
+
+    return channel;
   }
 
-  public setConnectionSend(connectionSend: (content: string) => void) {
-    this.connectionSend = connectionSend;
+  static forWebSocket(socket: WebSocket, options: IWSChannelCreateOptions) {
+    const wsConnection = new WSWebSocketConnection(socket);
+    return WSChannel.forClient(wsConnection, options);
+  }
+
+  static forNetSocket(socket: net.Socket, options: IWSChannelCreateOptions) {
+    const wsConnection = new NetSocketConnection(socket);
+    return WSChannel.forClient(wsConnection, options);
+  }
+
+  constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
+    const { id, logger } = options;
+    this.id = id;
+
+    if (logger) {
+      this.logger = logger;
+    }
+
+    this.LOG_TAG = `[WSChannel] [id:${id}]`;
   }
 
   // server
-  onMessage(cb: (data: any) => any) {
-    this.fireMessage = cb;
+  onMessage(cb: (data: string) => any) {
+    return this.emitter.on('message', cb);
   }
-  onOpen(cb: (id: number) => void) {
-    this.fireOpen = cb;
+  onOpen(cb: (id: string) => void) {
+    return this.emitter.on('open', cb);
   }
-  onReOpen(cb: () => void) {
-    this.fireReOpen = cb;
+  onReopen(cb: () => void) {
+    return this.emitter.on('reopen', cb);
   }
-  ready() {
-    this.connectionSend(
+  serverReady() {
+    this.connection.send(
       stringify({
-        kind: 'ready',
+        kind: 'server-ready',
         id: this.id,
       }),
     );
   }
+
   handleMessage(msg: ChannelMessage) {
-    if (msg.kind === 'ready' && this.fireOpen) {
-      this.fireOpen(msg.id);
-    } else if (msg.kind === 'data' && this.fireMessage) {
-      this.fireMessage(msg.content);
+    if (msg.kind === 'server-ready') {
+      this.emitter.emit('open', msg.id);
+    } else if (msg.kind === 'data') {
+      this.emitter.emit('message', msg.content);
     }
   }
 
   // client
-  open(path: string) {
+  open(path: string, clientId: string) {
     this.channelPath = path;
-    this.connectionSend(
+    this.connection.send(
       stringify({
         kind: 'open',
         id: this.id,
         path,
+        clientId,
       }),
     );
   }
   send(content: string) {
-    this.connectionSend(
+    this.connection.send(
       stringify({
         kind: 'data',
         id: this.id,
@@ -107,14 +190,36 @@ export class WSChannel implements IWebSocket {
       }),
     );
   }
+  hasMessageListener() {
+    return this.emitter.hasListener('message');
+  }
   onError() {}
-  close(code: number, reason: string) {
-    if (this.fireClose) {
-      this.fireClose(code, reason);
-    }
+  close(code?: number, reason?: string) {
+    this.emitter.emit('close', code, reason);
+  }
+  fireReopen() {
+    this.emitter.emit('reopen');
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb;
+    return this.emitter.on('close', cb);
+  }
+  createMessageConnection() {
+    return createWebSocketConnection(this);
+  }
+  dispose() {
+    this.emitter.dispose();
+  }
+
+  listen(channel: WSChannel) {
+    channel.onMessage((data) => {
+      this.send(data);
+    });
+    channel.onClose((code, reason) => {
+      this.close(code, reason);
+    });
+    channel.onReopen(() => {
+      this.fireReopen();
+    });
   }
 }
 
@@ -141,4 +246,26 @@ export class ChildConnectPath {
       clientId: list[2],
     };
   }
+}
+
+const fury = new Fury({});
+
+export const wsChannelProtocol = Type.object('ws-channel-protocol', {
+  kind: Type.string(),
+  clientId: Type.string(),
+  id: Type.string(),
+  path: Type.string(),
+  content: Type.string(),
+  code: Type.uint32(),
+  reason: Type.string(),
+});
+
+const wsChannelProtocolSerializer = fury.registerSerializer(wsChannelProtocol);
+
+export function stringify(obj: ChannelMessage): Uint8Array {
+  return wsChannelProtocolSerializer.serialize(obj);
+}
+
+export function parse(input: Uint8Array): ChannelMessage {
+  return wsChannelProtocolSerializer.deserialize(input) as any;
 }

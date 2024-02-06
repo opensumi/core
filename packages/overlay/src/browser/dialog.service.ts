@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Deferred, MessageType } from '@opensumi/ide-core-common';
@@ -28,6 +28,11 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   protected buttons: string[] = [];
 
   protected props: Record<string, any> = {};
+
+  constructor() {
+    super();
+    makeObservable(this);
+  }
 
   @action
   open<T = string>(

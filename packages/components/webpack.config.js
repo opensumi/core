@@ -1,6 +1,7 @@
 const path = require('path');
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const { ProgressPlugin } = require('webpack');
@@ -9,6 +10,7 @@ const tsConfigPath = path.join(__dirname, '../../configs/ts/references/tsconfig.
 
 /** @type { import('webpack').Configuration } */
 module.exports = {
+  mode: process.env.NODE_ENV || 'development',
   entry: path.join(__dirname, './src/index.ts'),
   output: {
     filename: 'index.js',
@@ -17,20 +19,18 @@ module.exports = {
   optimization: {
     minimizer: [new OptimizeCSSAssetsPlugin({})],
   },
+  cache: {
+    type: 'filesystem',
+  },
   plugins: [
     new MiniCssExtractPlugin({
       filename: 'index.css',
     }),
     !process.env.CI && new ProgressPlugin(),
+    new NodePolyfillPlugin({
+      includeAliases: ['path', 'process', 'util'],
+    }),
   ].filter(Boolean),
-  node: {
-    net: 'empty',
-    child_process: 'empty',
-    path: 'empty',
-    url: false,
-    fs: 'empty',
-    process: 'mock',
-  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [
@@ -46,32 +46,23 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/',
-            },
-          },
-        ],
+        test: /\.svg$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext][query]',
+        },
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
+        type: 'asset/resource',
+        generator: {
+          filename: './fonts/[name][ext][query]',
+          outputPath: 'fonts/',
+        },
       },
       {
         test: /\.tsx?$/,
         use: [
-          {
-            loader: 'cache-loader',
-            options: {
-              cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-            },
-          },
-          {
-            loader: 'thread-loader',
-            options: {
-              workers: require('os').cpus().length - 1,
-            },
-          },
           {
             loader: 'ts-loader',
             options: {
@@ -94,7 +85,9 @@ module.exports = {
             options: {
               importLoaders: 1,
               sourceMap: false,
-              localIdentName: '[local]___[hash:base64:5]',
+              modules: {
+                localIdentName: '[local]_[hash:base64:5]',
+              },
             },
           },
           {

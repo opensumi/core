@@ -1812,7 +1812,6 @@ namespace TaskParser {
     }
     const defaultBuildTask: { task: TaskTypes.Task | undefined; rank: number } = { task: undefined, rank: -1 };
     const defaultTestTask: { task: TaskTypes.Task | undefined; rank: number } = { task: undefined, rank: -1 };
-    // tslint:disable-next-line: variable-name
     const schema2_0_0: boolean = context.schemaVersion === TaskTypes.JsonSchemaVersion.V2_0_0;
     const baseLoadIssues = deepClone(context.taskLoadIssues);
     for (let index = 0; index < externals.length; index++) {
@@ -2054,7 +2053,6 @@ export interface ParseResult {
   engine: TaskTypes.ExecutionEngine;
 }
 
-// tslint:disable-next-line: no-empty-interface
 export type IProblemReporter = IProblemReporterBase;
 
 class UUIDMap {

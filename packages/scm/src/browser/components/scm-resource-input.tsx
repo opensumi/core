@@ -51,12 +51,12 @@ export const SCMResourceInput: FC<{
         ...props,
         ...(addonAfter
           ? {
-              addonAfter: isFunction(AFC) ? <AFC /> : addonAfter,
+              addonAfter: isFunction<React.FunctionComponent>(AFC) ? <AFC /> : addonAfter,
             }
           : {}),
         ...(addonBefore
           ? {
-              addonBefore: isFunction(ABC) ? <ABC /> : addonBefore,
+              addonBefore: isFunction<React.FunctionComponent>(ABC) ? <ABC /> : addonBefore,
             }
           : {}),
       });

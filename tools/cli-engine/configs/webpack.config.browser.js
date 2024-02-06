@@ -2,8 +2,8 @@ const path = require('path');
 
 const AssetsPlugin = require('assets-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
@@ -13,19 +13,13 @@ const { lessLoader } = require('./webpack-util');
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const dir = path.join(__dirname, '../src/browser');
 const distDir = path.join(__dirname, '../lib/browser');
-const port = 8080;
 const nodeEnv = process.env.NODE_ENV || 'development';
 
+/**
+ * @type {import('webpack').Configuration}
+ */
 module.exports = {
   entry: `${dir}/index.ts`,
-  node: {
-    net: 'empty',
-    child_process: 'empty',
-    path: 'empty',
-    url: false,
-    fs: 'empty',
-    process: 'mock',
-  },
   output: {
     filename: 'browser.js',
     path: distDir,
@@ -40,7 +34,7 @@ module.exports = {
   },
   bail: true,
   mode: nodeEnv,
-  devtool: 'null',
+  devtool: false,
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
@@ -63,7 +57,7 @@ module.exports = {
       },
       {
         test: /\.png$/,
-        use: 'file-loader',
+        type: 'asset/resource',
       },
       {
         test: /\.css$/,
@@ -98,17 +92,19 @@ module.exports = {
         ],
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: require.resolve('file-loader'),
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/',
-              publicPath: 'http://localhost:8080/fonts',
-            },
-          },
-        ],
+        test: /\.svg$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext][query]',
+        },
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
+        type: 'asset/resource',
+        generator: {
+          filename: './fonts/[name][ext][query]',
+          outputPath: 'fonts/',
+        },
       },
     ],
   },
@@ -116,11 +112,15 @@ module.exports = {
     modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
-    moduleExtensions: ['-loader'],
   },
   optimization: {
     nodeEnv,
-    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+    minimizer: [
+      new TerserJSPlugin({
+        minify: TerserJSPlugin.esbuildMinify,
+      }),
+      new OptimizeCSSAssetsPlugin({}),
+    ],
   },
   plugins: [
     new AssetsPlugin({
@@ -131,15 +131,14 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'main.css',
     }),
-    new CopyPlugin([
-      { from: path.join(dir, 'vendor'), to: distDir },
-      { from: path.join(dir, 'index.html'), to: distDir },
-    ]),
-    new FriendlyErrorsWebpackPlugin({
-      compilationSuccessInfo: {
-        messages: [`Your application is running here: http://localhost:${port}`],
-      },
-      clearConsole: true,
+    new CopyPlugin({
+      patterns: [
+        { from: path.join(dir, 'vendor'), to: distDir },
+        { from: path.join(dir, 'index.html'), to: distDir },
+      ],
+    }),
+    new NodePolyfillPlugin({
+      includeAliases: ['process', 'Buffer'],
     }),
   ],
 };

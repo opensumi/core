@@ -1,5 +1,5 @@
 import type { ValueType } from '@rc-component/mini-decimal';
-import clx from 'classnames';
+import cls from 'classnames';
 import type { InputNumberProps as RcInputNumberProps } from 'rc-input-number';
 import RcInputNumber from 'rc-input-number';
 import React from 'react';
@@ -24,7 +24,7 @@ export const InputNumber: React.FC<InputNumberProps> = (props: InputNumberProps)
     }
   };
 
-  const inputClx = clx('kt-input', 'kt-input-number', className, {
+  const inputClx = cls('kt-input', 'kt-input-number', className, {
     [`kt-input-${size}`]: size,
     ['kt-input-disabled']: disabled,
   });

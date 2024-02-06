@@ -11,7 +11,10 @@ if (!modulePath) {
   process.exit(1);
 }
 
-runTest(modulePath, argv.project as string).then((v) => {
+runTest(modulePath, {
+  project: argv.project as string,
+  runInBand: argv.runInBand as boolean,
+}).then((v) => {
   console.log('Test Result:', v.results.success ? 'PASS' : 'FAIL');
   // 如果三秒后进程还没退出
   setTimeout(() => {

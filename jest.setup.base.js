@@ -1,3 +1,5 @@
+const { TextEncoder, TextDecoder } = require('util');
+
 // Do not log message on GitHub Actions.
 // Because these logs will affect the detection of real problems.
 const _console = global.console;
@@ -12,6 +14,9 @@ global.console = process.env.CI
       timeEnd: () => {},
     }
   : _console;
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 process.on('unhandledRejection', (error) => {
   _console.error('unhandledRejection', error);

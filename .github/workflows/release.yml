@@ -45,7 +45,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
-
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - uses: mukunku/tag-exists-action@v1.0.0
         id: checkTag
         env:

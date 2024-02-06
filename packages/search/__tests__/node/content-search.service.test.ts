@@ -1,6 +1,3 @@
-/**
- * 参考使用 theia 的单测
- */
 import fs from 'fs';
 import path from 'path';
 

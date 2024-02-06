@@ -43,8 +43,7 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     this.clear();
     this._iframeDisposer = new Disposable();
     this._ready = new Promise<void>((resolve) => {
-      // tslint:disable-next-line: no-unused-variable
-      const disposer = this._onWebviewMessage('webview-ready', () => {
+      this._onWebviewMessage('webview-ready', () => {
         if (this._isReady) {
           // 这种情况一般是由于iframe在dom中的位置变动导致了重载。
           // 此时我们需要重新初始化

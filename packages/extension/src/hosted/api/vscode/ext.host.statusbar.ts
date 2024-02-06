@@ -26,7 +26,7 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
   setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
     // step3
     this.proxy.$setStatusBarMessage(text);
-    let handle: NodeJS.Timer | undefined;
+    let handle: NodeJS.Timeout | undefined;
 
     if (typeof arg === 'number') {
       handle = global.setTimeout(() => this.proxy.$dispose(), arg);
@@ -78,7 +78,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   private _command: string | vscode.Command | undefined;
 
   private _isVisible: boolean;
-  private _timeoutHandle: NodeJS.Timer | undefined;
+  private _timeoutHandle: NodeJS.Timeout | undefined;
 
   private _proxy: IMainThreadStatusBar;
 

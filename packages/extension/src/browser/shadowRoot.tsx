@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React, { useCallback } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -163,7 +163,7 @@ const ShadowRoot = ({
       {shadowRoot && (
         <ShadowContent root={shadowRoot}>
           <div
-            className={clx(getThemeTypeSelector(themeType!), 'shadow-context-wrapper', 'show-file-icons')}
+            className={cls(getThemeTypeSelector(themeType!), 'shadow-context-wrapper', 'show-file-icons')}
             style={{ width: '100%', height: '100%' }}
           >
             {children}

@@ -1614,7 +1614,7 @@ export class FileTreeModelService {
               fileStat?.isDirectory ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             );
           } else {
-            this.messageService.error(res);
+            this.messageService.error(`Error when copy file: ${uri.toString()}, ${res}`);
           }
         }
       }

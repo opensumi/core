@@ -1,4 +1,4 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import React from 'react';
 
 import { _InternalIcon, IconProps } from './icon';
@@ -90,7 +90,7 @@ export function createFromIconfontCN<T>(options: CustomIconOptions = {}) {
 
       const iconShapeClx = getIconShapeClxList(iconShapeOptions);
       return (
-        <_InternalIcon {...extraCommonProps} {...restProps} className={clx(className, iconShapeClx)} ref={ref}>
+        <_InternalIcon {...extraCommonProps} {...restProps} className={cls(className, iconShapeClx)} ref={ref}>
           {content}
         </_InternalIcon>
       );

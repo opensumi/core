@@ -8,8 +8,8 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
   fakeLoad = false;
-  // tslint:disable-next-line: no-unused-variable
-  private isInDevelopmentMode = false;
+
+  public isInDevelopmentMode = false;
 
   constructor() {
     window.addEventListener('message', (e) => {
@@ -29,7 +29,7 @@ export class ElectronWebviewChannel implements IWebviewChannel {
       }
     });
 
-    this.ready = new Promise<void>(async (resolve) => {
+    this.ready = new Promise<void>((resolve) => {
       resolve();
     });
 
@@ -59,6 +59,4 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   }
 }
 
-/* tslint:disable */
 new WebviewPanelManager(new ElectronWebviewChannel());
-/* tslint:enable */

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import cp from 'child_process';
 
 import isRunning from 'is-running';
@@ -24,6 +25,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
 
   fork(modulePath: string, ...args: any[]) {
     const extProcess = cp.fork(modulePath, ...args);
+    assert(extProcess.pid, `fork ${modulePath} error`);
     this.processMap.set(extProcess.pid, extProcess);
     return extProcess.pid;
   }
@@ -83,6 +85,10 @@ export class ExtensionHostManager implements IExtensionHostManager {
     if (!extProcess) {
       return;
     }
+
+    assert(extProcess.stdout, 'ext process spawn failed');
+    assert(extProcess.stderr, 'ext process spawn failed');
+
     extProcess.stdout.setEncoding('utf8');
     extProcess.stderr.setEncoding('utf8');
     const onStdout = Event.fromNodeEventEmitter<string>(extProcess.stdout, 'data');

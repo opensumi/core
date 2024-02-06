@@ -257,7 +257,6 @@ declare module 'vscode' {
      * @param hideAfterTimeout Timeout in milliseconds after which the message will be disposed.
      * @return A disposable which hides the status bar message.
      */
-    // tslint:disable-next-line: unified-signatures
     export function setStatusBarMessage(text: string, hideAfterTimeout: number): Disposable;
 
     /**
@@ -268,7 +267,6 @@ declare module 'vscode' {
      * @param hideWhenDone Thenable on which completion (resolve or reject) the message will be disposed.
      * @return A disposable which hides the status bar message.
      */
-    // tslint:disable-next-line: unified-signatures
     export function setStatusBarMessage(text: string, hideWhenDone: Thenable<any>): Disposable;
 
     /**
