@@ -78,6 +78,7 @@ export const getDefaultClientAppOpts = ({
     'general.language': defaultLanguage,
     'general.theme': 'opensumi-dark',
     'general.icon': 'vscode-icons',
+    'general.productIconTheme': 'opensumi-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
   },

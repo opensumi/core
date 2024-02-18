@@ -5,7 +5,14 @@ import ReactDOM from 'react-dom';
 import { ComponentContextProvider, IIconResourceOptions, IconContext } from '@opensumi/ide-components';
 import { DisposableCollection, LabelService, TComponentCDNType, useInjectable } from '@opensumi/ide-core-browser';
 import { ExtensionBrowserStyleSheet, URI, localize } from '@opensumi/ide-core-common';
-import { getThemeTypeSelector, IIconService, IProductIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
+import {
+  getThemeTypeSelector,
+  IIconService,
+  IProductIconService,
+  IThemeService,
+  PRODUCT_ICON_STYLE_ID,
+  ThemeType,
+} from '@opensumi/ide-theme';
 
 import { IExtension } from '../common';
 import { AbstractViewExtProcessService } from '../common/extension.service';
@@ -134,7 +141,7 @@ const ShadowRoot = ({
 
         // 注册 producticon theme
         const productIconStyle = document.createElement('style');
-        productIconStyle.id = 'product-icon-style';
+        productIconStyle.id = PRODUCT_ICON_STYLE_ID;
         productIconStyle.innerHTML = productIconService.currentTheme?.styleSheetContent || '';
         newHead.appendChild(productIconStyle);
 

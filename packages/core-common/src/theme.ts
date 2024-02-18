@@ -1,3 +1,5 @@
+import { isObject, isString, isUndefined } from '@opensumi/ide-utils';
+
 import { Codicon } from './codicons';
 
 export interface IThemeColor {
@@ -51,12 +53,7 @@ export namespace ThemeIcon {
   }
 
   export function isThemeIcon(obj: any): obj is ThemeIcon {
-    return (
-      obj &&
-      typeof obj === 'object' &&
-      typeof obj.id === 'string' &&
-      (typeof obj.color === 'undefined' || IThemeColor.isThemeColor(obj.color))
-    );
+    return isObject(obj) && isString(obj.id) && (isUndefined(obj.color) || IThemeColor.isThemeColor(obj.color));
   }
 
   const _regexFromString = new RegExp(

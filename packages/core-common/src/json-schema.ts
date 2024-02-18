@@ -49,7 +49,6 @@ export interface IJSONSchema {
   then?: IJSONSchema;
   else?: IJSONSchema;
 
-  // schema 2019-09
   unevaluatedProperties?: boolean | IJSONSchema;
   unevaluatedItems?: boolean | IJSONSchema;
   minContains?: number;
@@ -63,7 +62,6 @@ export interface IJSONSchema {
   $recursiveAnchor?: string;
   $vocabulary?: any;
 
-  // schema 2020-12
   prefixItems?: IJSONSchema[];
   $dynamicRef?: string;
   $dynamicAnchor?: string;

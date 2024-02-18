@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.86.0/src/vs/platform/theme/common/iconRegistry.ts
+
 import { ThemeIcon, localize, IJSONSchema, IJSONSchemaMap, Emitter, Event, URI } from '@opensumi/ide-core-common';
 import { getCodiconFontCharacters } from '@opensumi/ide-core-common/lib/codicons';
 
@@ -92,6 +94,7 @@ class IconRegistry implements IIconRegistry {
 
   private iconsById: { [key: string]: IconContribution };
   private sumiIconsById: { [key: string]: IconContribution };
+  private iconFontsById: { [key: string]: IconFontDefinition };
 
   private iconSchema: IJSONSchema & { properties: IJSONSchemaMap } = {
     definitions: {
@@ -127,26 +130,11 @@ class IconRegistry implements IIconRegistry {
     enumDescriptions: [],
   };
 
-  private iconFontsById: { [key: string]: IconFontDefinition };
-
-  // private _monacoIconRegistry = MonacoGetIconRegistory();
-
   constructor() {
     this.iconsById = {};
     this.iconFontsById = {};
     this.sumiIconsById = {};
   }
-
-  // get monaco icons
-  // private registerCodicon() {
-  //   const codicons = (this._monacoIconRegistry as any).iconsById;
-  //   for (const id in codicons) {
-  //     if (Object.hasOwn(codicons, id)) {
-  //       const codicon = codicons[id];
-  //       this.registerIcon(id, codicon.defaults, codicon.description);
-  //     }
-  //   }
-  // }
 
   public registerIcon(
     id: string,

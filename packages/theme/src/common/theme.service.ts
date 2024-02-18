@@ -12,6 +12,10 @@ export const DEFAULT_THEME_ID = 'ide-dark';
 
 export const DEFAULT_PRODUCT_ICON_THEME_ID = 'opensumi-icons';
 export const DEFAULT_PRODUCT_ICON_THEME_LABEL = 'OpenSumi Icons';
+
+export const PRODUCT_ICON_STYLE_ID = 'product-icon-style';
+// codiconStyles 为 monaco 内置样式表
+export const PRODUCT_ICON_CODICON_STYLE_ID = 'codiconStyles';
 // from vscode
 export const colorIdPattern = '^\\w+[.\\w+]*$';
 

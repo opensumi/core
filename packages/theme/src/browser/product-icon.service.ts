@@ -27,6 +27,8 @@ import {
   ExtensionData,
   DEFAULT_PRODUCT_ICON_THEME_ID,
   DEFAULT_PRODUCT_ICON_THEME_LABEL,
+  PRODUCT_ICON_STYLE_ID,
+  PRODUCT_ICON_CODICON_STYLE_ID,
 } from '../common';
 import { IconContribution, IconDefinition, IconFontDefinition, getIconRegistry } from '../common/icon-registry';
 
@@ -161,8 +163,8 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
       return;
     }
 
-    let styleNode = document.getElementById('product-icon-style');
-    let monacoNode = document.getElementById('codiconStyles');
+    let styleNode = document.getElementById(PRODUCT_ICON_STYLE_ID);
+    let monacoNode = document.getElementById(PRODUCT_ICON_CODICON_STYLE_ID);
 
     if (!productIconThemeData) {
       this.logger.warn('Target ProductIconTheme extension not detected, use built-in icons.');
@@ -186,7 +188,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
       monacoNode.innerHTML = codiconStyles || '';
     } else {
       monacoNode = document.createElement('style');
-      monacoNode.id = 'codiconStyles';
+      monacoNode.id = PRODUCT_ICON_CODICON_STYLE_ID;
       monacoNode.innerHTML = codiconStyles || '';
       document.getElementsByTagName('head')[0].appendChild(monacoNode);
     }
@@ -195,7 +197,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
       styleNode.innerHTML = sumiiconStyles || '';
     } else {
       styleNode = document.createElement('style');
-      styleNode.id = 'product-icon-style';
+      styleNode.id = PRODUCT_ICON_STYLE_ID;
       styleNode.innerHTML = sumiiconStyles || '';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
