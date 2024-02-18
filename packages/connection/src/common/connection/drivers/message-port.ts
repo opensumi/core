@@ -5,10 +5,7 @@ import { BaseConnection } from './base';
 export class MessagePortConnection extends BaseConnection<Uint8Array> {
   constructor(public port: MessagePort) {
     super();
-    if (typeof port.start === 'function') {
-      // compatible with nodejs in unittest, nodejs does not have start method
-      port.start();
-    }
+    port.start();
   }
 
   send(data: Uint8Array): void {

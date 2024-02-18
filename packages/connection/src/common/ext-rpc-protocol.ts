@@ -199,7 +199,7 @@ export class RPCProtocol implements IRPCProtocol {
     this._lastMessageId = 0;
     this.logger = logger || console;
     this.logger.error(
-      "You are using the deprecated 'RPCProtocol' class. Please use the new 'SumiConnectionMultiplexer'",
+      "You are using the deprecated class: 'RPCProtocol'. Please use the new one: 'SumiConnectionMultiplexer'",
     );
     this._protocol.onMessage((msg) => this._receiveOneMessage(msg));
   }
