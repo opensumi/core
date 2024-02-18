@@ -3,11 +3,15 @@ import http from 'http';
 import WebSocket from 'ws';
 
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
+import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
+import { ProxyIdentifier } from '../../src';
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
-import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
+import { SimpleConnection } from '../../src/common/connection/drivers/simple';
+import { SumiConnectionMultiplexer } from '../../src/common/rpc/multiplexer';
 import { WSChannel, parse } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
 
@@ -65,7 +69,7 @@ describe('connection', () => {
       const msgObj = parse(msg);
       if (msgObj.kind === 'server-ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
-          channel.handleMessage(msgObj);
+          channel.dispatchChannelMessage(msgObj);
         }
       }
     });
@@ -133,12 +137,8 @@ describe('connection', () => {
       new Promise<void>((resolve) => {
         wss.on('connection', (connection) => {
           serviceCenter = new RPCServiceCenter();
-          const channel = WSChannel.forWebSocket(connection, {
-            id: 'test-wss',
-          });
-
-          serviceCenter.setChannel(channel);
-
+          const sumiConnection = SumiConnection.forWSWebSocket(connection, {});
+          serviceCenter.setSumiConnection(sumiConnection);
           resolve();
         });
       }),
@@ -161,11 +161,9 @@ describe('connection', () => {
     });
 
     const clientCenter = new RPCServiceCenter();
-    const channel = WSChannel.forWebSocket(clientConnection!, {
-      id: 'test',
-    });
 
-    const toDispose = clientCenter.setChannel(channel);
+    const connection = SumiConnection.forWSWebSocket(clientConnection!);
+    const toDispose = clientCenter.setSumiConnection(connection);
     clientConnection!.once('close', () => {
       toDispose.dispose();
     });
@@ -205,22 +203,9 @@ describe('connection', () => {
   });
 
   it('RPCProtocol', async () => {
-    const emitterA = new Emitter<string>();
-    const emitterB = new Emitter<string>();
+    const { rpcProtocolExt: aProtocol, rpcProtocolMain: bProtocol } = createMockPairRPCProtocol();
 
-    const mockClientB = {
-      onMessage: emitterB.event,
-      send: (msg) => emitterA.fire(msg),
-    };
-    const mockClientA = {
-      send: (msg) => emitterB.fire(msg),
-      onMessage: emitterA.event,
-    };
-
-    const aProtocol = new RPCProtocol(mockClientA);
-    const bProtocol = new RPCProtocol(mockClientB);
-
-    const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
+    const testMainIdentifier = ProxyIdentifier.for('testIendifier');
     const mockMainIndetifierMethod = jest.fn();
     const mockUriTestFn = jest.fn((uri) => uri);
     const mockErrorFn = jest.fn(() => {
@@ -247,9 +232,9 @@ describe('connection', () => {
   });
 
   it('RPCProtocol Timeout', async () => {
-    const emitterTimeoutA = new Emitter<string>();
-    const emitterTimeoutB = new Emitter<string>();
-    const emitterTimeoutC = new Emitter<string>();
+    const emitterTimeoutA = new Emitter<any>();
+    const emitterTimeoutB = new Emitter<any>();
+    const emitterTimeoutC = new Emitter<any>();
 
     const mockClientTA = {
       onMessage: emitterTimeoutA.event,
@@ -262,19 +247,23 @@ describe('connection', () => {
     const mockClientTC = {
       onMessage: emitterTimeoutC.event,
       send: (msg) => emitterTimeoutA.fire(msg),
-      timeout: 1000,
     };
 
-    const timeoutAProtocol = new RPCProtocol(mockClientTA);
-    const timeoutBProtocol = new RPCProtocol(mockClientTB);
-    const timeoutCProtocol = new RPCProtocol(mockClientTC);
+    const timeoutAProtocol = new SumiConnectionMultiplexer(new SimpleConnection(mockClientTA));
+    const timeoutBProtocol = new SumiConnectionMultiplexer(new SimpleConnection(mockClientTB));
+    const timeoutCProtocol = new SumiConnectionMultiplexer(new SimpleConnection(mockClientTC), {
+      timeout: 1000,
+    });
 
-    const testTimeoutIdentifier = createMainContextProxyIdentifier('testTimeoutIdentifier');
+    const testTimeoutIdentifier = ProxyIdentifier.for('testTimeoutIdentifier');
     timeoutAProtocol.set(testTimeoutIdentifier, {
       $test: jest.fn(),
     });
 
-    await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(void 0);
-    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(new Error('RPC Timeout: 1'));
+    await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(undefined);
+
+    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(
+      'method testTimeoutIdentifier/$test timeout',
+    );
   });
 });

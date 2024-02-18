@@ -109,11 +109,12 @@ export async function createConnectionService(
 
 export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
-  const dispose = clientCenter.setChannel(channel);
 
-  const toRemove = channel.onClose(() => {
+  const dispose = clientCenter.setSumiConnection(channel.createSumiConnection());
+
+  const toDispose = channel.onClose(() => {
     dispose.dispose();
-    toRemove();
+    toDispose.dispose();
   });
 
   const { getRPCService } = initRPCService(clientCenter);
@@ -127,6 +128,9 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     if (moduleInstance.backServices) {
       for (const backService of moduleInstance.backServices) {
         backServiceArr.push(backService);
+        if (backService.protocol) {
+          clientCenter.loadProtocol(backService.protocol);
+        }
       }
     }
   }

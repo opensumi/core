@@ -1,5 +1,4 @@
 import { Injector } from '@opensumi/di';
-import { IWebSocket } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { localize } from '@opensumi/ide-core-common';
 import { IDebugSessionManager, DebugSessionOptions, IDebugModelManager } from '@opensumi/ide-debug';
@@ -16,6 +15,7 @@ import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
+import { ExtensionConnection } from '../../../../common/vscode';
 import { ThemeIcon } from '../../../../common/vscode/ext-types';
 
 export class ExtensionDebugSession extends DebugSession {
@@ -75,7 +75,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
     protected readonly debugPreferences: DebugPreferences,
-    protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
+    protected readonly connectionFactory: (sessionId: string) => Promise<ExtensionConnection>,
     protected readonly fileSystem: IFileServiceClient,
     protected readonly terminalOptionsExt: any,
     protected readonly debugPreference: DebugPreferences,

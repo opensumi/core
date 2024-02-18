@@ -7,7 +7,7 @@ import { ICommentsService } from '@opensumi/ide-comments';
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { EmptyConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/empty';
+import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
 import {
   IContextKeyService,
   StorageProvider,
@@ -541,7 +541,7 @@ export function setupExtensionServiceInjector() {
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel() {
-          return new WSChannel(new EmptyConnection(), { id: 'mock_wschannel' });
+          return new WSChannel(new SimpleConnection(), { id: 'mock_wschannel' });
         },
       },
     },

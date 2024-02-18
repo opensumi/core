@@ -1,43 +1,25 @@
 import { Deferred } from '@opensumi/ide-core-common';
+import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { ProxyLegacy } from '../proxy';
-import { IBench, ILogger, IRPCServiceMap, RPCServiceMethod, ServiceType } from '../types';
+import { TSumiProtocol, ProtocolRepository } from '../rpc';
+import { SumiConnection } from '../rpc/connection';
+import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
-import { WSChannel } from '../ws-channel';
 
-const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'mock' } : (process as any);
+import { ServiceRegistry, Invoker, ProxyLegacy, ProxySumi } from './proxy';
 
-const defaultReservedWordSet = new Set(['then']);
-
-class Invoker {
-  legacyProxy: ProxyLegacy;
-
-  private legacyInvokeProxy: any;
-
-  setLegacyProxy(proxy: ProxyLegacy) {
-    this.legacyProxy = proxy;
-    this.legacyInvokeProxy = proxy.getInvokeProxy();
-  }
-
-  invoke(name: string, ...args: any[]) {
-    if (defaultReservedWordSet.has(name) || typeof name === 'symbol') {
-      return Promise.resolve();
-    }
-
-    return this.legacyInvokeProxy[name](...args);
-  }
-}
+const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 
 export class RPCServiceCenter {
   public uid: string;
 
   private invokers: Invoker[] = [];
-  private connection: Array<WSChannel> = [];
 
-  private serviceMethodMap = { client: undefined } as unknown as IRPCServiceMap;
+  private protocolRepository = new ProtocolRepository();
+  private registry = new ServiceRegistry();
 
-  private connectionDeferred = new Deferred<void>();
+  private deferred = new Deferred<void>();
   private logger: ILogger;
 
   constructor(private bench?: IBench, logger?: ILogger) {
@@ -54,47 +36,75 @@ export class RPCServiceCenter {
   }
 
   ready() {
-    return this.connectionDeferred.promise;
+    return this.deferred.promise;
   }
 
-  setChannel(channel: WSChannel) {
-    if (!this.connection.length) {
-      this.connectionDeferred.resolve();
-    }
-    this.connection.push(channel);
-    const index = this.connection.length - 1;
+  loadProtocol(protocol: TSumiProtocol) {
+    this.protocolRepository.loadProtocol(protocol, {
+      nameConverter: (name) => getMethodName(protocol.name, name),
+    });
+  }
 
-    const rpcProxy = new ProxyLegacy(this.serviceMethodMap, this.logger);
-    const connection = channel.createMessageConnection();
-    rpcProxy.listen(connection);
+  setSumiConnection(connection: SumiConnection) {
+    if (this.invokers.length === 0) {
+      this.deferred.resolve();
+    }
+
+    const index = this.invokers.length - 1;
 
     const invoker = new Invoker();
 
-    invoker.setLegacyProxy(rpcProxy);
+    const sumiProxy = new ProxySumi(this.registry, this.logger);
+    invoker.attachSumi(sumiProxy);
+    sumiProxy.listen(connection);
 
     this.invokers.push(invoker);
 
     return {
       dispose: () => {
-        this.connection.splice(index, 1);
         this.invokers.splice(index, 1);
-        connection.dispose();
+        invoker.dispose();
+      },
+    };
+  }
+
+  setConnection(connection: MessageConnection) {
+    if (this.invokers.length === 0) {
+      this.deferred.resolve();
+    }
+
+    const index = this.invokers.length - 1;
+
+    const invoker = new Invoker();
+
+    const legacyProxy = new ProxyLegacy(this.registry, this.logger);
+    legacyProxy.listen(connection);
+
+    invoker.attachLegacy(legacyProxy);
+
+    this.invokers.push(invoker);
+
+    return {
+      dispose: () => {
+        this.invokers.splice(index, 1);
+        invoker.dispose();
       },
     };
   }
 
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
-    const name = getMethodName(serviceName, _name);
-    if (!this.connection.length) {
-      this.serviceMethodMap[name] = method;
-    } else {
-      this.invokers.forEach((proxy) => {
-        proxy.legacyProxy.listenService({ [name]: method });
-      });
-    }
+    this.registry.register(getMethodName(serviceName, _name), method);
+  }
+
+  onRequestService(serviceName: string, service: any) {
+    this.registry.registerService(service, {
+      nameConverter: (name) => getMethodName(serviceName, name),
+    });
   }
 
   async broadcast(serviceName: string, _name: string, ...args: any[]): Promise<any> {
+    await this.ready();
+
     const name = getMethodName(serviceName, _name);
     const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
 
@@ -117,8 +127,8 @@ export class RPCServiceCenter {
     }
 
     // FIXME: this is an unreasonable design, if remote service only returned doubtful result, we will return an empty array.
-    //        but actually we should throw an error to tell user that no remote service can handle this call.
-    //        or just return `undefined`.
+    // but actually we should throw an error to tell user that no remote service can handle this call.
+    // or just return `undefined`.
     return result.length === 1 ? result[0] : result;
   }
 }

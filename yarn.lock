@@ -2162,10 +2162,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/events@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@opensumi/events@npm:0.1.0"
-  checksum: d77e20857879ec77c8a98742bbeea465a0d903fc7d11b5c93d02ebbfd0ee3abd3b840ebfbb379592c03fd816d8399f720131def46d2c2d45015617cfb4ed18b0
+"@opensumi/events@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@opensumi/events@npm:1.0.0"
+  checksum: e9c83596e02b3eee7f3385b397771c1d2ea7075650d7f7c6b9e8dd38f4e6dcf9f132a87f54bf4651b7a7b4838fce7c377dfd4f852e417d0f1f4b1ca27c73da0c
   languageName: node
   linkType: hard
 
@@ -2258,7 +2258,7 @@ __metadata:
   resolution: "@opensumi/ide-connection@workspace:packages/connection"
   dependencies:
     "@furyjs/fury": 0.5.6-beta
-    "@opensumi/events": ^0.1.0
+    "@opensumi/events": ^1.0.0
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"

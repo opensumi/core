@@ -2,16 +2,14 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { getDebugLogger } from '@opensumi/ide-core-common';
 
 import {
-  IExtHostConnectionService,
-  IMainThreadConnection,
+  IInterProcessConnectionService,
+  IInterProcessConnection,
   ExtensionConnection,
   MainThreadAPIIdentifier,
-  ExtensionMessageReader,
-  ExtensionMessageWriter,
 } from '../../../common/vscode';
 
-export class ExtHostConnection implements IExtHostConnectionService {
-  private proxy: IMainThreadConnection;
+export class ExtHostConnection implements IInterProcessConnectionService {
+  private proxy: IInterProcessConnection;
   private connections = new Map<string, ExtensionConnection>();
 
   private readonly debug = getDebugLogger();
@@ -27,7 +25,7 @@ export class ExtHostConnection implements IExtHostConnectionService {
    */
   async $sendMessage(id: string, message: string): Promise<void> {
     if (this.connections.has(id)) {
-      this.connections.get(id)?.reader.readMessage(message);
+      this.connections.get(id)?.readMessage(message);
     }
   }
 
@@ -72,9 +70,7 @@ export class ExtHostConnection implements IExtHostConnectionService {
    * @param id
    */
   protected async doCreateConnection(id: string): Promise<ExtensionConnection> {
-    const reader = new ExtensionMessageReader();
-    const writer = new ExtensionMessageWriter(id, this.proxy);
-    return new ExtensionConnection(reader, writer, () => {
+    return new ExtensionConnection(id, this.proxy, () => {
       this.connections.delete(id);
       this.proxy.$deleteConnection(id);
     });

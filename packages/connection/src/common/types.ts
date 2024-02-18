@@ -5,7 +5,7 @@ export interface ILogger {
 }
 
 export type RPCServiceMethod = (...args: any[]) => any;
-export type IRPCServiceMap = Record<string, RPCServiceMethod>;
+export type IRPCServiceMap = Record<PropertyKey, RPCServiceMethod>;
 
 export enum ServiceType {
   Service,

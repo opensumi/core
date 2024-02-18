@@ -1,4 +1,4 @@
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { IWindowInfo } from '@opensumi/ide-extension/lib/common/sumi/window';
 import { ExtHostIDEWindow, ExtIDEWebviewWindow } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.window';
 import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.window';

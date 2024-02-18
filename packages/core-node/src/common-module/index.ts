@@ -1,4 +1,5 @@
 import { Injectable } from '@opensumi/di';
+import { CommonServerProtocol } from '@opensumi/ide-connection/lib/common/protocols/common-server';
 import {
   ICommonServer,
   CommonServerPath,
@@ -36,6 +37,7 @@ export class ServerCommonModule extends NodeModule {
     {
       servicePath: CommonServerPath,
       token: ICommonServer,
+      protocol: CommonServerProtocol,
     },
     {
       servicePath: KeytarServicePath,

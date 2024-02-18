@@ -1,4 +1,4 @@
-import { Buffers, copy } from '../../src/common/connection/buffers';
+import { Buffers, copy } from '../../src/common/buffers/buffers';
 
 describe('Buffers', () => {
   it('can push and slice', () => {
@@ -232,21 +232,21 @@ describe('Buffers', () => {
     expect(cursor.lineOffset).toEqual(1);
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
 
-    cursor.move(1);
+    cursor.skip(1);
     expect(cursor.offset).toEqual(6);
     expect(cursor.value).toEqual(list.get(cursor.offset));
     expect(cursor.line).toEqual(1);
     expect(cursor.lineOffset).toEqual(2);
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
 
-    cursor.move(2);
+    cursor.skip(2);
     expect(cursor.offset).toEqual(8);
     expect(cursor.value).toEqual(list.get(cursor.offset));
     expect(cursor.line).toEqual(1);
     expect(cursor.lineOffset).toEqual(4);
     expect(list.pos(cursor.offset)).toEqual({ buf: cursor.line, offset: cursor.lineOffset });
 
-    cursor.move(3);
+    cursor.skip(3);
     expect(cursor.offset).toEqual(11);
     expect(cursor.value).toEqual(list.get(cursor.offset));
     expect(cursor.line).toEqual(2);

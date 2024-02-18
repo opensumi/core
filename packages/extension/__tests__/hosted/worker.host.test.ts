@@ -1,22 +1,15 @@
 import { Injector } from '@opensumi/di';
 import { ProxyIdentifier } from '@opensumi/ide-connection';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
-import { Deferred, DefaultReporter, IReporter } from '@opensumi/ide-core-common';
+import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
+import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
 
 import { MainThreadExtensionLog } from '../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../__mocks__/api/mathread.storage';
 import { mockExtensionProps, mockExtensionProps2 } from '../../__mocks__/extensions';
-import { initMockRPCProtocol } from '../../__mocks__/initRPCProtocol';
+import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import { MockWorker, MessagePort, MessageChannel, mockFetch } from '../../__mocks__/worker';
 import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
-
-const enum MessageType {
-  Request = 1,
-  Reply = 2,
-  ReplyErr = 3,
-  Cancel = 4,
-}
 
 (global as any).self = global;
 (global as any).fetch = mockFetch;
@@ -26,32 +19,7 @@ const enum MessageType {
 
 describe('Extension Worker Thread Test Suites', () => {
   let extHostImpl: ExtensionWorkerHost;
-  let rpcProtocol: RPCProtocol;
-
-  const proxyMaps = new Map();
-  proxyMaps.set('MainThreadExtensionService', new MainThreadExtensionService());
-  proxyMaps.set('MainThreadStorage', new MainThreadStorage());
-  proxyMaps.set('MainThreadExtensionLog', new MainThreadExtensionLog());
-
-  const handler = new Deferred<(msg) => any>();
-  const fn = handler.promise;
-  const mockClient = {
-    send: async (msg) => {
-      const message = JSON.parse(msg);
-      const proxy = proxyMaps.get(message.proxyId);
-      if (proxy) {
-        const result = await proxy[message.method](...message.args);
-        if (await fn) {
-          const raw = `{"type": ${MessageType.Reply}, "id": "${message.id}", "res": ${JSON.stringify(result || '')}}`;
-          (await fn)(raw);
-        }
-      } else {
-        // eslint-disable-next-line no-console
-        console.log(`lost proxy ${message.proxyId} - ${message.method}`);
-      }
-    },
-    onMessage: (fn) => handler.resolve(fn),
-  };
+  let rpcProtocol: SumiConnectionMultiplexer;
 
   beforeAll(async () => {
     const injector = new Injector();
@@ -59,7 +27,14 @@ describe('Extension Worker Thread Test Suites', () => {
       token: IReporter,
       useValue: new DefaultReporter(),
     });
-    rpcProtocol = await initMockRPCProtocol(mockClient);
+
+    const { rpcProtocolExt, rpcProtocolMain } = await createMockPairRPCProtocol();
+
+    rpcProtocolExt.set(ProxyIdentifier.for('MainThreadExtensionService'), new MainThreadExtensionService());
+    rpcProtocolExt.set(ProxyIdentifier.for('MainThreadStorage'), new MainThreadStorage());
+    rpcProtocolExt.set(ProxyIdentifier.for('MainThreadExtensionLog'), new MainThreadExtensionLog());
+
+    rpcProtocol = rpcProtocolMain;
     extHostImpl = new ExtensionWorkerHost(rpcProtocol, injector);
   });
 

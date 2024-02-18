@@ -1,5 +1,5 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { IWebSocket } from '@opensumi/ide-connection';
+import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   Event,
   Emitter,
@@ -52,7 +52,7 @@ export class DebugSessionConnection implements IDisposable {
   protected readonly manager: DebugSessionManager;
 
   protected readonly pendingRequests = new Map<number, (response: DebugProtocol.Response) => void>();
-  protected readonly connection: Promise<IWebSocket>;
+  protected readonly connection: Promise<BaseConnection<string>>;
 
   protected readonly requestHandlers = new Map<string, DebugRequestHandler>();
 
@@ -67,7 +67,7 @@ export class DebugSessionConnection implements IDisposable {
 
   constructor(
     @Optional() readonly sessionId: string,
-    @Optional() protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
+    @Optional() protected readonly connectionFactory: (sessionId: string) => Promise<BaseConnection<string>>,
     @Optional() protected readonly traceOutputChannel: OutputChannel | undefined,
   ) {
     this.connection = this.createConnection();
@@ -82,15 +82,14 @@ export class DebugSessionConnection implements IDisposable {
   }
 
   /**
-   * 通过 Connection 模块创建可与 Node 进程通信的链接
-   * @returns IWebSocket
+   * Create a connection that can communicate with the Node process through the Connection module.
    */
-  protected async createConnection(): Promise<IWebSocket> {
+  protected async createConnection(): Promise<BaseConnection<string>> {
     if (this.disposed) {
       throw new Error('Connection has been already disposed.');
     } else {
       const connection = await this.connectionFactory(this.sessionId);
-      connection.onClose((code, reason) => {
+      connection.onceClose((code, reason) => {
         this.fire('exited', { code, reason });
       });
 
@@ -98,7 +97,7 @@ export class DebugSessionConnection implements IDisposable {
 
       this.toDispose.push(
         Disposable.create(() => {
-          connection.close();
+          connection.dispose();
         }),
       );
       return connection;

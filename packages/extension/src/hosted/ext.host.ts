@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Injector } from '@opensumi/di';
-import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
+import { SumiConnectionMultiplexer, ProxyIdentifier } from '@opensumi/ide-connection';
 import {
   Emitter,
   IReporterService,
@@ -63,12 +63,20 @@ abstract class ApiImplFactory {
   private apiFactory: any;
   private extAPIImpl: Map<string, any>;
 
-  constructor(readonly rpcProtocol: RPCProtocol, readonly extHost: IExtensionHostService, readonly injector: Injector) {
+  constructor(
+    readonly rpcProtocol: SumiConnectionMultiplexer,
+    readonly extHost: IExtensionHostService,
+    readonly injector: Injector,
+  ) {
     this.apiFactory = this.createAPIFactory(rpcProtocol, extHost, injector);
     this.extAPIImpl = new Map();
   }
 
-  abstract createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector): any;
+  abstract createAPIFactory(
+    rpcProtocol: SumiConnectionMultiplexer,
+    extHost: IExtensionHostService,
+    injector: Injector,
+  ): any;
 
   public load(extension: IExtensionDescription | undefined, addonImpl?: any) {
     if (!extension) {
@@ -94,26 +102,34 @@ abstract class ApiImplFactory {
 }
 
 class VSCodeAPIImpl extends ApiImplFactory {
-  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
+  override createAPIFactory(
+    rpcProtocol: SumiConnectionMultiplexer,
+    extHost: IExtensionHostService,
+    injector: Injector,
+  ) {
     return createVSCodeAPIFactory(rpcProtocol, extHost, injector.get(AppConfig));
   }
 }
 
 class OpenSumiAPIImpl extends ApiImplFactory {
-  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService, injector: Injector) {
+  override createAPIFactory(
+    rpcProtocol: SumiConnectionMultiplexer,
+    extHost: IExtensionHostService,
+    injector: Injector,
+  ) {
     return createSumiAPIFactory(rpcProtocol, extHost, 'node', injector.get(IReporter));
   }
 }
 
 class TelemetryAPIImpl extends ApiImplFactory {
-  override createAPIFactory(rpcProtocol: RPCProtocol, extHost: IExtensionHostService) {
+  override createAPIFactory(rpcProtocol: SumiConnectionMultiplexer, extHost: IExtensionHostService) {
     return createTelemetryAPIFactory(rpcProtocol, extHost, 'node');
   }
 }
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private extensions: IExtensionDescription[];
-  private rpcProtocol: RPCProtocol;
+  private rpcProtocol: SumiConnectionMultiplexer;
 
   public extensionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
@@ -130,7 +146,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   private extensionErrors = new WeakMap<Error, IExtensionDescription | undefined>();
 
-  constructor(rpcProtocol: RPCProtocol, public logger: IExtensionLogger, injector: Injector) {
+  constructor(rpcProtocol: SumiConnectionMultiplexer, public logger: IExtensionLogger, injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);

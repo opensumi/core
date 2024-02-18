@@ -11,6 +11,7 @@ let extHostProxy: ExtHostProxy;
 
 // KTLOG_SHOW_DEBUG=1 yarn jest packages/extension/__tests__/node/extension.host.proxy.manager.test.ts --detectOpenHandles
 extensionHostManagerTester({
+  name: 'ext host proxy manager',
   providers: [
     {
       token: IExtensionHostManager,

@@ -1,5 +1,6 @@
 export * from './message';
-export * from './proxy';
+export * from './rpc-service/proxy';
+export * from './rpc/multiplexer';
 export * from './ext-rpc-protocol';
 export * from './utils';
 export * from './ws-channel';

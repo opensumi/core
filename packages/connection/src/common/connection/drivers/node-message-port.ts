@@ -30,4 +30,7 @@ export class NodeMessagePortConnection extends BaseConnection<Uint8Array> {
       },
     };
   }
+  dispose(): void {
+    this.port.removeAllListeners();
+  }
 }

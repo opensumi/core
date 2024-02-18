@@ -16,7 +16,7 @@ import { ISumiExtHostWebviews } from '../sumi/webview';
 import { IExtHostAuthentication, IMainThreadAuthentication } from './authentication';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IExtHostComments, IMainThreadComments } from './comments';
-import { IExtHostConnection, IMainThreadConnection } from './connection';
+import { IInterProcessConnection } from './connection';
 import { IExtHostDebug, IMainThreadDebug } from './debug';
 import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
@@ -91,7 +91,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadWindowState: createMainContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
   MainThreadDecorations: createMainContextProxyIdentifier<IMainThreadDecorationsShape>('MainThreadDecorations'),
   MainThreadDebug: createMainContextProxyIdentifier<IMainThreadDebug>('MainThreadDebug'),
-  MainThreadConnection: createMainContextProxyIdentifier<IMainThreadConnection>('MainThreadConnection'),
+  MainThreadConnection: createMainContextProxyIdentifier<IInterProcessConnection>('MainThreadConnection'),
   MainThreadTerminal: createMainContextProxyIdentifier<IMainThreadTerminal>('MainThreadTerminal'),
   MainThreadWindow: createMainContextProxyIdentifier<IMainThreadWindow>('MainThreadWindow'),
   MainThreadProgress: createMainContextProxyIdentifier<IMainThreadProgress>('MainThreadProgress'),
@@ -133,7 +133,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostWindowState: createExtHostContextProxyIdentifier<IExtHostWindowState>('ExtHostWindowState'),
   ExtHostDecorations: createExtHostContextProxyIdentifier<IExtHostDecorationsShape>('ExtHostDecorations'),
   ExtHostDebug: createExtHostContextProxyIdentifier<IExtHostDebug>('ExtHostDebug'),
-  ExtHostConnection: createExtHostContextProxyIdentifier<IExtHostConnection>('ExtHostConnection'),
+  ExtHostConnection: createExtHostContextProxyIdentifier<IInterProcessConnection>('ExtHostConnection'),
   ExtHostTerminal: createExtHostContextProxyIdentifier<IExtHostTerminal>('ExtHostTerminal'),
   ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostWindow>('ExtHostWindow'),
   ExtHostProgress: createExtHostContextProxyIdentifier<IExtHostProgress>('ExtHostProgress'),
@@ -183,8 +183,6 @@ export * from './treeview';
 export * from './debug';
 export * from './extension';
 export * from './connection';
-export * from './extension-message-reader';
-export * from './extension-message-writer';
 export * from './terminal';
 export * from './progress';
 export * from './tasks';

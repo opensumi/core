@@ -19,7 +19,7 @@ import type {
   TestRunResult,
 } from 'vscode';
 
-import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
+import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { getDebugLogger } from '@opensumi/ide-core-common';
 import {
   CancellationToken,

@@ -10,7 +10,7 @@ import { PtyServiceManagerToken } from '../../src/node/pty.manager';
 import { PtyServiceManagerRemote } from '../../src/node/pty.manager.remote';
 import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
-// 使用Remote模式（非Local模式）来测试PtyService
+// use remote mode to test PtyService
 describe('PtyService function should be valid', () => {
   jest.setTimeout(20000);
 

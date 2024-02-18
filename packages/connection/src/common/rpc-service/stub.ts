@@ -1,5 +1,4 @@
 import { RPCServiceMethod, ServiceType } from '../types';
-import { getServiceMethods } from '../utils';
 
 import { RPCServiceCenter } from './center';
 
@@ -8,19 +7,12 @@ export class RPCServiceStub {
     this.center.registerService(serviceName, this.type);
   }
 
-  async ready() {
-    return this.center.ready();
-  }
-
   on(name: string, method: RPCServiceMethod) {
     this.onRequest(name, method);
   }
 
   onRequestService(service: any) {
-    const methods = getServiceMethods(service);
-    for (const method of methods) {
-      this.onRequest(method, service[method].bind(service));
-    }
+    this.center.onRequestService(this.serviceName, service);
   }
 
   onRequest(name: string, method: RPCServiceMethod) {
@@ -38,9 +30,10 @@ export class RPCServiceStub {
         if (!target[prop]) {
           if (typeof prop === 'symbol') {
             return Promise.resolve();
-          } else {
-            return (...args: any[]) => this.ready().then(() => this.broadcast(prop, ...args));
           }
+
+          target[prop] = (...args: any[]) => this.broadcast(prop, ...args);
+          return target[prop];
         } else {
           return target[prop];
         }

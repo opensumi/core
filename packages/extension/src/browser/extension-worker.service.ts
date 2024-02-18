@@ -1,7 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
-import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/ext-rpc-protocol';
-import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
+import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
+import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
+import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
 import { Disposable, IDisposable, toDisposable, path } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
@@ -146,7 +147,7 @@ export class WorkerExtProcessService
 
     return new Promise((resolve, reject) => {
       const ready = new Deferred<MessagePort>();
-      const onMessageEmitter = new Emitter<any>();
+
       if (this.appConfig.useIframeWrapWorkerHost) {
         const { iframe, extHostUuid } = startInsideIframe(workerUrl);
         window.addEventListener('message', (event) => {
@@ -165,7 +166,7 @@ export class WorkerExtProcessService
         });
 
         ready.promise.then((port) => {
-          resolve(this.createProtocol(port, onMessageEmitter));
+          resolve(this.createProtocol(port));
         });
       } else {
         try {
@@ -184,7 +185,7 @@ export class WorkerExtProcessService
           };
 
           ready.promise.then((port) => {
-            resolve(this.createProtocol(port, onMessageEmitter));
+            resolve(this.createProtocol(port));
           });
         } catch (err) {
           reject(err);
@@ -193,20 +194,13 @@ export class WorkerExtProcessService
     });
   }
 
-  private createProtocol(port: MessagePort, emitter: Emitter<string>) {
-    const onMessage = emitter.event;
-    const protocol = new RPCProtocol(
-      {
-        onMessage,
-        send: port.postMessage.bind(port),
-        timeout: this.appConfig.rpcMessageTimeout,
-      },
-      this.logger,
-    );
+  private createProtocol(port: MessagePort) {
+    const msgPortConnection = new MessagePortConnection(port);
 
-    port.onmessage = (event) => {
-      emitter.fire(event.data);
-    };
+    const protocol = new SumiConnectionMultiplexer(msgPortConnection, {
+      timeout: this.appConfig.rpcMessageTimeout,
+    });
+
     this.logger.log('[Worker Host] web worker extension host ready');
     return protocol;
   }

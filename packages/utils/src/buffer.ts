@@ -2,14 +2,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/arrays.ts
 
 import { toCanonicalName, iconvDecode, UTF8 } from './encoding';
 import * as strings from './strings';
 
 let textEncoder: TextEncoder | null;
 
-const hasBuffer = typeof Buffer !== 'undefined';
+const isInNodeEnv =
+  typeof process !== 'undefined' &&
+  typeof process.versions !== 'undefined' &&
+  typeof process.versions.node !== 'undefined';
+
+const hasBuffer = isInNodeEnv && typeof Buffer !== 'undefined';
 const hasTextEncoder = typeof TextEncoder !== 'undefined';
 const hasTextDecoder = typeof TextDecoder !== 'undefined';
 
@@ -72,7 +76,7 @@ export class BinaryBuffer {
 
   private constructor(buffer: Uint8Array) {
     this.buffer = buffer;
-    this.byteLength = this.buffer.byteLength;
+    this.byteLength = buffer.byteLength;
   }
 
   /**
@@ -95,10 +99,7 @@ export class BinaryBuffer {
   }
 
   slice(start?: number, end?: number): BinaryBuffer {
-    // IMPORTANT: use subarray instead of slice because TypedArray#slice
-    // creates shallow copy and NodeBuffer#slice doesn't. The use of subarray
-    // ensures the same, performant, behaviour.
-    return new BinaryBuffer(this.buffer.subarray(start! /* bad lib.d.ts*/, end));
+    return new BinaryBuffer(this.buffer.subarray(start, end));
   }
 
   set(array: BinaryBuffer | Uint8Array, offset?: number): void {

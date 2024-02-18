@@ -2,18 +2,15 @@ import {
   CancellationToken,
   CancellationTokenSource,
   Deferred,
-  Emitter,
   Event,
   SerializedError,
+  // Uri: vscode 中的 uri
+  // URI: 在 vscode 中的 uri 基础上包装了一些基础方法
   Uri,
   transformErrorForSerialization,
 } from '@opensumi/ide-core-common';
 
-import { ILogger } from './types';
-import { WSChannel } from './ws-channel';
-
-// Uri: vscode 中的 uri
-// URI: 在 vscode 中的 uri 基础上包装了一些基础方法
+import { IRPCProtocol, ProxyIdentifier } from './rpc/multiplexer';
 
 export enum RPCProtocolEnv {
   MAIN,
@@ -25,16 +22,7 @@ export interface IProxyIdentifier {
   countId: number;
 }
 
-export class ProxyIdentifier<T = any> {
-  public static count = 0;
-
-  public readonly serviceId: string;
-  public readonly countId: number;
-  constructor(serviceId: string) {
-    this.serviceId = serviceId;
-    this.countId = ++ProxyIdentifier.count;
-  }
-}
+export { ProxyIdentifier, IRPCProtocol } from './rpc/multiplexer';
 
 export function createExtHostContextProxyIdentifier<T>(serviceId: string): ProxyIdentifier<T> {
   const identifier = new ProxyIdentifier<T>(serviceId);
@@ -44,8 +32,9 @@ export function createMainContextProxyIdentifier<T>(identifier: string): ProxyId
   const result = new ProxyIdentifier<T>(identifier);
   return result;
 }
+
 export interface IMessagePassingProtocol {
-  send(msg: string): void;
+  send(msg): void;
   onMessage: Event<string>;
   timeout?: number;
 }
@@ -180,19 +169,15 @@ export class MessageIO {
   }
 }
 
-export const IRPCProtocol = Symbol('IRPCProtocol');
-export interface IRPCProtocol {
-  getProxy<T>(proxyId: ProxyIdentifier<T>): T;
-  set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
-  get<T>(identifier: ProxyIdentifier<T>): T;
-}
-
 function canceled(): Error {
   const error = new Error('Canceled');
   error.name = error.message;
   return error;
 }
 
+/**
+ * @deprecated Please use `SumiConnectionMultiplexer` instead.
+ */
 export class RPCProtocol implements IRPCProtocol {
   private readonly _protocol: IMessagePassingProtocol;
   private readonly _locals: Map<string, any>;
@@ -201,9 +186,9 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _timeoutHandles: Map<string, NodeJS.Timeout | number>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
-  private logger: ILogger;
+  private logger;
 
-  constructor(connection: IMessagePassingProtocol, logger?: ILogger) {
+  constructor(connection: IMessagePassingProtocol, logger?: any) {
     this._protocol = connection;
     this._locals = new Map();
     this._proxies = new Map();
@@ -213,6 +198,9 @@ export class RPCProtocol implements IRPCProtocol {
 
     this._lastMessageId = 0;
     this.logger = logger || console;
+    this.logger.error(
+      "You are using the deprecated 'RPCProtocol' class. Please use the new 'SumiConnectionMultiplexer'",
+    );
     this._protocol.onMessage((msg) => this._receiveOneMessage(msg));
   }
 
@@ -279,8 +267,8 @@ export class RPCProtocol implements IRPCProtocol {
     return result.promise;
   }
 
-  private _receiveOneMessage(rawMsg: string): void {
-    const msg = JSON.parse(rawMsg, ObjectTransfer.reviver);
+  private _receiveOneMessage(rawmsg: string): void {
+    const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
 
     if (this._timeoutHandles.has(msg.id)) {
       // 忽略一些 jest 测试场景 clearTimeout not defined 的问题
@@ -401,27 +389,4 @@ export class RPCProtocol implements IRPCProtocol {
 
     pendingReply.reject(new Error('RPC Timeout: ' + callId));
   }
-}
-
-interface RPCProtocolCreateOptions {
-  timeout?: number;
-}
-
-export function createRPCProtocol(channel: WSChannel, options: RPCProtocolCreateOptions = {}): RPCProtocol {
-  const onMessageEmitter = new Emitter<string>();
-  channel.onMessage((msg: string) => {
-    onMessageEmitter.fire(msg);
-  });
-
-  const onMessage = onMessageEmitter.event;
-  const send = (msg: string) => {
-    channel.send(msg);
-  };
-
-  const mainThreadProtocol = new RPCProtocol({
-    onMessage,
-    send,
-    timeout: options.timeout,
-  });
-  return mainThreadProtocol;
 }

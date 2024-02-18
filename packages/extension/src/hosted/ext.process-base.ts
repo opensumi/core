@@ -3,7 +3,8 @@ import { performance } from 'perf_hooks';
 import Stream from 'stream';
 
 import { ConstructorOf, Injector } from '@opensumi/di';
-import { WSChannel, createRPCProtocol } from '@opensumi/ide-connection';
+import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   Emitter,
   ReporterProcessMessage,
@@ -83,13 +84,10 @@ async function initRPCProtocol(extInjector: Injector): Promise<any> {
   logger.log('init rpc protocol for ext connection path', extConnection);
 
   const socket = net.createConnection(JSON.parse(extConnection));
-  const channel = WSChannel.forNetSocket(socket, {
-    id: 'ExtProcessBaseRPCProtocol',
-  });
 
   const appConfig = extInjector.get(AppConfig);
 
-  const extProtocol = createRPCProtocol(channel, {
+  const extProtocol = new SumiConnectionMultiplexer(new NetSocketConnection(socket), {
     timeout: appConfig.rpcMessageTimeout,
   });
 

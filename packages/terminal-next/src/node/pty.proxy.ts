@@ -5,8 +5,8 @@ import { promisify } from 'util';
 
 import * as pty from 'node-pty';
 
-import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
 import { isMacintosh, isLinux } from '@opensumi/ide-utils/lib/platform';
 
@@ -302,13 +302,10 @@ export class PtyServiceProxyRPCProvider {
   }
 
   private setProxyConnection(socket: net.Socket) {
-    const connection = new NetSocketConnection(socket);
-    const channel = WSChannel.forClient(connection, {
-      id: 'pty',
+    const connection = SumiConnection.forNetSocket(socket, {
       logger: this.logger,
     });
-
-    const remove = this.ptyServiceCenter.setChannel(channel);
+    const remove = this.ptyServiceCenter.setSumiConnection(connection);
     socket.on('close', () => {
       remove.dispose();
     });

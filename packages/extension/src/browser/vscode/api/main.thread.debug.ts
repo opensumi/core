@@ -30,8 +30,7 @@ import {
   IMainThreadDebug,
   ExtHostAPIIdentifier,
   IExtHostDebug,
-  ExtensionWSChannel,
-  IMainThreadConnectionService,
+  IInterProcessConnectionService,
   IStartDebuggingOptions,
 } from '../../../common/vscode';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
@@ -104,7 +103,7 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   constructor(
     @Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol,
-    @Optional(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
+    @Optional(IInterProcessConnectionService) private mainThreadConnection: IInterProcessConnectionService,
   ) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
     this.listen();
@@ -216,10 +215,7 @@ export class MainThreadDebug implements IMainThreadDebug {
       this.labelService,
       this.messageService,
       this.debugPreferences,
-      async (sessionId: string) => {
-        const connection = await this.mainThreadConnection.ensureConnection(sessionId);
-        return new ExtensionWSChannel(connection);
-      },
+      async (sessionId: string) => await this.mainThreadConnection.ensureConnection(sessionId),
       this.fileService,
       terminalOptionsExt,
       this.debugPreferences,

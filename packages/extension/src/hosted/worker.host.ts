@@ -1,5 +1,6 @@
 import { Injector } from '@opensumi/di';
-import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
+import { SumiConnectionMultiplexer, ProxyIdentifier } from '@opensumi/ide-connection';
+import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import {
   Emitter,
   Deferred,
@@ -29,22 +30,13 @@ import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 
 export function initRPCProtocol() {
-  const onMessageEmitter = new Emitter<string>();
   const channel = new MessageChannel();
 
   self.postMessage(channel.port2, [channel.port2]);
 
-  channel.port1.onmessage = (e) => {
-    onMessageEmitter.fire(e.data);
-  };
-  const onMessage = onMessageEmitter.event;
+  const msgPortConnection = new MessagePortConnection(channel.port1);
 
-  const extProtocol = new RPCProtocol({
-    onMessage,
-    send: (data) => {
-      channel.port1.postMessage(data);
-    },
-  });
+  const extProtocol = new SumiConnectionMultiplexer(msgPortConnection);
 
   return extProtocol;
 }
@@ -73,7 +65,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private reporterService: IReporterService;
 
-  constructor(private rpcProtocol: RPCProtocol, private injector: Injector) {
+  constructor(private rpcProtocol: SumiConnectionMultiplexer, private injector: Injector) {
     const reporter = this.injector.get(IReporter);
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);

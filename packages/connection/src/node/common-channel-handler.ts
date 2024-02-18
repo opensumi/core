@@ -161,7 +161,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             const { id } = msgObj;
             const channel = this.channelMap.get(id);
             if (channel) {
-              channel.handleMessage(msgObj);
+              channel.dispatchChannelMessage(msgObj);
             } else {
               this.logger.warn(`The channel(${id}) was not found`);
             }

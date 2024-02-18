@@ -1,8 +1,8 @@
 import net, { SocketConnectOpts } from 'net';
 
 import { Injectable, Optional } from '@opensumi/di';
-import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-connection';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import {
@@ -50,12 +50,10 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
       },
     });
 
-    const socketConnection = new NetSocketConnection(socket);
-    const channel = WSChannel.forClient(socketConnection, {
-      id: 'pty-manager-remote',
+    const connection = SumiConnection.forNetSocket(socket, {
       logger: this.logger,
     });
-    const remove = clientCenter.setChannel(channel);
+    const remove = clientCenter.setSumiConnection(connection);
     return Disposable.create(() => {
       callbackDisposed = true;
       remove.dispose();
@@ -99,7 +97,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     }
   }
 
-  protected initLocal() {
+  override initLocal() {
     // override 空置父类的方法，因为不需要LocalInit，使用RemoteInit替代
   }
 }

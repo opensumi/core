@@ -1,5 +1,5 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { createRPCProtocol, IRPCProtocol, WSChannel } from '@opensumi/ide-connection';
+import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
@@ -166,9 +166,10 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
     }
 
-    const mainThreadProtocol = createRPCProtocol(channel, {
+    const mainThreadProtocol = new SumiConnectionMultiplexer(channel.createConnection(), {
       timeout: this.appConfig.rpcMessageTimeout,
     });
+
     // 重启/重连时直接覆盖前一个连接
     return mainThreadProtocol;
   }
