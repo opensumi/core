@@ -31,8 +31,7 @@ export function ToolbarActionBasedLayout() {
           backgroundColor={colors.sideBarBackground}
           slot='left'
           isTabbar={true}
-          // 这里初始状态下会激活左侧第一个 Tab，因此默认宽度应该为侧边栏 (49px)+ 侧边面板宽度 (261px)
-          defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 310}
+          defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
           minResize={280}
           maxResize={480}
           minSize={49}
