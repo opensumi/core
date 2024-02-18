@@ -58,11 +58,12 @@ const CONTAINER_NAME_MAP = {
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
   @observable
-  currentContainerId = '';
+  // currentContainerId 默认值应该为一个非空且唯一的字符串，避免在切换容器时触发 MobX 不变错误
+  currentContainerId = '__NONE__';
 
   previousContainerId = '';
 
-  // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
+  // 由于 observable.map （即使是deep:false) 会把值转换成 observableValue，不希望这样
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
 
   @observable
