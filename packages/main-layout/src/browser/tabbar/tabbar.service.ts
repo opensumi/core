@@ -63,7 +63,6 @@ export class TabbarService extends WithEventBus {
 
   previousContainerId = '';
 
-  // 由于 observable.map （即使是deep:false) 会把值转换成 observableValue，不希望这样
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
 
   @observable
