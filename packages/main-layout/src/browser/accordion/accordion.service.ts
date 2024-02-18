@@ -102,7 +102,7 @@ export class AccordionService extends WithEventBus {
   views: View[] = observable.array([]);
 
   @observable.shallow
-  state: { [viewId: string]: SectionState } = {};
+  state: { [viewId: string]: SectionState } = observable.object({});
 
   rendered = false;
 
