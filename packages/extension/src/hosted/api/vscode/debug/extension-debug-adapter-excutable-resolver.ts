@@ -1,9 +1,8 @@
-import path from 'path';
-
 import type vscode from 'vscode';
 
 import { isWindows, isOSX } from '@opensumi/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@opensumi/ide-debug';
+import * as path from '@opensumi/ide-utils/lib/path';
 
 import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';
 

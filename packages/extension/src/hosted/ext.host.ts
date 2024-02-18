@@ -1,5 +1,3 @@
-import path from 'path';
-
 import { Injector } from '@opensumi/di';
 import { SumiConnectionMultiplexer, ProxyIdentifier } from '@opensumi/ide-connection';
 import {
@@ -16,6 +14,7 @@ import {
   arrays,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+import * as path from '@opensumi/ide-utils/lib/path';
 
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';

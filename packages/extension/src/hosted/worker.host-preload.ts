@@ -1,7 +1,6 @@
-import path from 'path';
-
 import { Injector } from '@opensumi/di';
 import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
+import * as path from '@opensumi/ide-utils/lib/path';
 
 import { setPerformance } from './api/vscode/language/util';
 import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';

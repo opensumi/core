@@ -1,5 +1,3 @@
-import paths from 'path';
-
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -347,10 +345,10 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
     function dirname(resource: Uri): Uri {
       if (resource.scheme === Schemes.file) {
-        return Uri.file(paths.dirname(resource.fsPath));
+        return Uri.file(path.dirname(resource.fsPath));
       }
       return resource.with({
-        path: paths.dirname(resource.path),
+        path: path.dirname(resource.path),
       });
     }
 
