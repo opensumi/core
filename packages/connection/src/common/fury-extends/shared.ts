@@ -1,7 +1,8 @@
 import Fury from '@furyjs/fury/dist/lib/fury';
+import type { Config } from '@furyjs/fury/dist/lib/type';
 
-export const furyFactory = () => {
-  const fury = Fury({});
+export const furyFactory = (config?: Config) => {
+  const fury = new Fury(config);
   const reader = fury.binaryReader;
   const writer = fury.binaryWriter;
 

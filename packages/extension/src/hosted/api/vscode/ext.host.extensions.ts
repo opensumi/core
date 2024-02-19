@@ -1,8 +1,7 @@
-import path from 'path';
-
 import type vscode from 'vscode';
 
 import { Uri } from '@opensumi/ide-core-common';
+import * as path from '@opensumi/ide-utils/lib/path';
 
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
 import { IExtHostStorage, IExtHostTerminal } from '../../../common/vscode';

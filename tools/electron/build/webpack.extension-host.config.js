@@ -1,6 +1,8 @@
 const path = require('path');
 
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const { ProgressPlugin } = require('webpack');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const distDir = path.join(__dirname, '../app/dist/extension');
@@ -14,6 +16,7 @@ const nodeTarget = {
   output: {
     filename: 'index.js',
     path: distDir,
+    clean: true,
   },
   node: false,
   resolve: {
@@ -76,6 +79,12 @@ const workerTarget = {
         configFile: tsConfigPath,
       }),
     ],
+    fallback: {
+      net: false,
+      path: false,
+      os: false,
+      crypto: false,
+    },
   },
   mode: 'development',
   devtool: 'source-map',
@@ -107,6 +116,12 @@ const workerTarget = {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
   },
+  plugins: [
+    !process.env.CI && new ProgressPlugin(),
+    new NodePolyfillPlugin({
+      includeAliases: ['process', 'Buffer'],
+    }),
+  ].filter(Boolean),
 };
 
 module.exports = [nodeTarget, workerTarget];
