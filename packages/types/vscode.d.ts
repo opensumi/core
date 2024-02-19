@@ -34,6 +34,7 @@
 /// <reference path='./vscode/typings/vscode.proposed.scmSelectedProvider.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.scmHistoryProvider.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.scmValidation.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.scmInputBoxActionButton.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.task.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.terminalDimensions.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.timeline.d.ts' />

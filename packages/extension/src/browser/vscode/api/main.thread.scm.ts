@@ -37,9 +37,12 @@ import {
   SCMGroupFeatures,
   SCMHistoryItemDto,
   SCMHistoryItemGroupDto,
+  SCMInputActionButtonDto,
   SCMProviderFeatures,
   SCMRawResourceSplices,
 } from '../../../common/vscode/scm';
+
+import type vscode from 'vscode';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
   readonly elements: ISCMResource[] = [];
@@ -630,6 +633,16 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     provider.$onDidChangeHistoryProviderCurrentHistoryItemGroup(historyItemGroup);
   }
 
+  $setInputBoxActionButton(sourceControlHandle: number, actionButton?: SCMInputActionButtonDto | null | undefined): void {
+		const repository = this._repositories.get(sourceControlHandle);
+
+		if (!repository) {
+			return;
+		}
+
+		repository.input.actionButton = actionButton ? { ...actionButton, icon: getSCMInputBoxActionButtonIcon(actionButton) } : undefined;
+	}
+
   private onDidChangeSelectedRepositories(repositories: ISCMRepository[]): void {
     const handles = repositories
       .filter((r) => r.provider instanceof MainThreadSCMProvider)
@@ -638,4 +651,15 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     // 跟 SCM 插件进程通信
     this._proxy.$setSelectedSourceControls(handles);
   }
+}
+
+function getSCMInputBoxActionButtonIcon(actionButton: SCMInputActionButtonDto): URI | { light: URI; dark: URI } | vscode.ThemeIcon | undefined {
+	if (!actionButton.icon) {
+		return undefined;
+	} else if (URI.isUri(actionButton.icon)) {
+		return URI.revive(actionButton.icon);
+	} else {
+		const icon = actionButton.icon as { light: UriComponents; dark: UriComponents };
+		return { light: URI.revive(icon.light), dark: URI.revive(icon.dark) };
+	}
 }

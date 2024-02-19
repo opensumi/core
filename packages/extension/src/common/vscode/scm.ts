@@ -92,6 +92,12 @@ export type SCMRawResource = [
   CommandDto | undefined /* command*/,
 ];
 
+export interface SCMInputActionButtonDto {
+	command: CommandDto;
+	icon?: UriComponents | { light: UriComponents; dark: UriComponents } | vscode.ThemeIcon;
+	enabled: boolean;
+}
+
 export type SCMRawResourceSplice = [number /* start */, number /* delete count */, SCMRawResource[]];
 
 export type SCMRawResourceSplices = [number /* handle*/, SCMRawResourceSplice[]];
@@ -169,4 +175,6 @@ export interface IMainThreadSCMShape extends IDisposable {
     sourceControlHandle: number,
     historyItemGroup: SCMHistoryItemGroupDto | undefined,
   ): void;
+
+  $setInputBoxActionButton(sourceControlHandle: number, actionButton?: SCMInputActionButtonDto | null): void;
 }
