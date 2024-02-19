@@ -901,13 +901,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@furyjs/fury@npm:0.5.6-beta":
-  version: 0.5.6-beta
-  resolution: "@furyjs/fury@npm:0.5.6-beta"
+"@furyjs/fury@npm:0.5.7-beta":
+  version: 0.5.7-beta
+  resolution: "@furyjs/fury@npm:0.5.7-beta"
   dependencies:
     node-gyp: ^9.4.0
     tslib: ^2.4.0
-  checksum: 0416f32de95ff21764aabe4622ac62c80a6f7499e4435177fd04aec1512305d9bc3419af986745e4a4edfa71b215b25cea6ad6a5c5b6bbbf93f702d8c08cb025
+  checksum: fff03a4f8a80f863f1fdd3adb532a9243e5464b5638908750b6b30fd7aa0e84f962e936c7bdd4fe92b76736a784bd977da50ddfb3885b40f26e91eafc1199b3e
   languageName: node
   linkType: hard
 
@@ -2257,7 +2257,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-connection@workspace:packages/connection"
   dependencies:
-    "@furyjs/fury": 0.5.6-beta
+    "@furyjs/fury": 0.5.7-beta
     "@opensumi/events": ^1.0.0
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
