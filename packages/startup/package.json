@@ -68,6 +68,7 @@
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-debug": "workspace:*",
     "@opensumi/ide-decoration": "workspace:*",
+    "@opensumi/ide-design": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-explorer": "workspace:*",
     "@opensumi/ide-extension": "workspace:*",

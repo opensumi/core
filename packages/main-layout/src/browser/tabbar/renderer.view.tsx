@@ -83,17 +83,19 @@ export const TabRendererBase: FC<{
 export const RightTabRenderer = ({
   className,
   components,
+  tabbarView,
 }: {
   className: string;
   components: ComponentRegistryInfo[];
+  tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
     side='right'
     direction='right-to-left'
-    id={VIEW_CONTAINERS.RIGHT_TABBAR}
+    id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL}
     className={cls(className, 'right-slot')}
     components={components}
-    TabbarView={RightTabbarRenderer}
+    TabbarView={tabbarView ?? RightTabbarRenderer}
     TabpanelView={RightTabPanelRenderer}
   />
 );
@@ -101,9 +103,11 @@ export const RightTabRenderer = ({
 export const LeftTabRenderer = ({
   className,
   components,
+  tabbarView,
 }: {
   className: string;
   components: ComponentRegistryInfo[];
+  tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
     side='left'
@@ -111,7 +115,7 @@ export const LeftTabRenderer = ({
     id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
     className={cls(className, 'left-slot')}
     components={components}
-    TabbarView={LeftTabbarRenderer}
+    TabbarView={tabbarView ?? LeftTabbarRenderer}
     TabpanelView={LeftTabPanelRenderer}
   />
 );
@@ -119,9 +123,11 @@ export const LeftTabRenderer = ({
 export const BottomTabRenderer = ({
   className,
   components,
+  tabbarView,
 }: {
   className: string;
   components: ComponentRegistryInfo[];
+  tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
     side='bottom'
@@ -129,7 +135,7 @@ export const BottomTabRenderer = ({
     direction='bottom-to-top'
     className={cls(className, 'bottom-slot')}
     components={components}
-    TabbarView={BottomTabbarRenderer}
+    TabbarView={tabbarView ?? BottomTabbarRenderer}
     TabpanelView={BottomTabPanelRenderer}
   />
 );

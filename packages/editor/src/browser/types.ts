@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 import {
   BasicEvent,
   Event,
@@ -482,3 +484,10 @@ export class ResoucesOfActiveComponentChangedEvent extends BasicEvent<{
   component: IEditorComponent;
   resources: IResource[];
 }> {}
+
+export const IEditorTabService = Symbol('IEditorTabService');
+
+export interface IEditorTabService {
+  renderEditorTab(component: ReactNode, isCurrent?: boolean): ReactNode;
+  renderTabCloseComponent(component: ReactNode): ReactNode;
+}

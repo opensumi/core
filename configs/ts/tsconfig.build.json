@@ -176,6 +176,9 @@
     },
     {
       "path": "./references/tsconfig.playwright.json"
+    },
+    {
+      "path": "./references/tsconfig.design.json"
     }
   ]
 }

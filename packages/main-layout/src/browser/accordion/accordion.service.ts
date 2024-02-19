@@ -23,7 +23,7 @@ import {
 import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
   SplitPanelManager,
-  SplitPanelService,
+  ISplitPanelService,
 } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
@@ -91,7 +91,7 @@ export class AccordionService extends WithEventBus {
   @Autowired(ILogger)
   private logger: ILogger;
 
-  protected splitPanelService: SplitPanelService;
+  protected splitPanelService: ISplitPanelService;
 
   // 用于强制显示功能的contextKey
   private forceRevealContextKeys = new Map<string, { when: string; key: IContextKey<boolean> }>();
@@ -134,6 +134,8 @@ export class AccordionService extends WithEventBus {
     super();
     makeObservable(this);
     this.splitPanelService = this.splitPanelManager.getService(containerId);
+    this.addDispose(this.splitPanelService);
+
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithSection', true);
     this.menuRegistry.registerMenuItem(this.menuId, {

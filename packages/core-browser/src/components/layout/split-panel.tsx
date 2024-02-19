@@ -91,20 +91,20 @@ function getElementSize(element: any, totalFlexNum: number) {
   }
 }
 
-export const SplitPanel: React.FC<SplitPanelProps> = ({
-  id,
-  className,
-  resizeHandleClassName,
-  style,
-  children = [],
-  direction = 'left-to-right',
-  resizeKeep = true,
-  flexGrow,
-  dynamicTarget,
-  minResize,
-  useDomSize,
-  ...restProps
-}) => {
+export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
+  const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(props.id);
+
+  const {
+    id,
+    className,
+    resizeHandleClassName,
+    style,
+    children = [],
+    direction = 'left-to-right',
+    resizeKeep = true,
+    dynamicTarget,
+  } = React.useMemo(() => splitPanelService.interceptProps.call(splitPanelService, props), [splitPanelService, splitPanelService.interceptProps, props]);
+
   const ResizeHandle = Layout.getResizeHandle(direction);
   const childList = React.useMemo(() => React.Children.toArray(children), [children]);
 
@@ -116,7 +116,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();
 
-  const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
   const maxLockState = React.useRef(childList.map(() => false));
   const hideState = React.useRef(childList.map(() => false));
   const resizeLockState = React.useRef(maxLockState.current.slice(0, childList.length - 1));
@@ -223,7 +222,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
     [eventBus],
   );
 
-  const elements: React.ReactNodeArray = React.useMemo(
+  const elements: React.ReactNode[] = React.useMemo(
     () =>
       childList
         .map((element, index) => {
@@ -336,14 +335,21 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
     };
   }, []);
 
-  return (
-    <div
-      ref={(ele) => (rootRef.current = ele!)}
-      {...restProps}
-      className={cls(styles['split-panel'], className)}
-      style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
-    >
-      {elements}
-    </div>
-  );
+  const renderSplitPanel = React.useMemo(() => {
+    const { renderSplitPanel } = splitPanelService;
+
+    return renderSplitPanel.call(
+      splitPanelService,
+      <div
+        ref={(ele) => (rootRef.current = ele!)}
+        {...props}
+        className={cls(styles['split-panel'], className)}
+        style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
+      />,
+      elements,
+      props,
+    );
+  }, [splitPanelService, splitPanelService.renderSplitPanel, elements, rootRef, style, props]);
+
+  return renderSplitPanel;
 };

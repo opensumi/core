@@ -67,7 +67,7 @@ export interface IIconService {
     shape?: IconShape,
     fromExtension?: boolean,
   ): string | undefined;
-  registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
+  registerIconThemes(iconThemesContribution: IThemeContribution[], extPath: URI): void;
 
   /**
    * 注册来自插件的字体图标
@@ -75,6 +75,8 @@ export interface IIconService {
   registerFontIcons(definitions: FontIconDefinition[], iconFontFamilies: IconFontFamily[]): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
+
+export const IThemeData = Symbol('IThemeData');
 
 export interface IThemeData extends IStandaloneThemeData {
   name: string;
@@ -84,6 +86,13 @@ export interface IThemeData extends IStandaloneThemeData {
   settings: IRawThemeSetting[];
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: URI): Promise<void>;
+  loadCustomTokens(customTokenColors: ITokenColorizationRule[]): unknown;
+}
+
+export const IThemeStore = Symbol('IThemeStore');
+
+export interface IThemeStore {
+  getThemeData(contribution?: IThemeContribution, basePath?: URI): Promise<IThemeData>;
 }
 
 export interface FontIconDefinition {
@@ -103,7 +112,7 @@ export interface IThemeService {
   currentThemeId: string;
   colorThemeLoaded: Deferred<void>;
   onThemeChange: Event<ITheme>;
-  registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
+  registerThemes(themeContributions: IThemeContribution[], extPath: URI): IDisposable;
   /**
    * 应用主题（外部需要改主题请直接修改preference）
    * @param id 主题ID
@@ -216,7 +225,7 @@ export const VS_LIGHT_THEME_NAME = 'vs';
 export const VS_DARK_THEME_NAME = 'vs-dark';
 export const HC_BLACK_THEME_NAME = 'hc-black';
 export const HC_LIGHT_THEME_NAME = 'hc-light';
-export interface ThemeContribution {
+export interface IThemeContribution {
   id?: string;
   label: string;
   // default to be vs
@@ -344,7 +353,7 @@ export function themeColorFromId(id: ColorIdentifier) {
   return { id };
 }
 
-export function getThemeId(contribution: ThemeContribution) {
+export function getThemeId(contribution: IThemeContribution) {
   if (contribution.id) {
     return contribution.id;
   }
