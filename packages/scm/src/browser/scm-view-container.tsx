@@ -1,17 +1,15 @@
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useRef, useState, FC, useCallback, memo } from 'react';
+import React, { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { AppConfig, ViewState } from '@opensumi/ide-core-browser';
-import { IContextKeyService, View, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, IContextKeyService, View, ViewState, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IContextMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DisposableCollection, localize } from '@opensumi/ide-core-common';
 import { AccordionContainer } from '@opensumi/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
-import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId, SCM_WELCOME_ID } from '../common';
+import { ISCMRepository, SCM_WELCOME_ID, scmContainerId, scmProviderViewId, scmResourceViewId } from '../common';
 
 import { SCMProviderList } from './components/scm-provider-list';
 import { SCMResourceInput } from './components/scm-resource-input';
@@ -226,16 +224,11 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
     return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
   }, [hasMultiRepos, repoViewTitle, selectedRepo, repoList]);
 
-  const PANEL_TITLEBAR_HEIGHT = React.useMemo(
-    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
-    [appConfig.layoutViewSize],
-  );
-
   return (
     <div className={styles.view}>
       <TitleBar
         title={panelTitle}
-        height={PANEL_TITLEBAR_HEIGHT}
+        height={appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}
         menubar={
           !hasMultiRepos && titleMenu ? (
             <InlineMenuBar
@@ -249,7 +242,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
       <AccordionContainer
         views={views}
         containerId={scmContainerId}
-        style={{ height: `calc(100% - ${PANEL_TITLEBAR_HEIGHT}px)` }}
+        style={{ height: `calc(100% - ${appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}px)` }}
       />
     </div>
   );

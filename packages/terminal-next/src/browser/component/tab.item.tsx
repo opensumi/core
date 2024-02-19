@@ -1,12 +1,11 @@
 import cls from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useRef, KeyboardEvent, createElement, useMemo } from 'react';
+import React, { KeyboardEvent, createElement, useEffect, useRef } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { getIcon, useInjectable, URI, localize, TERMINAL_COMMANDS, AppConfig } from '@opensumi/ide-core-browser';
+import { AppConfig, TERMINAL_COMMANDS, URI, getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -47,11 +46,6 @@ export const renderInfoItem = observer((props: ItemProps) => {
     }
   }
 
-  const PANEL_TITLEBAR_HEIGHT = useMemo(
-    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
-    [appConfig.layoutViewSize],
-  );
-
   return (
     <div
       ref={ref}
@@ -59,7 +53,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,
       })}
-      style={{ height: PANEL_TITLEBAR_HEIGHT }}
+      style={{ height: appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT }}
       onClick={() => handleSelect()}
       onContextMenu={(event) => props.onContextMenu && props.onContextMenu(event)}
     >

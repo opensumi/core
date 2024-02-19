@@ -1,26 +1,25 @@
 import { Autowired } from '@opensumi/di';
 import {
   CommandContribution,
-  CommandService,
-  PreferenceSchema,
   CommandRegistry,
-  localize,
+  CommandService,
   Domain,
   Event,
+  PreferenceSchema,
+  localize,
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 
-import { IContextKeyService, IContextKey } from '../context-key';
+import { IContextKey, IContextKeyService } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
-import { LAYOUT_VIEW_SIZE } from '../layout/constants';
-import { MenuContribution, IMenuRegistry } from '../menu/next/base';
+import { IMenuRegistry, MenuContribution } from '../menu/next/base';
 import { MenuId } from '../menu/next/menu-id';
 import { PreferenceContribution } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 
-import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS, TERMINAL_COMMANDS } from './common.command';
+import { COMMON_COMMANDS, EDITOR_COMMANDS, FILE_COMMANDS, TERMINAL_COMMANDS } from './common.command';
 import { ClientAppContribution } from './common.define';
 
 export const inputFocusedContextKey = 'inputFocus';
@@ -52,9 +51,7 @@ export class ClientCommonContribution
     const overridePropertiesDefault = {
       'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
       'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
-      'debug.toolbar.top': this.appConfig.isElectronRenderer
-        ? 0
-        : this.appConfig.layoutViewSize?.MENUBAR_HEIGHT || LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
+      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 0 : this.appConfig.layoutViewSize!.MENUBAR_HEIGHT,
     };
     const keys = Object.keys(this.schema.properties);
     for (const key of keys) {

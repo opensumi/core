@@ -9,7 +9,7 @@ import type {
 } from '@opensumi/ide-core-common';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
-import { LAYOUT_VIEW_SIZE } from '../layout/constants';
+import { ILayoutViewSize } from '../layout/constants';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
@@ -102,9 +102,9 @@ export interface AppConfig {
    */
   layoutComponent?: React.FC;
   /**
-   * 定义 IDE 各个布局区块的默认大小（高度）
+   * Define the default size (height) of each layout block in the IDE
    */
-  layoutViewSize?: typeof LAYOUT_VIEW_SIZE;
+  layoutViewSize?: Partial<ILayoutViewSize>;
   /**
    * 可基于 `layoutComponent` 配置的基础上
    * 定义面板大小，宽度/高度

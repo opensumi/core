@@ -4,21 +4,20 @@ import React from 'react';
 
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
+  AppConfig,
   ComponentRegistryInfo,
-  useInjectable,
   ComponentRenderer,
   ConfigProvider,
-  AppConfig,
   ErrorBoundary,
+  useInjectable,
   useViewState,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
-import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
+import { AccordionService, AccordionServiceFactory } from '../accordion/accordion.service';
 import { AccordionContainer } from '../accordion/accordion.view';
 import { TitleBar } from '../accordion/titlebar.view';
 
@@ -108,17 +107,16 @@ const ContainerView: React.FC<{
   }
   const viewState = useViewState(side, containerRef);
 
-  const PANEL_TITLEBAR_HEIGHT = React.useMemo(
-    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
-    [appConfig.layoutViewSize],
-  );
-
   return (
     <div ref={containerRef} className={styles.view_container}>
       {!CustomComponent && (
         <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
           {!title ? null : (
-            <TitleBar title={title} height={PANEL_TITLEBAR_HEIGHT} menubar={<InlineActionBar menus={titleMenu} />} />
+            <TitleBar
+              title={title}
+              height={appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}
+              menubar={<InlineActionBar menus={titleMenu} />}
+            />
           )}
           {titleComponent && (
             <div className={styles.panel_component}>
@@ -172,14 +170,9 @@ const BottomPanelView: React.FC<{
   }
   const viewState = useViewState(side, containerRef);
 
-  const PANEL_TITLEBAR_HEIGHT = React.useMemo(
-    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
-    [appConfig.layoutViewSize],
-  );
-
   return (
     <div ref={containerRef} className={styles.panel_container}>
-      <div className={styles.panel_title_bar} style={{ height: PANEL_TITLEBAR_HEIGHT }}>
+      <div className={styles.panel_title_bar} style={{ height: appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT }}>
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import { AppConfig, localize, useInjectable, ViewContextKeyRegistry } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
 
@@ -26,16 +25,11 @@ export const TestingView = () => {
     setMenus(menu);
   }, []);
 
-  const PANEL_TITLEBAR_HEIGHT = React.useMemo(
-    () => appConfig.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT,
-    [appConfig.layoutViewSize],
-  );
-
   return (
     <div className={styles.testing_container}>
       <TitleBar
         title={localize('test.title')}
-        height={PANEL_TITLEBAR_HEIGHT}
+        height={appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}
         menubar={menus ? <InlineMenuBar menus={menus}></InlineMenuBar> : null}
       />
       {/* 筛选器暂时先不搞 */}

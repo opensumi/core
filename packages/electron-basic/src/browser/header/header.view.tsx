@@ -1,20 +1,20 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  useInjectable,
-  ComponentRenderer,
-  ComponentRegistry,
-  DomListener,
-  electronEnv,
-  IWindowService,
-  useEventEffect,
   AppConfig,
+  ComponentRegistry,
+  ComponentRenderer,
+  Disposable,
+  DomListener,
+  IWindowService,
+  electronEnv,
+  getIcon,
+  isMacintosh,
+  useEventEffect,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
-import { isMacintosh, Disposable } from '@opensumi/ide-core-browser';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { IElectronHeaderService } from '../../common/header';
@@ -70,14 +70,14 @@ const useMaximize = () => {
 };
 
 const defaultHeight = (appConfig: AppConfig) => {
-  const layoutViewSize = appConfig.layoutViewSize || LAYOUT_VIEW_SIZE;
-
   if (isMacintosh) {
     // Big Sur increases title bar height
     const isNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
-    return isNewMacHeaderBar ? layoutViewSize.BIG_SUR_TITLEBAR_HEIGHT : layoutViewSize.TITLEBAR_HEIGHT;
+    return isNewMacHeaderBar
+      ? appConfig.layoutViewSize!.BIG_SUR_TITLEBAR_HEIGHT
+      : appConfig.layoutViewSize!.TITLEBAR_HEIGHT;
   }
-  return layoutViewSize.MENUBAR_HEIGHT;
+  return appConfig.layoutViewSize!.MENUBAR_HEIGHT;
 };
 
 export const HeaderBarLeftComponent = () => {
