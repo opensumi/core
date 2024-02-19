@@ -151,39 +151,21 @@ export class TabBarHandler {
    * 更新子视图的标题
    */
   updateViewTitle(viewId: string, title: string) {
-    const targetView = this.accordionService.views.find((view) => view.id === viewId);
-    if (targetView) {
-      targetView.name = title;
-      this.accordionService.updateViewTitle(viewId, title);
-    } else {
-      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion title`);
-    }
+    this.accordionService.updateViewTitle(viewId, title);
   }
 
   /**
    * 更新子视图的描述
    */
   updateViewDescription(viewId: string, desciption: string) {
-    const targetView = this.accordionService.views.find((view) => view.id === viewId);
-    if (targetView) {
-      targetView.description = desciption;
-      this.accordionService.updateViewDesciption(viewId, desciption);
-    } else {
-      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion description`);
-    }
+    this.accordionService.updateViewDesciption(viewId, desciption);
   }
 
   /**
    * 更新子视图的 message
    */
   updateViewMessage(viewId: string, message: string) {
-    const targetView = this.accordionService.views.find((view) => view.id === viewId);
-    if (targetView) {
-      targetView.message = message;
-      this.accordionService.updateViewMessage(viewId, message);
-    } else {
-      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion message`);
-    }
+    this.accordionService.updateViewMessage(viewId, message);
   }
   /**
    * 更新视图的标题

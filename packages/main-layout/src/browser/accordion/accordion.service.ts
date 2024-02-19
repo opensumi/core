@@ -18,6 +18,7 @@ import {
   Emitter,
   IScopedContextKeyService,
   isDefined,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
@@ -86,6 +87,9 @@ export class AccordionService extends WithEventBus {
 
   @Autowired(IProgressService)
   private progressService: IProgressService;
+
+  @Autowired(ILogger)
+  private logger: ILogger;
 
   protected splitPanelService: SplitPanelService;
 
@@ -159,16 +163,37 @@ export class AccordionService extends WithEventBus {
     });
   }
 
+  @action
   updateViewTitle(viewId: string, title: string) {
-    this.didChangeViewTitleEmitter.fire({ id: viewId, title });
+    const view = this.views.find((view) => view.id === viewId);
+    if (view) {
+      view.name = title;
+      this.didChangeViewTitleEmitter.fire({ id: viewId, title });
+    } else {
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion title`);
+    }
   }
 
+  @action
   updateViewDesciption(viewId: string, desc: string) {
-    this.didChangeViewTitleEmitter.fire({ id: viewId, description: desc });
+    const view = this.views.find((view) => view.id === viewId);
+    if (view) {
+      view.description = desc;
+      this.didChangeViewTitleEmitter.fire({ id: viewId, description: desc });
+    } else {
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion description`);
+    }
   }
 
+  @action
   updateViewMessage(viewId: string, msg: string) {
-    this.didChangeViewTitleEmitter.fire({ id: viewId, message: msg });
+    const view = this.views.find((view) => view.id === viewId);
+    if (view) {
+      view.message = msg;
+      this.didChangeViewTitleEmitter.fire({ id: viewId, message: msg });
+    } else {
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion message`);
+    }
   }
 
   updateViewBadge(viewId: string, badge: string) {
@@ -594,7 +619,6 @@ export class AccordionService extends WithEventBus {
     );
   }
 
-  @action
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
     const fullHeight = this.splitPanelService.rootNode?.clientHeight;
     const panel = this.splitPanelService.panels[index];
@@ -636,11 +660,15 @@ export class AccordionService extends WithEventBus {
       }
       if (toSaveSize !== this.headerSize) {
         // 视图折叠高度不做存储
-        viewState.size = toSaveSize;
+        runInAction(() => {
+          viewState.size = toSaveSize;
+        });
       }
     }
     this.storeState();
-    viewState.nextSize = calcTargetSize;
+    runInAction(() => {
+      viewState.nextSize = calcTargetSize;
+    });
     if (!noAnimation) {
       setTimeout(() => {
         // 动画 0.1s，保证结束后移除
