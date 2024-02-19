@@ -44,6 +44,7 @@ export const AccordionContainer = observer(
     React.useEffect(() => {
       accordionService.initConfig({ headerSize, minSize });
     }, []);
+
     const allCollapsed = !accordionService.visibleViews.find((view) => {
       const viewState: SectionState = accordionService.getViewState(view.id);
       return !viewState.collapsed;

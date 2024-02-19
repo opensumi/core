@@ -56,11 +56,12 @@ const CONTAINER_NAME_MAP = {
   bottom: 'panel',
 };
 
+const NONE_CONTAINER_ID = '__NONE__';
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
   @observable
   // currentContainerId 默认值应该为一个非空且唯一的字符串，避免在切换容器时触发 MobX 不变错误
-  currentContainerId = '__NONE__';
+  currentContainerId = NONE_CONTAINER_ID;
 
   previousContainerId = '';
 
@@ -164,6 +165,7 @@ export class TabbarService extends WithEventBus {
     this.currentContainerId = containerId;
   }
 
+  @action
   updateBadge(containerId: string, value: string) {
     const component = this.getContainer(containerId);
     if (component && component.options) {
@@ -455,6 +457,14 @@ export class TabbarService extends WithEventBus {
     }
     if (this.currentContainerId === containerId) {
       this.currentContainerId = this.visibleContainers[0].options?.containerId || '';
+    }
+  }
+
+  @action
+  updateTitle(containerId: string, title: string) {
+    const container = this.getContainer(containerId);
+    if (container) {
+      container.options!.title = title;
     }
   }
 
@@ -805,7 +815,7 @@ export class TabbarService extends WithEventBus {
     return reaction(
       () => this.currentContainerId,
       (nextContainerId, previousContainerId) => {
-        this.previousContainerId = previousContainerId;
+        this.previousContainerId = previousContainerId === NONE_CONTAINER_ID ? '' : previousContainerId;
         this.handleChange(nextContainerId, previousContainerId);
       },
     );

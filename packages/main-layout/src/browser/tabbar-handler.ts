@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
+import { Event, Emitter } from '@opensumi/ide-core-common';
 
 import { IMainLayoutService } from '../common';
 
@@ -9,9 +9,6 @@ import { TabbarService } from './tabbar/tabbar.service';
 export class TabBarHandler {
   @Autowired(IMainLayoutService)
   private layoutService!: IMainLayoutService;
-
-  @Autowired(ILogger)
-  private readonly logger: ILogger;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
@@ -170,8 +167,8 @@ export class TabBarHandler {
   /**
    * 更新视图的标题
    */
-  updateTitle(label: string) {
-    this.tabbarService.getContainer(this.containerId)!.options!.title = label;
+  updateTitle(title: string) {
+    this.tabbarService.updateTitle(this.containerId, title);
   }
   /**
    * 禁用侧边栏的resize功能
