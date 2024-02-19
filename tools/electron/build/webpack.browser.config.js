@@ -5,16 +5,22 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const webpack = require('webpack');
 
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const srcDir = path.join(__dirname, '../src/browser');
 const distDir = path.join(__dirname, '../app/dist/browser');
 
+/** @type { import('webpack').Configuration } */
 module.exports = {
   entry: path.join(srcDir, './index.ts'),
   output: {
     filename: 'bundle.js',
     path: distDir,
+    clean: true,
+  },
+  cache: {
+    type: 'filesystem',
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -23,6 +29,15 @@ module.exports = {
         configFile: tsConfigPath,
       }),
     ],
+    fallback: {
+      net: false,
+      path: false,
+      os: false,
+      crypto: false,
+      child_process: false,
+      url: false,
+      fs: false,
+    },
   },
   mode: 'development',
   devtool: 'source-map',
@@ -100,7 +115,7 @@ module.exports = {
         test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: './fonts/[name][ext][query]',
+          filename: '[name]-[hash:8][ext][query]',
           outputPath: 'fonts/',
         },
       },
@@ -127,6 +142,7 @@ module.exports = {
         },
       ],
     }),
+    !process.env.CI && new webpack.ProgressPlugin(),
     new NodePolyfillPlugin({
       includeAliases: ['path', 'Buffer', 'process'],
     }),

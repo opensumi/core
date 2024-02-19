@@ -11,7 +11,7 @@ async function main() {
   if (!fse.existsSync(semaphore)) {
     await fse.remove(path.resolve(folderName, 'node_modules'));
     await run('cd tools/electron && yarn && yarn run link-local && yarn run rebuild-native && yarn run build');
-    // fse.closeSync(fse.openSync(semaphore, 'a'));
+    fse.closeSync(fse.openSync(semaphore, 'a'));
   }
 
   startFromFolder(folderName, 'start');
