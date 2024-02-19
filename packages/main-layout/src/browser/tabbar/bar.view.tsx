@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { Badge, Icon } from '@opensumi/ide-components';
 import { ComponentRegistryInfo, useInjectable, KeybindingRegistry, usePreference } from '@opensumi/ide-core-browser';
@@ -167,49 +167,73 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
   },
 );
 
-export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => {
-  const progressService: IProgressService = useInjectable(IProgressService);
-  const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
-  const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
+export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(
+  ({ component: defaultComponent }) => {
+    const progressService: IProgressService = useInjectable(IProgressService);
+    const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
+    const [component, setComponent] = React.useState<ComponentRegistryInfo>(defaultComponent);
+    const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
+    const title = React.useMemo(() => {
+      const options = component.options;
+      if (options?.activateKeyBinding) {
+        return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
+      }
+      return options?.title;
+    }, [component]);
 
-  const title = React.useMemo(() => {
-    const options = component.options;
-    if (options?.activateKeyBinding) {
-      return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
-    }
-    return options?.title;
-  }, [component]);
+    useEffect(() => {
+      const dispose = component.onChange((newComponent) => {
+        setComponent(newComponent);
+      });
+      return () => {
+        dispose.dispose();
+      };
+    }, []);
 
-  return (
-    <div className={styles.icon_tab}>
-      <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
-      {inProgress ? (
-        <Badge className={styles.tab_badge}>
-          <span className={styles.icon_wrapper}>
-            <Icon icon='time-circle' />
-          </span>
-        </Badge>
-      ) : (
-        component.options?.badge && (
+    return (
+      <div className={styles.icon_tab}>
+        <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
+        {inProgress ? (
+          <Badge className={styles.tab_badge}>
+            <span className={styles.icon_wrapper}>
+              <Icon icon='time-circle' />
+            </span>
+          </Badge>
+        ) : (
+          component.options?.badge && (
+            <Badge className={styles.tab_badge}>
+              {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
+            </Badge>
+          )
+        )}
+      </div>
+    );
+  },
+);
+
+export const TextTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(
+  ({ component: defaultComponent }) => {
+    const [component, setComponent] = React.useState<ComponentRegistryInfo>(defaultComponent);
+    useEffect(() => {
+      const dispose = component.onChange((newComponent) => {
+        setComponent(newComponent);
+      });
+      return () => {
+        dispose.dispose();
+      };
+    }, []);
+    return (
+      <div className={styles.text_tab}>
+        <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
+        {component.options?.badge && (
           <Badge className={styles.tab_badge}>
             {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
           </Badge>
-        )
-      )}
-    </div>
-  );
-});
-
-export const TextTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => (
-  <div className={styles.text_tab}>
-    <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-    {component.options?.badge && (
-      <Badge className={styles.tab_badge}>
-        {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-      </Badge>
-    )}
-  </div>
-));
+        )}
+      </div>
+    );
+  },
+);
 
 export const IconElipses: React.FC = () => (
   <div className={styles.icon_tab}>

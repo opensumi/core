@@ -91,11 +91,11 @@ export class TabBarHandler {
    * 设置视图的顶部标题组件
    */
   setTitleComponent(Fc: React.ComponentType, props?: object) {
-    const componentInfo = this.tabbarService.getContainer(this.containerId);
-    if (componentInfo) {
-      componentInfo.options!.titleProps = props;
-      componentInfo.options!.titleComponent = Fc;
-      this.tabbarService.forceUpdateTabbar();
+    const component = this.tabbarService.getContainer(this.containerId);
+    if (component && component.options) {
+      component.options.titleProps = props;
+      component.options.titleComponent = Fc;
+      component.fireChange(component);
     }
   }
   /**
@@ -144,7 +144,7 @@ export class TabBarHandler {
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const viewState = this.accordionService.getViewState(viewId);
-      this.accordionService.setViewState(viewId, { ...viewState, hidden: !show });
+      this.accordionService.updateViewState(viewId, { ...viewState, hidden: !show });
     }
   }
   /**

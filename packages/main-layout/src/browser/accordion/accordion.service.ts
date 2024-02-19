@@ -103,10 +103,10 @@ export class AccordionService extends WithEventBus {
   private viewsWithContextKey = new Set<View>();
 
   @observable.shallow
-  views: View[] = observable.array([]);
+  views: View[] = [];
 
   @observable.shallow
-  state: { [viewId: string]: SectionState } = observable.object({});
+  state: { [viewId: string]: SectionState } = {};
 
   rendered = false;
 
@@ -196,8 +196,15 @@ export class AccordionService extends WithEventBus {
     }
   }
 
+  @action
   updateViewBadge(viewId: string, badge: string) {
-    this.didChangeViewTitleEmitter.fire({ id: viewId, badge });
+    const view = this.views.find((view) => view.id === viewId);
+    if (view) {
+      view.badge = badge;
+      this.didChangeViewTitleEmitter.fire({ id: viewId, badge });
+    } else {
+      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion message`);
+    }
   }
 
   tryUpdateResize() {
@@ -429,12 +436,12 @@ export class AccordionService extends WithEventBus {
     return `${forceRevealKey} == true`;
   }
 
-  protected storeState = debounce(() => {
+  protected storeState = () => {
     if (this.noRestore || !this.rendered) {
       return;
     }
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
-  }, 200);
+  };
 
   private registerGlobalToggleCommand() {
     const commandId = `view-container.hide.${this.containerId}`;
@@ -479,6 +486,7 @@ export class AccordionService extends WithEventBus {
     return commandId;
   }
 
+  @action
   protected doToggleView(viewId: string, forceShow?: boolean) {
     const state = this.getViewState(viewId);
     let nextState: boolean;
@@ -488,7 +496,7 @@ export class AccordionService extends WithEventBus {
       nextState = !forceShow;
     }
     state.hidden = nextState;
-    this.setViewState(viewId, state);
+    this.updateViewState(viewId, state);
     this.popViewKeyIfOnlyOneViewVisible();
     this.storeState();
   }
@@ -524,18 +532,18 @@ export class AccordionService extends WithEventBus {
     });
   }
 
-  @action toggleOpen(viewId: string, collapsed: boolean) {
+  toggleOpen(viewId: string, collapsed: boolean) {
     const index = this.visibleViews.findIndex((view) => view.id === viewId);
     if (index > -1) {
       this.doToggleOpen(viewId, collapsed, index, true);
     }
   }
 
-  @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
+  handleSectionClick = (viewId: string, collapsed: boolean, index: number) => {
     this.doToggleOpen(viewId, collapsed, index);
-  }
+  };
 
-  @action.bound handleContextMenu(event: React.MouseEvent, viewId?: string) {
+  handleContextMenu = (event: React.MouseEvent, viewId?: string) => {
     event.preventDefault();
     const menus = this.ctxMenuService.createMenu({
       id: this.menuId,
@@ -551,26 +559,21 @@ export class AccordionService extends WithEventBus {
         y: event.clientY,
       },
     });
-  }
+  };
 
   public getViewState(viewId: string) {
     let viewState = this.state[viewId];
     const view = this.views.find((item) => item.id === viewId);
     if (!viewState) {
-      runInAction(() => {
-        this.state[viewId] = { collapsed: view?.collapsed || false, hidden: view?.hidden || false };
-        viewState = this.state[viewId]!;
-      });
+      this.updateViewState(viewId, { collapsed: view?.collapsed || false, hidden: view?.hidden || false });
+      viewState = this.state[viewId];
     }
     return viewState;
   }
 
   @action
-  public setViewState(viewId: string, state: SectionState) {
-    this.state = {
-      ...this.state,
-      [viewId]: state,
-    };
+  public updateViewState(viewId: string, state: SectionState) {
+    this.state[viewId] = observable.object(state);
   }
 
   @action
@@ -619,6 +622,7 @@ export class AccordionService extends WithEventBus {
     );
   }
 
+  @action
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
     const fullHeight = this.splitPanelService.rootNode?.clientHeight;
     const panel = this.splitPanelService.panels[index];

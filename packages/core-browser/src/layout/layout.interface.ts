@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import { MaybeNull, BasicEvent } from '@opensumi/ide-core-common';
+import { MaybeNull, BasicEvent, Event } from '@opensumi/ide-core-common';
 
 import { Layout } from '../components/layout/index';
 import type { IMenu, IContextMenu } from '../menu/next';
@@ -36,6 +36,7 @@ export interface View {
   weight?: number;
   priority?: number;
   collapsed?: boolean;
+  badge?: string;
   hidden?: boolean;
   component?: React.ComponentType<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
@@ -87,6 +88,8 @@ export interface ComponentRegistry {
 }
 
 export interface ComponentRegistryInfo {
+  fireChange: (component: ComponentRegistryInfo) => void;
+  onChange: Event<ComponentRegistryInfo>;
   views: View[];
   options?: ViewContainerOptions;
 }

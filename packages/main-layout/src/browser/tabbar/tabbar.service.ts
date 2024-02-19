@@ -118,10 +118,6 @@ export class TabbarService extends WithEventBus {
   @Autowired(IProgressService)
   private progressService: IProgressService;
 
-  // 提供给 Mobx 强刷刷新
-  @observable
-  forceUpdate = 0;
-
   private accordionRestored: Set<string> = new Set();
 
   private readonly onCurrentChangeEmitter = new Emitter<{ previousId: string; currentId: string }>();
@@ -163,20 +159,16 @@ export class TabbarService extends WithEventBus {
   }
 
   @action
-  forceUpdateTabbar() {
-    this.forceUpdate++;
-  }
-
-  @action
   updateCurrentContainerId(containerId: string) {
     this.currentContainerId = containerId;
   }
 
   updateBadge(containerId: string, value: string) {
     const component = this.getContainer(containerId);
-    if (component && component.options?.badge) {
+    if (component && component.options) {
       component.options.badge = value;
     }
+    component?.fireChange(component);
   }
 
   registerPanelCommands(): void {
@@ -278,7 +270,10 @@ export class TabbarService extends WithEventBus {
     const disposables = new DisposableCollection();
     const options = componentInfo.options || { containerId };
     componentInfo.options = options;
+    const componentChangeEmitter = new Emitter<ComponentRegistryInfo>();
     this.containersMap.set(containerId, {
+      fireChange: (component: ComponentRegistryInfo) => componentChangeEmitter.fire(component),
+      onChange: componentChangeEmitter.event,
       views: componentInfo.views,
       options: observable.object(options, undefined, { deep: false }),
     });
