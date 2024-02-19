@@ -8,7 +8,6 @@ import { AbstractExtInstanceManagementService } from '../../types';
 export type ThemesSchema = Array<ThemeContribution>;
 
 // TODO 需等待 monaco-colors 初始化完成 才能注册
-// 优化 monaco 初始化
 @Injectable()
 @Contributes('productIconThemes')
 @LifeCycle(LifeCyclePhase.Initialize)

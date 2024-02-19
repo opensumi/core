@@ -1,3 +1,9 @@
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.86.0/src/vs/base/common/codicons.ts
 import { isString } from '@opensumi/ide-utils';
 
 import { ThemeIcon } from './theme';
@@ -47,16 +53,8 @@ export function getAllCodicons(): ThemeIcon[] {
   return Object.values(Codicon);
 }
 
-/**
- * The Codicon library is a set of default icons that are built-in in VS Code.
- *
- * In the product (outside of base) Codicons should only be used as defaults. In order to have all icons in VS Code
- * themeable, component should define new, UI component specific icons using `iconRegistry.registerIcon`.
- * In that call a Codicon can be named as default.
- */
-
-// TODO Codicon v0.0.12 后续升级需要做同步
 export const Codicon = {
+  // built-in icons, with image name
   add: register('add', 0xea60),
   plus: register('plus', 0xea60),
   gistNew: register('gist-new', 0xea60),
@@ -74,6 +72,7 @@ export const Codicon = {
   tag: register('tag', 0xea66),
   tagAdd: register('tag-add', 0xea66),
   tagRemove: register('tag-remove', 0xea66),
+  gitPullRequestLabel: register('git-pull-request-label', 0xea66),
   person: register('person', 0xea67),
   personFollow: register('person-follow', 0xea67),
   personOutline: register('person-outline', 0xea67),
@@ -106,6 +105,7 @@ export const Codicon = {
   closeDirty: register('close-dirty', 0xea71),
   debugBreakpoint: register('debug-breakpoint', 0xea71),
   debugBreakpointDisabled: register('debug-breakpoint-disabled', 0xea71),
+  debugBreakpointPending: register('debug-breakpoint-pending', 0xebd9),
   debugHint: register('debug-hint', 0xea71),
   primitiveSquare: register('primitive-square', 0xea72),
   edit: register('edit', 0xea73),
@@ -310,6 +310,7 @@ export const Codicon = {
   italic: register('italic', 0xeb0d),
   jersey: register('jersey', 0xeb0e),
   json: register('json', 0xeb0f),
+  bracket: register('bracket', 0xeb0f),
   kebabVertical: register('kebab-vertical', 0xeb10),
   key: register('key', 0xeb11),
   law: register('law', 0xeb12),
@@ -327,6 +328,7 @@ export const Codicon = {
   megaphone: register('megaphone', 0xeb1e),
   mention: register('mention', 0xeb1f),
   milestone: register('milestone', 0xeb20),
+  gitPullRequestMilestone: register('git-pull-request-milestone', 0xeb20),
   mortarBoard: register('mortar-board', 0xeb21),
   move: register('move', 0xeb22),
   multipleWindows: register('multiple-windows', 0xeb23),
@@ -387,7 +389,7 @@ export const Codicon = {
   starHalf: register('star-half', 0xeb5a),
   symbolClass: register('symbol-class', 0xeb5b),
   symbolColor: register('symbol-color', 0xeb5c),
-  symbolCustomcolor: register('symbol-customcolor', 0xeb5c),
+  symbolCustomColor: register('symbol-customcolor', 0xeb5c),
   symbolConstant: register('symbol-constant', 0xeb5d),
   symbolEnumMember: register('symbol-enum-member', 0xeb5e),
   symbolField: register('symbol-field', 0xeb5f),
@@ -451,9 +453,11 @@ export const Codicon = {
   menu: register('menu', 0xeb94),
   expandAll: register('expand-all', 0xeb95),
   feedback: register('feedback', 0xeb96),
+  gitPullRequestReviewer: register('git-pull-request-reviewer', 0xeb96),
   groupByRefType: register('group-by-ref-type', 0xeb97),
   ungroupByRefType: register('ungroup-by-ref-type', 0xeb98),
   account: register('account', 0xeb99),
+  gitPullRequestAssignee: register('git-pull-request-assignee', 0xeb99),
   bellDot: register('bell-dot', 0xeb9a),
   debugConsole: register('debug-console', 0xeb9b),
   library: register('library', 0xeb9c),
@@ -473,7 +477,7 @@ export const Codicon = {
   vmConnect: register('vm-connect', 0xeba9),
   cloud: register('cloud', 0xebaa),
   merge: register('merge', 0xebab),
-  export: register('export', 0xebac),
+  exportIcon: register('export', 0xebac),
   graphLeft: register('graph-left', 0xebad),
   magnet: register('magnet', 0xebae),
   notebook: register('notebook', 0xebaf),
@@ -532,13 +536,12 @@ export const Codicon = {
   graphLine: register('graph-line', 0xebe2),
   graphScatter: register('graph-scatter', 0xebe3),
   pieChart: register('pie-chart', 0xebe4),
-  bracket: register('bracket', 0xeb0f),
   bracketDot: register('bracket-dot', 0xebe5),
   bracketError: register('bracket-error', 0xebe6),
   lockSmall: register('lock-small', 0xebe7),
   azureDevops: register('azure-devops', 0xebe8),
   verifiedFilled: register('verified-filled', 0xebe9),
-  newline: register('newline', 0xebea),
+  newLine: register('newline', 0xebea),
   layout: register('layout', 0xebeb),
   layoutActivitybarLeft: register('layout-activitybar-left', 0xebec),
   layoutActivitybarRight: register('layout-activitybar-right', 0xebed),
@@ -573,50 +576,64 @@ export const Codicon = {
   gitPullRequestGoToChanges: register('git-pull-request-go-to-changes', 0xec0b),
   gitPullRequestNewChanges: register('git-pull-request-new-changes', 0xec0c),
   searchFuzzy: register('search-fuzzy', 0xec0d),
-  dialogError: register('dialog-error', 0xea87),
-  dialogWarning: register('dialog-warning', 0xea6c),
-  dialogInfo: register('dialog-info', 0xea74),
-  dialogClose: register('dialog-close', 0xea76),
-  treeItemExpanded: register('tree-item-expanded', 0xeab4),
-  treeFilterOnTypeOn: register('tree-filter-on-type-on', 0xeb83),
-  treeFilterOnTypeOff: register('tree-filter-on-type-off', 0xeb85),
-  treeFilterClear: register('tree-filter-clear', 0xea76),
-  treeItemLoading: register('tree-item-loading', 0xeb19),
-  menuSelection: register('menu-selection', 0xeab2),
-  menuSubmenu: register('menu-submenu', 0xeab6),
-  menubarMore: register('menubar-more', 0xea7c),
-  scrollbarButtonLeft: register('scrollbar-button-left', 0xeb6f),
-  scrollbarButtonRight: register('scrollbar-button-right', 0xeb70),
-  scrollbarButtonUp: register('scrollbar-button-up', 0xeb71),
-  scrollbarButtonDown: register('scrollbar-button-down', 0xeb6e),
-  toolbarMore: register('toolbar-more', 0xea7c),
-  quickInputBack: register('quick-input-back', 0xea9b),
-  widgetClose: register('widget-close', 0xea76),
-  gotoPreviousLocation: register('goto-previous-location', 0xeaa1),
-  gotoNextLocation: register('goto-next-location', 0xea9a),
-  diffReviewInsert: register('diff-review-insert', 0xea60),
-  diffReviewRemove: register('diff-review-remove', 0xeb3b),
-  diffReviewClose: register('diff-review-close', 0xea76),
-  diffInsert: register('diff-insert', 0xea60),
-  diffRemove: register('diff-remove', 0xeb3b),
-  suggestMoreInfo: register('suggest-more-info', 0xeab6),
-  markerNavigationNext: register('marker-navigation-next', 0xea9a),
-  markerNavigationPrevious: register('marker-navigation-previous', 0xeaa1),
-  findSelection: register('find-selection', 0xeb85),
-  findCollapsed: register('find-collapsed', 0xeab6),
-  findExpanded: register('find-expanded', 0xeab4),
-  findReplace: register('find-replace', 0xeb3d),
-  findReplaceAll: register('find-replace-all', 0xeb3c),
-  findPreviousMatch: register('find-previous-match', 0xeaa1),
-  findNextMatch: register('find-next-match', 0xea9a),
-  foldingExpanded: register('folding-expanded', 0xeab4),
-  foldingCollapsed: register('folding-collapsed', 0xeab6),
-  foldingManualCollapsed: register('folding-manual-collapsed', 0xeab6),
-  foldingManualExpanded: register('folding-manual-expanded', 0xeab4),
-  parameterHintsNext: register('parameter-hints-next', 0xeab4),
-  parameterHintsPrevious: register('parameter-hints-previous', 0xeab7),
-  extensionsWarningMessage: register('extensions-warning-message', 0xea6c),
-};
+  commentDraft: register('comment-draft', 0xec0e),
+  send: register('send', 0xec0f),
+  sparkle: register('sparkle', 0xec10),
+  insert: register('insert', 0xec11),
+  mic: register('mic', 0xec12),
+  thumbsDownFilled: register('thumbsdown-filled', 0xec13),
+  thumbsUpFilled: register('thumbsup-filled', 0xec14),
+  coffee: register('coffee', 0xec15),
+  snake: register('snake', 0xec16),
+  game: register('game', 0xec17),
+  vr: register('vr', 0xec18),
+  chip: register('chip', 0xec19),
+  piano: register('piano', 0xec1a),
+  music: register('music', 0xec1b),
+  micFilled: register('mic-filled', 0xec1c),
+  gitFetch: register('git-fetch', 0xec1d),
+  copilot: register('copilot', 0xec1e),
+  lightbulbSparkle: register('lightbulb-sparkle', 0xec1f),
+  lightbulbSparkleAutofix: register('lightbulb-sparkle-autofix', 0xec1f),
+  robot: register('robot', 0xec20),
+  sparkleFilled: register('sparkle-filled', 0xec21),
+  diffSingle: register('diff-single', 0xec22),
+  diffMultiple: register('diff-multiple', 0xec23),
+  surroundWith: register('surround-with', 0xec24),
+  gitStash: register('git-stash', 0xec26),
+  gitStashApply: register('git-stash-apply', 0xec27),
+  gitStashPop: register('git-stash-pop', 0xec28),
+
+  // derived icons, that could become separate icons
+
+  dialogError: register('dialog-error', 'error'),
+  dialogWarning: register('dialog-warning', 'warning'),
+  dialogInfo: register('dialog-info', 'info'),
+  dialogClose: register('dialog-close', 'close'),
+
+  treeItemExpanded: register('tree-item-expanded', 'chevron-down'), // collapsed is done with rotation
+
+  treeFilterOnTypeOn: register('tree-filter-on-type-on', 'list-filter'),
+  treeFilterOnTypeOff: register('tree-filter-on-type-off', 'list-selection'),
+  treeFilterClear: register('tree-filter-clear', 'close'),
+
+  treeItemLoading: register('tree-item-loading', 'loading'),
+
+  menuSelection: register('menu-selection', 'check'),
+  menuSubmenu: register('menu-submenu', 'chevron-right'),
+
+  menuBarMore: register('menubar-more', 'more'),
+
+  scrollbarButtonLeft: register('scrollbar-button-left', 'triangle-left'),
+  scrollbarButtonRight: register('scrollbar-button-right', 'triangle-right'),
+
+  scrollbarButtonUp: register('scrollbar-button-up', 'triangle-up'),
+  scrollbarButtonDown: register('scrollbar-button-down', 'triangle-down'),
+
+  toolBarMore: register('toolbar-more', 'more'),
+
+  quickInputBack: register('quick-input-back', 'arrow-left'),
+} as const;
 
 export const Sumiicon = {
   // proxy to codicon
