@@ -150,8 +150,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
             type: 'asset/resource',
             generator: {
-              filename: '[name][ext][query]',
-              outputPath: 'fonts/',
+              filename: 'fonts/[name][ext][query]',
             },
           },
         ],
