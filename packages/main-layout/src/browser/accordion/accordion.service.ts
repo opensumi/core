@@ -103,7 +103,7 @@ export class AccordionService extends WithEventBus {
   private viewsWithContextKey = new Set<View>();
 
   @observable.shallow
-  views: View[] = [];
+  views: View[] = observable.array([]);
 
   @observable.shallow
   state: { [viewId: string]: SectionState } = {};

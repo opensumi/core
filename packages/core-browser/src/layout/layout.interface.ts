@@ -88,10 +88,13 @@ export interface ComponentRegistry {
 }
 
 export interface ComponentRegistryInfo {
-  fireChange: (component: ComponentRegistryInfo) => void;
-  onChange: Event<ComponentRegistryInfo>;
   views: View[];
   options?: ViewContainerOptions;
+}
+
+export interface ComponentRegistryProvider extends ComponentRegistryInfo {
+  fireChange: (component: ComponentRegistryProvider) => void;
+  onChange: Event<ComponentRegistryProvider>;
 }
 
 export class ResizePayload {

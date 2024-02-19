@@ -23,6 +23,7 @@ import {
   Deferred,
   formatLocalize,
   createFormatLocalizedStr,
+  ComponentRegistryProvider,
 } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
@@ -63,7 +64,7 @@ export class TabbarService extends WithEventBus {
 
   previousContainerId = '';
 
-  containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  containersMap: Map<string, ComponentRegistryProvider> = new Map();
 
   @observable
   state: Map<string, TabState> = new Map();
@@ -231,7 +232,7 @@ export class TabbarService extends WithEventBus {
   }
 
   get visibleContainers() {
-    const components: ComponentRegistryInfo[] = [];
+    const components: ComponentRegistryProvider[] = [];
     this.containersMap.forEach((component) => {
       const state = component.options && this.state.get(component.options.containerId);
       if (!state || !state.hidden) {
@@ -270,9 +271,9 @@ export class TabbarService extends WithEventBus {
     const disposables = new DisposableCollection();
     const options = componentInfo.options || { containerId };
     componentInfo.options = options;
-    const componentChangeEmitter = new Emitter<ComponentRegistryInfo>();
+    const componentChangeEmitter = new Emitter<ComponentRegistryProvider>();
     this.containersMap.set(containerId, {
-      fireChange: (component: ComponentRegistryInfo) => componentChangeEmitter.fire(component),
+      fireChange: (component: ComponentRegistryProvider) => componentChangeEmitter.fire(component),
       onChange: componentChangeEmitter.event,
       views: componentInfo.views,
       options: observable.object(options, undefined, { deep: false }),

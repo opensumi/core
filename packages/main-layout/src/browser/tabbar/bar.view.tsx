@@ -3,7 +3,13 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 
 import { Badge, Icon } from '@opensumi/ide-components';
-import { ComponentRegistryInfo, useInjectable, KeybindingRegistry, usePreference } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryInfo,
+  useInjectable,
+  KeybindingRegistry,
+  usePreference,
+  ComponentRegistryProvider,
+} from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
@@ -167,11 +173,11 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
   },
 );
 
-export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(
+export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
   ({ component: defaultComponent }) => {
     const progressService: IProgressService = useInjectable(IProgressService);
     const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
-    const [component, setComponent] = React.useState<ComponentRegistryInfo>(defaultComponent);
+    const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
     const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
     const title = React.useMemo(() => {
       const options = component.options;
@@ -211,9 +217,9 @@ export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = obser
   },
 );
 
-export const TextTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(
+export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
   ({ component: defaultComponent }) => {
-    const [component, setComponent] = React.useState<ComponentRegistryInfo>(defaultComponent);
+    const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
     useEffect(() => {
       const dispose = component.onChange((newComponent) => {
         setComponent(newComponent);
