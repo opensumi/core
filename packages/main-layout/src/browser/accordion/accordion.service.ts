@@ -594,6 +594,7 @@ export class AccordionService extends WithEventBus {
     );
   }
 
+  @action
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
     const fullHeight = this.splitPanelService.rootNode?.clientHeight;
     const panel = this.splitPanelService.panels[index];
