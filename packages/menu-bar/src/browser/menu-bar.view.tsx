@@ -110,7 +110,7 @@ export const MenuBar = observer(() => {
   return (
     <ClickOutside
       className={styles.menubars}
-      style={{ height: appConfig.layoutViewSize!.MENUBAR_HEIGHT }}
+      style={{ height: appConfig.layoutViewSize!.menubarHeight }}
       mouseEvents={['click', 'contextmenu']}
       tabIndex={-1} // make focus event implement
       onFocus={handleMenubarFocusIn}

@@ -283,8 +283,7 @@ const FloatDebugToolbarView = observer(() => {
         fullScreen
           ? setToolbarOffsetTop(value)
           : setToolbarOffsetTop(
-              value +
-                (isNewMacHeaderBar() ? layoutViewSize!.TITLEBAR_HEIGHT! : layoutViewSize!.BIG_SUR_TITLEBAR_HEIGHT!),
+              value + (isNewMacHeaderBar() ? layoutViewSize!.titleBarHeight! : layoutViewSize!.bigSurTitleBarHeight!),
             );
       });
       disposableCollection.push(
@@ -294,7 +293,7 @@ const FloatDebugToolbarView = observer(() => {
               ? setToolbarOffsetTop(value)
               : setToolbarOffsetTop(
                   value +
-                    (isNewMacHeaderBar() ? layoutViewSize!.TITLEBAR_HEIGHT! : layoutViewSize!.BIG_SUR_TITLEBAR_HEIGHT!),
+                    (isNewMacHeaderBar() ? layoutViewSize!.titleBarHeight! : layoutViewSize!.bigSurTitleBarHeight!),
                 );
           }
         }),

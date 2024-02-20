@@ -29,7 +29,7 @@ export const TestingView = () => {
     <div className={styles.testing_container}>
       <TitleBar
         title={localize('test.title')}
-        height={appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}
+        height={appConfig.layoutViewSize!.panelTitleBarHeight}
         menubar={menus ? <InlineMenuBar menus={menus}></InlineMenuBar> : null}
       />
       {/* 筛选器暂时先不搞 */}

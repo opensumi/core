@@ -35,7 +35,7 @@ export const StatusBarView = memo(
       <div
         id={VIEW_CONTAINERS.STATUSBAR}
         className={styles.statusBar}
-        style={{ backgroundColor, height: appConfig.layoutViewSize!.STATUSBAR_HEIGHT + 'px' }}
+        style={{ backgroundColor, height: appConfig.layoutViewSize!.statusBarHeight + 'px' }}
         onContextMenu={handleCtxMenu}
       >
         <div className={cls(styles.area, styles.left)}>

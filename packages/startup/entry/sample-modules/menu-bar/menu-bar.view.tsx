@@ -18,7 +18,7 @@ export const MenuBarView = () => {
     <div
       id={VIEW_CONTAINERS.MENUBAR}
       className={styles.menu_bar_view}
-      style={{ height: appConfig.layoutViewSize!.MENUBAR_HEIGHT }}
+      style={{ height: appConfig.layoutViewSize!.menubarHeight }}
     >
       <span className={styles.menu_bar_logo} />
       <MenuBar />

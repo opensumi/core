@@ -53,7 +53,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,
       })}
-      style={{ height: appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT }}
+      style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
       onClick={() => handleSelect()}
       onContextMenu={(event) => props.onContextMenu && props.onContextMenu(event)}
     >

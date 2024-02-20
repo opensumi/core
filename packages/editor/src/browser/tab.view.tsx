@@ -333,8 +333,8 @@ export const Tabs = ({ group }: ITabsProps) => {
             })}
             style={
               wrapMode && i === group.resources.length - 1
-                ? { marginRight: lastMarginRight, height: appConfig.layoutViewSize!.EDITOR_TABS_HEIGHT }
-                : { height: appConfig.layoutViewSize!.EDITOR_TABS_HEIGHT }
+                ? { marginRight: lastMarginRight, height: appConfig.layoutViewSize!.editorTabsHeight }
+                : { height: appConfig.layoutViewSize!.editorTabsHeight }
             }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
@@ -497,7 +497,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       <div
         ref={ref}
         className={cls(styles.editor_actions, className)}
-        style={{ height: appConfig.layoutViewSize!.EDITOR_TABS_HEIGHT }}
+        style={{ height: appConfig.layoutViewSize!.editorTabsHeight }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}

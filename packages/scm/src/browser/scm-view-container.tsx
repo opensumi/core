@@ -228,7 +228,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
     <div className={styles.view}>
       <TitleBar
         title={panelTitle}
-        height={appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}
+        height={appConfig.layoutViewSize!.panelTitleBarHeight}
         menubar={
           !hasMultiRepos && titleMenu ? (
             <InlineMenuBar
@@ -242,7 +242,7 @@ export const SCMViewContainer: FC<{ viewState: ViewState }> = (props) => {
       <AccordionContainer
         views={views}
         containerId={scmContainerId}
-        style={{ height: `calc(100% - ${appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}px)` }}
+        style={{ height: `calc(100% - ${appConfig.layoutViewSize!.panelTitleBarHeight}px)` }}
       />
     </div>
   );

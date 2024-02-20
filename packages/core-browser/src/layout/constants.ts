@@ -1,40 +1,40 @@
 export interface ILayoutViewSize {
-  MENUBAR_HEIGHT: number;
-  EDITOR_TABS_HEIGHT: number;
-  BIG_SUR_TITLEBAR_HEIGHT: number;
-  TITLEBAR_HEIGHT: number;
-  PANEL_TITLEBAR_HEIGHT: number;
-  STATUSBAR_HEIGHT: number;
+  menubarHeight: number;
+  editorTabsHeight: number;
+  bigSurTitleBarHeight: number;
+  titleBarHeight: number;
+  panelTitleBarHeight: number;
+  statusBarHeight: number;
 }
 
 export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
-  MENUBAR_HEIGHT: 35,
-  EDITOR_TABS_HEIGHT: 35,
-  BIG_SUR_TITLEBAR_HEIGHT: 28,
-  TITLEBAR_HEIGHT: 22,
-  PANEL_TITLEBAR_HEIGHT: 35,
-  STATUSBAR_HEIGHT: 24,
+  menubarHeight: 35,
+  editorTabsHeight: 35,
+  bigSurTitleBarHeight: 28,
+  titleBarHeight: 22,
+  panelTitleBarHeight: 35,
+  statusBarHeight: 24,
 };
 
 export class LayoutViewSizeConfig implements ILayoutViewSize {
   constructor(private readonly layoutViewSize?: Partial<ILayoutViewSize>) {}
 
-  get MENUBAR_HEIGHT(): number {
-    return this.layoutViewSize?.MENUBAR_HEIGHT || DEFAULT_LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT;
+  get menubarHeight(): number {
+    return this.layoutViewSize?.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
   }
-  get EDITOR_TABS_HEIGHT(): number {
-    return this.layoutViewSize?.EDITOR_TABS_HEIGHT || DEFAULT_LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT;
+  get editorTabsHeight(): number {
+    return this.layoutViewSize?.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
   }
-  get BIG_SUR_TITLEBAR_HEIGHT(): number {
-    return this.layoutViewSize?.BIG_SUR_TITLEBAR_HEIGHT || DEFAULT_LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT;
+  get bigSurTitleBarHeight(): number {
+    return this.layoutViewSize?.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
   }
-  get TITLEBAR_HEIGHT(): number {
-    return this.layoutViewSize?.TITLEBAR_HEIGHT || DEFAULT_LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT;
+  get titleBarHeight(): number {
+    return this.layoutViewSize?.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
   }
-  get PANEL_TITLEBAR_HEIGHT(): number {
-    return this.layoutViewSize?.PANEL_TITLEBAR_HEIGHT || DEFAULT_LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT;
+  get panelTitleBarHeight(): number {
+    return this.layoutViewSize?.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
   }
-  get STATUSBAR_HEIGHT(): number {
-    return this.layoutViewSize?.STATUSBAR_HEIGHT || DEFAULT_LAYOUT_VIEW_SIZE.STATUSBAR_HEIGHT;
+  get statusBarHeight(): number {
+    return this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
   }
 }

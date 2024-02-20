@@ -114,7 +114,7 @@ const ContainerView: React.FC<{
           {!title ? null : (
             <TitleBar
               title={title}
-              height={appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT}
+              height={appConfig.layoutViewSize!.panelTitleBarHeight}
               menubar={<InlineActionBar menus={titleMenu} />}
             />
           )}
@@ -172,7 +172,7 @@ const BottomPanelView: React.FC<{
 
   return (
     <div ref={containerRef} className={styles.panel_container}>
-      <div className={styles.panel_title_bar} style={{ height: appConfig.layoutViewSize!.PANEL_TITLEBAR_HEIGHT }}>
+      <div className={styles.panel_title_bar} style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}>
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (

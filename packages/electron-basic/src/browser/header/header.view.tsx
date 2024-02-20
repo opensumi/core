@@ -74,10 +74,10 @@ const defaultHeight = (appConfig: AppConfig) => {
     // Big Sur increases title bar height
     const isNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
     return isNewMacHeaderBar
-      ? appConfig.layoutViewSize!.BIG_SUR_TITLEBAR_HEIGHT
-      : appConfig.layoutViewSize!.TITLEBAR_HEIGHT;
+      ? appConfig.layoutViewSize!.bigSurTitleBarHeight
+      : appConfig.layoutViewSize!.titleBarHeight;
   }
-  return appConfig.layoutViewSize!.MENUBAR_HEIGHT;
+  return appConfig.layoutViewSize!.menubarHeight;
 };
 
 export const HeaderBarLeftComponent = () => {
