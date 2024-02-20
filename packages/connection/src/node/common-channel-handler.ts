@@ -17,7 +17,7 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
   protected handlerRoute: MatchFunction;
 
   constructor(routePath: string, logger: ILogger = console, private options: CommonChannelHandlerOptions = {}) {
-    super('common-channel', logger);
+    super('node-channel-handler', logger);
     this.handlerRoute = match(routePath, options.pathMatchOptions);
     this.initWSServer();
   }

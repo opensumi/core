@@ -9,9 +9,9 @@ import { BaseCommonChannelHandler } from '../common/server-handler';
 /**
  * Channel Handler for electron backend
  */
-export class CommonChannelHandler4Electron extends BaseCommonChannelHandler {
+export class ElectronChannelHandler extends BaseCommonChannelHandler {
   constructor(private server: net.Server, private injector: Injector, logger: ILogger = console) {
-    super('common-channel-4-electron', logger);
+    super('electron-channel-handler', logger);
   }
 
   doHeartbeat(connectionId: string, connection: any): void {

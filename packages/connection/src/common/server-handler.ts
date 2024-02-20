@@ -68,6 +68,28 @@ export class CommonChannelPathHandler {
       });
     });
   }
+  dispatchChannelOpen(path: string, channel: WSChannel, clientId: string) {
+    // 根据 path 拿到注册的 handler
+    let handlerArr = this.get(path);
+    let params: Record<string, string> | undefined;
+    // 尝试通过父路径查找处理函数，如server/:id方式注册的handler
+    if (!handlerArr) {
+      const slashIndex = path.indexOf('/');
+      const hasSlash = slashIndex >= 0;
+      if (hasSlash) {
+        handlerArr = this.get(path.slice(0, slashIndex));
+        params = this.getParams(path.slice(0, slashIndex), path.slice(slashIndex + 1));
+      }
+    }
+
+    if (handlerArr) {
+      for (let i = 0, len = handlerArr.length; i < len; i++) {
+        const handler = handlerArr[i];
+        handler.handler(channel, clientId, params);
+      }
+    }
+  }
+
   getAll() {
     return Array.from(this.handlerMap.values());
   }
@@ -116,26 +138,7 @@ export abstract class BaseCommonChannelHandler {
           const channel = new WSChannel(connection, { id });
           this.channelMap.set(id, channel);
 
-          // 根据 path 拿到注册的 handler
-          let handlerArr = commonChannelPathHandler.get(path);
-          let params: Record<string, string> | undefined;
-          // 尝试通过父路径查找处理函数，如server/:id方式注册的handler
-          if (!handlerArr) {
-            const slashIndex = path.indexOf('/');
-            const hasSlash = slashIndex >= 0;
-            if (hasSlash) {
-              handlerArr = commonChannelPathHandler.get(path.slice(0, slashIndex));
-              params = commonChannelPathHandler.getParams(path.slice(0, slashIndex), path.slice(slashIndex + 1));
-            }
-          }
-
-          if (handlerArr) {
-            for (let i = 0, len = handlerArr.length; i < len; i++) {
-              const handler = handlerArr[i];
-              handler.handler(channel, clientId, params);
-            }
-          }
-
+          commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
           channel.serverReady();
         } else {
           const { id } = msgObj;

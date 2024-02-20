@@ -12,48 +12,14 @@ import {
   BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
   IEventBus,
-  UrlProvider,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
-import { createNetSocketConnection, electronEnv } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
 const initialLogger = getDebugLogger();
-
-export async function createClientConnection4Web(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  wsPath: UrlProvider,
-  onReconnect: () => void,
-  protocols?: string[],
-  clientId?: string,
-) {
-  return createConnectionService(
-    injector,
-    modules,
-    onReconnect,
-    ReconnectingWebSocketConnection.forURL(wsPath, protocols),
-    clientId,
-  );
-}
-
-export async function createClientConnection4Electron(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  clientId?: string,
-) {
-  const connection = createNetSocketConnection();
-  await createConnectionService(
-    injector,
-    modules,
-    () => {},
-    connection,
-    clientId ?? electronEnv.metadata.windowClientId,
-  );
-}
 
 export async function createConnectionService(
   injector: Injector,

@@ -1,1 +1,1 @@
-export * from './common-channel-handler';
+export * from './channel-handler';
