@@ -1,14 +1,7 @@
-.ai_native_slot_resize_horizontal {
-  width: 2px;
-  height: 100%;
-  margin: 0 2px;
-  position: relative;
-}
-
 div[class*='kt_workbench_editor___'] {
   height: 100%;
   width: 100%;
-  background-color: var(--ai-native-container-background);
+  background-color: var(--design-container-background);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
   overflow: hidden;
@@ -52,11 +45,11 @@ div[class*='kt_workbench_editor___'] {
         width: 22px;
         height: 22px;
         border-radius: 4px;
-        color: var(--ai-native-text-color-normal);
+        color: var(--design-text-color-normal);
 
         &:hover {
-          background-color: var(--ai-native-block-background-common);
-          color: var(--ai-native-text-color-hover);
+          background-color: var(--design-block-background-common);
+          color: var(--design-text-color-hover);
         }
       }
 
@@ -110,11 +103,11 @@ div[class*='kt_workbench_editor___'] {
         height: 22px;
         line-height: 22px;
         font-size: 14px;
-        color: var(--ai-native-text-color-normal);
+        color: var(--design-text-color-normal);
         margin-left: 2px;
 
         &:not(.disabled):hover {
-          color: var(--ai-native-text-color-hover);
+          color: var(--design-text-color-hover);
           opacity: 1;
         }
       }
@@ -132,16 +125,16 @@ div[class*='kt_workbench_editor___'] {
         &:hover {
           border-radius: 4px;
           background-color: var(--kt-icon-hoverBackground);
-          color: var(--ai-native-text-color-hover);
+          color: var(--design-text-color-hover);
         }
       }
 
       button[class*='btnAction__'] {
         border-radius: 4px;
-        color: var(--ai-native-text-color-normal);
+        color: var(--design-text-color-normal);
 
         &:hover {
-          color: var(--ai-native-text-color-hover);
+          color: var(--design-text-color-hover);
           background-color: var(--kt-icon-hoverBackground);
         }
 
@@ -170,7 +163,7 @@ div[class*='kt_workbench_editor___'] {
     border-bottom: 0 none;
 
     span[class*='navigation-part___'] {
-      color: var(--ai-native-text-color-other);
+      color: var(--design-text-color-other);
 
       > span:first-child {
         padding-right: 0;
@@ -185,7 +178,7 @@ div[class*='kt_workbench_editor___'] {
     }
 
     span[class*='navigation_icon___'] {
-      color: var(--ai-native-text-color-normal);
+      color: var(--design-text-color-normal);
     }
   }
 
@@ -202,7 +195,7 @@ div[class*='kt_workbench_editor___'] {
   .monaco-editor,
   .monaco-editor-background,
   .monaco-editor .margin {
-    background: var(--ai-native-monaco-background) !important;
+    background: var(--design-monaco-background) !important;
   }
 
   .rce-container-mbox {
@@ -218,8 +211,8 @@ div[class*='kt_workbench_editor___'] {
 /**
 * ---------------- 覆盖编辑器面板底部 tabbar 样式 ---------------------
 */
-.ai_bottom_slot {
-  background-color: var(--ai-native-container-background);
+.design_bottom_slot {
+  background-color: var(--design-container-background);
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
   overflow: hidden;
@@ -269,10 +262,10 @@ div[class*='kt_workbench_editor___'] {
       font-size: 14px;
       width: 22px;
       height: 22px;
-      color: var(--ai-native-text-color-normal);
+      color: var(--design-text-color-normal);
 
       &:not(.disabled):hover {
-        color: var(--ai-native-text-color-hover);
+        color: var(--design-text-color-hover);
       }
     }
 
@@ -283,7 +276,7 @@ div[class*='kt_workbench_editor___'] {
       &:hover {
         border-radius: 4px;
         background-color: var(--kt-icon-hoverBackground);
-        color: var(--ai-native-text-color-hover);
+        color: var(--design-text-color-hover);
       }
     }
   }
@@ -323,7 +316,7 @@ div[class*='kt_workbench_editor___'] {
       border: 0 none;
 
       span[class*='kt-icon'] {
-        color: var(--ai-native-input-color);
+        color: var(--design-input-color);
       }
     }
   }
@@ -335,7 +328,7 @@ div[class*='kt_workbench_editor___'] {
   }
 
   div[class*='panel_title_bar___'] {
-    background-color: var(--ai-native-title-background);
+    background-color: var(--design-title-background);
   }
 
   div[class*='panel_title_bar___']::before {
@@ -363,7 +356,7 @@ div[class*='kt_workbench_editor___'] {
 
     div[class*='close_icon___'] {
       opacity: 1;
-      color: var(--ai-native-text-color-normal);
+      color: var(--design-text-color-normal);
       display: flex;
       width: 22px;
       height: 22px;
@@ -375,7 +368,7 @@ div[class*='kt_workbench_editor___'] {
       }
 
       &:hover {
-        color: var(--ai-native-text-color-hover);
+        color: var(--design-text-color-hover);
       }
     }
   }
@@ -393,7 +386,7 @@ div[class*='kt_workbench_editor___'] {
       font-size: 16px;
 
       &:hover {
-        color: var(--ai-native-text-color-hover);
+        color: var(--design-text-color-hover);
         background-color: var(--kt-icon-hoverBackground);
       }
     }
@@ -420,14 +413,14 @@ div[class*='kt_workbench_editor___'] {
   :global {
     .kt-select-container {
       .kt-select-value > span {
-        color: var(--ai-native-text-color-normal);
+        color: var(--design-text-color-normal);
       }
 
       .kt-select-options {
         padding: 4px 0;
         border-radius: 8px;
-        box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1),
-          0px 3px 6px -4px var(--ai-native-boxShadow-color2), 0px 6px 16px 0px var(--ai-native-boxShadow-color3);
+        box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
+          0px 6px 16px 0px var(--design-boxShadow-color3);
 
         > div {
           line-height: 26px;
@@ -447,7 +440,7 @@ div[class*='kt_workbench_editor___'] {
   }
 }
 
-.ai_left_slot {
+.design_left_slot {
   div[class*='tab_panel___'] {
     border-right: none;
   }
@@ -489,14 +482,14 @@ div[class*='kt_workbench_editor___'] {
       align-items: center;
       justify-content: center;
       margin-left: 0;
-      color: var(--ai-native-text-color-normal);
+      color: var(--design-text-color-normal);
 
       &::before {
         font-size: 14px;
       }
 
       &:hover {
-        color: var(--ai-native-text-color-hover);
+        color: var(--design-text-color-hover);
         background-color: var(--activityBar-activeBorder);
         border-radius: 4px;
         opacity: 1;
@@ -516,24 +509,24 @@ div[class*='kt_workbench_editor___'] {
   * ---------------- 菜单相关样式 ---------------------
   */
   div[class*='titlebar__'] {
-    color: var(--ai-native-text-color-common);
+    color: var(--design-text-color-common);
 
     h1 {
-      color: var(--ai-native-text-color-common);
+      color: var(--design-text-color-common);
     }
   }
 
   div[class*='expansion_toggle___'] {
-    color: var(--ai-native-text-color-other);
+    color: var(--design-text-color-other);
   }
 
   div[class*='mod_selected___'] {
     div[class*='opened_editor_node_overflow_wrap__'] {
-      color: var(--ai-native-text-color-highlight) !important;
+      color: var(--design-text-color-highlight) !important;
     }
 
     div[class*='expansion_toggle___'] {
-      color: var(--ai-native-text-color-highlight) !important;
+      color: var(--design-text-color-highlight) !important;
     }
   }
 
@@ -641,7 +634,7 @@ div[class*='kt_workbench_editor___'] {
 /**
 * -------------------------------------------- 原默认右侧视图面板样式 --------------------------------------------
 */
-.ai_right_slot {
+.design_right_slot {
   div[class*='tab_panel___'] {
     &::before {
       content: none;

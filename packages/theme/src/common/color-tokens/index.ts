@@ -31,6 +31,6 @@ export * from './debugToolbar';
 export * from './charts';
 export * from './minimap';
 export * from './testing';
-export * from './ai-native';
+export * from './design';
 
 export * from './custom';

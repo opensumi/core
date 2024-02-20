@@ -19,7 +19,7 @@ export const DesignLeftTabRenderer = ({
   components: ComponentRegistryInfo[];
 }) => (
   <LeftTabRenderer
-    className={cls(className, styles.ai_left_slot)}
+    className={cls(className, styles.design_left_slot)}
     components={components}
     tabbarView={LeftTabbarRenderer}
   />
@@ -33,12 +33,12 @@ export const DesignRightTabRenderer = ({
   className: string;
   components: ComponentRegistryInfo[];
 }) => (
-    <RightTabRenderer
-      className={cls(className, styles.ai_left_slot)}
-      components={components}
-      tabbarView={LeftTabbarRenderer}
-    />
-  );
+  <RightTabRenderer
+    className={cls(className, styles.design_left_slot)}
+    components={components}
+    tabbarView={LeftTabbarRenderer}
+  />
+);
 
 // 编辑器 bottom 面板
 export const DesignBottomTabRenderer = ({
@@ -47,4 +47,4 @@ export const DesignBottomTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => <BottomTabRenderer className={cls(className, styles.ai_bottom_slot)} components={components} />;
+}) => <BottomTabRenderer className={cls(className, styles.design_bottom_slot)} components={components} />;

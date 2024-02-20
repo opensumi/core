@@ -10,7 +10,7 @@ import { BrowserCtxMenuService } from '@opensumi/ide-overlay/lib/browser/ctx-men
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
-import styles from './override.module.less';
+import styles from '../override.module.less';
 
 const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
   const iconService = useInjectable<IconService>(IIconService);
@@ -31,7 +31,7 @@ const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
   return (
     <div
       className={cls(
-        styles.ai_sub_menu_action_container,
+        styles.sub_menu_action_container,
         {
           [styles.disabled]: disabled,
           [styles.checked]: data.checked,

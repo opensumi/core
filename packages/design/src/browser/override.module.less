@@ -1,15 +1,4 @@
-.ai_marker_node_icon_container {
-  display: flex;
-  align-items: center;
-
-  .ai_icon {
-    color: #ffcc00;
-    display: none !important;
-    margin-right: 4px;
-  }
-}
-
-.ai_editor_tab_block_container {
+.editor_tab_block_container {
   display: flex;
   align-items: center;
   height: 36px;
@@ -38,7 +27,7 @@
       background-size: 14px;
       background-position: 2px;
       filter: grayscale(1);
-      color: var(--ai-native-icon-color);
+      color: var(--design-icon-color);
     }
   }
 
@@ -64,16 +53,16 @@
     }
 
     div[class*='close_tab___'] {
-      color: var(--ai-native-icon-color);
+      color: var(--design-icon-color);
 
       &:hover {
-        color: var(--ai-native-text-color-normal);
+        color: var(--design-text-color-normal);
       }
     }
   }
 }
 
-.ai_sub_menu_action_container {
+.sub_menu_action_container {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -107,7 +96,7 @@
     align-items: center;
 
     :global(.kt-icon) {
-      color: var(--ai-native-text-color-normal);
+      color: var(--design-text-color-normal);
     }
   }
 
@@ -151,7 +140,7 @@
 }
 
 :global(.ai-light) {
-  .ai_editor_tab_block_container {
+  .editor_tab_block_container {
     > div:first-child {
       &::before {
         filter: grayscale(0);
