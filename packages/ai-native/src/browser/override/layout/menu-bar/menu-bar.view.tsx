@@ -2,15 +2,14 @@ import clsx from 'classnames';
 import * as React from 'react';
 
 import {
-  AppConfig,
   getIcon,
   useInjectable,
   SlotRenderer,
   SlotLocation,
   AiNativeConfigService,
 } from '@opensumi/ide-core-browser';
-import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
-import { Button, Icon } from '@opensumi/ide-core-browser/lib/components';
+// import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { AILogoAvatar, EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -87,9 +86,9 @@ export const AiMenuBarView = () => {
 
   const [isOpen, setIsOpen] = React.useState<boolean>(true);
 
-  const handleRun = () => {
-    commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
-  };
+  // const handleRun = () => {
+  //   commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
+  // };
 
   const handleRightPanel = () => {
     aiMenubarService.toggleRightPanel();
@@ -145,11 +144,11 @@ export const AiMenuBarView = () => {
           <SlotRenderer slot={AI_MENU_BAR_LEFT} flex={1} overflow={'initial'} />
         </div>
         <div className={styles.center}>
-          <div className={styles.run}>
+          {/* <div className={styles.run}>
             <Button size={'default'} type='default' onClick={handleRun} className={styles.btn}>
               <Icon className={getIcon('run')} /> 运行
             </Button>
-          </div>
+          </div> */}
         </div>
         <div className={styles.right}>
           <SlotRenderer slot={AI_MENU_BAR_RIGHT} flex={1} overflow={'initial'} />
