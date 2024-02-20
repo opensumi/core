@@ -14,6 +14,10 @@ export class CommonChannelHandler4Electron extends BaseCommonChannelHandler {
     super('common-channel-4-electron', logger);
   }
 
+  doHeartbeat(connectionId: string, connection: any): void {
+    // do nothing
+  }
+
   listen() {
     this.logger.log('init Common Channel Handler');
     this.server.on('connection', (connection: net.Socket) => {

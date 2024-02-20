@@ -75,11 +75,22 @@ export class CommonChannelPathHandler {
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
 
-export class BaseCommonChannelHandler {
+export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSChannel> = new Map();
   protected heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(public handlerId: string, protected logger: ILogger = console) {}
+
+  abstract doHeartbeat(connectionId: string, connection: any): void;
+
+  private heartbeat(connectionId: string, connection: any) {
+    const timer = global.setTimeout(() => {
+      this.doHeartbeat(connectionId, connection);
+      this.heartbeat(connectionId, connection);
+    }, 5000);
+
+    this.heartbeatMap.set(connectionId, timer);
+  }
 
   receiveConnection(connection: IConnectionShape<Uint8Array>) {
     connection.onMessage((msg: Uint8Array) => {
@@ -99,6 +110,8 @@ export class BaseCommonChannelHandler {
           const { id, path } = msgObj;
           clientId = msgObj.clientId;
           this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
+
+          this.heartbeat(id, connection);
 
           const channel = new WSChannel(connection, { id });
           this.channelMap.set(id, channel);

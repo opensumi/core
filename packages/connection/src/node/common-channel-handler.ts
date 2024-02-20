@@ -22,13 +22,8 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
     this.initWSServer();
   }
 
-  private heartbeat(connectionId: string, connection: WebSocket) {
-    const timer = global.setTimeout(() => {
-      connection.ping();
-      this.heartbeat(connectionId, connection);
-    }, 5000);
-
-    this.heartbeatMap.set(connectionId, timer);
+  doHeartbeat(connectionId: string, connection: any): void {
+    connection.ping();
   }
 
   private initWSServer() {
