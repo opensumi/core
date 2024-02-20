@@ -664,15 +664,11 @@ export class AccordionService extends WithEventBus {
       }
       if (toSaveSize !== this.headerSize) {
         // 视图折叠高度不做存储
-        runInAction(() => {
-          viewState.size = toSaveSize;
-        });
+        viewState.size = toSaveSize;
       }
     }
     this.storeState();
-    runInAction(() => {
-      viewState.nextSize = calcTargetSize;
-    });
+    viewState.nextSize = calcTargetSize;
     if (!noAnimation) {
       setTimeout(() => {
         // 动画 0.1s，保证结束后移除
