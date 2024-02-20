@@ -1,7 +1,7 @@
 import * as parser from 'jsonc-parser';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, ThemeIcon, isString, path, Logger, localize } from '@opensumi/ide-core-browser';
+import { URI, ThemeIcon, isString, path, Logger } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { IProductIconTheme, ExtensionData, ThemeContribution } from '../common';
@@ -57,12 +57,12 @@ export class ProductIconThemeData implements IProductIconTheme {
       this.iconThemeDocument = await _loadProductIconThemeDocument(this.fileServiceClient, location, warnings);
     } catch (error) {
       // TODO more error handling
-      this.logger.error(localize('error.cannotparseicontheme', `parse icon theme failed ${location.codeUri.fsPath}`));
+      this.logger.error(`parse icon theme failed ${location.codeUri.fsPath}`);
     }
 
     this.isLoaded = true;
     if (warnings.length) {
-      this.logger.warn(localize('error.parseicondefs', warnings.toString()));
+      this.logger.warn(warnings.toString());
     }
     return this.styleSheetContent;
   }
@@ -134,13 +134,11 @@ async function _loadProductIconThemeDocument(
   const contentValue = parser.parse(ret.content.toString(), parseErrors);
 
   if (parseErrors.length > 0) {
-    return Promise.reject(new Error(localize('error.cannotparseicontheme', 'Parse product icon theme failed')));
+    return Promise.reject(new Error('Parse product icon theme failed'));
   } else if (typeof contentValue !== 'object') {
-    return Promise.reject(new Error(localize('error.invalidformat', 'Invalid icon theme format')));
+    return Promise.reject(new Error('Invalid icon theme format'));
   } else if (!contentValue.iconDefinitions || !Array.isArray(contentValue.fonts) || !contentValue.fonts.length) {
-    return Promise.reject(
-      new Error(localize('error.missingProperties', 'Missing properties: iconDefinitions or fonts')),
-    );
+    return Promise.reject(new Error('Missing properties: iconDefinitions or fonts'));
   }
 
   const iconThemeDocumentLocationDirname = path.dirname(location.toString());
@@ -154,14 +152,14 @@ async function _loadProductIconThemeDocument(
       if (isString(font.weight) && font.weight.match(fontWeightRegex)) {
         fontWeight = font.weight;
       } else {
-        warnings.push(localize('error.fontWeight', `Invalid font weight in font '${font.id}'. Ignoring setting.`));
+        warnings.push(`Invalid font weight in font '${font.id}'. Ignoring setting.`);
       }
 
       let fontStyle;
       if (isString(font.style) && font.style.match(fontStyleRegex)) {
         fontStyle = font.style;
       } else {
-        warnings.push(localize('error.fontStyle', `Invalid font style in font '${font.id}'. Ignoring setting.`));
+        warnings.push(`Invalid font style in font '${font.id}'. Ignoring setting.`);
       }
 
       const sanitizedSrc: IconFontSource[] = [];
@@ -171,19 +169,17 @@ async function _loadProductIconThemeDocument(
             const iconFontLocation = path.join(iconThemeDocumentLocationDirname, s.path);
             sanitizedSrc.push({ location: URI.parse(iconFontLocation), format: s.format });
           } else {
-            warnings.push(localize('error.fontSrc', `Invalid font source in font '${font.id}'. Ignoring source.`));
+            warnings.push(`Invalid font source in font '${font.id}'. Ignoring source.`);
           }
         }
       }
       if (sanitizedSrc.length) {
         sanitizedFonts.set(fontId, { weight: fontWeight, style: fontStyle, src: sanitizedSrc });
       } else {
-        warnings.push(
-          localize('error.noFontSrc', `No valid font source in font '${font.id}'. Ignoring font definition.`),
-        );
+        warnings.push(`No valid font source in font '${font.id}'. Ignoring font definition.`);
       }
     } else {
-      warnings.push(localize('error.fontId', `Missing or invalid font id '${font.id}'. Skipping font definition.`));
+      warnings.push(`Missing or invalid font id '${font.id}'. Skipping font definition.`);
     }
   }
 
@@ -202,12 +198,10 @@ async function _loadProductIconThemeDocument(
         const font = { id: `pi-${fontId}`, definition: fontDefinition };
         iconDefinitions.set(iconId, { fontCharacter: definition.fontCharacter, font });
       } else {
-        warnings.push(localize('error.icon.font', `Skipping icon definition '${iconId}'. Unknown font.`));
+        warnings.push(`Skipping icon definition '${iconId}'. Unknown font.`);
       }
     } else {
-      warnings.push(
-        localize('error.icon.fontCharacter', `Skipping icon definition '${iconId}'. Unknown fontCharacter.`),
-      );
+      warnings.push(`Skipping icon definition '${iconId}'. Unknown fontCharacter.`);
     }
   }
   return { iconDefinitions };

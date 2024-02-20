@@ -178,12 +178,15 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
     this.currentThemeId = themeId;
     this.currentTheme = productIconThemeData;
 
-    // product-icon-style 内存储 opensumi icon
-    // codiconStyles 内存储 codicon icon
+    /**
+     * product-icon-style 内存储 opensumi icon
+     * codiconStyles 内存储 codicon icon
+     * monaco-colors 内为 monaco 内置样式
+     * 注册时序为 monaco-colors -> codiconStyles -> product-icon-style
+     * TODO 此处 monaco-colors 的注册时序无法保证
+     */
     const codiconStyles = this.getIconsStyleSheet.getCSS();
     const sumiiconStyles = this.getIconsStyleSheet.getSumiCSS();
-
-    // TODO monaco patch monaco-colors cannot remove
     if (monacoNode) {
       monacoNode.innerHTML = codiconStyles || '';
     } else {
@@ -353,6 +356,7 @@ export function getIconsStyleSheet(
         const fontContribution = definition.font;
         if (fontContribution) {
           usedFontIds[fontContribution.id] = fontContribution.definition as IconFontDefinition;
+          // slice for 'sumi-' prefix
           return `.kticon-${contribution.id.slice(5)}:before { content: '${
             definition.fontCharacter
           }'; font-family: ${asCSSPropertyValue(fontContribution.id)}; }`;
