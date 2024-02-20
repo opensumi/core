@@ -1,7 +1,5 @@
 import net from 'net';
 
-import { Injector } from '@opensumi/di';
-
 import { ILogger } from '../common';
 import { NetSocketConnection } from '../common/connection';
 import { BaseCommonChannelHandler } from '../common/server-handler';
@@ -10,7 +8,7 @@ import { BaseCommonChannelHandler } from '../common/server-handler';
  * Channel Handler for electron backend
  */
 export class ElectronChannelHandler extends BaseCommonChannelHandler {
-  constructor(private server: net.Server, private injector: Injector, logger: ILogger = console) {
+  constructor(private server: net.Server, logger: ILogger = console) {
     super('electron-channel-handler', logger);
   }
 

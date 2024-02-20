@@ -3,9 +3,9 @@ import { ILogger } from './types';
 import { ChannelMessage, WSChannel, parse, stringify } from './ws-channel';
 
 export interface IPathHandler {
-  dispose: (connection: any, connectionId: string) => void;
-  handler: (connection: any, connectionId: string, params?: Record<string, string>) => void;
-  reconnect?: (connection: any, connectionId: string) => void;
+  dispose: (channel: WSChannel, connectionId: string) => void;
+  handler: (channel: WSChannel, connectionId: string, params?: Record<string, string>) => void;
+  reconnect?: (channel: WSChannel, connectionId: string) => void;
   connection?: any;
 }
 

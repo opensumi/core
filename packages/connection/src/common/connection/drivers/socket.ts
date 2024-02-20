@@ -10,11 +10,13 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
 
   constructor(private socket: net.Socket) {
     super();
-    this.socket.on('data', (chunk) => {
+    const decode = (chunk) => {
       this.decoder.push(chunk);
-    });
+    };
+    this.socket.on('data', decode);
     this.socket.once('close', () => {
       this.decoder.dispose();
+      this.socket.off('data', decode);
     });
   }
 
@@ -30,11 +32,17 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
     return this.decoder.onData(cb);
   }
 
-  onceClose(cb: () => void): IDisposable {
-    this.socket.once('close', cb);
+  onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
+    const wrapper = (hadError: boolean) => {
+      const code: number = hadError ? 1 : 0;
+      const reason: string = hadError ? 'had error' : '';
+      cb(code, reason);
+    };
+
+    this.socket.once('close', wrapper);
     return {
       dispose: () => {
-        this.socket.off('close', cb);
+        this.socket.off('close', wrapper);
       },
     };
   }
