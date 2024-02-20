@@ -3,7 +3,8 @@ import net from 'net';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
+import { CommonChannelHandler4Electron } from '@opensumi/ide-connection/lib/electron';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
@@ -54,7 +55,7 @@ export function createServerConnection2(
   });
 
   // 事件由 connection 的时机来触发
-  commonChannelPathHandler.register('RPCService', {
+  commonChannelPathHandler.register(RPCServiceChannelPath, {
     handler: (channel: WSChannel, clientId: string) => {
       handleClientChannel(injector, modulesInstances, channel, clientId, logger);
     },
@@ -73,14 +74,16 @@ export function createServerConnection2(
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger) as INodeLogger;
 
-  server.on('connection', (socket) => {
-    logger.log('new connection', socket.remoteAddress, socket.remotePort);
-    const channel = WSChannel.forClient(new NetSocketConnection(socket), {
-      id: 'RPCService-' + process.env.CODE_WINDOW_CLIENT_ID!,
-      logger,
-    });
-    handleClientChannel(injector, modulesInstances, channel, process.env.CODE_WINDOW_CLIENT_ID!, logger);
+  const handler = new CommonChannelHandler4Electron(server, injector, logger);
+  // 事件由 connection 的时机来触发
+  commonChannelPathHandler.register(RPCServiceChannelPath, {
+    handler: (channel: WSChannel, clientId: string) => {
+      handleClientChannel(injector, modulesInstances, channel, clientId, logger);
+    },
+    dispose: () => {},
   });
+
+  handler.listen();
 }
 
 export function bindModuleBackService(

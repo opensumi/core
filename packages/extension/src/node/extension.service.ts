@@ -474,75 +474,51 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private async _setMainThreadConnection(
     handler: (connectionResult: { channel: WSChannel; clientId: string }) => void,
   ) {
-    if (process.env.KTELECTRON) {
-      const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
-      const mainThreadServer: net.Server = net.createServer();
-      const mainThreadListenPath = await this.getElectronMainThreadListenPath2(clientId);
-      this.logger.log(`The electron mainThread listen on ${mainThreadListenPath}`);
-
-      mainThreadServer.on('connection', (connection) => {
-        this.logger.log(`The electron mainThread ${clientId} connected`);
-
-        const channel = WSChannel.forClient(new NetSocketConnection(connection), {
-          id: 'ElectronMainThreadForward- + clientId',
-        });
-
+    commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
+      handler: (channel: WSChannel, clientId: string) => {
         handler({
           channel,
           clientId,
         });
 
-        connection.once('close', () => {
-          this.logger.log(`Dispose client by clientId ${clientId}`);
-          // if renderer connection is lost, kill ext process
-          // this means user has close the window
-          this.disposeClientExtProcess(clientId);
-        });
-      });
+        channel.onceClose(() => {
+          channel.dispose();
+          this.logger.log(`The connection client ${clientId} closed`);
 
-      mainThreadServer.listen(mainThreadListenPath, () => {
-        this.logger.log(`Electron mainThread listen on ${mainThreadListenPath}`);
-      });
-    } else {
-      commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
-        handler: (channel: WSChannel, clientId: string) => {
-          handler({
-            channel,
-            clientId,
-          });
-
-          channel.onceClose(() => {
-            channel.dispose();
-            this.logger.log(`The connection client ${clientId} closed`);
-
-            if (this.clientExtProcessExtConnection.has(clientId)) {
-              const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
-              if (extConnection) {
-                this.clientExtProcessExtConnection.delete(clientId);
-                extConnection.dispose();
-                extConnection.destroy();
-              }
+          if (this.clientExtProcessExtConnection.has(clientId)) {
+            const extConnection = this.clientExtProcessExtConnection.get(clientId)!;
+            if (extConnection) {
+              this.clientExtProcessExtConnection.delete(clientId);
+              extConnection.dispose();
+              extConnection.destroy();
             }
-            this.closeExtProcessWhenConnectionClose(clientId);
-          });
-        },
-        dispose: () => {},
-      });
-    }
+          }
+          this.closeExtProcessWhenConnectionClose(clientId);
+        });
+      },
+      dispose: () => {},
+    });
   }
 
-  /**
-   * 当连接断开后走定时器杀死插件进程
-   */
   private closeExtProcessWhenConnectionClose(connectionClientId: string) {
     if (this.clientExtProcessMap.has(connectionClientId)) {
-      const timer = global.setTimeout(() => {
-        this.logger.log(`Dispose client by connectionClientId ${connectionClientId}`);
+      if (process.env.KTELECTRON) {
+        // in electron, if current connection is closed, kill the ext process immediately
         this.disposeClientExtProcess(connectionClientId).catch((e) => {
           this.logger.error(`Close extension host process when connection throw error\n${e.message}`);
         });
-      }, this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
-      this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
+      } else {
+        /**
+         * in web, if current connection is closed, kill the ext process after a threshold
+         */
+        const timer = global.setTimeout(() => {
+          this.logger.log(`Dispose client by connectionClientId ${connectionClientId}`);
+          this.disposeClientExtProcess(connectionClientId).catch((e) => {
+            this.logger.error(`Close extension host process when connection throw error\n${e.message}`);
+          });
+        }, this.appConfig.processCloseExitThreshold ?? ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
+        this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
+      }
     }
   }
 

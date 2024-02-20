@@ -3,6 +3,7 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   getDebugLogger,
   IReporterService,
@@ -16,7 +17,7 @@ import {
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
-import { createNetSocketConnection, fromWindowClientId } from '../utils';
+import { createNetSocketConnection, electronEnv } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
@@ -45,11 +46,13 @@ export async function createClientConnection4Electron(
   clientId?: string,
 ) {
   const connection = createNetSocketConnection();
-  const channel = WSChannel.forClient(connection, {
-    id: clientId || fromWindowClientId('RPCService'),
-    logger: console,
-  });
-  return bindConnectionService(injector, modules, channel);
+  await createConnectionService(
+    injector,
+    modules,
+    () => {},
+    connection,
+    clientId ?? electronEnv.metadata.windowClientId,
+  );
 }
 
 export async function createConnectionService(
@@ -100,8 +103,8 @@ export async function createConnectionService(
     useValue: channelHandler,
   });
 
-  // 重连不会执行后面的逻辑
-  const channel = await channelHandler.openChannel('RPCService');
+  // reconnecting will not execute the following logic
+  const channel = await channelHandler.openChannel(RPCServiceChannelPath);
   channel.onReopen(() => onReconnect());
 
   bindConnectionService(injector, modules, channel);

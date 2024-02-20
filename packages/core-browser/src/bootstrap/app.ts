@@ -229,14 +229,14 @@ export class ClientApp implements IClientApp, IDisposable {
         this.connectionProtocols,
         this.config.clientId,
       );
-      this.logger = this.getLogger();
-      // Replace Logger
-      this.injector.get(WSChannelHandler).replaceLogger(this.logger);
     }
+
+    this.logger = this.getLogger();
+    // Replace Logger
+    this.injector.get(WSChannelHandler).replaceLogger(this.logger);
 
     measureReporter.timeEnd('ClientApp.createConnection');
 
-    this.logger = this.getLogger();
     this.stateService.state = 'client_connected';
     this.registerEventListeners();
     // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
