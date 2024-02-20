@@ -2,8 +2,6 @@ import { localize } from '@opensumi/ide-core-common';
 import { Codicon, Sumiicon } from '@opensumi/ide-core-common/lib/codicons';
 
 // https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
-// 可能存在部分 icon 不对应, opensumi codicon 版本为 0.0.12 vscode 为 0.0.35
-// TODO 升级 codicon 版本
 export const codIconIdentifier = {
   'accounts-view-bar-icon': {
     defaults: Codicon.account,
@@ -909,23 +907,23 @@ export const codIconIdentifier = {
 export const sumiIconIdentifier = {
   'sumi-explorer': {
     defaults: Sumiicon.explorer,
-    description: localize('', 'View icon in the Explorer view.'),
+    description: 'View icon in the Explorer view.',
   },
   'sumi-search': {
     defaults: Sumiicon.search,
-    description: localize('', 'View icon in the Search view.'),
+    description: 'View icon in the Search view.',
   },
   'sumi-debug': {
     defaults: Sumiicon.debug,
-    description: localize('', 'View icon in the Debug view.'),
+    description: 'View icon in the Debug view.',
   },
   'sumi-scm': {
     defaults: Sumiicon.scm,
-    description: localize('', 'View icon in the Source Control  view.'),
+    description: 'View icon in the Source Control  view.',
   },
   'sumi-extension': {
     defaults: Sumiicon.extension,
-    description: localize('', 'View icon in the Extension view.'),
+    description: 'View icon in the Extension view.',
   },
   'sumi-embed': {
     defaults: Sumiicon.embed,

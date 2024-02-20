@@ -635,8 +635,8 @@ export const Codicon = {
   quickInputBack: register('quick-input-back', 'arrow-left'),
 } as const;
 
+// proxy to sumiicon
 export const Sumiicon = {
-  // proxy to codicon
   explorer: registerSumi('files', 0xe71e, ['files', 'explorer-view-icon']),
   search: registerSumi('search', 0xe710, ['search', 'search-editor-label-icon', 'search-view-icon']),
   debug: registerSumi('debug-alt', 0xe712, [
