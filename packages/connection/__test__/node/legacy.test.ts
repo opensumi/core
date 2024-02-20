@@ -4,8 +4,8 @@ import { Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
-import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/ext-rpc-protocol';
 import { createWebSocketConnection } from '../../src/common/message';
+import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
 
 const WebSocket = ws;
 
