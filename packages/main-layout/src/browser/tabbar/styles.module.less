@@ -20,6 +20,23 @@
     color: var(--activityBarBadge-foreground);
   }
 }
+
+.text_tab {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .bottom_tab_title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    :global(.kaitian-icon) {
+      color: var(--activityBar-inactiveForeground);
+    }
+  }
+}
+
 .icon_tab {
   padding: 0 0;
   position: relative;
@@ -368,8 +385,10 @@
   flex-direction: row;
   align-items: center;
   z-index: 1;
-  border-top: 1px solid var(--sideBar-border);
   height: 24px;
+  + .tab_panel {
+    border-bottom: 1px solid var(--sideBar-border);
+  }
 }
 
 .split_line {

@@ -23,6 +23,7 @@ import {
   Deferred,
   formatLocalize,
   createFormatLocalizedStr,
+  ComponentRegistryProvider,
 } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
@@ -55,15 +56,16 @@ const CONTAINER_NAME_MAP = {
   bottom: 'panel',
 };
 
+const NONE_CONTAINER_ID = '__NONE__';
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
   @observable
-  currentContainerId = '';
+  // currentContainerId 默认值应该为一个非空且唯一的字符串，避免在切换容器时触发 MobX 不变错误
+  currentContainerId = NONE_CONTAINER_ID;
 
   previousContainerId = '';
 
-  // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
-  containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  containersMap: Map<string, ComponentRegistryProvider> = new Map();
 
   @observable
   state: Map<string, TabState> = new Map();
@@ -118,10 +120,6 @@ export class TabbarService extends WithEventBus {
   @Autowired(IProgressService)
   private progressService: IProgressService;
 
-  // 提供给 Mobx 强刷刷新
-  @observable
-  forceUpdate = 0;
-
   private accordionRestored: Set<string> = new Set();
 
   private readonly onCurrentChangeEmitter = new Emitter<{ previousId: string; currentId: string }>();
@@ -163,20 +161,17 @@ export class TabbarService extends WithEventBus {
   }
 
   @action
-  forceUpdateTabbar() {
-    this.forceUpdate++;
-  }
-
-  @action
   updateCurrentContainerId(containerId: string) {
     this.currentContainerId = containerId;
   }
 
+  @action
   updateBadge(containerId: string, value: string) {
     const component = this.getContainer(containerId);
-    if (component && component.options?.badge) {
+    if (component && component.options) {
       component.options.badge = value;
     }
+    component?.fireChange(component);
   }
 
   registerPanelCommands(): void {
@@ -239,7 +234,7 @@ export class TabbarService extends WithEventBus {
   }
 
   get visibleContainers() {
-    const components: ComponentRegistryInfo[] = [];
+    const components: ComponentRegistryProvider[] = [];
     this.containersMap.forEach((component) => {
       const state = component.options && this.state.get(component.options.containerId);
       if (!state || !state.hidden) {
@@ -278,7 +273,10 @@ export class TabbarService extends WithEventBus {
     const disposables = new DisposableCollection();
     const options = componentInfo.options || { containerId };
     componentInfo.options = options;
+    const componentChangeEmitter = new Emitter<ComponentRegistryProvider>();
     this.containersMap.set(containerId, {
+      fireChange: (component: ComponentRegistryProvider) => componentChangeEmitter.fire(component),
+      onChange: componentChangeEmitter.event,
       views: componentInfo.views,
       options: observable.object(options, undefined, { deep: false }),
     });
@@ -459,6 +457,14 @@ export class TabbarService extends WithEventBus {
     }
     if (this.currentContainerId === containerId) {
       this.currentContainerId = this.visibleContainers[0].options?.containerId || '';
+    }
+  }
+
+  @action
+  updateTitle(containerId: string, title: string) {
+    const container = this.getContainer(containerId);
+    if (container) {
+      container.options!.title = title;
     }
   }
 
@@ -809,7 +815,7 @@ export class TabbarService extends WithEventBus {
     return reaction(
       () => this.currentContainerId,
       (nextContainerId, previousContainerId) => {
-        this.previousContainerId = previousContainerId;
+        this.previousContainerId = previousContainerId === NONE_CONTAINER_ID ? '' : previousContainerId;
         this.handleChange(nextContainerId, previousContainerId);
       },
     );
