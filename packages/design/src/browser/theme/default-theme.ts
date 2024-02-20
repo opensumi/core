@@ -791,7 +791,7 @@ export default {
   encodedTokensColors: [],
   rules: [],
   base: 'vs-dark',
-  aiThemeType: 'ai-dark',
+  designThemeType: 'design-dark',
   inherit: true,
   hasDefaultTokens: false,
   id: 'OpenSumi AI Native Theme',

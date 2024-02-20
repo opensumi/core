@@ -15,15 +15,7 @@ import lightTheme from './theme/light-theme';
 
 @Injectable()
 export class DesignModule extends BrowserModule {
-  providers: Provider[] = [
-    DesignCoreContribution,
-    {
-      token: ISplitPanelService,
-      useClass: DesignSplitPanelService,
-      override: true,
-      isDefault: true,
-    },
-  ];
+  providers: Provider[] = [DesignCoreContribution];
 
   preferences = (injector: Injector) => {
     import('./style/index.less');
@@ -40,12 +32,12 @@ export class DesignModule extends BrowserModule {
             let themeToken;
             if (contribution?.id?.includes('light')) {
               themeToken = lightTheme;
-              document.body.classList.remove(defaultTheme.aiThemeType);
+              document.body.classList.remove(defaultTheme.designThemeType);
             } else {
               themeToken = defaultTheme;
-              document.body.classList.remove(lightTheme.aiThemeType);
+              document.body.classList.remove(lightTheme.designThemeType);
             }
-            document.body.classList.add(themeToken.aiThemeType);
+            document.body.classList.add(themeToken.designThemeType);
             theme.initializeFromData(themeToken);
 
             const colors = theme.colors;
@@ -60,22 +52,6 @@ export class DesignModule extends BrowserModule {
               }
             }
 
-            const defaultRemoveColor = new Color(new RGBA(217, 108, 108, 0.2));
-            registerColor(
-              'diffEditor.removedLineBackground',
-              { dark: defaultRemoveColor, light: defaultRemoveColor, hcDark: null, hcLight: null },
-              '',
-              true,
-            );
-
-            const defaultInsertColor = new Color(new RGBA(108, 217, 126, 0.2));
-            registerColor(
-              'diffEditor.insertedLineBackground',
-              { dark: defaultInsertColor, light: defaultInsertColor, hcDark: null, hcLight: null },
-              '',
-              true,
-            );
-
             return newTheme;
           }
         },
@@ -85,6 +61,12 @@ export class DesignModule extends BrowserModule {
       {
         token: IEditorTabService,
         useClass: DesignEditorTabService,
+        override: true,
+        isDefault: true,
+      },
+      {
+        token: ISplitPanelService,
+        useClass: DesignSplitPanelService,
         override: true,
         isDefault: true,
       },
