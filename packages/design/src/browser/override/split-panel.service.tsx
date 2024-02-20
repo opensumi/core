@@ -1,9 +1,7 @@
-import React, { FunctionComponentElement, ReactNode } from 'react';
+import { FunctionComponentElement, ReactNode } from 'react';
 
 import { SplitPanelProps } from '@opensumi/ide-core-browser/lib/components';
 import { SplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
-
-import styles from '../layout/layout.module.less';
 
 export class DesignSplitPanelService extends SplitPanelService {
   override renderSplitPanel(

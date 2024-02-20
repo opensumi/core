@@ -19,6 +19,7 @@ import {
   SubmenuItemNode,
   generateMergedCtxMenu,
 } from '../../menu/next';
+import { IMenuRenderProps } from '../../menu/next/renderer/ctxmenu/browser';
 import { useInjectable } from '../../react-hooks';
 import { transformLabelWithCodicon, useContextMenus, useMenus } from '../../utils';
 
@@ -63,7 +64,9 @@ export const MenuActionList: React.FC<{
   context?: any[];
   style?: React.CSSProperties;
   iconService?: IMenubarIconService;
-}> = ({ data = [], context = [], afterClick, style, iconService }) => {
+  renderSubMenuTitle?: (node: MenuNode, props: IMenuRenderProps) => React.ReactNode | undefined | null;
+  renderMenuItem?: (node: MenuNode, props: IMenuRenderProps) => React.ReactNode | undefined | null;
+}> = ({ data = [], context = [], afterClick, style, iconService, renderSubMenuTitle, renderMenuItem }) => {
   if (!data.length) {
     return null;
   }
@@ -94,6 +97,34 @@ export const MenuActionList: React.FC<{
     [data, context],
   );
 
+  const subMenuTitle = React.useCallback(
+    (menuNode: MenuNode) => {
+      if (renderSubMenuTitle) {
+        const subMenu = renderSubMenuTitle(menuNode, { hasSubmenu: true, disabled: false });
+        if (subMenu) {
+          return subMenu;
+        }
+      }
+
+      return <MenuAction hasSubmenu data={menuNode} iconService={iconService} />;
+    },
+    [renderSubMenuTitle],
+  );
+
+  const menuItem = React.useCallback(
+    (menuNode: MenuNode) => {
+      if (renderMenuItem) {
+        const menuItem = renderMenuItem(menuNode, { hasSubmenu: false, disabled: menuNode.disabled });
+        if (menuItem) {
+          return menuItem;
+        }
+      }
+
+      return <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />;
+    },
+    [renderMenuItem],
+  );
+
   const recursiveRender = React.useCallback(
     (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
@@ -113,7 +144,7 @@ export const MenuActionList: React.FC<{
                 key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}
                 className={styles.submenuItem}
                 popupClassName='kt-menu'
-                title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
+                title={subMenuTitle(menuNode)}
               >
                 {recursiveRender(menuNode.children, menuNode.label)}
               </Menu.SubMenu>
@@ -130,7 +161,7 @@ export const MenuActionList: React.FC<{
               className={styles.menuItem}
               disabled={menuNode.disabled}
             >
-              <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
+              {menuItem(menuNode)}
             </Menu.Item>
             {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
           </React.Fragment>

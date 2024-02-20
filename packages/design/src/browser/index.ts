@@ -1,16 +1,17 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, URI } from '@opensumi/ide-core-browser';
 import { ISplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
-import { Color, IThemeData, IThemeStore, RGBA, IThemeContribution, registerColor } from '@opensumi/ide-theme';
+import { Color, IThemeContribution, IThemeData, IThemeStore, RGBA, registerColor } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
-import { AiEditorTabService } from './ai-editor-tab.service';
 import { DesignCoreContribution } from './design.contribution';
+import { DesignEditorTabService } from './override/editor-tab.service';
+import { DesignBrowserCtxMenuService } from './override/menu.service';
 import { DesignSplitPanelService } from './override/split-panel.service';
 import defaultTheme from './theme/default-theme';
 import lightTheme from './theme/light-theme';
-
 
 @Injectable()
 export class DesignModule extends BrowserModule {
@@ -26,7 +27,6 @@ export class DesignModule extends BrowserModule {
 
   preferences = (injector: Injector) => {
     import('./style/index.less');
-    // import('./layout/layout.module.less');
 
     injector.overrideProviders(
       {
@@ -84,9 +84,13 @@ export class DesignModule extends BrowserModule {
       },
       {
         token: IEditorTabService,
-        useClass: AiEditorTabService,
+        useClass: DesignEditorTabService,
         override: true,
         isDefault: true,
+      },
+      {
+        token: IBrowserCtxMenu,
+        useClass: DesignBrowserCtxMenuService,
       },
     );
   };

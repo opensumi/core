@@ -26,7 +26,7 @@ const EditorTabCloseComponent = (props) => {
 };
 
 @Injectable()
-export class AiEditorTabService extends EditorTabService {
+export class DesignEditorTabService extends EditorTabService {
   override renderEditorTab(component: ReactNode, isCurrent: boolean): ReactNode {
     return (
       <div

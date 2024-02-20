@@ -1,10 +1,9 @@
 import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { SplitPanelProps } from './split-panel';
-
 
 export const ISplitPanelService = Symbol('ISplitPanelService');
 export interface ISplitPanelService extends IDisposable {
@@ -18,6 +17,8 @@ export interface ISplitPanelService extends IDisposable {
     props: SplitPanelProps,
   ): React.ReactElement;
   interceptProps(props: SplitPanelProps): SplitPanelProps;
+  setRootNode(node: HTMLElement): void;
+  whenReady: Promise<void>;
 }
 
 @Injectable({ multiple: true })
@@ -27,12 +28,23 @@ export class SplitPanelService extends Disposable implements ISplitPanelService 
     super();
   }
 
+  private _whenReadyDeferred: Deferred<void> = new Deferred();
+
   panels: HTMLElement[] = [];
 
   rootNode: HTMLElement | undefined;
 
   get isVisible(): boolean {
     return (this.rootNode && this.rootNode.clientHeight > 0) || false;
+  }
+
+  get whenReady() {
+    return this._whenReadyDeferred.promise;
+  }
+
+  setRootNode(node: HTMLElement) {
+    this.rootNode = node;
+    this._whenReadyDeferred.resolve();
   }
 
   getFirstResizablePanel(index: number, direction: boolean, isPrev?: boolean): HTMLElement | undefined {

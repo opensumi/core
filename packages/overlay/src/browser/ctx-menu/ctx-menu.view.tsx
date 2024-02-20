@@ -49,6 +49,8 @@ export const CtxMenu = observer(() => {
             afterClick={handleClick}
             context={ctxMenuService.context}
             iconService={iconService}
+            renderSubMenuTitle={ctxMenuService.renderSubMenuTitle}
+            renderMenuItem={ctxMenuService.renderMenuItem}
           />
         </ClickOutside>
       }

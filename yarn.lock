@@ -16587,15 +16587,15 @@ __metadata:
   linkType: hard
 
 "rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
-  version: 5.38.1
-  resolution: "rc-util@npm:5.38.1"
+  version: 5.38.2
+  resolution: "rc-util@npm:5.38.2"
   dependencies:
     "@babel/runtime": ^7.18.3
     react-is: ^18.2.0
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 40d0411fb5d6b0a187e718ff16c18f3d68eae3d7e4def43a9a9b2690b89cfce639077a69d683aa01302f8132394dd633baf76b07e5a3b8438fb706b1abb31937
+  checksum: 104a76bb013e0ebe456e6ad6a0af0abe2e10a782f9e8a7802709f254ff5181142cc5c4c877cc05e4faccf2a30b94cc053d211dda88d8a29b118baceacc128c5a
   languageName: node
   linkType: hard
 
