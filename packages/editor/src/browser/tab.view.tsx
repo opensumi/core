@@ -1,45 +1,45 @@
 import cls from 'classnames';
 import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  useContext,
-  useMemo,
-  forwardRef,
   DragEvent,
   HTMLAttributes,
-  Ref,
   MouseEvent,
+  Ref,
+  forwardRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from 'react';
 
 import { Scrollbars } from '@opensumi/ide-components';
 import {
-  getIcon,
-  MaybeNull,
-  IEventBus,
-  getSlotLocation,
+  AppConfig,
   ConfigContext,
+  Disposable,
+  DisposableCollection,
+  DomListener,
+  Event,
+  IEventBus,
+  MaybeNull,
+  PreferenceService,
   ResizeEvent,
   URI,
-  Disposable,
-  DomListener,
-  PreferenceService,
-  DisposableCollection,
-  Event,
   getExternalIcon,
+  getIcon,
+  getSlotLocation,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 
-import { IResource, ResourceService, IEditorGroup, WorkbenchEditorService, ResourceDidUpdateEvent } from '../common';
+import { IEditorGroup, IResource, ResourceDidUpdateEvent, ResourceService, WorkbenchEditorService } from '../common';
 
 import styles from './editor.module.less';
 import { TabTitleMenuService } from './menu/title-context.menu';
-import { GridResizeEvent, IEditorActionRegistry, DragOverPosition, EditorGroupFileDropEvent } from './types';
+import { DragOverPosition, EditorGroupFileDropEvent, GridResizeEvent, IEditorActionRegistry } from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -62,6 +62,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
   const [wrapMode, setWrapMode] = useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
@@ -332,13 +333,8 @@ export const Tabs = ({ group }: ITabsProps) => {
             })}
             style={
               wrapMode && i === group.resources.length - 1
-                ? { marginRight: lastMarginRight, height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
-                : {
-                    height:
-                      group.currentResource === resource
-                        ? LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT + 1
-                        : LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
-                  }
+                ? { marginRight: lastMarginRight, height: appConfig.layoutViewSize!.editorTabsHeight }
+                : { height: appConfig.layoutViewSize!.editorTabsHeight }
             }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
@@ -469,6 +465,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
 
     const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
+    const appConfig = useInjectable<AppConfig>(AppConfig);
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
@@ -500,7 +497,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       <div
         ref={ref}
         className={cls(styles.editor_actions, className)}
-        style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
+        style={{ height: appConfig.layoutViewSize!.editorTabsHeight }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}
