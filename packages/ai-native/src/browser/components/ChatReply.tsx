@@ -114,6 +114,7 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
         onReady={onReady}
         treeName={props.treeData.label}
         leaveBottomBlank={false}
+        baseIndent={0}
       />
     </div>
   );
