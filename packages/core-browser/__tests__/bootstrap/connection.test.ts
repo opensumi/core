@@ -1,10 +1,11 @@
+import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import { IEventBus, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
 import { WebSocket, Server } from '@opensumi/mock-socket';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ClientAppStateService } from '../../src/application';
-import { createClientConnection4Web } from '../../src/bootstrap/connection';
+import { createConnectionService } from '../../src/bootstrap/connection';
 (global as any).WebSocket = WebSocket;
 
 describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
@@ -29,7 +30,7 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
       done();
     });
     stateService = injector.get(ClientAppStateService);
-    createClientConnection4Web(injector, [], fakeWSURL, () => {});
+    createConnectionService(injector, [], () => {}, ReconnectingWebSocketConnection.forURL(fakeWSURL));
     stateService.state = 'core_module_initialized';
     new Promise<void>((resolve) => {
       setTimeout(() => {
