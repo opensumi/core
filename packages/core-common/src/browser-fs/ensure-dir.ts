@@ -4,14 +4,6 @@ import { promisify } from './util';
 
 const PATH_SEPARATOR = '/';
 
-function fsExistsAsync(path: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    fs.exists(path, (exists: boolean) => {
-      resolve(exists);
-    });
-  });
-}
-
 interface FsLike {
   access: (path: string) => Promise<boolean>;
   mkdir: (path: string) => Promise<void>;

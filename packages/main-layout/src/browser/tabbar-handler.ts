@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
+import { Event, Emitter } from '@opensumi/ide-core-common';
 
 import { IMainLayoutService } from '../common';
 
@@ -9,9 +9,6 @@ import { TabbarService } from './tabbar/tabbar.service';
 export class TabBarHandler {
   @Autowired(IMainLayoutService)
   private layoutService!: IMainLayoutService;
-
-  @Autowired(ILogger)
-  private readonly logger: ILogger;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
@@ -91,11 +88,11 @@ export class TabBarHandler {
    * 设置视图的顶部标题组件
    */
   setTitleComponent(Fc: React.ComponentType, props?: object) {
-    const componentInfo = this.tabbarService.getContainer(this.containerId);
-    if (componentInfo) {
-      componentInfo.options!.titleProps = props;
-      componentInfo.options!.titleComponent = Fc;
-      this.tabbarService.forceUpdateTabbar();
+    const component = this.tabbarService.getContainer(this.containerId);
+    if (component && component.options) {
+      component.options.titleProps = props;
+      component.options.titleComponent = Fc;
+      component.fireChange(component);
     }
   }
   /**
@@ -144,52 +141,34 @@ export class TabBarHandler {
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const viewState = this.accordionService.getViewState(viewId);
-      this.accordionService.setViewState(viewId, { ...viewState, hidden: !show });
+      this.accordionService.updateViewState(viewId, { ...viewState, hidden: !show });
     }
   }
   /**
    * 更新子视图的标题
    */
   updateViewTitle(viewId: string, title: string) {
-    const targetView = this.accordionService.views.find((view) => view.id === viewId);
-    if (targetView) {
-      targetView.name = title;
-      this.accordionService.updateViewTitle(viewId, title);
-    } else {
-      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion title`);
-    }
+    this.accordionService.updateViewTitle(viewId, title);
   }
 
   /**
    * 更新子视图的描述
    */
   updateViewDescription(viewId: string, desciption: string) {
-    const targetView = this.accordionService.views.find((view) => view.id === viewId);
-    if (targetView) {
-      targetView.description = desciption;
-      this.accordionService.updateViewDesciption(viewId, desciption);
-    } else {
-      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion description`);
-    }
+    this.accordionService.updateViewDesciption(viewId, desciption);
   }
 
   /**
    * 更新子视图的 message
    */
   updateViewMessage(viewId: string, message: string) {
-    const targetView = this.accordionService.views.find((view) => view.id === viewId);
-    if (targetView) {
-      targetView.message = message;
-      this.accordionService.updateViewMessage(viewId, message);
-    } else {
-      this.logger.error(`No target view \`${viewId}\` found, unable to update accordion message`);
-    }
+    this.accordionService.updateViewMessage(viewId, message);
   }
   /**
    * 更新视图的标题
    */
-  updateTitle(label: string) {
-    this.tabbarService.getContainer(this.containerId)!.options!.title = label;
+  updateTitle(title: string) {
+    this.tabbarService.updateTitle(this.containerId, title);
   }
   /**
    * 禁用侧边栏的resize功能

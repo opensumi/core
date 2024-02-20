@@ -66,7 +66,7 @@ export class LayoutState {
       LAYOUT_STATE.isScoped(key) ||
         (this.saveLayoutWithWorkspace && (LAYOUT_STATE.isLayout(key) || LAYOUT_STATE.isStatusBar(key))),
     );
-  }, 60);
+  }, 200);
 
   private setStorageValue(key: string, state: object, scope?: boolean) {
     if (scope) {
