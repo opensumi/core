@@ -212,7 +212,7 @@ export class AiChatService extends Disposable {
       if (selectionContent) {
         messageWithPrompt = `这是 ${displayName} 文件，我会提供给你代码片段以及我的问题, 你需要根据我给的代码片段来解释我的问题。我提供的代码片段是: \`\`\`\n${selectionContent}\n\`\`\`，我的问题是: "${message}" `;
       } else {
-        messageWithPrompt = `这是 ${displayName} 文件，代码内容是 \`\`\`\n${content}\n\`\`\`。根据我提供的代码内容来回答我的问题，我的问题是: "${message}" `;
+        messageWithPrompt = `解释下面的代码: "${message}" `;
       }
     }
     return messageWithPrompt;
