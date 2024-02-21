@@ -12,6 +12,7 @@ import {
 } from '@opensumi/ide-components';
 import { CommandService, URI, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IIconTheme, IThemeService } from '@opensumi/ide-theme';
@@ -72,6 +73,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
   onTwistierClick,
 }) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px`;
 
   const scmResourceGroup = item.resource as ISCMResourceGroup;
@@ -118,9 +120,14 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={cls(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
-            [`${styles.mod_collapsed}`]: !(node as SCMResourceGroup).expanded,
-          })}
+          className={cls(
+            styles.scm_tree_node_segment,
+            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+            getIcon('arrow-right'),
+            {
+              [`${styles.mod_collapsed}`]: !(node as SCMResourceGroup).expanded,
+            },
+          )}
         />
       );
     },
@@ -146,7 +153,10 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
-      className={cls(styles.scm_tree_node, decorations ? decorations.classlist : null)}
+      className={cls(
+        designService.getStyles('scm_tree_node', styles.scm_tree_node),
+        decorations ? decorations.classlist : null,
+      )}
       style={{
         height: SCM_TREE_NODE_HEIGHT,
         lineHeight: `${SCM_TREE_NODE_HEIGHT}px`,
@@ -189,6 +199,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
   iconTheme,
 }) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const decoration = SCMResourceGroup.is(item) ? null : decorationService.getDecoration(item.uri, false);
 
   const scmResource = item.resource as ISCMResource;
@@ -321,9 +332,14 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={cls(styles.scm_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
-            [`${styles.mod_collapsed}`]: !(node as SCMResourceFolder).expanded,
-          })}
+          className={cls(
+            styles.scm_tree_node_segment,
+            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+            getIcon('arrow-right'),
+            {
+              [`${styles.mod_collapsed}`]: !(node as SCMResourceFolder).expanded,
+            },
+          )}
         />
       );
     },
@@ -337,7 +353,10 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(styles.scm_tree_node, decorations ? decorations.classlist : null)}
+      className={cls(
+        designService.getStyles('scm_tree_node', styles.scm_tree_node),
+        decorations ? decorations.classlist : null,
+      )}
       style={{
         color: decoration ? decoration.color : '',
         paddingLeft,

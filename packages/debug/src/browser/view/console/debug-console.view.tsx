@@ -21,6 +21,7 @@ import {
   getIcon,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
@@ -38,6 +39,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const { consoleModel } = debugConsoleService;
   const { height, width } = viewState;
   const [model, setModel] = React.useState<IDebugConsoleModel>();
@@ -205,7 +207,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   return (
     <div className={styles.debug_console} onContextMenu={handleOuterContextMenu} onClick={handleConsoleClick}>
       <div
-        className={styles.debug_console_output}
+        className={designService.getStyles('debug_console_output', styles.debug_console_output)}
         tabIndex={-1}
         onBlur={handleOuterBlur}
         ref={wrapperRef}
@@ -213,7 +215,10 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       >
         {renderOutputContent()}
       </div>
-      <div className={styles.variable_repl_bar} style={{ maxHeight: height - 26 + 'px' }}>
+      <div
+        className={designService.getStyles('variable_repl_bar', styles.variable_repl_bar)}
+        style={{ maxHeight: height - 26 + 'px' }}
+      >
         <div className={styles.variable_repl_bar_icon}>
           <span className={getIcon('right')}></span>
         </div>
@@ -260,6 +265,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   itemType,
 }: IDebugConsoleNodeRenderedProps) => {
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
   const [computedStyle, setComputedStyle] = React.useState<string>();
 
@@ -423,7 +429,12 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_console_node_segment, styles.expansion_toggle)}>
+        <div
+          className={cls(
+            styles.debug_console_node_segment,
+            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          )}
+        >
           <Loading />
         </div>
       );
@@ -435,9 +446,14 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_console_node_segment, styles.expansion_toggle, getIcon('right'), {
-          [`${styles.mod_collapsed}`]: !(node as DebugConsoleNode).expanded,
-        })}
+        className={cls(
+          styles.debug_console_node_segment,
+          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          getIcon('right'),
+          {
+            [`${styles.mod_collapsed}`]: !(node as DebugConsoleNode).expanded,
+          },
+        )}
       />
     );
   };

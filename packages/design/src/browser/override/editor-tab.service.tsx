@@ -31,7 +31,7 @@ export class DesignEditorTabService extends EditorTabService {
     return (
       <div
         className={cls({
-          [styles.editor_tab_block_container]: true,
+          [styles['design-editor_tab_block_container']]: true,
           [styles.active]: isCurrent,
         })}
       >

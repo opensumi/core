@@ -1,15 +1,17 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, URI } from '@opensumi/ide-core-browser';
 import { ISplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
-import { Color, IThemeContribution, IThemeData, IThemeStore, RGBA, registerColor } from '@opensumi/ide-theme';
+import { Color, IThemeContribution, IThemeData, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import { DesignCoreContribution } from './design.contribution';
 import { DesignEditorTabService } from './override/editor-tab.service';
 import { DesignBrowserCtxMenuService } from './override/menu.service';
 import { DesignSplitPanelService } from './override/split-panel.service';
+import designStyles from './style/design.module.less';
 import defaultTheme from './theme/default-theme';
 import lightTheme from './theme/light-theme';
 
@@ -18,11 +20,14 @@ export class DesignModule extends BrowserModule {
   providers: Provider[] = [DesignCoreContribution];
 
   preferences = (injector: Injector) => {
-    import('./style/index.less');
+    import('./style/global.less');
+
+    const designStyleService: IDesignStyleService = injector.get(IDesignStyleService);
+    // console.log('designStyles:>>>>', designStyles)
+    designStyleService.setStyles(designStyles);
 
     injector.overrideProviders(
       {
-        // AI Native 模式下默认使用该主题
         token: IThemeStore,
         useClass: class extends ThemeStore {
           override async getThemeData(contribution?: IThemeContribution, basePath?: URI) {

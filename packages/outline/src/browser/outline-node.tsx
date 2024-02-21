@@ -8,7 +8,8 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { CommandService, URI, getIcon } from '@opensumi/ide-core-browser';
+import { CommandService, URI, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { SymbolTag } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
 import { IOutlineDecorationService } from '../common';
@@ -44,6 +45,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   decorationService,
   decorations,
 }: OutlineNodeRenderedProps) => {
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const decoration = OutlineTreeNode.is(item) ? decorationService.getDecoration(item) : null;
 
   const handleClick = (ev: React.MouseEvent) => {
@@ -106,9 +108,14 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   const renderFolderToggle = (node: OutlineCompositeTreeNode, clickHandler: any) => (
     <div
       onClick={clickHandler}
-      className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
-        [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
-      })}
+      className={cls(
+        styles.file_tree_node_segment,
+        designService.getStyles('expansion_toggle', styles.expansion_toggle),
+        getIcon('arrow-right'),
+        {
+          [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
+        },
+      )}
     />
   );
 
@@ -140,7 +147,10 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(styles.outline_node, decorations ? decorations.classlist : null)}
+      className={cls(
+        designService.getStyles('outline_node', styles.outline_node),
+        decorations ? decorations.classlist : null,
+      )}
       style={editorNodeStyle}
       data-id={item.id}
     >

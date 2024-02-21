@@ -4,6 +4,7 @@ import React from 'react';
 import { ErrorBoundary, getIcon, useInjectable, useViewState } from '@opensumi/ide-core-browser';
 import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IContextMenu, IMenu, isIMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -68,6 +69,7 @@ export const AccordionSection = ({
   alignment,
 }: CollapsePanelProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [metadata, setMetadata] = React.useState({
@@ -139,11 +141,11 @@ export const AccordionSection = ({
   }, [expanded, headerSize, alignment]);
 
   return (
-    <div className={styles.kt_split_panel} data-view-id={viewId}>
+    <div className={designService.getStyles('kt_split_panel', styles.kt_split_panel)} data-view-id={viewId}>
       {!noHeader && (
         <div
           {...attrs}
-          className={cls(styles.kt_split_panel_header, headerClass)}
+          className={cls(designService.getStyles('kt_split_panel_header', styles.kt_split_panel_header), headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
@@ -161,7 +163,7 @@ export const AccordionSection = ({
             {metadata.badge && <div className={styles.section_badge}>{metadata.badge}</div>}
           </div>
           {expanded && titleMenu && (
-            <div className={styles.actions_wrap}>
+            <div className={designService.getStyles('actions_wrap', styles.actions_wrap)}>
               {isIMenu(titleMenu) ? (
                 <InlineActionBar menus={titleMenu} context={titleMenuContext} />
               ) : (

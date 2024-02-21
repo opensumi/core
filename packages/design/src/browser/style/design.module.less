@@ -1,23 +1,68 @@
-div[class*='kt_workbench_editor___'] {
+.design-box-panel {
+  background-image: url('https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*hLI-SqEx-YkAAAAAAAAAAAAADhl8AQ/original');
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+:global(.design-light) {
+  .design-box-panel {
+    background-image: url('https://mdn.alipayobjects.com/huamei_aj2sia/afts/img/A*6wRWRLd0RCMAAAAAAAAAAAAADoSNAQ/original');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+}
+
+:global(#opensumi-quickpick) {
+  .design-quickopen_list {
+    border-radius: 0 0 8px 8px !important;
+    border: 0 none !important;
+    box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
+      0px 6px 16px 0px var(--design-boxShadow-color3) !important;
+  }
+}
+
+.design-debug_toolbar_wrapper {
+  border-radius: 8px;
+  background-color: var(--kt-modal-background);
+  border: 0 none !important;
+  box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
+    0px 6px 16px 0px var(--design-boxShadow-color3) !important;
+}
+
+.design-navigation_menu {
+  border-radius: 8px;
+  border: 0 none !important;
+  box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
+    0px 6px 16px 0px var(--design-boxShadow-color3) !important;
+
+  .design-navigation_menu_item {
+    :global(.kaitian-icon) {
+      font-size: 14px;
+    }
+  }
+}
+
+.design-kt_workbench_editor {
   height: 100%;
   width: 100%;
   background-color: var(--design-container-background);
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
   overflow: hidden;
+}
 
-  /**
-    * ---------------- 覆盖 editor tab 样式 ---------------------
-    */
-
-  div[class*='kt_editor_tabs_scroll_wrapper___'] {
-    &:after {
-      display: none;
-    }
+/**
+* ---------------- 覆盖 editor tab 样式 ---------------------
+*/
+.design-kt_editor_tabs_scroll_wrapper {
+  &:after {
+    display: none;
   }
+}
 
-  div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_content___'] {
-    div[class*='kt_editor_tab___'] {
+.design-kt_editor_group {
+  .design-kt_editor_tabs_content {
+    .design-kt_editor_tab {
       border: 0 none;
       padding: 0;
       min-width: initial;
@@ -31,7 +76,7 @@ div[class*='kt_workbench_editor___'] {
         }
       }
 
-      div[class*='tab_right___'] {
+      .design-tab_right {
         width: 22px;
         height: 22px;
         line-height: 22px;
@@ -41,7 +86,7 @@ div[class*='kt_workbench_editor___'] {
         margin-right: 0;
       }
 
-      div[class*='kt_editor_close_icon___'] {
+      .design-kt_editor_close_icon {
         width: 22px;
         height: 22px;
         border-radius: 4px;
@@ -53,7 +98,7 @@ div[class*='kt_workbench_editor___'] {
         }
       }
 
-      div[class*='close_tab___'] {
+      .design-close_tab {
         display: block;
       }
 
@@ -67,35 +112,33 @@ div[class*='kt_workbench_editor___'] {
       }
     }
 
-    div[class*='kt_editor_tab_current___'] {
-      // background-color: var(--kt-panelTitle-background) !important;
-
-      div[class*='close_tab___'] {
+    .design-kt_editor_tab_current {
+      .design-close_tab {
         display: block;
       }
     }
 
-    div[class*='kt_editor_tab_dirty___'] {
-      div[class*='close_tab___'] {
+    .design-kt_editor_tab_dirty {
+      .design-close_tab {
         display: none;
       }
 
       &:hover {
-        div[class*='close_tab___'] {
+        .design-close_tab {
           display: block;
         }
       }
     }
   }
 
-  div[class*='kt_editor_tabs__'] {
-    div[class*='editor_actions__'] {
+  .design-kt_editor_tabs {
+    .design-editor_actions {
       &::after,
       &::before {
         content: none;
       }
 
-      span[class*='iconAction__'] {
+      span.design-iconAction {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -112,7 +155,7 @@ div[class*='kt_workbench_editor___'] {
         }
       }
 
-      span[class*='btnAction__'] {
+      span.design-btnAction {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -129,7 +172,7 @@ div[class*='kt_workbench_editor___'] {
         }
       }
 
-      button[class*='btnAction__'] {
+      button.design-btnAction {
         border-radius: 4px;
         color: var(--design-text-color-normal);
 
@@ -154,90 +197,93 @@ div[class*='kt_workbench_editor___'] {
       }
     }
   }
+}
 
-  /**
-      * ---------------- 覆盖 editor navigation 导航条样式 ---------------------
-      */
-  div[class*='navigation_container___'] {
-    height: 28px;
-    border-bottom: 0 none;
+/**
+* ---------------- 覆盖 editor navigation 导航条样式 ---------------------
+*/
+.design-navigation_container {
+  height: 28px;
+  border-bottom: 0 none;
 
-    span[class*='navigation-part___'] {
-      color: var(--design-text-color-other);
+  span.design-navigation-part {
+    color: var(--design-text-color-other);
 
-      > span:first-child {
+    > span:first-child {
+      padding-right: 0;
+
+      &::before {
+        background-size: 14px;
+        background-position: center;
         padding-right: 0;
-
-        &::before {
-          background-size: 14px;
-          background-position: center;
-          padding-right: 0;
-          margin-right: 4px;
-        }
+        margin-right: 4px;
       }
-    }
-
-    span[class*='navigation_icon___'] {
-      color: var(--design-text-color-normal);
     }
   }
 
-  /**
-      * ---------------- 覆盖 editor component 内容区块样式 ---------------------
-      */
-  div[class*='kt_editor_component___'] {
-    padding-right: 2px;
-    background-color: var(--panel-background);
+  span.design-navigation_icon {
+    color: var(--design-text-color-normal);
   }
 }
 
-:global {
-  .monaco-editor,
-  .monaco-editor-background,
-  .monaco-editor .margin {
-    background: var(--design-monaco-background) !important;
+/**
+* ---------------- 覆盖 editor component 内容区块样式 ---------------------
+*/
+.design-kt_editor_component {
+  padding-right: 2px;
+  background-color: var(--panel-background);
+}
+
+div[class*='design-editor_tab_block_container__'] {
+  .design-tab_right {
+    &:hover {
+      background-color: initial !important;
+      transform: scale(1) !important;
+    }
+
+    .design-close_tab {
+      color: var(--design-icon-color);
+
+      &:hover {
+        color: var(--design-text-color-normal);
+      }
+    }
   }
 }
 
 /**
 * ---------------- 覆盖编辑器面板底部 tabbar 样式 ---------------------
 */
-.design_bottom_slot {
-  background-color: var(--design-container-background);
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  overflow: hidden;
-
-  div[class*='tab_bar___'] {
+:global(.design_bottom_slot) {
+  .design-tab_bar {
     height: 100%;
   }
 
-  div[class*='tab_panel___'] {
+  .design-tab_panel {
     &::before {
       content: none;
     }
   }
 
-  li[class*='bottom_tab___'] {
+  li.design-bottom_tab {
     height: 100%;
     line-height: 31px;
   }
 
-  div[class*='bottom_bar_container___'] {
-    // background-color: var(--kt-panelTitle-background);
+  .design-bottom_bar_container {
     width: 100%;
     height: 32px;
   }
 
-  div[class*='variable_repl_bar___'] {
+  .design-variable_repl_bar {
     background-color: transparent;
   }
 
-  div[class*='panel_toolbar_container___'] {
+  .design-panel_toolbar_container {
     margin: 0 10px;
   }
 
-  div[class*='titleActions___'] {
+  .design-titleActions {
     > span {
       margin-left: 4px;
 
@@ -246,7 +292,7 @@ div[class*='kt_workbench_editor___'] {
       }
     }
 
-    span[class*='iconAction__'] {
+    span.design-iconAction {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -260,7 +306,7 @@ div[class*='kt_workbench_editor___'] {
       }
     }
 
-    span[class*='btnAction__'] {
+    span.design-btnAction {
       padding: 3px;
       font-size: 14px;
 
@@ -272,20 +318,20 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='kt-select-value-small'] {
+  :global(.kt-select-value-small) {
     height: 24px;
     border: 0 none;
     border-radius: 4px;
   }
 
-  div[class*='debug_console_output___'] {
+  .design-debug_console_output {
     background-color: transparent;
   }
 
-  div[class*='markerFilterContent___'] {
+  .design-markerFilterContent {
     justify-content: start;
 
-    div[class*='filterInput___'] {
+    .design-filterInput {
       height: 24px;
       font-size: 12px;
       border-radius: 4px;
@@ -295,10 +341,10 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='debug_console_filter___'] {
+  .design-debug_console_filter {
     justify-content: start;
 
-    div[class*='filter_input___'] {
+    .design-filter_input {
       height: 24px;
       font-size: 12px;
       border-radius: 4px;
@@ -306,27 +352,25 @@ div[class*='kt_workbench_editor___'] {
       max-width: 240px;
       border: 0 none;
 
-      span[class*='kt-icon'] {
+      :global(.kt-icon) {
         color: var(--design-input-color);
       }
     }
   }
 
-  /* 过度方案 */
-
-  li[class*='bottom_tab___'] {
+  li.design-bottom_tab {
     background-color: transparent;
   }
 
-  div[class*='panel_title_bar___'] {
+  .design-panel_title_bar {
     background-color: var(--design-title-background);
+
+    &::before {
+      content: none;
+    }
   }
 
-  div[class*='panel_title_bar___']::before {
-    content: none;
-  }
-
-  div[class*='item_container__'] {
+  .design-item_container {
     border: 0 none;
 
     &::after {
@@ -340,12 +384,12 @@ div[class*='kt_workbench_editor___'] {
       background-color: var(--kt-panelTab-border);
     }
 
-    div[class*='item_info_name___'] {
+    .design-item_info_name {
       min-width: 110px;
       margin-right: 4px;
     }
 
-    div[class*='close_icon___'] {
+    .design-tab_close_icon {
       opacity: 1;
       color: var(--design-text-color-normal);
       display: flex;
@@ -364,7 +408,7 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='item_wrapper___'] {
+  .design-tab_item_wrapper {
     > div {
       display: flex;
       align-items: center;
@@ -383,15 +427,14 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='item_selected___'] {
-    // background-color: rgba(21, 27, 33, 1);
+  .design-tab_item_selected {
     &::before,
     &::after {
       display: none;
     }
   }
 
-  div[class*='tab_contents___'] {
+  .design-tab_contents {
     height: 35px;
 
     :first-child {
@@ -400,72 +443,46 @@ div[class*='kt_workbench_editor___'] {
       }
     }
   }
-
-  :global {
-    .kt-select-container {
-      .kt-select-value > span {
-        color: var(--design-text-color-normal);
-      }
-
-      .kt-select-options {
-        padding: 4px 0;
-        border-radius: 8px;
-        box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
-          0px 6px 16px 0px var(--design-boxShadow-color3);
-
-        > div {
-          line-height: 26px;
-          height: 26px;
-        }
-
-        span {
-          margin: 0;
-          width: 100%;
-        }
-
-        &::-webkit-scrollbar {
-          width: 4px !important;
-        }
-      }
-    }
-  }
 }
 
-.design_left_slot {
-  div[class*='tab_panel___'] {
+/**
+* ---------------- 覆盖左侧 tabbar 样式 ---------------------
+*/
+:global(.design_left_slot) {
+  .design-tab_panel {
     border-right: none;
   }
 
-  div[class*='file_tree_node___'] {
+  .design-file_tree_node {
     font-size: 12px;
   }
 
-  div[class*='tree_view_node___'],
-  div[class*='scm_tree_node___'],
-  div[class*='opened_editor_node___'],
-  div[class*='file_tree_node___'] {
+  .design-tree_view_node,
+  .design-scm_tree_node,
+  .design-opened_editor_node,
+  .design-file_tree_node {
     border-radius: 4px;
     margin: 0 5px;
   }
 
-  div[class*='kt_split_panel___'] {
+  .design-kt_split_panel {
     &::-webkit-scrollbar {
       width: 4px;
     }
   }
 
-  div[class*='kt_split_panel_header___'] {
+  .design-kt_split_panel_header {
     &:focus {
       outline: none;
     }
 
-    div[class*='actions_wrap___'] {
+    .design-actions_wrap {
       margin: 0 8px;
     }
   }
 
   // 标题右边Icon行动点
-  div[class*='titleActions___'] {
+  .design-titleActions {
     > span {
       display: flex;
       width: 22px;
@@ -499,7 +516,7 @@ div[class*='kt_workbench_editor___'] {
   /**
   * ---------------- 菜单相关样式 ---------------------
   */
-  div[class*='titlebar__'] {
+  .design-titlebar {
     color: var(--design-text-color-common);
 
     h1 {
@@ -507,21 +524,21 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='expansion_toggle___'] {
+  .design-expansion_toggle {
     color: var(--design-text-color-other);
   }
 
   div[class*='mod_selected___'] {
-    div[class*='opened_editor_node_overflow_wrap__'] {
+    .design-opened_editor_node_overflow_wrap {
       color: var(--design-text-color-highlight) !important;
     }
 
-    div[class*='expansion_toggle___'] {
+    .design-expansion_toggle {
       color: var(--design-text-color-highlight) !important;
     }
   }
 
-  div[class*='icon_tab___'] {
+  .design-icon_tab {
     height: 32px;
     width: 32px;
     border-radius: 8px;
@@ -543,17 +560,17 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='tab_panel___'] {
+  .design-tab_panel {
     &::before {
       content: none;
     }
   }
 
-  div[class*='tab_panel_hidden___'] {
+  .design-tab_panel_hidden {
     display: none;
   }
 
-  li[class*='left_tab___'] {
+  li.design-left_tab {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -563,18 +580,18 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='left_tab_bar___'] {
+  .design-left_tab_bar {
     border-right: none;
     border-top: none;
     width: 48px;
 
-    div[class*='bar_content___'] {
+    .design-bar_content {
       width: 100%;
       overflow-y: auto;
 
       :global {
         .active {
-          div[class*='icon_tab___'] {
+          .design-icon_tab {
             background-color: var(--activityBar-activeBorder);
 
             &::before {
@@ -612,48 +629,12 @@ div[class*='kt_workbench_editor___'] {
     }
   }
 
-  div[class*='outline_node___'] {
+  .design-outline_node {
     border-radius: 4px;
   }
 
   // 插件面板
-  div[class*='extension_item___'] {
+  .design-extension_item {
     border-radius: 8px;
-  }
-}
-
-/**
-* -------------------------------------------- 原默认右侧视图面板样式 --------------------------------------------
-*/
-.design_right_slot {
-  div[class*='tab_panel___'] {
-    &::before {
-      content: none;
-    }
-  }
-
-  background-color: var(--panel-background);
-  border: 1px solid var(--sideBar-border);
-  border-radius: 12px;
-  overflow: hidden;
-  height: 100%;
-
-  .right_slot_container_wrap {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-
-    .header {
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--sideBar-border);
-      padding: 0 10px;
-    }
-
-    .container {
-      flex: 1;
-    }
   }
 }

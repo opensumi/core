@@ -31,6 +31,7 @@ import {
   getSlotLocation,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
@@ -70,6 +71,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
   const editorTabService = useInjectable<IEditorTabService>(IEditorTabService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
 
   const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
   const [wrapMode, setWrapMode] = useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
@@ -335,7 +337,7 @@ export const Tabs = ({ group }: ITabsProps) => {
           {decoration.readOnly ? (
             <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
           ) : null}
-          <div className={styles.tab_right}>
+          <div className={designService.getStyles('tab_right', styles.tab_right)}>
             <div
               className={cls({
                 [styles.kt_hidden]: !decoration.dirty,
@@ -343,14 +345,20 @@ export const Tabs = ({ group }: ITabsProps) => {
               })}
             ></div>
             <div
-              className={styles.close_tab}
+              className={designService.getStyles('close_tab', styles.close_tab)}
               onMouseDown={(e) => {
                 e.stopPropagation();
                 group.close(resource.uri);
               }}
             >
               {editorTabService.renderTabCloseComponent(
-                <div className={cls(getIcon('close'), styles.kt_editor_close_icon)} />,
+                <div
+                  className={cls(
+                    getIcon('close'),
+                    designService.getStyles('kt_editor_close_icon'),
+                    styles.kt_editor_close_icon,
+                  )}
+                />,
               )}
             </div>
           </div>
@@ -362,7 +370,10 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const renderTabContent = () => (
-    <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
+    <div
+      className={designService.getStyles('kt_editor_tabs_content', styles.kt_editor_tabs_content)}
+      ref={contentRef as any}
+    >
       {group.resources.map((resource, i) => {
         let ref: HTMLDivElement | null;
         const decoration = resourceService.getResourceDecoration(resource.uri);
@@ -371,11 +382,12 @@ export const Tabs = ({ group }: ITabsProps) => {
             draggable={true}
             title={resource.title}
             className={cls({
-              [styles.kt_editor_tab]: true,
+              [designService.getStyles('kt_editor_tab', styles.kt_editor_tab)]: true,
               [styles.last_in_row]: tabMap.get(i),
-              [styles.kt_editor_tab_current]: group.currentResource === resource,
+              [designService.getStyles('kt_editor_tab_current', styles.kt_editor_tab_current)]:
+                group.currentResource === resource,
               [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
-              [styles.kt_editor_tab_dirty]: decoration.dirty,
+              [designService.getStyles('kt_editor_tab_dirty', styles.kt_editor_tab_dirty)]: decoration.dirty,
             })}
             style={
               wrapMode && i === group.resources.length - 1
@@ -438,9 +450,9 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   return (
-    <div id={VIEW_CONTAINERS.EDITOR_TABS} className={styles.kt_editor_tabs}>
+    <div id={VIEW_CONTAINERS.EDITOR_TABS} className={designService.getStyles('kt_editor_tabs', styles.kt_editor_tabs)}>
       <div
-        className={styles.kt_editor_tabs_scroll_wrapper}
+        className={designService.getStyles('kt_editor_tabs_scroll_wrapper', styles.kt_editor_tabs_scroll_wrapper)}
         ref={tabWrapperRef as any}
         onDragOver={handleWrapperDragOver}
         onDragLeave={handleWrapperDragLeave}
@@ -490,6 +502,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
     const appConfig = useInjectable<AppConfig>(AppConfig);
+    const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
@@ -520,7 +533,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     return (
       <div
         ref={ref}
-        className={cls(styles.editor_actions, className)}
+        className={cls(designService.getStyles('editor_actions', styles.editor_actions), className)}
         style={{ height: appConfig.layoutViewSize!.editorTabsHeight }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>

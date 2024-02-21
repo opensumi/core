@@ -11,6 +11,7 @@ import {
   ValidateInput,
 } from '@opensumi/ide-components';
 import { Key, KeyCode, isUndefined, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -316,6 +317,7 @@ export const QuickOpenList: React.FC<{
   onScroll: (props: ListOnScrollProps) => void;
 }> = observer(({ onReady, onScroll }) => {
   const { widget } = React.useContext(QuickOpenContext);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
 
   const getSize = React.useCallback(
     (index) => {
@@ -329,7 +331,7 @@ export const QuickOpenList: React.FC<{
     <RecycleList
       onReady={onReady}
       onScroll={onScroll}
-      className={cls(styles.quickopen_list, {
+      className={cls(designService.getStyles('quickopen_list', styles.quickopen_list), {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
         [styles.validate_warning]: widget.validateType === VALIDATE_TYPE.WARNING,
       })}

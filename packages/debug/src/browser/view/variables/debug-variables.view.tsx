@@ -14,6 +14,7 @@ import {
   TreeNodeType,
 } from '@opensumi/ide-components';
 import { ViewState, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 
 import {
   DebugScope,
@@ -178,6 +179,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   onContextMenu,
   itemType,
 }: IDebugVariableNodeRenderedProps) => {
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
   };
@@ -256,7 +258,12 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_variables_node_segment, styles.expansion_toggle)}>
+        <div
+          className={cls(
+            styles.debug_variables_node_segment,
+            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          )}
+        >
           <Loading />
         </div>
       );
@@ -264,9 +271,14 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_variables_node_segment, styles.expansion_toggle, getIcon('right'), {
-          [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
-        })}
+        className={cls(
+          styles.debug_variables_node_segment,
+          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          getIcon('right'),
+          {
+            [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
+          },
+        )}
       />
     );
   };

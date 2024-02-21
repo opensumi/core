@@ -4,6 +4,7 @@ import React, { CSSProperties, DragEvent, FC, MouseEvent, ReactNode, useCallback
 import { ClasslistComposite, INodeRendererProps, Loading, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
@@ -52,6 +53,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   onDrop,
 }: TreeViewNodeRenderedProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const [decoration, setDecoration] = useState(item.uri && decorationService.getDecoration(item.uri, false));
 
   useEffect(() => {
@@ -154,9 +156,14 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     return (
       <div
         onClick={clickHandler}
-        className={cls(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
-          [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
-        })}
+        className={cls(
+          styles.tree_view_node_segment,
+          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          getIcon('arrow-right'),
+          {
+            [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
+          },
+        )}
       />
     );
   };
@@ -268,7 +275,10 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       title={getItemTooltip()}
-      className={cls(styles.tree_view_node, decorations ? decorations.classlist : null)}
+      className={cls(
+        designService.getStyles('tree_view_node', styles.tree_view_node),
+        decorations ? decorations.classlist : null,
+      )}
       data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={draggable}

@@ -13,6 +13,7 @@ import {
   useViewState,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -44,6 +45,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
 
   React.useEffect(() => {
@@ -53,8 +55,8 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   return (
     <div
       id={id}
-      className={cls(styles.tab_panel, {
-        [styles.tab_panel_hidden]: !tabbarService.currentContainerId,
+      className={cls(designService.getStyles('tab_panel', styles.tab_panel), {
+        [designService.getStyles('tab_panel_hidden', styles.tab_panel_hidden)]: !tabbarService.currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -156,6 +158,7 @@ const BottomPanelView: React.FC<{
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const { component: CustomComponent, containerId } = component.options || {};
   const titleComponent = component.options && component.options.titleComponent;
@@ -172,14 +175,17 @@ const BottomPanelView: React.FC<{
 
   return (
     <div ref={containerRef} className={styles.panel_container}>
-      <div className={styles.panel_title_bar} style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}>
+      <div
+        className={designService.getStyles('panel_title_bar', styles.panel_title_bar)}
+        style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
+      >
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (
             <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           )}
         </div>
-        <div className={styles.panel_toolbar_container}>
+        <div className={designService.getStyles('panel_toolbar_container', styles.panel_toolbar_container)}>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>

@@ -12,32 +12,32 @@ import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connect
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import {
   AppLifeCycleServiceToken,
+  asExtensionCandidate,
   CommandRegistry,
   ContributionProvider,
+  createContributionProvider,
   DefaultStorageProvider,
   Deferred,
   GeneralSettingsId,
-  IAppLifeCycleService,
+  getDebugLogger,
   IApplicationService,
+  IAppLifeCycleService,
   IDisposable,
   IEventBus,
-  ILogServiceClient,
   ILoggerManagerClient,
+  ILogServiceClient,
   IReporterService,
+  isElectronRenderer,
+  isOSX,
+  isUndefined,
   LifeCyclePhase,
   MaybePromise,
   REPORT_NAME,
+  setLanguageId,
   StorageProvider,
   StorageResolverContribution,
   SupportLogNamespace,
   UrlProvider,
-  asExtensionCandidate,
-  createContributionProvider,
-  getDebugLogger,
-  isElectronRenderer,
-  isOSX,
-  isUndefined,
-  setLanguageId,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -56,23 +56,24 @@ import { LayoutViewSizeConfig } from '../layout/constants';
 import { RenderedEvent } from '../layout/layout.interface';
 import { IMenuRegistry, MenuRegistryImpl } from '../menu/next/base';
 import {
+  getPreferenceLanguageId,
+  injectPreferenceConfigurations,
+  injectPreferenceSchemaProvider,
   PreferenceProvider,
   PreferenceProviderProvider,
   PreferenceScope,
   PreferenceService,
   PreferenceServiceImpl,
-  getPreferenceLanguageId,
-  injectPreferenceConfigurations,
-  injectPreferenceSchemaProvider,
   registerLocalStorageProvider,
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_CODICONS_CN_CSS, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { createNetSocketConnection, electronEnv } from '../utils';
 
-import { IClientAppOpts, IPreferences, IconInfo, IconMap, LayoutConfig, ModuleConstructor } from './app.interface';
+import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { IAppRenderer, renderClientApp } from './app.view';
 import { bindConnectionService, createConnectionService } from './connection';
+
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 

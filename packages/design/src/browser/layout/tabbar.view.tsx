@@ -2,14 +2,7 @@ import cls from 'classnames';
 import React from 'react';
 
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser';
-import { LeftTabbarRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
-import {
-  BottomTabRenderer,
-  LeftTabRenderer,
-  RightTabRenderer,
-} from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
-
-import styles from './layout.module.less';
+import { BottomTabRenderer, LeftTabRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
 
 export const DesignLeftTabRenderer = ({
   className,
@@ -17,28 +10,7 @@ export const DesignLeftTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => (
-  <LeftTabRenderer
-    className={cls(className, styles.design_left_slot)}
-    components={components}
-    tabbarView={LeftTabbarRenderer}
-  />
-);
-
-// right 面板只保留 panel
-export const DesignRightTabRenderer = ({
-  className,
-  components,
-}: {
-  className: string;
-  components: ComponentRegistryInfo[];
-}) => (
-  <RightTabRenderer
-    className={cls(className, styles.design_left_slot)}
-    components={components}
-    tabbarView={LeftTabbarRenderer}
-  />
-);
+}) => <LeftTabRenderer className={cls(className, 'design_left_slot')} components={components} />;
 
 // 编辑器 bottom 面板
 export const DesignBottomTabRenderer = ({
@@ -47,4 +19,4 @@ export const DesignBottomTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => <BottomTabRenderer className={cls(className, styles.design_bottom_slot)} components={components} />;
+}) => <BottomTabRenderer className={cls(className, 'design_bottom_slot')} components={components} />;

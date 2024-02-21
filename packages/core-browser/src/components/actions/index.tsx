@@ -5,6 +5,7 @@ import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
 import { isBoolean, strings } from '@opensumi/ide-core-common';
 
+import { IDesignStyleService } from '../../design';
 import {
   AbstractMenuService,
   ComponentMenuItemNode,
@@ -191,12 +192,14 @@ const EllipsisWidget: React.FC<{
   onClick?: React.MouseEventHandler<HTMLElement>;
   title?: string;
 }> = ({ type, icon, disabled, onClick, title }) => {
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+
   if (type === 'icon') {
     return (
       <Button
         size='small'
         type={type}
-        className={styles.btnAction}
+        className={designService.getStyles('btnAction', styles.btnAction)}
         onClick={onClick}
         title={title}
         icon={icon || 'ellipsis'}
@@ -209,7 +212,14 @@ const EllipsisWidget: React.FC<{
   }
 
   return (
-    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props} title={title}>
+    <Button
+      size='small'
+      type='secondary'
+      className={designService.getStyles('btnAction', styles.btnAction)}
+      onClick={onClick}
+      {...props}
+      title={title}
+    >
       <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
@@ -227,6 +237,7 @@ const InlineActionWidget: React.FC<
   } & React.HTMLAttributes<HTMLElement>
 > = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const [loading, setLoading] = useState(false);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const handleClick = React.useCallback(
     async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
       if (event) {
@@ -267,7 +278,7 @@ const InlineActionWidget: React.FC<
     return (
       <Button
         type={data.icon ? 'icon' : 'link'}
-        className={cls(styles.iconAction, className, {
+        className={cls(designService.getStyles('iconAction', styles.iconAction), className, {
           [styles.disabled]: data.disabled,
           [styles.submenuIconAction]: isSubmenuNode,
         })}
@@ -284,7 +295,7 @@ const InlineActionWidget: React.FC<
   if (data.type === 'checkbox') {
     return (
       <CheckBox
-        className={cls(className, styles.btnAction)}
+        className={cls(className, designService.getStyles('btnAction', styles.btnAction))}
         disabled={data.disabled}
         label={data.label}
         title={title}
@@ -298,7 +309,7 @@ const InlineActionWidget: React.FC<
   return (
     <Button
       loading={loading}
-      className={cls(className, styles.btnAction)}
+      className={cls(className, designService.getStyles('btnAction', styles.btnAction))}
       disabled={data.disabled}
       onClick={handleClick}
       size='small'
@@ -403,6 +414,7 @@ export const TitleActionList: React.FC<
   }) => {
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
     const abstractMenuService = useInjectable<AbstractMenuService>(AbstractMenuService);
+    const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
     const [primary, secondary] = regroup(nav, more);
     const handleShowMore = React.useCallback(
       (e: React.MouseEvent<HTMLElement>) => {
@@ -437,7 +449,10 @@ export const TitleActionList: React.FC<
       ) : null;
 
     return (
-      <div className={cls([styles.titleActions, className])} data-menu-id={menuId}>
+      <div
+        className={cls([designService.getStyles('titleActions', styles.titleActions), className])}
+        data-menu-id={menuId}
+      >
         {moreAtFirst && moreAction}
         {primary.map((item) => {
           if (item.id === ComponentMenuItemNode.ID) {

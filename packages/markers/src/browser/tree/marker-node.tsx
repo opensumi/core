@@ -9,7 +9,8 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { IMatch, URI, getIcon } from '@opensumi/ide-core-browser';
+import { IMatch, URI, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
@@ -134,6 +135,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   decorations,
   onClick,
 }: IMarkerNodeRenderedProps) => {
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       ev.stopPropagation();
@@ -197,9 +199,14 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: MarkerGroupNode) => (
       <div
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
-          [`${styles.mod_collapsed}`]: !(node as MarkerGroupNode).expanded,
-        })}
+        className={cls(
+          styles.segment,
+          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          getIcon('arrow-right'),
+          {
+            [`${styles.mod_collapsed}`]: !(node as MarkerGroupNode).expanded,
+          },
+        )}
       />
     ),
     [],

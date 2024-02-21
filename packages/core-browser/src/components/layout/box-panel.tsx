@@ -1,6 +1,7 @@
 import cls from 'classnames';
 import React from 'react';
 
+import { IDesignStyleService } from '../../design';
 import { useInjectable } from '../../react-hooks';
 import { AppConfig } from '../../react-providers';
 
@@ -60,6 +61,7 @@ export const BoxPanel: React.FC<{
   // convert children to list
   const arrayChildren = React.Children.toArray(children) as ChildComponent[];
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
 
   return (
     <div
@@ -69,7 +71,7 @@ export const BoxPanel: React.FC<{
         }
       }}
       {...restProps}
-      className={cls(styles['box-panel'], className)}
+      className={cls(designService.getStyles('box-panel', styles['box-panel']), className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}
     >
       {arrayChildren.map((child, index) => (

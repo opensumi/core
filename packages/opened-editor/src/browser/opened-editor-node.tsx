@@ -9,7 +9,15 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { CommandService, OPEN_EDITORS_COMMANDS, URI, getIcon, localize } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  OPEN_EDITORS_COMMANDS,
+  URI,
+  getIcon,
+  localize,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { EDITOR_WEBVIEW_SCHEME } from '@opensumi/ide-webview';
 
@@ -48,6 +56,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   commandService,
   decorations,
 }: EditorNodeRenderedProps) => {
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const decoration = EditorFileGroup.is(item) ? null : decorationService.getDecoration(item.uri, false);
 
   const handleClick = (ev: React.MouseEvent) => {
@@ -213,7 +222,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
       className={cls(
-        styles.opened_editor_node,
+        designService.getStyles('opened_editor_node', styles.opened_editor_node),
         decorations ? decorations.classlist : null,
         EditorFile.is(item) && item.dirty && styles.dirty,
       )}
@@ -223,7 +232,12 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       {renderActionBar()}
       <div className={cls(styles.opened_editor_node_content)}>
         {renderIcon(item)}
-        <div className={styles.opened_editor_node_overflow_wrap}>
+        <div
+          className={designService.getStyles(
+            'opened_editor_node_overflow_wrap',
+            styles.opened_editor_node_overflow_wrap,
+          )}
+        >
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>

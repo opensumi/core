@@ -2,7 +2,8 @@ import cls from 'classnames';
 import React, { useCallback } from 'react';
 
 import { ClasslistComposite, INodeRendererProps } from '@opensumi/ide-components';
-import { getIcon } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 
 import { CommentContentNode, CommentFileNode, CommentReplyNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -26,6 +27,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   onClick,
   onTwistierClick,
 }: ICommentNodeRenderedProps) => {
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       if (item.onSelect) {
@@ -102,9 +104,14 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
     (node: CommentFileNode) => (
       <div
         onClick={handleTwistierClick}
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
-          [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
-        })}
+        className={cls(
+          styles.segment,
+          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          getIcon('arrow-right'),
+          {
+            [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
+          },
+        )}
       />
     ),
     [handleTwistierClick],

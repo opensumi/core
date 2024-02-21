@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { useDisposable } from '@opensumi/ide-core-browser/lib/utils/react-hooks';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
@@ -18,6 +19,7 @@ import Messages from './messages';
  */
 export const MarkerFilterPanel = observer(() => {
   const markerService: MarkerService = useInjectable(IMarkerService);
+  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
 
   const [filterValue, setFilterValue] = React.useState<string>('');
 
@@ -35,11 +37,11 @@ export const MarkerFilterPanel = observer(() => {
   }, 250);
 
   return (
-    <div className={styles.markerFilterContent}>
+    <div className={designService.getStyles('markerFilterContent', styles.markerFilterContent)}>
       <AutoFocusedInput
         containerId={MARKER_CONTAINER_ID}
         hasClear
-        className={styles.filterInput}
+        className={designService.getStyles('filterInput', styles.filterInput)}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}
         value={filterValue}
         onValueChange={onChangeCallback}
