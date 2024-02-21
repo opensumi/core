@@ -3,6 +3,7 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
   getDebugLogger,
   IReporterService,
@@ -11,46 +12,14 @@ import {
   BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
   IEventBus,
-  UrlProvider,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
-import { createNetSocketConnection, fromWindowClientId } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
 const initialLogger = getDebugLogger();
-
-export async function createClientConnection4Web(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  wsPath: UrlProvider,
-  onReconnect: () => void,
-  protocols?: string[],
-  clientId?: string,
-) {
-  return createConnectionService(
-    injector,
-    modules,
-    onReconnect,
-    ReconnectingWebSocketConnection.forURL(wsPath, protocols),
-    clientId,
-  );
-}
-
-export async function createClientConnection4Electron(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  clientId?: string,
-) {
-  const connection = createNetSocketConnection();
-  const channel = WSChannel.forClient(connection, {
-    id: clientId || fromWindowClientId('RPCService'),
-    logger: console,
-  });
-  return bindConnectionService(injector, modules, channel);
-}
 
 export async function createConnectionService(
   injector: Injector,
@@ -100,8 +69,8 @@ export async function createConnectionService(
     useValue: channelHandler,
   });
 
-  // 重连不会执行后面的逻辑
-  const channel = await channelHandler.openChannel('RPCService');
+  // reconnecting will not execute the following logic
+  const channel = await channelHandler.openChannel(RPCServiceChannelPath);
   channel.onReopen(() => onReconnect());
 
   bindConnectionService(injector, modules, channel);

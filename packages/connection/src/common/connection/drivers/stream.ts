@@ -1,0 +1,73 @@
+import type { Readable, Writable } from 'stream';
+
+import { IDisposable } from '@opensumi/ide-core-common';
+
+import { BaseConnection } from './base';
+import { LengthFieldBasedFrameDecoder, prependLengthField } from './frame-decoder';
+
+export class StreamConnection extends BaseConnection<Uint8Array> {
+  protected decoder = new LengthFieldBasedFrameDecoder();
+
+  constructor(public readable: Readable, public writable: Writable) {
+    super();
+    const decode = (chunk: Uint8Array) => {
+      this.decoder.push(chunk);
+    };
+    this.readable.on('data', decode);
+    this.readable.once('close', () => {
+      this.decoder.dispose();
+      this.readable.off('data', decode);
+    });
+  }
+
+  send(data: Uint8Array): void {
+    this.writable.write(prependLengthField(data));
+  }
+
+  onMessage(cb: (data: Uint8Array) => void): IDisposable {
+    return this.decoder.onData(cb);
+  }
+
+  onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
+    const wrapper = (hadError: boolean) => {
+      const code: number = hadError ? 1 : 0;
+      const reason: string = hadError ? 'had error' : '';
+      cb(code, reason);
+      dispose();
+    };
+
+    const dispose = () => {
+      this.readable.off('close', wrapper);
+      if ((this.writable as any) !== (this.readable as any)) {
+        this.writable.off('close', wrapper);
+      }
+    };
+
+    this.readable.once('close', wrapper);
+    if ((this.writable as any) !== (this.readable as any)) {
+      this.writable.once('close', wrapper);
+    }
+
+    return {
+      dispose,
+    };
+  }
+
+  onError(cb: (err: Error) => void): IDisposable {
+    this.readable.on('error', cb);
+    if ((this.writable as any) !== (this.readable as any)) {
+      this.writable.on('error', cb);
+    }
+    return {
+      dispose: () => {
+        this.readable.off('error', cb);
+        if ((this.writable as any) !== (this.readable as any)) {
+          this.writable.off('error', cb);
+        }
+      },
+    };
+  }
+  dispose(): void {
+    this.decoder.dispose();
+  }
+}

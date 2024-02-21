@@ -3,7 +3,8 @@ import net from 'net';
 
 import { Injector, InstanceCreator, ClassCreator, FactoryCreator } from '@opensumi/di';
 import { WSChannel, initRPCService, RPCServiceCenter } from '@opensumi/ide-connection';
-import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
+import { ElectronChannelHandler } from '@opensumi/ide-connection/lib/electron';
 import {
   WebSocketServerRoute,
   WebSocketHandler,
@@ -54,7 +55,7 @@ export function createServerConnection2(
   });
 
   // 事件由 connection 的时机来触发
-  commonChannelPathHandler.register('RPCService', {
+  commonChannelPathHandler.register(RPCServiceChannelPath, {
     handler: (channel: WSChannel, clientId: string) => {
       handleClientChannel(injector, modulesInstances, channel, clientId, logger);
     },
@@ -73,14 +74,16 @@ export function createServerConnection2(
 export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger) as INodeLogger;
 
-  server.on('connection', (socket) => {
-    logger.log('new connection', socket.remoteAddress, socket.remotePort);
-    const channel = WSChannel.forClient(new NetSocketConnection(socket), {
-      id: 'RPCService-' + process.env.CODE_WINDOW_CLIENT_ID!,
-      logger,
-    });
-    handleClientChannel(injector, modulesInstances, channel, process.env.CODE_WINDOW_CLIENT_ID!, logger);
+  const handler = new ElectronChannelHandler(server, logger);
+  // 事件由 connection 的时机来触发
+  commonChannelPathHandler.register(RPCServiceChannelPath, {
+    handler: (channel: WSChannel, clientId: string) => {
+      handleClientChannel(injector, modulesInstances, channel, clientId, logger);
+    },
+    dispose: () => {},
   });
+
+  handler.listen();
 }
 
 export function bindModuleBackService(
@@ -92,14 +95,18 @@ export function bindModuleBackService(
   const { createRPCService } = initRPCService(serviceCenter);
 
   const childInjector = injector.createChild();
-  for (const module of modules) {
-    if (!module.backServices) {
+  for (const m of modules) {
+    if (!m.backServices) {
       continue;
     }
 
-    for (const service of module.backServices) {
+    for (const service of m.backServices) {
       if (!service.token) {
         continue;
+      }
+
+      if (service.protocol) {
+        serviceCenter.loadProtocol(service.protocol);
       }
 
       const serviceToken = service.token;
@@ -129,14 +136,11 @@ export function bindModuleBackService(
       if (serviceInstance.setConnectionClientId && clientId) {
         serviceInstance.setConnectionClientId(clientId);
       }
-      if (service.protocol) {
-        serviceCenter.loadProtocol(service.protocol);
-      }
 
-      const createService = createRPCService(service.servicePath, serviceInstance);
+      const stub = createRPCService(service.servicePath, serviceInstance);
 
       if (!serviceInstance.rpcClient) {
-        serviceInstance.rpcClient = [createService];
+        serviceInstance.rpcClient = [stub];
       }
     }
   }

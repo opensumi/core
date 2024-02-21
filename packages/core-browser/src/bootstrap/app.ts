@@ -8,6 +8,8 @@ import ResizeObserver from 'resize-observer-polyfill';
 import { Injector } from '@opensumi/di';
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import {
   CommandRegistry,
   isOSX,
@@ -67,11 +69,11 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { electronEnv } from '../utils';
+import { createNetSocketConnection, electronEnv } from '../utils';
 
 import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
-import { createClientConnection4Web, createClientConnection4Electron, bindConnectionService } from './connection';
+import { bindConnectionService, createConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 
@@ -218,22 +220,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
     if (channel) {
       await bindConnectionService(this.injector, this.modules, channel);
-    } else if (type === 'electron') {
-      await createClientConnection4Electron(this.injector, this.modules, this.config.clientId);
-    } else if (type === 'web') {
-      await createClientConnection4Web(
-        this.injector,
-        this.modules,
-        this.connectionPath,
-        () => {
-          this.onReconnectContributions();
-        },
-        this.connectionProtocols,
-        this.config.clientId,
-      );
-      this.logger = this.getLogger();
-      // Replace Logger
-      this.injector.get(WSChannelHandler).replaceLogger(this.logger);
+    } else if (type) {
+      await this.createConnection(type);
     }
 
     measureReporter.timeEnd('ClientApp.createConnection');
@@ -251,6 +239,33 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.lifeCycleService.phase = LifeCyclePhase.Ready;
     measureReporter.timeEnd('Framework.ready');
+  }
+
+  protected async createConnection(type: 'electron' | 'web') {
+    let connection: ReconnectingWebSocketConnection | NetSocketConnection;
+    let clientId: string | undefined = this.config.clientId;
+    if (type === 'electron') {
+      connection = createNetSocketConnection();
+      clientId = this.config.clientId ?? electronEnv.metadata.windowClientId;
+    } else if (type === 'web') {
+      connection = ReconnectingWebSocketConnection.forURL(this.connectionPath, this.connectionProtocols);
+    } else {
+      throw new Error(`Unknown connection type: ${type}`);
+    }
+
+    await createConnectionService(
+      this.injector,
+      this.modules,
+      () => {
+        this.onReconnectContributions();
+      },
+      connection,
+      clientId,
+    );
+
+    // create logger after connection established
+    this.logger = this.getLogger();
+    this.injector.get(WSChannelHandler).replaceLogger(this.logger);
   }
 
   private getLogger() {
