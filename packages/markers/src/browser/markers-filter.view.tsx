@@ -37,11 +37,11 @@ export const MarkerFilterPanel = observer(() => {
   }, 250);
 
   return (
-    <div className={designService.getStyles('markerFilterContent', styles.markerFilterContent)}>
+    <div className={designService.wrapStyles(styles.markerFilterContent)}>
       <AutoFocusedInput
         containerId={MARKER_CONTAINER_ID}
         hasClear
-        className={designService.getStyles('filterInput', styles.filterInput)}
+        className={designService.wrapStyles(styles.filterInput)}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}
         value={filterValue}
         onValueChange={onChangeCallback}

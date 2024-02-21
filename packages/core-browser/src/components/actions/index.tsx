@@ -199,7 +199,7 @@ const EllipsisWidget: React.FC<{
       <Button
         size='small'
         type={type}
-        className={designService.getStyles('btnAction', styles.btnAction)}
+        className={designService.wrapStyles(styles.btnAction)}
         onClick={onClick}
         title={title}
         icon={icon || 'ellipsis'}
@@ -215,7 +215,7 @@ const EllipsisWidget: React.FC<{
     <Button
       size='small'
       type='secondary'
-      className={designService.getStyles('btnAction', styles.btnAction)}
+      className={designService.wrapStyles(styles.btnAction)}
       onClick={onClick}
       {...props}
       title={title}
@@ -278,7 +278,7 @@ const InlineActionWidget: React.FC<
     return (
       <Button
         type={data.icon ? 'icon' : 'link'}
-        className={cls(designService.getStyles('iconAction', styles.iconAction), className, {
+        className={cls(designService.wrapStyles(styles.iconAction), className, {
           [styles.disabled]: data.disabled,
           [styles.submenuIconAction]: isSubmenuNode,
         })}
@@ -295,7 +295,7 @@ const InlineActionWidget: React.FC<
   if (data.type === 'checkbox') {
     return (
       <CheckBox
-        className={cls(className, designService.getStyles('btnAction', styles.btnAction))}
+        className={cls(className, designService.wrapStyles(styles.btnAction))}
         disabled={data.disabled}
         label={data.label}
         title={title}
@@ -309,7 +309,7 @@ const InlineActionWidget: React.FC<
   return (
     <Button
       loading={loading}
-      className={cls(className, designService.getStyles('btnAction', styles.btnAction))}
+      className={cls(className, designService.wrapStyles(styles.btnAction))}
       disabled={data.disabled}
       onClick={handleClick}
       size='small'
@@ -449,10 +449,7 @@ export const TitleActionList: React.FC<
       ) : null;
 
     return (
-      <div
-        className={cls([designService.getStyles('titleActions', styles.titleActions), className])}
-        data-menu-id={menuId}
-      >
+      <div className={cls([designService.wrapStyles(styles.titleActions), className])} data-menu-id={menuId}>
         {moreAtFirst && moreAction}
         {primary.map((item) => {
           if (item.id === ComponentMenuItemNode.ID) {

@@ -52,8 +52,8 @@ export const renderInfoItem = observer((props: ItemProps) => {
     <div
       ref={ref}
       className={cls({
-        [designService.getStyles('item_container', styles.item_container)]: true,
-        [designService.getStyles('tab_item_selected', styles.tab_item_selected)]: !!props.selected,
+        [designService.wrapStyles(styles.item_container)]: true,
+        [designService.wrapStyles(styles.tab_item_selected)]: !!props.selected,
       })}
       style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
       onClick={() => handleSelect()}
@@ -70,11 +70,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
           onKeyDown={(e) => handleOnKeyDown(e)}
         ></input>
       ) : (
-        <div
-          id={props.id}
-          className={designService.getStyles('item_info_name', styles.item_info_name)}
-          title={props.name}
-        >
+        <div id={props.id} className={designService.wrapStyles(styles.item_info_name)} title={props.name}>
           {props.name !== '' ? (
             <>
               <Icon
@@ -94,7 +90,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         <div></div>
       ) : (
         <div
-          className={cls([getIcon('close'), designService.getStyles('tab_close_icon', styles.tab_close_icon)])}
+          className={cls([getIcon('close'), designService.wrapStyles(styles.tab_close_icon)])}
           onClick={(event) => {
             event.stopPropagation();
             handleClose();
@@ -113,7 +109,7 @@ export const renderAddItem = observer((props: ItemProps) => {
   const createTitle = keybinding ? `${localize('terminal.new')}(${keybinding})` : localize('terminal.new');
 
   return (
-    <div className={designService.getStyles('tab_item_wrapper', styles.tab_item_wrapper)}>
+    <div className={designService.wrapStyles(styles.tab_item_wrapper)}>
       <div
         title={createTitle}
         className={cls({

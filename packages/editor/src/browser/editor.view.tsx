@@ -79,7 +79,7 @@ export const EditorView = () => {
 
   return (
     <div
-      className={designService.getStyles('kt_workbench_editor', styles.kt_workbench_editor)}
+      className={designService.wrapStyles(styles.kt_workbench_editor)}
       id='workbench-editor'
       ref={(ele) => {
         ref.current = ele;
@@ -292,7 +292,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   return (
     <div
       ref={groupWrapperRef as any}
-      className={designService.getStyles('kt_editor_group', styles.kt_editor_group)}
+      className={designService.wrapStyles(styles.kt_editor_group)}
       tabIndex={1}
       onFocus={(e) => {
         group.gainFocus();
@@ -454,7 +454,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
       <div className={styles.kt_editor_components}>
         <div
           className={cls({
-            [designService.getStyles('kt_editor_component', styles.kt_editor_component)]: true,
+            [designService.wrapStyles(styles.kt_editor_component)]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
           })}
         >
@@ -463,29 +463,21 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         <div
           className={cls({
             [styles.kt_editor_code_editor]: true,
-            [designService.getStyles('kt_editor_component', styles.kt_editor_component)]: true,
+            [designService.wrapStyles(styles.kt_editor_component)]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
           })}
           ref={codeEditorRef}
         />
         <div
-          className={cls(
-            styles.kt_editor_diff_editor,
-            designService.getStyles('kt_editor_component', styles.kt_editor_component),
-            {
-              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
-            },
-          )}
+          className={cls(styles.kt_editor_diff_editor, designService.wrapStyles(styles.kt_editor_component), {
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
+          })}
           ref={diffEditorRef}
         />
         <div
-          className={cls(
-            styles.kt_editor_diff_3_editor,
-            designService.getStyles('kt_editor_component', styles.kt_editor_component),
-            {
-              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
-            },
-          )}
+          className={cls(styles.kt_editor_diff_3_editor, designService.wrapStyles(styles.kt_editor_component), {
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
+          })}
           ref={mergeEditorRef}
         />
       </div>

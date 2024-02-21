@@ -158,7 +158,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
         onClick={clickHandler}
         className={cls(
           styles.tree_view_node_segment,
-          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          designService.wrapStyles(styles.expansion_toggle),
           getIcon('arrow-right'),
           {
             [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
@@ -275,10 +275,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       title={getItemTooltip()}
-      className={cls(
-        designService.getStyles('tree_view_node', styles.tree_view_node),
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(designService.wrapStyles(styles.tree_view_node), decorations ? decorations.classlist : null)}
       data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={draggable}

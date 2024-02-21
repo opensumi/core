@@ -23,7 +23,6 @@ export class DesignModule extends BrowserModule {
     import('./style/global.less');
 
     const designStyleService: IDesignStyleService = injector.get(IDesignStyleService);
-    // console.log('designStyles:>>>>', designStyles)
     designStyleService.setStyles(designStyles);
 
     injector.overrideProviders(

@@ -63,10 +63,10 @@ export const DebugConsoleFilterView = observer(() => {
   }, [historyApi]);
 
   return (
-    <div className={designService.getStyles('debug_console_filter', styles.debug_console_filter)}>
+    <div className={designService.wrapStyles(styles.debug_console_filter)}>
       <HistoryInputBox
         hasClear
-        className={designService.getStyles('filter_input', styles.filter_input)}
+        className={designService.wrapStyles(styles.filter_input)}
         value={filterValue}
         placeholder={localize('debug.console.filter.placeholder')}
         onValueChange={onDebounceValueChange}

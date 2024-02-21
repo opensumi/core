@@ -331,7 +331,7 @@ export const QuickOpenList: React.FC<{
     <RecycleList
       onReady={onReady}
       onScroll={onScroll}
-      className={cls(designService.getStyles('quickopen_list', styles.quickopen_list), {
+      className={cls(designService.wrapStyles(styles.quickopen_list), {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
         [styles.validate_warning]: widget.validateType === VALIDATE_TYPE.WARNING,
       })}

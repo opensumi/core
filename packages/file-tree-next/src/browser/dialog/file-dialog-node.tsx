@@ -99,7 +99,7 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
           <div
             className={cls(
               styles.file_tree_node_segment,
-              designService.getStyles('expansion_toggle', styles.expansion_toggle),
+              designService.wrapStyles(styles.expansion_toggle),
               getIcon('arrow-right'),
               {
                 [`${styles.mod_collapsed}`]:
@@ -120,7 +120,7 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
           onClick={clickHandler}
           className={cls(
             styles.file_tree_node_segment,
-            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+            designService.wrapStyles(styles.expansion_toggle),
             getIcon('arrow-right'),
             {
               [`${styles.mod_collapsed}`]: !(node as Directory).expanded,
@@ -195,10 +195,7 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(
-        designService.getStyles('file_tree_node', styles.file_tree_node),
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(designService.wrapStyles(styles.file_tree_node), decorations ? decorations.classlist : null)}
       style={fileTreeNodeStyle}
       draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
     >

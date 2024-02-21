@@ -283,12 +283,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div
-          className={cls(
-            styles.debug_watch_node_segment,
-            designService.getStyles('expansion_toggle', styles.expansion_toggle),
-          )}
-        >
+        <div className={cls(styles.debug_watch_node_segment, designService.wrapStyles(styles.expansion_toggle))}>
           <Loading />
         </div>
       );
@@ -298,7 +293,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
         onClick={handleTwiceClick}
         className={cls(
           styles.debug_watch_node_segment,
-          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          designService.wrapStyles(styles.expansion_toggle),
           getIcon('right'),
           {
             [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,

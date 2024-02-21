@@ -199,14 +199,9 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: MarkerGroupNode) => (
       <div
-        className={cls(
-          styles.segment,
-          designService.getStyles('expansion_toggle', styles.expansion_toggle),
-          getIcon('arrow-right'),
-          {
-            [`${styles.mod_collapsed}`]: !(node as MarkerGroupNode).expanded,
-          },
-        )}
+        className={cls(styles.segment, designService.wrapStyles(styles.expansion_toggle), getIcon('arrow-right'), {
+          [`${styles.mod_collapsed}`]: !(node as MarkerGroupNode).expanded,
+        })}
       />
     ),
     [],

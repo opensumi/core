@@ -49,20 +49,14 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
   }
   return parts.length === 0 ? null : (
     <div
-      className={designService.getStyles('navigation_container', styles.navigation_container)}
+      className={designService.wrapStyles(styles.navigation_container)}
       onContextMenu={(event) => {
         event.preventDefault();
       }}
     >
       {parts.map((p, i) => (
         <React.Fragment key={i + '-crumb:' + p.name}>
-          {i > 0 && (
-            <Icon
-              icon={'right'}
-              size='small'
-              className={designService.getStyles('navigation_icon', styles.navigation_icon)}
-            />
-          )}
+          {i > 0 && <Icon icon={'right'} size='small' className={designService.wrapStyles(styles.navigation_icon)} />}
           <NavigationItem part={p} editorGroup={editorGroup} />
         </React.Fragment>
       ))}
@@ -97,7 +91,7 @@ export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPa
         }
         event.preventDefault();
       }}
-      className={designService.getStyles('navigation-part', styles['navigation-part'])}
+      className={designService.wrapStyles(styles['navigation-part'])}
       ref={itemRef as any}
     >
       {part.icon && <span className={part.icon}></span>}
@@ -135,7 +129,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
 
   return (
     <div
-      className={designService.getStyles('navigation_menu', styles.navigation_menu)}
+      className={designService.wrapStyles(styles.navigation_menu)}
       style={{
         left: model.x + 'px',
         top: top + 'px',
@@ -178,7 +172,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
             <div
               onClick={clickToNavigate || clickToGetChild}
               ref={(el) => (itemRef = el)}
-              className={cls(designService.getStyles('navigation_menu_item', styles.navigation_menu_item), {
+              className={cls(designService.wrapStyles(styles.navigation_menu_item), {
                 [styles.navigation_menu_item_current]: i === model.initialIndex,
               })}
               key={'menu-' + p.name}

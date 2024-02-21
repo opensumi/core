@@ -222,7 +222,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
       className={cls(
-        designService.getStyles('opened_editor_node', styles.opened_editor_node),
+        designService.wrapStyles(styles.opened_editor_node),
         decorations ? decorations.classlist : null,
         EditorFile.is(item) && item.dirty && styles.dirty,
       )}
@@ -232,12 +232,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       {renderActionBar()}
       <div className={cls(styles.opened_editor_node_content)}>
         {renderIcon(item)}
-        <div
-          className={designService.getStyles(
-            'opened_editor_node_overflow_wrap',
-            styles.opened_editor_node_overflow_wrap,
-          )}
-        >
+        <div className={designService.wrapStyles(styles.opened_editor_node_overflow_wrap)}>
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>

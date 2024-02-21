@@ -71,7 +71,7 @@ export const BoxPanel: React.FC<{
         }
       }}
       {...restProps}
-      className={cls(designService.getStyles('box-panel', styles['box-panel']), className)}
+      className={cls(designService.wrapStyles(styles['box-panel']), className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}
     >
       {arrayChildren.map((child, index) => (

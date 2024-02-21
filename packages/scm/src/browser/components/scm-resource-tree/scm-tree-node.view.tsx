@@ -122,7 +122,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
           onClick={clickHandler}
           className={cls(
             styles.scm_tree_node_segment,
-            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+            designService.wrapStyles(styles.expansion_toggle),
             getIcon('arrow-right'),
             {
               [`${styles.mod_collapsed}`]: !(node as SCMResourceGroup).expanded,
@@ -153,10 +153,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
-      className={cls(
-        designService.getStyles('scm_tree_node', styles.scm_tree_node),
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(designService.wrapStyles(styles.scm_tree_node), decorations ? decorations.classlist : null)}
       style={{
         height: SCM_TREE_NODE_HEIGHT,
         lineHeight: `${SCM_TREE_NODE_HEIGHT}px`,
@@ -334,7 +331,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
           onClick={clickHandler}
           className={cls(
             styles.scm_tree_node_segment,
-            designService.getStyles('expansion_toggle', styles.expansion_toggle),
+            designService.wrapStyles(styles.expansion_toggle),
             getIcon('arrow-right'),
             {
               [`${styles.mod_collapsed}`]: !(node as SCMResourceFolder).expanded,
@@ -353,10 +350,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(
-        designService.getStyles('scm_tree_node', styles.scm_tree_node),
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(designService.wrapStyles(styles.scm_tree_node), decorations ? decorations.classlist : null)}
       style={{
         color: decoration ? decoration.color : '',
         paddingLeft,

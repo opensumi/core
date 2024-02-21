@@ -7,7 +7,6 @@ import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common'
 
 import { InstallState, VSXExtension } from '../../common';
 
-
 import styles from './extension.module.less';
 
 export enum ExtensionViewType {
@@ -60,7 +59,7 @@ export const Extension = React.memo(
     }, [extension]);
 
     return (
-      <div className={designService.getStyles('extension_item', styles.extension_item)} onClick={onClickCallback}>
+      <div className={designService.wrapStyles(styles.extension_item)} onClick={onClickCallback}>
         {extension.iconUrl ? (
           <img
             className={styles.icon}

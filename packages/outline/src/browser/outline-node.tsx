@@ -110,7 +110,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       onClick={clickHandler}
       className={cls(
         styles.file_tree_node_segment,
-        designService.getStyles('expansion_toggle', styles.expansion_toggle),
+        designService.wrapStyles(styles.expansion_toggle),
         getIcon('arrow-right'),
         {
           [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
@@ -147,10 +147,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(
-        designService.getStyles('outline_node', styles.outline_node),
-        decorations ? decorations.classlist : null,
-      )}
+      className={cls(designService.wrapStyles(styles.outline_node), decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >

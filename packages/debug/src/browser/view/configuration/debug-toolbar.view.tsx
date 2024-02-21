@@ -311,7 +311,7 @@ const FloatDebugToolbarView = observer(() => {
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
 
   const debugToolbarWrapperClass = cls({
-    [designService.getStyles('debug_toolbar_wrapper', styles.debug_toolbar_wrapper)]: true,
+    [designService.wrapStyles(styles.debug_toolbar_wrapper)]: true,
     [styles.debug_toolbar_wrapper_electron]: isElectronRenderer,
   });
 

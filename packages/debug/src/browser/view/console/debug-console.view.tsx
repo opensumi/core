@@ -207,7 +207,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   return (
     <div className={styles.debug_console} onContextMenu={handleOuterContextMenu} onClick={handleConsoleClick}>
       <div
-        className={designService.getStyles('debug_console_output', styles.debug_console_output)}
+        className={designService.wrapStyles(styles.debug_console_output)}
         tabIndex={-1}
         onBlur={handleOuterBlur}
         ref={wrapperRef}
@@ -215,10 +215,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       >
         {renderOutputContent()}
       </div>
-      <div
-        className={designService.getStyles('variable_repl_bar', styles.variable_repl_bar)}
-        style={{ maxHeight: height - 26 + 'px' }}
-      >
+      <div className={designService.wrapStyles(styles.variable_repl_bar)} style={{ maxHeight: height - 26 + 'px' }}>
         <div className={styles.variable_repl_bar_icon}>
           <span className={getIcon('right')}></span>
         </div>
@@ -429,12 +426,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div
-          className={cls(
-            styles.debug_console_node_segment,
-            designService.getStyles('expansion_toggle', styles.expansion_toggle),
-          )}
-        >
+        <div className={cls(styles.debug_console_node_segment, designService.wrapStyles(styles.expansion_toggle))}>
           <Loading />
         </div>
       );
@@ -448,7 +440,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
         onClick={handleTwiceClick}
         className={cls(
           styles.debug_console_node_segment,
-          designService.getStyles('expansion_toggle', styles.expansion_toggle),
+          designService.wrapStyles(styles.expansion_toggle),
           getIcon('right'),
           {
             [`${styles.mod_collapsed}`]: !(node as DebugConsoleNode).expanded,

@@ -18,16 +18,22 @@ export class DesignStyleService implements IDesignStyleService {
     this._styles = model;
   }
 
-  getStyles(className: string, defaultStyle?: string): string {
+  wrapStyles(styles?: string): string {
     if (!this._styles) {
-      return defaultStyle || '';
+      return styles || '';
     }
+
+    if (!styles) {
+      return '';
+    }
+
+    let _cls = styles.replace(/___\w{5}/, '');
 
     // design 模块的样式需要添加 design 前缀
-    if (!className.startsWith(prefix)) {
-      className = prefix + className;
+    if (!_cls.startsWith(prefix)) {
+      _cls = prefix + _cls;
     }
 
-    return cls(defaultStyle, this._styles[className]);
+    return cls(styles, this._styles[_cls]);
   }
 }

@@ -55,8 +55,8 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   return (
     <div
       id={id}
-      className={cls(designService.getStyles('tab_panel', styles.tab_panel), {
-        [designService.getStyles('tab_panel_hidden', styles.tab_panel_hidden)]: !tabbarService.currentContainerId,
+      className={cls(designService.wrapStyles(styles.tab_panel), {
+        [designService.wrapStyles(styles.tab_panel_hidden)]: !tabbarService.currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -176,7 +176,7 @@ const BottomPanelView: React.FC<{
   return (
     <div ref={containerRef} className={styles.panel_container}>
       <div
-        className={designService.getStyles('panel_title_bar', styles.panel_title_bar)}
+        className={designService.wrapStyles(styles.panel_title_bar)}
         style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
       >
         <h1>{component.options?.title?.toUpperCase()}</h1>
@@ -185,7 +185,7 @@ const BottomPanelView: React.FC<{
             <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           )}
         </div>
-        <div className={designService.getStyles('panel_toolbar_container', styles.panel_toolbar_container)}>
+        <div className={designService.wrapStyles(styles.panel_toolbar_container)}>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>

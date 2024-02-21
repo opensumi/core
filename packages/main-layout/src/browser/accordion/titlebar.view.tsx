@@ -12,7 +12,7 @@ export const TitleBar: React.FC<{
 }> = React.memo((props) => {
   const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   return (
-    <div className={designService.getStyles('titlebar', styles.titlebar)} style={{ height: props.height }}>
+    <div className={designService.wrapStyles(styles.titlebar)} style={{ height: props.height }}>
       <h1>{props.title}</h1>
       {props.menubar || null}
     </div>

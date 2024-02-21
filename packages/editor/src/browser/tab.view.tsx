@@ -337,7 +337,7 @@ export const Tabs = ({ group }: ITabsProps) => {
           {decoration.readOnly ? (
             <span className={cls(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
           ) : null}
-          <div className={designService.getStyles('tab_right', styles.tab_right)}>
+          <div className={designService.wrapStyles(styles.tab_right)}>
             <div
               className={cls({
                 [styles.kt_hidden]: !decoration.dirty,
@@ -345,20 +345,14 @@ export const Tabs = ({ group }: ITabsProps) => {
               })}
             ></div>
             <div
-              className={designService.getStyles('close_tab', styles.close_tab)}
+              className={designService.wrapStyles(styles.close_tab)}
               onMouseDown={(e) => {
                 e.stopPropagation();
                 group.close(resource.uri);
               }}
             >
               {editorTabService.renderTabCloseComponent(
-                <div
-                  className={cls(
-                    getIcon('close'),
-                    designService.getStyles('kt_editor_close_icon'),
-                    styles.kt_editor_close_icon,
-                  )}
-                />,
+                <div className={cls(getIcon('close'), designService.wrapStyles(styles.kt_editor_close_icon))} />,
               )}
             </div>
           </div>
@@ -370,10 +364,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   const renderTabContent = () => (
-    <div
-      className={designService.getStyles('kt_editor_tabs_content', styles.kt_editor_tabs_content)}
-      ref={contentRef as any}
-    >
+    <div className={designService.wrapStyles(styles.kt_editor_tabs_content)} ref={contentRef as any}>
       {group.resources.map((resource, i) => {
         let ref: HTMLDivElement | null;
         const decoration = resourceService.getResourceDecoration(resource.uri);
@@ -382,12 +373,11 @@ export const Tabs = ({ group }: ITabsProps) => {
             draggable={true}
             title={resource.title}
             className={cls({
-              [designService.getStyles('kt_editor_tab', styles.kt_editor_tab)]: true,
+              [designService.wrapStyles(styles.kt_editor_tab)]: true,
               [styles.last_in_row]: tabMap.get(i),
-              [designService.getStyles('kt_editor_tab_current', styles.kt_editor_tab_current)]:
-                group.currentResource === resource,
+              [designService.wrapStyles(styles.kt_editor_tab_current)]: group.currentResource === resource,
               [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
-              [designService.getStyles('kt_editor_tab_dirty', styles.kt_editor_tab_dirty)]: decoration.dirty,
+              [designService.wrapStyles(styles.kt_editor_tab_dirty)]: decoration.dirty,
             })}
             style={
               wrapMode && i === group.resources.length - 1
@@ -450,9 +440,9 @@ export const Tabs = ({ group }: ITabsProps) => {
   );
 
   return (
-    <div id={VIEW_CONTAINERS.EDITOR_TABS} className={designService.getStyles('kt_editor_tabs', styles.kt_editor_tabs)}>
+    <div id={VIEW_CONTAINERS.EDITOR_TABS} className={designService.wrapStyles(styles.kt_editor_tabs)}>
       <div
-        className={designService.getStyles('kt_editor_tabs_scroll_wrapper', styles.kt_editor_tabs_scroll_wrapper)}
+        className={designService.wrapStyles(styles.kt_editor_tabs_scroll_wrapper)}
         ref={tabWrapperRef as any}
         onDragOver={handleWrapperDragOver}
         onDragLeave={handleWrapperDragLeave}
@@ -533,7 +523,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     return (
       <div
         ref={ref}
-        className={cls(designService.getStyles('editor_actions', styles.editor_actions), className)}
+        className={cls(designService.wrapStyles(styles.editor_actions), className)}
         style={{ height: appConfig.layoutViewSize!.editorTabsHeight }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>

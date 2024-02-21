@@ -104,14 +104,9 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
     (node: CommentFileNode) => (
       <div
         onClick={handleTwistierClick}
-        className={cls(
-          styles.segment,
-          designService.getStyles('expansion_toggle', styles.expansion_toggle),
-          getIcon('arrow-right'),
-          {
-            [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
-          },
-        )}
+        className={cls(styles.segment, designService.wrapStyles(styles.expansion_toggle), getIcon('arrow-right'), {
+          [`${styles.mod_collapsed}`]: !(node as CommentFileNode).expanded,
+        })}
       />
     ),
     [handleTwistierClick],

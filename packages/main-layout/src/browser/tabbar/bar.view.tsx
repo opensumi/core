@@ -97,9 +97,9 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
     });
 
     return (
-      <div className={cls([designService.getStyles('tab_bar', styles.tab_bar), className])}>
+      <div className={cls([designService.wrapStyles(styles.tab_bar), className])}>
         <div
-          className={designService.getStyles('bar_content', styles.bar_content)}
+          className={designService.wrapStyles(styles.bar_content)}
           style={{ flexDirection: Layout.getTabbarDirection(direction) }}
         >
           {visibleContainers.map((component) => {
@@ -203,7 +203,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = o
     }, []);
 
     return (
-      <div className={designService.getStyles('icon_tab', styles.icon_tab)}>
+      <div className={designService.wrapStyles(styles.icon_tab)}>
         <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
         {inProgress ? (
           <Badge className={styles.tab_badge}>
@@ -250,7 +250,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = o
 export const IconElipses: React.FC = () => {
   const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   return (
-    <div className={designService.getStyles('icon_tab', styles.icon_tab)}>
+    <div className={designService.wrapStyles(styles.icon_tab)}>
       {/* i18n */}
       <div className={cls(getIcon('ellipsis'), 'activity-icon')} title='extra tabs'></div>
     </div>
@@ -298,7 +298,7 @@ export const LeftTabbarRenderer: React.FC = () => {
   return (
     <div
       id={VIEW_CONTAINERS.LEFT_TABBAR}
-      className={designService.getStyles('left_tab_bar', styles.left_tab_bar)}
+      className={designService.wrapStyles(styles.left_tab_bar)}
       onContextMenu={tabbarService.handleContextMenu}
     >
       <InlineMenuBar className={cls(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
@@ -306,7 +306,7 @@ export const LeftTabbarRenderer: React.FC = () => {
         tabSize={48}
         MoreTabView={IconElipses}
         className={styles.left_tab_content}
-        tabClassName={designService.getStyles('left_tab', styles.left_tab)}
+        tabClassName={designService.wrapStyles(styles.left_tab)}
         TabView={IconTabView}
         barSize={48}
         margin={90}
@@ -325,13 +325,13 @@ export const BottomTabbarRenderer: React.FC = () => {
     <div
       id={VIEW_CONTAINERS.BOTTOM_TABBAR}
       onContextMenu={tabbarService.handleContextMenu}
-      className={cls(designService.getStyles('bottom_bar_container', styles.bottom_bar_container), 'next_bottom_bar')}
+      className={cls(designService.wrapStyles(styles.bottom_bar_container), 'next_bottom_bar')}
     >
       <TabbarViewBase
         // TODO: 暂时通过预估值来计算是否超出可视范围，实际上需要通过dom尺寸的计算
         tabSize={80}
         MoreTabView={TextElipses}
-        tabClassName={designService.getStyles('bottom_tab', styles.bottom_tab)}
+        tabClassName={designService.wrapStyles(styles.bottom_tab)}
         TabView={TextTabView}
         barSize={24}
         panelBorderSize={1}

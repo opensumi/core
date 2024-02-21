@@ -41,7 +41,7 @@ export default observer(() => {
     <div className={styles.view_container}>
       <div className={styles.tabs}>
         <Scrollbars forwardedRef={(el) => (el ? (tabContainer.current = el.ref) : null)}>
-          <div className={designService.getStyles('tab_contents', styles.tab_contents)}>
+          <div className={designService.wrapStyles(styles.tab_contents)}>
             {view.groups.map((group, index) => {
               if (!group) {
                 return;

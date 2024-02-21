@@ -141,11 +141,11 @@ export const AccordionSection = ({
   }, [expanded, headerSize, alignment]);
 
   return (
-    <div className={designService.getStyles('kt_split_panel', styles.kt_split_panel)} data-view-id={viewId}>
+    <div className={designService.wrapStyles(styles.kt_split_panel)} data-view-id={viewId}>
       {!noHeader && (
         <div
           {...attrs}
-          className={cls(designService.getStyles('kt_split_panel_header', styles.kt_split_panel_header), headerClass)}
+          className={cls(designService.wrapStyles(styles.kt_split_panel_header), headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
@@ -163,7 +163,7 @@ export const AccordionSection = ({
             {metadata.badge && <div className={styles.section_badge}>{metadata.badge}</div>}
           </div>
           {expanded && titleMenu && (
-            <div className={designService.getStyles('actions_wrap', styles.actions_wrap)}>
+            <div className={designService.wrapStyles(styles.actions_wrap)}>
               {isIMenu(titleMenu) ? (
                 <InlineActionBar menus={titleMenu} context={titleMenuContext} />
               ) : (
