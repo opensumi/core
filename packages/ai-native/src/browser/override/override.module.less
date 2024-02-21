@@ -17,10 +17,10 @@
   padding: 0 8px;
   margin-right: 0 !important;
 
-  &::after {
+  &::before {
     content: '';
     position: absolute;
-    right: 0;
+    left: 0;
     top: 12px;
     display: inline-block;
     width: 1px;
@@ -46,7 +46,7 @@
     background-color: var(--panel-background);
     color: var(--tab-activeForeground);
 
-    &::after {
+    &::before {
       content: none;
     }
 

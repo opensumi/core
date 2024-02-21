@@ -38,9 +38,9 @@
         align-items: center;
         background-color: transparent;
 
-        // 最有一个元素分割线隐藏
-        &:last-child {
-          > div::after {
+        // 第一个元素分割线隐藏
+        &:first-child {
+          > div::before {
             content: none;
           }
         }
@@ -81,10 +81,16 @@
       }
 
       div[class*='kt_editor_tab_current___'] {
-        // background-color: var(--kt-panelTitle-background) !important;
-
         div[class*='close_tab___'] {
           display: block;
+        }
+      }
+
+      div[class*='kt_editor_tab_current___'] + div {
+        div[class*='ai_editor_tab_block_container___'] {
+          &::before {
+            content: none;
+          }
         }
       }
 
@@ -492,7 +498,6 @@
       border-radius: 4px;
       width: 240px;
       max-width: 240px;
-      border: 0 none;
       span[class*='kt-icon'] {
         color: var(--ai-native-input-color);
       }

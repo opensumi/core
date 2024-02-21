@@ -674,7 +674,7 @@ export default {
     'kt.select.disableForeground': '#5F656B',
     'kt.select.foreground': '#D7DBDE',
     'kt.select.placeholderForeground': '#5F656B',
-    'kt.selectDropdown.background': '#35393D',
+    'kt.selectDropdown.background': '#222830',
     'kt.selectDropdown.foreground': '#D7DBDE',
     'kt.selectDropdown.hoverBackground': '#ffffff14',
     'kt.selectDropdown.selectionBackground': '#ffffff14',
