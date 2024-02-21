@@ -1,7 +1,40 @@
-export namespace LAYOUT_VIEW_SIZE {
-  export const MENUBAR_HEIGHT = 35;
-  export const EDITOR_TABS_HEIGHT = 35;
-  export const BIG_SUR_TITLEBAR_HEIGHT = 28;
-  export const TITLEBAR_HEIGHT = 22;
-  export const PANEL_TITLEBAR_HEIGHT = 35;
+export interface ILayoutViewSize {
+  menubarHeight: number;
+  editorTabsHeight: number;
+  bigSurTitleBarHeight: number;
+  titleBarHeight: number;
+  panelTitleBarHeight: number;
+  statusBarHeight: number;
+}
+
+export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
+  menubarHeight: 35,
+  editorTabsHeight: 35,
+  bigSurTitleBarHeight: 28,
+  titleBarHeight: 22,
+  panelTitleBarHeight: 35,
+  statusBarHeight: 24,
+};
+
+export class LayoutViewSizeConfig implements ILayoutViewSize {
+  constructor(private readonly layoutViewSize?: Partial<ILayoutViewSize>) {}
+
+  get menubarHeight(): number {
+    return this.layoutViewSize?.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
+  }
+  get editorTabsHeight(): number {
+    return this.layoutViewSize?.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
+  }
+  get bigSurTitleBarHeight(): number {
+    return this.layoutViewSize?.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
+  }
+  get titleBarHeight(): number {
+    return this.layoutViewSize?.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
+  }
+  get panelTitleBarHeight(): number {
+    return this.layoutViewSize?.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
+  }
+  get statusBarHeight(): number {
+    return this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
+  }
 }

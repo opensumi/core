@@ -27,7 +27,7 @@ import {
   AbstractMenuService,
   IContextMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Deferred, getDebugLogger } from '@opensumi/ide-core-common';
+import { Deferred, getDebugLogger, isUndefined } from '@opensumi/ide-core-common';
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
 
 import {
@@ -195,7 +195,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         defaultContainer = '';
       }
     }
-    if (currentId === undefined) {
+    if (isUndefined(currentId)) {
       service.updateCurrentContainerId(defaultContainer);
     } else {
       service.updateCurrentContainerId(

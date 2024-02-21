@@ -9,6 +9,7 @@ import type {
 } from '@opensumi/ide-core-common';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
+import { ILayoutViewSize } from '../layout/constants';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
@@ -100,6 +101,10 @@ export interface AppConfig {
    * 默认值可参考：https://github.com/opensumi/core/blob/58b998d9e1f721928f576579f16ded46b7505e84/packages/core-browser/src/components/layout/default-layout.tsx
    */
   layoutComponent?: React.FC;
+  /**
+   * Define the default size (height) of each layout block in the IDE
+   */
+  layoutViewSize?: Partial<ILayoutViewSize>;
   /**
    * 可基于 `layoutComponent` 配置的基础上
    * 定义面板大小，宽度/高度

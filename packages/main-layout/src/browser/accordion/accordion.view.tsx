@@ -44,6 +44,7 @@ export const AccordionContainer = observer(
     React.useEffect(() => {
       accordionService.initConfig({ headerSize, minSize });
     }, []);
+
     const allCollapsed = !accordionService.visibleViews.find((view) => {
       const viewState: SectionState = accordionService.getViewState(view.id);
       return !viewState.collapsed;
@@ -74,6 +75,10 @@ export const AccordionContainer = observer(
               header={(view.name && replaceLocalizePlaceholder(view.name)) || view.id}
               viewId={view.id}
               key={view.id}
+              message={view.message}
+              description={view.description}
+              badge={view.badge}
+              title={view.name}
               expanded={!collapsed}
               accordionService={accordionService}
               index={index}
