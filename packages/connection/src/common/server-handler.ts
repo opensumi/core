@@ -61,10 +61,10 @@ export class CommonChannelPathHandler {
   get(channelPath: string) {
     return this.handlerMap.get(channelPath);
   }
-  disposeConnectionClientId(connection: any, clientId: string) {
+  disposeConnectionClientId(channel: any, clientId: string) {
     this.handlerMap.forEach((handlerArr: IPathHandler[]) => {
       handlerArr.forEach((handler: IPathHandler) => {
-        handler.dispose(connection, clientId);
+        handler.dispose(channel, clientId);
       });
     });
   }
