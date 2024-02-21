@@ -84,7 +84,6 @@
   "devDependencies": {
     "@ast-grep/napi": "^0.17.1",
     "@opensumi/ide-dev-tool": "workspace:*",
-    "@types/benchmark": "^2.1.5",
     "@types/debug": "^4.1.5",
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^7.1.1",
@@ -103,7 +102,6 @@
     "@typescript-eslint/parser": "^5.12.1",
     "async-retry": "^1.3.1",
     "await-event": "^2.1.0",
-    "benchmark": "^2.1.4",
     "chalk": "^4.1.2",
     "compressing": "^1.10.0",
     "cross-env": "^7.0.3",
