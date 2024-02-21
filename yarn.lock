@@ -2085,6 +2085,7 @@ __metadata:
     "@commitlint/cli": ^15.0.0
     "@commitlint/config-conventional": ^7.1.2
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@types/benchmark": ^2.1.5
     "@types/debug": ^4.1.5
     "@types/fs-extra": ^9.0.13
     "@types/glob": ^7.1.1
@@ -2103,6 +2104,7 @@ __metadata:
     "@typescript-eslint/parser": ^5.12.1
     async-retry: ^1.3.1
     await-event: ^2.1.0
+    benchmark: ^2.1.4
     chalk: ^4.1.2
     commitizen: ^4.2.4
     commitlint: ^15.0.0
@@ -2144,6 +2146,7 @@ __metadata:
     semver: ^7.5.2
     simple-git: ^3.3.0
     temp: ^0.9.4
+    tinybench: ^2.6.0
     ts-jest: ^29.1.0
     ts-loader: ^9.5.1
     ts-node: ^10.9.1
@@ -3659,6 +3662,13 @@ __metadata:
   dependencies:
     "@babel/types": ^7.3.0
   checksum: d20953338b2f012ab7750932ece0a78e7d1645b0a6ff42d49be90f55e9998085da1374a9786a7da252df89555c6586695ba4d1d4b4e88ab2b9f306bcd35e00d3
+  languageName: node
+  linkType: hard
+
+"@types/benchmark@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "@types/benchmark@npm:2.1.5"
+  checksum: 2d052d96b2982997cad13b2c267bdc00e180a607484f05e957bea06a44d632eabf72ff8dc239ee3c2bea0dff877c805b6e01b208520590c197f1b5f3b3867cb4
   languageName: node
   linkType: hard
 
@@ -5628,6 +5638,16 @@ __metadata:
   version: 2.2.3
   resolution: "before-after-hook@npm:2.2.3"
   checksum: a1a2430976d9bdab4cd89cb50d27fa86b19e2b41812bf1315923b0cba03371ebca99449809226425dd3bcef20e010db61abdaff549278e111d6480034bebae87
+  languageName: node
+  linkType: hard
+
+"benchmark@npm:^2.1.4":
+  version: 2.1.4
+  resolution: "benchmark@npm:2.1.4"
+  dependencies:
+    lodash: ^4.17.4
+    platform: ^1.3.3
+  checksum: aa466561d4f2b0a2419a3069b8f90fd35ffacf26849697eea9de525ecfbd10b44da11070cc51c88d772076db8cb2415641b493de7d6c024fdf8551019c6fcf1c
   languageName: node
   linkType: hard
 
@@ -15859,6 +15879,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"platform@npm:^1.3.3":
+  version: 1.3.6
+  resolution: "platform@npm:1.3.6"
+  checksum: 6f472a09c61d418c7e26c1c16d0bdc029549d512dbec6526216a1e59ec68100d07007d0097dcba69dddad883d6f2a83361b4bdfe0094a3d9a2af24158643d85e
+  languageName: node
+  linkType: hard
+
 "playwright-core@npm:1.40.1":
   version: 1.40.1
   resolution: "playwright-core@npm:1.40.1"
@@ -19050,6 +19077,13 @@ __metadata:
   dependencies:
     setimmediate: ^1.0.4
   checksum: ec37ae299066bef6c464dcac29c7adafba1999e7227a9bdc4e105a459bee0f0b27234a46bfd7ab4041da79619e06a58433472867a913d01c26f8a203f87cee70
+  languageName: node
+  linkType: hard
+
+"tinybench@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "tinybench@npm:2.6.0"
+  checksum: a621ac66ac17ec5da7e9ac10b3c27040e58c3cd843ccedd8e1e3fab5702d6337b80d02b7bfbf420ab5f029dcb7895657fb80ce21181896e170fa4e6d2c2eebc4
   languageName: node
   linkType: hard
 
