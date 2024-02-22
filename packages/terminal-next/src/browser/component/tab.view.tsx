@@ -2,8 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Scrollbars } from '@opensumi/ide-components';
-import { KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
+import { KeybindingRegistry, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
 import { IThemeService, ThemeType } from '@opensumi/ide-theme';
 
 import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
@@ -18,9 +17,9 @@ export default observer(() => {
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
   const themeService = useInjectable<IThemeService>(IThemeService);
   const keybindingService = useInjectable<KeybindingRegistry>(KeybindingRegistry);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const tabContainer = useRef<HTMLDivElement | null>();
   const [theme, setTheme] = useState<ThemeType>('dark');
+  const styles_tab_contents = useDesignStyles(styles.tab_contents);
 
   const init = useCallback(() => {
     themeService.getCurrentTheme().then((theme) => {
@@ -41,7 +40,7 @@ export default observer(() => {
     <div className={styles.view_container}>
       <div className={styles.tabs}>
         <Scrollbars forwardedRef={(el) => (el ? (tabContainer.current = el.ref) : null)}>
-          <div className={designService.wrapStyles(styles.tab_contents)}>
+          <div className={styles_tab_contents}>
             {view.groups.map((group, index) => {
               if (!group) {
                 return;

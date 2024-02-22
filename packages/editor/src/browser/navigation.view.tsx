@@ -5,8 +5,14 @@ import React, { memo, useCallback, useEffect, useRef } from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Icon, Scrollbars } from '@opensumi/ide-components';
-import { Disposable, DomListener, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
+import {
+  Disposable,
+  DomListener,
+  getIcon,
+  useDesignStyles,
+  useInjectable,
+  useUpdateOnEvent,
+} from '@opensumi/ide-core-browser';
 
 import { BreadCrumbsMenuService } from './menu/breadcrumbs.menus';
 import styles from './navigation.module.less';
@@ -16,7 +22,8 @@ import { EditorGroup } from './workbench-editor.service';
 
 export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => {
   const breadCrumbService = useInjectable<IBreadCrumbService>(IBreadCrumbService);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+  const styles_navigation_container = useDesignStyles(styles.navigation_container);
+  const styles_navigation_icon = useDesignStyles(styles.navigation_icon);
 
   useUpdateOnGroupTabChange(editorGroup);
 
@@ -49,14 +56,14 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
   }
   return parts.length === 0 ? null : (
     <div
-      className={designService.wrapStyles(styles.navigation_container)}
+      className={styles_navigation_container}
       onContextMenu={(event) => {
         event.preventDefault();
       }}
     >
       {parts.map((p, i) => (
         <React.Fragment key={i + '-crumb:' + p.name}>
-          {i > 0 && <Icon icon={'right'} size='small' className={designService.wrapStyles(styles.navigation_icon)} />}
+          {i > 0 && <Icon icon={'right'} size='small' className={styles_navigation_icon} />}
           <NavigationItem part={p} editorGroup={editorGroup} />
         </React.Fragment>
       ))}
@@ -66,8 +73,8 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
 export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPart; editorGroup: EditorGroup }) => {
   const viewService = useInjectable<NavigationBarViewService>(NavigationBarViewService);
   const breadcrumbsMenuService = useInjectable<BreadCrumbsMenuService>(BreadCrumbsMenuService);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const itemRef = useRef<HTMLSpanElement>();
+  const styles_navigation_part = useDesignStyles(styles['navigation-part']);
 
   const onClick = useCallback(async () => {
     if (part.getSiblings && itemRef.current) {
@@ -91,7 +98,7 @@ export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPa
         }
         event.preventDefault();
       }}
-      className={designService.wrapStyles(styles['navigation-part'])}
+      className={styles_navigation_part}
       ref={itemRef as any}
     >
       {part.icon && <span className={part.icon}></span>}
@@ -110,9 +117,9 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
   }
 
   const scrollerContainer = useRef<HTMLDivElement | null>();
-
+  const styles_navigation_menu = useDesignStyles(styles.navigation_menu);
+  const styles_navigation_menu_item = useDesignStyles(styles.navigation_menu_item);
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
 
   const scrollToCurrent = useCallback(() => {
     if (scrollerContainer.current) {
@@ -129,7 +136,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
 
   return (
     <div
-      className={designService.wrapStyles(styles.navigation_menu)}
+      className={styles_navigation_menu}
       style={{
         left: model.x + 'px',
         top: top + 'px',
@@ -172,7 +179,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
             <div
               onClick={clickToNavigate || clickToGetChild}
               ref={(el) => (itemRef = el)}
-              className={cls(designService.wrapStyles(styles.navigation_menu_item), {
+              className={cls(styles_navigation_menu_item, {
                 [styles.navigation_menu_item_current]: i === model.initialIndex,
               })}
               key={'menu-' + p.name}

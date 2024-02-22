@@ -4,9 +4,16 @@ import { observer } from 'mobx-react-lite';
 import React, { KeyboardEvent, createElement, useEffect, useRef } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { AppConfig, TERMINAL_COMMANDS, URI, getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  TERMINAL_COMMANDS,
+  URI,
+  getIcon,
+  localize,
+  useDesignStyles,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -19,7 +26,10 @@ export const renderInfoItem = observer((props: ItemProps) => {
   const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+  const styles_item_container = useDesignStyles(styles.item_container);
+  const styles_tab_item_selected = useDesignStyles(styles.tab_item_selected);
+  const styles_item_info_name = useDesignStyles(styles.item_info_name);
+  const styles_tab_close_icon = useDesignStyles(styles.tab_close_icon);
 
   const handleOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && props.onInputEnter && props.id) {
@@ -52,8 +62,8 @@ export const renderInfoItem = observer((props: ItemProps) => {
     <div
       ref={ref}
       className={cls({
-        [designService.wrapStyles(styles.item_container)]: true,
-        [designService.wrapStyles(styles.tab_item_selected)]: !!props.selected,
+        [styles_item_container]: true,
+        [styles_tab_item_selected]: !!props.selected,
       })}
       style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
       onClick={() => handleSelect()}
@@ -70,7 +80,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
           onKeyDown={(e) => handleOnKeyDown(e)}
         ></input>
       ) : (
-        <div id={props.id} className={designService.wrapStyles(styles.item_info_name)} title={props.name}>
+        <div id={props.id} className={styles_item_info_name} title={props.name}>
           {props.name !== '' ? (
             <>
               <Icon
@@ -90,7 +100,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         <div></div>
       ) : (
         <div
-          className={cls([getIcon('close'), designService.wrapStyles(styles.tab_close_icon)])}
+          className={cls([getIcon('close'), styles_tab_close_icon])}
           onClick={(event) => {
             event.stopPropagation();
             handleClose();
@@ -104,12 +114,11 @@ export const renderInfoItem = observer((props: ItemProps) => {
 export const renderAddItem = observer((props: ItemProps) => {
   const handleAdd = debounce(() => props.onClick && props.onClick(), 20);
   const keybinding = props.getKeybinding && props.getKeybinding(TERMINAL_COMMANDS.ADD.id);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
-
   const createTitle = keybinding ? `${localize('terminal.new')}(${keybinding})` : localize('terminal.new');
+  const style_tab_item_wrapper = useDesignStyles(styles.tab_item_wrapper);
 
   return (
-    <div className={designService.wrapStyles(styles.tab_item_wrapper)}>
+    <div className={style_tab_item_wrapper}>
       <div
         title={createTitle}
         className={cls({

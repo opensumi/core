@@ -1,10 +1,9 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { ErrorBoundary, getIcon, useInjectable, useViewState } from '@opensumi/ide-core-browser';
+import { ErrorBoundary, getIcon, useDesignStyles, useInjectable, useViewState } from '@opensumi/ide-core-browser';
 import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IContextMenu, IMenu, isIMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -69,7 +68,9 @@ export const AccordionSection = ({
   alignment,
 }: CollapsePanelProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+  const styles_actions_wrap = useDesignStyles(styles.actions_wrap);
+  const styles_kt_split_panel = useDesignStyles(styles.kt_split_panel);
+  const styles_kt_split_panel_header = useDesignStyles(styles.kt_split_panel_header);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [metadata, setMetadata] = React.useState({
@@ -141,11 +142,11 @@ export const AccordionSection = ({
   }, [expanded, headerSize, alignment]);
 
   return (
-    <div className={designService.wrapStyles(styles.kt_split_panel)} data-view-id={viewId}>
+    <div className={styles_kt_split_panel} data-view-id={viewId}>
       {!noHeader && (
         <div
           {...attrs}
-          className={cls(designService.wrapStyles(styles.kt_split_panel_header), headerClass)}
+          className={cls(styles_kt_split_panel_header, headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
@@ -163,7 +164,7 @@ export const AccordionSection = ({
             {metadata.badge && <div className={styles.section_badge}>{metadata.badge}</div>}
           </div>
           {expanded && titleMenu && (
-            <div className={designService.wrapStyles(styles.actions_wrap)}>
+            <div className={styles_actions_wrap}>
               {isIMenu(titleMenu) ? (
                 <InlineActionBar menus={titleMenu} context={titleMenuContext} />
               ) : (

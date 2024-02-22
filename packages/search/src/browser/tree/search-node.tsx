@@ -9,9 +9,8 @@ import {
   getIcon,
   isDefined,
   localize,
-  useInjectable,
+  useDesignStyles,
 } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 
 import { SearchContentNode, SearchFileNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -47,7 +46,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   isUseRegexp,
   isMatchCase,
 }: ISearchNodeRenderedProps) => {
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       onClick(ev, item as SearchContentNode);
@@ -175,7 +174,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: SearchFileNode) => (
       <div
-        className={cls(styles.segment, designService.wrapStyles(styles.expansion_toggle), getIcon('arrow-right'), {
+        className={cls(styles.segment, styles_expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as SearchFileNode).expanded,
         })}
       />

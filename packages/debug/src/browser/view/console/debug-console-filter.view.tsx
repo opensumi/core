@@ -3,8 +3,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { HistoryInputBox, IHistoryInputBoxHandler } from '@opensumi/ide-components/lib/input/HistoryInputBox';
-import { Key, localize, useInjectable } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
+import { Key, localize, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
 
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import styles from './debug-console.module.less';
@@ -14,9 +13,10 @@ import styles from './debug-console.module.less';
  */
 export const DebugConsoleFilterView = observer(() => {
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const [filterValue, setFilterValue] = React.useState<string>('');
   const [historyApi, setHistoryApi] = React.useState<IHistoryInputBoxHandler>();
+  const styles_debug_console_filter = useDesignStyles(styles.debug_console_filter);
+  const styles_filter_input = useDesignStyles(styles.filter_input);
 
   const onDebounceValueChange = debounce((value: string) => {
     setFilterValue(value);
@@ -63,10 +63,10 @@ export const DebugConsoleFilterView = observer(() => {
   }, [historyApi]);
 
   return (
-    <div className={designService.wrapStyles(styles.debug_console_filter)}>
+    <div className={styles_debug_console_filter}>
       <HistoryInputBox
         hasClear
-        className={designService.wrapStyles(styles.filter_input)}
+        className={styles_filter_input}
         value={filterValue}
         placeholder={localize('debug.console.filter.placeholder')}
         onValueChange={onDebounceValueChange}

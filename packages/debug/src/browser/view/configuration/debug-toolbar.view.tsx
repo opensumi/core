@@ -13,11 +13,11 @@ import {
   getIcon,
   isMacintosh,
   localize,
+  useDesignStyles,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { DebugState } from '../../../common';
@@ -269,8 +269,8 @@ const FloatDebugToolbarView = observer(() => {
   const controller = useInjectable<FloatController>(FloatController);
   const preference = useInjectable<PreferenceService>(PreferenceService);
   const { isElectronRenderer, layoutViewSize } = useInjectable<AppConfig>(AppConfig);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper);
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
   const { state } = debugToolbarService;
 
@@ -311,7 +311,7 @@ const FloatDebugToolbarView = observer(() => {
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
 
   const debugToolbarWrapperClass = cls({
-    [designService.wrapStyles(styles.debug_toolbar_wrapper)]: true,
+    [styles_debug_toolbar_wrapper]: true,
     [styles.debug_toolbar_wrapper_electron]: isElectronRenderer,
   });
 

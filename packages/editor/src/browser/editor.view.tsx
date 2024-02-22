@@ -16,6 +16,7 @@ import {
   PreferenceService,
   URI,
   View,
+  useDesignStyles,
   useDisposable,
 } from '@opensumi/ide-core-browser';
 import {
@@ -24,7 +25,6 @@ import {
   ResizeHandleHorizontal,
   ResizeHandleVertical,
 } from '@opensumi/ide-core-browser/lib/components';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 
@@ -55,10 +55,10 @@ export const EditorView = () => {
 
   const workbenchEditorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.ComponentType<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
   const [ready, setReady] = React.useState<boolean>(workbenchEditorService.gridReady);
+  const styles_kt_workbench_editor = useDesignStyles(styles.kt_workbench_editor);
 
   React.useEffect(() => {
     if (!ready) {
@@ -79,7 +79,7 @@ export const EditorView = () => {
 
   return (
     <div
-      className={designService.wrapStyles(styles.kt_workbench_editor)}
+      className={styles_kt_workbench_editor}
       id='workbench-editor'
       ref={(ele) => {
         ref.current = ele;
@@ -239,8 +239,8 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const groupWrapperRef = React.useRef<HTMLElement | null>();
 
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
+  const styles_kt_editor_group = useDesignStyles(styles.kt_editor_group);
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroundImage } = appConfig;
@@ -292,7 +292,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   return (
     <div
       ref={groupWrapperRef as any}
-      className={designService.wrapStyles(styles.kt_editor_group)}
+      className={styles_kt_editor_group}
       tabIndex={1}
       onFocus={(e) => {
         group.gainFocus();
@@ -327,7 +327,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLDivElement>(null);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const eventBus = useInjectable(IEventBus) as IEventBus;
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+  const styles_kt_editor_component = useDesignStyles(styles.kt_editor_component);
   const components: React.ReactNode[] = [];
   const codeEditorRef = React.useRef<HTMLDivElement>(null);
   const diffEditorRef = React.useRef<HTMLDivElement>(null);
@@ -454,7 +454,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
       <div className={styles.kt_editor_components}>
         <div
           className={cls({
-            [designService.wrapStyles(styles.kt_editor_component)]: true,
+            [styles_kt_editor_component]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
           })}
         >
@@ -463,19 +463,19 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         <div
           className={cls({
             [styles.kt_editor_code_editor]: true,
-            [designService.wrapStyles(styles.kt_editor_component)]: true,
+            [styles_kt_editor_component]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
           })}
           ref={codeEditorRef}
         />
         <div
-          className={cls(styles.kt_editor_diff_editor, designService.wrapStyles(styles.kt_editor_component), {
+          className={cls(styles.kt_editor_diff_editor, styles_kt_editor_component, {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
           })}
           ref={diffEditorRef}
         />
         <div
-          className={cls(styles.kt_editor_diff_3_editor, designService.wrapStyles(styles.kt_editor_component), {
+          className={cls(styles.kt_editor_diff_3_editor, styles_kt_editor_component, {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
           })}
           ref={mergeEditorRef}

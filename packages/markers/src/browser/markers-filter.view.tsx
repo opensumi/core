@@ -3,8 +3,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
-import { useDisposable } from '@opensumi/ide-core-browser/lib/utils/react-hooks';
+import { useDesignStyles, useDisposable } from '@opensumi/ide-core-browser/lib/utils/react-hooks';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
 import { IMarkerService, MARKER_CONTAINER_ID } from '../common';
@@ -19,7 +18,8 @@ import Messages from './messages';
  */
 export const MarkerFilterPanel = observer(() => {
   const markerService: MarkerService = useInjectable(IMarkerService);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+  const styles_markerFilterContent = useDesignStyles(styles.markerFilterContent);
+  const styles_filterInput = useDesignStyles(styles.filterInput);
 
   const [filterValue, setFilterValue] = React.useState<string>('');
 
@@ -37,11 +37,11 @@ export const MarkerFilterPanel = observer(() => {
   }, 250);
 
   return (
-    <div className={designService.wrapStyles(styles.markerFilterContent)}>
+    <div className={styles_markerFilterContent}>
       <AutoFocusedInput
         containerId={MARKER_CONTAINER_ID}
         hasClear
-        className={designService.wrapStyles(styles.filterInput)}
+        className={styles_filterInput}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}
         value={filterValue}
         onValueChange={onChangeCallback}

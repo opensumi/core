@@ -8,8 +8,7 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { CommandService, URI, getIcon, useInjectable } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
+import { CommandService, URI, getIcon, useDesignStyles } from '@opensumi/ide-core-browser';
 import { SymbolTag } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
 import { IOutlineDecorationService } from '../common';
@@ -45,8 +44,9 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   decorationService,
   decorations,
 }: OutlineNodeRenderedProps) => {
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const decoration = OutlineTreeNode.is(item) ? decorationService.getDecoration(item) : null;
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_outline_node = useDesignStyles(styles.outline_node);
 
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
@@ -108,14 +108,9 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   const renderFolderToggle = (node: OutlineCompositeTreeNode, clickHandler: any) => (
     <div
       onClick={clickHandler}
-      className={cls(
-        styles.file_tree_node_segment,
-        designService.wrapStyles(styles.expansion_toggle),
-        getIcon('arrow-right'),
-        {
-          [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
-        },
-      )}
+      className={cls(styles.file_tree_node_segment, styles_expansion_toggle, getIcon('arrow-right'), {
+        [`${styles.mod_collapsed}`]: !(node as OutlineCompositeTreeNode).expanded,
+      })}
     />
   );
 
@@ -147,7 +142,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       title={getItemTooltip()}
-      className={cls(designService.wrapStyles(styles.outline_node), decorations ? decorations.classlist : null)}
+      className={cls(styles_outline_node, decorations ? decorations.classlist : null)}
       style={editorNodeStyle}
       data-id={item.id}
     >

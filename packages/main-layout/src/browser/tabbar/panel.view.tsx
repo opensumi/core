@@ -9,11 +9,11 @@ import {
   ComponentRenderer,
   ConfigProvider,
   ErrorBoundary,
+  useDesignStyles,
   useInjectable,
   useViewState,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -45,8 +45,10 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
+
+  const styles_tab_panel = useDesignStyles(styles.tab_panel);
+  const styles_tab_panel_hidden = useDesignStyles(styles.tab_panel_hidden);
 
   React.useEffect(() => {
     // panelSize = 384-1-48
@@ -55,8 +57,8 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   return (
     <div
       id={id}
-      className={cls(designService.wrapStyles(styles.tab_panel), {
-        [designService.wrapStyles(styles.tab_panel_hidden)]: !tabbarService.currentContainerId,
+      className={cls(styles_tab_panel, {
+        [styles_tab_panel_hidden]: !tabbarService.currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -158,8 +160,10 @@ const BottomPanelView: React.FC<{
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const styles_panel_title_bar = useDesignStyles(styles.panel_title_bar);
+  const styles_panel_toolbar_container = useDesignStyles(styles.panel_toolbar_container);
+
   const { component: CustomComponent, containerId } = component.options || {};
   const titleComponent = component.options && component.options.titleComponent;
 
@@ -175,17 +179,14 @@ const BottomPanelView: React.FC<{
 
   return (
     <div ref={containerRef} className={styles.panel_container}>
-      <div
-        className={designService.wrapStyles(styles.panel_title_bar)}
-        style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}
-      >
+      <div className={styles_panel_title_bar} style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}>
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (
             <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           )}
         </div>
-        <div className={designService.wrapStyles(styles.panel_toolbar_container)}>
+        <div className={styles_panel_toolbar_container}>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>

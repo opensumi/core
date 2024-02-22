@@ -1,8 +1,7 @@
 import React, { useCallback, useState } from 'react';
 
 import { Button, Icon, getIcon } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
+import { useDesignStyles } from '@opensumi/ide-core-browser';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { InstallState, VSXExtension } from '../../common';
@@ -25,7 +24,7 @@ interface IExtensionViewProps {
 
 export const Extension = React.memo(
   ({ extension: extension, onInstall, onClick, type, installedExtensions, openVSXRegistry }: IExtensionViewProps) => {
-    const designService = useInjectable<IDesignStyleService>(IDesignStyleService);
+    const styles_extension_item = useDesignStyles(styles.extension_item);
     const [installing, setInstalling] = useState<boolean>();
     const installedExtension = installedExtensions?.find(
       (installed) => installed.namespace === extension.namespace && installed.name === extension.name,
@@ -59,7 +58,7 @@ export const Extension = React.memo(
     }, [extension]);
 
     return (
-      <div className={designService.wrapStyles(styles.extension_item)} onClick={onClickCallback}>
+      <div className={styles_extension_item} onClick={onClickCallback}>
         {extension.iconUrl ? (
           <img
             className={styles.icon}
