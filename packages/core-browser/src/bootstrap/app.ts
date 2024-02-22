@@ -35,7 +35,6 @@ import {
   getDebugLogger,
   isElectronRenderer,
   isOSX,
-  isUndefined,
   setLanguageId,
 } from '@opensumi/ide-core-common';
 import {
@@ -68,6 +67,8 @@ import {
   registerLocalStorageProvider,
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
+import { BrowserRuntime } from '../runtime/browser';
+import { ElectronRendererRuntime } from '../runtime/electron-renderer';
 import { DEFAULT_CDN_ICON, IDE_CODICONS_CN_CSS, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { electronEnv } from '../utils';
 
@@ -75,7 +76,6 @@ import { IClientAppOpts, IPreferences, IconInfo, IconMap, LayoutConfig, ModuleCo
 import { IAppRenderer, renderClientApp } from './app.view';
 import { bindConnectionServiceDeprecated, createConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
-import { injectElectronInnerProviders } from './inner-providers-electron';
 
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
@@ -103,6 +103,7 @@ export class ClientApp implements IClientApp, IDisposable {
   private contributionsProvider: ContributionProvider<ClientAppContribution>;
   private nextMenuRegistry: MenuRegistryImpl;
   private stateService: ClientAppStateService;
+  runtime: ElectronRendererRuntime | BrowserRuntime;
 
   constructor(opts: IClientAppOpts) {
     const {
@@ -126,18 +127,20 @@ export class ClientApp implements IClientApp, IDisposable {
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer ?? isElectronRenderer();
+
+    this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime();
+
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
       appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
-      appRoot: isUndefined(opts.appRoot) ? (isDesktop ? electronEnv.appPath : '') : opts.appRoot,
+      appRoot: opts.appRoot,
       uriScheme: DEFAULT_URI_SCHEME,
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
       // 一些转换和 typo 修复
       isElectronRenderer: isDesktop,
       workspaceDir: opts.workspaceDir || '',
-      extensionDir:
-        opts.extensionDir || (opts.isElectronRenderer || isDesktop ? electronEnv.metadata?.extensionDir : ''),
+      extensionDir: opts.extensionDir,
       injector: this.injector,
       wsPath: opts.wsPath || `ws://${window.location.hostname}:8000`,
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -154,10 +157,6 @@ export class ClientApp implements IClientApp, IDisposable {
       window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
     }
 
-    if (this.config.isElectronRenderer && electronEnv.metadata?.extensionDevelopmentHost) {
-      this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;
-    }
-
     if (opts.extensionDevelopmentPath) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
         Array.isArray(opts.extensionDevelopmentPath)
@@ -165,15 +164,10 @@ export class ClientApp implements IClientApp, IDisposable {
           : [asExtensionCandidate(opts.extensionDevelopmentPath, true)],
       );
 
-      this.config.extensionDevelopmentHost = !!opts.extensionDevelopmentPath;
+      this.config.extensionDevelopmentHost = true;
     }
 
-    // 旧方案兼容, 把 `electron.metadata.extensionCandidate` 提前注入 `AppConfig` 的对应配置中
-    if (this.config.isElectronRenderer && electronEnv.metadata?.extensionCandidate) {
-      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
-        electronEnv.metadata.extensionCandidate || [],
-      );
-    }
+    this.config = this.runtime.mergeAppConfig(this.config);
 
     this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
     this.connectionProtocols = connectionProtocols;
@@ -221,6 +215,10 @@ export class ClientApp implements IClientApp, IDisposable {
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
     if (connection) {
+      // do not allow use deprecated method start() with connection parameter
+      // because we all use `WSChannelHandler` to create connection.
+      // if user want to pass a message connection, we can allow user pass a `WSChannelHandler`.
+
       // eslint-disable-next-line no-console
       console.error("You're using deprecated method 'start()' with connection parameter");
       // eslint-disable-next-line no-console
@@ -319,9 +317,8 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
-    if (this.config.isElectronRenderer) {
-      injectElectronInnerProviders(this.injector);
-    }
+
+    this.runtime.registerRuntimeInnerProviders(this.injector);
   }
 
   private initFields() {
@@ -344,13 +341,7 @@ export class ClientApp implements IClientApp, IDisposable {
         this.injector.addProviders(...instance.providers);
       }
 
-      if (this.config.isElectronRenderer && instance.electronProviders) {
-        this.injector.addProviders(...instance.electronProviders);
-      }
-
-      if (!this.config.isElectronRenderer && instance.webProviders) {
-        this.injector.addProviders(...instance.webProviders);
-      }
+      this.runtime.registerRuntimeModuleProviders(this.injector, instance);
 
       if (instance.preferences) {
         instance.preferences(this.injector);
