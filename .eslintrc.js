@@ -154,6 +154,12 @@ module.exports = {
     'no-control-regex': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'unused-imports/no-unused-imports': 'warn',
+    'sort-imports': [
+      'error',
+      {
+        ignoreDeclarationSort: true,
+      },
+    ],
     // 让 import 中的内部包和外部包分组，看起来更美观
     'import/order': [
       'error',
@@ -164,16 +170,6 @@ module.exports = {
           caseInsensitive: true,
         },
         'newlines-between': 'always',
-      },
-    ],
-    'sort-imports': [
-      'error',
-      {
-        ignoreCase: false,
-        ignoreDeclarationSort: false,
-        ignoreMemberSort: false,
-        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-        allowSeparatedGroups: false,
       },
     ],
     'import/no-restricted-paths': [

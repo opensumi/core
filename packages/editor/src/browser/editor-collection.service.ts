@@ -29,8 +29,7 @@ import {
   IUndoStopOptions,
   ResourceDecorationNeedChangeEvent,
 } from '../common';
-import { IEditorDocumentModel } from '../common/editor';
-import { IEditorDocumentModelRef } from '../common/editor';
+import { IEditorDocumentModel, IEditorDocumentModelRef } from '../common/editor';
 
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';

@@ -12,8 +12,7 @@ import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
-import { IEditorDocumentModelRef } from '../../common/editor';
-import { IEditorDocumentModel } from '../../common/editor';
+import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
   detectIndentation?: boolean;
