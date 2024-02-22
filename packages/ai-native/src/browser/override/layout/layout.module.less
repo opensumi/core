@@ -556,10 +556,13 @@
 
   div[class*='item_container__'] {
     border: 0 none;
-    &::after {
+    &:first-child::before {
+      display: none;
+    }
+    &::before {
       content: '';
       position: absolute;
-      right: 0;
+      left: 0;
       top: 12px;
       display: inline-block;
       width: 1px;
@@ -606,7 +609,13 @@
   }
 
   div[class*='item_selected___'] {
-    // background-color: rgba(21, 27, 33, 1);
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+
+  div[class*='item_selected___'] + div {
     &::before,
     &::after {
       display: none;
