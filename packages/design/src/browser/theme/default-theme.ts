@@ -794,6 +794,6 @@ export default {
   designThemeType: 'design-dark',
   inherit: true,
   hasDefaultTokens: false,
-  id: 'OpenSumi AI Native Theme',
-  name: 'OpenSumi AI Native Dark+ (default dark)',
+  id: 'OpenSumi Design Theme',
+  name: 'OpenSumi Design Dark+ (default dark)',
 };

@@ -795,6 +795,6 @@ export default {
   inherit: true,
   hasDefaultTokens: false,
   designThemeType: 'design-light',
-  id: 'OpenSumi AI Native Theme',
-  name: 'OpenSumi AI Native Light+ (default light)',
+  id: 'OpenSumi Design Theme',
+  name: 'OpenSumi Design Light+ (default light)',
 };

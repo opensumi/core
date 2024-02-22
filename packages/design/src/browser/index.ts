@@ -3,8 +3,9 @@ import { BrowserModule, URI } from '@opensumi/ide-core-browser';
 import { ISplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
 import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { AppLifeCycleServiceToken, Event, IAppLifeCycleService, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
-import { Color, IThemeContribution, IThemeData, IThemeStore } from '@opensumi/ide-theme';
+import { Color, IThemeContribution, IThemeData, IThemeService, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import { DesignCoreContribution } from './design.contribution';
@@ -24,6 +25,25 @@ export class DesignModule extends BrowserModule {
 
     const designStyleService: IDesignStyleService = injector.get(IDesignStyleService);
     designStyleService.setStyles(designStyles);
+
+    const appLifeCycleService: IAppLifeCycleService = injector.get(AppLifeCycleServiceToken);
+
+    Event.once(Event.filter(appLifeCycleService.onDidLifeCyclePhaseChange, (phase) => phase === LifeCyclePhase.Ready))(
+      () => {
+        const themeService: IThemeService = injector.get(IThemeService);
+        themeService.registerThemes(
+          [
+            {
+              id: defaultTheme.id,
+              label: defaultTheme.name,
+              path: '',
+              extensionId: defaultTheme.id,
+            },
+          ],
+          URI.parse('defaultTheme').withScheme('design'),
+        );
+      },
+    );
 
     injector.overrideProviders(
       {
