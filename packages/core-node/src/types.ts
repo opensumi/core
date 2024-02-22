@@ -1,14 +1,13 @@
-import type cp from 'child_process';
-import type http from 'http';
-import type https from 'https';
-
-import type Koa from 'koa';
-import type ws from 'ws';
+import { BasicModule } from '@opensumi/ide-core-common';
 
 import type { Injector } from '@opensumi/di';
 import type { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
 import type { ConstructorOf, ILogService, LogLevel, MaybePromise } from '@opensumi/ide-core-common';
-import { BasicModule } from '@opensumi/ide-core-common';
+import type cp from 'child_process';
+import type http from 'http';
+import type https from 'https';
+import type Koa from 'koa';
+import type ws from 'ws';
 
 export abstract class NodeModule extends BasicModule {}
 

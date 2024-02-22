@@ -1,31 +1,29 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  getDebugLogger,
+  DisposableStore,
+  IExtensionInfo,
   Uri,
+  arrays,
+  getDebugLogger,
+  isFunction,
+  objects,
   revive,
   toDisposable,
-  DisposableStore,
-  arrays,
-  objects,
   validateConstraint,
-  isFunction,
-  IExtensionInfo,
 } from '@opensumi/ide-core-common';
 
 import {
-  MainThreadAPIIdentifier,
-  IMainThreadCommands,
-  IExtHostCommands,
-  Handler,
   ArgumentProcessor,
-  ICommandHandlerDescription,
   CommandHandler,
+  Handler,
+  ICommandHandlerDescription,
+  IExtHostCommands,
   IExtensionDescription,
+  IMainThreadCommands,
+  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
-import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
+import { Disposable, Location, Position, Range } from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
 import { CommandDto } from '../../../common/vscode/scm';
 import { IBuiltInCommand } from '../../ext.process-base';
@@ -33,6 +31,8 @@ import { IBuiltInCommand } from '../../ext.process-base';
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ApiCommand, ApiCommandResult, newCommands } from './ext.host.api.command';
 import { ObjectIdentifier } from './language/util';
+
+import type vscode from 'vscode';
 
 export function createCommandsApiFactory(
   extHostCommands: IExtHostCommands,

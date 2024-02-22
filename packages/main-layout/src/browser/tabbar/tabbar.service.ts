@@ -1,48 +1,48 @@
 import debounce from 'lodash/debounce';
-import { observable, action, reaction, makeObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, reaction, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  toDisposable,
-  WithEventBus,
+  CommandRegistry,
   ComponentRegistryInfo,
+  ComponentRegistryProvider,
+  Deferred,
+  DisposableCollection,
   Emitter,
   Event,
+  IContextKey,
+  IContextKeyService,
+  IScopedContextKeyService,
+  KeybindingRegistry,
   OnEvent,
   ResizeEvent,
   SlotLocation,
-  CommandRegistry,
-  localize,
-  KeybindingRegistry,
   ViewContextKeyRegistry,
-  IContextKeyService,
-  getTabbarCtxKey,
-  IContextKey,
-  DisposableCollection,
-  IScopedContextKeyService,
-  Deferred,
-  formatLocalize,
+  WithEventBus,
   createFormatLocalizedStr,
-  ComponentRegistryProvider,
+  formatLocalize,
+  getTabbarCtxKey,
+  localize,
+  toDisposable,
 } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
   AbstractContextMenuService,
   AbstractMenuService,
   IContextMenu,
-  IMenuRegistry,
   ICtxMenuRenderer,
-  generateCtxMenu,
   IMenu,
+  IMenuRegistry,
   MenuId,
+  generateCtxMenu,
   getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
-import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
-import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
+import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
+import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {

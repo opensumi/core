@@ -1,6 +1,6 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { QuickInputOptions, IQuickInputService, QuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
+import { IQuickInputService, QuickInputOptions, QuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { Deferred, Emitter, Event, withNullAsUndefined } from '@opensumi/ide-core-common';
 
 import { QuickTitleBar } from './quick-title-bar';

@@ -1,8 +1,8 @@
-import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
+import { createExtHostContextProxyIdentifier, createMainContextProxyIdentifier } from '@opensumi/ide-connection';
 
-import { IMainThreadCommon, IExtHostCommon } from './common';
-import { IMainThreadLayout, IExtHostLayout } from './layout';
-import { IMainThreadLifeCycle, IExtHostLifeCycle } from './lifecycle';
+import { IExtHostCommon, IMainThreadCommon } from './common';
+import { IExtHostLayout, IMainThreadLayout } from './layout';
+import { IExtHostLifeCycle, IMainThreadLifeCycle } from './lifecycle';
 import { IExtHostTheme, IMainThreadTheme } from './theme';
 import { IExtHostToolbar, IMainThreadToolbar } from './toolbar';
 import { IExtHostIDEWindow, IMainThreadIDEWindow } from './window';

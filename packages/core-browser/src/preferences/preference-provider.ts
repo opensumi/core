@@ -1,19 +1,19 @@
 import { Injectable } from '@opensumi/di';
 import {
-  IDisposable,
+  Deferred,
   DisposableCollection,
   Emitter,
   Event,
-  URI,
-  Deferred,
-  isEmptyObject,
   FileStat,
+  IDisposable,
+  URI,
+  isEmptyObject,
 } from '@opensumi/ide-core-common';
 import { PreferenceScope } from '@opensumi/ide-core-common/lib/preferences/preference-scope';
 
 import { JSONUtils, JSONValue } from '../utils';
 
-import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
+import { getAllExternalProviders, getExternalPreferenceProvider } from './early-preferences';
 import { PreferenceResolveResult } from './types';
 export interface IResolvedPreferences {
   default: { [key: string]: any };

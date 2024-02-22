@@ -3,13 +3,13 @@ import {
   ClientAppContribution,
   Domain,
   IStatusBarService,
-  localize,
   Severity,
   StatusBarAlignment,
   WithEventBus,
+  localize,
 } from '@opensumi/ide-core-browser';
 
-import { WorkbenchEditorService, IEditor, ILanguageStatusService, ILanguageStatus } from '../../common';
+import { IEditor, ILanguageStatus, ILanguageStatusService, WorkbenchEditorService } from '../../common';
 import { EditorDocumentModelOptionChangedEvent } from '../doc-model/types';
 
 @Domain(ClientAppContribution)

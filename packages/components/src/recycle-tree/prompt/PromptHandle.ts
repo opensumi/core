@@ -1,6 +1,6 @@
 import { DisposableCollection, Emitter, Event, IAsyncResult } from '@opensumi/ide-utils';
 
-import { bindInputElement, ProxiedInputProp } from '../../input';
+import { ProxiedInputProp, bindInputElement } from '../../input';
 import { createMarkedRenderer, toMarkdownHtml } from '../../utils';
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));

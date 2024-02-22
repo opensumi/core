@@ -9,21 +9,21 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 
 import { Button, ComponentContextProvider, RecycleList } from '@opensumi/ide-components';
 import {
-  localize,
-  getIcon,
-  useInjectable,
-  IJSONSchemaRegistry,
-  ISchemaContributions,
-  IJSONSchema,
-  IJSONSchemaSnippet,
-  IJSONSchemaMap,
-  isUndefined,
-  Disposable,
-  Schemes,
   CommandService,
+  Disposable,
+  EDITOR_COMMANDS,
+  IJSONSchema,
+  IJSONSchemaMap,
+  IJSONSchemaRegistry,
+  IJSONSchemaSnippet,
+  ISchemaContributions,
+  Schemes,
+  getIcon,
   isObject,
+  isUndefined,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
-import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { EDirection, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';
 import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
@@ -51,12 +51,12 @@ import { ArrayFieldItemTemplate } from './templates/array-field-item-template';
 import { ArrayFieldTemplate } from './templates/array-field-template';
 import { BaseInputTemplate } from './templates/base-input-template';
 import {
-  MoveUpButton,
-  MoveDownButton,
-  RemoveButton,
-  AddItemButton,
   AddButton,
+  AddItemButton,
   CopyButton,
+  MoveDownButton,
+  MoveUpButton,
+  RemoveButton,
 } from './templates/button-template';
 import { DescriptionFieldTemplate } from './templates/description-field-template';
 import { FieldTemplate } from './templates/field-template';

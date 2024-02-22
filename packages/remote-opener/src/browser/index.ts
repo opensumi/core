@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { RemoteOpenerConverterContribution, RemoteOpenerServicePath, RemoteOpenerBrowserServiceToken } from '../common';
+import { RemoteOpenerBrowserServiceToken, RemoteOpenerConverterContribution, RemoteOpenerServicePath } from '../common';
 
 import { RemoteOpenerContributionClient } from './remote.opener.contribution';
 import { RemoteOpenerBrowserServiceImpl } from './remote.opener.service';

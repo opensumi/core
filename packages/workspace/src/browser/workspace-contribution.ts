@@ -1,19 +1,19 @@
 import { Autowired } from '@opensumi/di';
 import {
-  CommandRegistry,
   ClientAppContribution,
+  CommandContribution,
+  CommandRegistry,
   Domain,
+  FsProviderContribution,
   PreferenceContribution,
   PreferenceSchema,
-  FsProviderContribution,
-  CommandContribution,
+  URI,
   WORKSPACE_COMMANDS,
   localize,
-  URI,
 } from '@opensumi/ide-core-browser';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 
-import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '../common';
+import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService } from '../common';
 
 import { WorkspaceContextKey } from './workspace-contextkey';
 import { workspacePreferenceSchema } from './workspace-preferences';

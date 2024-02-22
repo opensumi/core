@@ -1,4 +1,4 @@
-import { SendClientResult, SEARCH_STATE } from '../common';
+import { SEARCH_STATE, SendClientResult } from '../common';
 
 /**
  * 用于收集多个搜索结果后合并，减少更新视图频率

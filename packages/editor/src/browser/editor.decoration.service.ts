@@ -1,20 +1,20 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { URI, IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';
+import { Disposable, IDisposable, IEventBus, URI } from '@opensumi/ide-core-browser';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
+import { IContentDecorationRenderOptions, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '../common';
 
 import {
-  IEditorDecorationCollectionService,
+  EditorDecorationChangeEvent,
+  EditorDecorationProviderRegistrationEvent,
+  EditorDecorationTypeRemovedEvent,
   IBrowserTextEditorDecorationType,
   IDynamicModelDecorationProperty,
-  IThemedCssStyle,
+  IEditorDecorationCollectionService,
   IEditorDecorationProvider,
-  EditorDecorationProviderRegistrationEvent,
-  EditorDecorationChangeEvent,
-  EditorDecorationTypeRemovedEvent,
+  IThemedCssStyle,
 } from './types';
 
 @Injectable()

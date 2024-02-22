@@ -1,14 +1,14 @@
-import type vscode from 'vscode';
-
-import { Uri, CancellationToken, IRange, Cache, DisposableStore } from '@opensumi/ide-core-common';
+import { Cache, CancellationToken, DisposableStore, IRange, Uri } from '@opensumi/ide-core-common';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as typeConvert from '../../../../common/vscode/converter';
 import * as types from '../../../../common/vscode/ext-types';
-import { IInlayHintsDto, IInlayHintDto } from '../../../../common/vscode/languages';
+import { IInlayHintDto, IInlayHintsDto } from '../../../../common/vscode/languages';
 import { ChainedCacheId } from '../../../../common/vscode/model.api';
 import { CommandsConverter } from '../ext.host.command';
+
+import type vscode from 'vscode';
 
 export class InlayHintsAdapter {
   private _cache = new Cache<vscode.InlayHint>('InlayHints');

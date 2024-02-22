@@ -1,14 +1,14 @@
-import { observable, action, makeObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService, URI, isUndefined } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
-  DebugSessionOptions,
   DEFAULT_ADD_CONFIGURATION_KEY,
-  DEFAULT_CONFIGURATION_NAME_SEPARATOR,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
+  DEFAULT_CONFIGURATION_NAME_SEPARATOR,
+  DebugSessionOptions,
 } from '../../../common';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import { DebugConfigurationManager } from '../../debug-configuration-manager';

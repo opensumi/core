@@ -3,7 +3,7 @@ import { GenericObjectType, StrictRJSFSchema } from '@rjsf/utils';
 import * as jsoncparser from 'jsonc-parser';
 import lodashSet from 'lodash/set';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { COMMON_COMMANDS } from '@opensumi/ide-core-browser';
 import { CommandService, Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';

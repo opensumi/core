@@ -3,25 +3,24 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
-  INodeRendererProps,
   ClasslistComposite,
-  IRecycleTreeHandle,
-  TreeNodeType,
-  RecycleTree,
+  INodeRendererProps,
   INodeRendererWrapProps,
-  TreeModel,
+  IRecycleTreeHandle,
+  Loading,
   PromptHandle,
+  RecycleTree,
+  TreeModel,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { useInjectable, getIcon, DisposableCollection, Disposable } from '@opensumi/ide-core-browser';
-import { ViewState } from '@opensumi/ide-core-browser';
+import { Disposable, DisposableCollection, ViewState, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
+  DebugVariable,
+  DebugVariableContainer,
+  DebugWatchNode,
   ExpressionContainer,
   ExpressionNode,
-  DebugVariableContainer,
-  DebugVariable,
-  DebugWatchNode,
 } from '../../tree/debug-tree-node.define';
 
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';

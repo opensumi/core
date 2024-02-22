@@ -1,13 +1,13 @@
 import { localize } from '@opensumi/ide-core-common';
 import {
-  registerColor,
+  ColorDefaults,
+  ColorIdentifier,
   PANEL_BACKGROUND,
   PANEL_BORDER,
-  ColorIdentifier,
-  ColorDefaults,
   editorFindMatch,
   editorFindMatchHighlight,
   overviewRulerFindMatchForeground,
+  registerColor,
   transparent,
 } from '@opensumi/ide-theme';
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { statSync, existsSync } from 'fs';
+import { existsSync, statSync } from 'fs';
 import { join } from 'path';
 
 import { green, red } from 'chalk';

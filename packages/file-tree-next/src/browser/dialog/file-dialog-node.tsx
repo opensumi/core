@@ -1,19 +1,18 @@
 import cls from 'classnames';
 import React from 'react';
 
-
 import {
-  TreeNode,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
-  PromptHandle,
-  TreeNodeType,
-  RenamePromptHandle,
+  Loading,
   NewPromptHandle,
+  PromptHandle,
+  RenamePromptHandle,
+  TreeNode,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { getIcon, URI } from '@opensumi/ide-core-browser';
+import { URI, getIcon } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 
 import { Directory, File } from '../../common/file-tree-node.define';

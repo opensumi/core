@@ -1,23 +1,23 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  IDisposable,
   Disposable,
-  MarkerManager,
+  IDisposable,
   IMarkerData,
   IRelatedInformation,
+  MarkerManager,
   MarkerSeverity,
+  URI,
 } from '@opensumi/ide-core-common';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  DiagnosticSeverity,
-  DiagnosticRelatedInformation,
   Diagnostic,
+  DiagnosticRelatedInformation,
+  DiagnosticSeverity,
+  ILanguageService,
   Language,
   WorkspaceSymbolProvider,
-  ILanguageService,
 } from '../../common';
 
 import { MonacoDiagnosticCollection } from './diagnostic-collection';

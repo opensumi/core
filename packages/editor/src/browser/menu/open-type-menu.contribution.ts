@@ -1,12 +1,12 @@
 import { Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
+  IMenuItem,
   IMenuRegistry,
   ISubmenuItem,
-  MenuId,
-  MenuContribution,
-  IMenuItem,
   MenuCommandDesc,
+  MenuContribution,
+  MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Command, CommandContribution, CommandRegistry, Disposable, localize } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';

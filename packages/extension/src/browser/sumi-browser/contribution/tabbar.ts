@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common';
+import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 
-import { IRunTimeParams, AbstractSumiBrowserContributionRunner, ITabBarViewContribution } from '../types';
+import { AbstractSumiBrowserContributionRunner, IRunTimeParams, ITabBarViewContribution } from '../types';
 
 const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar'];
 

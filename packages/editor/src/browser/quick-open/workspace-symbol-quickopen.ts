@@ -1,29 +1,29 @@
-import type { SymbolInformation, Range } from 'vscode-languageserver-types';
-
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  QuickOpenHandler,
-  QuickOpenModel,
-  CancellationTokenSource,
-  QuickOpenItem,
   CancellationToken,
-  URI,
+  CancellationTokenSource,
+  QuickOpenHandler,
+  QuickOpenItem,
   QuickOpenMode,
-  getSymbolIcon,
+  QuickOpenModel,
+  URI,
   getIcon,
+  getSymbolIcon,
 } from '@opensumi/ide-core-browser';
-import { ILogger, localize, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
-import { QuickOpenBaseAction, QuickOpenActionProvider } from '@opensumi/ide-quick-open';
+import { ILogger, IReporterService, REPORT_NAME, localize } from '@opensumi/ide-core-common';
+import { QuickOpenActionProvider, QuickOpenBaseAction } from '@opensumi/ide-quick-open';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
-  WorkspaceSymbolProvider,
-  ILanguageService,
-  WorkspaceSymbolParams,
-  WorkbenchEditorService,
   EditorGroupSplitAction,
+  ILanguageService,
+  WorkbenchEditorService,
+  WorkspaceSymbolParams,
+  WorkspaceSymbolProvider,
 } from '../../common';
+
+import type { Range, SymbolInformation } from 'vscode-languageserver-types';
 
 @Injectable()
 class WorkspaceSymbolOpenSideAction extends QuickOpenBaseAction {

@@ -3,25 +3,24 @@ import React, { useCallback } from 'react';
 
 import {
   Badge,
-  TreeNode,
+  ClasslistComposite,
   CompositeTreeNode,
   ITreeNodeRendererProps,
-  ClasslistComposite,
+  Loading,
+  TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { useInjectable, getIcon, CommandService } from '@opensumi/ide-core-browser';
-import { URI } from '@opensumi/ide-core-browser';
+import { CommandService, URI, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IThemeService, IIconTheme } from '@opensumi/ide-theme';
+import { IIconTheme, IThemeService } from '@opensumi/ide-theme';
 
 import { ISCMResource, ISCMResourceGroup } from '../../../common';
 import { ViewModelContext } from '../../scm-model';
 
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
-import { SCMResourceNotRoot, SCMResourceFolder, SCMResourceGroup, SCMResourceFile } from './scm-tree-node';
+import { SCMResourceFile, SCMResourceFolder, SCMResourceGroup, SCMResourceNotRoot } from './scm-tree-node';
 import styles from './scm-tree-node.module.less';
 
 export const SCM_TREE_NODE_HEIGHT = 22;

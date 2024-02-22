@@ -16,8 +16,8 @@ import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   EDiffRangeTurn,
-  EditorViewType,
   ETurnDirection,
+  EditorViewType,
   IActionsDescription,
   IActionsProvider,
   IBaseCodeEditor,

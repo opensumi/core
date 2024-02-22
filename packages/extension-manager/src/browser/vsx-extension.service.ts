@@ -1,15 +1,15 @@
-import { observable, action, makeObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
   Disposable,
-  fuzzyScore,
   IStatusBarService,
-  localize,
   StatusBarAlignment,
   StatusBarEntryAccessor,
   URI,
+  fuzzyScore,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
@@ -18,13 +18,13 @@ import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { ICON_THEME_TOGGLE_COMMAND, THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 import {
-  InstallState,
   IVSXExtensionBackService,
   IVSXExtensionService,
+  InstallState,
   VSXExtension,
   VSXExtensionServicePath,
 } from '../common';
-import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
+import { QueryParam, VSXExtensionRaw, VSXSearchParam } from '../common/vsx-registry-types';
 
 @Injectable()
 export class VSXExtensionService extends Disposable implements IVSXExtensionService {

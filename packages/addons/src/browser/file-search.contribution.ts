@@ -3,30 +3,32 @@
  */
 import fuzzy from 'fuzzy';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  localize,
-  formatLocalize,
   CommandService,
-  URI,
   EDITOR_COMMANDS,
+  Highlight,
+  ILogger,
+  KeybindingContribution,
+  KeybindingRegistry,
+  Mode,
+  PreferenceService,
   QuickOpenActionProvider,
   QuickOpenItem,
-  PreferenceService,
+  RecentFilesManager,
+  URI,
+  formatLocalize,
+  getIcon,
   getSymbolIcon,
-  Highlight,
-  Mode,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { KeybindingContribution, KeybindingRegistry, ILogger } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
-import { RecentFilesManager } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
+  CancellationToken,
+  CancellationTokenSource,
+  Command,
   CommandContribution,
   CommandRegistry,
-  Command,
-  CancellationTokenSource,
-  CancellationToken,
   IRange,
   IReporterService,
   REPORT_NAME,
@@ -40,10 +42,10 @@ import {
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import {
-  QuickOpenModel,
-  QuickOpenOptions,
   PrefixQuickOpenService,
   QuickOpenBaseAction,
+  QuickOpenModel,
+  QuickOpenOptions,
 } from '@opensumi/ide-quick-open';
 import {
   QuickOpenContribution,

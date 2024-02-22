@@ -1,12 +1,12 @@
-import { observable, action, makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
 import { WithEventBus } from '@opensumi/ide-core-common';
 import {
-  IEditorDocumentModelService,
   EditorCollectionService,
   ICodeEditor,
+  IEditorDocumentModelService,
   getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

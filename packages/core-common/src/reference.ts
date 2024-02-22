@@ -1,4 +1,4 @@
-import { Emitter, Event, Disposable, MaybePromise } from '@opensumi/ide-utils';
+import { Disposable, Emitter, Event, MaybePromise } from '@opensumi/ide-utils';
 
 export interface IRef<T> {
   instance: T;

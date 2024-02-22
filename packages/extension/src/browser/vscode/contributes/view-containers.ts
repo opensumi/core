@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase, DisposableCollection } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { DisposableCollection, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IconType, IIconService } from '@opensumi/ide-theme';
+import { IIconService, IconType } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 type LocationKey = 'panel' | 'activitybar';

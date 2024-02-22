@@ -1,9 +1,9 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { debounce, Emitter, Event } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter, Event, debounce } from '@opensumi/ide-core-common';
 
-import { ITerminalSearchService, ITerminalGroupViewService, ITerminalController, ITerminalClient } from '../common';
+import { ITerminalClient, ITerminalController, ITerminalGroupViewService, ITerminalSearchService } from '../common';
 
 @Injectable()
 export class TerminalSearchService implements ITerminalSearchService {

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 console.time('Render');
-import { Injector, Domain } from '@opensumi/di';
-import { IClientAppOpts, electronEnv, URI } from '@opensumi/ide-core-browser';
+import { Domain, Injector } from '@opensumi/di';
+import { IClientAppOpts, URI, electronEnv } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 // 引入公共样式文件
 import '@opensumi/ide-core-browser/lib/style/index.less';

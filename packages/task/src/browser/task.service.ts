@@ -1,24 +1,24 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   Disposable,
-  Uri,
-  PreferenceService,
-  localize,
   IDisposable,
+  IStringDictionary,
+  Mode,
+  PreferenceService,
   QuickOpenItem,
   QuickOpenService,
+  Uri,
   formatLocalize,
   getIcon,
-  IStringDictionary,
   isString,
-  Mode,
+  localize,
 } from '@opensumi/ide-core-browser';
 import {
-  ITaskDefinitionRegistry,
-  IProblemMatcherRegistry,
-  Event,
-  IProblemPatternRegistry,
   Emitter,
+  Event,
+  IProblemMatcherRegistry,
+  IProblemPatternRegistry,
+  ITaskDefinitionRegistry,
   platform,
 } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
@@ -26,20 +26,20 @@ import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { ITerminalClient } from '@opensumi/ide-terminal-next/lib/common/client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
+import { ITaskProvider, ITaskService, ITaskSummary, ITaskSystem, WorkspaceFolderTaskResult } from '../common';
 import {
   ConfiguringTask,
-  TaskSet,
-  Task,
   ContributedTask,
   CustomTask,
-  TaskIdentifier,
   KeyedTaskIdentifier,
+  Task,
   TaskEvent,
+  TaskIdentifier,
+  TaskSet,
 } from '../common/task';
 
 import { ValidationState, ValidationStatus } from './parser';
-import { parse, IProblemReporter, createCustomTask } from './task-config';
+import { IProblemReporter, createCustomTask, parse } from './task-config';
 
 class ProblemReporter implements IProblemReporter {
   private _validationStatus: ValidationStatus;

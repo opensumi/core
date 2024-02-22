@@ -1,39 +1,39 @@
 import * as fuzzy from 'fuzzy';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  Disposable,
-  IDisposable,
-  ScopedKeybinding,
-  KeybindingRegistry,
-  URI,
-  Emitter,
-  Keybinding,
-  KeybindingScope,
-  CommandService,
-  EDITOR_COMMANDS,
   CommandRegistry,
-  localize,
-  KeySequence,
-  KeybindingService,
-  ILogger,
-  Event,
-  KeybindingWeight,
-  ThrottledDelayer,
-  FileStat,
+  CommandService,
+  Deferred,
+  Disposable,
   DisposableCollection,
-  ProgressLocation,
+  EDITOR_COMMANDS,
+  Emitter,
+  Event,
+  FileStat,
+  IDisposable,
+  ILogger,
   IProgress,
   IProgressStep,
-  Deferred,
-  Throttler,
+  KeySequence,
+  Keybinding,
+  KeybindingRegistry,
+  KeybindingScope,
+  KeybindingService,
+  KeybindingWeight,
+  ProgressLocation,
   Schemes,
+  ScopedKeybinding,
+  ThrottledDelayer,
+  Throttler,
+  URI,
+  localize,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
+import { IKeymapService, KEYMAPS_FILE_NAME, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
 
 import { KeymapsParser } from './keymaps-parser';
 

@@ -1,5 +1,6 @@
+import { IToolbarActionBtnStyle, IToolbarPopoverStyle, IToolbarSelectStyle } from '@opensumi/ide-core-browser';
+
 import type { DropDownProps } from '@opensumi/ide-components';
-import { IToolbarActionBtnStyle, IToolbarSelectStyle, IToolbarPopoverStyle } from '@opensumi/ide-core-browser';
 
 export interface IToolbarActionBasicContribution {
   id: string;

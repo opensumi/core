@@ -1,12 +1,12 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
+  CommonServerPath,
+  Deferred,
+  IApplicationService,
+  ICommonServer,
   OS,
   OperatingSystem,
-  IApplicationService,
-  CommonServerPath,
-  ICommonServer,
-  Deferred,
 } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers/config-provider';

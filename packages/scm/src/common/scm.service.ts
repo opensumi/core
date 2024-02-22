@@ -1,11 +1,10 @@
-import { observable, computed, action, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
 import { IInputBaseProps } from '@opensumi/ide-components';
-import { Event, Emitter, arrays, getDebugLogger } from '@opensumi/ide-core-common';
-import { IDisposable, toDisposable } from '@opensumi/ide-core-common';
+import { Emitter, Event, IDisposable, arrays, getDebugLogger, toDisposable } from '@opensumi/ide-core-common';
 
-import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
+import { IInputValidator, ISCMInput, ISCMProvider, ISCMRepository } from './scm';
 
 const { equals } = arrays;
 class SCMInput implements ISCMInput {

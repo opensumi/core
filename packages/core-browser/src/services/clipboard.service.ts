@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IClipboardService, CLIPBOARD_FILE_TOKEN } from '@opensumi/ide-core-common';
-import { URI } from '@opensumi/ide-core-common';
+import { CLIPBOARD_FILE_TOKEN, IClipboardService, URI } from '@opensumi/ide-core-common';
 
 import { ILogger } from '../logger';
 

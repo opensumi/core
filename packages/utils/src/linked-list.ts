@@ -1,4 +1,4 @@
-import { Iterator, IteratorResult, FIN } from './iterator';
+import { FIN, Iterator, IteratorResult } from './iterator';
 
 class Node<E> {
   static readonly Undefined = new Node<any>(undefined);

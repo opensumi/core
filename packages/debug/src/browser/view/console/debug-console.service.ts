@@ -1,28 +1,28 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   IContextKeyService,
   MonacoOverrideServiceRegistry,
   ServiceNames,
-  localize,
   StorageProvider,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { Schemes, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
+import { CommandRegistry, Emitter, Event, STORAGE_NAMESPACE, Schemes, URI } from '@opensumi/ide-core-common';
 import { EditorCollectionService, IDecorationApplyOptions } from '@opensumi/ide-editor';
-import { IEditorDocumentModelService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
+import { ICodeEditor, IEditorDocumentModelService, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { transparent, editorForeground, IThemeService } from '@opensumi/ide-theme';
+import { IThemeService, editorForeground, transparent } from '@opensumi/ide-theme';
 import { IHistoryNavigationWidget } from '@opensumi/monaco-editor-core/esm/vs/base/browser/history';
 import { HistoryNavigator } from '@opensumi/monaco-editor-core/esm/vs/base/common/history';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  DEBUG_CONSOLE_CONTAINER_ID,
-  IDebugSessionManager,
   CONTEXT_IN_DEBUG_MODE_KEY,
+  DEBUG_CONSOLE_CONTAINER_ID,
   DebugState,
   IDebugConsoleModelService,
+  IDebugSessionManager,
 } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 

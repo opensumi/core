@@ -2,10 +2,10 @@ import {
   FieldTemplateProps,
   FormContextType,
   GenericObjectType,
-  getTemplate,
-  getUiOptions,
   RJSFSchema,
   StrictRJSFSchema,
+  getTemplate,
+  getUiOptions,
 } from '@rjsf/utils';
 import cls from 'classnames';
 import React from 'react';

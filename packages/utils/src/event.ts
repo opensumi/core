@@ -5,7 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/event.ts
 
 import { CancellationToken } from './cancellation';
-import { DisposableStore, combinedDisposable, Disposable, IDisposable, toDisposable } from './disposable';
+import { Disposable, DisposableStore, IDisposable, combinedDisposable, toDisposable } from './disposable';
 import { onUnexpectedError } from './errors';
 import { once as onceFn } from './functional';
 import { LinkedList } from './linked-list';

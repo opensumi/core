@@ -2,9 +2,9 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, Uri } from '@opensumi/ide-core-common';
 
 import {
-  IExtHostEditorTabs,
   IEditorTab,
   IEditorTabDto,
+  IExtHostEditorTabs,
   IMainThreadEditorTabsShape,
 } from './../../../common/vscode/editor-tabs';
 import { MainThreadAPIIdentifier } from './../../../common/vscode/index';

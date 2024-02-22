@@ -1,6 +1,7 @@
-import type { ITree } from '@opensumi/ide-components';
 import { Event, IBaseMarkerManager, IMarker, IMatch } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
+
+import type { ITree } from '@opensumi/ide-components';
 
 export { MARKER_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 

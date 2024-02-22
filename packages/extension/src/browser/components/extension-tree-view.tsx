@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import React, {
-  memo,
-  MouseEvent,
   DragEvent,
+  MouseEvent,
   PropsWithChildren,
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -12,9 +12,8 @@ import React, {
 } from 'react';
 
 import { Injector } from '@opensumi/di';
-import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
-import { ViewState } from '@opensumi/ide-core-browser';
-import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
+import { INodeRendererProps, IRecycleTreeHandle, RecycleTree, TreeNodeType } from '@opensumi/ide-components';
+import { ViewState, isOSX, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';

@@ -1,20 +1,19 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
+  ClientAppContribution,
   CommandContribution,
   CommandRegistry,
-  TabBarToolbarContribution,
-  localize,
-  ToolbarRegistry,
-  ClientAppContribution,
+  Domain,
   KeybindingContribution,
   KeybindingRegistry,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
   getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
-import { MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { DEBUG_WATCH_ID, DEBUG_COMMANDS } from '../../../common';
+import { DEBUG_COMMANDS, DEBUG_WATCH_ID } from '../../../common';
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
 
 import {

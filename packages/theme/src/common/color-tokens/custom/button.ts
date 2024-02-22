@@ -1,15 +1,15 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { RGBA, Color } from '../../color';
-import { registerColor, darken, lighten } from '../../utils';
+import { Color, RGBA } from '../../color';
+import { darken, lighten, registerColor } from '../../utils';
 import { foreground } from '../base';
 import {
   buttonBackground,
+  buttonBorder,
   buttonForeground,
   buttonHoverBackground,
   buttonSecondaryBackground,
   buttonSecondaryForeground,
-  buttonBorder,
 } from '../button';
 
 /* disable button */

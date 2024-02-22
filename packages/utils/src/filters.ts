@@ -6,7 +6,7 @@
 
 import { CharCode } from './charCode';
 import { LRUCache } from './map';
-import { startsWithIgnoreCase, convertSimple2RegExpPattern } from './strings';
+import { convertSimple2RegExpPattern, startsWithIgnoreCase } from './strings';
 
 // Returns null if word doesn't match.
 export type IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null;

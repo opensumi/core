@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { KeybindingRegistry, useInjectable, localize, QuickOpenTab } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, QuickOpenTab, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
 import { KeybindingView } from '../keybinding';

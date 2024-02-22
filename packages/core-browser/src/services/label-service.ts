@@ -2,15 +2,15 @@ import cls from 'classnames';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  Emitter,
-  IDisposable,
-  arrays,
-  Event,
-  WithEventBus,
   BasicEvent,
   Disposable,
+  Emitter,
+  Event,
+  IDisposable,
   LRUMap,
+  URI,
+  WithEventBus,
+  arrays,
 } from '@opensumi/ide-core-common';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';

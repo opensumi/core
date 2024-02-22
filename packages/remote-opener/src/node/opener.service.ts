@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { Uri } from '@opensumi/ide-core-common';
 

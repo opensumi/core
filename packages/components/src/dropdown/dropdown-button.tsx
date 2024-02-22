@@ -3,11 +3,11 @@ import cls from 'classnames';
 import * as React from 'react';
 
 import { Button } from '../button';
-import type { ButtonSize, ButtonType } from '../button';
-import type { ButtonHTMLType } from '../button';
+
+import Dropdown from './dropdown';
 
 import type { DropDownProps } from './dropdown';
-import Dropdown from './dropdown';
+import type { ButtonHTMLType, ButtonSize, ButtonType } from '../button';
 
 export interface DropdownButtonProps extends DropDownProps {
   type?: ButtonType;

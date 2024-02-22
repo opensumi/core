@@ -5,13 +5,13 @@ import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connect
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
-  getDebugLogger,
-  IReporterService,
   BasicModule,
   BrowserConnectionCloseEvent,
-  BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
+  BrowserConnectionOpenEvent,
   IEventBus,
+  IReporterService,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 

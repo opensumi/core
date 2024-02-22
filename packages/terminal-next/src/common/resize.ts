@@ -1,5 +1,4 @@
-import { Event } from '@opensumi/ide-core-common';
-import { Disposable } from '@opensumi/ide-core-common';
+import { Disposable, Event } from '@opensumi/ide-core-common';
 
 import { IShellLaunchConfig } from './pty';
 

@@ -3,9 +3,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { HistoryInputBox, IHistoryInputBoxHandler } from '@opensumi/ide-components/lib/input/HistoryInputBox';
-import { localize } from '@opensumi/ide-core-browser';
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { Key } from '@opensumi/ide-core-browser';
+import { Key, localize, useInjectable } from '@opensumi/ide-core-browser';
 
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import styles from './debug-console.module.less';

@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, localize, getIcon, IReporterService, strings } from '@opensumi/ide-core-browser';
+import { IReporterService, URI, getIcon, localize, strings } from '@opensumi/ide-core-browser';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';

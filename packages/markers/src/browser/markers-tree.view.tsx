@@ -1,14 +1,14 @@
-import React, { FC, useEffect, useState, useCallback, useRef } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components';
-import { ViewState, useInjectable, Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, ViewState, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IMarkerService } from '../common';
 
 import { MarkerService } from './markers-service';
 import styles from './markers.module.less';
 import Messages from './messages';
-import { IMarkerNodeRenderedProps, MarkerNodeRendered, MARKER_TREE_NODE_HEIGHT } from './tree/marker-node';
+import { IMarkerNodeRenderedProps, MARKER_TREE_NODE_HEIGHT, MarkerNodeRendered } from './tree/marker-node';
 import { MarkerModelService, MarkerTreeModel } from './tree/tree-model.service';
 
 const MarkerList: FC<{ viewState: ViewState }> = ({ viewState }) => {

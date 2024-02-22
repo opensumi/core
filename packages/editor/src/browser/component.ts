@@ -2,19 +2,19 @@ import isEqual from 'lodash/isEqual';
 import uniqWith from 'lodash/uniqWith';
 import ReactDOM from 'react-dom';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ExtensionActivateEvent, IDisposable, IEventBus } from '@opensumi/ide-core-common';
 
-import { IResource, IEditorOpenType } from '../common';
+import { IEditorOpenType, IResource } from '../common';
 
 import {
+  EditorComponentDisposeEvent,
   EditorComponentRegistry,
+  EditorComponentRenderMode,
+  EditorSide,
   IEditorComponent,
   IEditorComponentResolver,
-  EditorComponentRenderMode,
   IEditorSideWidget,
-  EditorSide,
-  EditorComponentDisposeEvent,
   RegisterEditorComponentEvent,
   RegisterEditorSideComponentEvent,
 } from './types';

@@ -1,11 +1,11 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
   CommandContribution,
   CommandRegistry,
+  Domain,
   Event,
-  IContextKeyService,
   IContextKey,
+  IContextKeyService,
   Uri,
 } from '@opensumi/ide-core-browser';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';

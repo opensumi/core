@@ -1,12 +1,12 @@
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 
 import {
-  ITerminalController,
   ITerminalChildProcess,
-  ITerminalProcessExtHostProxy,
+  ITerminalController,
+  ITerminalDimensions,
   ITerminalDimensionsOverride,
   ITerminalLaunchError,
-  ITerminalDimensions,
+  ITerminalProcessExtHostProxy,
 } from '../common';
 
 export class TerminalProcessExtHostProxy

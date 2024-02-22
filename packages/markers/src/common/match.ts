@@ -1,14 +1,14 @@
-import { Schemes } from '@opensumi/ide-core-common';
 import {
-  URI,
-  strings,
-  isWindows,
-  isLinux,
-  TernarySearchTree,
-  path,
-  parseGlob,
   IExpression,
   ParsedExpression,
+  Schemes,
+  TernarySearchTree,
+  URI,
+  isLinux,
+  isWindows,
+  parseGlob,
+  path,
+  strings,
 } from '@opensumi/ide-core-common';
 
 export class ResourceGlobMatcher {

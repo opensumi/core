@@ -1,21 +1,21 @@
 import { TextDocument } from 'vscode-languageserver-types';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  URI,
+  AppConfig,
+  BinaryBuffer,
+  Deferred,
+  DisposableCollection,
   Emitter,
   Event,
-  FileUri,
-  DisposableCollection,
-  IDisposable,
-  BinaryBuffer,
-  parseGlob,
-  ParsedPattern,
-  Deferred,
-  Uri,
-  FilesChangeEvent,
   ExtensionActivateEvent,
-  AppConfig,
+  FileUri,
+  FilesChangeEvent,
+  IDisposable,
+  ParsedPattern,
+  URI,
+  Uri,
+  parseGlob,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { FileSystemProviderCapabilities, IEventBus, Schemes } from '@opensumi/ide-core-common';
@@ -23,29 +23,27 @@ import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
-  FileStat,
+  DidFilesChangedParams,
+  FileAccess,
+  FileChange,
+  FileChangeEvent,
+  FileCopyOptions,
+  FileCreateOptions,
   FileDeleteOptions,
   FileMoveOptions,
-  IBrowserFileSystemRegistry,
-  IFileSystemProvider,
-  FileSystemProvider,
-  FileSystemError,
-  FileAccess,
-  IDiskFileProvider,
-  containsExtraFileMethod,
-  IFileSystemProviderRegistrationEvent,
-  IFileSystemProviderCapabilitiesChangeEvent,
-} from '../common';
-import {
-  FileChangeEvent,
-  DidFilesChangedParams,
-  FileChange,
-  IFileServiceClient,
   FileSetContentOptions,
-  FileCreateOptions,
-  FileCopyOptions,
+  FileStat,
+  FileSystemError,
+  FileSystemProvider,
+  IBrowserFileSystemRegistry,
+  IDiskFileProvider,
+  IFileServiceClient,
   IFileServiceWatcher,
+  IFileSystemProvider,
+  IFileSystemProviderCapabilitiesChangeEvent,
+  IFileSystemProviderRegistrationEvent,
   TextDocumentContentChangeEvent,
+  containsExtraFileMethod,
 } from '../common';
 
 import { FileSystemWatcher } from './watcher';

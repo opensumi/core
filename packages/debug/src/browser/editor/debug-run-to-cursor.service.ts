@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
 import { IDebugBreakpoint } from '../../common';
 
-import { IDebugSessionManager, DebugState } from './../../common/debug-session';
+import { DebugState, IDebugSessionManager } from './../../common/debug-session';
 import { DebugBreakpoint } from './../breakpoint/breakpoint-marker';
 import { DebugSessionManager } from './../debug-session-manager';
 import { DebugBreakpointsService } from './../view/breakpoints/debug-breakpoints.service';

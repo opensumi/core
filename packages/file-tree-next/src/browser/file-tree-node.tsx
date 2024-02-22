@@ -2,17 +2,17 @@ import cls from 'classnames';
 import React from 'react';
 
 import {
-  TreeNode,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
-  PromptHandle,
-  TreeNodeType,
-  RenamePromptHandle,
+  Loading,
   NewPromptHandle,
+  PromptHandle,
+  RenamePromptHandle,
+  TreeNode,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { getIcon, URI, path, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
+import { URI, getIcon, path, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IIconService } from '@opensumi/ide-theme/lib/common/index';
 

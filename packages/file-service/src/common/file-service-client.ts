@@ -1,21 +1,25 @@
-import { DidFilesChangedParams, FileChangeEvent } from '@opensumi/ide-core-common';
 import {
-  IFileServiceClient as IFileServiceClientToken,
+  BinaryBuffer,
+  DidFilesChangedParams,
+  Event,
+  FileChangeEvent,
   FileSystemProviderCapabilities,
+  IDisposable,
+  IFileServiceClient as IFileServiceClientToken,
+  URI,
 } from '@opensumi/ide-core-common';
-import { URI, Event, IDisposable, BinaryBuffer } from '@opensumi/ide-core-common';
 
 import {
-  FileStat,
-  FileMoveOptions,
-  FileDeleteOptions,
-  FileSetContentOptions,
-  FileCreateOptions,
   FileCopyOptions,
+  FileCreateOptions,
+  FileDeleteOptions,
+  FileMoveOptions,
+  FileSetContentOptions,
+  FileStat,
   FileSystemProvider,
-  TextDocumentContentChangeEvent,
-  IFileSystemProviderRegistrationEvent,
   IFileSystemProviderCapabilitiesChangeEvent,
+  IFileSystemProviderRegistrationEvent,
+  TextDocumentContentChangeEvent,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 

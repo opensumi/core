@@ -1,10 +1,10 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { CommandRegistry, CommandService, Command, IDisposable, isMacintosh, Event } from '@opensumi/ide-core-common';
+import { Command, CommandRegistry, CommandService, Event, IDisposable, isMacintosh } from '@opensumi/ide-core-common';
 
 import { IContextKeyService } from '../../context-key';
 import { KeybindingRegistry } from '../../keybinding';
 
-import { ISubmenuItem, MenuNode, IMenuActionDisplayType, IComponentMenuItem, IComponentMenuItemProps } from './base';
+import { IComponentMenuItem, IComponentMenuItemProps, IMenuActionDisplayType, ISubmenuItem, MenuNode } from './base';
 import { MenuId } from './menu-id';
 import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
 

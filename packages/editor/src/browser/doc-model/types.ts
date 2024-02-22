@@ -1,112 +1,19 @@
 import {
-  URI,
-  MaybePromise,
-  IRef,
-  IDisposable,
-  Event,
-  IRange,
   BasicEvent,
+  Event,
+  IDisposable,
   IEditOperation,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
+  MaybePromise,
+  URI,
 } from '@opensumi/ide-core-browser';
-import { EndOfLineSequence, EOL, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
-
-/**
- * editorDocumentModel is a wrapped concept for monaco's textModel
- */
-export interface IEditorDocumentModel extends IDisposable {
-  /**
-   * 文档URI
-   */
-  readonly uri: URI;
-
-  /**
-   * A unique identifier associated with this model.
-   */
-  id: string;
-
-  /**
-   * 编码
-   */
-  encoding: string;
-
-  /**
-   * An event emitted when the model's encoding have changed.
-   * @event
-   */
-  onDidChangeEncoding: Event<void>;
-
-  /**
-   * 行末结束
-   */
-  eol: EOL;
-
-  /**
-   * 语言Id
-   */
-  languageId: string;
-
-  /**
-   * 是否被修改过
-   */
-  readonly dirty: boolean;
-
-  /**
-   * 能否修改
-   */
-  readonly readonly: boolean;
-
-  /**
-   * 能否保存
-   */
-  readonly savable: boolean;
-
-  /**
-   * 是否永远都显示 dirty
-   */
-  readonly alwaysDirty: boolean;
-
-  /**
-   * 即便是 dirty 也要被 dispose
-   */
-  readonly disposeEvenDirty: boolean;
-
-  /**
-   * 是否关闭自动保存功能
-   */
-  readonly closeAutoSave: boolean;
-
-  /**
-   * 获得monaco的TextModel
-   */
-  getMonacoModel(): ITextModel;
-
-  /**
-   *  保存文档, 如果文档不可保存，则不会有任何反应
-   *  @param force 强制保存, 不管diff
-   */
-  save(force?: boolean, reason?: SaveReason): Promise<boolean>;
-
-  /**
-   * 恢复文件内容
-   * @param notOnDisk 文档已经不存在磁盘
-   */
-  revert(notOnDisk?: boolean): Promise<void>;
-
-  getText(range?: IRange): string;
-
-  updateContent(content: string, eol?: EOL): void;
-
-  updateEncoding(encoding: string): Promise<void>;
-
-  // setEncoding(encoding: string, preferredEncoding, mode: EncodingMode): Promise<void>;
-
-  updateOptions(options: IDocModelUpdateOptions);
-}
+import { IEditorDocumentModelRef } from '../../common/editor';
+import { IEditorDocumentModel } from '../../common/editor';
 
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
   detectIndentation?: boolean;
@@ -211,8 +118,6 @@ export interface IPreferredModelOptions {
   languageId?: string;
   eol?: EOL;
 }
-
-export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
 
 export interface IEditorDocumentModelService {
   hasLanguage(languageId: string): boolean;

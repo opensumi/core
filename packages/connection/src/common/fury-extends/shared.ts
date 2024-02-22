@@ -1,4 +1,5 @@
 import Fury from '@furyjs/fury/dist/lib/fury';
+
 import type { Config } from '@furyjs/fury/dist/lib/type';
 
 export const furyFactory = (config?: Config) => {

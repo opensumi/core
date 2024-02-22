@@ -3,16 +3,16 @@ import { IJSONSchema, IJSONSchemaMap } from '@opensumi/ide-core-common/lib/json-
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 
 import {
-  fontStylePattern,
-  getStylingSchemeEntry,
   ISemanticTokenRegistry,
-  parseClassifierString,
-  selectorPattern,
   SemanticTokenDefaultRule,
+  TOKEN_TYPE_WILDCARD,
   TokenSelector,
   TokenStyleDefaults,
   TokenTypeOrModifierContribution,
-  TOKEN_TYPE_WILDCARD,
+  fontStylePattern,
+  getStylingSchemeEntry,
+  parseClassifierString,
+  selectorPattern,
   typeAndModifierIdPattern,
 } from '../common/semantic-tokens-registry';
 

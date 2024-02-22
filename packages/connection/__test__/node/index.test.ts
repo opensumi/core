@@ -7,13 +7,12 @@ import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connecti
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
-import { ProxyIdentifier } from '../../src';
-import { RPCService } from '../../src';
+import { ProxyIdentifier, RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
 import { SimpleConnection } from '../../src/common/connection/drivers/simple';
 import { SumiConnectionMultiplexer } from '../../src/common/rpc/multiplexer';
 import { WSChannel, parse } from '../../src/common/ws-channel';
-import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
+import { CommonChannelHandler, WebSocketServerRoute, commonChannelPathHandler } from '../../src/node';
 
 const wssPort = 7788;
 

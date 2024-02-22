@@ -1,5 +1,5 @@
 import { isElectronRenderer } from './os';
-import { isWindows, isMacintosh, setImmediate } from './platform';
+import { isMacintosh, isWindows, setImmediate } from './platform';
 
 interface IProcess {
   platform: string;

@@ -1,9 +1,8 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { DisposableCollection } from '@opensumi/ide-core-browser';
-import { getThemeTypeSelector, IThemeService, ThemeType } from '@opensumi/ide-theme/lib/common';
+import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
+import { IThemeService, ThemeType, getThemeTypeSelector } from '@opensumi/ide-theme/lib/common';
 
 import { AbstractViewExtProcessService } from '../../common/extension.service';
 

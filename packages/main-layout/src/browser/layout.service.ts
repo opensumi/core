@@ -1,40 +1,40 @@
 import debounce from 'lodash/debounce';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  WithEventBus,
-  IDisposable,
-  View,
-  ViewContainerOptions,
-  ContributionProvider,
-  SlotLocation,
-  IContextKeyService,
-  ExtensionActivateEvent,
   AppConfig,
-  ComponentRegistry,
-  ILogger,
   CommandRegistry,
   CommandService,
+  ComponentRegistry,
+  ContributionProvider,
+  ExtensionActivateEvent,
+  IContextKeyService,
+  IDisposable,
+  ILogger,
   OnEvent,
+  SlotLocation,
+  View,
+  ViewContainerOptions,
+  WithEventBus,
   slotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import {
-  IMenuRegistry,
   AbstractContextMenuService,
-  MenuId,
   AbstractMenuService,
   IContextMenu,
+  IMenuRegistry,
+  MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Deferred, getDebugLogger, isUndefined } from '@opensumi/ide-core-common';
 import { ThemeChangedEvent } from '@opensumi/ide-theme';
 
 import {
-  MainLayoutContribution,
   IMainLayoutService,
-  ViewComponentOptions,
+  MainLayoutContribution,
   SUPPORT_ACCORDION_LOCATION,
+  ViewComponentOptions,
 } from '../common';
 
 import { AccordionService } from './accordion/accordion.service';

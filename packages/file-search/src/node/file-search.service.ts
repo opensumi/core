@@ -2,7 +2,7 @@ import readline from 'readline';
 
 import fuzzy from 'fuzzy';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { CancellationToken, CancellationTokenSource, path } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { IProcessFactory } from '@opensumi/ide-process';

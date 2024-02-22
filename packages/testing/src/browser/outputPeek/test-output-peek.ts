@@ -1,4 +1,4 @@
-import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import { EDITOR_COMMANDS, IContextKeyService, Schemes } from '@opensumi/ide-core-browser';
 import { CommandService, Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
@@ -12,7 +12,7 @@ import { isDiffable } from '../../common/testingStates';
 import { TestContextKey } from '../test-contextkey.service';
 import { TestResultServiceImpl } from '../test.result.service';
 
-import { buildTestUri, TestUriType } from './../../common/testingUri';
+import { TestUriType, buildTestUri } from './../../common/testingUri';
 import { TestingPeekOpenerServiceImpl } from './test-peek-opener.service';
 import { TestingOutputPeek } from './test-peek-widget';
 

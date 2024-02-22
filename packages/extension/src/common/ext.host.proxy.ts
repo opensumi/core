@@ -1,7 +1,7 @@
-import type * as net from 'net';
-
 import { ProxyIdentifier } from '@opensumi/ide-connection';
 import { Event } from '@opensumi/ide-core-common';
+
+import type * as net from 'net';
 
 /**
  * 代理服务监听的端口，可以通过 constructor 修改参数
@@ -126,7 +126,7 @@ export interface IExtHostProxyOptions {
    * control rpcProtocol message timeout
    * default -1，it means disable
    */
-   rpcMessageTimeout?: number;
+  rpcMessageTimeout?: number;
 }
 
 /**

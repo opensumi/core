@@ -1,22 +1,22 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
 import {
-  URI,
-  DisposableCollection,
-  Emitter,
-  IContextKeyService,
-  EDITOR_COMMANDS,
   CommandService,
-  ThrottledDelayer,
   Deferred,
+  DisposableCollection,
+  EDITOR_COMMANDS,
+  Emitter,
   Event,
-  path,
-  pSeries,
+  IContextKeyService,
+  ThrottledDelayer,
+  URI,
   formatLocalize,
+  pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { WorkbenchEditorService, IEditorGroup, IResource } from '@opensumi/ide-editor/lib/browser';
+import { IEditorGroup, IResource, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';

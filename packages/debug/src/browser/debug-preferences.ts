@@ -1,10 +1,10 @@
 import { Injector } from '@opensumi/di';
 import {
-  PreferenceSchema,
+  PreferenceContribution,
   PreferenceProxy,
+  PreferenceSchema,
   PreferenceService,
   createPreferenceProxy,
-  PreferenceContribution,
   localize,
 } from '@opensumi/ide-core-browser';
 

@@ -1,4 +1,4 @@
-import { Injectable, INJECTOR_TOKEN, Injector, Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Deferred } from '@opensumi/ide-core-common';
 
 @Injectable({ multiple: true })

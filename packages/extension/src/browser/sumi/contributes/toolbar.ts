@@ -1,16 +1,16 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IJSONSchema, IToolbarRegistry } from '@opensumi/ide-core-browser';
 import { toolbar } from '@opensumi/ide-core-browser/lib/extensions/schema/toolbar';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
 import {
-  IToolbarButtonContribution,
-  IToolbarSelectContribution,
   IToolbarActionBasicContribution,
+  IToolbarButtonContribution,
   IToolbarDropdownButtonContribution,
+  IToolbarSelectContribution,
 } from '../types';
 
 export interface KtToolbarSchema {

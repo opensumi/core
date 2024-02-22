@@ -1,17 +1,17 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  IClientApp,
   ClientAppContribution,
+  Domain,
+  EDITOR_COMMANDS,
+  IClientApp,
   KeybindingContribution,
   KeybindingRegistry,
-  EDITOR_COMMANDS,
-  Domain,
   electronEnv,
 } from '@opensumi/ide-core-browser';
-import { isOSX, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { OnEvent, WithEventBus, isOSX } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
-import { WorkbenchEditorService, IDocPersistentCacheProvider } from '../common';
+import { IDocPersistentCacheProvider, WorkbenchEditorService } from '../common';
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 import { ResourceDecorationChangeEvent } from './types';

@@ -1,36 +1,32 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  DecorationsManager,
+  CompositeTreeNode,
   Decoration,
+  DecorationsManager,
   IRecycleTreeHandle,
+  IWatcherEvent,
+  TreeNodeEvent,
   TreeNodeType,
   WatchEvent,
-  TreeNodeEvent,
-  IWatcherEvent,
-  CompositeTreeNode,
 } from '@opensumi/ide-components';
 import {
-  Emitter,
-  IContextKeyService,
   Deferred,
-  Event,
   DisposableCollection,
+  Emitter,
+  Event,
   IClipboardService,
-  path,
+  IContextKeyService,
   pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { IDebugConsoleModelService, IDebugSessionManager } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
 import { DebugSession } from '../../debug-session';
 import { DidChangeActiveDebugSession } from '../../debug-session-manager';
 import { AnsiConsoleNode } from '../../tree';
-import {
-  ExpressionContainer,
-  DebugConsoleNode,
-  DebugConsoleRoot,
-} from '../../tree/debug-tree-node.define';
+import { DebugConsoleNode, DebugConsoleRoot, ExpressionContainer } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';

@@ -4,22 +4,22 @@ import {
   CommandRegistry,
   CorePreferences,
   Deferred,
+  Disposable,
   ExtensionActivateEvent,
   IClientApp,
   ILogger,
-  Disposable,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
-  localize,
-  OnEvent,
-  WithEventBus,
-  ProgressLocation,
   ExtensionDidContributes,
-  getLanguageId,
-  URI,
   GeneralSettingsId,
+  OnEvent,
+  ProgressLocation,
+  URI,
+  WithEventBus,
+  getLanguageId,
+  localize,
 } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -30,9 +30,9 @@ import {
   ExtensionHostType,
   ExtensionNodeServiceServerPath,
   ExtensionService,
-  IExtensionNodeClientService,
   IExtCommandManagement,
   IExtensionMetaData,
+  IExtensionNodeClientService,
   LANGUAGE_BUNDLE_FIELD,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
@@ -46,13 +46,13 @@ import { MainThreadAPIIdentifier } from '../common/vscode';
 import { Extension } from './extension';
 import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import {
-  ExtensionApiReadyEvent,
-  ExtensionDidEnabledEvent,
-  ExtensionBeforeActivateEvent,
-  ExtensionDidUninstalledEvent,
-  IActivationEventService,
   AbstractExtInstanceManagementService,
+  ExtensionApiReadyEvent,
+  ExtensionBeforeActivateEvent,
+  ExtensionDidEnabledEvent,
+  ExtensionDidUninstalledEvent,
   ExtensionsInitializedEvent,
+  IActivationEventService,
 } from './types';
 import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscode/contributes';
 

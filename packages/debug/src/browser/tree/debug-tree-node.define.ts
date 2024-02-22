@@ -1,4 +1,4 @@
-import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode, TreeNode } from '@opensumi/ide-components';
 import { MessageType, localize } from '@opensumi/ide-core-browser';
 import { IRange, isDefined } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-utils/lib/path';

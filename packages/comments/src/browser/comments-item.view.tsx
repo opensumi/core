@@ -3,29 +3,29 @@ import React from 'react';
 
 import { Button } from '@opensumi/ide-components';
 import {
-  useInjectable,
-  localize,
   IContextKeyService,
-  isUndefined,
   IMarkdownString,
+  isUndefined,
+  localize,
   toLocalString,
   toMarkdownHtml,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import {
-  IThreadComment,
-  ICommentsCommentTitle,
   CommentMode,
   ICommentReply,
   ICommentsCommentContext,
-  ICommentsZoneWidget,
+  ICommentsCommentTitle,
   ICommentsFeatureRegistry,
   ICommentsThread,
+  ICommentsZoneWidget,
+  IThreadComment,
 } from '../common';
 
-import { CommentReactions, CommentReactionSwitcher } from './comment-reactions.view';
+import { CommentReactionSwitcher, CommentReactions } from './comment-reactions.view';
 import { CommentsBody } from './comments-body';
 import { CommentsTextArea } from './comments-textarea.view';
 import styles from './comments.module.less';

@@ -1,8 +1,14 @@
 import React, { useCallback } from 'react';
 
 import { Button } from '@opensumi/ide-components';
-import { CommandRegistry, CommandService, SCM_COMMANDS, URI, localize } from '@opensumi/ide-core-browser';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import {
+  CommandRegistry,
+  CommandService,
+  SCM_COMMANDS,
+  URI,
+  localize,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 
 import styles from '../editor.module.less';
 import { ReactEditorComponent } from '../types';

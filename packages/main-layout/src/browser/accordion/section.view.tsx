@@ -1,11 +1,10 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { ErrorBoundary, getIcon, useInjectable, useViewState } from '@opensumi/ide-core-browser';
 import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IContextMenu, IMenu, isIMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';

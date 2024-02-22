@@ -2,25 +2,25 @@ import cls from 'classnames';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
-import { DefaultMarkedRenderer, linkify, Markdown } from '@opensumi/ide-components/lib/markdown/index';
+import { DefaultMarkedRenderer, Markdown, linkify } from '@opensumi/ide-components/lib/markdown/index';
 import {
   DisposableCollection,
-  getIcon,
+  ILogger,
+  IOpenerService,
   IPreferenceSettingsService,
-  localize,
+  IResolvedPreferenceViewDesc,
   PreferenceItem,
   PreferenceProvider,
   PreferenceSchemaProvider,
   PreferenceScope,
   PreferenceService,
+  formatLocalize,
+  getIcon,
+  localize,
   replaceLocalizePlaceholder,
   useInjectable,
-  formatLocalize,
-  ILogger,
-  IOpenerService,
-  IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
 import { getPreferenceItemLabel, knownPrefIdMappings } from '../common';

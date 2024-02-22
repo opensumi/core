@@ -1,5 +1,5 @@
 import { localize } from '@opensumi/ide-core-browser';
-import { formatLocalize, MessageType, URI } from '@opensumi/ide-core-common';
+import { MessageType, URI, formatLocalize } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IResourceFileEdit, IResourceTextEdit, IWorkspaceEditService } from '@opensumi/ide-workspace-edit';

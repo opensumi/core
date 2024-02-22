@@ -7,22 +7,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IBuffer, IBufferCell, IDisposable, ITerminalAddon, Terminal } from 'xterm';
-
 import { PreferenceChange } from '@opensumi/ide-core-browser/lib/preferences';
 import {
-  debounce,
+  Disposable,
   DisposableCollection,
   Emitter,
   Event,
+  debounce,
   disposableTimeout,
-  Disposable,
 } from '@opensumi/ide-core-common';
 
 import { CodeTerminalSettingId } from '../common/preference';
 
 import { Color, RGBA } from './terminal.typeAhead.ext';
-import { XtermAttributes, IXtermCore } from './xterm-private';
+import { IXtermCore, XtermAttributes } from './xterm-private';
+
+import type { IBuffer, IBufferCell, IDisposable, ITerminalAddon, Terminal } from 'xterm';
 
 export const DEFAULT_LOCAL_ECHO_EXCLUDE: ReadonlyArray<string> = ['vim', 'vi', 'nano', 'tmux'];
 

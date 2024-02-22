@@ -1,19 +1,19 @@
-import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
-
-import { Injectable, Autowired } from '@opensumi/di';
-import { addDisposableListener, PreferenceService } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService, addDisposableListener } from '@opensumi/ide-core-browser';
 import {
   Disposable,
-  IDisposable,
   DisposableCollection,
   Emitter,
   Event,
-  isOSX,
+  IDisposable,
   RunOnceScheduler,
+  isOSX,
   localize,
 } from '@opensumi/ide-core-common';
 
 import { convertBufferRangeToViewport } from './helpers';
+
+import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
 
 // default delay time (ms) for showing tooltip when mouse is over a link
 const DEFAULT_HOVER_DELAY = 500;

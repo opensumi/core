@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 function createRootElement(id: string) {
   const rootContainer = document.createElement('div');

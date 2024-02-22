@@ -1,10 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
+  ILogger,
+  PreferenceConfigurations,
   PreferenceProvider,
   PreferenceResolveResult,
-  PreferenceConfigurations,
-  ILogger,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

@@ -1,17 +1,15 @@
 import cls from 'classnames';
-import { observable, makeObservable, action } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useRef, memo } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Icon } from '@opensumi/ide-components';
-import { Scrollbars } from '@opensumi/ide-components';
-import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
+import { Icon, Scrollbars } from '@opensumi/ide-components';
+import { Disposable, DomListener, getIcon, useInjectable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 
 import { BreadCrumbsMenuService } from './menu/breadcrumbs.menus';
 import styles from './navigation.module.less';
-import { IBreadCrumbService, IBreadCrumbPart } from './types';
+import { IBreadCrumbPart, IBreadCrumbService } from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
 import { EditorGroup } from './workbench-editor.service';
 

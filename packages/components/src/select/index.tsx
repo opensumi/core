@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import './style.less';
-import { getIcon, Icon } from '../icon';
+import { Icon, getIcon } from '../icon';
 
 export interface IDataOption<T> {
   iconClass?: string;

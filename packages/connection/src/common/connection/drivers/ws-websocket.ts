@@ -1,8 +1,8 @@
-import type WebSocket from 'ws';
-
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
+
+import type WebSocket from 'ws';
 
 export class WSWebSocketConnection extends BaseConnection<Uint8Array> {
   constructor(public socket: WebSocket) {

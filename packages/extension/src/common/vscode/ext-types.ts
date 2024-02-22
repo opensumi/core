@@ -1,11 +1,10 @@
-import type vscode from 'vscode';
-
-import { Uri, UriUtils } from '@opensumi/ide-core-common';
-import { strings, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
+import { Uri, UriUtils, es5ClassCompat, isStringArray, strings, uuid } from '@opensumi/ide-core-common';
 
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
 import { illegalArgument } from './utils';
+
+import type vscode from 'vscode';
 
 export { UriComponents } from './models/uri';
 const { startsWithIgnoreCase } = strings;

@@ -1,4 +1,4 @@
-import { Disposable, Uri, Event, CancellationToken, IDisposable } from '@opensumi/ide-core-common';
+import { CancellationToken, Disposable, Event, IDisposable, Uri } from '@opensumi/ide-core-common';
 
 type ColorIdentifier = string;
 

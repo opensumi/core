@@ -1,32 +1,32 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import {
+  AutoOpenBarrier,
   Disposable,
   Emitter,
-  WithEventBus,
-  IDisposable,
   Event,
-  throttle,
-  arrays,
-  AutoOpenBarrier,
-  PreferenceScope,
+  IDisposable,
   ILogger,
+  PreferenceScope,
+  URI,
+  WithEventBus,
+  arrays,
+  throttle,
 } from '@opensumi/ide-core-common';
-import { URI } from '@opensumi/ide-core-common';
 
 import {
+  ICreateContributedTerminalProfileOptions,
   IExtensionTerminalProfile,
   ISaveContributedProfileArgs,
   IShellLaunchConfig,
+  ITerminalContributions,
   ITerminalProfile,
+  ITerminalProfileContribution,
   ITerminalProfileObject,
   ITerminalProfileProvider,
   ITerminalProfileService,
   ITerminalService,
   terminalProfileArgsMatch,
-  ICreateContributedTerminalProfileOptions,
-  ITerminalProfileContribution,
-  ITerminalContributions,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 

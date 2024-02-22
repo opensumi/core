@@ -1,36 +1,36 @@
-import { Provider, Injectable } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
 import {
-  ITerminalController,
-  ITerminalService,
-  ITerminalRestore,
-  ITerminalTheme,
-  ITerminalServicePath,
-  ITerminalProcessPath,
   ITerminalApiService,
-  ITerminalSearchService,
-  ITerminalGroupViewService,
-  ITerminalErrorService,
-  ITerminalInternalService,
-  ITerminalRenderProvider,
-  ITerminalNetwork,
-  ITerminalHoverManagerService,
-  ITerminalProfileService,
   ITerminalClientFactory2,
+  ITerminalController,
+  ITerminalErrorService,
+  ITerminalGroupViewService,
+  ITerminalHoverManagerService,
+  ITerminalInternalService,
+  ITerminalNetwork,
+  ITerminalProcessPath,
   ITerminalProfileInternalService,
+  ITerminalProfileService,
+  ITerminalRenderProvider,
+  ITerminalRestore,
+  ITerminalSearchService,
+  ITerminalService,
+  ITerminalServicePath,
+  ITerminalTheme,
 } from '../common';
 import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
 import { ITerminalPreference } from '../common/preference';
 
 import {
   TerminalCommandContribution,
-  TerminalMenuContribution,
-  TerminalLifeCycleContribution,
-  TerminalRenderContribution,
   TerminalKeybindingContribution,
+  TerminalLifeCycleContribution,
+  TerminalMenuContribution,
   TerminalNetworkContribution,
   TerminalPreferenceContribution,
+  TerminalRenderContribution,
 } from './contribution';
 import { TerminalApiService } from './terminal.api';
 import { createTerminalClientFactory2 } from './terminal.client';

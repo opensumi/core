@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { CancellationTokenSource, arrays, IRange } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { CancellationTokenSource, IRange, arrays } from '@opensumi/ide-core-common';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 

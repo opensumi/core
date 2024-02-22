@@ -1,19 +1,19 @@
-import type vscode from 'vscode';
-
 import { Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-common';
 import {
-  ITerminalInfo,
-  ITerminalDimensionsDto,
-  ITerminalLaunchError,
+  ICreateContributedTerminalProfileOptions,
   ITerminalDimensions,
+  ITerminalDimensionsDto,
   ITerminalExitEvent,
+  ITerminalInfo,
+  ITerminalLaunchError,
   ITerminalLinkDto,
   ITerminalProfile,
-  ICreateContributedTerminalProfileOptions,
 } from '@opensumi/ide-terminal-next';
 import { SerializableEnvironmentVariableCollection } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 import { IExtensionDescription } from './extension';
+
+import type vscode from 'vscode';
 
 export interface IMainThreadTerminal {
   $sendText(id: string, text: string, addNewLine?: boolean): void;

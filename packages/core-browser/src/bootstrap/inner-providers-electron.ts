@@ -1,16 +1,16 @@
 import { Injector } from '@opensumi/di';
 import { IElectronMainMenuService } from '@opensumi/ide-core-common';
 import {
-  IElectronMainUIService,
   IElectronMainLifeCycleService,
+  IElectronMainUIService,
   IElectronURLService,
 } from '@opensumi/ide-core-common/lib/electron';
 
 import {
   ElectronMenuBarService,
-  IElectronMenuFactory,
-  IElectronMenuBarService,
   ElectronMenuFactory,
+  IElectronMenuBarService,
+  IElectronMenuFactory,
 } from '../menu/next/renderer/ctxmenu/electron';
 import { AppConfig } from '../react-providers/config-provider';
 import { createElectronMainApi } from '../utils/electron';

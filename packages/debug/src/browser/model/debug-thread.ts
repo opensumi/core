@@ -1,4 +1,4 @@
-import { Event, Emitter } from '@opensumi/ide-core-browser';
+import { Emitter, Event } from '@opensumi/ide-core-browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { DEBUG_REPORT_NAME, IDebugExceptionInfo } from '../../common';

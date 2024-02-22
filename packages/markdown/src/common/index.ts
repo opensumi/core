@@ -1,4 +1,4 @@
-import { CancellationToken, IDisposable, Event, URI } from '@opensumi/ide-core-common';
+import { CancellationToken, Event, IDisposable, URI } from '@opensumi/ide-core-common';
 
 export interface IMarkdownService {
   previewMarkdownInContainer(

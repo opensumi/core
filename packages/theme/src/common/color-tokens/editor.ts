@@ -1,10 +1,10 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color, RGBA } from '../../common/color';
-import { registerColor, transparent, lighten, darken, lessProminent } from '../utils';
+import { darken, lessProminent, lighten, registerColor, transparent } from '../utils';
 
 import { badgeBackground, badgeForeground } from './badge';
-import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
+import { activeContrastBorder, contrastBorder, focusBorder, foreground } from './base';
 
 // TODO COLOR 此处vscode内的editor error warning info颜色都有做修改
 export const editorErrorBackground = registerColor(

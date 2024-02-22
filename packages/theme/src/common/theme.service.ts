@@ -1,9 +1,9 @@
 import { IRawThemeSetting } from 'vscode-textmate';
 
-import { Event, URI, IDisposable, IThemeColor, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Event, IDisposable, IThemeColor, URI } from '@opensumi/ide-core-common';
 
 import { Color } from './color';
-import { vs, vs_dark, hc_black, hc_light } from './default-themes';
+import { hc_black, hc_light, vs, vs_dark } from './default-themes';
 
 export const ThemeServicePath = 'themeServicePath';
 

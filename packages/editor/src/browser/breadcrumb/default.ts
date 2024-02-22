@@ -4,16 +4,16 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
   EDITOR_COMMANDS,
-  Event,
   Emitter,
-  getSymbolIcon,
+  Event,
   IPosition,
   IRange,
+  LRUMap,
   MaybeNull,
   OnEvent,
   URI,
   WithEventBus,
-  LRUMap,
+  getSymbolIcon,
   path,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';

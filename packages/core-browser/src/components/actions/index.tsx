@@ -6,21 +6,21 @@ import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
 import { isBoolean, strings } from '@opensumi/ide-core-common';
 
 import {
-  MenuNode,
-  ICtxMenuRenderer,
-  SeparatorMenuItemNode,
+  AbstractMenuService,
+  ComponentMenuItemNode,
   IContextMenu,
+  ICtxMenuRenderer,
   IMenu,
+  IMenuAction,
   IMenuSeparator,
   MenuId,
+  MenuNode,
+  SeparatorMenuItemNode,
   SubmenuItemNode,
-  IMenuAction,
-  ComponentMenuItemNode,
-  AbstractMenuService,
   generateMergedCtxMenu,
 } from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
-import { useMenus, useContextMenus, transformLabelWithCodicon } from '../../utils';
+import { transformLabelWithCodicon, useContextMenus, useMenus } from '../../utils';
 
 import placements from './placements';
 import styles from './styles.module.less';

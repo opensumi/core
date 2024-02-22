@@ -2,7 +2,7 @@ import { DisposableCollection } from '@opensumi/ide-utils';
 
 import { ITreeNodeOrCompositeTreeNode } from '../../types';
 
-import { Decoration, TargetMatchMode, IDecorationEventData } from './Decoration';
+import { Decoration, IDecorationEventData, TargetMatchMode } from './Decoration';
 
 export class ClasslistComposite {
   public classlist: ReadonlyArray<string>;

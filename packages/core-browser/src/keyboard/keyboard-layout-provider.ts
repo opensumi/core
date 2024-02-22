@@ -1,12 +1,12 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { isOSX, Emitter, Deferred, ILogger, isWindows } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Deferred, Emitter, ILogger, isOSX, isWindows } from '@opensumi/ide-core-common';
 import {
-  KeyboardNativeLayoutService,
-  KeyboardLayoutChangeNotifierService,
-  KeyValidationInput,
   IKeymapInfo,
   ILinuxKeyboardLayoutInfo,
   IMacKeyboardLayoutInfo,
+  KeyValidationInput,
+  KeyboardLayoutChangeNotifierService,
+  KeyboardNativeLayoutService,
   KeymapInfo,
   getKeyboardLayoutId,
 } from '@opensumi/ide-core-common/lib/keyboard';

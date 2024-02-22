@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
-import { LifeCyclePhase, DisposableCollection, getDebugLogger } from '@opensumi/ide-core-common';
+import { DisposableCollection, LifeCyclePhase, getDebugLogger } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { ExtensionLoadingView } from '../../components';
 import { AbstractExtInstanceManagementService } from '../../types';
 

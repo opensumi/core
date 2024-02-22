@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
+  IJSONSchema,
+  IProblemMatcherRegistry,
   LifeCyclePhase,
   ProblemMatcherContribution,
-  IProblemMatcherRegistry,
-  IJSONSchema,
   localize,
   objects,
 } from '@opensumi/ide-core-common';

@@ -4,9 +4,9 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { notification, open } from '@opensumi/ide-components';
 import { parseWithoutEscape } from '@opensumi/ide-components/lib/utils';
 import { IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
-import { MessageType, uuid, localize } from '@opensumi/ide-core-common';
+import { MessageType, localize, uuid } from '@opensumi/ide-core-common';
 
-import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
+import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH } from '../common';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {

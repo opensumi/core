@@ -9,15 +9,15 @@ import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   ACCEPT_CURRENT_ACTIONS,
-  CONFLICT_ACTIONS_ICON,
-  EditorViewType,
-  IGNORE_ACTIONS,
-  DECORATIONS_CLASSNAME,
   ADDRESSING_TAG_CLASSNAME,
-  TActionsType,
-  IActionsDescription,
   APPEND_ACTIONS,
+  CONFLICT_ACTIONS_ICON,
+  DECORATIONS_CLASSNAME,
+  EditorViewType,
+  IActionsDescription,
   IConflictActionsEvent,
+  IGNORE_ACTIONS,
+  TActionsType,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';

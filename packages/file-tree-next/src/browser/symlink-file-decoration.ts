@@ -1,6 +1,6 @@
 import { Optional } from '@opensumi/di';
-import { Uri, Emitter, localize } from '@opensumi/ide-core-browser';
-import { IDecorationsProvider, IDecorationData } from '@opensumi/ide-decoration';
+import { Emitter, Uri, localize } from '@opensumi/ide-core-browser';
+import { IDecorationData, IDecorationsProvider } from '@opensumi/ide-decoration';
 
 import { FileTreeService } from './file-tree.service';
 

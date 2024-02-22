@@ -1,7 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { localize } from '@opensumi/ide-core-common';
-import { IDebugSessionManager, DebugSessionOptions, IDebugModelManager } from '@opensumi/ide-debug';
+import { DebugSessionOptions, IDebugModelManager, IDebugSessionManager } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';

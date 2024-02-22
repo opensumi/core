@@ -1,14 +1,14 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 
 import {
-  ITerminalErrorService,
-  ITerminalError,
-  ITerminalService,
-  ITerminalGroupViewService,
-  ITerminalController,
   IPtyExitEvent,
+  ITerminalController,
+  ITerminalError,
+  ITerminalErrorService,
+  ITerminalGroupViewService,
+  ITerminalService,
 } from '../common';
 
 @Injectable()

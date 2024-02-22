@@ -1,14 +1,14 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  COMMON_COMMANDS,
+  Domain,
+  MaybePromise,
+  PreferenceConfiguration,
   PreferenceContribution,
   PreferenceSchema,
-  Domain,
-  PreferenceConfiguration,
   URI,
-  MaybePromise,
-  localize,
   getIcon,
-  COMMON_COMMANDS,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next/menu-id';

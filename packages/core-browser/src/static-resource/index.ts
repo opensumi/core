@@ -4,7 +4,7 @@ import { Domain } from '@opensumi/ide-core-common/lib/di-helper/index';
 
 import { ClientAppContribution } from '../common/common.define';
 
-import { StaticResourceService, StaticResourceContribution } from './static.definition';
+import { StaticResourceContribution, StaticResourceService } from './static.definition';
 
 export * from './static.definition';
 

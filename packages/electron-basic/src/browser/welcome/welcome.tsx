@@ -1,13 +1,13 @@
 import React from 'react';
 
 import {
-  useInjectable,
-  localize,
-  FileUri,
-  URI,
   CommandService,
   FILE_COMMANDS,
+  FileUri,
   IWindowService,
+  URI,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';

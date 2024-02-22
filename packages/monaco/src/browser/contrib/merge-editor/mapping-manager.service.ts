@@ -1,10 +1,10 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import { DocumentMapping } from './model/document-mapping';
 import { LineRange } from './model/line-range';
 import { LineRangeMapping } from './model/line-range-mapping';
-import { EDiffRangeTurn, EditorViewType, ETurnDirection } from './types';
+import { EDiffRangeTurn, ETurnDirection, EditorViewType } from './types';
 
 @Injectable()
 export class MappingManagerService extends Disposable {

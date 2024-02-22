@@ -2,23 +2,23 @@ import debounce from 'lodash/debounce';
 import flattenDeep from 'lodash/flattenDeep';
 import groupBy from 'lodash/groupBy';
 
-import { INJECTOR_TOKEN, Injector, Injectable, Autowired } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  Disposable,
-  IRange,
-  URI,
-  Emitter,
   AppConfig,
-  localize,
-  getIcon,
-  Event,
-  memoize,
-  IDisposable,
-  positionToRange,
   Deferred,
+  Disposable,
+  Emitter,
+  Event,
+  IDisposable,
+  IRange,
   LRUCache,
   LabelService,
+  URI,
   formatLocalize,
+  getIcon,
+  localize,
+  memoize,
+  positionToRange,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
 import {
@@ -34,11 +34,11 @@ import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/mo
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  ICommentsService,
-  ICommentsThread,
-  ICommentsFeatureRegistry,
   CommentPanelId,
   ICommentRangeProvider,
+  ICommentsFeatureRegistry,
+  ICommentsService,
+  ICommentsThread,
   ICommentsThreadOptions,
   IWriteableCommentsTreeNode,
 } from '../common';

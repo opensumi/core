@@ -1,11 +1,9 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 
 import { IExtensionHostService, IExtensionWorkerHost } from '../../../common';
-import { IExtensionDescription } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
-import { createCommandsApiFactory, ExtHostCommands } from '../vscode/ext.host.command';
-
-import { ExtHostAPIIdentifier } from './../../../common/vscode/index';
+import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.command';
 
 interface IOptions {
   firstParty?: boolean;

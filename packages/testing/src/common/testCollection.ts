@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/tree/main/src/vs/workbench/contrib/testing/common
 
-import { Uri as URI, IRange, IPosition, Emitter, map, IMarkdownString } from '@opensumi/ide-core-common';
+import { Emitter, IMarkdownString, IPosition, IRange, Uri as URI, map } from '@opensumi/ide-core-common';
 
 export type TestsDiffOp =
   | [op: TestDiffOpType.Add, item: InternalTestItem]

@@ -5,43 +5,41 @@ import * as fse from 'fs-extra';
 import trash from 'trash';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Injectable, INJECTOR_TOKEN, Autowired, Injector, Optional } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
+  DisposableCollection,
+  Emitter,
+  Event,
+  FileUri,
+  IDisposable,
+  IFileStatOptions,
   ILogService,
   ILogServiceManager,
   SupportLogNamespace,
-  path,
-  IFileStatOptions,
-} from '@opensumi/ide-core-node';
-import {
-  isLinux,
-  UriComponents,
-  Uri,
-  Event,
-  IDisposable,
   URI,
-  Emitter,
+  Uri,
+  UriComponents,
+  isLinux,
   isUndefined,
-  DisposableCollection,
-  FileUri,
+  path,
   uuid,
 } from '@opensumi/ide-core-node';
 
 import {
-  FileChangeEvent,
-  FileStat,
-  FileType,
   DidFilesChangedParams,
-  FileSystemError,
+  FileAccess,
+  FileChangeEvent,
   FileMoveOptions,
+  FileStat,
+  FileSystemError,
+  FileSystemProviderCapabilities,
+  FileType,
+  IDiskFileProvider,
+  handleError,
   isErrnoException,
   notEmpty,
-  IDiskFileProvider,
-  FileAccess,
-  FileSystemProviderCapabilities,
-  handleError,
 } from '../common/';
 
 import { FileSystemWatcherServer } from './recursive/file-service-watcher';
@@ -176,6 +174,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
       dirList.forEach((name) => {
         const filePath = paths.join(_uri.fsPath, name);
+        // eslint-disable-next-line import/namespace
         result.push([name, this.getFileStatType(fse.statSync(filePath))]);
       });
       return result;

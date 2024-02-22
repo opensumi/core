@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SlotRenderer } from '@opensumi/ide-core-browser';
-import { BoxPanel, getStorageValue, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 
 export function DefaultLayout() {
   const { colors, layout } = getStorageValue();

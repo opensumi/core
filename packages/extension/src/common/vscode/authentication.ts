@@ -1,7 +1,7 @@
 import {
-  AuthenticationSessionsChangeEvent,
-  AuthenticationSession,
   AuthenticationProviderInformation,
+  AuthenticationSession,
+  AuthenticationSessionsChangeEvent,
 } from '@opensumi/ide-core-common';
 
 export interface IMainThreadAuthentication {

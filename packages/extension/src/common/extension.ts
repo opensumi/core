@@ -1,36 +1,36 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import {
-  LifeCyclePhase,
-  Disposable,
-  IJSONSchema,
-  IDisposable,
-  Deferred,
-  Uri,
-  MaybePromise,
-  IExtensionLogger,
-  ExtensionConnectOption,
-  replaceNlsField,
-  ILogger,
-  WithEventBus,
-  IAppLifeCycleService,
   AppLifeCycleServiceToken,
+  Deferred,
+  Disposable,
   Emitter,
+  ExtensionConnectOption,
+  IAppLifeCycleService,
+  IDisposable,
+  IExtensionLogger,
   IExtensionProps,
   IExtensionsSchemaService,
+  IJSONSchema,
+  ILogger,
+  LifeCyclePhase,
   LinkedText,
-  URI,
-  createLocalizedStr,
+  MaybePromise,
   Throttler,
+  URI,
+  Uri,
+  WithEventBus,
+  createLocalizedStr,
+  replaceNlsField,
 } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
-import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
+import { IIconService, IconType, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
 import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
 
-import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
+import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IExtensionLanguagePack, IMainThreadCommands } from './vscode';
 import { ThemeIcon } from './vscode/ext-types';

@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { getDebugLogger, URI, parseWithComments, formatLocalize } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { URI, formatLocalize, getDebugLogger, parseWithComments } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 

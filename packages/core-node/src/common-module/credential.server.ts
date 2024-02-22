@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IChunkedPassword, INativeCredentialService, isWindows } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../types';

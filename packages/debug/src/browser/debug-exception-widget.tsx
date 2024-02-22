@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
 import { formatLocalize, localize } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';

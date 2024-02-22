@@ -1,29 +1,30 @@
 import debounce from 'lodash/debounce';
-import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ISelection, Emitter, Event, IRange, getDebugLogger, Disposable } from '@opensumi/ide-core-common';
-import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@opensumi/ide-editor';
+import { Disposable, Emitter, Event, IRange, ISelection, getDebugLogger } from '@opensumi/ide-core-common';
+import { IDecorationApplyOptions, IResourceOpenOptions, ISingleEditOperation } from '@opensumi/ide-editor';
 
 import {
-  IExtensionHostEditorService,
   ExtensionDocumentDataManager,
+  IExtensionHostEditorService,
   MainThreadAPIIdentifier,
 } from '../../../../common/vscode';
 import * as TypeConverts from '../../../../common/vscode/converter';
 import {
-  IEditorStatusChangeDTO,
   IEditorChangeDTO,
-  TextEditorSelectionChangeKind,
   IEditorCreatedDTO,
-  IResolvedTextEditorConfiguration,
+  IEditorStatusChangeDTO,
   IMainThreadEditorsService,
+  IResolvedTextEditorConfiguration,
   ITextEditorUpdateConfiguration,
   TextEditorCursorStyle,
+  TextEditorSelectionChangeKind,
 } from '../../../../common/vscode/editor';
-import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle } from '../../../../common/vscode/ext-types';
+import { Position, Range, Selection, TextEditorLineNumbersStyle, Uri } from '../../../../common/vscode/ext-types';
 
 import { TextEditorEdit } from './edit.builder';
+
+import type vscode from 'vscode';
 
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
   private _editors: Map<string, TextEditorData> = new Map();

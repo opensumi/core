@@ -1,4 +1,4 @@
-import { IExtensionInfo, IDisposable } from '@opensumi/ide-core-common';
+import { IDisposable, IExtensionInfo } from '@opensumi/ide-core-common';
 
 import { Disposable } from './ext-types';
 

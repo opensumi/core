@@ -5,7 +5,7 @@ import { ILogger } from '../common';
 import { WSWebSocketConnection } from '../common/connection';
 import { BaseCommonChannelHandler, commonChannelPathHandler } from '../common/server-handler';
 
-import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
+import { CommonChannelHandlerOptions, WebSocketHandler } from './ws';
 
 export { commonChannelPathHandler };
 

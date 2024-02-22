@@ -8,9 +8,9 @@
 // - https://github.com/microsoft/vscode/blob/ff383268424b1d4b6620e7ea197fb13ae513414f/src/vs/base/node/shell.ts
 
 import fs from 'fs';
-import { userInfo, release } from 'os';
+import { release, userInfo } from 'os';
 
-import { IProcessEnvironment, isLinux, isMacintosh, OperatingSystem, path } from '@opensumi/ide-core-common';
+import { IProcessEnvironment, OperatingSystem, isLinux, isMacintosh, path } from '@opensumi/ide-core-common';
 import { isWindows } from '@opensumi/ide-core-node';
 
 export const WINDOWS_GIT_BASH_PATHS = [

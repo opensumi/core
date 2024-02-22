@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Token, Injector } from '@opensumi/di';
+import { Injector, Token } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import { ConfigContext } from '../react-providers/config-provider';

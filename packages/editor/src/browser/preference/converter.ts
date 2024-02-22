@@ -1,4 +1,4 @@
-import { objects, Uri } from '@opensumi/ide-core-browser';
+import { Uri, objects } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 

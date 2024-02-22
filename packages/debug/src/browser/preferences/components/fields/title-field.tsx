@@ -1,4 +1,4 @@
-import { FormContextType, TitleFieldProps, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { FormContextType, RJSFSchema, StrictRJSFSchema, TitleFieldProps } from '@rjsf/utils';
 import React from 'react';
 
 import styles from '../json-widget.module.less';

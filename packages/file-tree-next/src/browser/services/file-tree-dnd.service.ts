@@ -1,15 +1,15 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { Decoration, TargetMatchMode } from '@opensumi/ide-components';
 import {
-  DisposableCollection,
-  Disposable,
-  ILogger,
-  WithEventBus,
-  URI,
-  ThrottledDelayer,
-  FileStat,
-  encodeBase64,
   BinaryBuffer,
+  Disposable,
+  DisposableCollection,
+  FileStat,
+  ILogger,
+  ThrottledDelayer,
+  URI,
+  WithEventBus,
+  encodeBase64,
 } from '@opensumi/ide-core-browser';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IFileServiceClient } from '@opensumi/ide-file-service';

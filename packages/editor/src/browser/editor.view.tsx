@@ -15,8 +15,8 @@ import {
   MaybeNull,
   PreferenceService,
   URI,
-  useDisposable,
   View,
+  useDisposable,
 } from '@opensumi/ide-core-browser';
 import {
   IResizeHandleDelegate,
@@ -35,16 +35,16 @@ import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
 import {
+  CodeEditorDidVisibleEvent,
   DragOverPosition,
   EditorComponentRegistry,
   EditorComponentRenderMode,
   EditorGroupFileDropEvent,
   EditorGroupsResetSizeEvent,
-  RegisterEditorSideComponentEvent,
+  EditorOpenType,
   EditorSide,
   IEditorComponent,
-  CodeEditorDidVisibleEvent,
-  EditorOpenType,
+  RegisterEditorSideComponentEvent,
   ResoucesOfActiveComponentChangedEvent,
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';

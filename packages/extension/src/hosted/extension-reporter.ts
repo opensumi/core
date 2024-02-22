@@ -1,10 +1,10 @@
 import {
+  Emitter,
   IReporter,
   PerformanceData,
   PointData,
-  Emitter,
-  ReporterProcessMessage,
   REPORT_TYPE,
+  ReporterProcessMessage,
 } from '@opensumi/ide-core-common';
 
 export class ExtensionReporter implements IReporter {

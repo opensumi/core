@@ -2,15 +2,15 @@ import { IRawThemeSetting } from 'vscode-textmate';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  localize,
-  parseWithComments,
+  CharCode,
   ILogger,
   IReporterService,
   REPORT_NAME,
-  isString,
-  CharCode,
+  URI,
   isBoolean,
+  isString,
+  localize,
+  parseWithComments,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -19,14 +19,10 @@ import { Color } from '../common/color';
 import { editorBackground, editorForeground } from '../common/color-tokens/editor';
 import { parse as parsePList } from '../common/plistParser';
 import {
-  createMatchers,
   ISemanticTokenRegistry,
   ITextMateThemingRule,
   Matcher,
   MatcherWithPriority,
-  nameMatcher,
-  noMatch,
-  parseClassifierString,
   ProbeScope,
   SemanticTokenRule,
   TextMateThemingRuleDefinitions,
@@ -34,20 +30,24 @@ import {
   TokenStyleDefinition,
   TokenStyleDefinitions,
   TokenStyleValue,
+  createMatchers,
+  nameMatcher,
+  noMatch,
+  parseClassifierString,
 } from '../common/semantic-tokens-registry';
 import {
-  ITokenThemeRule,
-  IColors,
   BuiltinTheme,
-  ITokenColorizationRule,
-  IColorMap,
-  getThemeType,
-  IThemeData,
   ColorScheme,
-  ISemanticTokenColorizationSetting,
-  VS_LIGHT_THEME_NAME,
   HC_BLACK_THEME_NAME,
   HC_LIGHT_THEME_NAME,
+  IColorMap,
+  IColors,
+  ISemanticTokenColorizationSetting,
+  IThemeData,
+  ITokenColorizationRule,
+  ITokenThemeRule,
+  VS_LIGHT_THEME_NAME,
+  getThemeType,
 } from '../common/theme.service';
 import { convertSettings } from '../common/themeCompatibility';
 

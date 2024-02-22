@@ -1,16 +1,16 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Disposable, QuickPickService, localize, formatLocalize, ILogger } from '@opensumi/ide-core-browser';
+import { Disposable, ILogger, QuickPickService, formatLocalize, localize } from '@opensumi/ide-core-browser';
 import {
-  IAuthenticationService,
-  IAuthenticationProvider,
-  AuthenticationSessionsChangeEvent,
-  AuthenticationSession,
   AuthenticationGetSessionOptions,
+  AuthenticationSession,
+  AuthenticationSessionsChangeEvent,
+  IAuthenticationProvider,
+  IAuthenticationService,
 } from '@opensumi/ide-core-common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
-import { IMainThreadAuthentication, ExtHostAPIIdentifier, IExtHostAuthentication } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostAuthentication, IMainThreadAuthentication } from '../../../common/vscode';
 import { IActivationEventService } from '../../types';
 
 @Injectable({ multiple: true })

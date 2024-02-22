@@ -1,32 +1,32 @@
-import { observable, action, runInAction, makeObservable } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  WithEventBus,
-  OnEvent,
-  IContextKeyService,
-  IReporterService,
-  Schemes,
   Emitter,
   Event,
+  IContextKeyService,
   IRange,
+  IReporterService,
+  OnEvent,
+  Schemes,
+  URI,
+  WithEventBus,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
+import { EditorCollectionService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
+import { WorkspaceEditDidDeleteFileEvent, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
-import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY, IDebugBreakpoint } from '../../../common';
+import { CONTEXT_IN_DEBUG_MODE_KEY, DEBUG_REPORT_NAME, IDebugBreakpoint } from '../../../common';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import {
-  DebugExceptionBreakpoint,
-  isDebugBreakpoint,
-  isDebugExceptionBreakpoint,
   BreakpointManager,
   DebugDecorator,
+  DebugExceptionBreakpoint,
   EXCEPTION_BREAKPOINT_URI,
+  isDebugBreakpoint,
+  isDebugExceptionBreakpoint,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';

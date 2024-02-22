@@ -1,11 +1,10 @@
-import type vscode from 'vscode';
-
-import { Uri as URI } from '@opensumi/ide-core-common';
-import { arrays } from '@opensumi/ide-core-common';
+import { Uri as URI, arrays } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { Position, SelectionRange } from '../../../../common/vscode/model.api';
+
+import type vscode from 'vscode';
 
 const { isNonEmptyArray } = arrays;
 

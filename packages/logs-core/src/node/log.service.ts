@@ -4,20 +4,20 @@ import process from 'process';
 
 import spdlog from 'spdlog';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 
 import {
-  ILogService,
-  ILogServiceOptions,
   BaseLogServiceOptions,
-  LogLevel,
-  SupportLogNamespace,
-  ILogServiceManager,
-  format,
-  ILogServiceForClient,
   DebugLog,
   IBaseLogService,
+  ILogService,
+  ILogServiceForClient,
+  ILogServiceManager,
+  ILogServiceOptions,
+  LogLevel,
+  SupportLogNamespace,
+  format,
 } from '../common/';
 
 export const DEFAULT_LOG_FOLDER = path.join(os.homedir(), '.sumi/logs/');

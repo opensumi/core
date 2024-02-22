@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
 import {
   HasSearchResults,
   SearchInputBoxFocusedKey,

@@ -1,6 +1,6 @@
 import { PreferenceService, createPreferenceProxy } from '@opensumi/ide-core-browser';
 
-import { editorPreferenceSchema, EditorPreferences } from './schema';
+import { EditorPreferences, editorPreferenceSchema } from './schema';
 
 export function createEditorPreferenceProxy(
   preferenceService: PreferenceService,

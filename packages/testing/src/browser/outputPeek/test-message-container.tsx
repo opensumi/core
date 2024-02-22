@@ -5,9 +5,9 @@ import { IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, IMarkdownString, Schemes, URI } from '@opensumi/ide-core-common';
 import {
   EditorCollectionService,
-  getSimpleEditorOptions,
   IDiffEditor,
   IEditorDocumentModelService,
+  getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
 import { Markdown } from '@opensumi/ide-markdown';
 import { IDiffEditorOptions, IEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';

@@ -1,15 +1,15 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  PreferenceSchemaProvider,
+  IPreferenceSettingsService,
+  ISettingSection,
   PreferenceSchema,
   PreferenceSchemaProperties,
-  IPreferenceSettingsService,
+  PreferenceSchemaProvider,
   PreferenceService,
-  ISettingSection,
 } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface ConfigurationSnippets {

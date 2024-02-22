@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
 
-import { IDocPersistentCacheProvider, IDocStatus, IDocCache, parseCacheValueFrom } from '../../common/doc-cache';
+import { IDocCache, IDocPersistentCacheProvider, IDocStatus, parseCacheValueFrom } from '../../common/doc-cache';
 
 /**
  * 使用 LocalStorage 实现的文档缓存对象

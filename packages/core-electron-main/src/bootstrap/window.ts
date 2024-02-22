@@ -1,26 +1,26 @@
-import { ChildProcess, fork, ForkOptions } from 'child_process';
+import { ChildProcess, ForkOptions, fork } from 'child_process';
 import qs from 'querystring';
 
 import {
-  app,
   BrowserWindow,
-  shell,
-  ipcMain,
   BrowserWindowConstructorOptions,
   IpcMainEvent,
   WebPreferences,
+  app,
+  ipcMain,
+  shell,
 } from 'electron';
 import treeKill from 'tree-kill';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  ExtensionCandidate,
-  getDebugLogger,
-  Disposable,
-  isMacintosh,
-  URI,
-  FileUri,
   Deferred,
+  Disposable,
+  ExtensionCandidate,
+  FileUri,
+  URI,
+  getDebugLogger,
+  isMacintosh,
 } from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 

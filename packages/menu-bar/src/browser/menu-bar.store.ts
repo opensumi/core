@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
-import { observable, action, makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 

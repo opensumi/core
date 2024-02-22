@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { getLanguageId, ILogger, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { ILogger, URI, WithEventBus, getLanguageId } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {

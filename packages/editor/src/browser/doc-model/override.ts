@@ -2,8 +2,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-browser';
 import {
-  ITextModelService,
   ITextModelContentProvider,
+  ITextModelService,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/resolverService';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 

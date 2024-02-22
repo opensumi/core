@@ -1,35 +1,35 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  Event,
-  formatLocalize,
-  IProblemMatcherRegistry,
   Disposable,
-  ProblemMatcher,
-  isString,
   Emitter,
+  Event,
+  IProblemMatcherRegistry,
+  ProblemMatcher,
+  formatLocalize,
+  isString,
   objects,
   path,
 } from '@opensumi/ide-core-common';
-import { ITerminalClient, IShellLaunchConfig } from '@opensumi/ide-terminal-next/lib/common';
+import { IShellLaunchConfig, ITerminalClient } from '@opensumi/ide-terminal-next/lib/common';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {
-  ITaskSystem,
-  ITaskExecuteResult,
-  TaskExecuteKind,
   IActivateTaskExecutorData,
+  ITaskExecuteResult,
+  ITaskSystem,
+  TaskExecuteKind,
   TaskTerminateResponse,
 } from '../common';
 import {
-  Task,
-  ContributedTask,
-  CommandString,
   CommandConfiguration,
+  CommandString,
+  ContributedTask,
+  CustomTask,
+  RuntimeType,
+  Task,
   TaskEvent,
   TaskEventKind,
-  RuntimeType,
 } from '../common/task';
-import { CustomTask } from '../common/task';
 
 import { ProblemCollector } from './problem-collector';
 import { TaskStatus, TerminalTaskExecutor } from './task-executor';

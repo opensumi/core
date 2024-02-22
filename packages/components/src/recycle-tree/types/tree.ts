@@ -2,7 +2,7 @@ import { MaybePromise } from '@opensumi/ide-utils';
 
 import { CompositeTreeNode } from '../tree/TreeNode';
 
-import { ITreeNodeOrCompositeTreeNode, ICompositeTreeNode } from './tree-node';
+import { ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
 
 export interface ITree {
   // 加载子节点函数

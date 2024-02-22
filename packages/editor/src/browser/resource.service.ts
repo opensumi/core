@@ -1,19 +1,19 @@
 import { observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, IDisposable, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
-import { Disposable, arrays, LRUMap, ILogger, Emitter } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IDisposable, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, ILogger, LRUMap, arrays } from '@opensumi/ide-core-common';
 
 import {
-  ResourceService,
-  IResource,
-  IResourceProvider,
-  ResourceNeedUpdateEvent,
-  ResourceDidUpdateEvent,
-  IResourceDecoration,
-  ResourceDecorationNeedChangeEvent,
-  ResourceDecorationChangeEvent,
   AskSaveResult,
+  IResource,
+  IResourceDecoration,
+  IResourceProvider,
+  ResourceDecorationChangeEvent,
+  ResourceDecorationNeedChangeEvent,
+  ResourceDidUpdateEvent,
+  ResourceNeedUpdateEvent,
+  ResourceService,
 } from '../common';
 
 const { addElement } = arrays;

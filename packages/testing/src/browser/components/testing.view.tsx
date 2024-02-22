@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { AppConfig, localize, useInjectable, ViewContextKeyRegistry } from '@opensumi/ide-core-browser';
+import { AppConfig, ViewContextKeyRegistry, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';

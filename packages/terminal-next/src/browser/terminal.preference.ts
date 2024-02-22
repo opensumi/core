@@ -1,16 +1,16 @@
 import pickBy from 'lodash/pickBy';
 import { ITerminalOptions } from 'xterm';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import {
-  ITerminalPreference,
+  CodeTerminalSettingId,
   IPreferenceValue,
+  ITerminalPreference,
   SupportedOptions,
   SupportedOptionsName,
-  CodeTerminalSettingId,
 } from '../common/preference';
 
 @Injectable()

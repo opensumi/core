@@ -1,5 +1,5 @@
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
-import { ClientCommonModule, BrowserModule } from '@opensumi/ide-core-browser';
+import { BrowserModule, ClientCommonModule } from '@opensumi/ide-core-browser';
 import { ConstructorOf } from '@opensumi/ide-core-common';
 import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
 import { EditorModule } from '@opensumi/ide-editor/lib/browser';

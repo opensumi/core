@@ -1,31 +1,31 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
+  ClientAppContribution,
+  Command,
   CommandContribution,
   CommandRegistry,
-  Command,
-  localize,
-  PreferenceService,
-  replaceLocalizePlaceholder,
-  PreferenceScope,
-  QuickOpenService,
-  QuickOpenOptions,
-  QuickOpenItem,
-  Mode,
-  ClientAppContribution,
+  Domain,
   GeneralSettingsId,
+  Mode,
+  PreferenceScope,
+  PreferenceService,
+  QuickOpenItem,
+  QuickOpenOptions,
+  QuickOpenService,
+  localize,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import {
-  IThemeService,
-  IIconService,
-  BuiltinThemeComparator,
-  getThemeTypeName,
   BuiltinTheme,
+  BuiltinThemeComparator,
   DEFAULT_THEME_ID,
+  IIconService,
+  IThemeService,
   IconThemeInfo,
   ThemeInfo,
+  getThemeTypeName,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 

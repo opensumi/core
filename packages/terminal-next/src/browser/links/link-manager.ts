@@ -1,20 +1,20 @@
-import { Terminal, ILinkProvider, IViewportRange } from 'xterm';
+import { ILinkProvider, IViewportRange, Terminal } from 'xterm';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IOpenerService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
-  URI,
   Disposable,
-  IDisposable,
   DisposableCollection,
-  isOSX,
   FileUri,
+  IDisposable,
+  OperatingSystem,
+  Schemes,
+  URI,
+  isMacintosh,
+  isOSX,
+  isWindows,
   localize,
   path,
-  OperatingSystem,
-  isWindows,
-  isMacintosh,
-  Schemes,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -29,12 +29,12 @@ import { TerminalProtocolLinkProvider } from './protocol-link-provider';
 import {
   TerminalValidatedLocalLinkProvider,
   lineAndColumnClause,
+  lineAndColumnClauseGroupCount,
+  unixLineAndColumnMatchIndex,
   unixLocalLinkClause,
-  winLocalLinkClause,
   winDrivePrefix,
   winLineAndColumnMatchIndex,
-  unixLineAndColumnMatchIndex,
-  lineAndColumnClauseGroupCount,
+  winLocalLinkClause,
 } from './validated-local-link-provider';
 
 const { posix, win32 } = path;

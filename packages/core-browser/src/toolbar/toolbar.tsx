@@ -3,26 +3,26 @@ import throttle from 'lodash/throttle';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { IEventBus, Disposable, Emitter } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, IEventBus } from '@opensumi/ide-core-common';
 
 import { DomListener } from '../dom';
-import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
+import { AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '../menu/next';
 import { PreferenceService } from '../preferences';
 import { useInjectable } from '../react-hooks';
-import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers/config-provider';
+import { AppConfig, ConfigContext, ConfigProvider } from '../react-providers/config-provider';
 import { getIcon } from '../style/icon/icon';
 
 import {
+  ISize,
+  IToolbarAction,
+  IToolbarActionElementProps,
+  IToolbarLocationPreference,
+  IToolbarLocationProps,
   IToolbarRegistry,
   ToolbarActionGroupsChangedEvent,
-  IToolbarAction,
-  ISize,
   ToolbarActionsChangedEvent,
-  IToolbarLocationProps,
-  IToolbarLocationPreference,
-  IToolbarActionElementProps,
-  ToolbarRegistryReadyEvent,
   ToolbarActionsWhenChangeEvent,
+  ToolbarRegistryReadyEvent,
 } from './types';
 
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;

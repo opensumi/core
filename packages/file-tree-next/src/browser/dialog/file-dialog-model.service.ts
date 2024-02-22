@@ -1,17 +1,17 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  DecorationsManager,
   Decoration,
+  DecorationsManager,
   IRecycleTreeHandle,
-  TreeNodeType,
   PromptValidateMessage,
-  TreeNodeEvent,
   Tree,
+  TreeNodeEvent,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { URI, DisposableCollection, Emitter, CorePreferences, Event } from '@opensumi/ide-core-browser';
+import { CorePreferences, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 
-import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
+import { IFileDialogModel, IFileDialogTreeService, PasteTypes } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeModel } from '../file-tree-model';
 import styles from '../file-tree-node.module.less';

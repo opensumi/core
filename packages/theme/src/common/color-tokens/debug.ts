@@ -1,6 +1,6 @@
 import { registerColor } from '../utils';
 
-import { foreground, errorForeground } from './base';
+import { errorForeground, foreground } from './base';
 import { editorInfoForeground, editorWarningForeground } from './editor';
 
 export const debugTokenExpressionName = registerColor(

@@ -1,10 +1,10 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@opensumi/ide-core-browser';
-import { URI, arrays, Disposable, IExtensionInfo } from '@opensumi/ide-core-common';
+import { CommandRegistry, IContextKeyService, IDisposable, ILogger } from '@opensumi/ide-core-browser';
+import { Disposable, IExtensionInfo, URI, arrays } from '@opensumi/ide-core-common';
 import { ICommandServiceToken, IMonacoCommandService } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 
-import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
+import { ArgumentProcessor, ExtHostAPIIdentifier, IExtHostCommands, IMainThreadCommands } from '../../../common/vscode';
 
 const { isNonEmptyArray } = arrays;
 

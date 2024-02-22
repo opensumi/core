@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Schemes, CommandService } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { CommandService, Schemes, URI } from '@opensumi/ide-core-common';
 
 import { IOpener } from '.';
 

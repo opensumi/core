@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
-  ComponentRenderer,
+  AppConfig,
   ComponentRegistry,
+  ComponentRenderer,
+  IClientApp,
   SlotLocation,
   useInjectable,
-  AppConfig,
-  IClientApp,
 } from '@opensumi/ide-core-browser';
 
 import { CtxMenu } from './ctx-menu/ctx-menu.view';

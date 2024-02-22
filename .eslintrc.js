@@ -15,8 +15,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     // 后续可开启eslint-plugin-import的推荐规则
-    // 'plugin:eslint-plugin-import/recommended',
-    // 'plugin:eslint-plugin-import/typescript',
+    'plugin:eslint-plugin-import/recommended',
+    'plugin:eslint-plugin-import/typescript',
     'prettier',
   ],
   settings: {
@@ -158,7 +158,7 @@ module.exports = {
     'import/order': [
       'error',
       {
-        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'unknown'],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type', 'unknown'],
         alphabetize: {
           order: 'asc',
           caseInsensitive: true,

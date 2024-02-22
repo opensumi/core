@@ -1,30 +1,29 @@
 import debounce from 'lodash/debounce';
 
-import { Injector, Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import { DomListener, IContextKeyService, IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
+  AbstractMenuService,
   ICtxMenuRenderer,
-  generateMergedCtxMenu,
   IMenu,
   MenuId,
-  AbstractMenuService,
+  generateMergedCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, URI, isOSX, memoize, uuid } from '@opensumi/ide-core-common';
 import { IThemeService, debugIconBreakpointForeground } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  IDebugModel,
   DEBUG_REPORT_NAME,
-  ShowDebugHoverOptions,
-  TSourceBrekpointProperties,
   DebugBreakpointWidgetContext,
   IDebugBreakpoint,
+  IDebugModel,
+  ShowDebugHoverOptions,
+  TSourceBrekpointProperties,
 } from '../../common';
 import { DebugEditor } from '../../common/debug-editor';
 import { IDebugSessionManager } from '../../common/debug-session';
-import { BreakpointManager } from '../breakpoint';
-import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
+import { BreakpointManager, DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';

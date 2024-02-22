@@ -3,10 +3,10 @@ import React from 'react';
 import {
   BasicEvent,
   CancellationToken,
-  IEventBus,
-  useInjectable,
   CancellationTokenSource,
   Disposable,
+  IEventBus,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 
 import { ExtensionService } from '../../common';

@@ -1,25 +1,25 @@
 import fuzzy from 'fuzzy';
 import React, { useEffect, useMemo, useRef } from 'react';
-import { FixedSizeList, VariableSizeList, ListProps } from 'react-window';
+import { FixedSizeList, ListProps, VariableSizeList } from 'react-window';
 
 import {
+  CancellationToken,
+  CancellationTokenSource,
+  Disposable,
   DisposableCollection,
   Emitter,
   Event,
-  Disposable,
-  CancellationTokenSource,
-  CancellationToken,
   Throttler,
 } from '@opensumi/ide-utils';
 
 import { ScrollbarsVirtualList } from '../scrollbars';
 
-import { RenamePromptHandle, PromptHandle } from './prompt';
+import { PromptHandle, RenamePromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
-import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
+import { CompositeTreeNode, TreeNode, spliceArray } from './tree';
 import { TreeModel } from './tree/model/TreeModel';
-import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
-import { TreeNodeType, TreeNodeEvent, ICompositeTreeNode } from './types';
+import { INodeRenderer, INodeRendererProps, NodeRendererWrap } from './TreeNodeRendererWrap';
+import { ICompositeTreeNode, TreeNodeEvent, TreeNodeType } from './types';
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 

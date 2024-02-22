@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, Event, Disposable } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 
 import {
-  ITerminalErrorService,
-  ITerminalNetwork,
-  ITerminalInternalService,
   ITerminalController,
-  ITerminalReconnectInfo,
   ITerminalError,
+  ITerminalErrorService,
+  ITerminalInternalService,
+  ITerminalNetwork,
+  ITerminalReconnectInfo,
   TerminalNetworkStatus,
 } from '../common';
 

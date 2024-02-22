@@ -1,41 +1,41 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  DecorationsManager,
   Decoration,
-  TreeNodeType,
-  RenamePromptHandle,
-  NewPromptHandle,
-  PromptValidateMessage,
-  PROMPT_VALIDATE_TYPE,
-  TreeNodeEvent,
-  TreeModel,
+  DecorationsManager,
   IRecycleTreeFilterHandle,
+  NewPromptHandle,
+  PROMPT_VALIDATE_TYPE,
+  PromptValidateMessage,
+  RenamePromptHandle,
+  TreeModel,
+  TreeNodeEvent,
+  TreeNodeType,
 } from '@opensumi/ide-components';
 import { ISerializableState, TreeStateWatcher } from '@opensumi/ide-components/lib/recycle-tree/tree/model/treeState';
 import {
+  CommandService,
   CorePreferences,
-  IContextKey,
-  URI,
-  strings,
-  localize,
-  arrays,
-  formatLocalize,
+  Deferred,
   DisposableCollection,
-  StorageProvider,
-  STORAGE_NAMESPACE,
-  IStorage,
+  Emitter,
   Event,
+  FILE_COMMANDS,
+  IClipboardService,
+  IContextKey,
+  IStorage,
+  STORAGE_NAMESPACE,
+  StorageProvider,
   ThrottledDelayer,
   Throttler,
-  Emitter,
-  Deferred,
-  CommandService,
-  FILE_COMMANDS,
+  URI,
+  arrays,
+  formatLocalize,
+  localize,
   path,
-  IClipboardService,
+  strings,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';

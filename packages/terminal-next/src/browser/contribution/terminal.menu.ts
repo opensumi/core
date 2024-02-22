@@ -1,22 +1,22 @@
 import { Autowired } from '@opensumi/di';
 import {
-  localize,
-  PreferenceService,
-  IPreferenceSettingsService,
-  getSlotLocation,
   AppConfig,
-  getTabbarCtxKey,
+  IPreferenceSettingsService,
+  PreferenceService,
   TERMINAL_COMMANDS,
+  getSlotLocation,
+  getTabbarCtxKey,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import {
-  MenuContribution,
-  IMenuRegistry,
-  getTabbarCommonMenuId,
   MenuId as CoreMenuId,
+  IMenuRegistry,
+  MenuContribution,
   MenuId,
+  getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
+import { CommandService, Domain, isWindows } from '@opensumi/ide-core-common';
 
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService } from '../../common';
 

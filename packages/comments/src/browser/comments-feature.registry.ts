@@ -2,13 +2,13 @@ import { Injectable } from '@opensumi/di';
 
 import {
   CommentsPanelOptions,
-  ICommentsFeatureRegistry,
-  PanelTreeNodeHandler,
   FileUploadHandler,
-  MentionsOptions,
-  ZoneWidgerRender,
-  ICommentsConfig,
   ICommentProviderFeature,
+  ICommentsConfig,
+  ICommentsFeatureRegistry,
+  MentionsOptions,
+  PanelTreeNodeHandler,
+  ZoneWidgerRender,
 } from '../common';
 
 @Injectable()

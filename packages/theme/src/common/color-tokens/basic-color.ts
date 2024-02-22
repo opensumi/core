@@ -1,4 +1,4 @@
-import { RGBA, Color } from '../color';
+import { Color, RGBA } from '../color';
 import { transparent } from '../utils';
 
 export const foregroundColor = Color.white;

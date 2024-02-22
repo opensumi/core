@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
-import { Event, Emitter, Uri, BinaryBuffer, FileSystemProviderCapabilities } from '@opensumi/ide-core-browser';
+import { BinaryBuffer, Emitter, Event, FileSystemProviderCapabilities, Uri } from '@opensumi/ide-core-browser';
 
-import { FileChangeEvent, FileStat, FileType, FileSystemProvider } from '../common';
+import { FileChangeEvent, FileStat, FileSystemProvider, FileType } from '../common';
 
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {

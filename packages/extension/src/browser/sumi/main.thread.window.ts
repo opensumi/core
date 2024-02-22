@@ -1,17 +1,16 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable } from '@opensumi/ide-core-browser';
 import { IPlainWebviewWindow, IWebviewService } from '@opensumi/ide-webview';
 
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import {
-  IMainThreadIDEWindow,
-  IIDEWindowWebviewOptions,
-  IIDEWindowWebviewEnv,
   IExtHostIDEWindow,
+  IIDEWindowWebviewEnv,
+  IIDEWindowWebviewOptions,
+  IMainThreadIDEWindow,
   IWindowInfo,
 } from '../../common/sumi/window';
-
 
 // 与 MainThreadWindow 做一下区分，用于拓展 sumi 下的ideWindow API
 @Injectable({ multiple: true })

@@ -1,19 +1,19 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { INodeLogger, OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-node';
+import { INodeLogger, OperatingSystem, isMacintosh, isWindows } from '@opensumi/ide-core-node';
 
 import {
+  INodePtyInstance,
   IShellLaunchConfig,
+  ITerminalError,
   ITerminalNodeService,
   ITerminalServiceClient,
-  INodePtyInstance,
-  ITerminalError,
 } from '../common';
 import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
 import { IPtyProcessProxy } from '../common/pty';
-import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
+import { WINDOWS_DEFAULT_SHELL_PATH_MAPS, WindowsShellType } from '../common/shell';
 
-import { findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { WINDOWS_GIT_BASH_PATHS, findShellExecutableAsync, getSystemShell } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 
 /**

@@ -5,12 +5,12 @@ import React, { useEffect } from 'react';
 import { Badge, Icon } from '@opensumi/ide-components';
 import {
   ComponentRegistryInfo,
-  useInjectable,
-  KeybindingRegistry,
-  usePreference,
   ComponentRegistryProvider,
+  KeybindingRegistry,
+  getIcon,
+  useInjectable,
+  usePreference,
 } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';

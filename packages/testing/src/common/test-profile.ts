@@ -1,6 +1,6 @@
 import { ITestController, TestId } from '../index';
 
-import { InternalTestItem, ITestRunProfile, TestRunProfileBitset } from './testCollection';
+import { ITestRunProfile, InternalTestItem, TestRunProfileBitset } from './testCollection';
 
 export const sorter = (a: ITestRunProfile, b: ITestRunProfile) => {
   if (a.isDefault !== b.isDefault) {

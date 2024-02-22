@@ -1,4 +1,4 @@
-import { IDisposable, IJSONSchema, IJSONSchemaSnippet, Event, BinaryBuffer } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Event, IDisposable, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
 
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';

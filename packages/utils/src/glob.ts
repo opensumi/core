@@ -9,7 +9,7 @@
 
 import { CharCode } from './charCode';
 import { LRUCache } from './map';
-import { Path, basename as getBaseName, extname } from './path';
+import { Path, extname, basename as getBaseName } from './path';
 import * as strings from './strings';
 
 export interface IExpression {

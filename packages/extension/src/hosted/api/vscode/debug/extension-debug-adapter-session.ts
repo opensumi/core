@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
-import { DebugStreamConnection, DebugConfiguration } from '@opensumi/ide-debug';
+import { DebugConfiguration, DebugStreamConnection } from '@opensumi/ide-debug';
 
 import { ExtensionConnection } from '../../../../common/vscode';
 
 import { StreamDebugAdapter } from './abstract-debug-adapter-session';
+
+import type vscode from 'vscode';
 
 export class ExtensionDebugAdapterSession extends StreamDebugAdapter implements vscode.DebugSession {
   readonly type: string;

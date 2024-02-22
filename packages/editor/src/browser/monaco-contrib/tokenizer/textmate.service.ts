@@ -1,26 +1,26 @@
-import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
+import { OnigScanner, OnigString, loadWASM } from 'vscode-oniguruma';
 import {
-  Registry,
-  IRawGrammar,
-  IOnigLib,
-  parseRawGrammar,
   IEmbeddedLanguagesMap,
-  ITokenTypeMap,
   INITIAL,
+  IOnigLib,
+  IRawGrammar,
+  ITokenTypeMap,
+  Registry,
+  parseRawGrammar,
 } from 'vscode-textmate';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  WithEventBus,
-  parseWithComments,
-  PreferenceService,
-  ILogger,
-  ExtensionActivateEvent,
-  getDebugLogger,
-  electronEnv,
   AppConfig,
+  ExtensionActivateEvent,
+  ILogger,
+  PreferenceService,
+  WithEventBus,
+  electronEnv,
+  getDebugLogger,
+  parseWithComments,
 } from '@opensumi/ide-core-browser';
-import { URI, Disposable, isObject } from '@opensumi/ide-core-common';
+import { Disposable, URI, isObject } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
   GrammarsContribution,
@@ -40,17 +40,19 @@ import {
 import {
   CommentRule,
   IIndentationRule,
+  IRegExp,
   IndentAction,
   IndentationRuleDto,
-  IRegExp,
   LanguageConfigurationDto,
   LanguagesContribution,
 } from '@opensumi/ide-monaco/lib/common';
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { asStringArray } from '@opensumi/ide-utils/lib/arrays';
-import { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
-import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import {
+  ILanguageExtensionPoint,
+  ILanguageService,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';

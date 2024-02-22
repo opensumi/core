@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Tabs } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
@@ -9,7 +9,7 @@ import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { localize } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
-import { IVSXExtensionService, TabActiveKey, VSXExtension, VSXExtensionServiceToken, InstallState } from '../common';
+import { IVSXExtensionService, InstallState, TabActiveKey, VSXExtension, VSXExtensionServiceToken } from '../common';
 
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID } from './const';
 import { Extension, ExtensionViewType } from './extension';

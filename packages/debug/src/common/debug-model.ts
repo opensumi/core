@@ -1,27 +1,25 @@
 import stream from 'stream';
 
 import {
-  IDisposable,
-  MaybePromise,
-  IJSONSchema,
-  IJSONSchemaSnippet,
-  URI,
+  BinaryBuffer,
   Disposable,
   Emitter,
-  BinaryBuffer,
+  Event,
+  IDisposable,
+  IJSONSchema,
+  IJSONSchemaSnippet,
+  MaybePromise,
+  URI,
   decodeBase64,
   encodeBase64,
-  Event,
 } from '@opensumi/ide-core-common';
 // eslint-disable-next-line import/no-restricted-paths
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import type { editor } from '@opensumi/monaco-editor-core';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
+  DebugBreakpointWidgetContext,
   IRuntimeBreakpoint,
   ISourceBreakpoint,
-  DebugBreakpointWidgetContext,
   TSourceBrekpointProperties,
 } from './debug-breakpoint';
 import { DebugConfiguration } from './debug-configuration';
@@ -30,9 +28,7 @@ import { IDebugHoverWidget } from './debug-hover';
 import { IMemoryInvalidationEvent, IMemoryRegion, MemoryRange, MemoryRangeType } from './debug-service';
 import { IDebugSession } from './debug-session';
 
-export interface IDebugBreakpointWidget extends IDisposable {
-  position: monaco.Position | undefined;
-}
+import type { editor } from '@opensumi/monaco-editor-core';
 
 export interface IDebugBreakpointWidget extends IDisposable {
   position: monaco.Position | undefined;
@@ -266,7 +262,7 @@ export interface IDebugModelManager {
     uri: URI,
     type: DebugModelSupportedEventType,
     event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent,
-    monacoEditor: IMonacoCodeEditor,
+    monacoEditor: any,
   ): void;
   onModelChanged: Event<monaco.editor.IModelChangedEvent>;
 }

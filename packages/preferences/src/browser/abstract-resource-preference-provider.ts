@@ -1,26 +1,24 @@
 import * as jsoncparser from 'jsonc-parser';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  JSONUtils,
-  URI,
+  AppConfig,
   Disposable,
-  isUndefined,
-  PreferenceProviderDataChanges,
+  FileChange,
   ILogger,
   IResolvedPreferences,
-  Throttler,
-  FileChange,
-  Schemes,
-  AppConfig,
-  VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME,
-} from '@opensumi/ide-core-browser';
-import {
+  JSONUtils,
+  PreferenceConfigurations,
   PreferenceProvider,
+  PreferenceProviderDataChange,
+  PreferenceProviderDataChanges,
   PreferenceSchemaProvider,
   PreferenceScope,
-  PreferenceProviderDataChange,
-  PreferenceConfigurations,
+  Schemes,
+  Throttler,
+  URI,
+  VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME,
+  isUndefined,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 

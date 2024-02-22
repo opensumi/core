@@ -1,9 +1,9 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { AppConfig, Deferred, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable, toDisposable, path } from '@opensumi/ide-core-common';
+import { Disposable, IDisposable, path, toDisposable } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';

@@ -3,50 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostLanguageFeatures.ts
-
-import vscode from 'vscode';
-import {
-  DocumentSelector,
-  HoverProvider,
+import vscode, {
+  CallHierarchyProvider,
   CancellationToken,
-  DocumentHighlightProvider,
-  DocumentFilter,
-  CompletionItemProvider,
-  DefinitionProvider,
-  TypeDefinitionProvider,
-  FoldingRangeProvider,
-  FoldingContext,
-  DocumentColorProvider,
-  DocumentRangeFormattingEditProvider,
-  OnTypeFormattingEditProvider,
-  CodeLensProvider,
   CodeActionProvider,
   CodeActionProviderMetadata,
-  ImplementationProvider,
+  CodeLensProvider,
+  CompletionItemProvider,
   DeclarationProvider,
+  DefinitionProvider,
   Diagnostic,
-  DiagnosticCollection,
-  DocumentLinkProvider,
-  ReferenceProvider,
-  TextDocument,
-  LanguageConfiguration,
-  DocumentSymbolProvider,
-  WorkspaceSymbolProvider,
-  SignatureHelpProvider,
-  RenameProvider,
-  SignatureHelpProviderMetadata,
-  Event,
   DiagnosticChangeEvent,
-  SelectionRangeProvider,
+  DiagnosticCollection,
+  DocumentColorProvider,
+  DocumentFilter,
   DocumentFormattingEditProvider,
-  CallHierarchyProvider,
-  TypeHierarchyProvider,
-  DocumentSemanticTokensProvider,
-  SemanticTokensLegend,
+  DocumentHighlightProvider,
+  DocumentLinkProvider,
+  DocumentRangeFormattingEditProvider,
   DocumentRangeSemanticTokensProvider,
+  DocumentSelector,
+  DocumentSemanticTokensProvider,
+  DocumentSymbolProvider,
   EvaluatableExpressionProvider,
+  Event,
+  FoldingContext,
+  FoldingRangeProvider,
+  HoverProvider,
+  ImplementationProvider,
   InlineValuesProvider,
+  LanguageConfiguration,
   LinkedEditingRangeProvider,
+  OnTypeFormattingEditProvider,
+  ReferenceProvider,
+  RenameProvider,
+  SelectionRangeProvider,
+  SemanticTokensLegend,
+  SignatureHelpProvider,
+  SignatureHelpProviderMetadata,
+  TextDocument,
+  TypeDefinitionProvider,
+  TypeHierarchyProvider,
+  WorkspaceSymbolProvider,
+  // eslint-disable-next-line import/no-unresolved
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
@@ -54,69 +53,68 @@ import { ConstructorOf } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   DisposableStore,
-  disposableTimeout,
   IDisposable,
   IExtensionLogger,
   Severity,
   Uri,
   UriComponents,
+  disposableTimeout,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
-  IMainThreadLanguages,
-  MainThreadAPIIdentifier,
   ExtensionDocumentDataManager,
-  IExtHostLanguages,
-  ISuggestDataDto,
-  IExtensionDescription,
   ICodeActionListDto,
-  IInlineValueContextDto,
-  ILinkedEditingRangesDto,
+  IExtHostLanguages,
+  IExtensionDescription,
   IInlayHintDto,
   IInlayHintsDto,
-  InlineCompletionContext,
+  IInlineValueContextDto,
+  ILinkedEditingRangesDto,
+  IMainThreadLanguages,
+  ISuggestDataDto,
   IdentifiableInlineCompletions,
+  InlineCompletionContext,
+  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import * as typeConvert from '../../../common/vscode/converter';
 import { CancellationError, Disposable, LanguageStatusSeverity } from '../../../common/vscode/ext-types';
 import {
-  SerializedDocumentFilter,
-  Hover,
-  Position,
-  Range,
-  Selection,
+  ChainedCacheId,
+  CodeLens,
+  ColorPresentation,
   CompletionContext,
   Definition,
   DefinitionLink,
-  FoldingRange,
-  RawColorInfo,
-  ColorPresentation,
   DocumentHighlight,
-  FormattingOptions,
-  SingleEditOperation,
-  CodeLens,
-  ReferenceContext,
-  Location,
-  SerializedLanguageConfiguration,
-  ILink,
   DocumentSymbol,
-  WorkspaceEditDto,
-  RenameLocation,
-  ISerializedSignatureHelpProviderMetadata,
-  SignatureHelpContextDto,
-  SelectionRange,
+  FoldingRange,
+  FormattingOptions,
+  Hover,
   ICallHierarchyItemDto,
-  IIncomingCallDto,
-  IOutgoingCallDto,
-  WithDuration,
-  ChainedCacheId,
   ICodeLensListDto,
-  ISignatureHelpDto,
+  IIncomingCallDto,
+  ILink,
   ILinksListDto,
+  IOutgoingCallDto,
+  ISerializedSignatureHelpProviderMetadata,
+  ISignatureHelpDto,
+  Location,
+  Position,
+  Range,
+  RawColorInfo,
+  ReferenceContext,
+  RenameLocation,
+  Selection,
+  SelectionRange,
+  SerializedDocumentFilter,
+  SerializedLanguageConfiguration,
+  SignatureHelpContextDto,
+  SingleEditOperation,
+  WithDuration,
+  WorkspaceEditDto,
 } from '../../../common/vscode/model.api';
-import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../../common/vscode/utils';
+import { serializeEnterRules, serializeIndentation, serializeRegExp } from '../../../common/vscode/utils';
 
 import { ExtHostCommands } from './ext.host.command';
 import { CallHierarchyAdapter } from './language/callhierarchy';
@@ -139,7 +137,7 @@ import { LinkProviderAdapter } from './language/link-provider';
 import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
 import { OnTypeFormattingAdapter } from './language/on-type-formatting';
 import { OutlineAdapter } from './language/outline';
-import { RangeFormattingAdapter, FormattingAdapter } from './language/range-formatting';
+import { FormattingAdapter, RangeFormattingAdapter } from './language/range-formatting';
 import { ReferenceAdapter } from './language/reference';
 import { RenameAdapter } from './language/rename';
 import { SelectionRangeAdapter } from './language/selection';
@@ -149,6 +147,8 @@ import { TypeDefinitionAdapter } from './language/type-definition';
 import { TypeHierarchyAdapter } from './language/type-hierarchy';
 import { getDurationTimer, score } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
+
+import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export function createLanguagesApiFactory(
   extHostLanguages: ExtHostLanguages,

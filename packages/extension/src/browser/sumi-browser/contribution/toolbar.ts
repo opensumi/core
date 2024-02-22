@@ -1,10 +1,10 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Disposable, IDisposable, ILogger } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 import { IToolBarViewService, ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 
-import { IRunTimeParams, AbstractSumiBrowserContributionRunner } from '../types';
+import { AbstractSumiBrowserContributionRunner, IRunTimeParams } from '../types';
 
 @Injectable({ multiple: true })
 export class ToolBarBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {

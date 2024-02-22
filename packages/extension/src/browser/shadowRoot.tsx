@@ -1,12 +1,11 @@
 import cls from 'classnames';
-import React, { useCallback } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { ComponentContextProvider, IconContext, IIconResourceOptions } from '@opensumi/ide-components';
+import { ComponentContextProvider, IIconResourceOptions, IconContext } from '@opensumi/ide-components';
 import { DisposableCollection, LabelService, TComponentCDNType, useInjectable } from '@opensumi/ide-core-browser';
-import { ExtensionBrowserStyleSheet, localize, URI } from '@opensumi/ide-core-common';
-import { getThemeTypeSelector, IIconService, IThemeService, ThemeType } from '@opensumi/ide-theme';
+import { ExtensionBrowserStyleSheet, URI, localize } from '@opensumi/ide-core-common';
+import { IIconService, IThemeService, ThemeType, getThemeTypeSelector } from '@opensumi/ide-theme';
 
 import { IExtension } from '../common';
 import { AbstractViewExtProcessService } from '../common/extension.service';

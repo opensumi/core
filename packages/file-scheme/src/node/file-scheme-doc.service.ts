@@ -1,23 +1,23 @@
 import { existsSync, readFile, statSync, writeFile } from 'fs-extra';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import {
-  IEditorDocumentModelSaveResult,
-  URI,
-  IEditorDocumentChange,
   BasicTextLines,
-  isEditChange,
   CancellationToken,
-  SaveTaskResponseState,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
   SaveTaskErrorCause,
-  iconvEncode,
-  iconvDecode,
+  SaveTaskResponseState,
   Throttler,
+  URI,
+  iconvDecode,
+  iconvEncode,
+  isEditChange,
 } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
-import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
+import { IContentChange, IFileSchemeDocNodeService, ISavingContent } from '../common';
 
 @Injectable()
 export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {

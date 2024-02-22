@@ -5,7 +5,7 @@ import { View, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection, Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
-import { AccordionServiceFactory, AccordionService, SectionState } from './accordion.service';
+import { AccordionService, AccordionServiceFactory, SectionState } from './accordion.service';
 import { AccordionSection } from './section.view';
 
 interface AccordionContainerProps {

@@ -1,21 +1,21 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import React from 'react';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Disposable,
   IToolbarRegistry,
-  createToolbarActionBtn,
   ToolbarActionBtnClickEvent,
+  createToolbarActionBtn,
 } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
 
 import {
-  IToolBarViewService,
-  ToolBarPosition,
-  IToolBarElementHandle,
   IToolBarAction,
   IToolBarComponent,
+  IToolBarElementHandle,
+  IToolBarViewService,
+  ToolBarPosition,
 } from './types';
 
 const locationToString = {
