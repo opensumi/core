@@ -55,8 +55,12 @@ export class ApplicationService implements IApplicationService {
   }
 
   get clientId(): string {
-    const wsChannel = this.injector.get(WSChannelHandler);
-    return wsChannel.clientId;
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
+      return electronEnv.metadata.windowClientId;
+    } else {
+      const wsChannel = this.injector.get(WSChannelHandler);
+      return wsChannel.clientId;
+    }
   }
 
   get windowId(): string | number {

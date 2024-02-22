@@ -127,3 +127,7 @@ export function createNetSocketConnection(connectPath?: string): NetSocketConnec
   }
   return new NetSocketConnection(socket);
 }
+
+export function fromWindowClientId(suffix: string) {
+  return `${suffix}-${electronEnv.metadata.windowClientId}`;
+}
