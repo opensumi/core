@@ -369,81 +369,94 @@ export const Tabs = ({ group }: ITabsProps) => {
     [editorTabService],
   );
 
-  const renderTabContent = () => (
-    <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
-      {group.resources.map((resource, i) => {
-        let ref: HTMLDivElement | null;
-        const decoration = resourceService.getResourceDecoration(resource.uri);
-        return (
-          <div
-            draggable={true}
-            title={resource.title}
-            className={classnames({
-              [styles.kt_editor_tab]: true,
-              [styles.last_in_row]: tabMap.get(i),
-              [styles.kt_editor_tab_current]: group.currentResource === resource,
-              [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
-              [styles.kt_editor_tab_dirty]: decoration.dirty,
-            })}
-            style={
-              wrapMode && i === group.resources.length - 1
-                ? { marginRight: lastMarginRight, height: EDITOR_TABS_HEIGHT }
-                : { height: EDITOR_TABS_HEIGHT }
-            }
-            onContextMenu={(event) => {
-              tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
-              event.preventDefault();
-            }}
-            key={resource.uri.toString()}
-            onMouseUp={(e) => {
-              if (e.nativeEvent.which === 2) {
+  const renderTabContent = () => {
+    const curTabIndex = group.resources.findIndex((resource) => group.currentResource === resource);
+    return (
+      <div
+        className={classnames({
+          [styles.kt_editor_tabs_content]: true,
+          [styles.kt_editor_tabs_current_last]: curTabIndex === group.resources.length - 1,
+        })}
+        ref={contentRef as any}
+      >
+        {group.resources.map((resource, i) => {
+          let ref: HTMLDivElement | null;
+          const decoration = resourceService.getResourceDecoration(resource.uri);
+          return (
+            <div
+              draggable={true}
+              title={resource.title}
+              className={classnames({
+                [styles.kt_editor_tab]: true,
+                [styles.last_in_row]: tabMap.get(i),
+                [styles.kt_editor_tab_current_prev]: curTabIndex - 1 === i,
+                [styles.kt_editor_tab_current_next]: curTabIndex + 1 === i,
+                [styles.kt_editor_tab_current]: group.currentResource === resource,
+                [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
+                [styles.kt_editor_tab_dirty]: decoration.dirty,
+              })}
+              style={
+                wrapMode && i === group.resources.length - 1
+                  ? { marginRight: lastMarginRight, height: EDITOR_TABS_HEIGHT }
+                  : { height: EDITOR_TABS_HEIGHT }
+              }
+              onContextMenu={(event) => {
+                tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
+                event.preventDefault();
+              }}
+              key={resource.uri.toString()}
+              onMouseUp={(e) => {
+                if (e.nativeEvent.which === 2) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  group.close(resource.uri);
+                }
+              }}
+              onMouseDown={(e) => {
+                if (e.nativeEvent.which === 1) {
+                  group.open(resource.uri, { focus: true });
+                }
+              }}
+              data-uri={resource.uri.toString()}
+              onDragOver={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                group.close(resource.uri);
-              }
-            }}
-            onMouseDown={(e) => {
-              if (e.nativeEvent.which === 1) {
-                group.open(resource.uri, { focus: true });
-              }
-            }}
-            data-uri={resource.uri.toString()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (ref) {
-                ref.classList.add(styles.kt_on_drag_over);
-              }
-            }}
-            onDragLeave={(e) => {
-              if (ref) {
-                ref.classList.remove(styles.kt_on_drag_over);
-              }
-            }}
-            onDrop={(e) => {
-              if (ref) {
-                ref.classList.remove(styles.kt_on_drag_over);
-              }
-              if (onDrop) {
-                onDrop(e, i, resource);
-              }
-            }}
-            onDoubleClick={(e) => {
-              group.pinPreviewed(resource.uri);
-            }}
-            ref={(el) => (ref = el)}
-            onDragStart={(e) => {
-              e.dataTransfer.setData('uri', resource.uri.toString());
-              e.dataTransfer.setData('uri-source-group', group.name);
-            }}
-          >
-            {renderEditorTab(resource, group.currentResource === resource)}
-          </div>
-        );
-      })}
-      {wrapMode && <EditorActions className={styles.kt_editor_wrap_mode_action} ref={editorActionRef} group={group} />}
-    </div>
-  );
+                if (ref) {
+                  ref.classList.add(styles.kt_on_drag_over);
+                }
+              }}
+              onDragLeave={(e) => {
+                if (ref) {
+                  ref.classList.remove(styles.kt_on_drag_over);
+                }
+              }}
+              onDrop={(e) => {
+                if (ref) {
+                  ref.classList.remove(styles.kt_on_drag_over);
+                }
+                if (onDrop) {
+                  onDrop(e, i, resource);
+                }
+              }}
+              onDoubleClick={(e) => {
+                group.pinPreviewed(resource.uri);
+              }}
+              ref={(el) => (ref = el)}
+              onDragStart={(e) => {
+                e.dataTransfer.setData('uri', resource.uri.toString());
+                e.dataTransfer.setData('uri-source-group', group.name);
+              }}
+            >
+              {renderEditorTab(resource, group.currentResource === resource)}
+            </div>
+          );
+        })}
+        {wrapMode && (
+          <EditorActions className={styles.kt_editor_wrap_mode_action} ref={editorActionRef} group={group} />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div id={VIEW_CONTAINERS.EDITOR_TABS} className={styles.kt_editor_tabs}>

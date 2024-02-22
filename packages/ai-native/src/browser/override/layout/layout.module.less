@@ -36,7 +36,6 @@
         padding: 0;
         min-width: initial;
         align-items: center;
-        background-color: transparent;
 
         // 第一个元素分割线隐藏
         &:first-child {
@@ -86,8 +85,19 @@
         }
       }
 
-      div[class*='kt_editor_tab_current___'] + div {
+      div[class*='kt_editor_tab_current_prev___'] {
+        background-color: var(--panel-background);
         div[class*='ai_editor_tab_block_container___'] {
+          border-radius: 0 0 12px 0;
+          background-color: var(--editorGroupHeader-tabsBackground);
+        }
+      }
+
+      div[class*='kt_editor_tab_current_next___'] {
+        background-color: var(--panel-background);
+        div[class*='ai_editor_tab_block_container___'] {
+          background-color: var(--editorGroupHeader-tabsBackground);
+          border-radius: 0 0 0 12px;
           &::before {
             content: none;
           }
@@ -102,6 +112,32 @@
           div[class*='close_tab___'] {
             display: block;
           }
+        }
+      }
+    }
+
+    // 最后一个元素选中时增加圆角
+    div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_current_last___'] {
+      div[class*='kt_editor_tab_current___'] {
+        padding-right: 12px !important;
+        &::before {
+          content: '';
+          position: absolute;
+          left: auto;
+          right: 0;
+          width: 12px;
+          height: 100%;
+          background-color: var(--editorGroupHeader-tabsBackground);
+          border-radius: 0 0 0 12px;
+        }
+        &::after {
+          content: '';
+          position: absolute;
+          left: auto;
+          right: 0;
+          width: 12px;
+          height: 100%;
+          background-color: var(--panel-background);
         }
       }
     }
