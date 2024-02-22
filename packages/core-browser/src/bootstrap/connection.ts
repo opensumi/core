@@ -14,6 +14,7 @@ import {
   getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 import { ClientAppStateService } from '../application';
 
@@ -26,7 +27,7 @@ export async function createConnectionService(
   modules: ModuleConstructor[],
   onReconnect: () => void,
   connection: ReconnectingWebSocketConnection | NetSocketConnection,
-  clientId?: string,
+  clientId: string,
 ) {
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
@@ -76,7 +77,7 @@ export async function createConnectionService(
   bindConnectionService(injector, modules, channel);
 }
 
-export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
+export function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
 
   const dispose = clientCenter.setSumiConnection(channel.createSumiConnection());
@@ -86,6 +87,29 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     toDispose.dispose();
   });
 
+  initConnectionService(injector, modules, clientCenter);
+}
+
+/**
+ * @deprecated Please use `bindConnectionService` instead
+ */
+export function bindConnectionServiceDeprecated(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  connection: MessageConnection,
+) {
+  const clientCenter = new RPCServiceCenter();
+  const dispose = clientCenter.setConnection(connection);
+
+  const toDispose = connection.onClose(() => {
+    dispose.dispose();
+    toDispose.dispose();
+  });
+
+  initConnectionService(injector, modules, clientCenter);
+}
+
+function initConnectionService(injector: Injector, modules: ModuleConstructor[], clientCenter: RPCServiceCenter) {
   const { getRPCService } = initRPCService(clientCenter);
 
   const backServiceArr: BackService[] = [];

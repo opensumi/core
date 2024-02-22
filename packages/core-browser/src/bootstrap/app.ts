@@ -6,7 +6,6 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
-import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
@@ -50,6 +49,8 @@ import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/ele
 import { ClientAppStateService } from '../application';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
+import { ElectronConnectionHelper, WebConnectionHelper } from '../connection/';
+import { CONNECTION_HELPER_TOKEN } from '../connection/base';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
 import { LayoutViewSizeConfig } from '../layout/constants';
@@ -68,13 +69,15 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_CODICONS_CN_CSS, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { createNetSocketConnection, electronEnv } from '../utils';
+import { electronEnv } from '../utils';
 
 import { IClientAppOpts, IPreferences, IconInfo, IconMap, LayoutConfig, ModuleConstructor } from './app.interface';
 import { IAppRenderer, renderClientApp } from './app.view';
-import { bindConnectionService, createConnectionService } from './connection';
+import { bindConnectionServiceDeprecated, createConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
+
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 // 添加resize observer polyfill
 if (typeof (window as any).ResizeObserver === 'undefined') {
@@ -210,15 +213,19 @@ export class ClientApp implements IClientApp, IDisposable {
   public async start(
     container: HTMLElement | IAppRenderer,
     type?: 'electron' | 'web',
-    channel?: WSChannel,
+    connection?: MessageConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
-    if (channel) {
-      await bindConnectionService(this.injector, this.modules, channel);
+    if (connection) {
+      // eslint-disable-next-line no-console
+      console.error("You're using deprecated method 'start()' with connection parameter");
+      // eslint-disable-next-line no-console
+      console.error('We introduced a new connection service to replace the old one');
+      bindConnectionServiceDeprecated(this.injector, this.modules, connection);
     } else if (type) {
       await this.createConnection(type);
     }
@@ -241,16 +248,36 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async createConnection(type: 'electron' | 'web') {
-    let connection: ReconnectingWebSocketConnection | NetSocketConnection;
-    let clientId: string | undefined = this.config.clientId;
-    if (type === 'electron') {
-      connection = createNetSocketConnection();
-      clientId = this.config.clientId ?? electronEnv.metadata.windowClientId;
-    } else if (type === 'web') {
-      connection = ReconnectingWebSocketConnection.forURL(this.connectionPath, this.connectionProtocols);
-    } else {
-      throw new Error(`Unknown connection type: ${type}`);
+    let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
+
+    switch (type) {
+      case 'electron':
+        connectionHelper = this.injector.get(ElectronConnectionHelper, [
+          {
+            clientId: this.config.clientId,
+          },
+        ]);
+        break;
+      case 'web':
+        connectionHelper = this.injector.get(WebConnectionHelper, [
+          {
+            clientId: this.config.clientId,
+            connectionPath: this.connectionPath,
+            connectionProtocols: this.connectionProtocols,
+          },
+        ]);
+        break;
+      default:
+        throw new Error(`Unknown backend type: ${type}`);
     }
+
+    this.injector.addProviders({
+      token: CONNECTION_HELPER_TOKEN,
+      useValue: connectionHelper,
+    });
+
+    const connection: ReconnectingWebSocketConnection | NetSocketConnection = connectionHelper.createConnection();
+    const clientId: string = this.config.clientId ?? connectionHelper.generateNewClientId();
 
     await createConnectionService(
       this.injector,
