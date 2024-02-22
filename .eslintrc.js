@@ -154,6 +154,8 @@ module.exports = {
     'no-control-regex': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'unused-imports/no-unused-imports': 'warn',
+    'import/export': 'off',
+    'import/namespace': 'off',
     'sort-imports': [
       'error',
       {
