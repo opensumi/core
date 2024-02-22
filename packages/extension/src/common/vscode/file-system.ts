@@ -1,5 +1,5 @@
-import { Uri, Uri as URI, Event, IDisposable, CancellationToken, es5ClassCompat } from '@opensumi/ide-core-common';
-import { FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-service';
+import { CancellationToken, Event, IDisposable, Uri as URI, Uri, es5ClassCompat } from '@opensumi/ide-core-common';
+import { FileChange, FileSystemProviderCapabilities } from '@opensumi/ide-file-service';
 import { FileOperation } from '@opensumi/ide-workspace-edit';
 
 import { Disposable } from './ext-types';

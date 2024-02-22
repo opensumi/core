@@ -1,25 +1,29 @@
 import { Injectable } from '@opensumi/di';
 import {
-  Uri,
-  Disposable,
-  Event,
-  Emitter,
   CancellationTokenSource,
-  localize,
-  isThenable,
+  Disposable,
+  Emitter,
+  Event,
   IDisposable,
-  toDisposable,
+  LinkedList,
+  TernarySearchTree,
+  Uri,
+  arrays,
   dispose,
+  getDebugLogger,
+  isPromiseCanceledError,
+  isThenable,
+  localize,
+  strings,
+  toDisposable,
 } from '@opensumi/ide-core-common';
-import { getDebugLogger, strings, arrays } from '@opensumi/ide-core-common';
-import { isPromiseCanceledError, LinkedList, TernarySearchTree } from '@opensumi/ide-core-common';
 
 import {
-  IDecorationsService,
   IDecoration,
-  IResourceDecorationChangeEvent,
-  IDecorationsProvider,
   IDecorationData,
+  IDecorationsProvider,
+  IDecorationsService,
+  IResourceDecorationChangeEvent,
 } from '../common/decorations';
 
 const { isFalsyOrWhitespace } = strings;

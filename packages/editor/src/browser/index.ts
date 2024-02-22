@@ -1,9 +1,9 @@
-import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Provider } from '@opensumi/di';
 import {
   BrowserModule,
-  Domain,
   ClientAppContribution,
   ContributionProvider,
+  Domain,
   PreferenceService,
   createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
@@ -16,20 +16,20 @@ import {
 import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 
-import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
+import { EditorCollectionService, ILanguageService, ResourceService, WorkbenchEditorService } from '../common';
 import { IDocPersistentCacheProvider } from '../common/doc-cache';
 
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
-import { CompareService, CompareEditorContribution } from './diff/compare';
+import { CompareEditorContribution, CompareService } from './diff/compare';
 import { EmptyDocCacheImpl } from './doc-cache';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from './doc-model/main';
 import { SaveParticipantsContribution } from './doc-model/saveParticipants';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { EditorElectronContribution } from './editor-electron.contribution';
-import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
+import { EditorAutoSaveEditorContribution, EditorContribution } from './editor.contribution';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
 import { EditorFeatureRegistryImpl } from './feature';
 import { FileSystemResourceContribution } from './fs-resource';
@@ -42,8 +42,8 @@ import { MergeEditorContribution } from './merge-editor/merge-editor.contributio
 import {
   CallHierarchyContribution,
   CallHierarchyService,
-  TypeHierarchyService,
   TypeHierarchyContribution,
+  TypeHierarchyService,
 } from './monaco-contrib';
 import {
   MonacoActionRegistry,
@@ -55,12 +55,12 @@ import { EditorPreferenceContribution } from './preference/contribution';
 import { EditorPreferences, editorPreferenceSchema } from './preference/schema';
 import { ResourceServiceImpl } from './resource.service';
 import {
-  EditorComponentRegistry,
   BrowserEditorContribution,
-  IEditorDecorationCollectionService,
-  IEditorActionRegistry,
-  ICompareService,
+  EditorComponentRegistry,
   IBreadCrumbService,
+  ICompareService,
+  IEditorActionRegistry,
+  IEditorDecorationCollectionService,
   IEditorFeatureRegistry,
   ILanguageStatusService,
 } from './types';

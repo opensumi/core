@@ -1,6 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, WithEventBus, OnEvent, URI, Event } from '@opensumi/ide-core-browser';
-import { IResource, IEditorGroup } from '@opensumi/ide-editor';
+import { Emitter, Event, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
+import { IEditorGroup, IResource } from '@opensumi/ide-editor';
 import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolChangedEvent } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';

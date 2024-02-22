@@ -1,16 +1,16 @@
-import type vscode from 'vscode';
-
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IOpenerService, IClipboardService, IExternalUriService, AppConfig } from '@opensumi/ide-core-browser';
+import { AppConfig, IClipboardService, IExternalUriService, IOpenerService } from '@opensumi/ide-core-browser';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
-import { getCodeLanguage, URI, firstSessionDateStorageKey, IApplicationService } from '@opensumi/ide-core-common';
+import { IApplicationService, URI, firstSessionDateStorageKey, getCodeLanguage } from '@opensumi/ide-core-common';
 import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 
-import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostEnv, IMainThreadEnv } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
 
 import { MainThreadStorage } from './main.thread.storage';
+
+import type vscode from 'vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadEnv implements IMainThreadEnv {

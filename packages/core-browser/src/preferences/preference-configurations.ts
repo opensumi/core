@@ -1,6 +1,10 @@
-import { Injectable, Autowired, Injector } from '@opensumi/di';
-import { URI, createContributionProvider } from '@opensumi/ide-core-common';
-import { ContributionProvider, DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME } from '@opensumi/ide-core-common';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
+import {
+  ContributionProvider,
+  DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME,
+  URI,
+  createContributionProvider,
+} from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers/config-provider';
 

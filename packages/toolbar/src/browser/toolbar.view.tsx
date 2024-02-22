@@ -3,7 +3,7 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { ToolbarLocation, Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, ToolbarLocation } from '@opensumi/ide-core-browser';
 
 import styles from './toolbar.module.less';
 

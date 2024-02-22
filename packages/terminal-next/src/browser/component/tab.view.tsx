@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Scrollbars } from '@opensumi/ide-components';
 import { KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';

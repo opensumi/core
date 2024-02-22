@@ -1,19 +1,18 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
-import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Event } from '@opensumi/ide-core-browser';
+import { ITreeNodeOrCompositeTreeNode, Tree } from '@opensumi/ide-components';
+import { Emitter, Event, PreferenceService } from '@opensumi/ide-core-browser';
 import { PreferenceScope } from '@opensumi/ide-core-common';
 
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
 
-import { SCMTreeAPI, ISCMTreeNodeDescription } from './scm-tree-api';
+import { ISCMTreeNodeDescription, SCMTreeAPI } from './scm-tree-api';
 import {
-  SCMResourceRoot,
-  SCMResourceGroup,
   SCMResourceFile,
   SCMResourceFolder,
-  SCMResourceNotFile,
+  SCMResourceGroup,
   SCMResourceItem,
+  SCMResourceNotFile,
+  SCMResourceRoot,
 } from './scm-tree-node';
 
 /**

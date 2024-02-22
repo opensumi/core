@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import { Icon } from '../../../icon';
 import { IInputBaseProps, Input } from '../../../input';
 import { LocalizeContext } from '../../../locale-context-provider';
-import { IRecycleTreeProps, IRecycleTreeHandle } from '../../RecycleTree';
+import { IRecycleTreeHandle, IRecycleTreeProps } from '../../RecycleTree';
 
 import './filter.less';
 

@@ -1,24 +1,24 @@
 import { Injector } from '@opensumi/di';
-import { SumiConnectionMultiplexer, ProxyIdentifier } from '@opensumi/ide-connection';
+import { ProxyIdentifier, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { MessagePortConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/message-port';
 import {
-  Emitter,
   Deferred,
+  Emitter,
   IExtensionProps,
-  Uri,
-  IReporterService,
-  ReporterService,
-  REPORT_HOST,
   IReporter,
+  IReporterService,
+  REPORT_HOST,
   REPORT_NAME,
+  ReporterService,
+  Uri,
 } from '@opensumi/ide-core-common';
 
-import { IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
+import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionWorkerHost } from '../common';
 import { ActivatedExtension, ActivatedExtensionJSON } from '../common/activator';
 import {
-  MainThreadAPIIdentifier,
   ExtHostAPIIdentifier,
   ExtensionIdentifier,
+  MainThreadAPIIdentifier,
   SumiWorkerExtensionService,
 } from '../common/vscode';
 

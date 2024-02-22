@@ -1,16 +1,16 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
-  IExtensionStorageUri,
+  DEFAULT_EXTENSION_STORAGE_DIR_NAME,
+  IExtensionStorageServer,
   IExtensionStorageService,
+  IExtensionStorageUri,
   KeysToAnyValues,
   KeysToKeysToAnyValue,
-  IExtensionStorageServer,
-  DEFAULT_EXTENSION_STORAGE_DIR_NAME,
 } from '../common';
 
 @Injectable()

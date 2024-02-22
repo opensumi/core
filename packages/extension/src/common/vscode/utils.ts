@@ -1,12 +1,13 @@
+// eslint-disable-next-line import/no-unresolved
 import vscode from 'vscode';
 
-import type {
-  OnEnterRule,
-  IndentationRule,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/languageConfiguration';
-
 import * as types from './ext-types';
-import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule } from './model.api';
+import { SerializedIndentationRule, SerializedOnEnterRule, SerializedRegExp } from './model.api';
+
+import type {
+  IndentationRule,
+  OnEnterRule,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/languageConfiguration';
 
 /**
  * Returns `true` if the parameter has type "object" and not null, an array, a regexp, a date.

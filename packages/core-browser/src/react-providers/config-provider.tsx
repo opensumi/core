@@ -1,5 +1,8 @@
 import React from 'react';
 
+import { ILayoutViewSize } from '../layout/constants';
+
+import type { IPreferences, LayoutConfig } from '../bootstrap';
 import type { Injector } from '@opensumi/di';
 import type {
   ExtensionBrowserStyleSheet,
@@ -7,9 +10,6 @@ import type {
   ExtensionConnectOption,
   UrlProvider,
 } from '@opensumi/ide-core-common';
-
-import type { IPreferences, LayoutConfig } from '../bootstrap';
-import { ILayoutViewSize } from '../layout/constants';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {

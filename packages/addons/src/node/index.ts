@@ -1,11 +1,11 @@
-import { Provider, Injectable } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import {
-  IFileDropServiceToken,
+  ConnectionBackServicePath,
   FileDropServicePath,
   IConnectionBackService,
-  ConnectionBackServicePath,
+  IFileDropServiceToken,
 } from '../common';
 
 import { ConnectionRTTBackService } from './connection-rtt-service';

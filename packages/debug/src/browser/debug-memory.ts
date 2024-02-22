@@ -1,21 +1,20 @@
 import clamp from 'lodash/clamp';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { path } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
+  BinaryBuffer,
+  Disposable,
+  Emitter,
   Event,
-  FileSystemProvider,
   FileChangeEvent,
   FileStat,
+  FileSystemProvider,
   FileSystemProviderCapabilities,
   FileType,
-  Uri,
-  BinaryBuffer,
-  Emitter,
-  Disposable,
   ILogger,
+  Uri,
+  path,
 } from '@opensumi/ide-core-common';
-
 
 import {
   DEBUG_MEMORY_SCHEME,

@@ -1,12 +1,12 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   CommandService,
   Disposable,
   EDITOR_COMMANDS,
   Emitter,
   Event,
-  localize,
   MonacoService,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { URI } from '@opensumi/ide-core-common';

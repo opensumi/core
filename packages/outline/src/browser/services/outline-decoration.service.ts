@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, MarkerManager, MarkerSeverity, IMarker } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IMarker, MarkerManager, MarkerSeverity, URI } from '@opensumi/ide-core-browser';
 import { IThemeService, listErrorForeground, listWarningForeground } from '@opensumi/ide-theme';
 
 import { IOutlineMarker } from '../../common';

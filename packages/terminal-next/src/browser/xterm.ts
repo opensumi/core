@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ITerminalOptions, ITheme, Terminal } from 'xterm';
-import type { CanvasAddon as CanvasAddonType } from 'xterm-addon-canvas';
 import { FitAddon } from 'xterm-addon-fit';
 import { ISearchOptions, SearchAddon } from 'xterm-addon-search';
-import type { WebglAddon as WebglAddonType } from 'xterm-addon-webgl';
 
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IClipboardService } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import { Disposable } from '@opensumi/ide-core-common';
@@ -14,7 +12,7 @@ import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench
 import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry';
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
-import { SupportedOptions, CodeTerminalSettingId } from '../common/preference';
+import { CodeTerminalSettingId, SupportedOptions } from '../common/preference';
 import { IXTerm, RenderType } from '../common/xterm';
 
 import styles from './component/terminal.module.less';
@@ -27,6 +25,9 @@ import {
   TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR,
   TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
 } from './terminal.color';
+
+import type { CanvasAddon as CanvasAddonType } from 'xterm-addon-canvas';
+import type { WebglAddon as WebglAddonType } from 'xterm-addon-webgl';
 
 export interface XTermOptions {
   cwd?: string;

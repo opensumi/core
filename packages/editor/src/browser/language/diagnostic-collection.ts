@@ -4,10 +4,10 @@ import IMonacoModel = monaco.editor.IModel;
 import IMonacoMarkerData = monaco.editor.IMarkerData;
 
 // eslint-disable-next-line import/order
-import { DisposableCollection, Disposable, IDisposable } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, IDisposable } from '@opensumi/ide-core-common';
 
 // eslint-disable-next-line import/order
-import { DiagnosticCollection, Diagnostic, asMonacoDiagnostics } from '../../common';
+import { Diagnostic, DiagnosticCollection, asMonacoDiagnostics } from '../../common';
 
 export class MonacoDiagnosticCollection implements DiagnosticCollection {
   protected readonly diagnostics = new Map<string, MonacoModelDiagnostics | undefined>();

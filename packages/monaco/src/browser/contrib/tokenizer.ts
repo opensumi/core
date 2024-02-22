@@ -1,7 +1,8 @@
 import { URI } from '@opensumi/ide-core-common';
-import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 
 import { LanguagesContribution } from '../../common';
+
+import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 
 export const ITextmateTokenizer = Symbol('ITextmateTokenizer');
 

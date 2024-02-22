@@ -3,6 +3,7 @@
  * @deprecated `kaitian-worker` was deprecated, Please use `sumi-worker` instead.
  */
 declare module 'kaitian-worker' {
+  // eslint-disable-next-line import/no-unresolved
   export * from 'sumi-worker';
 }
 declare module 'sumi-worker' {

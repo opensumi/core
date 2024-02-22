@@ -1,12 +1,12 @@
 import {
-  ariaDescribedByIds,
   BaseInputTemplateProps,
-  examplesId,
-  getInputProps,
   FormContextType,
   GenericObjectType,
   RJSFSchema,
   StrictRJSFSchema,
+  ariaDescribedByIds,
+  examplesId,
+  getInputProps,
 } from '@rjsf/utils';
 import React, { ChangeEvent, FocusEvent } from 'react';
 
@@ -71,7 +71,9 @@ export const BaseInputTemplate = <T = any, S extends StrictRJSFSchema = RJSFSche
         <datalist id={examplesId<T>(id)}>
           {(schema.examples as string[])
             .concat(schema.default && !schema.examples.includes(schema.default) ? ([schema.default] as string[]) : [])
-            .map((example) => <option key={example} value={example} />)}
+            .map((example) => (
+              <option key={example} value={example} />
+            ))}
         </datalist>
       )}
     </>

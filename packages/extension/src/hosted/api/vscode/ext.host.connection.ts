@@ -2,9 +2,9 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { getDebugLogger } from '@opensumi/ide-core-common';
 
 import {
-  IInterProcessConnectionService,
-  IInterProcessConnection,
   ExtensionConnection,
+  IInterProcessConnection,
+  IInterProcessConnectionService,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 

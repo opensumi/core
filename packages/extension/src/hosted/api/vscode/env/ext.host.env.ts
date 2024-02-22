@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, LogLevel as KTLogLevel, Schemes, URI } from '@opensumi/ide-core-common';
 
-import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostEnv, ExtHostEnvValues } from '../../../../common/vscode';
+import { ExtHostEnvValues, IExtHostEnv, IMainThreadEnv, MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { LogLevel } from '../../../../common/vscode/ext-types';
+
+import type vscode from 'vscode';
 
 export class ExtHostEnv implements IExtHostEnv {
   private rpcProtocol: IRPCProtocol;

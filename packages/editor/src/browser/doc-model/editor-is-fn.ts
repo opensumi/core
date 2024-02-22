@@ -1,4 +1,4 @@
-import { IStackElement, IEditStackElement, IEOLStackElement } from './types';
+import { IEOLStackElement, IEditStackElement, IStackElement } from './types';
 
 export function isEditStack(element: IStackElement): element is IEditStackElement {
   return !!(element as IEditStackElement).editOperations;

@@ -1,26 +1,23 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import {
-  IContextKeyService,
-  PreferenceService,
-  MonacoOverrideServiceRegistry,
-  ServiceNames,
-  Position,
-  positionToRange,
-} from '@opensumi/ide-core-browser';
-import {
-  IDisposable,
-  Disposable,
-  RunOnceScheduler,
   CancellationTokenSource,
-  onUnexpectedExternalError,
-  createMemoizer,
-  Event,
-  arrays,
   Constants,
+  Disposable,
+  Event,
+  IContextKeyService,
+  IDisposable,
+  MonacoOverrideServiceRegistry,
+  Position,
+  PreferenceService,
+  RunOnceScheduler,
+  ServiceNames,
+  arrays,
+  createMemoizer,
+  onUnexpectedExternalError,
+  positionToRange,
   strings,
 } from '@opensumi/ide-core-browser';
-import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IDecorationApplyOptions, IEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';

@@ -8,7 +8,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { EditorViewType, DECORATIONS_CLASSNAME } from '../types';
+import { DECORATIONS_CLASSNAME, EditorViewType } from '../types';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 import { GuidelineWidget } from '../view/guideline-widget';
 

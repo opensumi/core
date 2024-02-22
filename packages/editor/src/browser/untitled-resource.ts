@@ -1,31 +1,31 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  Emitter,
-  Event,
-  Schemes,
-  WithEventBus,
-  IEditorDocumentChange,
-  IEditorDocumentModelSaveResult,
   AppConfig,
   CommandService,
-  OperatingSystem,
+  Emitter,
+  Event,
   IApplicationService,
-  PreferenceService,
-  getLanguageIdFromMonaco,
-  localize,
-  formatLocalize,
+  IEditorDocumentChange,
+  IEditorDocumentModelSaveResult,
   MessageType,
-  path,
-  isWindows,
+  OperatingSystem,
+  PreferenceService,
   SaveTaskResponseState,
+  Schemes,
+  URI,
+  WithEventBus,
+  formatLocalize,
+  getLanguageIdFromMonaco,
+  isWindows,
+  localize,
+  path,
 } from '@opensumi/ide-core-browser';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import { AskSaveResult, IResource, IResourceProvider, WorkbenchEditorService } from '../common';
 
-import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
+import { IEditorDocumentModelContentProvider, IEditorDocumentModelService } from './doc-model/types';
 
 @Injectable()
 export class UntitledDocumentIdCounter {

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { SubMenu as RcSubMenu, SubMenuProps as RCSubMenuProps } from 'rc-menu';
+import { SubMenuProps as RCSubMenuProps, SubMenu as RcSubMenu } from 'rc-menu';
 import React from 'react';
 
 interface TitleEventEntity {

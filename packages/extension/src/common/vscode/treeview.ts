@@ -1,11 +1,11 @@
-import type vscode from 'vscode';
-
-import { Event, IDisposable, IAccessibilityInformation, BinaryBuffer } from '@opensumi/ide-core-common';
-import type { CancellationToken } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Event, IAccessibilityInformation, IDisposable } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
 
-import { TreeItemCollapsibleState, ThemeIcon, MarkdownString } from './ext-types';
-import { UriComponents, ICommand } from './models';
+import { MarkdownString, ThemeIcon, TreeItemCollapsibleState } from './ext-types';
+import { ICommand, UriComponents } from './models';
+
+import type { CancellationToken } from '@opensumi/ide-core-common';
+import type vscode from 'vscode';
 
 export interface ITreeViewRevealOptions {
   select?: boolean;

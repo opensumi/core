@@ -1,13 +1,13 @@
 import { Event, IRange } from '@opensumi/ide-core-common';
 import {
-  CommentThread,
-  CommentReaction,
-  CommentingRanges,
   Comment,
-  CommentThreadChangedEvent,
   CommentInput,
   CommentMode,
+  CommentReaction,
+  CommentThread,
+  CommentThreadChangedEvent,
   CommentThreadCollapsibleState,
+  CommentingRanges,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { ICommand } from './command';

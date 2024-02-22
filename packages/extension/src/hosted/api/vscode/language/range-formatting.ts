@@ -16,8 +16,6 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/languages/range-formatting.ts
 
-import type vscode from 'vscode';
-
 import { Uri as URI } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
@@ -25,6 +23,8 @@ import * as Converter from '../../../../common/vscode/converter';
 import { FormattingOptions, Range, SingleEditOperation } from '../../../../common/vscode/model.api';
 
 import { createToken } from './util';
+
+import type vscode from 'vscode';
 
 export class RangeFormattingAdapter {
   constructor(

@@ -1,12 +1,12 @@
 import { Autowired } from '@opensumi/di';
 import {
+  COMMON_COMMANDS,
+  CommandService,
+  Domain,
+  EDITOR_COMMANDS,
+  URI,
   VariableContribution,
   VariableRegistry,
-  Domain,
-  URI,
-  CommandService,
-  EDITOR_COMMANDS,
-  COMMON_COMMANDS,
 } from '@opensumi/ide-core-browser';
 
 import { IWorkspaceService } from '../common';

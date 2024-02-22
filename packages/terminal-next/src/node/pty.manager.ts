@@ -1,6 +1,6 @@
 import * as pty from 'node-pty';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import { IPtyProcessProxy, IPtyProxyRPCService, IPtySpawnOptions, IShellLaunchConfig } from '../common';

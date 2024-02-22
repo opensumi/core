@@ -9,7 +9,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
-import { ICommentsService, CommentMode } from '../../src/common';
+import { CommentMode, ICommentsService } from '../../src/common';
 
 describe('comment service test', () => {
   let injector: MockInjector;

@@ -2,18 +2,18 @@ import { spawn } from 'child_process';
 import { dirname } from 'path';
 import qs from 'querystring';
 
-import { BrowserWindow, dialog, shell, webContents, clipboard } from 'electron';
+import { BrowserWindow, clipboard, dialog, shell, webContents } from 'electron';
 import { stat } from 'fs-extra';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Domain, isWindows, IEventBus, URI } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Domain, IEventBus, URI, isWindows } from '@opensumi/ide-core-common';
 import {
   IElectronMainUIService,
   IElectronMainUIServiceShape,
   IElectronPlainWebviewWindowOptions,
 } from '@opensumi/ide-core-common/lib/electron';
 
-import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
+import { ElectronMainApiProvider, ElectronMainApiRegistry, ElectronMainContribution } from '../types';
 
 import { WindowCreatedEvent } from './events';
 

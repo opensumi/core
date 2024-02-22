@@ -1,16 +1,15 @@
-import type vscode from 'vscode';
-
-import { Uri as URI, Cache, CancellationToken } from '@opensumi/ide-core-common';
-import { DisposableStore } from '@opensumi/ide-core-common';
-import type { CodeActionContext, WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { Cache, CancellationToken, DisposableStore, Uri as URI } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager, ICodeActionDto, ICodeActionListDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { CodeActionKind } from '../../../../common/vscode/ext-types';
-import { Selection, Range, ChainedCacheId, IWorkspaceEditDto } from '../../../../common/vscode/model.api';
+import { ChainedCacheId, IWorkspaceEditDto, Range, Selection } from '../../../../common/vscode/model.api';
 import { CommandsConverter } from '../ext.host.command';
 
 import { Diagnostics } from './diagnostics';
+
+import type { CodeActionContext, WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type vscode from 'vscode';
 
 export class CodeActionAdapter {
   private static readonly _maxCodeActionsPerFile: number = 1000;

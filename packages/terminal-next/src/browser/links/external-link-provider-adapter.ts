@@ -1,14 +1,14 @@
-import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
-
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
 
-import { ITerminalExternalLinkProvider, ITerminalClient } from '../../common';
+import { ITerminalClient, ITerminalExternalLinkProvider } from '../../common';
 
 import { TerminalBaseLinkProvider } from './base';
-import { getXtermLineContent, convertLinkRangeToBuffer } from './helpers';
+import { convertLinkRangeToBuffer, getXtermLineContent } from './helpers';
 import { TerminalLink } from './link';
 import { XtermLinkMatcherHandler } from './link-manager';
+
+import type { IBufferLine, IViewportRange, Terminal } from 'xterm';
 
 /**
  * An adapter to convert a simple external link provider into an internal link provider that

@@ -1,5 +1,3 @@
-import type vscode from 'vscode';
-
 import { Uri } from '@opensumi/ide-core-common';
 import * as path from '@opensumi/ide-utils/lib/path';
 
@@ -8,8 +6,10 @@ import { IExtHostStorage, IExtHostTerminal } from '../../../common/vscode';
 import { ExtensionMode } from '../../../common/vscode/ext-types';
 import { KTExtension, KTWorkerExtension } from '../../vscode.extension';
 
-import { ExtensionSecrets, ExtHostSecret } from './ext.host.secrets';
+import { ExtHostSecret, ExtensionSecrets } from './ext.host.secrets';
 import { ExtensionGlobalMemento, ExtensionMemento } from './ext.host.storage';
+
+import type vscode from 'vscode';
 
 export interface IKTContextOptions {
   extensionId: string;

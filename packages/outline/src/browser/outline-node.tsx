@@ -2,13 +2,13 @@ import cls from 'classnames';
 import React from 'react';
 
 import {
-  TreeNode,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
+  TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
+import { CommandService, URI, getIcon } from '@opensumi/ide-core-browser';
 import { SymbolTag } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
 import { IOutlineDecorationService } from '../common';

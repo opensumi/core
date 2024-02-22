@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, IContextKey, IContextKeyService, URI, uuid, arrays } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter, IContextKey, IContextKeyService, URI, arrays, uuid } from '@opensumi/ide-core-browser';
 import { TestingHasAnyResults, TestingIsRunning } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 
 import { ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
@@ -11,9 +11,9 @@ import {
   TestResultItemChangeReason,
 } from '../common/test-result';
 import {
-  ResolvedTestRunRequest,
   ExtensionRunTestsRequest,
   ITestRunProfile,
+  ResolvedTestRunRequest,
   TestResultItem,
   TestResultState,
 } from '../common/testCollection';

@@ -1,19 +1,19 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
+  CancellationToken,
+  CommonLanguageId,
+  Disposable,
   Emitter,
   Event,
+  IDisposable,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
-  ISchemaStore,
-  IDisposable,
-  Disposable,
   IJSONSchemaRegistry,
+  ISchemaStore,
+  MaybePromise,
   PreferenceService,
   Schemes,
-  CancellationToken,
-  MaybePromise,
-  CommonLanguageId,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';

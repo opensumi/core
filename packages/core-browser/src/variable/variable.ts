@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { URI, IDisposable, Disposable, DisposableCollection, MaybePromise } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, IDisposable, MaybePromise, URI } from '@opensumi/ide-core-common';
 
 export type TVariableResolve = string | undefined | { [x: string]: string | undefined };
 export interface Variable {

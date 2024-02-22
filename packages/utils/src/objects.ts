@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/objects.ts
 
-import { isUndefinedOrNull, isArray, isObject } from './types';
+import { isArray, isObject, isUndefinedOrNull } from './types';
 
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 

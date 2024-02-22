@@ -7,17 +7,17 @@ import compressing from 'compressing';
 import fs from 'fs-extra';
 import nodeFetch, { RequestInit } from 'node-fetch';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
 import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import {
-  IVSXExtensionBackService,
   IExtensionInstallParam,
   IMarketplaceService,
   IOpentrsMarketplaceService,
   IOpenvsxMarketplaceService,
+  IVSXExtensionBackService,
 } from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';
 

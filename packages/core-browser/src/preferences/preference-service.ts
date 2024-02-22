@@ -1,20 +1,20 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Deferred,
-  Emitter,
   DisposableCollection,
-  URI,
-  isUndefined,
-  isEmptyObject,
-  objects,
+  Emitter,
   LRUMap,
   PREFERENCE_PROPERTY_TYPE,
-  isString,
+  URI,
   isArray,
-  isNumber,
   isBoolean,
+  isEmptyObject,
   isNull,
+  isNumber,
   isObject,
+  isString,
+  isUndefined,
+  objects,
 } from '@opensumi/ide-core-common';
 
 import { PreferenceConfigurations } from './preference-configurations';

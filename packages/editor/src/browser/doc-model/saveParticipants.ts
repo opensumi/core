@@ -1,17 +1,17 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
-  WithEventBus,
+  CommandService,
   Domain,
+  ILogger,
+  IProgress,
+  IProgressStep,
+  MonacoOverrideServiceRegistry,
   OnEvent,
   PreferenceService,
-  CommandService,
-  ServiceNames,
-  ILogger,
-  MonacoOverrideServiceRegistry,
-  IProgress,
   ProgressLocation,
-  IProgressStep,
+  ServiceNames,
+  WithEventBus,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -26,8 +26,8 @@ import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/ra
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { CodeActionProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import {
-  getCodeActions,
   CodeActionItem,
+  getCodeActions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
 import {
   CodeActionKind,

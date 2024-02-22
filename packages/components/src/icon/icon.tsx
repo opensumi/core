@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React from 'react';
 
 import { defaultIconMap, defaultIconfont } from './iconfont/iconManager';
-import { getIcon, IIconShapeOptions } from './util';
+import { IIconShapeOptions, getIcon } from './util';
 
 import './styles.less';
 

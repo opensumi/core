@@ -1,24 +1,27 @@
 import { Autowired } from '@opensumi/di';
-import { localize, PreferenceSchema, SEARCH_COMMANDS, IClipboardService } from '@opensumi/ide-core-browser';
 import {
+  ClientAppContribution,
+  ComponentContribution,
+  ComponentRegistry,
+  IClipboardService,
   KeybindingContribution,
   KeybindingRegistry,
-  ClientAppContribution,
-  ComponentRegistry,
-  ComponentContribution,
   PreferenceContribution,
+  PreferenceSchema,
+  SEARCH_COMMANDS,
+  getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
 import { SEARCH_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { SearchInputBoxFocusedKey } from '@opensumi/ide-core-browser/lib/contextkey/search';
-import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
-import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TabBarToolbarContribution, ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   CommandContribution,
   CommandRegistry,
   DisposableCollection,
-  formatLocalize,
   MessageType,
+  formatLocalize,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';

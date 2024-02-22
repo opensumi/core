@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { TreeNode, ITree, CompositeTreeNode } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { MessageType } from '@opensumi/ide-core-browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 

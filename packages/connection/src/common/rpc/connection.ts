@@ -1,16 +1,12 @@
-import type net from 'net';
-
-import type { WebSocket } from 'ws';
-
 import { EventEmitter } from '@opensumi/events';
 import {
+  CancellationToken,
+  CancellationTokenSource,
   DisposableCollection,
   IDisposable,
-  parseError,
-  CancellationToken,
   canceled,
-  CancellationTokenSource,
   isPromise,
+  parseError,
 } from '@opensumi/ide-utils';
 
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
@@ -21,11 +17,11 @@ import { MethodTimeoutError } from './errors';
 import {
   BodyCodec,
   ErrorCode,
-  OperationType,
-  MessageIO,
-  requestHeadersSerializer,
-  reader,
   IRequestHeaders,
+  MessageIO,
+  OperationType,
+  reader,
+  requestHeadersSerializer,
 } from './packet';
 import { ProtocolRepository } from './protocol-repository';
 import {
@@ -36,6 +32,9 @@ import {
   TRequestCallback,
 } from './types';
 import { assert } from './utils';
+
+import type net from 'net';
+import type { WebSocket } from 'ws';
 
 const nullHeaders = {};
 

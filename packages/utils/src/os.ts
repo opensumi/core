@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { isWindows, isMacintosh, OperatingSystem } from './platform';
+import { OperatingSystem, isMacintosh, isWindows } from './platform';
 
 export type CMD = [string, string[]];
 export function cmd(command: string, ...args: string[]): CMD {

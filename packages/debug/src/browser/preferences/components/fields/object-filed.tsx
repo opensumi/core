@@ -1,6 +1,5 @@
 import { getDefaultRegistry } from '@rjsf/core';
-import { FieldProps } from '@rjsf/utils';
-import { FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { FieldProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
 import React, { useEffect } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';

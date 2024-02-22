@@ -1,16 +1,19 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
 import {
+  CancellationTokenSource,
   CommandService,
   CorePreferences,
-  PreferenceService,
+  DisposableCollection,
   EDITOR_COMMANDS,
+  Emitter,
+  Event,
   ILogger,
-  CancellationTokenSource,
+  PreferenceService,
+  URI,
 } from '@opensumi/ide-core-browser';
-import { DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -23,7 +26,7 @@ import { ViewModelContext } from '../../scm-model';
 
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMTreeModel } from './scm-tree-model';
-import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceRoot } from './scm-tree-node';
+import { SCMResourceFile, SCMResourceFolder, SCMResourceGroup, SCMResourceRoot } from './scm-tree-node';
 import styles from './scm-tree-node.module.less';
 import { SCMTreeService } from './scm-tree.service';
 

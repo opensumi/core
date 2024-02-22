@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { objects, IJSONSchema, IJSONSchemaRegistry } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IJSONSchema, IJSONSchemaRegistry, objects } from '@opensumi/ide-core-browser';
 
 import { launchExtensionSchemaUri, launchSchemaUri } from '../common';
 import { DebugServer, IDebugServer } from '../common/debug-service';

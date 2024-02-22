@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { INodeLogger, AppConfig, isDevelopment, isElectronNode } from '@opensumi/ide-core-node';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { AppConfig, INodeLogger, isDevelopment, isElectronNode } from '@opensumi/ide-core-node';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
 import { IPtyProcessProxy, IShellLaunchConfig } from '../common/pty';

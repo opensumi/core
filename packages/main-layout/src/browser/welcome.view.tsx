@@ -2,8 +2,7 @@ import cls from 'classnames';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components/lib/button';
-import { getExternalIcon, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { IContextKeyService, IOpenerService, getExternalIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { parseLinkedText } from '@opensumi/ide-core-common';
 
 import { IViewContentDescriptor } from '../common';

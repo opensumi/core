@@ -1,4 +1,4 @@
-import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-browser';
+import { IJSONSchema, IJSONSchemaSnippet, MaybePromise } from '@opensumi/ide-core-browser';
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
 import { DebuggerDescription } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionDTO } from '@opensumi/ide-debug/lib/common/debug-session-options';

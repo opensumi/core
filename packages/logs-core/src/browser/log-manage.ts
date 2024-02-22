@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-core-common';
 
 import {
-  LogServiceForClientPath,
-  ILogServiceForClient,
-  SupportLogNamespace,
-  LogLevel,
-  ILoggerManagerClient,
   ILogServiceClient,
+  ILogServiceForClient,
+  ILoggerManagerClient,
+  LogLevel,
+  LogServiceForClientPath,
+  SupportLogNamespace,
 } from '../common/';
 
 import { LogServiceClient } from './log.service';

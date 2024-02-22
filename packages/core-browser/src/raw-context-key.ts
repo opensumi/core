@@ -1,6 +1,6 @@
 import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { IContextKeyService, IContextKey } from './context-key';
+import { IContextKey, IContextKeyService } from './context-key';
 
 export abstract class IRawContextKey<T extends ContextKeyValue> {
   raw: string;

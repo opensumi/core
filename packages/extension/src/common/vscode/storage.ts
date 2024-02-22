@@ -1,4 +1,4 @@
-import { Uri, Event } from '@opensumi/ide-core-common';
+import { Event, Uri } from '@opensumi/ide-core-common';
 import { IExtensionStorageUri } from '@opensumi/ide-extension-storage';
 
 export interface KeysToAnyValues {

@@ -1,24 +1,24 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandRegistry,
   CommandService,
-  ILogger,
-  formatLocalize,
   IContextKeyService,
-  isUndefined,
+  ILogger,
   URI,
+  formatLocalize,
+  isUndefined,
   localize,
 } from '@opensumi/ide-core-browser';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
-import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuItem, IMenuRegistry, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
-import { IEditorGroup, EditorOpenType } from '@opensumi/ide-editor';
+import { EditorOpenType, IEditorGroup } from '@opensumi/ide-editor';
 import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
-import { ThemeType, IconType } from '@opensumi/ide-theme';
+import { IconType, ThemeType } from '@opensumi/ide-theme';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 // 对插件侧 contributes 的 menu interface

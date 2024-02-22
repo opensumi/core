@@ -1,4 +1,4 @@
-import { Injector, Injectable } from '@opensumi/di';
+import { Injectable, Injector } from '@opensumi/di';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { BrowserModule } from '@opensumi/ide-core-browser/lib/browser-module';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
@@ -6,15 +6,15 @@ import { RecentFilesManager } from '@opensumi/ide-core-browser/lib/quick-open';
 import {
   CommonServerPath,
   ConstructorOf,
-  getDebugLogger,
+  ILogServiceManager,
   ILogger,
   ILoggerManagerClient,
-  ILogServiceManager,
   LogLevel,
   LogServiceForClientPath,
   OS,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { NodeModule, INodeLogger, ServerApp } from '@opensumi/ide-core-node';
+import { INodeLogger, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 
 import { MockLogger, MockLoggerManageClient, MockLoggerService } from '../../../packages/core-browser/__mocks__/logger';
 import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';

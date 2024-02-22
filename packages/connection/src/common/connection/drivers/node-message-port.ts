@@ -1,8 +1,8 @@
-import type { MessagePort } from 'worker_threads';
-
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
+
+import type { MessagePort } from 'worker_threads';
 
 export class NodeMessagePortConnection extends BaseConnection<Uint8Array> {
   constructor(private port: MessagePort) {

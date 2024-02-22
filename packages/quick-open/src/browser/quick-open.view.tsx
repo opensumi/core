@@ -1,17 +1,16 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import type { ListOnScrollProps } from 'react-window';
 
 import {
   Button,
   CheckBox,
   IRecycleListHandler,
   RecycleList,
-  ValidateInput,
   VALIDATE_TYPE,
+  ValidateInput,
 } from '@opensumi/ide-components';
-import { Key, KeyCode, useInjectable, localize, isUndefined } from '@opensumi/ide-core-browser';
+import { Key, KeyCode, isUndefined, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -32,6 +31,8 @@ import { QuickOpenItemService } from './quick-open-item.service';
 import { QuickOpenContext } from './quick-open.type';
 import { QuickTitleBar } from './quick-title-bar';
 import styles from './styles.module.less';
+
+import type { ListOnScrollProps } from 'react-window';
 
 interface IQuickOpenItemProps {
   data: QuickOpenItem;

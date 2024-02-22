@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { INodeRendererProps, ClasslistComposite } from '@opensumi/ide-components';
+import { ClasslistComposite, INodeRendererProps } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser';
 
 import { CommentContentNode, CommentFileNode, CommentReplyNode } from './tree-node.defined';

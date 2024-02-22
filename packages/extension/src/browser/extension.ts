@@ -1,25 +1,25 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
-  getDebugLogger,
-  registerLocalizationBundle,
-  getCurrentLanguageInfo,
-  WithEventBus,
-  replaceNlsField,
-  Uri,
   Deferred,
   URI,
+  Uri,
+  WithEventBus,
+  getCurrentLanguageInfo,
+  getDebugLogger,
+  registerLocalizationBundle,
+  replaceNlsField,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import {
-  JSONType,
+  ExtensionNodeServiceServerPath,
   ExtensionService,
   IExtension,
-  IExtensionProps,
   IExtensionMetaData,
   IExtensionNodeClientService,
-  ExtensionNodeServiceServerPath,
+  IExtensionProps,
+  JSONType,
 } from '../common';
 
 import { ExtensionMetadataService } from './metadata.service';

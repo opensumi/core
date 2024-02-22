@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { ScopedBrowserStorageService, Disposable } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, ScopedBrowserStorageService } from '@opensumi/ide-core-browser';
 
-import { ITerminalRestore, ITerminalController, ITerminalInternalService, ITerminalBrowserHistory } from '../common';
+import { ITerminalBrowserHistory, ITerminalController, ITerminalInternalService, ITerminalRestore } from '../common';
 
 const DEFAULT_TERMINAL_STORE_KEY = 'OPENSUMI_TERMINAL_RESTORE';
 @Injectable()

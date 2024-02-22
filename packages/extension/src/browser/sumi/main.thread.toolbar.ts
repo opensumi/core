@@ -1,21 +1,21 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
+  CommandRegistry,
+  CommandService,
+  Disposable,
+  ExtensionActivateEvent,
+  IDisposable,
+  IEventBus,
   IToolbarActionBtnDelegate,
+  IToolbarActionBtnState,
+  IToolbarActionDropdownButtonDelegate,
+  IToolbarActionSelectDelegate,
+  IToolbarPopoverRegistry,
   IToolbarRegistry,
   createToolbarActionBtn,
-  CommandService,
-  CommandRegistry,
-  IDisposable,
-  IToolbarActionBtnState,
-  IToolbarActionSelectDelegate,
-  createToolbarActionSelect,
-  IEventBus,
-  ExtensionActivateEvent,
-  IToolbarPopoverRegistry,
   createToolbarActionDropdownButton,
-  IToolbarActionDropdownButtonDelegate,
+  createToolbarActionSelect,
 } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { EMIT_EXT_HOST_EVENT } from '../../common';
@@ -30,10 +30,10 @@ import {
   IMainThreadToolbar,
   SELECT_CONNECT_HANDLE_ID,
   SELECT_ON_SELECT_ID,
-  SELECT_STATE_CHANGE_ID,
   SELECT_SET_OPTIONS,
   SELECT_SET_SELECT_ID,
   SELECT_SET_STATE_ID,
+  SELECT_STATE_CHANGE_ID,
   SHOW_POPOVER_ID,
 } from '../../common/sumi/toolbar';
 import { ExtensionLoadingView } from '../components';

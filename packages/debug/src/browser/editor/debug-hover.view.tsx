@@ -2,17 +2,17 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { IRecycleTreeHandle, RecycleTree, INodeRendererWrapProps, TreeNodeEvent } from '@opensumi/ide-components';
+import { INodeRendererWrapProps, IRecycleTreeHandle, RecycleTree, TreeNodeEvent } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import {
-  ExpressionNode,
-  ExpressionContainer,
   DebugHoverVariableRoot,
   DebugVariable,
+  ExpressionContainer,
+  ExpressionNode,
 } from '../tree/debug-tree-node.define';
-import { DebugVariableRenderedNode, DEBUG_VARIABLE_TREE_NODE_HEIGHT } from '../view/variables/debug-variables.view';
+import { DEBUG_VARIABLE_TREE_NODE_HEIGHT, DebugVariableRenderedNode } from '../view/variables/debug-variables.view';
 
 import { DebugHoverModel } from './debug-hover-model';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';

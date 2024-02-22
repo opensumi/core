@@ -1,8 +1,9 @@
 import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { Emitter, Disposable } from '@opensumi/ide-core-common';
-import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { Disposable, Emitter } from '@opensumi/ide-core-common';
 
 import { IOptions, ZoneWidget } from './zone-widget';
+
+import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export interface IPeekViewOptions extends IOptions {
   supportOnTitleClick?: boolean;

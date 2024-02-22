@@ -1,15 +1,15 @@
 import { Injector } from '@opensumi/di';
 import {
-  localize,
-  getAvailableLanguages,
-  SUPPORTED_ENCODINGS,
   GeneralSettingsId,
-  PreferenceSchema,
   MenubarSettingId,
+  PreferenceSchema,
+  SUPPORTED_ENCODINGS,
+  getAvailableLanguages,
+  localize,
 } from '@opensumi/ide-core-common';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
-import { createPreferenceProxy, PreferenceProxy, PreferenceService } from './preferences';
+import { PreferenceProxy, PreferenceService, createPreferenceProxy } from './preferences';
 
 const EXPLORER_DEFAULTS = {
   confirmDelete: true,

@@ -1,27 +1,27 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  Logger,
-  PreferenceService,
-  PreferenceSchemaProvider,
   IPreferenceSettingsService,
+  Logger,
+  PreferenceSchemaProvider,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import {
-  Event,
-  URI,
-  WithEventBus,
-  localize,
-  Emitter,
-  isObject,
+  ContributionProvider,
+  Deferred,
   DisposableCollection,
-  uuid,
-  isLinux,
-  isWindows,
+  Emitter,
+  Event,
+  ExtensionDidContributes,
   IThemeColor,
   OnEvent,
-  ExtensionDidContributes,
-  Deferred,
-  ContributionProvider,
+  URI,
+  WithEventBus,
   isFunction,
+  isLinux,
+  isObject,
+  isWindows,
+  localize,
+  uuid,
 } from '@opensumi/ide-core-common';
 
 import { ICSSStyleService, ThemeContributionProvider } from '../common';
@@ -34,23 +34,23 @@ import {
 } from '../common/color-registry';
 import { ThemeChangedEvent } from '../common/event';
 import {
-  ITheme,
-  ThemeType,
   ColorIdentifier,
-  getBuiltinRules,
-  getThemeType,
-  ThemeContribution,
-  IColorMap,
-  ThemeInfo,
-  IThemeService,
-  ExtColorContribution,
-  getThemeId,
-  getThemeTypeSelector,
-  IColorCustomizations,
-  ITokenColorizationRule,
-  ITokenColorCustomizations,
   DEFAULT_THEME_ID,
+  ExtColorContribution,
+  IColorCustomizations,
+  IColorMap,
+  ITheme,
+  IThemeService,
+  ITokenColorCustomizations,
+  ITokenColorizationRule,
+  ThemeContribution,
+  ThemeInfo,
+  ThemeType,
   colorIdPattern,
+  getBuiltinRules,
+  getThemeId,
+  getThemeType,
+  getThemeTypeSelector,
 } from '../common/theme.service';
 
 import { ThemeData } from './theme-data';
@@ -667,7 +667,10 @@ class Theme implements ITheme {
   private patchTokenColors() {
     // 当默认颜色不在settings当中时，需要补充至颜色值中，默认颜色设置 scope 为 ['']
     // 需要注意的是，后续进行取值时，会依赖数组顺序，初始化后，请不要随意修改
-    if (this.themeData.themeSettings.filter((setting) => setting.scope?.length === 1 && setting.scope[0] === '').length === 0) {
+    if (
+      this.themeData.themeSettings.filter((setting) => setting.scope?.length === 1 && setting.scope[0] === '')
+        .length === 0
+    ) {
       this.themeData.themeSettings.unshift({
         settings: {
           foreground: this.themeData.colors['editor.foreground']

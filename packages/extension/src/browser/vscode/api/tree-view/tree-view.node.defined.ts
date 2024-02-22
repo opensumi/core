@@ -1,6 +1,6 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IAccessibilityInformation, isObject, isString, Uri, UriComponents } from '@opensumi/ide-core-common';
+import { IAccessibilityInformation, Uri, UriComponents, isObject, isString } from '@opensumi/ide-core-common';
 
 import { ITreeItemLabel } from '../../../../common/vscode';
 import { ICommand } from '../../../../common/vscode/models';

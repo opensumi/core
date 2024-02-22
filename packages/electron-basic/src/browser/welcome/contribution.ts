@@ -1,6 +1,6 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, URI, localize, ClientAppContribution, RecentFilesManager } from '@opensumi/ide-core-browser';
-import { ResourceService, IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { ClientAppContribution, Domain, RecentFilesManager, URI, localize } from '@opensumi/ide-core-browser';
+import { IResource, ResourceService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,

@@ -1,18 +1,19 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, URI, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-common';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  DebugModelFactory,
-  IDebugModel,
   BreakpointsChangeEvent,
+  DebugModelFactory,
   DebugModelSupportedEventType,
+  IDebugModel,
   IDebugModelManager,
 } from '../../common';
 import { BreakpointManager } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
+
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 export class DebugModelManager extends Disposable implements IDebugModelManager {

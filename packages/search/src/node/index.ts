@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
-import { IContentSearchServer, ContentSearchServerPath } from '../common';
+import { ContentSearchServerPath, IContentSearchServer } from '../common';
 
 import { ContentSearchService } from './content-search.service';
 

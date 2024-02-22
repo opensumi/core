@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
-import { Uri, Cache } from '@opensumi/ide-core-common';
+import { Cache, Uri } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { ChainedCacheId, ILink, ILinkDto, ILinksListDto } from '../../../../common/vscode/model.api';
+
+import type vscode from 'vscode';
 
 export class LinkProviderAdapter {
   private cache = new Cache<vscode.DocumentLink>('DocumentLink');

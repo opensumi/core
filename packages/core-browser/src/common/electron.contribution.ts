@@ -1,7 +1,7 @@
 import { Autowired } from '@opensumi/di';
-import { localize, Domain } from '@opensumi/ide-core-common';
+import { Domain, localize } from '@opensumi/ide-core-common';
 
-import { MenuContribution, IMenuRegistry } from '../menu/next/base';
+import { IMenuRegistry, MenuContribution } from '../menu/next/base';
 import { MenuId } from '../menu/next/menu-id';
 import { AppConfig } from '../react-providers/config-provider';
 

@@ -1,30 +1,31 @@
-import type vscode from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
 import {
-  isString,
-  Uri as URI,
-  IRange,
-  IDisposable,
-  UriComponents,
-  SymbolTag,
   CancellationToken,
   Event,
+  IDisposable,
   IMarkdownString,
+  IRange,
+  SymbolTag,
+  Uri as URI,
+  UriComponents,
+  isString,
 } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
+// eslint-disable-next-line import/no-restricted-paths
+import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languageFeatureRegistry';
+
+import { IndentAction, SymbolKind } from './ext-types';
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 // eslint-disable-next-line import/no-restricted-paths
 import type { TypeHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
-import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languageFeatureRegistry';
 import type { CompletionItemLabel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
+import type { editor, languages } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 // 内置的api类型声明
-
-import { IndentAction, SymbolKind } from './ext-types';
-export { IMarkdownString, SymbolTag, CallHierarchyItem, TypeHierarchyItem };
+import type vscode from 'vscode';
+export { CallHierarchyItem, IMarkdownString, SymbolTag, TypeHierarchyItem };
 
 export interface IRawColorInfo {
   color: [number, number, number, number];

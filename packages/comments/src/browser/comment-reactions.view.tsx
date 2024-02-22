@@ -1,18 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-
-import { useInjectable, IEventBus, getExternalIcon, Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, IEventBus, getExternalIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Button } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import {
-  IThreadComment,
-  ICommentsThread,
   CommentReaction,
   CommentReactionClick,
+  ICommentsThread,
+  IThreadComment,
   SwitchCommandReaction,
 } from '../common';
 

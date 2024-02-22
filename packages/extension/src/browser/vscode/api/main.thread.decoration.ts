@@ -1,15 +1,14 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { UriComponents, Uri as URI, Emitter, CancellationToken } from '@opensumi/ide-core-common';
-import { IDisposable, dispose } from '@opensumi/ide-core-common';
-import { IDecorationsService, IDecorationData } from '@opensumi/ide-decoration';
+import { CancellationToken, Emitter, IDisposable, Uri as URI, UriComponents, dispose } from '@opensumi/ide-core-common';
+import { IDecorationData, IDecorationsService } from '@opensumi/ide-decoration';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import {
+  DecorationData,
+  DecorationRequest,
   IExtHostDecorationsShape,
   IMainThreadDecorationsShape,
-  DecorationRequest,
-  DecorationData,
 } from '../../../common/vscode/decoration';
 
 class DecorationRequestsQueue {

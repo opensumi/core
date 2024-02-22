@@ -1,19 +1,19 @@
-import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IDisposable, Disposable, Event, Emitter } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 
 import { IContextKeyService } from '../../context-key';
 
 import { MenuNode } from './base';
-import { generateMergedCtxMenu, generateCtxMenu, mergeTupleMenuNodeResult } from './menu-util';
+import { generateCtxMenu, generateMergedCtxMenu, mergeTupleMenuNodeResult } from './menu-util';
 import {
-  AbstractMenuService,
   AbstractContextMenuService,
+  AbstractMenuService,
+  CreateMenuPayload,
   IContextMenu,
   IMenu,
   IMenuConfig,
   SubmenuItemNode,
   TupleMenuNodeResult,
-  CreateMenuPayload,
 } from './menu.interface';
 
 @Injectable()

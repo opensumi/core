@@ -1,31 +1,31 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  COMMON_COMMANDS,
   ClientAppContribution,
-  URI,
-  Domain,
+  Command,
   CommandContribution,
   CommandRegistry,
-  Command,
-  COMMON_COMMANDS,
+  Domain,
+  KEYBOARD_COMMANDS,
   KeybindingContribution,
   KeybindingRegistry,
-  WithEventBus,
-  MaybePromise,
-  localize,
-  getIcon,
   KeyboardNativeLayoutService,
-  KEYBOARD_COMMANDS,
-  getKeyboardLayoutId,
   KeymapInfo,
+  MaybePromise,
+  URI,
+  WithEventBus,
   formatLocalize,
+  getIcon,
+  getKeyboardLayoutId,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IResource, IResourceProvider, ResourceService } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { QuickPickItem, QuickPickService } from '@opensumi/ide-quick-open';
 
-import { KEYMAPS_SCHEME, IKeymapService } from '../common';
+import { IKeymapService, KEYMAPS_SCHEME } from '../common';
 
 import { KeymapsView } from './keymaps.view';
 

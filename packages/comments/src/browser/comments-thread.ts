@@ -1,17 +1,17 @@
-import { observable, computed, autorun, makeObservable } from 'mobx';
+import { autorun, computed, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRange, Disposable, URI, IContextKeyService, uuid, localize, Emitter } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Disposable, Emitter, IContextKeyService, IRange, URI, localize, uuid } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { IEditor, EditorCollectionService } from '@opensumi/ide-editor';
+import { EditorCollectionService, IEditor } from '@opensumi/ide-editor';
 
 import {
-  ICommentsThread,
   IComment,
-  ICommentsThreadOptions,
   ICommentsService,
-  IThreadComment,
+  ICommentsThread,
+  ICommentsThreadOptions,
   ICommentsZoneWidget,
+  IThreadComment,
 } from '../common';
 
 import { CommentsZoneWidget } from './comments-zone.view';

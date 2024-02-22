@@ -1,18 +1,18 @@
 import net from 'net';
 
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { MaybePromise, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
-import { INodeLogger, AppConfig } from '@opensumi/ide-core-node';
+import { Disposable, IDisposable, MaybePromise, toDisposable } from '@opensumi/ide-core-common';
+import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 
 import {
-  IExtensionHostManager,
-  Output,
-  EXT_SERVER_IDENTIFIER,
-  IExtHostProxyRPCService,
   EXT_HOST_PROXY_IDENTIFIER,
   EXT_HOST_PROXY_SERVER_PROT,
+  EXT_SERVER_IDENTIFIER,
+  IExtHostProxyRPCService,
+  IExtensionHostManager,
+  Output,
 } from '../common';
 
 @Injectable()

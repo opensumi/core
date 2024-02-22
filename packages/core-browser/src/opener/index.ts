@@ -1,4 +1,4 @@
-import { URI, IDisposable, MaybePromise } from '..';
+import { IDisposable, MaybePromise, URI } from '..';
 
 export const OpenerContribution = Symbol('OpenerContribution');
 export interface OpenerContribution {

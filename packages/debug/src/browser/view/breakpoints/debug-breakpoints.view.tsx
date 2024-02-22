@@ -1,22 +1,21 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
-import { Badge } from '@opensumi/ide-components';
+import { Badge, BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
 import {
-  useInjectable,
   CommandService,
-  EDITOR_COMMANDS,
-  URI,
-  getIcon,
   Disposable,
-  ViewState,
+  EDITOR_COMMANDS,
   Event,
   IRange,
+  URI,
+  ViewState,
+  getExternalIcon,
+  getIcon,
   localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
-import { getExternalIcon } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
@@ -24,10 +23,10 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol'
 import { DEBUG_COMMANDS, IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
 import {
   DebugExceptionBreakpoint,
+  EXCEPTION_BREAKPOINT_URI,
+  getStatus,
   isDebugBreakpoint,
   isRuntimeBreakpoint,
-  getStatus,
-  EXCEPTION_BREAKPOINT_URI,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 

@@ -1,8 +1,7 @@
 import pm from 'picomatch';
 
 import { Injectable } from '@opensumi/di';
-import { MaybePromise } from '@opensumi/ide-core-common';
-import { IDisposable } from '@opensumi/ide-core-common';
+import { IDisposable, MaybePromise } from '@opensumi/ide-core-common';
 
 import { IActivationEventService } from './types';
 

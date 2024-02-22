@@ -1,12 +1,12 @@
-import type vscode from 'vscode';
-
 import { Schemes } from '@opensumi/ide-core-common';
 
 import { IMainThreadDocumentsShape } from '../../../../common/vscode';
-import { Range, Position, EndOfLine, Uri } from '../../../../common/vscode/ext-types';
+import { EndOfLine, Position, Range, Uri } from '../../../../common/vscode/ext-types';
 
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
+
+import type vscode from 'vscode';
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
 export function setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void {

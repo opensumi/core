@@ -1,15 +1,15 @@
-import { Injectable, Optional, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { DisposableCollection, Uri, URI, ILogger } from '@opensumi/ide-core-browser';
+import { DisposableCollection, ILogger, URI, Uri } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
-  DebuggerDescription,
   DebugConfiguration,
-  IDebuggerContribution,
-  IDebugServiceContributionPoint,
+  DebuggerDescription,
   IDebugBreakpoint,
   IDebugConsoleModelService,
   IDebugModelManager,
+  IDebugServiceContributionPoint,
+  IDebuggerContribution,
 } from '@opensumi/ide-debug';
 import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
@@ -17,7 +17,7 @@ import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferen
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { IDebugService, IDebugServer } from '@opensumi/ide-debug/lib/common/debug-service';
+import { IDebugServer, IDebugService } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -27,16 +27,16 @@ import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import {
-  IMainThreadDebug,
   ExtHostAPIIdentifier,
   IExtHostDebug,
   IInterProcessConnectionService,
+  IMainThreadDebug,
   IStartDebuggingOptions,
 } from '../../../common/vscode';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { IActivationEventService } from '../../types';
 
-import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
+import { ExtensionDebugSessionContributionRegistry, ExtensionDebugSessionFactory } from './debug';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
 import { ExtensionDebugService } from './debug/extension-debug-service';
 

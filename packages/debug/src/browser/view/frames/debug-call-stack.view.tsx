@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useInjectable, ViewState } from '@opensumi/ide-core-browser';
+import { ViewState, useInjectable } from '@opensumi/ide-core-browser';
 
-import { IDebugSessionManager, IDebugSession } from '../../../common';
+import { IDebugSession, IDebugSessionManager } from '../../../common';
 import { DebugSession } from '../../debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
 

@@ -6,7 +6,7 @@ import utils from 'y-websocket/bin/utils';
 // @ts-ignore
 import { Doc as YDoc, Map as YMap, Text as YText } from 'yjs';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileService } from '@opensumi/ide-file-service/lib/node';

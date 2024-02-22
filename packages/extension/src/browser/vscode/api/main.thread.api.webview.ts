@@ -1,54 +1,54 @@
 import throttle from 'lodash/throttle';
 
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  Disposable,
-  URI,
-  MaybeNull,
-  IEventBus,
-  ILogger,
-  Schemes,
-  IExtensionInfo,
   CommandRegistry,
-  StorageProvider,
-  STORAGE_SCHEMA,
-  IStorage,
+  Disposable,
   IDisposable,
+  IEventBus,
+  IExtensionInfo,
+  ILogger,
+  IOpenerService,
+  IStorage,
+  MaybeNull,
+  STORAGE_SCHEMA,
+  Schemes,
+  StorageProvider,
+  URI,
   arrays,
 } from '@opensumi/ide-core-browser';
-import { IOpenerService } from '@opensumi/ide-core-browser';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
-import { CancellationToken, WithEventBus, OnEvent } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
+import { CancellationToken, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupChangeEvent, IEditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 import {
-  IWebviewService,
   IEditorWebviewComponent,
-  IWebview,
   IPlainWebview,
   IPlainWebviewComponentHandle,
+  IWebview,
+  IWebviewService,
 } from '@opensumi/ide-webview';
 
 import { ISumiExtHostWebviews } from '../../../common/sumi/webview';
 import {
-  IMainThreadWebview,
-  WebviewPanelShowOptions,
-  IWebviewPanelOptions,
-  IWebviewOptions,
   ExtHostAPIIdentifier,
   IExtHostWebview,
-  IWebviewPanelViewState,
+  IExtHostWebviewView,
+  IMainThreadWebview,
   IMainThreadWebviewView,
   IWebviewExtensionDescription,
-  IExtHostWebviewView,
+  IWebviewOptions,
+  IWebviewPanelOptions,
+  IWebviewPanelViewState,
+  WebviewPanelShowOptions,
+  WebviewViewOptions,
   WebviewViewResolverRegistrationEvent,
   WebviewViewResolverRegistrationRemovalEvent,
-  WebviewViewOptions,
 } from '../../../common/vscode';
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 import { WebviewViewShouldShowEvent } from '../../components/extension-webview-view';

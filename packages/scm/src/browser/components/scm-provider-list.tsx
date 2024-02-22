@@ -1,10 +1,9 @@
 import cls from 'classnames';
-import React, { useCallback, CSSProperties, FC } from 'react';
+import React, { CSSProperties, FC, useCallback } from 'react';
 
 import { Badge } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { ViewState } from '@opensumi/ide-core-browser';
-import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ViewState, useInjectable } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IStatusBarService } from '@opensumi/ide-status-bar';
 import { StatusBarItem } from '@opensumi/ide-status-bar/lib/browser/status-bar-item.view';
 

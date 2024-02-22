@@ -1,18 +1,18 @@
-import { DomListener, IRange } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable, Event, Emitter, uuid } from '@opensumi/ide-core-browser';
+import { Disposable, DomListener, Emitter, Event, IDisposable, IRange, uuid } from '@opensumi/ide-core-browser';
 import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
-import type { ICodeEditor, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { createCSSRule, removeCSSRulesContainingSelector } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import {
-  Sash,
   IHorizontalSashLayoutProvider,
-  Orientation,
-  SashState,
   ISashEvent,
+  Orientation,
+  Sash,
+  SashState,
 } from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/sash/sash';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { TrackedRangeStickiness } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import type { ICodeEditor, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;

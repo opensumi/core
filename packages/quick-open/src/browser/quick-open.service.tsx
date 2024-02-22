@@ -1,26 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
-  compareAnything,
   ConfigProvider,
   IContextKey,
   IContextKeyService,
+  IDisposable,
   KeybindingRegistry,
   QuickOpenActionProvider,
   QuickOpenTabOptions,
-  IDisposable,
+  compareAnything,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   HideReason,
+  QuickOpenModel as IKaitianQuickOpenModel,
   IKeyMods,
   QuickOpenItem,
-  QuickOpenModel as IKaitianQuickOpenModel,
   QuickOpenOptions,
   QuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';

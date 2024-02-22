@@ -1,14 +1,15 @@
 import { IPty as INodePty } from 'node-pty';
 import * as pty from 'node-pty';
-import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 
-import { MaybePromise, Uri, OperatingSystem, IThemeColor } from '@opensumi/ide-core-common';
+import { IThemeColor, MaybePromise, OperatingSystem, Uri } from '@opensumi/ide-core-common';
 
 import { ITerminalError } from './error';
 import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } from './extension';
 import { IDetectProfileOptions, ITerminalProfile } from './profile';
 import { WindowsShellType } from './shell';
+
+import type vscode from 'vscode';
 
 export interface IPtySpawnOptions {
   /**

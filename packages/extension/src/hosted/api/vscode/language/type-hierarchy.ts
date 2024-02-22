@@ -1,11 +1,11 @@
-import type vscode from 'vscode';
-
-import { Uri, CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, Uri } from '@opensumi/ide-core-common';
 import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import { Position, ITypeHierarchyItemDto } from '../../../../common/vscode/model.api';
+import { ITypeHierarchyItemDto, Position } from '../../../../common/vscode/model.api';
+
+import type vscode from 'vscode';
 
 export class TypeHierarchyAdapter {
   private readonly _idPool = new IdGenerator('');

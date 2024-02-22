@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase, localize, URI, Disposable } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, LifeCyclePhase, URI, localize } from '@opensumi/ide-core-common';
 import { GrammarsContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 export type GrammarSchema = Array<GrammarsContribution>;

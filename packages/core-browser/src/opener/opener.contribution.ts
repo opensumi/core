@@ -1,5 +1,5 @@
-import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
-import { Domain, ContributionProvider } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
 import { ClientAppContribution } from '../common/common.define';
 import { AppConfig } from '../react-providers/config-provider';
@@ -7,7 +7,7 @@ import { AppConfig } from '../react-providers/config-provider';
 import { CommandOpener } from './command-opener';
 import { HttpOpener } from './http-opener';
 
-import { OpenerContribution, IOpenerService } from '.';
+import { IOpenerService, OpenerContribution } from '.';
 
 @Domain(OpenerContribution)
 export class DefaultOpenerContribution implements OpenerContribution {

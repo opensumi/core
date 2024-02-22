@@ -1,10 +1,10 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color } from '../../common/color';
-import { transparent, registerColor } from '../utils';
+import { registerColor, transparent } from '../utils';
 
 import { contrastBorder } from './base';
-import { editorBackground, editorForeground, EDITOR_DRAG_AND_DROP_BACKGROUND } from './editor';
+import { EDITOR_DRAG_AND_DROP_BACKGROUND, editorBackground, editorForeground } from './editor';
 
 // < --- Panels --- >
 export const PANEL_BACKGROUND = registerColor(

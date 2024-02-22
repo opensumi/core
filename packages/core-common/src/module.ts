@@ -2,7 +2,7 @@
  * 项目中会使用到的模块接口定义
  */
 
-import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@opensumi/di';
+import { Autowired, ConstructorOf, Domain, INJECTOR_TOKEN, Injector, Provider, Token } from '@opensumi/di';
 
 import { RPCProtocol } from './types/rpc';
 

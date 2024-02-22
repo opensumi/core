@@ -1,9 +1,8 @@
 import debounce from 'lodash/debounce';
-import React, { PropsWithChildren, useCallback, MouseEvent, useState, useEffect, memo, useRef } from 'react';
+import React, { MouseEvent, PropsWithChildren, memo, useCallback, useEffect, useRef, useState } from 'react';
 
-import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
-import { ViewState } from '@opensumi/ide-core-browser';
-import { localize } from '@opensumi/ide-core-browser';
+import { INodeRendererWrapProps, IRecycleTreeHandle, RecycleTree, TreeNodeType } from '@opensumi/ide-components';
+import { ViewState, localize } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 

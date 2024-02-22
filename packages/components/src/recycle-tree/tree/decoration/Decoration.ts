@@ -1,6 +1,6 @@
-import { IDisposable, Disposable, Emitter } from '@opensumi/ide-utils';
+import { Disposable, Emitter, IDisposable } from '@opensumi/ide-utils';
 
-import { ITreeNode, ICompositeTreeNode } from '../../types';
+import { ICompositeTreeNode, ITreeNode } from '../../types';
 import { TreeNode } from '../TreeNode';
 
 export enum TargetMatchMode {

@@ -1,34 +1,34 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  PreferenceService,
-  PreferenceSchemaProvider,
-  IPreferenceSettingsService,
-  Emitter,
-  Event,
-  ILogger,
   CODICON_OWNER,
   Deferred,
-  OnEvent,
-  WithEventBus,
+  Emitter,
+  Event,
   ExtensionDidContributes,
   GeneralSettingsId,
+  ILogger,
+  IPreferenceSettingsService,
+  OnEvent,
+  PreferenceSchemaProvider,
+  PreferenceService,
+  URI,
+  WithEventBus,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 
 import {
-  ThemeType,
-  IconThemeType,
+  FontIconDefinition,
   IIconService,
-  ThemeContribution,
-  getThemeId,
   IIconTheme,
-  getThemeTypeSelector,
-  IconType,
+  IconFontFamily,
   IconShape,
   IconThemeInfo,
-  FontIconDefinition,
-  IconFontFamily,
+  IconThemeType,
+  IconType,
+  ThemeContribution,
+  ThemeType,
+  getThemeId,
+  getThemeTypeSelector,
 } from '../common';
 
 import { IconThemeStore } from './icon-theme-store';

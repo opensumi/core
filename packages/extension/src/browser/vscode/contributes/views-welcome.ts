@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { DisposableCollection, localize } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
@@ -7,7 +7,7 @@ import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@ope
 import { SCM_WELCOME_ID } from '@opensumi/ide-scm';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 export enum ViewsWelcomeExtensionPointFields {
   view = 'view',

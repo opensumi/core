@@ -1,4 +1,4 @@
-import { strings, CaseInsensitiveMap } from '@opensumi/ide-utils';
+import { CaseInsensitiveMap, strings } from '@opensumi/ide-utils';
 
 const { format, mnemonicButtonLabel } = strings;
 

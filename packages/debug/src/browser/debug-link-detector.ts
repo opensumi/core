@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { Schemes, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
-import { URI, IRange, isWindows, isMacintosh, path as osPath, OperatingSystem } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IOpenerService, OS, Schemes, formatLocalize } from '@opensumi/ide-core-browser';
+import { IRange, OperatingSystem, URI, isMacintosh, isWindows, path as osPath } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 
 import styles from './view/console/debug-console.module.less';

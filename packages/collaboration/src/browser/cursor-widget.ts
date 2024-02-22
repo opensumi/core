@@ -1,6 +1,6 @@
 import { Awareness } from 'y-protocols/awareness';
 
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';

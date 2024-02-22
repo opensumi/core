@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IToolbarPopoverStyle } from '@opensumi/ide-core-browser/lib/toolbar';
-import { Emitter, Disposable, IExtensionLogger } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, IExtensionLogger } from '@opensumi/ide-core-common';
 
 import {
   IToolbarButtonContribution,
@@ -9,25 +9,25 @@ import {
 } from '../../../browser/sumi/types';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import {
-  IToolbarButtonActionHandle,
-  IToolbarSelectActionHandle,
-  IMainThreadToolbar,
-  IExtHostToolbar,
-  IToolbarDropdownButtonActionHandle,
-  DROPDOWN_BUTTON_ON_SELECT_ID,
-  BUTTON_SET_STATE_ID,
-  SHOW_POPOVER_ID,
-  HIDE_POPOVER_ID,
-  BUTTON_SET_CONTEXT_ID,
   BUTTON_CLICK_ID,
-  BUTTON_STATE_CHANGE_ID,
   BUTTON_CONNECT_HANDLE_ID,
-  SELECT_SET_STATE_ID,
-  SELECT_SET_OPTIONS,
-  SELECT_SET_SELECT_ID,
+  BUTTON_SET_CONTEXT_ID,
+  BUTTON_SET_STATE_ID,
+  BUTTON_STATE_CHANGE_ID,
+  DROPDOWN_BUTTON_ON_SELECT_ID,
+  HIDE_POPOVER_ID,
+  IExtHostToolbar,
+  IMainThreadToolbar,
+  IToolbarButtonActionHandle,
+  IToolbarDropdownButtonActionHandle,
+  IToolbarSelectActionHandle,
   SELECT_CONNECT_HANDLE_ID,
   SELECT_ON_SELECT_ID,
+  SELECT_SET_OPTIONS,
+  SELECT_SET_SELECT_ID,
+  SELECT_SET_STATE_ID,
   SELECT_STATE_CHANGE_ID,
+  SHOW_POPOVER_ID,
   TOOLBAR_ACTION_TYPE,
 } from '../../../common/sumi/toolbar';
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';

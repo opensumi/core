@@ -1,9 +1,9 @@
-import type { Readable, Writable } from 'stream';
-
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
 import { LengthFieldBasedFrameDecoder, prependLengthField } from './frame-decoder';
+
+import type { Readable, Writable } from 'stream';
 
 export class StreamConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();

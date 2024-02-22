@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 
 import { IIconTheme, ThemeContribution, getThemeId } from '../common';

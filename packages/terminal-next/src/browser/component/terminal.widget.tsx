@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { useInjectable, localize } from '@opensumi/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
-  ITerminalGroupViewService,
-  IWidget,
+  ETerminalErrorType,
   ITerminalError,
   ITerminalErrorService,
-  ETerminalErrorType,
+  ITerminalGroupViewService,
+  IWidget,
 } from '../../common';
 
 import styles from './terminal.module.less';

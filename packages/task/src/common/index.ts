@@ -1,11 +1,12 @@
-import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred, IJSONSchemaMap } from '@opensumi/ide-core-common';
+import { Deferred, Event, IDisposable, IJSONSchemaMap, TaskIdentifier, URI, Uri } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 import { IShellLaunchConfig, ITerminalClient } from '@opensumi/ide-terminal-next/lib/common';
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ProblemCollector } from '../browser/problem-collector';
+import { ConfiguringTask, ContributedTask, KeyedTaskIdentifier, Task, TaskEvent, TaskSet } from './task';
 
-import { Task, ConfiguringTask, ContributedTask, TaskSet, KeyedTaskIdentifier, TaskEvent } from './task';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ProblemCollector } from '../browser/problem-collector';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface TaskMap {}

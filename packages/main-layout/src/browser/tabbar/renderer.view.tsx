@@ -1,15 +1,15 @@
 import cls from 'classnames';
-import React, { useEffect, useRef, useState, memo, createContext, FC, useContext, useLayoutEffect } from 'react';
+import React, { FC, createContext, memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
+import { ComponentRegistryInfo, IEventBus, ResizeEvent, useInjectable } from '@opensumi/ide-core-browser';
 import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
-import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer } from './bar.view';
-import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer } from './panel.view';
+import { BottomTabbarRenderer, LeftTabbarRenderer, RightTabbarRenderer } from './bar.view';
+import { BottomTabPanelRenderer, LeftTabPanelRenderer, RightTabPanelRenderer } from './panel.view';
 import styles from './styles.module.less';
-import { TabbarServiceFactory, TabbarService } from './tabbar.service';
+import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 
 export const TabbarConfig = createContext<{
   side: string;

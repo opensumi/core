@@ -1,18 +1,15 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  IDisposable,
-  Emitter,
-  Disposable,
-  Uri,
-  DisposableStore,
-  toDisposable,
-  Event,
   CancellationTokenSource,
+  Disposable,
+  DisposableStore,
+  Emitter,
+  Event,
+  IDisposable,
+  Uri,
   asPromise,
+  toDisposable,
 } from '@opensumi/ide-core-common';
-import type { CancellationToken } from '@opensumi/ide-core-common';
 
 import {
   DataTransferDTO,
@@ -22,13 +19,18 @@ import {
   ITreeViewRevealOptions,
   ITreeViewsService,
   MainThreadAPIIdentifier,
+  TreeView,
+  TreeViewItem,
+  TreeViewSelection,
   TreeviewsService,
 } from '../../../common/vscode';
-import { TreeView, TreeViewItem, TreeViewSelection } from '../../../common/vscode';
 import { DataTransfer } from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
 
 import { ExtHostCommands } from './ext.host.command';
+
+import type { CancellationToken } from '@opensumi/ide-core-common';
+import type vscode from 'vscode';
 
 type Root = null | undefined | void;
 interface TreeData<T> {

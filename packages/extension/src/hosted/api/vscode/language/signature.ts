@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
 import { Uri as URI } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as typeConvert from '../../../../common/vscode/converter';
-import { Position, ISignatureHelpDto, SignatureHelpContextDto } from '../../../../common/vscode/model.api';
+import { ISignatureHelpDto, Position, SignatureHelpContextDto } from '../../../../common/vscode/model.api';
+
+import type vscode from 'vscode';
 
 export class SignatureHelpAdapter {
   private cacheId = 0;

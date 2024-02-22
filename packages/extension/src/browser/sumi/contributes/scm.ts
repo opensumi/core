@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase, IJSONSchema, localize } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IJSONSchema, LifeCyclePhase, localize } from '@opensumi/ide-core-common';
 import { SCMService } from '@opensumi/ide-scm';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 @Injectable()
 @Contributes('scm')

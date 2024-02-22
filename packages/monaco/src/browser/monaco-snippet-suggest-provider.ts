@@ -1,16 +1,16 @@
 import * as jsoncparser from 'jsonc-parser';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
+  Disposable,
+  DisposableCollection,
+  IDisposable,
+  ILogger,
   IRange,
   Uri,
-  localize,
-  ILogger,
-  Disposable,
-  IDisposable,
-  DisposableCollection,
-  path,
   isPatternInWord,
+  localize,
+  path,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';

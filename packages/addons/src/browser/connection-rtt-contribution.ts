@@ -3,7 +3,7 @@ import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@
 import { Command, CommandContribution, CommandRegistry } from '@opensumi/ide-core-common/lib/command';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
-import { ConnectionRTTBrowserServiceToken, ConnectionRTTBrowserService } from './connection-rtt-service';
+import { ConnectionRTTBrowserService, ConnectionRTTBrowserServiceToken } from './connection-rtt-service';
 
 const START_CONNECTION_RTT_COMMAND: Command = {
   id: 'connection.start.rtt',

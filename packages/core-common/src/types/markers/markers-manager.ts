@@ -3,8 +3,7 @@ import { Emitter, Event, IDisposable, arrays } from '@opensumi/ide-utils';
 
 import { WithEventBus } from '../../event-bus';
 
-import { MapMap } from './markers';
-import { IMarker, IMarkerData, MarkerStatistics, MarkerSeverity } from './markers';
+import { IMarker, IMarkerData, MapMap, MarkerSeverity, MarkerStatistics } from './markers';
 
 const { isFalsyOrEmpty } = arrays;
 

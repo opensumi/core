@@ -4,7 +4,7 @@ import {
   createMessageConnection,
 } from '@opensumi/vscode-jsonrpc/lib/common/api';
 import { Disposable } from '@opensumi/vscode-jsonrpc/lib/common/disposable';
-import { MessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
+import { DataCallback, MessageReader } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
 import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
 /**
  * FIXME: 由于 `createMessageConnection` 方法隐式依赖了 `@opensumi/vscode-jsonrpc/lib/browser/main` 或 `@opensumi/vscode-jsonrpc/lib/node/main`

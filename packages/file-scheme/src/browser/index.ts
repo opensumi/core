@@ -5,8 +5,8 @@ import { FileSchemeDocNodeServicePath, IFileSchemeDocClient } from '../common';
 
 import { FileSchemeDocClientService } from './file-scheme-doc.client';
 import {
-  FileSystemEditorResourceContribution,
   FileSystemEditorComponentContribution,
+  FileSystemEditorResourceContribution,
 } from './file-scheme.contribution';
 
 @Injectable()

@@ -1,22 +1,22 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
 import {
-  URI,
-  DisposableCollection,
-  Emitter,
   CommandService,
   Deferred,
+  Disposable,
+  DisposableCollection,
+  Emitter,
   Event,
-  MaybeNull,
-  MarkerManager,
+  ILogger,
   IPosition,
   IRange,
-  Disposable,
-  ThrottledDelayer,
-  path,
-  pSeries,
   LRUMap,
-  ILogger,
+  MarkerManager,
+  MaybeNull,
+  ThrottledDelayer,
+  URI,
+  pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
@@ -28,7 +28,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IOutlineDecorationService, OUTLINE_VIEW_ID } from '../../common';
-import { OutlineTreeNode, OutlineCompositeTreeNode, OutlineRoot } from '../outline-node.define';
+import { OutlineCompositeTreeNode, OutlineRoot, OutlineTreeNode } from '../outline-node.define';
 import styles from '../outline-node.module.less';
 
 import { OutlineEventService } from './outline-event.service';

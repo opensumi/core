@@ -1,18 +1,18 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
   CommandContribution,
   CommandRegistry,
+  Domain,
   Event,
-  IContextKeyService,
   IContextKey,
+  IContextKeyService,
   Uri,
 } from '@opensumi/ide-core-browser';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import {
   ITypeHierarchyService,
-  TypeHierarchyProviderRegistry,
   TypeHierarchyItem,
+  TypeHierarchyProviderRegistry,
 } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 

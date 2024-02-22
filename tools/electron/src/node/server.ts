@@ -4,7 +4,7 @@ import net from 'net';
 
 import { Deferred, LogLevel } from '@opensumi/ide-core-common';
 import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
-import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
+import { IServerAppOpts, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 import { parseArgv } from '@opensumi/ide-utils/lib/argv';
 const argv = parseArgv(process.argv.slice(2));
 

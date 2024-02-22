@@ -1,42 +1,42 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  PreferenceService,
-  JsonSchemaContribution,
-  ISchemaStore,
-  PreferenceScope,
-  IJSONSchemaRegistry,
-  Disposable,
-  CorePreferences,
   ClientAppContribution,
   CommandContribution,
   ContributionProvider,
+  CorePreferences,
+  Disposable,
   Domain,
-  MonacoContribution,
-  ServiceNames,
-  KeybindingContribution,
-  KeybindingRegistry,
-  IOpenerService,
-  MonacoOverrideServiceRegistry,
-  KeybindingScope,
+  EDITOR_COMMANDS,
   IContextKeyService,
+  IJSONSchemaRegistry,
+  IOpenerService,
+  ISchemaStore,
+  JsonSchemaContribution,
   KeyCode,
   KeySequence,
-  EDITOR_COMMANDS,
+  KeybindingContribution,
+  KeybindingRegistry,
+  KeybindingScope,
+  MonacoContribution,
+  MonacoOverrideServiceRegistry,
+  PreferenceScope,
+  PreferenceService,
+  ServiceNames,
 } from '@opensumi/ide-core-browser';
 import {
+  IMenuItem,
   IMenuRegistry,
+  ISubmenuItem,
   MenuContribution,
   MenuId,
-  IMenuItem,
-  ISubmenuItem,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI, ILogger, DisposableCollection, isString, CommandService, isOSX } from '@opensumi/ide-core-common';
+import { CommandService, DisposableCollection, ILogger, URI, isOSX, isString } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import {
   ISemanticTokenRegistry,
-  parseClassifierString,
   TokenStyle,
+  parseClassifierString,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import * as monaco from '@opensumi/monaco-editor-core';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
@@ -52,8 +52,8 @@ import {
 import {
   StandaloneCommandService,
   StandaloneKeybindingService,
+  StandaloneServices,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
 import {

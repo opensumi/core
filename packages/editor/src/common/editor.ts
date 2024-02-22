@@ -2,28 +2,127 @@ import { Injectable } from '@opensumi/di';
 import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import {
-  URI,
-  Event,
   BasicEvent,
+  Event,
   IDisposable,
-  MaybeNull,
-  IRange,
-  ISelection,
   ILineChange,
-  IPosition,
-  IThemeColor,
   IMarkdownString,
+  IPosition,
+  IRange,
+  IRef,
+  ISelection,
+  IThemeColor,
+  MaybeNull,
+  URI,
 } from '@opensumi/ide-core-common';
-// eslint-disable-next-line import/no-restricted-paths
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-// eslint-disable-next-line import/no-restricted-paths
-import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import type { ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
+import { IDocModelUpdateOptions } from '../browser/doc-model/types';
 
 import { IResource } from './resource';
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { EOL, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
+import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import type { ITextModel, ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+
+// eslint-disable-next-line import/no-restricted-paths
+
+/**
+ * editorDocumentModel is a wrapped concept for monaco's textModel
+ */
+
+export interface IEditorDocumentModel extends IDisposable {
+  /**
+   * 文档URI
+   */
+  readonly uri: URI;
+
+  /**
+   * A unique identifier associated with this model.
+   */
+  id: string;
+
+  /**
+   * 编码
+   */
+  encoding: string;
+
+  /**
+   * An event emitted when the model's encoding have changed.
+   * @event
+   */
+  onDidChangeEncoding: Event<void>;
+
+  /**
+   * 行末结束
+   */
+  eol: EOL;
+
+  /**
+   * 语言Id
+   */
+  languageId: string;
+
+  /**
+   * 是否被修改过
+   */
+  readonly dirty: boolean;
+
+  /**
+   * 能否修改
+   */
+  readonly readonly: boolean;
+
+  /**
+   * 能否保存
+   */
+  readonly savable: boolean;
+
+  /**
+   * 是否永远都显示 dirty
+   */
+  readonly alwaysDirty: boolean;
+
+  /**
+   * 即便是 dirty 也要被 dispose
+   */
+  readonly disposeEvenDirty: boolean;
+
+  /**
+   * 是否关闭自动保存功能
+   */
+  readonly closeAutoSave: boolean;
+
+  /**
+   * 获得monaco的TextModel
+   */
+  getMonacoModel(): ITextModel;
+
+  /**
+   *  保存文档, 如果文档不可保存，则不会有任何反应
+   *  @param force 强制保存, 不管diff
+   */
+  save(force?: boolean, reason?: SaveReason): Promise<boolean>;
+
+  /**
+   * 恢复文件内容
+   * @param notOnDisk 文档已经不存在磁盘
+   */
+  revert(notOnDisk?: boolean): Promise<void>;
+
+  getText(range?: IRange): string;
+
+  updateContent(content: string, eol?: EOL): void;
+
+  updateEncoding(encoding: string): Promise<void>;
+
+  // setEncoding(encoding: string, preferredEncoding, mode: EncodingMode): Promise<void>;
+  updateOptions(options: IDocModelUpdateOptions);
+}
+
+export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
 
 export interface CursorStatus {
   position: MaybeNull<IPosition>;

@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
+import { CheckBox, Input, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
 import { ConfigContext } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
 import { localize } from '@opensumi/ide-core-common/lib/localize';

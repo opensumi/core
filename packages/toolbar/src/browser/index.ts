@@ -1,12 +1,12 @@
-import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Provider } from '@opensumi/di';
 import {
-  BrowserModule,
-  Domain,
   AppConfig,
+  BrowserModule,
   ClientAppContribution,
   ContributionProvider,
-  ToolBarActionContribution,
+  Domain,
   IToolbarRegistry,
+  ToolBarActionContribution,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { FrameworkKind, IExtensionsSchemaService } from '@opensumi/ide-core-common';

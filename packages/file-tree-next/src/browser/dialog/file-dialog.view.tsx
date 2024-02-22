@@ -2,17 +2,17 @@ import React from 'react';
 
 import {
   Button,
+  INodeRendererProps,
+  IRecycleTreeHandle,
   Input,
-  Select,
   Option,
   RecycleTree,
-  IRecycleTreeHandle,
-  INodeRendererProps,
+  Select,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { useInjectable, localize, isMacintosh, path } from '@opensumi/ide-core-browser';
+import { isMacintosh, localize, path, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
-import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@opensumi/ide-overlay';
+import { IDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
 
 import { Directory, File } from '../../common/file-tree-node.define';
 

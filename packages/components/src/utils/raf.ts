@@ -8,7 +8,7 @@ let id = 0;
 const ids: RafMap = {};
 
 // Support call raf with delay specified frame
-export default function wrapperRaf(callback: () => void, delayFrames = 1): number {
+function wrapperRaf(callback: () => void, delayFrames = 1): number {
   const myId: number = id++;
   let restFrames: number = delayFrames;
 
@@ -38,3 +38,5 @@ wrapperRaf.cancel = function cancel(pid?: number) {
 };
 
 wrapperRaf.ids = ids; // export this for test usage
+
+export { wrapperRaf };

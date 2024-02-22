@@ -1,37 +1,37 @@
 import debounce from 'lodash/debounce';
-import { action, observable, makeObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  View,
   CommandRegistry,
-  ViewContextKeyRegistry,
-  IContextKeyService,
-  localize,
-  IContextKey,
-  OnEvent,
-  WithEventBus,
-  ResizeEvent,
-  DisposableCollection,
   ContextKeyChangeEvent,
-  Event,
+  DisposableCollection,
   Emitter,
-  IScopedContextKeyService,
-  isDefined,
+  Event,
+  IContextKey,
+  IContextKeyService,
   ILogger,
+  IScopedContextKeyService,
+  OnEvent,
+  ResizeEvent,
+  View,
+  ViewContextKeyRegistry,
+  WithEventBus,
+  isDefined,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
   SplitPanelManager,
   SplitPanelService,
 } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
   AbstractContextMenuService,
   AbstractMenuService,
+  ICtxMenuRenderer,
   IMenu,
   IMenuRegistry,
-  ICtxMenuRenderer,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';

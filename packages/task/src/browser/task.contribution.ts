@@ -1,14 +1,14 @@
 import { Autowired } from '@opensumi/di';
 import {
+  Command,
   CommandContribution,
   CommandRegistry,
   Domain,
-  Command,
-  JsonSchemaContribution,
   IJSONSchemaRegistry,
-  WithEventBus,
-  TerminalClientAttachEvent,
+  JsonSchemaContribution,
   OnEvent,
+  TerminalClientAttachEvent,
+  WithEventBus,
 } from '@opensumi/ide-core-browser';
 import { ITerminalController } from '@opensumi/ide-terminal-next/lib/common/controller';
 

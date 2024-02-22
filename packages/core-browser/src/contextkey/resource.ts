@@ -1,6 +1,6 @@
 import { Schemes, URI } from '@opensumi/ide-core-common';
 
-import { IContextKeyService, IContextKey } from '../context-key';
+import { IContextKey, IContextKeyService } from '../context-key';
 import { getLanguageIdFromMonaco } from '../services/label-service';
 
 export type ILanguageResolver = (uri: URI) => string | null;

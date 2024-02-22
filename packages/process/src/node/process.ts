@@ -1,17 +1,17 @@
-import { ChildProcess, spawn, fork } from 'child_process';
+import { ChildProcess, fork, spawn } from 'child_process';
 import stream from 'stream';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter } from '@opensumi/ide-core-common';
 
 import {
-  ProcessOptions,
   ForkOptions,
-  IProcessStartEvent,
-  IProcessExitEvent,
-  ProcessErrorEvent,
-  IProcessManage,
   IProcess,
+  IProcessExitEvent,
+  IProcessManage,
+  IProcessStartEvent,
+  ProcessErrorEvent,
+  ProcessOptions,
 } from '../common/index';
 
 import { DevNullStream } from './dev-null-stream';

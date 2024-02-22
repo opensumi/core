@@ -2,27 +2,26 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
+// eslint-disable-next-line import/no-unresolved
 import { ProgressOptions } from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  formatLocalize,
   CancellationToken,
-  Progress,
-  IProgressStep,
-  throttle,
   CancellationTokenSource,
+  IProgressStep,
+  Progress,
+  formatLocalize,
+  throttle,
 } from '@opensumi/ide-core-common';
 
 import {
-  MainThreadAPIIdentifier,
   IExtHostProgress,
-  IMainThreadProgress,
   IExtensionDescription,
+  IMainThreadProgress,
+  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import { ProgressLocation } from '../../../common/vscode/converter';
-
 
 export class ExtHostProgress implements IExtHostProgress {
   private _handles = 0;

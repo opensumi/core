@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { DATA_SET_COMMAND, RenderWrapper } from '@opensumi/ide-components/lib/markdown/render';
-import { createMarkedRenderer, toMarkdownHtml as toHtml, IMarkedOptions } from '@opensumi/ide-components/lib/utils';
+import { IMarkedOptions, createMarkedRenderer, toMarkdownHtml as toHtml } from '@opensumi/ide-components/lib/utils';
 
 import { IOpenerService } from '../opener';
 

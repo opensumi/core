@@ -2,15 +2,15 @@ import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor } from '../../utils';
 import {
+  listActiveSelectionBackground,
+  listActiveSelectionForeground,
+  listFocusBackground,
+  listFocusForeground,
   listHoverBackground,
   listHoverForeground,
-  listInactiveSelectionForeground,
   listInactiveSelectionBackground,
-  listActiveSelectionForeground,
-  listActiveSelectionBackground,
+  listInactiveSelectionForeground,
   listInvalidItemForeground,
-  listFocusForeground,
-  listFocusBackground,
 } from '../list-tree';
 
 export const treeHoverBackground = registerColor(

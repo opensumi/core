@@ -8,7 +8,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { CommandContribution, CommandRegistry, ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
-import { ICollaborationService, CollaborationModuleContribution } from '../common';
+import { CollaborationModuleContribution, ICollaborationService } from '../common';
 import { REDO, UNDO } from '../common/commands';
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution, FsProviderContribution)

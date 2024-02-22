@@ -1,10 +1,10 @@
 import { Injector } from '@opensumi/di';
 import {
-  getNodeRequire,
-  SupportLogNamespace,
+  IExtensionLogger,
   ILogService,
   LogLevel,
-  IExtensionLogger,
+  SupportLogNamespace,
+  getNodeRequire,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';

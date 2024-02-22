@@ -1,7 +1,7 @@
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import { Color } from './color';
-import { ColorValue, ColorFunction, ITheme, ColorContribution, ColorDefaults, ColorIdentifier } from './theme.service';
+import { ColorContribution, ColorDefaults, ColorFunction, ColorIdentifier, ColorValue, ITheme } from './theme.service';
 
 // color registry
 export const Extensions = {

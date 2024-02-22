@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  PreferenceSchemaProperties,
   OVERRIDE_PROPERTY_PATTERN,
   PreferenceProvider,
+  PreferenceSchemaProperties,
   PreferenceScope,
 } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 export interface ConfigurationSnippets {
   body: {

@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
   CommandContribution,
@@ -10,27 +10,27 @@ import {
   EDITOR_COMMANDS,
   Event,
   FileType,
-  getIcon,
   KeybindingContribution,
   KeybindingRegistry,
   MaybePromise,
   TabBarToolbarContribution,
   ToolbarRegistry,
   URI,
+  getIcon,
 } from '@opensumi/ide-core-browser';
 import { TestingCanRefreshTests, TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Emitter, IMarkdownString } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
-  IEditorFeatureRegistry,
-  IEditorDocumentModelContentRegistry,
-  IEditorDocumentModelContentProvider,
-  WorkbenchEditorService,
   EditorComponentRegistry,
-  ResourceService,
-  IResource,
   EditorOpenType,
+  IEditorDocumentModelContentProvider,
+  IEditorDocumentModelContentRegistry,
+  IEditorFeatureRegistry,
+  IResource,
+  ResourceService,
+  WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';

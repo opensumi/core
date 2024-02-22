@@ -1,5 +1,5 @@
 // eslint-disable no-console
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Logger } from '@opensumi/ide-core-browser';
 import { CancellationToken, Disposable, DisposableStore, IDisposable, URI } from '@opensumi/ide-core-common';
@@ -13,16 +13,16 @@ import {
   TestResultServiceToken,
 } from '@opensumi/ide-testing/lib/common/test-result';
 import {
-  ITestRunProfile,
-  ResolvedTestRunRequest,
-  TestResultState,
-  SerializedTestMessage,
-  ILocationDto,
-  ITestRunTask,
   ExtensionRunTestsRequest,
-  TestsDiff,
+  ILocationDto,
   ITestItem,
+  ITestRunProfile,
+  ITestRunTask,
+  ResolvedTestRunRequest,
+  SerializedTestMessage,
   TestDiffOpType,
+  TestResultState,
+  TestsDiff,
 } from '@opensumi/ide-testing/lib/common/testCollection';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 

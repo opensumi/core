@@ -1,11 +1,11 @@
 import React from 'react';
 
 import {
-  QuickOpenItem,
   HideReason,
-  QuickOpenActionProvider,
-  QuickOpenTabOptions,
   IKeyMods,
+  QuickOpenActionProvider,
+  QuickOpenItem,
+  QuickOpenTabOptions,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 

@@ -1,10 +1,10 @@
-import type { TextDocument } from 'vscode';
-
-import { Event, BasicEvent, URI, IExtensionInfo } from '@opensumi/ide-core-common';
-import type { CancellationToken } from '@opensumi/ide-core-common';
+import { BasicEvent, Event, IExtensionInfo, URI } from '@opensumi/ide-core-common';
 
 import { Uri, UriComponents } from './ext-types';
-import type { WebviewPanel, IWebviewPanelOptions } from './webview';
+
+import type { IWebviewPanelOptions, WebviewPanel } from './webview';
+import type { CancellationToken } from '@opensumi/ide-core-common';
+import type { TextDocument } from 'vscode';
 
 /**
  * Provider for text based custom editors.

@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, MaybePromise, Event, URI } from '@opensumi/ide-utils';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Event, IDisposable, MaybePromise, URI } from '@opensumi/ide-utils';
 
 import { ContributionProvider } from './contribution-provider';
 

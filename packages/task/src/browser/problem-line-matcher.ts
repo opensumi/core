@@ -15,20 +15,20 @@
  ********************************************************************************/
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-abstract-line-matcher.ts
-
+// eslint-disable-next-line import/no-unresolved
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
 
 import {
-  isWindows,
+  FileLocationKind,
   ProblemLocationKind,
-  ProblemPattern,
-  ProblemMatcher,
   ProblemMatch,
   ProblemMatchData,
+  ProblemMatcher,
+  ProblemPattern,
   Severity,
-  FileLocationKind,
   URI,
   WatchingPattern,
+  isWindows,
 } from '@opensumi/ide-core-common';
 
 const endOfLine: string = isWindows ? '\r\n' : '\n';

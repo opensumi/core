@@ -1,7 +1,7 @@
-import type vscode from 'vscode';
-
 import { URI } from '@opensumi/ide-core-common';
+
 import type { IChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/smartLinesDiffComputer';
+import type vscode from 'vscode';
 
 // explorer/context
 // 资源管理器 ctxmenu

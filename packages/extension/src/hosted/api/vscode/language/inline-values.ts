@@ -1,11 +1,10 @@
-import type vscode from 'vscode';
-
-import { Uri, CancellationToken, IRange } from '@opensumi/ide-core-common';
-import { asPromise } from '@opensumi/ide-core-common';
+import { CancellationToken, IRange, Uri, asPromise } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 
 import { ExtensionDocumentDataManager, IInlineValueContextDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
+
+import type vscode from 'vscode';
 
 export class InlineValuesAdapter {
   constructor(

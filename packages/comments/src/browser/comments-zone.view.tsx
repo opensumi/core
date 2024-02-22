@@ -3,19 +3,19 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { INJECTOR_TOKEN, Injectable, Autowired } from '@opensumi/di';
-import { ConfigProvider, localize, AppConfig, useInjectable, Event, Emitter } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable } from '@opensumi/di';
+import { AppConfig, ConfigProvider, Emitter, Event, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditor } from '@opensumi/ide-editor';
-import { ResizeZoneWidget, IOptions } from '@opensumi/ide-monaco-enhance';
+import { IOptions, ResizeZoneWidget } from '@opensumi/ide-monaco-enhance';
 
 import {
   ICommentReply,
-  ICommentsZoneWidget,
   ICommentThreadTitle,
   ICommentsFeatureRegistry,
   ICommentsThread,
+  ICommentsZoneWidget,
 } from '../common';
 
 import { CommentItem } from './comments-item.view';

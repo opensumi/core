@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { StoragePaths, Deferred, URI, isWindows, ILogger, path } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Deferred, ILogger, StoragePaths, URI, isWindows, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { IStoragePathServer } from '../common';

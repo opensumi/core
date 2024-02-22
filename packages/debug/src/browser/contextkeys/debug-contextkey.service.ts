@@ -1,20 +1,20 @@
-import { Optional, Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService, IContextKey, IScopedContextKeyService } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { IContextKey, IContextKeyService, IScopedContextKeyService } from '@opensumi/ide-core-browser';
 
 import { DebugState } from '../../common';
 
 import {
-  CONTEXT_IN_DEBUG_REPL,
+  CONTEXT_ACTIVE_BREAKPOINTS,
+  CONTEXT_CAN_VIEW_MEMORY,
+  CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT,
+  CONTEXT_DEBUG_STATE,
+  CONTEXT_EXCEPTION_WIDGET_VISIBLE,
   CONTEXT_IN_DEBUG_CONSOLE,
   CONTEXT_IN_DEBUG_MODE,
-  CONTEXT_DEBUG_STATE,
-  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
-  CONTEXT_SET_VARIABLE_SUPPORTED,
+  CONTEXT_IN_DEBUG_REPL,
   CONTEXT_RESTART_FRAME_SUPPORTED,
-  CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT,
-  CONTEXT_CAN_VIEW_MEMORY,
-  CONTEXT_EXCEPTION_WIDGET_VISIBLE,
-  CONTEXT_ACTIVE_BREAKPOINTS,
+  CONTEXT_SET_VARIABLE_SUPPORTED,
+  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
 } from './../../common/constants';
 
 @Injectable()

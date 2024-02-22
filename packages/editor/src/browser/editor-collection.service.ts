@@ -1,50 +1,47 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRange, IContextKeyService } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { IContextKeyService, IRange } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
 import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
+  Disposable,
+  Emitter,
+  Emitter as EventEmitter,
   ILineChange,
+  ISelection,
+  OnEvent,
   URI,
   WithEventBus,
-  OnEvent,
-  Emitter as EventEmitter,
-  ISelection,
-  Disposable,
-  objects,
   isEmptyObject,
+  objects,
 } from '@opensumi/ide-core-common';
-import { Emitter } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+
+import {
+  CursorStatus,
+  EditorCollectionService,
+  EditorType,
+  ICodeEditor,
+  IDecorationApplyOptions,
+  IDiffEditor,
+  IEditor,
+  IResourceOpenOptions,
+  IUndoStopOptions,
+  ResourceDecorationNeedChangeEvent,
+} from '../common';
+import { IEditorDocumentModel, IEditorDocumentModelRef } from '../common/editor';
+
+import { MonacoEditorDecorationApplier } from './decoration-applier';
+import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
+import { EditorFeatureRegistryImpl } from './feature';
+import { getConvertedMonacoOptions, isDiffEditorOption, isEditorOption } from './preference/converter';
+import { IEditorFeatureRegistry } from './types';
+
 import type {
   ICodeEditor as IMonacoCodeEditor,
   IDiffEditor as IMonacoDiffEditor,
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
-
-import {
-  ICodeEditor,
-  IEditor,
-  EditorCollectionService,
-  IDiffEditor,
-  ResourceDecorationNeedChangeEvent,
-  CursorStatus,
-  IUndoStopOptions,
-  IDecorationApplyOptions,
-  EditorType,
-  IResourceOpenOptions,
-} from '../common';
-
-import { MonacoEditorDecorationApplier } from './decoration-applier';
-import {
-  IEditorDocumentModelRef,
-  EditorDocumentModelContentChangedEvent,
-  IEditorDocumentModelService,
-  IEditorDocumentModel,
-} from './doc-model/types';
-import { EditorFeatureRegistryImpl } from './feature';
-import { getConvertedMonacoOptions, isEditorOption, isDiffEditorOption } from './preference/converter';
-import { IEditorFeatureRegistry } from './types';
 
 const { removeUndefined } = objects;
 

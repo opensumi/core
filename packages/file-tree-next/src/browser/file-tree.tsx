@@ -1,32 +1,32 @@
 import cls from 'classnames';
 import React, {
-  useRef,
-  useEffect,
-  useCallback,
-  useState,
-  memo,
-  RefObject,
-  PropsWithChildren,
-  MouseEvent,
   DragEvent,
+  MouseEvent,
+  PropsWithChildren,
+  RefObject,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 
 import {
-  RecycleTreeFilterDecorator,
-  RecycleTree,
-  TreeNodeType,
   INodeRendererWrapProps,
   IRecycleTreeFilterHandle,
+  RecycleTree,
+  RecycleTreeFilterDecorator,
   TreeModel,
+  TreeNodeType,
 } from '@opensumi/ide-components';
 import {
-  ViewState,
-  useInjectable,
-  isOSX,
-  URI,
-  DisposableCollection,
   CancellationToken,
   CancellationTokenSource,
+  DisposableCollection,
+  URI,
+  ViewState,
+  isOSX,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
@@ -35,7 +35,7 @@ import { IIconService } from '@opensumi/ide-theme/lib/common/index';
 import { FILE_EXPLORER_WELCOME_ID, IFileTreeService } from '../common';
 import { Directory, File } from '../common/file-tree-node.define';
 
-import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
+import { FILE_TREE_NODE_HEIGHT, FileTreeNode } from './file-tree-node';
 import styles from './file-tree.module.less';
 import { FileTreeService, ITreeIndent } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';

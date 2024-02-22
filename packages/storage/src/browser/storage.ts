@@ -1,14 +1,14 @@
 import { AppConfig, StorageService } from '@opensumi/ide-core-browser';
 import {
-  getDebugLogger,
-  IStorage,
-  ThrottledDelayer,
-  isUndefinedOrNull,
+  Deferred,
+  DisposableCollection,
   Emitter,
   Event,
-  DisposableCollection,
-  Deferred,
+  IStorage,
+  ThrottledDelayer,
   URI,
+  getDebugLogger,
+  isUndefinedOrNull,
 } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 

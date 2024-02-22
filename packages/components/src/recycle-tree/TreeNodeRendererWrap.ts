@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { RenamePromptHandle, NewPromptHandle } from './prompt';
-import { TreeNode, CompositeTreeNode } from './tree/TreeNode';
+import { NewPromptHandle, RenamePromptHandle } from './prompt';
+import { CompositeTreeNode, TreeNode } from './tree/TreeNode';
 import { TreeNodeType } from './types';
 
 export interface ITreeNodeRendererProps {

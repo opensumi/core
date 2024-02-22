@@ -1,27 +1,27 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { AppConfig, ResizeEvent, getSlotLocation } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import {
-  WithEventBus,
-  Emitter,
-  Deferred,
-  Event,
-  IDisposable,
-  DisposableStore,
-  ILogger,
-  DisposableCollection,
   CommandRegistry,
+  Deferred,
+  DisposableCollection,
+  DisposableStore,
+  Emitter,
+  Event,
+  IApplicationService,
+  IDisposable,
+  ILogger,
+  Uri,
+  WithEventBus,
+  isThemeColor,
   replaceLocalizePlaceholder,
   withNullAsUndefined,
-  isThemeColor,
-  Uri,
-  IApplicationService,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -29,32 +29,32 @@ import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-hand
 import { IThemeService } from '@opensumi/ide-theme';
 
 import {
-  ITerminalController,
-  ITerminalClient,
-  IWidget,
-  ITerminalInfo,
-  ITerminalBrowserHistory,
-  ITerminalTheme,
-  ITerminalGroupViewService,
+  ICreateClientWithWidgetOptions,
+  ICreateTerminalOptions,
   IShellLaunchConfig,
+  IStartExtensionTerminalRequest,
+  ITerminalBrowserHistory,
+  ITerminalClient,
+  ITerminalClientFactory2,
+  ITerminalController,
   ITerminalErrorService,
+  ITerminalExitEvent,
+  ITerminalExternalLinkProvider,
+  ITerminalGroupViewService,
+  ITerminalInfo,
   ITerminalInternalService,
   ITerminalLaunchError,
   ITerminalProcessExtHostProxy,
-  IStartExtensionTerminalRequest,
-  ITerminalExitEvent,
-  ITerminalTitleChangeEvent,
-  ITerminalExternalLinkProvider,
-  ICreateTerminalOptions,
-  ITerminalClientFactory2,
-  ICreateClientWithWidgetOptions,
-  ITerminalProfileService,
-  TerminalOptions,
-  asTerminalIcon,
-  TERMINAL_ID_SEPARATOR,
   ITerminalProfile,
+  ITerminalProfileService,
+  ITerminalTheme,
+  ITerminalTitleChangeEvent,
+  IWidget,
+  TERMINAL_ID_SEPARATOR,
   TerminalCliterFilter,
   TerminalLocation,
+  TerminalOptions,
+  asTerminalIcon,
 } from '../common';
 import { CodeTerminalSettingId } from '../common/preference';
 

@@ -1,4 +1,4 @@
-import { TreeNode, CompositeTreeNode } from '../tree';
+import { CompositeTreeNode, TreeNode } from '../tree';
 import { TreeNodeType } from '../types';
 
 import { PromptHandle } from './PromptHandle';

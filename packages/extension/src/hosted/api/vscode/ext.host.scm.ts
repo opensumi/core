@@ -15,38 +15,38 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/scm.ts
 
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  asPromise,
-  comparePaths,
-  arrays,
-  debounce,
-  Event,
-  Emitter,
-  getDebugLogger,
+  CancellationToken,
   DisposableStore,
+  Emitter,
+  Event,
+  IDisposable,
+  ISplice,
   MutableDisposable,
   Uri as URI,
   UriComponents,
-  CancellationToken,
-  IDisposable,
-  ISplice,
+  arrays,
+  asPromise,
+  comparePaths,
+  debounce,
+  getDebugLogger,
   isUndefined,
 } from '@opensumi/ide-core-common';
 
-import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
+import { IExtensionDescription, MainThreadAPIIdentifier } from '../../../common/vscode';
 import {
-  SCMRawResourceSplices,
+  CommandDto,
+  IExtHostSCMShape,
+  IMainThreadSCMShape,
   SCMRawResource,
   SCMRawResourceSplice,
-  IMainThreadSCMShape,
-  IExtHostSCMShape,
-  CommandDto,
+  SCMRawResourceSplices,
 } from '../../../common/vscode/scm';
 
 import { ExtHostCommands } from './ext.host.command';
+
+import type vscode from 'vscode';
 
 const { sortedDiff } = arrays;
 

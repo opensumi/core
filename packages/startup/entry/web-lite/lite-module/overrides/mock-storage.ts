@@ -1,12 +1,12 @@
 import { Injector } from '@opensumi/di';
 import {
-  isUndefinedOrNull,
-  StorageProvider,
-  IStorage,
-  Event,
-  Emitter,
   Disposable,
+  Emitter,
+  Event,
+  IStorage,
+  StorageProvider,
   URI,
+  isUndefinedOrNull,
 } from '@opensumi/ide-core-common';
 
 let mockedStorage: MockedStorage | null = null;

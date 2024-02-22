@@ -15,22 +15,22 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/debug-session-manager.ts
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  WaitUntilEvent,
-  Emitter,
-  Event,
-  URI,
-  IContextKey,
-  DisposableCollection,
-  IContextKeyService,
-  formatLocalize,
-  Uri,
-  IReporterService,
-  uuid,
-  localize,
   COMMON_COMMANDS,
   CommandService,
+  DisposableCollection,
+  Emitter,
+  Event,
+  IContextKey,
+  IContextKeyService,
+  IReporterService,
+  URI,
+  Uri,
+  WaitUntilEvent,
+  formatLocalize,
+  localize,
+  uuid,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -39,20 +39,20 @@ import { ITaskService } from '@opensumi/ide-task/lib/common';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {
-  DebugConfiguration,
-  IDebugServer,
-  DebugServer,
-  DebugSessionOptions,
-  IDebugSessionDTO,
-  DEBUG_REPORT_NAME,
-  IDebugSessionManager,
-  DebugSessionExtra,
-  DebugThreadExtra,
   CONTEXT_DEBUG_STOPPED_KEY,
-  CONTEXT_IN_DEBUG_MODE_KEY,
   CONTEXT_DEBUG_TYPE_KEY,
+  CONTEXT_IN_DEBUG_MODE_KEY,
+  DEBUG_REPORT_NAME,
+  DebugConfiguration,
+  DebugServer,
+  DebugSessionExtra,
+  DebugSessionOptions,
   DebugState,
+  DebugThreadExtra,
   IDebugModelManager,
+  IDebugServer,
+  IDebugSessionDTO,
+  IDebugSessionManager,
 } from '../common';
 import { IDebugProgress } from '../common/debug-progress';
 

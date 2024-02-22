@@ -2,12 +2,12 @@ import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { TSumiProtocol, ProtocolRepository } from '../rpc';
+import { ProtocolRepository, TSumiProtocol } from '../rpc';
 import { SumiConnection } from '../rpc/connection';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 
-import { ServiceRegistry, Invoker, ProxyLegacy, ProxySumi } from './proxy';
+import { Invoker, ProxyLegacy, ProxySumi, ServiceRegistry } from './proxy';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 

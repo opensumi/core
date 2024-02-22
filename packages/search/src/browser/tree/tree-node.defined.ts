@@ -1,4 +1,4 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { URI } from '@opensumi/ide-core-common';
 
 import { ContentSearchResult, ISearchTreeService } from '../../common/content-search';

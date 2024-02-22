@@ -1,21 +1,21 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  Event,
   Emitter,
-  Uri,
-  getDebugLogger,
+  Event,
   FileSystemProviderCapabilities,
-  isLinux,
+  Uri,
   debounce,
+  getDebugLogger,
+  isLinux,
 } from '@opensumi/ide-core-common';
 
 import {
-  IDiskFileProvider,
-  FileChangeEvent,
-  DiskFileServicePath,
-  FileSystemProvider,
   DidFilesChangedParams,
+  DiskFileServicePath,
   FileChange,
+  FileChangeEvent,
+  FileSystemProvider,
+  IDiskFileProvider,
 } from '../common';
 
 export abstract class CoreFileServiceProviderClient implements FileSystemProvider {

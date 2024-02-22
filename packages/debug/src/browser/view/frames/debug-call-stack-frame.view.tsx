@@ -1,15 +1,15 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { RecycleList } from '@opensumi/ide-components';
 import {
-  ViewState,
-  isUndefined,
-  useInjectable,
-  localize,
   DisposableCollection,
+  ViewState,
   getIcon,
+  isUndefined,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 
 import { IDebugSessionManager } from '../../../common';

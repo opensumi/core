@@ -1,7 +1,4 @@
-import type net from 'net';
-
 import { Type } from '@furyjs/fury';
-import type WebSocket from 'ws';
 
 import { EventEmitter } from '@opensumi/events';
 import { DisposableCollection } from '@opensumi/ide-core-common';
@@ -10,8 +7,11 @@ import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { oneOf } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
-import { SumiConnection, ISumiConnectionOptions } from './rpc/connection';
+import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
 import { ILogger } from './types';
+
+import type net from 'net';
+import type WebSocket from 'ws';
 
 /**
  * `ping` and `pong` are used to detect whether the connection is alive.

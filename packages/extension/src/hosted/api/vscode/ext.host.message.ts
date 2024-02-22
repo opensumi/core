@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MessageType } from '@opensumi/ide-core-common';
 import { MAX_MESSAGE_LENGTH } from '@opensumi/ide-overlay/lib/common';
 
-import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
+import { IExtHostMessage, IMainThreadMessage, MainThreadAPIIdentifier } from '../../../common/vscode';
+
+import type vscode from 'vscode';
 
 export class ExtHostMessage implements IExtHostMessage {
   private proxy: IMainThreadMessage;

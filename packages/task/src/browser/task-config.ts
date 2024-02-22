@@ -4,31 +4,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-  isStringArray,
-  isString,
-  ProblemMatcherType,
-  NamedProblemMatcher,
-  objects,
-  formatLocalize,
-  isBoolean,
-  isArray,
-  ProblemMatcher,
-  isUndefined,
   IJSONSchemaMap,
-  uuid,
-  IStringDictionary,
-  KeyedTaskIdentifier,
   IProblemMatcherRegistry,
-  ITaskDefinitionRegistry,
   IProblemPatternRegistry,
+  IStringDictionary,
+  ITaskDefinitionRegistry,
+  KeyedTaskIdentifier,
+  NamedProblemMatcher,
   NamedProblemPattern,
   Platform,
+  ProblemMatcher,
+  ProblemMatcherType,
+  formatLocalize,
+  isArray,
+  isBoolean,
+  isString,
+  isStringArray,
+  isUndefined,
+  objects,
+  uuid,
 } from '@opensumi/ide-core-common';
 
 import { IWorkspaceFolder } from '../common';
 import * as TaskTypes from '../common/task';
 
-import { IProblemReporterBase, ValidationStatus, ProblemMatcherParser, Config } from './parser';
+import { Config, IProblemReporterBase, ProblemMatcherParser, ValidationStatus } from './parser';
 
 const { deepClone } = objects;
 

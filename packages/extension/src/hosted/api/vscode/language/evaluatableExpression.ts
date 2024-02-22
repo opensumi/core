@@ -1,6 +1,7 @@
+// eslint-disable-next-line import/no-unresolved
 import vscode from 'vscode';
 
-import { asPromise, CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, asPromise } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';

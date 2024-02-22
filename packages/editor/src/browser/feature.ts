@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, arrays, ILogger, Emitter, Event, URI } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter, Event, IDisposable, ILogger, URI, arrays } from '@opensumi/ide-core-browser';
 
 import { IEditor } from '../common';
 
-import { IEditorFeatureRegistry, IEditorFeatureContribution } from './types';
+import { IEditorFeatureContribution, IEditorFeatureRegistry } from './types';
 
 const { addElement } = arrays;
 

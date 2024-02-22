@@ -1,7 +1,7 @@
-import { Provider, Injectable } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { ISCMMenus, SCMService, IDirtyDiffWorkbenchController } from '../common';
+import { IDirtyDiffWorkbenchController, ISCMMenus, SCMService } from '../common';
 
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';

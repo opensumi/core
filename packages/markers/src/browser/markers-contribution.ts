@@ -7,10 +7,10 @@ import {
   Disposable,
   Domain,
   IStatusBarService,
-  localize,
   Logger,
   MARKER_COMMANDS,
   StatusBarAlignment,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 

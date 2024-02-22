@@ -1,7 +1,7 @@
-import { Provider, Injectable, Domain } from '@opensumi/di';
+import { Domain, Injectable, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { ICollaborationService, CollaborationServiceForClientPath, CollaborationModuleContribution } from '../common';
+import { CollaborationModuleContribution, CollaborationServiceForClientPath, ICollaborationService } from '../common';
 
 import { CollaborationContribution } from './collaboration.contribution';
 import { CollaborationService } from './collaboration.service';

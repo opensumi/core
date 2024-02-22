@@ -1,22 +1,25 @@
-import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
-import type * as vscode from 'vscode';
-import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
+// eslint-disable-next-line import/no-unresolved
+import { CancellationToken, DefinitionProvider, DocumentSelector, HoverProvider, ReferenceProvider } from 'vscode';
 
-import { Autowired, Injectable, ConstructorOf } from '@opensumi/di';
-import { Uri, URI, LRUMap, DisposableCollection } from '@opensumi/ide-core-common';
+import { Autowired, ConstructorOf, Injectable } from '@opensumi/di';
+import { DisposableCollection, LRUMap, URI, Uri } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, LanguageSelector } from '@opensumi/ide-editor/lib/browser';
-import { ExtensionDocumentDataManager, IExtHostLanguages } from '@opensumi/ide-extension/lib/common/vscode';
-import { MonacoModelIdentifier, testGlob } from '@opensumi/ide-extension/lib/common/vscode';
+import {
+  ExtensionDocumentDataManager,
+  IExtHostLanguages,
+  MonacoModelIdentifier,
+  testGlob,
+} from '@opensumi/ide-extension/lib/common/vscode';
 import { fromLanguageSelector } from '@opensumi/ide-extension/lib/common/vscode/converter';
 import { Disposable } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import {
-  SerializedDocumentFilter,
-  Hover,
-  Position,
   Definition,
   DefinitionLink,
-  ReferenceContext,
+  Hover,
   Location,
+  Position,
+  ReferenceContext,
+  SerializedDocumentFilter,
   isDocumentFilter,
 } from '@opensumi/ide-extension/lib/common/vscode/model.api';
 import { ExtHostDocumentData } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
@@ -25,6 +28,9 @@ import { DefinitionAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode
 import { HoverAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/hover';
 import { ReferenceAdapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/language/reference';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import type * as vscode from 'vscode';
 
 @Injectable()
 class LiteDocumentDataManager implements Partial<ExtensionDocumentDataManager> {

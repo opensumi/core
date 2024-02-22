@@ -6,10 +6,10 @@
 
 import {
   editorActiveIndentGuides,
-  editorIndentGuides,
   editorBackground,
   editorForeground,
   editorInactiveSelection,
+  editorIndentGuides,
   editorSelectionHighlight,
 } from './color-registry';
 import { IStandaloneThemeData } from './theme.service';

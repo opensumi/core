@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useRef, useEffect } from 'react';
+import React, { PropsWithChildren, useEffect, useRef } from 'react';
 
 import { IInputBaseProps, Input } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';

@@ -1,18 +1,18 @@
 import { Autowired } from '@opensumi/di';
 import {
+  AppConfig,
   Domain,
+  GlobalBrowserStorageService,
+  IStorage,
+  STORAGE_NAMESPACE,
+  STORAGE_SCHEMA,
+  ScopedBrowserStorageService,
   StorageResolverContribution,
   URI,
-  IStorage,
-  STORAGE_SCHEMA,
-  AppConfig,
-  ScopedBrowserStorageService,
-  GlobalBrowserStorageService,
-  STORAGE_NAMESPACE,
 } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IStorageServer, IWorkspaceStorageServer, IGlobalStorageServer } from '../common';
+import { IGlobalStorageServer, IStorageServer, IWorkspaceStorageServer } from '../common';
 
 import { Storage } from './storage';
 

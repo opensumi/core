@@ -1,16 +1,19 @@
-import { ISelection, IRange, ILineChange } from '@opensumi/ide-core-common';
+import { ILineChange, IRange, ISelection } from '@opensumi/ide-core-common';
 import {
-  IUndoStopOptions,
-  ISingleEditOperation,
-  IDecorationRenderOptions,
   IDecorationApplyOptions,
+  IDecorationRenderOptions,
   IResourceOpenOptions,
+  ISingleEditOperation,
+  IUndoStopOptions,
 } from '@opensumi/ide-editor';
+
+// eslint-disable-next-line import/no-restricted-paths
+import { ViewColumn } from './enums';
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type { RenderLineNumbersType as MonacoRenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 
-import { ViewColumn } from './enums';
 export * from './custom-editor';
 export * from './enums';
 export interface IExtensionHostEditorService {

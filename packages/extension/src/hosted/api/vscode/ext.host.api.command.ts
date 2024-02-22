@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from 'vscode';
-
 import { Uri as URI, arrays } from '@opensumi/ide-core-common';
-import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import * as typeConverters from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
 
 import { CommandsConverter } from './ext.host.command';
+
+import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
+import type * as vscode from 'vscode';
 
 const { isFalsyOrEmpty } = arrays;
 

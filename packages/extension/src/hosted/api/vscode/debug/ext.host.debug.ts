@@ -1,30 +1,28 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet, path } from '@opensumi/ide-core-common';
+import { Emitter, Event, IJSONSchema, IJSONSchemaSnippet, path, uuid } from '@opensumi/ide-core-common';
 import {
   DebugConfiguration,
   DebugStreamConnection,
-  IDebuggerContribution,
   IDebugSessionDTO,
+  IDebuggerContribution,
 } from '@opensumi/ide-debug';
 
 import {
   IExtHostCommands,
   IExtHostDebugService,
-  IMainThreadDebug,
   IInterProcessConnectionService,
+  IMainThreadDebug,
+  MainThreadAPIIdentifier,
 } from '../../../../common/vscode';
-import { MainThreadAPIIdentifier } from '../../../../common/vscode';
 import {
-  Disposable,
-  Uri,
-  DebugConsoleMode,
   DebugAdapterExecutable,
-  DebugAdapterServer,
   DebugAdapterInlineImplementation,
   DebugAdapterNamedPipeServer,
+  DebugAdapterServer,
   DebugConfigurationProviderTriggerKind,
+  DebugConsoleMode,
+  Disposable,
+  Uri,
 } from '../../../../common/vscode/ext-types';
 import { Breakpoint } from '../../../../common/vscode/models';
 import { CustomChildProcessModule } from '../../../ext.process-base';
@@ -34,11 +32,13 @@ import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutab
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
 import {
   connectDebugAdapter,
-  startDebugAdapter,
   directDebugAdapter,
   namedPipeDebugAdapter,
+  startDebugAdapter,
 } from './extension-debug-adapter-starter';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
+
+import type vscode from 'vscode';
 
 const { Path } = path;
 

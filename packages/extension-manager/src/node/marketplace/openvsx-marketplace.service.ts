@@ -1,6 +1,6 @@
 import nodeFetch from 'node-fetch';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { IMarketplaceService } from '../../common';

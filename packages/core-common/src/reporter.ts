@@ -1,15 +1,15 @@
-import { Injectable, Inject } from '@opensumi/di';
+import { Inject, Injectable } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-utils';
 
 import { getDebugLogger } from './log';
 import {
-  IReporterService,
-  ReporterMetadata,
   IReporter,
+  IReporterService,
+  IReporterTimer,
   PerformanceData,
   PointData,
-  IReporterTimer,
   REPORT_NAME,
+  ReporterMetadata,
 } from './types/reporter';
 
 class ReporterTimer implements IReporterTimer {

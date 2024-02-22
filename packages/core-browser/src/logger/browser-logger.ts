@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient, LogLevel } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ILogServiceClient, ILoggerManagerClient, LogLevel, SupportLogNamespace } from '@opensumi/ide-core-common';
 
 export { ILogger } from '@opensumi/ide-core-common';
 

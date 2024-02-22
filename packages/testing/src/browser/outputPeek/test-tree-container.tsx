@@ -6,17 +6,16 @@ import { Disposable, localize } from '@opensumi/ide-core-common';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import { TestPeekMessageToken } from '../../common';
-import { ITestResult, maxCountPriority, resultItemParents, TestResultServiceToken } from '../../common/test-result';
+import { ITestResult, TestResultServiceToken, maxCountPriority, resultItemParents } from '../../common/test-result';
 import { ITestMessage, ITestTaskState, TestResultItem, TestResultState } from '../../common/testCollection';
 import { firstLine, parseMarkdownText } from '../../common/testingStates';
-import { buildTestUri, TestUriType } from '../../common/testingUri';
+import { TestUriType, buildTestUri } from '../../common/testingUri';
 import { ITestTreeData } from '../../common/tree-view.model';
 import styles from '../components/testing.module.less';
 import { getIconWithColor } from '../icons/icons';
 import { TestResultServiceImpl } from '../test.result.service';
 
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
-
 
 enum ETestTreeType {
   RESULT = 'result',

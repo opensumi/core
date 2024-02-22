@@ -1,18 +1,18 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  DecorationsManager,
   Decoration,
+  DecorationsManager,
   IRecycleTreeHandle,
-  WatchEvent,
   TreeNodeEvent,
+  WatchEvent,
 } from '@opensumi/ide-components';
-import { Emitter, Deferred, Event, DisposableCollection, path, pSeries } from '@opensumi/ide-core-browser';
+import { Deferred, DisposableCollection, Emitter, Event, pSeries, path } from '@opensumi/ide-core-browser';
 
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import styles from '../view/variables/debug-variables.module.less';
 
 import { DebugHoverModel } from './debug-hover-model';
-import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
+import { DebugHoverSource, ExpressionVariable } from './debug-hover-source';
 
 const { Path } = path;
 

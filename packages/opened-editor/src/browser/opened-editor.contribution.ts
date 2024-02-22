@@ -1,18 +1,18 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
-  localize,
+  ClientAppContribution,
   CommandContribution,
   CommandRegistry,
-  OPEN_EDITORS_COMMANDS,
   CommandService,
-  FILE_COMMANDS,
+  Domain,
   EDITOR_COMMANDS,
+  FILE_COMMANDS,
+  OPEN_EDITORS_COMMANDS,
   URI,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { ClientAppContribution } from '@opensumi/ide-core-browser';
-import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TabBarToolbarContribution, ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';

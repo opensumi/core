@@ -1,14 +1,14 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Disposable,
-  IDisposable,
   DisposableCollection,
+  IDisposable,
   IJSONSchema,
   IJSONSchemaSnippet,
-  WaitUntilEvent,
   ILogger,
+  WaitUntilEvent,
 } from '@opensumi/ide-core-browser';
-import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
+import { DebugServer, DebuggerDescription, IDebugSessionDTO, IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

@@ -1,8 +1,8 @@
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
-import { WebSocket, Server } from '@opensumi/mock-socket';
+import { Server, WebSocket } from '@opensumi/mock-socket';
 
 import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
-import { stringify, parse } from '../../src/common/ws-channel';
+import { parse, stringify } from '../../src/common/ws-channel';
 (global as any).WebSocket = WebSocket;
 
 const randomPortFn = () => Math.floor(Math.random() * 10000) + 10000;

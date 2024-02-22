@@ -2,13 +2,13 @@ import { Injectable, Injector } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import {
-  IFileService,
-  IDiskFileProvider,
-  ShadowFileServicePath,
-  FileServicePath,
-  IShadowFileProvider,
-  FileSystemProvider,
   DiskFileServicePath,
+  FileServicePath,
+  FileSystemProvider,
+  IDiskFileProvider,
+  IFileService,
+  IShadowFileProvider,
+  ShadowFileServicePath,
 } from '../common';
 import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
 

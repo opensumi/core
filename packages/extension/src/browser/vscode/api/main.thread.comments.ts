@@ -1,50 +1,50 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
+  CommentMode,
+  CommentReaction,
+  CommentReactionClick,
+  ICommentsFeatureRegistry,
   ICommentsService,
   ICommentsThread,
-  ICommentsFeatureRegistry,
-  CommentMode,
-  CommentReactionClick,
   IThreadComment,
-  CommentReaction,
 } from '@opensumi/ide-comments';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
-  IRange,
+  CancellationToken,
+  Disposable,
   Emitter,
   Event,
-  URI,
-  CancellationToken,
   IDisposable,
-  positionToRange,
-  isUndefined,
-  Disposable,
-  WithEventBus,
+  IRange,
   OnEvent,
+  URI,
+  WithEventBus,
+  isUndefined,
+  positionToRange,
 } from '@opensumi/ide-core-common';
 import {
-  CommentThread,
   CommentInput,
-  CommentReaction as CoreCommentReaction,
-  CommentMode as CoreCommentMode,
+  CommentThread,
   CommentThreadState,
+  CommentMode as CoreCommentMode,
+  CommentReaction as CoreCommentReaction,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
-  IMainThreadComments,
   CommentProviderFeatures,
+  ExtHostAPIIdentifier,
   IExtHostComments,
   IMainThreadCommands,
+  IMainThreadComments,
 } from '../../../common/vscode';
-import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { MarkdownString } from '../../../common/vscode/converter';
 import { MarkdownString as CodeMarkdownString } from '../../../common/vscode/ext-types';
 import {
-  UriComponents,
+  CommentThreadChanges,
   CommentThreadCollapsibleState,
   Comment as CoreComment,
-  CommentThreadChanges,
+  UriComponents,
 } from '../../../common/vscode/models';
 
 @Injectable({ multiple: true })

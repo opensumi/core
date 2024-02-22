@@ -1,14 +1,14 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { INodeRendererProps, ClasslistComposite, Badge, Button } from '@opensumi/ide-components';
+import { Badge, Button, ClasslistComposite, INodeRendererProps } from '@opensumi/ide-components';
 import {
-  getIcon,
   CommandService,
   SEARCH_COMMANDS,
-  localize,
   getExternalIcon,
+  getIcon,
   isDefined,
+  localize,
 } from '@opensumi/ide-core-browser';
 
 import { SearchContentNode, SearchFileNode } from './tree-node.defined';
