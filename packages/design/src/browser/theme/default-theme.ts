@@ -1,5 +1,7 @@
+import { BuiltinTheme } from '@opensumi/ide-theme';
+
 export default {
-  themeSettings: [
+  tokenColors: [
     {
       scope: ['meta.embedded', 'source.groovy.embedded'],
       settings: {
@@ -790,10 +792,10 @@ export default {
   },
   encodedTokensColors: [],
   rules: [],
-  base: 'vs-dark',
+  base: 'vs-dark' as BuiltinTheme,
   designThemeType: 'design-dark',
   inherit: true,
   hasDefaultTokens: false,
-  id: 'OpenSumi Design Theme',
+  id: 'opensumi-design-dark-theme',
   name: 'OpenSumi Design Dark+ (default dark)',
 };

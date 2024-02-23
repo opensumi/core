@@ -4,8 +4,9 @@ import { ISplitPanelService } from '@opensumi/ide-core-browser/lib/components/la
 import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { AppLifeCycleServiceToken, Event, IAppLifeCycleService, LifeCyclePhase } from '@opensumi/ide-core-common';
+import { Schemes } from '@opensumi/ide-core-common';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
-import { Color, IThemeContribution, IThemeData, IThemeService, IThemeStore } from '@opensumi/ide-theme';
+import { IThemeContribution, IThemeService, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import { DesignCoreContribution } from './design.contribution';
@@ -31,17 +32,21 @@ export class DesignModule extends BrowserModule {
     Event.once(Event.filter(appLifeCycleService.onDidLifeCyclePhaseChange, (phase) => phase === LifeCyclePhase.Ready))(
       () => {
         const themeService: IThemeService = injector.get(IThemeService);
-        themeService.registerThemes(
-          [
-            {
-              id: defaultTheme.id,
-              label: defaultTheme.name,
-              path: '',
-              extensionId: defaultTheme.id,
-            },
-          ],
-          URI.parse('defaultTheme').withScheme('design'),
-        );
+
+        [defaultTheme, lightTheme].forEach((theme) => {
+          themeService.registerThemes(
+            [
+              {
+                id: theme.id,
+                label: theme.name,
+                path: '',
+                extensionId: theme.id,
+                uiTheme: theme.base,
+              },
+            ],
+            URI.parse(`${theme.id}.json`).withQuery(theme.id).withScheme(Schemes.design),
+          );
+        });
       },
     );
 
@@ -51,31 +56,14 @@ export class DesignModule extends BrowserModule {
         useClass: class extends ThemeStore {
           override async getThemeData(contribution?: IThemeContribution, basePath?: URI) {
             const newTheme = await super.getThemeData(contribution, basePath);
-
-            const theme = this.injector.get(IThemeData);
-            let themeToken;
-            if (contribution?.id?.includes('light')) {
-              themeToken = lightTheme;
-              document.body.classList.remove(defaultTheme.designThemeType);
+            if (defaultTheme.id === contribution?.id) {
+              document.body.classList.add(defaultTheme.designThemeType);
+            } else if (lightTheme.id === contribution?.id) {
+              document.body.classList.add(lightTheme.designThemeType);
             } else {
-              themeToken = defaultTheme;
               document.body.classList.remove(lightTheme.designThemeType);
+              document.body.classList.remove(defaultTheme.designThemeType);
             }
-            document.body.classList.add(themeToken.designThemeType);
-            theme.initializeFromData(themeToken);
-
-            const colors = theme.colors;
-            if (colors) {
-              for (const colorId in colors) {
-                if (Object.prototype.hasOwnProperty.call(colors, colorId)) {
-                  const colorHex = colors[colorId];
-                  if (typeof colorHex === 'string') {
-                    newTheme.colorMap[colorId] = Color.fromHex(colors[colorId]);
-                  }
-                }
-              }
-            }
-
             return newTheme;
           }
         },
