@@ -112,11 +112,12 @@
       &::before {
         content: none;
       }
-    }
 
-    .design-kt_editor_tab_current {
-      .design-close_tab {
-        display: block;
+      &.design-kt_editor_tab_current {
+        background-color: transparent;
+        .design-close_tab {
+          display: block;
+        }
       }
     }
 
@@ -591,14 +592,12 @@ div[class*='design-editor_tab_block_container__'] {
       width: 100%;
       overflow-y: auto;
 
-      :global {
-        .active {
-          .design-icon_tab {
-            background-color: var(--activityBar-activeBorder);
+      :global(.active) {
+        .design-icon_tab {
+          background-color: var(--activityBar-activeBorder);
 
-            &::before {
-              content: none;
-            }
+          &::before {
+            content: none;
           }
         }
       }

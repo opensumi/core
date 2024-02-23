@@ -3,8 +3,13 @@ import { BrowserModule, URI } from '@opensumi/ide-core-browser';
 import { ISplitPanelService } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
 import { IDesignStyleService } from '@opensumi/ide-core-browser/lib/design';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { AppLifeCycleServiceToken, Event, IAppLifeCycleService, LifeCyclePhase } from '@opensumi/ide-core-common';
-import { Schemes } from '@opensumi/ide-core-common';
+import {
+  AppLifeCycleServiceToken,
+  Event,
+  IAppLifeCycleService,
+  LifeCyclePhase,
+  Schemes,
+} from '@opensumi/ide-core-common';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IThemeContribution, IThemeService, IThemeStore } from '@opensumi/ide-theme';
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
