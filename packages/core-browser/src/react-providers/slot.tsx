@@ -170,7 +170,10 @@ export const slotRendererRegistry = new SlotRendererRegistry();
 export interface SlotProps {
   // Name of the slot view
   slot: string;
-  // Background color of the slot view
+  /**
+   * Background color of the slot view
+   * @deprecated discontinued
+   */
   backgroundColor?: string;
   // Is tabbar slot renderer or not
   isTabbar?: boolean;
@@ -211,7 +214,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
   return (
     <ErrorBoundary>
-      <SlotDecorator slot={slot} backgroundColor={props.backgroundColor}>
+      <SlotDecorator slot={slot}>
         <Renderer components={componentInfos} {...props} />
       </SlotDecorator>
     </ErrorBoundary>
