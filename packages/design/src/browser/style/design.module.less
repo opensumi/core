@@ -115,6 +115,7 @@
 
       &.design-kt_editor_tab_current {
         background-color: transparent;
+
         .design-close_tab {
           display: block;
         }
@@ -365,12 +366,8 @@ div[class*='design-editor_tab_block_container__'] {
     background-color: transparent;
   }
 
-  .design-panel_title_bar {
-    background-color: var(--design-title-background);
-
-    &::before {
-      content: none;
-    }
+  .design-panel_title_bar::before {
+    content: none;
   }
 
   .design-item_container {
@@ -444,6 +441,15 @@ div[class*='design-editor_tab_block_container__'] {
       &.design-item_container {
         border-left: 1px solid var(--editorGroup-border);
       }
+    }
+  }
+}
+
+:global(.design-dark),
+:global(.design-light) {
+  :global(.design_bottom_slot) {
+    .design-panel_title_bar {
+      background-color: var(--design-title-background);
     }
   }
 }
