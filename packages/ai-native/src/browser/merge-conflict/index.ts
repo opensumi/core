@@ -720,22 +720,29 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         conflictText: (isRegenerate && codeAssemble) || validEditOperation[0].text,
         isAccept: true,
       });
-      this.updateReportData();
-      this.reportConflictData();
       if (!isRegenerate) {
         // 记录处理数量 非重新生成 conflict 存在
         const uri = this.getModel().uri.toString();
         const cacheConflictRanges = this.cacheConflicts.getAllConflictsByUri(uri);
         if (cacheConflictRanges) {
-          const cacheConflict = cacheConflictRanges.find((cacheConflict) =>
-            cacheConflict.range.equalsRange(conflict!.range),
-          );
-          // TODO 同步 scanDocument
+          const cacheConflict = cacheConflictRanges.find((cacheConflict) => {
+            if (cacheConflict.isResolved) {
+              return false;
+            }
+            if (cacheConflict.range.equalsRange(range)) {
+              return true;
+            }
+            if (cacheConflict.text === codeAssemble) {
+              return true;
+            }
+          });
           if (cacheConflict && !cacheConflict.isResolved) {
             this.cacheConflicts.setConflictResolved(uri, cacheConflict.id);
           }
         }
       }
+      this.updateReportData();
+      this.reportConflictData();
       return Promise.resolve(resolveConflictResult);
     } else {
       if (resolveConflictResult?.isCancel) {
@@ -919,7 +926,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       // @ts-ignore
       languageFeaturesService.codeLensProvider._onDidChange.fire();
     }
-  }, 1000);
+  }, 2000);
 
   private debounceMessageWarning = debounce(() => {
     message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
