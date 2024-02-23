@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
-import { URI, path, LifeCyclePhase, localize, ILogger } from '@opensumi/ide-core-common';
-import { ThemeContribution, IIconService } from '@opensumi/ide-theme';
+import { ILogger, LifeCyclePhase, URI, localize, path } from '@opensumi/ide-core-common';
+import { IIconService, ThemeContribution } from '@opensumi/ide-theme';
 import { getIconRegistry } from '@opensumi/ide-theme/lib/common/icon-registry';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';

@@ -1,10 +1,10 @@
 import * as parser from 'jsonc-parser';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, ThemeIcon, isString, path, Logger } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Logger, ThemeIcon, URI, isString, path } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { IProductIconTheme, ExtensionData, ThemeContribution } from '../common';
+import { ExtensionData, IProductIconTheme, ThemeContribution } from '../common';
 import {
   IconContribution,
   IconDefinition,

@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IJSONSchema, LifeCyclePhase, localize, URI } from '@opensumi/ide-core-common';
+import { IJSONSchema, LifeCyclePhase, URI, localize } from '@opensumi/ide-core-common';
 import { LanguagesContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 

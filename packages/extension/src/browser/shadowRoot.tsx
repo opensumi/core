@@ -6,12 +6,12 @@ import { ComponentContextProvider, IIconResourceOptions, IconContext } from '@op
 import { DisposableCollection, LabelService, TComponentCDNType, useInjectable } from '@opensumi/ide-core-browser';
 import { ExtensionBrowserStyleSheet, URI, localize } from '@opensumi/ide-core-common';
 import {
-  getThemeTypeSelector,
   IIconService,
   IProductIconService,
   IThemeService,
   PRODUCT_ICON_STYLE_ID,
   ThemeType,
+  getThemeTypeSelector,
 } from '@opensumi/ide-theme';
 
 import { IExtension } from '../common';

@@ -18,16 +18,16 @@ import {
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import {
-  IProductIconService,
-  BuiltinThemeComparator,
   BuiltinTheme,
+  BuiltinThemeComparator,
+  DEFAULT_PRODUCT_ICON_THEME_ID,
   DEFAULT_THEME_ID,
   IIconService,
+  IProductIconService,
   IThemeService,
   IconThemeInfo,
   ThemeInfo,
   getThemeTypeName,
-  DEFAULT_PRODUCT_ICON_THEME_ID,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 

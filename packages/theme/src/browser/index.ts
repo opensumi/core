@@ -4,7 +4,7 @@ import { BrowserModule } from '@opensumi/ide-core-browser';
 import { ThemeContributionProvider } from '../common/provider';
 import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
 import { ICSSStyleService } from '../common/style';
-import { ThemeServicePath, IThemeService, IIconService, IProductIconService } from '../common/theme.service';
+import { IIconService, IProductIconService, IThemeService, ThemeServicePath } from '../common/theme.service';
 
 import { IconService } from './icon.service';
 import { ProductIconService } from './product-icon.service';
