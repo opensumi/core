@@ -306,7 +306,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     forkArgs.push(`--${KT_PROCESS_SOCK_OPTION_KEY}=${JSON.stringify(extServerListenOption)}`);
 
-    if (process.env.KTELECTRON) {
+    if (isElectronNode()) {
       extProcessPath = this.appConfig.extHost || (process.env.EXTENSION_HOST_ENTRY as string);
     } else {
       preloadPath =
@@ -503,7 +503,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private closeExtProcessWhenConnectionClose(connectionClientId: string) {
     if (this.clientExtProcessMap.has(connectionClientId)) {
-      if (process.env.KTELECTRON) {
+      if (isElectronNode()) {
         // in electron, if current connection is closed, kill the ext process immediately
         this.disposeClientExtProcess(connectionClientId).catch((e) => {
           this.logger.error(`Close extension host process when connection throw error\n${e.message}`);

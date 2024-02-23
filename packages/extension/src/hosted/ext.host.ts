@@ -14,7 +14,7 @@ import {
   timeout,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
-import * as path from '@opensumi/ide-utils/lib/path';
+import { join } from '@opensumi/ide-utils/lib/path';
 
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtendProxy, IExtensionHostService, getExtensionId } from '../common';
 import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from '../common/activator';
@@ -452,7 +452,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     if (extension.packageJSON.sumiContributes && extension.packageJSON.sumiContributes.nodeMain) {
       try {
         const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
-        extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.sumiContributes.nodeMain));
+        extendModule = getNodeRequire()(join(extension.path, extension.packageJSON.sumiContributes.nodeMain));
         reportTimer.timeEnd(extension.id, {
           version: extension.packageJSON.version,
         });
@@ -463,7 +463,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         this.logger.error(`active extension ${extension.id} failure by\n${error}`);
       }
     } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
-      extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
+      extendModule = getNodeRequire()(join(extension.path, extension.extendConfig.node.main));
       if (!extendModule) {
         this.logger.warn(`Can not find extendModule ${extension.id}`);
       }

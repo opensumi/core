@@ -33,7 +33,6 @@ import {
   asExtensionCandidate,
   createContributionProvider,
   getDebugLogger,
-  isElectronRenderer,
   isOSX,
   setLanguageId,
 } from '@opensumi/ide-core-common';
@@ -96,7 +95,6 @@ export class ClientApp implements IClientApp, IDisposable {
 
   private logger: ILogServiceClient;
   private connectionPath: UrlProvider;
-  private connectionProtocols?: string[];
   private keybindingRegistry: KeybindingRegistry;
   private keybindingService: KeybindingService;
   private modules: ModuleConstructor[];
@@ -105,11 +103,10 @@ export class ClientApp implements IClientApp, IDisposable {
   private stateService: ClientAppStateService;
   runtime: ElectronRendererRuntime | BrowserRuntime;
 
-  constructor(opts: IClientAppOpts) {
+  constructor(protected opts: IClientAppOpts) {
     const {
       modules,
       connectionPath,
-      connectionProtocols,
       iconStyleSheets,
       useCdnIcon,
       editorBackgroundImage,
@@ -126,7 +123,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
-    const isDesktop = opts.isElectronRenderer ?? isElectronRenderer();
+    const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === 'electron';
 
     this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime();
 
@@ -170,7 +167,6 @@ export class ClientApp implements IClientApp, IDisposable {
     this.config = this.runtime.mergeAppConfig(this.config);
 
     this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
-    this.connectionProtocols = connectionProtocols;
     this.initBaseProvider();
     this.initFields();
     this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);
@@ -261,7 +257,7 @@ export class ClientApp implements IClientApp, IDisposable {
           {
             clientId: this.config.clientId,
             connectionPath: this.connectionPath,
-            connectionProtocols: this.connectionProtocols,
+            connectionProtocols: this.opts.connectionProtocols,
           },
         ]);
         break;
@@ -723,4 +719,18 @@ export class ClientApp implements IClientApp, IDisposable {
   private _handleWheel = () => {
     // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
   };
+
+  protected detectRuntime() {
+    const global = window as any;
+    if (
+      global.isElectronRenderer ||
+      (typeof navigator === 'object' &&
+        typeof navigator.userAgent === 'string' &&
+        navigator.userAgent.indexOf('Electron') >= 0)
+    ) {
+      return 'electron';
+    }
+
+    return 'web';
+  }
 }
