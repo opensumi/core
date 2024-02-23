@@ -102,7 +102,7 @@ const cssStyle = `
 `;
 
 function loadStyleString(load: boolean) {
-  let mergeConflictStyleNode = document.getElementById('merge-conflict-codlens-style');
+  let mergeConflictStyleNode = document.getElementById('merge-conflict-codelens-style');
   if (!load) {
     mergeConflictStyleNode?.remove();
     return;
@@ -535,6 +535,10 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           if (!document) {
             return Promise.resolve();
           }
+          const conflicts = this.cacheConflicts.scanDocument(document as monaco.editor.ITextModel);
+          if (!conflicts?.length) {
+            return Promise.resolve();
+          }
           this.reportData = {
             clickAllNum: this.reportData.clickAllNum! + 1,
           };
@@ -610,7 +614,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     _token: monaco.CancellationToken,
   ): Promise<monaco.languages.CodeLens[] | null> {
     const conflicts = this.cacheConflicts.scanDocument(document);
-    if (!conflicts?.length) {
+    if (!conflicts.length) {
       return null;
     }
     const items: monaco.languages.CodeLens[] = [];
@@ -654,7 +658,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
-    let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange()) ?? '';
+    let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange(1, range.endColumn)) ?? '';
     if (isRegenerate) {
       codeAssemble = this.getCacheResolvedConflicts().get(lineRange.id)?.conflictText ?? '';
     }
@@ -716,22 +720,29 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         conflictText: (isRegenerate && codeAssemble) || validEditOperation[0].text,
         isAccept: true,
       });
-      this.updateReportData();
-      this.reportConflictData();
       if (!isRegenerate) {
         // 记录处理数量 非重新生成 conflict 存在
         const uri = this.getModel().uri.toString();
         const cacheConflictRanges = this.cacheConflicts.getAllConflictsByUri(uri);
         if (cacheConflictRanges) {
-          const cacheConflict = cacheConflictRanges.find((cacheConflict) =>
-            cacheConflict.range.equalsRange(conflict!.range),
-          );
-          // TODO 同步 scanDocument
+          const cacheConflict = cacheConflictRanges.find((cacheConflict) => {
+            if (cacheConflict.isResolved) {
+              return false;
+            }
+            if (cacheConflict.range.equalsRange(range)) {
+              return true;
+            }
+            if (cacheConflict.text === codeAssemble) {
+              return true;
+            }
+          });
           if (cacheConflict && !cacheConflict.isResolved) {
             this.cacheConflicts.setConflictResolved(uri, cacheConflict.id);
           }
         }
       }
+      this.updateReportData();
+      this.reportConflictData();
       return Promise.resolve(resolveConflictResult);
     } else {
       if (resolveConflictResult?.isCancel) {
@@ -770,7 +781,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       return Promise.resolve();
     }
     const conflicts = this.cacheConflicts.scanDocument(document);
-    if (!conflicts?.length) {
+    if (!conflicts.length) {
       return Promise.resolve();
     }
     let isCancelAll = false;
@@ -823,7 +834,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       let prompt = `你是一个智能解决代码冲突的专家，我遇到了一个代码的冲突，请仔细思考后给我解决冲突后最匹配的一个结果。注意，你需要理解代码语义后再给出答案。以下是代码中的冲突部分: \n ${codePromptBean}`;
 
       if (isRegenerate) {
-        const newContent = this.getModel()!.getValueInRange(range.toRange());
+        const newContent = this.getModel()!.getValueInRange(range.toRange(1, Constants.MAX_SAFE_SMALL_INTEGER));
         prompt += `\n当前的解决冲突后的代码是 \n ${newContent}，但是我不够满意，希望给出另一种解决方案`;
       }
       return this.aiBackService.request(prompt, { type: 'resolveConflict' }, this.createRequestToken(range.id).token);
@@ -910,14 +921,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }
 
   // 强制刷新 codelens
-  private updateCodeLensProvider() {
-    setTimeout(() => {
-      if (this.getModel().uri) {
-        // @ts-ignore
-        languageFeaturesService.codeLensProvider._onDidChange.fire();
-      }
-    }, 2000);
-  }
+  private updateCodeLensProvider = debounce(() => {
+    if (this.getModel().uri) {
+      // @ts-ignore
+      languageFeaturesService.codeLensProvider._onDidChange.fire();
+    }
+  }, 2000);
 
   private debounceMessageWarning = debounce(() => {
     message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');

@@ -300,11 +300,5 @@ export class DocumentMergeConflict implements ICacheDocumentMergeConflict {
     this.incoming = descriptor.incoming;
     this.commonAncestors = descriptor.commonAncestors;
     this.splitter = descriptor.splitter;
-
-    // this.incomingContent = descriptor?.incomingContent;
-    // this.currentContent = descriptor?.currentContent;
-    // this.bothContent = descriptor?.bothContent;
-    // this.aiContent = descriptor?.aiContent;
-    // this.defaultContent = descriptor?.defaultContent;
   }
 }
