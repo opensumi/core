@@ -28,7 +28,7 @@ import {
   IconType,
   ThemeType,
   getThemeId,
-  getThemeTypeSelector
+  getThemeTypeSelector,
 } from '../common';
 
 import { IconThemeStore } from './icon-theme-store';
