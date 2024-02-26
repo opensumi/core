@@ -1,6 +1,7 @@
 import { Serializer, Type } from '@furyjs/fury';
 import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
+import { Headers } from '@opensumi/ide-core-common/lib/types/rpc';
 import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
 import { furyFactory } from '../fury-extends/shared';
@@ -15,17 +16,7 @@ export enum OperationType {
   Cancel,
 }
 
-export enum BodyCodec {
-  /**
-   * Means no body
-   */
-  None,
-  Text,
-  Binary,
-  JSON,
-}
-
-export enum ErrorCode {
+export enum Status {
   OK,
   Err,
 }
@@ -33,11 +24,11 @@ export enum ErrorCode {
 const { fury, reader, writer } = furyFactory();
 export { reader };
 
-const requestHeadersProto = Type.object('headers', {
+const requestHeadersProto = Type.object('req-headers', {
   cancelable: Type.bool(),
 });
 
-export interface IRequestHeaders {
+export interface IRequestHeaders extends Headers {
   /**
    * If set to true, the request can be canceled.
    *
@@ -46,7 +37,22 @@ export interface IRequestHeaders {
   cancelable?: boolean;
 }
 
-export const requestHeadersSerializer = generateSerializer(fury, requestHeadersProto) as Serializer;
+export const requestHeadersSerializer = generateSerializer(fury, requestHeadersProto) as Serializer<
+  IRequestHeaders,
+  IRequestHeaders
+>;
+
+export type IResponseHeaders = Headers;
+
+export const responseHeadersProto = Type.object('resp-headers', {
+  chunked: Type.bool(),
+  chunkSize: Type.uint32(),
+});
+
+export const responseHeadersSerializer = generateSerializer(fury, responseHeadersProto) as Serializer<
+  IResponseHeaders,
+  IResponseHeaders
+>;
 
 export class MessageIO {
   static Request(requestId: number, rpcType: number, method: string, headers: IRequestHeaders, payload: Uint8Array) {
@@ -55,7 +61,6 @@ export class MessageIO {
     writer.uint8(ProtoVersionV1);
     writer.uint8(rpcType);
     writer.uint32(requestId);
-    writer.uint8(BodyCodec.Binary);
     writer.stringOfVarUInt32(method);
     requestHeadersSerializer.write(headers);
     writer.varUInt32(payload.length);
@@ -70,19 +75,19 @@ export class MessageIO {
     writer.uint8(ProtoVersionV1);
     writer.uint8(OperationType.Cancel);
     writer.uint32(requestId);
-    writer.uint8(BodyCodec.None);
 
     return writer.dump();
   }
 
-  static Response(requestId: number, headers: Record<string, any>, payload: Uint8Array) {
+  static Response(requestId: number, method: string, headers: Record<string, any>, payload: Uint8Array) {
     writer.reset();
 
     writer.uint8(ProtoVersionV1);
     writer.uint8(OperationType.Response);
     writer.uint32(requestId);
-    writer.uint8(BodyCodec.Binary);
-    writer.uint16(ErrorCode.OK);
+    writer.stringOfVarUInt32(method);
+    writer.uint16(Status.OK);
+    responseHeadersSerializer.write(headers);
     writer.varUInt32(payload.length);
     writer.buffer(payload);
 
@@ -95,8 +100,8 @@ export class MessageIO {
     writer.uint8(ProtoVersionV1);
     writer.uint8(OperationType.Response);
     writer.uint32(requestId);
-    writer.uint8(BodyCodec.JSON);
     writer.uint16(status);
+    responseHeadersSerializer.write(headers);
     writer.stringOfVarUInt32(stringifyError(error));
 
     return writer.dump();

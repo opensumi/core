@@ -1,3 +1,4 @@
+import { IReadableStream } from '@opensumi/ide-connection/lib/common/rpc/stream';
 import { Event, Uri } from '@opensumi/ide-utils';
 
 import { FileChangeEvent } from './file-watch';
@@ -196,6 +197,8 @@ export interface FileSystemProvider {
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
   readFile(uri: Uri, encoding?: string): Uint8Array | void | Promise<Uint8Array | void>;
+
+  readFileStream(uri: Uri): Promise<IReadableStream<Uint8Array>>;
 
   /**
    * Write data to a file, replacing its entire contents.
