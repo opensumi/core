@@ -713,7 +713,7 @@ export default {
     'menu.selectionBackground': '#5F656B40',
     'menu.selectionForeground': '#FFFFFF',
     'menu.separatorBackground': '#43484D',
-    'menubar.selectionBackground': '#2C3033',
+    'menubar.selectionBackground': '#5f656b40',
     'menubar.selectionForeground': '#FFFFFF',
     'message.background': '#222830',
     'message.foreground': '#D7DBDE',
