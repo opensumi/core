@@ -138,7 +138,7 @@ export class ClientApp implements IClientApp, IDisposable {
       // 一些转换和 typo 修复
       isElectronRenderer: isDesktop,
       workspaceDir: opts.workspaceDir || '',
-      extensionDir: opts.extensionDir,
+      extensionDir: opts.extensionDir || '',
       injector: this.injector,
       wsPath: opts.wsPath || `ws://${window.location.hostname}:8000`,
       layoutConfig: opts.layoutConfig as LayoutConfig,
