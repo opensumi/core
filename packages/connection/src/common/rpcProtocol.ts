@@ -22,7 +22,7 @@ export interface IProxyIdentifier {
   countId: number;
 }
 
-export { ProxyIdentifier, IRPCProtocol } from './rpc/multiplexer';
+export { IRPCProtocol, ProxyIdentifier };
 
 export function createExtHostContextProxyIdentifier<T>(serviceId: string): ProxyIdentifier<T> {
   const identifier = new ProxyIdentifier<T>(serviceId);
