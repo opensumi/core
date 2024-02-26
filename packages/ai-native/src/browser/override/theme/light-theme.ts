@@ -755,7 +755,7 @@ export default {
     'statusBarItem.activeBackground': '#FFFFFF40',
     'statusBarItem.hoverBackground': '#FFFFFF03',
     'statusBarItem.remoteBackground': '#6329B4',
-    'tab.activeBackground': '#ffffff0f',
+    'tab.activeBackground': '#ffffff',
     'tab.activeForeground': '#151b21',
     'tab.border': '#e9e9e914',
     'tab.inactiveBackground': '#00000000',
