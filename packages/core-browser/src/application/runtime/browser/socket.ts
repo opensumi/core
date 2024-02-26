@@ -2,19 +2,18 @@ import { Injectable } from '@opensumi/di';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
 import { UrlProvider, uuid } from '@opensumi/ide-core-common';
 
-import { BaseConnectionHelper, IBaseConnectionOptions } from '../base-socket';
+import { BaseConnectionHelper } from '../base-socket';
 
-export interface IWebConnectionOptions extends IBaseConnectionOptions {
-  clientId?: string;
+export interface IWebConnectionOptions {
   connectionPath: UrlProvider;
   connectionProtocols?: string[];
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class WebConnectionHelper extends BaseConnectionHelper {
   clientId: string;
   constructor(protected options: IWebConnectionOptions) {
-    super(options);
+    super();
 
     this.clientId = WebConnectionHelper.clientIdFactory();
   }
