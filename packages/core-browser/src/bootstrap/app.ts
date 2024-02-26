@@ -131,7 +131,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
       appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
-      appRoot: opts.appRoot,
+      appRoot: opts.appRoot || '',
       uriScheme: DEFAULT_URI_SCHEME,
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
