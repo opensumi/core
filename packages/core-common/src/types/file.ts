@@ -1,5 +1,5 @@
-import { IReadableStream } from '@opensumi/ide-connection/lib/common/rpc/stream';
 import { Event, Uri } from '@opensumi/ide-utils';
+import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileChangeEvent } from './file-watch';
 

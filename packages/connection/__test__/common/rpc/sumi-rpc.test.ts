@@ -1,8 +1,8 @@
 import { Type } from '@furyjs/fury';
 
 import { METHOD_NOT_REGISTERED } from '@opensumi/ide-connection/lib/common/constants';
-import { IReadableStream } from '@opensumi/ide-connection/lib/common/rpc/stream';
 import { Deferred } from '@opensumi/ide-core-common';
+import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { test } from './common-tester';
 import { createConnectionPair, createSumiRPCClientPair, longMessage } from './utils';
