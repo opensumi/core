@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createMutex } from 'lib0/mutex';
+// @ts-ignore
 import { Awareness } from 'y-protocols/awareness';
 import {
   RelativePosition,
