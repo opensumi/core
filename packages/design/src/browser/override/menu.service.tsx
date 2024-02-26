@@ -31,7 +31,7 @@ const MenuComponent = (props: { data: MenuNode } & IMenuRenderProps) => {
   return (
     <div
       className={cls(
-        styles.sub_menu_action_container,
+        styles.menuAction__sub_menu_action_container,
         {
           [styles.disabled]: disabled,
           [styles.checked]: data.checked,
