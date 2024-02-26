@@ -3,12 +3,15 @@ import { Injectable, Injector } from '@opensumi/di';
 import { BrowserModule } from '../../../browser-module';
 import { AppConfig } from '../../../react-providers';
 import { electronEnv } from '../../../utils/electron';
+import { ESupportRuntime } from '../constants';
 import { IRendererRuntime } from '../types';
 
 import { injectElectronInnerProviders } from './inner-providers-electron';
 
 @Injectable()
 export class ElectronRendererRuntime implements IRendererRuntime {
+  runtimeName = ESupportRuntime.Electron;
+
   registerRuntimeModuleProviders(injector: Injector, instance: BrowserModule<any>): void {
     instance.electronProviders && injector.addProviders(...instance.electronProviders);
   }

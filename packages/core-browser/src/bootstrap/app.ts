@@ -203,7 +203,7 @@ export class ClientApp implements IClientApp, IDisposable {
    */
   public async start(
     container: HTMLElement | IAppRenderer,
-    type?: ESupportRuntime,
+    type?: ESupportRuntime | `${ESupportRuntime}`,
     connection?: MessageConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
@@ -242,7 +242,7 @@ export class ClientApp implements IClientApp, IDisposable {
     measureReporter.timeEnd('Framework.ready');
   }
 
-  protected async createConnection(type: ESupportRuntime) {
+  protected async createConnection(type: `${ESupportRuntime}`) {
     let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
 
     switch (type) {

@@ -103,6 +103,7 @@ export const electronEnv: {
   webviewPreload: string;
   plainWebviewPreload: string;
   metadata: IElectronEnvMetadata;
+  osRelease: string;
   [key: string]: any;
 } = (global as any) || {};
 
