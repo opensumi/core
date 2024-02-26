@@ -46,6 +46,7 @@ import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/ele
 
 import { ClientAppStateService } from '../application';
 import { ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
+import { ESupportRuntime } from '../application/runtime';
 import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
@@ -123,7 +124,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
-    const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === 'electron';
+    const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
 
     this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime();
 
@@ -202,7 +203,7 @@ export class ClientApp implements IClientApp, IDisposable {
    */
   public async start(
     container: HTMLElement | IAppRenderer,
-    type?: 'electron' | 'web',
+    type?: ESupportRuntime,
     connection?: MessageConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
@@ -211,9 +212,9 @@ export class ClientApp implements IClientApp, IDisposable {
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
     if (connection) {
-      // do not allow use deprecated method start() with connection parameter
-      // because we all use `WSChannelHandler` to create connection.
-      // if user want to pass a message connection, we can allow user pass a `WSChannelHandler`.
+      // do not allow user use deprecated method start() with connection parameter
+      // because we all use `WSChannelHandler` to create connection
+      // WSChannelHandler hasn't supported user's custom connection.
 
       // eslint-disable-next-line no-console
       console.error("You're using deprecated method 'start()' with connection parameter");
@@ -241,18 +242,18 @@ export class ClientApp implements IClientApp, IDisposable {
     measureReporter.timeEnd('Framework.ready');
   }
 
-  protected async createConnection(type: 'electron' | 'web') {
+  protected async createConnection(type: ESupportRuntime) {
     let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
 
     switch (type) {
-      case 'electron':
+      case ESupportRuntime.Electron:
         connectionHelper = this.injector.get(ElectronConnectionHelper, [
           {
             clientId: this.config.clientId,
           },
         ]);
         break;
-      case 'web':
+      case ESupportRuntime.Web:
         connectionHelper = this.injector.get(WebConnectionHelper, [
           {
             clientId: this.config.clientId,
@@ -728,9 +729,9 @@ export class ClientApp implements IClientApp, IDisposable {
         typeof navigator.userAgent === 'string' &&
         navigator.userAgent.indexOf('Electron') >= 0)
     ) {
-      return 'electron';
+      return ESupportRuntime.Electron;
     }
 
-    return 'web';
+    return ESupportRuntime.Web;
   }
 }

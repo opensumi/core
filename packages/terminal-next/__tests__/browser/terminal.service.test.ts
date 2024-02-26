@@ -111,9 +111,9 @@ describe('terminal service test cases', () => {
     launchConfig = undefined;
   });
   it('should be generate a session id', async () => {
-    const windowClientId = await terminalService.generateSessionId?.();
-    expect(windowClientId).toMatch(/^test-window-client-id.*/);
-    expect(windowClientId).toContain(TERMINAL_ID_SEPARATOR);
+    const sessionId = await terminalService.generateSessionId?.();
+    expect(sessionId).toMatch(/^test-window-client-id.*/);
+    expect(sessionId).toContain(TERMINAL_ID_SEPARATOR);
   });
 
   it('[attachByLaunchConfig] should be valid launchConfig with a valid shell path and ignore type', async () => {

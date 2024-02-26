@@ -56,10 +56,8 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
     },
     {
       get: (target, method) => {
-        if (method === 'on') {
-          return target[method];
-        } else {
-          return async (...args: any) =>
+        if (!target[method]) {
+          target[method] = async (...args: any) =>
             new Promise((resolve, reject) => {
               const requestId = id++;
               ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
@@ -87,6 +85,7 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
               ElectronIpcRenderer.on('response:' + name, listener);
             });
         }
+        return target[method];
       },
     },
   );
@@ -126,8 +125,4 @@ export function createNetSocketConnection(connectPath?: string): NetSocketConnec
     socket = electronEnv.createRPCNetConnection();
   }
   return new NetSocketConnection(socket);
-}
-
-export function fromWindowClientId(suffix: string) {
-  return `${suffix}-${electronEnv.metadata.windowClientId}`;
 }
