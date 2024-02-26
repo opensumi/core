@@ -14,11 +14,12 @@ import {
   getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 import { ClientAppStateService } from '../application';
 
 import { ModuleConstructor } from './app.interface';
+
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 const initialLogger = getDebugLogger();
 
