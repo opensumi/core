@@ -1049,3 +1049,40 @@ export class Dispatcher<T = void> implements IDisposable {
     }
   }
 }
+
+export class EventQueue<T> {
+  emitter = new Emitter<T>();
+
+  queue: T[] = [];
+
+  isOpened = false;
+  open() {
+    this.isOpened = true;
+    this.queue.forEach((data) => {
+      this.emitter.fire(data);
+    });
+    this.queue = [];
+  }
+
+  push(data: T) {
+    if (this.isOpened) {
+      this.emitter.fire(data);
+    } else {
+      this.queue.push(data);
+    }
+  }
+
+  on(cb: (data: T) => void) {
+    const disposable = this.emitter.event(cb);
+
+    if (!this.isOpened) {
+      this.open();
+    }
+
+    return disposable;
+  }
+
+  dispose() {
+    this.emitter.dispose();
+  }
+}

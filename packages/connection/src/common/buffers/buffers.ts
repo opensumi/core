@@ -4,7 +4,7 @@
  * Where possible, operations execute without creating a new Buffer and copying everything over.
  */
 
-const emptyBuffer = new Uint8Array(0);
+export const emptyBuffer = new Uint8Array(0);
 
 export function copy(
   source: Uint8Array,

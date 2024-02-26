@@ -1,5 +1,6 @@
 import os from 'os';
 import paths from 'path';
+import { Readable } from 'stream';
 
 import * as fse from 'fs-extra';
 import trash from 'trash';
@@ -60,6 +61,11 @@ export interface IWatcher {
     excludes?: string[];
   };
   disposable: IDisposable;
+}
+
+export interface IReadFileStreamOptions {
+  position?: number;
+  length?: number;
 }
 
 @Injectable({ multiple: true })
@@ -207,25 +213,35 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       const buffer = await fse.readFile(FileUri.fsPath(new URI(_uri)));
       return buffer;
     } catch (error) {
-      if (isErrnoException(error)) {
-        if (error.code === 'ENOENT') {
-          throw FileSystemError.FileNotFound(uri.path, 'Error occurred while reading file');
-        }
+      this.handleReadFileError(error, uri);
+    }
+  }
 
-        if (error.code === 'EISDIR') {
-          throw FileSystemError.FileIsADirectory(uri.path, 'Error occurred while reading file: path is a directory.');
-        }
+  async readFileStream(uri: UriComponents, opts: IReadFileStreamOptions): Promise<Readable> {
+    const _uri = Uri.revive(uri);
+    try {
+      return fse.createReadStream(FileUri.fsPath(new URI(_uri)));
+    } catch (error) {
+      this.handleReadFileError(error, uri);
+    }
+  }
 
-        if (error.code === 'EPERM') {
-          throw FileSystemError.FileIsNoPermissions(
-            uri.path,
-            'Error occurred while reading file: path is a directory.',
-          );
-        }
+  protected handleReadFileError(error: Error, uri: UriComponents): never {
+    if (isErrnoException(error)) {
+      if (error.code === 'ENOENT') {
+        throw FileSystemError.FileNotFound(uri.path, 'Error occurred while reading file');
       }
 
-      throw error;
+      if (error.code === 'EISDIR') {
+        throw FileSystemError.FileIsADirectory(uri.path, 'Error occurred while reading file: path is a directory.');
+      }
+
+      if (error.code === 'EPERM') {
+        throw FileSystemError.FileIsNoPermissions(uri.path, 'Error occurred while reading file: path is a directory.');
+      }
     }
+
+    throw error;
   }
 
   async writeFile(

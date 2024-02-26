@@ -1,9 +1,11 @@
 import { Type } from '@furyjs/fury';
 
 import { METHOD_NOT_REGISTERED } from '@opensumi/ide-connection/lib/common/constants';
+import { IReadableStream } from '@opensumi/ide-connection/lib/common/rpc/stream';
+import { Deferred } from '@opensumi/ide-core-common';
 
 import { test } from './common-tester';
-import { createConnectionPair, createSumiRPCClientPair } from './utils';
+import { createConnectionPair, createSumiRPCClientPair, longMessage } from './utils';
 
 test('sumi rpc', {
   factory: createSumiRPCClientPair,
@@ -73,5 +75,22 @@ describe('sumi rpc only', () => {
 
     await expect(invoker1.notFound()).resolves.toEqual(METHOD_NOT_REGISTERED);
     await expect(invoker2.notFound()).resolves.toEqual(METHOD_NOT_REGISTERED);
+  });
+
+  it('support readable stream', async () => {
+    const { invoker1 } = createSumiRPCClientPair(pair);
+    const result = (await invoker1.readFileStream('test.txt')) as IReadableStream<Uint8Array>;
+
+    const deferred = new Deferred<void>();
+    let msg = '';
+    result.onData((d) => {
+      msg += d.toString();
+    });
+    result.onEnd(() => {
+      deferred.resolve();
+    });
+
+    await deferred.promise;
+    expect(msg).toBe(longMessage);
   });
 });

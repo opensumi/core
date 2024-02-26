@@ -12,7 +12,7 @@ export type TSumiProtocolMethod = _RPCProtocolMethod<TypeDescription>;
 export type TSumiRequest = _Request<TypeDescription>;
 export type TSumiResponse = _Response<TypeDescription>;
 
-export type TRequestCallback = (headers: Record<string, any>, error?: any, payload?: Uint8Array | string | any) => void;
+export type TRequestCallback = (headers: Record<string, any>, error?: any, payload?: any) => void;
 
 export type THandlerResult<R> = R | Promise<R>;
 
