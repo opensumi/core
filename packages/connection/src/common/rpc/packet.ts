@@ -46,7 +46,6 @@ export type IResponseHeaders = Headers;
 
 export const responseHeadersProto = Type.object('resp-headers', {
   chunked: Type.bool(),
-  chunkSize: Type.uint32(),
 });
 
 export const responseHeadersSerializer = generateSerializer(fury, responseHeadersProto) as Serializer<

@@ -9,6 +9,7 @@ import {
   isPromise,
   parseError,
 } from '@opensumi/ide-utils';
+import { IReadableStream, isNodeReadable, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { emptyBuffer } from '../buffers/buffers';
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
@@ -27,7 +28,6 @@ import {
   responseHeadersSerializer,
 } from './packet';
 import { ProtocolRepository } from './protocol-repository';
-import { IReadableStream, isNodeReadable, listenReadable } from './stream';
 import {
   TGenericNotificationHandler,
   TGenericRequestHandler,
