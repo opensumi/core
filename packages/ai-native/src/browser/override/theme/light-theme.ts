@@ -606,7 +606,7 @@ export default {
     'kt.icon.secondaryForeground': '#868C91',
     'kt.infoBackground': '#167CDB40',
     'kt.infoIconForeground': '#3895EB',
-    'kt.input.border': '#151b2129',
+    'kt.input.border': '#00000000',
     'kt.input.disableBackground': '#151b210a',
     'kt.input.disableForeground': '#151b2159',
     'kt.input.selectionBackground': '#1A66AC',

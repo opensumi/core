@@ -668,7 +668,7 @@ export default {
     'kt.secondaryButton.hoverBorder': '#3895EB',
     'kt.secondaryButton.hoverForeground': '#3895EB',
     'kt.secondaryButton.background': '#00000000',
-    'kt.select.background': '#ffffff0f',
+    'kt.select.background': '#ffffff14',
     'kt.select.border': '#00000000',
     'kt.select.disableBackground': '#5F656B40',
     'kt.select.disableForeground': '#5F656B',
