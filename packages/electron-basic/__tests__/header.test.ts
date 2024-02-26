@@ -66,21 +66,21 @@ describe('header service should work', () => {
     headerService.titleTemplate = template;
     headerService.separator = '\n';
     const data = headerService.formatAppTitle();
-    expect(data).toEqual(
-      `activeEditorShort|myFile.txt|
-activeEditorMedium|myFolder/myFileFolder/myFile.txt|
-activeEditorLong|/Users/Development/myFolder/myFileFolder/myFile.txt|
-activeFolderShort|myFileFolder|
-activeFolderMedium|myFolder/myFileFolder|
-activeFolderLong|/Users/Development/myFolder/myFileFolder|
-folderName|Development|
-folderPath|/Users/Development|
-rootName|Development|
-rootPath|/Users/Development|
-appName|OpenSumi|
-dirty|● |
-remoteName||`,
-    );
+    expect(data).toMatchInlineSnapshot(`
+      "activeEditorShort|myFile.txt|
+      activeEditorMedium|myFolder/myFileFolder/myFile.txt|
+      activeEditorLong|/Users/Development/myFolder/myFileFolder/myFile.txt|
+      activeFolderShort|myFileFolder|
+      activeFolderMedium|myFolder/myFileFolder|
+      activeFolderLong|/Users/Development/myFolder/myFileFolder|
+      folderName|Development|
+      folderPath|/Users/Development|
+      rootName|Development|
+      rootPath|/Users/Development|
+      appName|OpenSumi|
+      dirty|● |
+      remoteName||"
+    `);
     // restore
     headerService.separator = SEPARATOR;
   });

@@ -10,7 +10,7 @@ import {
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-browser';
 import { ResourceDidUpdateEvent, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
-import { basename, dirname, toSlashes } from '@opensumi/ide-utils/lib/path';
+import { basename, dirname, posix, toSlashes } from '@opensumi/ide-utils/lib/path';
 import { template } from '@opensumi/ide-utils/lib/strings';
 
 import { IElectronHeaderService } from '../../common/header';
@@ -158,6 +158,10 @@ function makeRelativePath(workspaceDir: string, path: string) {
 
   workspaceDir = toSlashes(workspaceDir);
   path = toSlashes(path);
+
+  if (!workspaceDir.endsWith(posix.sep)) {
+    workspaceDir += posix.sep;
+  }
 
   if (path.startsWith(workspaceDir)) {
     return path.substring(workspaceDir.length);
