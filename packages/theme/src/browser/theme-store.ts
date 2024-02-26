@@ -2,7 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { IThemeStore } from '../common/';
-import { IThemeData, IThemeContribution, getThemeId } from '../common/theme.service';
+import { IThemeContribution, IThemeData, getThemeId } from '../common/theme.service';
 
 import { ThemeData } from './theme-data';
 

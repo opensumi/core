@@ -22,8 +22,8 @@ import {
 } from '@opensumi/ide-core-browser';
 import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
-  SplitPanelManager,
   ISplitPanelService,
+  SplitPanelManager,
 } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
 import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
