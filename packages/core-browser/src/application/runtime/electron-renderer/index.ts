@@ -1,8 +1,8 @@
 import { Injectable, Injector } from '@opensumi/di';
 
-import { BrowserModule } from '../../browser-module';
-import { AppConfig } from '../../react-providers';
-import { electronEnv } from '../../utils/electron';
+import { BrowserModule } from '../../../browser-module';
+import { AppConfig } from '../../../react-providers';
+import { electronEnv } from '../../../utils/electron';
 import { IRendererRuntime } from '../types';
 
 import { injectElectronInnerProviders } from './inner-providers-electron';

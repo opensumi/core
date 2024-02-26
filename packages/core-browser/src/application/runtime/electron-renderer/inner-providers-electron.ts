@@ -6,16 +6,16 @@ import {
   IElectronURLService,
 } from '@opensumi/ide-core-common/lib/electron';
 
-import { ICtxMenuRenderer } from '../../menu/next';
+import { ICtxMenuRenderer } from '../../../menu/next';
 import {
   ElectronCtxMenuRenderer,
   ElectronMenuBarService,
   ElectronMenuFactory,
   IElectronMenuBarService,
   IElectronMenuFactory,
-} from '../../menu/next/renderer/ctxmenu/electron';
-import { AppConfig } from '../../react-providers/config-provider';
-import { createElectronMainApi } from '../../utils/electron';
+} from '../../../menu/next/renderer/ctxmenu/electron';
+import { AppConfig } from '../../../react-providers/config-provider';
+import { createElectronMainApi } from '../../../utils/electron';
 
 export function injectElectronInnerProviders(injector: Injector) {
   const appConfig: AppConfig = injector.get(AppConfig);

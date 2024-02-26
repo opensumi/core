@@ -5,7 +5,7 @@ export interface IBaseConnectionOptions {
 }
 
 export abstract class BaseConnectionHelper {
-  abstract generateNewClientId(): string;
+  abstract getDefaultClientId(): string;
 
   abstract createConnection(): BaseConnection<Uint8Array>;
 

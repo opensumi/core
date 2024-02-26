@@ -45,10 +45,12 @@ import {
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
 import { ClientAppStateService } from '../application';
+import { ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
+import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
+import { BrowserRuntime } from '../application/runtime/browser';
+import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
-import { ElectronConnectionHelper, WebConnectionHelper } from '../connection/';
-import { CONNECTION_HELPER_TOKEN } from '../connection/base';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
 import { LayoutViewSizeConfig } from '../layout/constants';
@@ -66,8 +68,6 @@ import {
   registerLocalStorageProvider,
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
-import { BrowserRuntime } from '../runtime/browser';
-import { ElectronRendererRuntime } from '../runtime/electron-renderer';
 import { DEFAULT_CDN_ICON, IDE_CODICONS_CN_CSS, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { electronEnv } from '../utils';
 
@@ -271,7 +271,7 @@ export class ClientApp implements IClientApp, IDisposable {
     });
 
     const connection: ReconnectingWebSocketConnection | NetSocketConnection = connectionHelper.createConnection();
-    const clientId: string = this.config.clientId ?? connectionHelper.generateNewClientId();
+    const clientId: string = this.config.clientId ?? connectionHelper.getDefaultClientId();
 
     await createConnectionService(
       this.injector,

@@ -1,11 +1,11 @@
 import { Injectable } from '@opensumi/di';
 
-import { createNetSocketConnection, electronEnv } from '../../utils/electron';
-import { BaseConnectionHelper } from '../base';
+import { createNetSocketConnection, electronEnv } from '../../../utils/electron';
+import { BaseConnectionHelper } from '../base-socket';
 
 @Injectable()
 export class ElectronConnectionHelper extends BaseConnectionHelper {
-  generateNewClientId() {
+  getDefaultClientId() {
     return electronEnv.metadata.windowClientId;
   }
 
