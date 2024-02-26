@@ -34,9 +34,11 @@ export async function createPackage(name: string) {
     throw new Error(`${name} is exists, can't create once more.`);
   }
 
+  const pkgName = `@opensumi/ide-${name}`;
+
   const filePaths = glob.sync(templatePattern);
   const replaceList = [
-    createReplaceTuple('template-name', `@opensumi/ide-${name}`),
+    createReplaceTuple('template-name', pkgName),
     createReplaceTuple('TemplateUpperName', upperFirst(camelCase(name))),
   ];
 
@@ -67,8 +69,8 @@ export async function createPackage(name: string) {
   const resolveJsonPath = path.join(__dirname, '../../configs/ts/tsconfig.resolve.json');
   const resolveTsConfig = require(resolveJsonPath);
   const extendPaths = {
-    [`@opensumi/ide-${name}`]: [`../packages/${name}/src/index.ts`],
-    [`@opensumi/ide-${name}/lib/*`]: [`../packages/${name}/src/*`],
+    [pkgName]: [`../packages/${name}/src/index.ts`],
+    [`${pkgName}/lib/*`]: [`../packages/${name}/src/*`],
   };
   Object.assign(resolveTsConfig.compilerOptions.paths, extendPaths);
   await fs.writeFile(resolveJsonPath, JSON.stringify(resolveTsConfig, null, 2) + '\n');
@@ -78,5 +80,6 @@ export async function createPackage(name: string) {
   await fs.writeFile(moduleTsJsonPath, JSON.stringify(moduleTsConfig, null, 2) + '\n');
 
   // 创建完模块之后执行一次初始化
-  run('yarn run init');
+  await run('yarn');
+  await run('yarn run init');
 }
