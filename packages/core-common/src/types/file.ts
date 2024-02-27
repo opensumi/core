@@ -124,6 +124,11 @@ export enum FileType {
   SymbolicLink = 64,
 }
 
+export interface IReadFileStreamOptions {
+  position?: number;
+  length?: number;
+}
+
 /**
  * Compatible with vscode.FileSystemProvider
  */
@@ -198,7 +203,7 @@ export interface FileSystemProvider {
    */
   readFile(uri: Uri, encoding?: string): Uint8Array | void | Promise<Uint8Array | void>;
 
-  readFileStream(uri: Uri): Promise<IReadableStream<Uint8Array>>;
+  readFileStream?(uri: Uri, opts?: IReadFileStreamOptions): Promise<IReadableStream<Uint8Array>>;
 
   /**
    * Write data to a file, replacing its entire contents.

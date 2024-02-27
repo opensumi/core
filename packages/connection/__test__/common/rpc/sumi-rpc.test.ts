@@ -2,7 +2,7 @@ import { Type } from '@furyjs/fury';
 
 import { METHOD_NOT_REGISTERED } from '@opensumi/ide-connection/lib/common/constants';
 import { Deferred } from '@opensumi/ide-core-common';
-import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
+import { IReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { test } from './common-tester';
 import { createConnectionPair, createSumiRPCClientPair, longMessage } from './utils';
@@ -83,11 +83,14 @@ describe('sumi rpc only', () => {
 
     const deferred = new Deferred<void>();
     let msg = '';
-    result.onData((d) => {
-      msg += d.toString();
-    });
-    result.onEnd(() => {
-      deferred.resolve();
+
+    listenReadable(result, {
+      onData: (d) => {
+        msg += d.toString();
+      },
+      onEnd() {
+        deferred.resolve();
+      },
     });
 
     await deferred.promise;

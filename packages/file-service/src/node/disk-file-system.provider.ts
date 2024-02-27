@@ -18,6 +18,7 @@ import {
   IFileStatOptions,
   ILogService,
   ILogServiceManager,
+  IReadFileStreamOptions,
   SupportLogNamespace,
   URI,
   Uri,
@@ -61,11 +62,6 @@ export interface IWatcher {
     excludes?: string[];
   };
   disposable: IDisposable;
-}
-
-export interface IReadFileStreamOptions {
-  position?: number;
-  length?: number;
 }
 
 @Injectable({ multiple: true })

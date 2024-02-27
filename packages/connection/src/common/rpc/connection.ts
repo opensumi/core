@@ -378,26 +378,45 @@ export class SumiConnection implements IDisposable {
 }
 
 class ActiveRequest implements IReadableStream<Uint8Array> {
-  protected queue = new EventQueue<Uint8Array>();
-  protected endQueue = new EventQueue<void>();
+  protected dataQ = new EventQueue<Uint8Array>();
+  protected endQ = new EventQueue<void>();
+
+  on(event: 'data', listener: (chunk: Uint8Array) => void): this;
+  on(event: 'end', listener: () => void): this;
+  on(event: string, listener: (...args: any[]) => void): this;
+  on(event: unknown, listener: unknown): this {
+    if (typeof event === 'string') {
+      switch (event) {
+        case 'data':
+          this.onData(listener as (chunk: Uint8Array) => void);
+          break;
+        case 'end':
+          this.onEnd(listener as () => void);
+          break;
+        default:
+          break;
+      }
+    }
+    return this;
+  }
 
   onData(cb: (data: Uint8Array) => void): IDisposable {
-    return this.queue.on(cb);
+    return this.dataQ.on(cb);
   }
 
   onEnd(cb: () => void): IDisposable {
-    return this.endQueue.on(cb);
+    return this.endQ.on(cb);
   }
 
   constructor(protected requestId: number, protected responseHeaders: IResponseHeaders) {}
 
   emit(buffer: Uint8Array) {
-    this.queue.push(buffer);
+    this.dataQ.push(buffer);
   }
 
   end() {
-    this.queue.dispose();
-    this.endQueue.push(undefined);
-    this.endQueue.dispose();
+    this.dataQ.dispose();
+    this.endQ.push(undefined);
+    this.endQ.dispose();
   }
 }
