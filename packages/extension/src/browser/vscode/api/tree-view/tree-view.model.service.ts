@@ -1,45 +1,45 @@
 import { DragEvent, MouseEvent } from 'react';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  DecorationsManager,
-  Decoration,
-  IRecycleTreeHandle,
-  TreeNodeType,
-  PromptValidateMessage,
-  TreeNodeEvent,
-  TreeNode,
   CompositeTreeNode,
+  Decoration,
+  DecorationsManager,
+  IRecycleTreeHandle,
+  PromptValidateMessage,
   TargetMatchMode,
+  TreeNode,
+  TreeNodeEvent,
+  TreeNodeType,
 } from '@opensumi/ide-components';
 import {
+  CommandService,
+  Deferred,
   DisposableCollection,
   Emitter,
-  PreferenceService,
   IContextKeyService,
-  Deferred,
-  ThrottledDelayer,
-  CommandService,
   LabelService,
+  PreferenceService,
+  ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
   ICtxMenuRenderer,
-  generateCtxMenu,
   MenuId,
+  generateCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
-  isUndefinedOrNull,
-  isNumber,
   CancellationToken,
-  Disposable,
-  Uri,
-  URI,
-  ILogger,
   CancellationTokenSource,
-  uuid,
+  Disposable,
+  ILogger,
   Mimes,
   Schemes,
+  URI,
+  Uri,
+  isNumber,
+  isUndefinedOrNull,
+  uuid,
 } from '@opensumi/ide-core-common';
 
 import {
@@ -54,8 +54,8 @@ import {
   DataTransfers,
   DraggedTreeItemsIdentifier,
   LocalSelectionTransfer,
-  toVSDataTransfer,
   VSDataTransfer,
+  toVSDataTransfer,
 } from '../../../../common/vscode/data-transfer';
 import { TreeViewDataProvider, TreeViewDragAndDropController } from '../main.thread.treeview';
 

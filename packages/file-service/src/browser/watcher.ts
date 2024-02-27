@@ -1,6 +1,6 @@
-import { Event, Emitter, DisposableCollection, URI } from '@opensumi/ide-core-common';
+import { DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-common';
 
-import { IFileServiceClient, IFileServiceWatcher, FileServiceWatcherOptions, FileChange } from '../common';
+import { FileChange, FileServiceWatcherOptions, IFileServiceClient, IFileServiceWatcher } from '../common';
 
 function filterChange(fileChangeList: FileChange[], watchUri: string) {
   return fileChangeList.filter((fileChange) => {

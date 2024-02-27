@@ -1,10 +1,9 @@
-import { uuid } from '@opensumi/ide-core-common';
-import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import { IReporterService, REPORT_NAME, uuid } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
-import { WSCloseInfo, ConnectionInfo } from '../common/utils';
-import { WSChannel, stringify, parse } from '../common/ws-channel';
+import { ConnectionInfo, WSCloseInfo } from '../common/utils';
+import { WSChannel, parse, stringify } from '../common/ws-channel';
 
 /**
  * Channel Handler in browser

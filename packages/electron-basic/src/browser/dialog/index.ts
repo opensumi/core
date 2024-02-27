@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IElectronNativeDialogService, electronEnv } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 

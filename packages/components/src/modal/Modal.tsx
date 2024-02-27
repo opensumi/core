@@ -6,9 +6,10 @@ import addEventListener from 'rc-util/lib/Dom/addEventListener';
 import React, { PropsWithChildren } from 'react';
 
 import { Button } from '../button';
-import type { ButtonType, ButtonProps } from '../button';
 
-import { getConfirmLocale, ModalLocale } from './locale';
+import { ModalLocale, getConfirmLocale } from './locale';
+
+import type { ButtonProps, ButtonType } from '../button';
 
 let mousePosition: { x: number; y: number } | null;
 export const destroyFns: Array<() => void> = [];

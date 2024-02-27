@@ -14,6 +14,8 @@ tools/cli-engine/src/browser/worker-host.js
 packages/*/lib/**
 packages/**/dist/**
 packages/**/dist-node/**
+**/__tests__/**
+**/tests/**
 
 packages/components/src/icon/iconfont
 packages/core-browser/src/style/octicons

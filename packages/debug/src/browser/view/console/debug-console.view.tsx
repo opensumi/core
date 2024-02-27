@@ -3,25 +3,31 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
-  RecycleTree,
-  IRecycleTreeHandle,
-  TreeNodeType,
-  INodeRendererWrapProps,
   ClasslistComposite,
-  INodeRendererProps,
   CompositeTreeNode,
+  INodeRendererProps,
+  INodeRendererWrapProps,
+  IRecycleTreeHandle,
+  Loading,
+  RecycleTree,
   TreeNode,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
-import { PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
+import {
+  CoreConfiguration,
+  PreferenceChange,
+  PreferenceService,
+  ViewState,
+  getIcon,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
 import { CharWidthReader } from '../../debugUtils';
-import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
+import { AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
 
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';

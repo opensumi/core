@@ -1,14 +1,14 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   AppConfig,
-  localize,
-  replaceLocalizePlaceholder,
-  Emitter,
   DisposableCollection,
-  isMacintosh,
+  Emitter,
+  OnEvent,
   PreferenceService,
   WithEventBus,
-  OnEvent,
+  isMacintosh,
+  localize,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-browser';
 import { ResourceDidUpdateEvent, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';

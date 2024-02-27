@@ -1,18 +1,18 @@
 import * as fs from 'fs';
 
 import { FileChangeType, FileSystemProviderCapabilities } from '@opensumi/ide-core-browser';
-import { Event, URI, FileUri, Uri, Emitter, path, BinaryBuffer } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Emitter, Event, FileUri, URI, Uri, path } from '@opensumi/ide-core-common';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { promisify } from '@opensumi/ide-core-common/lib/browser-fs/util';
 import {
-  IDiskFileProvider,
   FileChangeEvent,
   FileStat,
-  FileType,
   FileSystemError,
-  notEmpty,
-  isErrnoException,
+  FileType,
+  IDiskFileProvider,
   getFileTypeByExt,
+  isErrnoException,
+  notEmpty,
 } from '@opensumi/ide-file-service';
 
 import { HttpTreeList } from './http-file.service';

@@ -1,11 +1,11 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { localize, formatLocalize, QuickOpenHandler, View } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { QuickOpenHandler, View, formatLocalize, localize } from '@opensumi/ide-core-browser';
 import {
-  QuickOpenItem,
-  PrefixQuickOpenService,
-  QuickOpenModel,
-  QuickOpenItemOptions,
   Mode,
+  PrefixQuickOpenService,
+  QuickOpenItem,
+  QuickOpenItemOptions,
+  QuickOpenModel,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 
 import { IMainLayoutService } from '../common';

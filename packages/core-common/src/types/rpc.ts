@@ -1,9 +1,5 @@
 export interface Headers {
-  transferEncoding?: 'chunked';
-  /**
-   * @default 4M
-   */
-  chunkSize?: number;
+  chunked?: boolean;
 }
 
 export interface Request<T> {

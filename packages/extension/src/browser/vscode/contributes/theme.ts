@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { LifeCyclePhase, URI } from '@opensumi/ide-core-common';
-import { ThemeContribution, IThemeService } from '@opensumi/ide-theme';
+import { IThemeService, ThemeContribution } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 export type ThemesSchema = Array<ThemeContribution>;

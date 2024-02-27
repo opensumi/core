@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { toCanonicalName, iconvDecode, UTF8 } from './encoding';
+import { UTF8, iconvDecode, toCanonicalName } from './encoding';
 import * as strings from './strings';
 
 let textEncoder: TextEncoder | null;

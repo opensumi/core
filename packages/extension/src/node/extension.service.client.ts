@@ -1,18 +1,18 @@
 import os from 'os';
 import path from 'path';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { uuid, INodeLogger, Uri, AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger, Uri, uuid } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
 import {
-  IExtraMetaData,
-  IExtensionMetaData,
-  IExtensionNodeService,
-  IExtensionNodeClientService,
   ICreateProcessOptions,
+  IExtensionMetaData,
+  IExtensionNodeClientService,
+  IExtensionNodeService,
+  IExtraMetaData,
 } from '../common';
 import { IExtensionLanguagePackMetadata } from '../common/vscode';
 

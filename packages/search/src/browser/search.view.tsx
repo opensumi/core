@@ -1,9 +1,8 @@
 import cls from 'classnames';
-import React, { memo, useCallback, PropsWithChildren, useState, useMemo, useEffect, FormEvent, useRef } from 'react';
+import React, { FormEvent, PropsWithChildren, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ValidateMessage } from '@opensumi/ide-components';
-import { DisposableCollection, Key, ViewState } from '@opensumi/ide-core-browser';
-import { localize, useInjectable } from '@opensumi/ide-core-browser';
+import { DisposableCollection, Key, ViewState, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import {

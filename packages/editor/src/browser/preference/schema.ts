@@ -1,10 +1,10 @@
 import {
-  localize,
-  isOSX,
-  isLinux,
+  PreferenceProxy,
   PreferenceSchema,
   PreferenceSchemaProperties,
-  PreferenceProxy,
+  isLinux,
+  isOSX,
+  localize,
 } from '@opensumi/ide-core-browser';
 
 export const USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?';

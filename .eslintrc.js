@@ -15,8 +15,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     // 后续可开启eslint-plugin-import的推荐规则
-    // 'plugin:eslint-plugin-import/recommended',
-    // 'plugin:eslint-plugin-import/typescript',
+    'plugin:eslint-plugin-import/recommended',
+    'plugin:eslint-plugin-import/typescript',
     'prettier',
   ],
   settings: {
@@ -154,11 +154,19 @@ module.exports = {
     'no-control-regex': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'unused-imports/no-unused-imports': 'warn',
+    'import/export': 'off',
+    'import/namespace': 'off',
+    'sort-imports': [
+      'error',
+      {
+        ignoreDeclarationSort: true,
+      },
+    ],
     // 让 import 中的内部包和外部包分组，看起来更美观
     'import/order': [
       'error',
       {
-        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'unknown'],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type', 'unknown'],
         alphabetize: {
           order: 'asc',
           caseInsensitive: true,

@@ -1,20 +1,20 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Emitter,
-  URI,
+  EncodingRegistry,
   Event,
-  IApplicationService,
   FileChangeType,
-  OperatingSystem,
+  IApplicationService,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
+  OperatingSystem,
   PreferenceService,
-  getLanguageIdFromMonaco,
-  EncodingRegistry,
-  UTF8_with_bom,
-  UTF8,
-  detectEncodingFromBuffer,
   SaveTaskResponseState,
+  URI,
+  UTF8,
+  UTF8_with_bom,
+  detectEncodingFromBuffer,
+  getLanguageIdFromMonaco,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';

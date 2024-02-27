@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IEventBus, useInjectable } from '@opensumi/ide-core-browser';
 import {
-  LifeCyclePhase,
-  CancellationTokenSource,
   CUSTOM_EDITOR_SCHEME,
+  CancellationTokenSource,
   Disposable,
   ILogger,
+  LifeCyclePhase,
   match,
 } from '@opensumi/ide-core-common';
 import {
@@ -19,16 +19,16 @@ import {
 import { IWebviewService } from '@opensumi/ide-webview';
 import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
 
-import { VSCodeContributePoint, Contributes, ExtensionService, LifeCycle } from '../../../common';
+import { Contributes, ExtensionService, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { ICustomEditorOptions } from '../../../common/vscode';
 import {
+  CustomEditorOptionChangeEvent,
   CustomEditorScheme,
   CustomEditorShouldDisplayEvent,
-  CustomEditorShouldHideEvent,
-  CustomEditorOptionChangeEvent,
-  CustomEditorShouldSaveEvent,
-  CustomEditorShouldRevertEvent,
   CustomEditorShouldEditEvent,
+  CustomEditorShouldHideEvent,
+  CustomEditorShouldRevertEvent,
+  CustomEditorShouldSaveEvent,
 } from '../../../common/vscode/custom-editor';
 import { IActivationEventService } from '../../types';
 

@@ -2,17 +2,19 @@
  * @deprecated `kaitian` was deprecated, Please use `sumi` instead.
  */
 declare module 'kaitian' {
+  // eslint-disable-next-line import/no-unresolved
   export * from 'sumi';
 }
 declare module 'sumi' {
+  // eslint-disable-next-line import/no-unresolved
   export * from 'vscode';
-
   import {
-    ExtensionContext as VSCodeExtensionContext,
     Disposable,
+    ExtensionKind,
     TextEditor,
     TextEditorEdit,
-    ExtensionKind,
+    ExtensionContext as VSCodeExtensionContext,
+    // eslint-disable-next-line import/no-unresolved
   } from 'vscode';
 
   /**

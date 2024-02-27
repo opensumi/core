@@ -15,10 +15,11 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/common/severity.ts
 
+// eslint-disable-next-line import/no-unresolved
 import { Diagnostic } from 'vscode';
 
 import { Injectable } from '@opensumi/di';
-import { isArray, isString, IDisposable, Disposable, DisposableCollection, URI } from '@opensumi/ide-utils';
+import { Disposable, DisposableCollection, IDisposable, URI, isArray, isString } from '@opensumi/ide-utils';
 
 import { ProblemMatcher } from './problem-matcher';
 

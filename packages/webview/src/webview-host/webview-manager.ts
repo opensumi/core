@@ -1,4 +1,4 @@
-import { defaultCss, IWebviewChannel, getVsCodeApiScript } from './common';
+import { IWebviewChannel, defaultCss, getVsCodeApiScript } from './common';
 
 export class WebviewPanelManager {
   private activeTheme = 'default';

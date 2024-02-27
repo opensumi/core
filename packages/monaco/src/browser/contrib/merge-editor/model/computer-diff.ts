@@ -1,8 +1,8 @@
 import { IDocumentDiff } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/documentDiffProvider';
 import { RangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import {
-  IEditorWorkerService,
   IDiffComputationResult,
+  IEditorWorkerService,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 

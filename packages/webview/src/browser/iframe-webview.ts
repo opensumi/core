@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, URI } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { AppConfig, Disposable, DomListener, IDisposable, URI, getDebugLogger } from '@opensumi/ide-core-browser';
 
 import { AbstractWebviewPanel } from './abstract-webview';
 import { IWebview, IWebviewContentOptions } from './types';

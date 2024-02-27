@@ -1,11 +1,11 @@
 import { Injector } from '@opensumi/di';
 import {
-  IReporter,
   DefaultReporter,
+  IReporter,
   IReporterService,
-  ReporterService,
-  ReporterMetadata,
   REPORT_HOST,
+  ReporterMetadata,
+  ReporterService,
 } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,

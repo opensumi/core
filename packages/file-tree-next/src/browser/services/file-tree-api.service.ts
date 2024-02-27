@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ITree } from '@opensumi/ide-components';
-import { EDITOR_COMMANDS, CorePreferences } from '@opensumi/ide-core-browser';
-import { URI, localize, CommandService, formatLocalize, path } from '@opensumi/ide-core-common';
+import { CorePreferences, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { CommandService, URI, formatLocalize, localize, path } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';

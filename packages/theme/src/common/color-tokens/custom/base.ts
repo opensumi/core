@@ -1,8 +1,8 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { transparent, registerColor } from '../../utils';
-import { iconForeground, foreground } from '../base';
-import { editorWarningForeground, editorErrorForeground, editorInfoForeground } from '../editor';
+import { registerColor, transparent } from '../../utils';
+import { foreground, iconForeground } from '../base';
+import { editorErrorForeground, editorInfoForeground, editorWarningForeground } from '../editor';
 
 // base custom colors
 // 强调色

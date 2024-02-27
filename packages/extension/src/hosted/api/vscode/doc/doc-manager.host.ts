@@ -1,14 +1,12 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   BinaryBuffer,
   CancellationTokenSource,
   Emitter,
   IDisposable,
+  URI,
   isUTF8,
   normalizeFileUrl,
-  URI,
 } from '@opensumi/ide-core-common';
 
 import {
@@ -25,9 +23,11 @@ import {
 } from '../../../../common/vscode';
 import { TextEdit as TextEditConverter, toRange } from '../../../../common/vscode/converter';
 import { TextDocumentChangeReason, TextEdit, Uri } from '../../../../common/vscode/ext-types';
-import type * as model from '../../../../common/vscode/model.api';
 
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
+
+import type * as model from '../../../../common/vscode/model.api';
+import type vscode from 'vscode';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 

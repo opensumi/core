@@ -1,10 +1,10 @@
-import type React from 'react';
-
-import { MaybeNull, BasicEvent, Event } from '@opensumi/ide-core-common';
+import { BasicEvent, Event, MaybeNull } from '@opensumi/ide-core-common';
 
 import { Layout } from '../components/layout/index';
-import type { IMenu, IContextMenu } from '../menu/next';
+
+import type { IContextMenu, IMenu } from '../menu/next';
 import type { SlotLocation } from '../react-providers';
+import type React from 'react';
 
 export type Side = 'left' | 'right' | 'bottom';
 

@@ -1,9 +1,9 @@
 import { Injector } from '@opensumi/di';
 import {
-  PreferenceService,
   PreferenceProxy,
-  createPreferenceProxy,
   PreferenceSchema,
+  PreferenceService,
+  createPreferenceProxy,
   localize,
 } from '@opensumi/ide-core-browser';
 

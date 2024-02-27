@@ -1,9 +1,9 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
-  IAuthenticationService,
   CommandContribution,
   CommandRegistry,
+  Domain,
+  IAuthenticationService,
   noAccountsId,
 } from '@opensumi/ide-core-common';
 

@@ -1,6 +1,6 @@
-import { Event, Emitter, IDisposable, DisposableCollection } from '@opensumi/ide-utils';
+import { DisposableCollection, Emitter, Event, IDisposable } from '@opensumi/ide-utils';
 
-import { TreeStateManager, IPathChange, IExpansionStateChange } from './TreeStateManager';
+import { IExpansionStateChange, IPathChange, TreeStateManager } from './TreeStateManager';
 import { ISerializableState, TreeStateWatcherChangeType as TreeStateChangeType } from './types';
 
 export class TreeStateWatcher implements IDisposable {

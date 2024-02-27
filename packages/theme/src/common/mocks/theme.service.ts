@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event, URI, IThemeColor, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, Event, IThemeColor, URI } from '@opensumi/ide-core-common';
 
-import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '../theme.service';
+import { ExtColorContribution, ITheme, IThemeService, ThemeContribution } from '../theme.service';
 
 @Injectable()
 export class MockThemeService implements IThemeService {

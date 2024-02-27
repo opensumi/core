@@ -1,29 +1,29 @@
 import { Injector } from '@opensumi/di';
-import { SumiConnectionMultiplexer, ProxyIdentifier } from '@opensumi/ide-connection';
+import { ProxyIdentifier, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import {
   Emitter,
+  IExtensionLogger,
+  IExtensionProps,
+  IReporter,
   IReporterService,
   REPORT_HOST,
   REPORT_NAME,
-  IExtensionProps,
-  Uri,
-  timeout,
   ReporterService,
-  IReporter,
-  IExtensionLogger,
+  Uri,
   arrays,
+  timeout,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import * as path from '@opensumi/ide-utils/lib/path';
 
-import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
-import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
+import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtendProxy, IExtensionHostService, getExtensionId } from '../common';
+import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from '../common/activator';
 import {
   ExtHostAPIIdentifier,
-  MainThreadAPIIdentifier,
-  IExtensionDescription,
   ExtensionIdentifier,
   IExtHostLocalization,
+  IExtensionDescription,
+  MainThreadAPIIdentifier,
 } from '../common/vscode';
 
 import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';

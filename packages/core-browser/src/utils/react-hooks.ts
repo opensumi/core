@@ -1,11 +1,11 @@
 import _debounce from 'lodash/debounce';
-import { useState, useEffect, DependencyList } from 'react';
+import { DependencyList, useEffect, useState } from 'react';
 
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../menu/next/base';
 import { generateInlineActions } from '../menu/next/menu-util';
-import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
+import { IContextMenu, IMenu, IMenuSeparator } from '../menu/next/menu.interface';
 import { PreferenceService } from '../preferences/types';
 import { useInjectable } from '../react-hooks/injectable-hooks';
 

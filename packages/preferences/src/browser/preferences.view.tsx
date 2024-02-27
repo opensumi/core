@@ -1,30 +1,30 @@
 import debounce from 'lodash/debounce';
-import { toJS, observable } from 'mobx';
+import { observable, toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
-  Input,
-  ComponentContextProvider,
-  Tabs,
-  IIconResourceOptions,
   BasicRecycleTree,
+  ComponentContextProvider,
   IBasicTreeData,
+  IIconResourceOptions,
+  Input,
+  Tabs,
 } from '@opensumi/ide-components';
 import { VirtualList } from '@opensumi/ide-components/lib/virtual-list';
 import { IVirtualListRange } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
-  useInjectable,
-  localize,
-  formatLocalize,
-  ISettingGroup,
   IPreferenceSettingsService,
-  ISettingSection,
-  getIcon,
-  URI,
-  LabelService,
   IResolvedSettingSection,
+  ISettingGroup,
+  ISettingSection,
+  LabelService,
+  URI,
+  formatLocalize,
+  getIcon,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { EDirection } from '@opensumi/ide-core-browser/lib/components/index';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/split-panel';

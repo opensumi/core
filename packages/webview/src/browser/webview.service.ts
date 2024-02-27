@@ -1,29 +1,28 @@
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
+  AppConfig,
+  Disposable,
+  Emitter,
+  IEventBus,
+  ILogger,
+  IStorage,
+  MaybeNull,
+  STORAGE_SCHEMA,
+  StorageProvider,
+  URI,
+  arrays,
   getDebugLogger,
   localize,
-  URI,
-  IEventBus,
-  Disposable,
-  MaybeNull,
-  ILogger,
-  arrays,
-  Emitter,
-  StorageProvider,
-  IStorage,
-  STORAGE_SCHEMA,
-  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { throwNonElectronError } from '@opensumi/ide-core-common/lib/error';
-import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@opensumi/ide-editor';
+import { IEditorGroup, IResource, ResourceNeedUpdateEvent, WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
   EditorComponentRenderMode,
-  EditorPreferences,
   EditorGroupChangeEvent,
   EditorOpenType,
+  EditorPreferences,
 } from '@opensumi/ide-editor/lib/browser';
-import type { ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
 
 import { EditorWebviewComponentView } from './editor-webview';
@@ -31,20 +30,22 @@ import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
 import { IFrameWebviewPanel } from './iframe-webview';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import {
-  IWebviewService,
-  IPlainWebviewConstructionOptions,
+  EDITOR_WEBVIEW_SCHEME,
+  IEditorWebviewComponent,
+  IEditorWebviewMetaData,
   IPlainWebview,
+  IPlainWebviewComponentHandle,
+  IPlainWebviewConstructionOptions,
+  IPlainWebviewWindow,
   IWebview,
   IWebviewContentOptions,
-  IWebviewThemeData,
-  IEditorWebviewComponent,
-  EDITOR_WEBVIEW_SCHEME,
-  IEditorWebviewMetaData,
-  IPlainWebviewComponentHandle,
-  IPlainWebviewWindow,
   IWebviewReviver,
+  IWebviewService,
+  IWebviewThemeData,
 } from './types';
 import { ElectronPlainWebviewWindow } from './webview-window';
+
+import type { ITheme } from '@opensumi/ide-theme';
 
 const { addElement } = arrays;
 

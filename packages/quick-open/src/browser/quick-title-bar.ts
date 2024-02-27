@@ -1,11 +1,11 @@
-import { observable, computed, action, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { QuickTitleButton, QuickTitleButtonSide } from '@opensumi/ide-core-browser/lib/quick-open';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
 import './quick-title-bar.less';
-import { IconType, IIconService, IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService, IconType } from '@opensumi/ide-theme';
 
 import { iconPath2URI } from '../common/icon';
 

@@ -1,6 +1,6 @@
 import { path } from '@opensumi/ide-core-browser';
 
-import { ISCMResourceGroup, ISCMResource, ISCMRepository } from '../common';
+import { ISCMRepository, ISCMResource, ISCMResourceGroup } from '../common';
 
 const { basename } = path;
 

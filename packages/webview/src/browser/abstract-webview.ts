@@ -1,13 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  Event,
-  URI,
+  AppConfig,
   Disposable,
-  IDisposable,
   Emitter,
+  Event,
+  IDisposable,
   IEventBus,
   MaybeNull,
-  AppConfig,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { ITheme, IThemeService } from '@opensumi/ide-theme';

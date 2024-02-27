@@ -1,19 +1,20 @@
 import { createHash } from 'crypto';
 
 import address from 'address';
-import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Event, uuid } from '@opensumi/ide-core-common';
 
 import {
-  IExtensionDescription,
   IExtHostEnv,
   IExtHostTerminal,
+  IExtensionDescription,
   IMainThreadEnv,
   MainThreadAPIIdentifier,
 } from '../../../../common/vscode';
 import { LogLevel } from '../../worker/worker.ext-types';
+
+import type vscode from 'vscode';
 
 export class Env {
   private macMachineId: string;

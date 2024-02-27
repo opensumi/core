@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { memoize, IContextKeyService } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IContextKeyService, memoize } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
-  IMenu,
   ICtxMenuRenderer,
-  generateMergedCtxMenu,
+  IMenu,
   MenuId,
+  generateMergedCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
 

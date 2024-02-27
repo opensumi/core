@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { LifeCyclePhase, localize } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 @Injectable()
 @Contributes('viewsProxies')

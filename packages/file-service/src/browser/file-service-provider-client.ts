@@ -1,21 +1,22 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  Event,
   Emitter,
-  Uri,
-  getDebugLogger,
+  Event,
   FileSystemProviderCapabilities,
-  isLinux,
+  Uri,
   debounce,
+  getDebugLogger,
+  isLinux,
 } from '@opensumi/ide-core-common';
+import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import {
-  IDiskFileProvider,
-  FileChangeEvent,
-  DiskFileServicePath,
-  FileSystemProvider,
   DidFilesChangedParams,
+  DiskFileServicePath,
   FileChange,
+  FileChangeEvent,
+  FileSystemProvider,
+  IDiskFileProvider,
 } from '../common';
 
 export abstract class CoreFileServiceProviderClient implements FileSystemProvider {
@@ -57,6 +58,13 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
     }
     const buffer = await this.fileServiceProvider.readFile(uri);
     return buffer;
+  }
+
+  readFileStream(uri: Uri): Promise<IReadableStream<Uint8Array>> {
+    if (this.fileServiceProvider.readFileStream) {
+      return this.fileServiceProvider.readFileStream(uri);
+    }
+    throw new Error('readFileStream not supported');
   }
 
   writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }) {

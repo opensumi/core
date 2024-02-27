@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 import iconv from 'iconv-lite';
 
-import type { BinaryBuffer } from './buffer';
 import { SUPPORTED_ENCODINGS } from './const';
+
+import type { BinaryBuffer } from './buffer';
 
 export const UTF8 = 'utf8';
 export const UTF8_with_bom = 'utf8bom';

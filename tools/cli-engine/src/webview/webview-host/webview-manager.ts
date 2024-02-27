@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { defaultCss, IWebviewChannel, getVsCodeApiScript } from './common';
+import { IWebviewChannel, defaultCss, getVsCodeApiScript } from './common';
 
 export class WebviewPanelManager {
   private activeTheme = 'default';

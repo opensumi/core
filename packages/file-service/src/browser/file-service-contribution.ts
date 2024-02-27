@@ -1,13 +1,13 @@
 import { Autowired } from '@opensumi/di';
 import {
+  ClientAppContribution,
+  ContributionProvider,
   Domain,
   FsProviderContribution,
-  ContributionProvider,
-  ClientAppContribution,
   Schemes,
 } from '@opensumi/ide-core-browser';
 
-import { IFileServiceClient, IDiskFileProvider } from '../common';
+import { IDiskFileProvider, IFileServiceClient } from '../common';
 
 import { FileServiceClient } from './file-service-client';
 

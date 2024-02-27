@@ -1,4 +1,4 @@
-import { TreeNode, ICompositeTreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { CompositeTreeNode, ICompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { URI } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
 

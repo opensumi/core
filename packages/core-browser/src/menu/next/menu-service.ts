@@ -1,18 +1,18 @@
-import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { CommandRegistry, Disposable, Event, Emitter } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { CommandRegistry, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 
-import { IMenuItem, isIMenuItem, ISubmenuItem, IComponentMenuItem, isIComponentMenuItem, IMenuRegistry } from './base';
+import { IComponentMenuItem, IMenuItem, IMenuRegistry, ISubmenuItem, isIComponentMenuItem, isIMenuItem } from './base';
 import { MenuId } from './menu-id';
 import {
   AbstractMenuService,
+  ComponentMenuItemNode,
   IMenu,
   IMenuNodeOptions,
-  SubmenuItemNode,
-  ComponentMenuItemNode,
   MenuItemNode,
+  SubmenuItemNode,
 } from './menu.interface';
 
 type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem | IComponentMenuItem>];

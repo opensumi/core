@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IRecycleTreeProps, IRecycleTreeHandle } from '../../RecycleTree';
+import { IRecycleTreeHandle, IRecycleTreeProps } from '../../RecycleTree';
 import { TreeModel } from '../../tree';
 import { TreeNodeEvent } from '../../types';
 

@@ -1,41 +1,40 @@
 import * as jsoncparser from 'jsonc-parser';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  Deferred,
-  ILogger,
-  PreferenceService,
-  PreferenceSchemaProvider,
-  Event,
-  Emitter,
-  DisposableCollection,
-  PreferenceScope,
-  IDisposable,
-  Disposable,
   AppConfig,
+  Deferred,
+  Disposable,
+  DisposableCollection,
+  Emitter,
+  Event,
   IClientApp,
+  IDisposable,
+  ILogger,
   IWindowService,
+  PreferenceSchemaProvider,
+  PreferenceScope,
+  PreferenceService,
   path,
 } from '@opensumi/ide-core-browser';
 import {
-  URI,
-  StorageProvider,
   IStorage,
   STORAGE_NAMESPACE,
-  localize,
-  formatLocalize,
   Schemes,
+  StorageProvider,
+  URI,
+  formatLocalize,
+  localize,
 } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
-import { FileChangeEvent } from '@opensumi/ide-file-service/lib/common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileChangeEvent, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import {
   DEFAULT_WORKSPACE_SUFFIX_NAME,
   IWorkspaceService,
-  WorkspaceInput,
-  WORKSPACE_USER_STORAGE_FOLDER_NAME,
   UNTITLED_WORKSPACE,
+  WORKSPACE_USER_STORAGE_FOLDER_NAME,
+  WorkspaceInput,
 } from '../common';
 
 import { WorkspaceData } from './workspace-data';

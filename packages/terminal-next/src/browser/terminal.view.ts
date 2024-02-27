@@ -1,15 +1,15 @@
-import { observable, computed, makeObservable, action } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, Disposable, Event } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
 
 import {
-  ITerminalGroupViewService,
-  IWidget,
-  ITerminalInternalService,
-  userActionViewUuid,
-  IWidgetGroup,
   IShellLaunchConfig,
+  ITerminalGroupViewService,
+  ITerminalInternalService,
+  IWidget,
+  IWidgetGroup,
+  userActionViewUuid,
 } from '../common';
 
 export class Widget extends Disposable implements IWidget {

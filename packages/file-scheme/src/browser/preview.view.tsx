@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { useInjectable, Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, useInjectable } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
-import { ReactEditorComponent, IResource } from '@opensumi/ide-editor/lib/browser';
+import { IResource, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 import styles from './style.module.less';
 

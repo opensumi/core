@@ -3,8 +3,8 @@ import RcMenu, { Divider, ItemGroup } from 'rc-menu';
 import React from 'react';
 import { polyfill } from 'react-lifecycles-compat';
 
-import collapseMotion from '../utils/motion';
-import raf from '../utils/raf';
+import { collapseMotion } from '../utils/motion';
+import { wrapperRaf } from '../utils/raf';
 import { warning } from '../utils/warning';
 
 import MenuContext from './MenuContext';
@@ -139,7 +139,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
   }
 
   componentWillUnmount() {
-    raf.cancel(this.mountRafId);
+    wrapperRaf.cancel(this.mountRafId);
   }
 
   setOpenKeys(openKeys: string[]) {

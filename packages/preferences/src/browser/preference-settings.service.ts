@@ -1,40 +1,40 @@
-import { observable, action, computed, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
 import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
-  IPreferenceViewDesc,
-  IPreferenceSettingsService,
-  ISettingGroup,
-  ISettingSection,
-  PreferenceProviderProvider,
-  Emitter,
-  Dispatcher,
-  Event,
   CommandService,
-  isString,
-  getIcon,
-  PreferenceScope,
-  PreferenceProvider,
-  PreferenceSchemaProvider,
+  Dispatcher,
+  Disposable,
+  Emitter,
+  Event,
   IDisposable,
-  arrays,
-  getAvailableLanguages,
-  PreferenceService,
-  replaceLocalizePlaceholder,
-  TerminalSettingsId,
+  IPreferenceSettingsService,
+  IPreferenceViewDesc,
   IResolvedPreferenceViewDesc,
   IResolvedSettingSection,
-  Disposable,
+  ISettingGroup,
+  ISettingSection,
+  MenubarSettingId,
+  PreferenceProvider,
+  PreferenceProviderProvider,
+  PreferenceSchemaProvider,
+  PreferenceScope,
+  PreferenceService,
+  TerminalSettingsId,
   UserScope,
   WorkspaceScope,
-  MenubarSettingId,
+  arrays,
+  getAvailableLanguages,
+  getIcon,
+  isString,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel, ESectionItemKind } from '../common';
+import { ESectionItemKind, PreferenceSettingId, getPreferenceItemLabel, toPreferenceReadableName } from '../common';
 
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 

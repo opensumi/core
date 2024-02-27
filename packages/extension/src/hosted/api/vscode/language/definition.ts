@@ -1,5 +1,3 @@
-import type vscode from 'vscode';
-
 import { Uri as URI } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
@@ -7,6 +5,8 @@ import * as Converter from '../../../../common/vscode/converter';
 import * as types from '../../../../common/vscode/ext-types';
 import { Definition, DefinitionLink, Location, Position } from '../../../../common/vscode/model.api';
 import { isDefinitionLinkArray, isLocationArray } from '../../../../common/vscode/utils';
+
+import type vscode from 'vscode';
 
 export class DefinitionAdapter {
   constructor(

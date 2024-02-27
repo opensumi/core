@@ -1,4 +1,4 @@
-import { IRange, CancellationToken, Event } from '@opensumi/ide-core-common';
+import { CancellationToken, Event, IRange } from '@opensumi/ide-core-common';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 

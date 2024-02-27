@@ -2,7 +2,7 @@ import { Injectable } from '@opensumi/di';
 
 import { ITerminalRenderProvider } from '../common';
 
-import { renderInfoItem, renderAddItem } from './component/tab.item';
+import { renderAddItem, renderInfoItem } from './component/tab.item';
 
 @Injectable()
 export class TerminalRenderProvider implements ITerminalRenderProvider {

@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Event, Emitter } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import { IMainLayoutService } from '../common';
 

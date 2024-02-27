@@ -3,7 +3,7 @@ import path from 'path';
 import compressing from 'compressing';
 import * as fs from 'fs-extra';
 
-import { toLocalISOString, Archive } from '@opensumi/ide-core-common';
+import { Archive, toLocalISOString } from '@opensumi/ide-core-common';
 
 /**
  * @param date 不传则返回当天日志文件夹名
@@ -45,6 +45,7 @@ export async function cleanOldLogs(logsRoot: string) {
  */
 export async function cleanAllLogs(logsRoot: string) {
   try {
+    // eslint-disable-next-line import/namespace
     const children = fs.readdirSync(logsRoot);
     for (const name of children) {
       if (!/^\d{8}$/.test(name)) {
@@ -63,6 +64,7 @@ export async function cleanAllLogs(logsRoot: string) {
  */
 export function cleanExpiredLogs(day: number, logsRoot: string) {
   try {
+    // eslint-disable-next-line import/namespace
     const children = fs.readdirSync(logsRoot);
     const toDelete = children.filter((name) => /^\d{8}$/.test(name) && Number(name) < day);
     for (const name of toDelete) {
@@ -81,6 +83,7 @@ export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: P
   if (waitPromise) {
     await waitPromise;
   }
+  // eslint-disable-next-line import/namespace
   if (!fs.existsSync(foldPath)) {
     throw new Error(`The log directory does not exist: ${foldPath}`);
   }

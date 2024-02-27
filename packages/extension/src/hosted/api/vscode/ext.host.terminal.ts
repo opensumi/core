@@ -1,31 +1,29 @@
 import { userInfo } from 'os';
 
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  Event,
-  Emitter,
-  isUndefined,
-  DisposableStore,
-  IDisposable,
+  CancellationTokenSource,
   Deferred,
   Disposable,
-  CancellationTokenSource,
+  DisposableStore,
+  Emitter,
+  Event,
+  IDisposable,
+  isUndefined,
   uuid,
 } from '@opensumi/ide-core-common';
 import {
-  ITerminalInfo,
-  TerminalDataBufferer,
-  ITerminalChildProcess,
-  ITerminalDimensionsOverride,
-  ITerminalDimensionsDto,
-  ITerminalLaunchError,
-  ITerminalExitEvent,
-  ITerminalLinkDto,
   ICreateContributedTerminalProfileOptions,
+  ITerminalChildProcess,
+  ITerminalDimensionsDto,
+  ITerminalDimensionsOverride,
+  ITerminalExitEvent,
+  ITerminalInfo,
+  ITerminalLaunchError,
+  ITerminalLinkDto,
   ITerminalProfile,
   TERMINAL_ID_SEPARATOR,
+  TerminalDataBufferer,
 } from '@opensumi/ide-terminal-next';
 import {
   EnvironmentVariableMutatorType,
@@ -34,11 +32,13 @@ import {
 
 import { IExtension } from '../../../common';
 import {
-  IMainThreadTerminal,
-  MainThreadAPIIdentifier,
   IExtHostTerminal,
   IExtensionDescription,
+  IMainThreadTerminal,
+  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
+
+import type vscode from 'vscode';
 
 let nextLinkId = 1;
 

@@ -1,32 +1,33 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  URI,
-  IRef,
-  ReferenceManager,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
-  WithEventBus,
-  OnEvent,
-  StorageProvider,
-  IStorage,
-  STORAGE_SCHEMA,
   ILogger,
+  IRef,
+  IStorage,
+  OnEvent,
   PreferenceService,
   ReadyEvent,
-  memoize,
+  ReferenceManager,
+  STORAGE_SCHEMA,
+  StorageProvider,
+  URI,
+  WithEventBus,
   mapToSerializable,
+  memoize,
   serializableToMap,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
+import { IEditorDocumentModel } from '../../common/editor';
+
 import { EditorDocumentModel } from './editor-document-model';
 import {
-  IEditorDocumentModel,
+  EditorDocumentModelCreationEvent,
+  EditorDocumentModelOptionExternalUpdatedEvent,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
-  EditorDocumentModelOptionExternalUpdatedEvent,
-  EditorDocumentModelCreationEvent,
   IPreferredModelOptions,
 } from './types';
 

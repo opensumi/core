@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import { CancellationToken } from 'vscode';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
@@ -17,7 +18,7 @@ import {
   revive,
 } from '@opensumi/ide-core-common';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
-import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
+import { InlineValue, InlineValueContext, InlineValuesProvider } from '@opensumi/ide-debug/lib/common/inline-values';
 import { ILanguageService } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelService,
@@ -31,7 +32,6 @@ import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { ILanguageService as IMonacoLanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
@@ -39,15 +39,15 @@ import {
   ExtHostAPIIdentifier,
   ICodeActionDto,
   ICodeActionProviderMetadataDto,
-  IdentifiableInlineCompletion,
-  IdentifiableInlineCompletions,
   IExtHostLanguages,
   IInlayHintDto,
   IMainThreadLanguages,
-  InlineCompletionContext,
   ISuggestDataDto,
   ISuggestDataDtoField,
   ISuggestResultDtoField,
+  IdentifiableInlineCompletion,
+  IdentifiableInlineCompletions,
+  InlineCompletionContext,
   MonacoModelIdentifier,
   RangeSuggestDataDto,
   testGlob,
@@ -56,22 +56,22 @@ import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { CancellationError, UriComponents } from '../../../common/vscode/ext-types';
 import { IExtensionDescription } from '../../../common/vscode/extension';
 import {
+  CallHierarchyItem,
+  FoldingRangeProvider,
+  ICallHierarchyItemDto,
   ILink,
+  ILinkDto,
   ISerializedSignatureHelpProviderMetadata,
+  ITypeHierarchyItemDto,
+  IWorkspaceEditDto,
+  ResourceFileEditDto,
+  ResourceTextEditDto,
   SemanticTokensLegend,
   SerializedDocumentFilter,
   SerializedLanguageConfiguration,
-  WorkspaceSymbolProvider,
-  ICallHierarchyItemDto,
-  ITypeHierarchyItemDto,
-  CallHierarchyItem,
   TypeHierarchyItem,
-  IWorkspaceEditDto,
-  ResourceTextEditDto,
-  ResourceFileEditDto,
-  ILinkDto,
+  WorkspaceSymbolProvider,
   isDocumentFilter,
-  FoldingRangeProvider,
 } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 
@@ -79,6 +79,8 @@ import {
   DocumentRangeSemanticTokensProviderImpl,
   DocumentSemanticTokensProvider,
 } from './semantic-tokens/semantic-token-provider';
+
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 const { extname } = path;
 

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';

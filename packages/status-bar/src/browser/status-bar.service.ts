@@ -1,16 +1,16 @@
-import { observable, computed, action, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig, Disposable, IContextKeyService, isUndefined, IDisposable } from '@opensumi/ide-core-browser';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { Autowired, Injectable } from '@opensumi/di';
+import { AppConfig, Disposable, IContextKeyService, IDisposable, isUndefined } from '@opensumi/ide-core-browser';
+import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { AbstractMenuService, IMenu, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import {
   IStatusBarService,
-  StatusBarEntry,
   StatusBarAlignment,
-  StatusBarEntryAccessor,
   StatusBarCommand,
+  StatusBarEntry,
+  StatusBarEntryAccessor,
   StatusBarState,
 } from '@opensumi/ide-core-browser/lib/services';
 import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-core-common';

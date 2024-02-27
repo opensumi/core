@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
-import { SuggestEvent, DisposableCollection } from '@opensumi/ide-core-browser';
+import { DisposableCollection, PreferenceService, SuggestEvent } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
 import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 

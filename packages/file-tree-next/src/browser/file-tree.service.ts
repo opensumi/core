@@ -1,26 +1,26 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Tree, ITree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ITree, ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
 import {
-  CommandService,
-  IContextKeyService,
-  URI,
-  EDITOR_COMMANDS,
-  Disposable,
-  FILE_COMMANDS,
-  PreferenceService,
-  Emitter,
-  ILogger,
-  path,
-  pSeries,
   CancellationTokenSource,
+  CommandService,
+  Disposable,
+  EDITOR_COMMANDS,
+  Emitter,
+  FILE_COMMANDS,
+  IContextKeyService,
+  ILogger,
+  PreferenceService,
+  URI,
+  pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
   FileChange,
-  IFileServiceClient,
   FileChangeType,
   FileStat,
+  IFileServiceClient,
   IFileServiceWatcher,
 } from '@opensumi/ide-file-service/lib/common';
 import { IIconService } from '@opensumi/ide-theme';

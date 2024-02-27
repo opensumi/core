@@ -1,14 +1,14 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   Deferred,
+  IApplicationService,
+  IDisposable,
   IExtensionProps,
   ILogger,
-  IDisposable,
   toDisposable,
-  IApplicationService,
 } from '@opensumi/ide-core-browser';
 
 import {

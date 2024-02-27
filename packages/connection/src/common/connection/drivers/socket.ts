@@ -1,9 +1,9 @@
-import type net from 'net';
-
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
 import { LengthFieldBasedFrameDecoder, prependLengthField } from './frame-decoder';
+
+import type net from 'net';
 
 export class NetSocketConnection extends BaseConnection<Uint8Array> {
   protected decoder = new LengthFieldBasedFrameDecoder();

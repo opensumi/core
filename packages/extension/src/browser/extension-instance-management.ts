@@ -1,10 +1,10 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { AppConfig, Disposable, StorageProvider, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
-import { Emitter, ExtensionCandidate as ExtensionCandidate, getLanguageId, IStorage } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { AppConfig, Disposable, STORAGE_NAMESPACE, StorageProvider } from '@opensumi/ide-core-browser';
+import { Emitter, ExtensionCandidate as ExtensionCandidate, IStorage, getLanguageId } from '@opensumi/ide-core-common';
 
 import {
-  ExtensionNodeServiceServerPath,
   EXTENSION_ENABLE,
+  ExtensionNodeServiceServerPath,
   IExtensionMetaData,
   IExtensionNodeClientService,
 } from '../common';

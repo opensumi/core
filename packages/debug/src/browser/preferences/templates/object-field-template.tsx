@@ -1,22 +1,21 @@
 import {
-  ObjectFieldTemplateProps,
-  StrictRJSFSchema,
-  RJSFSchema,
+  ADDITIONAL_PROPERTY_FLAG,
   FormContextType,
+  ObjectFieldTemplatePropertyType,
+  ObjectFieldTemplateProps,
+  RJSFSchema,
+  StrictRJSFSchema,
+  canExpand,
+  descriptionId,
   getTemplate,
   getUiOptions,
-  descriptionId,
-  canExpand,
   titleId,
-  ADDITIONAL_PROPERTY_FLAG,
-  ObjectFieldTemplatePropertyType,
 } from '@rjsf/utils';
 import cls from 'classnames';
 import React, { useCallback, useMemo } from 'react';
 
 import { getIcon } from '@opensumi/ide-components';
-import { IJSONSchema, useInjectable } from '@opensumi/ide-core-browser';
-import { Key } from '@opensumi/ide-core-browser';
+import { IJSONSchema, Key, useInjectable } from '@opensumi/ide-core-browser';
 
 import { ILaunchService } from '../../../common/debug-service';
 import { LaunchService } from '../launch.service';
@@ -64,7 +63,10 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
     ButtonTemplates: { AddButton },
   } = registry.templates;
 
-  const description = useMemo(() => props.description ?? (schema as IJSONSchema).markdownDescription, [props.description, schema]);
+  const description = useMemo(
+    () => props.description ?? (schema as IJSONSchema).markdownDescription,
+    [props.description, schema],
+  );
 
   const fieldContainerClass = useMemo(
     () =>

@@ -1,12 +1,12 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
+  QuickOpenHandler,
   formatLocalize,
   localize,
-  QuickOpenHandler,
   withNullAsUndefined,
 } from '@opensumi/ide-core-browser';
-import { QuickOpenItem, PrefixQuickOpenService, QuickOpenModel, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
+import { Mode, PrefixQuickOpenService, QuickOpenItem, QuickOpenModel } from '@opensumi/ide-core-browser/lib/quick-open';
 import { Event as MonacoEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IRange as IMonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';

@@ -1,6 +1,6 @@
 import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
-import { ClientCommonModule, BrowserModule, ConstructorOf } from '@opensumi/ide-core-browser';
+import { BrowserModule, ClientCommonModule, ConstructorOf } from '@opensumi/ide-core-browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
 import { EditorModule } from '@opensumi/ide-editor/lib/browser';

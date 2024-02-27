@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   ClientAppContribution,
   Domain,
-  getIcon,
   IStatusBarService,
   StatusBarAlignment,
   StatusBarEntryAccessor,
+  getIcon,
 } from '@opensumi/ide-core-browser';
 import {
   BrowserConnectionCloseEvent,

@@ -1,11 +1,11 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
   ClientAppContribution,
-  PreferenceService,
-  IClientApp,
-  localize,
+  Domain,
   GeneralSettingsId,
+  IClientApp,
+  PreferenceService,
+  localize,
   setLanguageId,
 } from '@opensumi/ide-core-browser';
 import { IDialogService } from '@opensumi/ide-overlay';

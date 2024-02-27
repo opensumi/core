@@ -1,15 +1,16 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, ILogger, WithEventBus, OnEvent, CancellationToken, IDisposable } from '@opensumi/ide-core-browser';
+import { CancellationToken, IDisposable, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { FileStat } from '@opensumi/ide-file-service';
-import { ResourceEdit, IBulkEditResult } from '@opensumi/ide-monaco/lib/browser/monaco-api/index';
+import { IBulkEditResult, ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api/index';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IBulkEditServiceShape, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
-import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, IExtHostWorkspace } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostStorage, IExtHostWorkspace, IMainThreadWorkspace } from '../../../common/vscode';
+
 import type * as model from '../../../common/vscode/model.api';
 
 @Injectable({ multiple: true })

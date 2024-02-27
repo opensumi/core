@@ -1,8 +1,8 @@
 import { Terminal } from 'xterm';
 
-import { IDisposable, Disposable, Event, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, Event, IDisposable } from '@opensumi/ide-core-common';
 
-import { INodePtyInstance, TerminalOptions, ICreateTerminalOptions, IShellLaunchConfig } from './pty';
+import { ICreateTerminalOptions, INodePtyInstance, IShellLaunchConfig, TerminalOptions } from './pty';
 import { IWidget } from './resize';
 
 export interface ITerminalDataEvent {

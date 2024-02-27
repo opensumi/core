@@ -1,12 +1,12 @@
 import React, { FC, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components';
-import { useInjectable, ViewState, localize } from '@opensumi/ide-core-browser';
+import { ViewState, localize, useInjectable } from '@opensumi/ide-core-browser';
 
 import { ICommentsFeatureRegistry } from '../common';
 
 import styles from './comments.module.less';
-import { CommentNodeRendered, COMMENT_TREE_NODE_HEIGHT, ICommentNodeRenderedProps } from './tree/comment-node';
+import { COMMENT_TREE_NODE_HEIGHT, CommentNodeRendered, ICommentNodeRenderedProps } from './tree/comment-node';
 import { CommentModelService, CommentTreeModel } from './tree/tree-model.service';
 
 export const CommentsPanel: FC<{ viewState: ViewState }> = ({ viewState }) => {

@@ -8,7 +8,7 @@ import * as pty from 'node-pty';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
-import { isMacintosh, isLinux } from '@opensumi/ide-utils/lib/platform';
+import { isLinux, isMacintosh } from '@opensumi/ide-utils/lib/platform';
 
 import {
   IPtyProxyRPCService,

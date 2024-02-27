@@ -1,8 +1,8 @@
-import type vscode from 'vscode';
-
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { ExtensionHostType } from '.';
+
+import type vscode from 'vscode';
 
 export class ExtensionActivationTimes {
   public static readonly NONE = new ExtensionActivationTimes(false, -1, -1, -1);

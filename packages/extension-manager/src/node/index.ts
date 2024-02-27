@@ -1,11 +1,11 @@
-import { Provider, Injectable } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import {
+  IOpentrsMarketplaceService,
+  IOpenvsxMarketplaceService,
   VSXExtensionBackSerivceToken,
   VSXExtensionServicePath,
-  IOpenvsxMarketplaceService,
-  IOpentrsMarketplaceService,
 } from '../common';
 
 import { OpentrsMarketplaceService, OpenvsxMarketplaceService } from './marketplace';

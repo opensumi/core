@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { getExternalIcon, Disposable, PreferenceService, MenubarSettingId } from '@opensumi/ide-core-browser';
+import { Disposable, MenubarSettingId, PreferenceService, getExternalIcon } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, IMenubarItem, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';

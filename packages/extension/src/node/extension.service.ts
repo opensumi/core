@@ -1,56 +1,57 @@
-import type cp from 'child_process';
 import net from 'net';
 import path from 'path';
 import util from 'util';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { WSChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { commonChannelPathHandler } from '@opensumi/ide-connection/lib/node';
 import {
-  Event,
   Emitter,
-  timeout,
-  isUndefined,
-  findFreePort,
-  IReporterTimer,
-  getDebugLogger,
-  SupportLogNamespace,
-  ExtensionConnectOption,
+  Event,
   ExtensionConnectModeOption,
+  ExtensionConnectOption,
+  IReporterTimer,
+  SupportLogNamespace,
+  findFreePort,
+  getDebugLogger,
+  isUndefined,
+  timeout,
 } from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import {
-  Deferred,
-  isWindows,
   AppConfig,
-  IReporter,
+  Deferred,
   INodeLogger,
-  REPORT_TYPE,
+  IReporter,
+  IReporterService,
+  PerformanceData,
   REPORT_NAME,
+  REPORT_TYPE,
+  ReporterProcessMessage,
   getShellPath,
   isDevelopment,
   isElectronNode,
-  PerformanceData,
-  IReporterService,
-  ReporterProcessMessage,
+  isWindows,
 } from '@opensumi/ide-core-node';
 
 import {
-  OutputType,
+  CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
+  ICreateProcessOptions,
+  IExtensionHostManager,
+  IExtensionMetaData,
+  IExtensionNodeClientService,
+  IExtensionNodeService,
   IExtraMetaData,
   KT_APP_CONFIG_KEY,
-  IExtensionMetaData,
-  ProcessMessageType,
-  IExtensionNodeService,
-  IExtensionHostManager,
-  ICreateProcessOptions,
   KT_PROCESS_SOCK_OPTION_KEY,
-  IExtensionNodeClientService,
-  CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
+  OutputType,
+  ProcessMessageType,
 } from '../common';
 
 import { ExtensionScanner } from './extension.scanner';
+
+import type cp from 'child_process';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {

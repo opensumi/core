@@ -1,7 +1,7 @@
-import type vscode from 'vscode';
-
-import { IExtensionHostService, IExtensionHost, IExtensionWorkerHost, JSONType, IExtensionProps } from '../common';
+import { IExtensionHost, IExtensionHostService, IExtensionProps, IExtensionWorkerHost, JSONType } from '../common';
 import { VSCodeExtensionService } from '../common/vscode';
+
+import type vscode from 'vscode';
 
 export abstract class Extension<T = any, S extends IExtensionHost = any> implements vscode.Extension<T> {
   readonly id: string;

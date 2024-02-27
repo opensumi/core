@@ -4,7 +4,7 @@ import { DisposableCollection, Emitter, Event, IReporterService } from '@opensum
 
 import { DEBUG_COMMANDS, DEBUG_REPORT_NAME } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
+import { DebugWatchNode, DebugWatchRoot } from '../tree/debug-tree-node.define';
 
 export const IDebugWatchData = Symbol('IDebugWatchData');
 export interface IDebugWatchData {

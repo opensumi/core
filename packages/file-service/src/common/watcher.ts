@@ -1,5 +1,4 @@
-import { URI, Event, FileChange } from '@opensumi/ide-core-common';
-import { IRelativePattern } from '@opensumi/ide-core-common';
+import { Event, FileChange, IRelativePattern, URI } from '@opensumi/ide-core-common';
 
 import { IFileServiceClient } from './file-service-client';
 

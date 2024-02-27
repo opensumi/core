@@ -1,11 +1,11 @@
 import {
-  descriptionId,
   FormContextType,
-  getTemplate,
   RJSFSchema,
   StrictRJSFSchema,
-  titleId,
   WidgetProps,
+  descriptionId,
+  getTemplate,
+  titleId,
 } from '@rjsf/utils';
 import React, { useMemo } from 'react';
 

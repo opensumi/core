@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { CheckBox, Select, Button } from '@opensumi/ide-components';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Button, CheckBox, Select } from '@opensumi/ide-components';
 import {
-  useInjectable,
-  PreferenceService,
-  PreferenceScope,
   IToolbarRegistry,
+  PreferenceScope,
+  PreferenceService,
   localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 
 import styles from './style.module.less';

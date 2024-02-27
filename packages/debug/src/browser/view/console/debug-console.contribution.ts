@@ -4,13 +4,13 @@ import {
   CommandRegistry,
   ComponentContribution,
   ComponentRegistry,
-  getIcon,
-  localize,
-  TabBarToolbarContribution,
-  ToolbarRegistry,
+  IContextKeyService,
   KeybindingContribution,
   KeybindingRegistry,
-  IContextKeyService,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
+  getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
@@ -19,7 +19,7 @@ import { DEBUG_COMMANDS, DEBUG_CONSOLE_CONTAINER_ID, IDebugConsoleModelService }
 import { DebugContextKey } from '../../contextkeys/debug-contextkey.service';
 import { DebugConsoleNode } from '../../tree';
 
-import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
+import { CONTEXT_IN_DEBUG_MODE, CONTEXT_IN_DEBUG_REPL } from './../../../common/constants';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { DebugConsoleFilterView } from './debug-console-filter.view';
 import { DebugConsoleService } from './debug-console.service';

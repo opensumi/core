@@ -1,5 +1,4 @@
-import { Disposable, Emitter, Event as BaseEvent, IDisposable } from '@opensumi/ide-core-common';
-import { isWebKit } from '@opensumi/ide-core-common';
+import { Event as BaseEvent, Disposable, Emitter, IDisposable, isWebKit } from '@opensumi/ide-core-common';
 
 export const EventType = {
   // Mouse

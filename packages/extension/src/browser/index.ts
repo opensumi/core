@@ -5,19 +5,19 @@ import { IDebugServer } from '@opensumi/ide-debug/lib/common';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
 
 import {
+  AbstractExtensionManagementService,
   ExtensionHostProfilerServicePath,
   ExtensionNodeServiceServerPath,
   ExtensionService,
   IExtCommandManagement,
-  AbstractExtensionManagementService,
-  RequireInterceptorContribution,
   IRequireInterceptorService,
+  RequireInterceptorContribution,
   RequireInterceptorService,
 } from '../common';
 import {
   AbstractNodeExtProcessService,
-  AbstractWorkerExtProcessService,
   AbstractViewExtProcessService,
+  AbstractWorkerExtProcessService,
 } from '../common/extension.service';
 
 import { ActivationEventServiceImpl } from './activation.service';
@@ -33,7 +33,7 @@ import { BrowserRequireInterceptorContribution } from './require-interceptor.con
 import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import { AbstractExtInstanceManagementService, IActivationEventService } from './types';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
-import { VSCodeContributesServiceToken, VSCodeContributesService } from './vscode/contributes';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscode/contributes';
 
 @Injectable()
 export class ExtensionModule extends BrowserModule {

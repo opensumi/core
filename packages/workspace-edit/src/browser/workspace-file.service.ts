@@ -1,22 +1,22 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
-  URI,
-  Uri,
-  CancellationTokenSource,
-  CancellationToken,
-  Disposable,
-  IDisposable,
-  getDebugLogger,
   AsyncEmitter,
+  CancellationToken,
+  CancellationTokenSource,
+  Disposable,
   Event,
   FileStat,
+  IDisposable,
+  URI,
+  Uri,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
-  FileOperation,
   FILE_OPERATION_TIMEOUT,
+  FileOperation,
   IWorkspaceFileOperationParticipant,
   IWorkspaceFileService,
   SourceTargetPair,

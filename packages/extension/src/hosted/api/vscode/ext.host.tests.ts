@@ -4,48 +4,33 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostTesting.ts
 
-import type {
-  FileCoverage,
-  TestController,
-  TestCoverageProvider,
-  TestItem,
-  TestMessage,
-  TestRun,
-  TestRunProfile,
-  TestTag,
-  Location,
-  TestObserver,
-  TestsChangeEvent,
-  TestRunResult,
-} from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
-import { getDebugLogger } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   CancellationTokenSource,
-  uuid,
-  isDefined,
-  objects,
-  hash,
-  once,
   Disposable,
   DisposableStore,
-  toDisposable,
   Emitter,
   Event,
   arrays,
+  getDebugLogger,
+  hash,
+  isDefined,
+  objects,
+  once,
+  toDisposable,
+  uuid,
 } from '@opensumi/ide-core-common';
 import {
   AbstractIncrementalTestCollection,
   CoverageDetails,
   IFileCoverage,
   ILocationDto,
+  ISerializedTestResults,
+  ITestItem,
   IncrementalChangeCollector,
   IncrementalTestCollectionItem,
   InternalTestItem,
-  ISerializedTestResults,
-  ITestItem,
   RunTestForControllerRequest,
   TestResultState,
   TestRunProfileBitset,
@@ -59,6 +44,21 @@ import { TestRunProfileKind, TestRunRequest } from '../../../common/vscode/ext-t
 import { InvalidTestItemError, TestItemImpl, TestItemRootImpl } from '../../../common/vscode/testing/testApi';
 import { SingleUseTestCollection } from '../../../common/vscode/testing/testCollection';
 import { IExtHostTests, IMainThreadTesting } from '../../../common/vscode/tests';
+
+import type {
+  FileCoverage,
+  Location,
+  TestController,
+  TestCoverageProvider,
+  TestItem,
+  TestMessage,
+  TestObserver,
+  TestRun,
+  TestRunProfile,
+  TestRunResult,
+  TestTag,
+  TestsChangeEvent,
+} from 'vscode';
 
 interface ControllerInfo {
   controller: TestController;

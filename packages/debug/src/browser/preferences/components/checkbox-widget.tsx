@@ -1,11 +1,11 @@
 import {
-  ariaDescribedByIds,
-  getTemplate,
   FormContextType,
+  GenericObjectType,
   RJSFSchema,
   StrictRJSFSchema,
   WidgetProps,
-  GenericObjectType,
+  ariaDescribedByIds,
+  getTemplate,
 } from '@rjsf/utils';
 import React, { FocusEvent } from 'react';
 

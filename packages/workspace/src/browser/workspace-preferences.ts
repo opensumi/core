@@ -1,9 +1,9 @@
 import { Injector } from '@opensumi/di';
 import {
-  createPreferenceProxy,
   PreferenceProxy,
-  PreferenceService,
   PreferenceSchema,
+  PreferenceService,
+  createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
 
 export const workspacePreferenceSchema: PreferenceSchema = {

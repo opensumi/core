@@ -1,12 +1,12 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { BaseConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
-  Event,
-  Emitter,
-  DisposableCollection,
-  Disposable,
-  IDisposable,
   Deferred,
+  Disposable,
+  DisposableCollection,
+  Emitter,
+  Event,
+  IDisposable,
   getDebugLogger,
 } from '@opensumi/ide-core-browser';
 import { CancellationToken } from '@opensumi/ide-core-common';
@@ -14,13 +14,13 @@ import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import {
+  DEBUG_REPORT_NAME,
   DebugConfiguration,
   DebugEventTypes,
   DebugExitEvent,
   DebugRequestTypes,
-  DEBUG_REPORT_NAME,
-  getSequenceId,
   IDebugSessionManager,
+  getSequenceId,
 } from '../common';
 
 import { DebugSessionManager } from './debug-session-manager';

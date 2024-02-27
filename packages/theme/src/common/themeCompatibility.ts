@@ -5,7 +5,7 @@
 
 import { Color } from './color';
 import * as colorRegistry from './color-registry';
-import { ITokenColorizationRule, IColorMap } from './theme.service';
+import { IColorMap, ITokenColorizationRule } from './theme.service';
 
 const settingToColorIdMapping: { [settingId: string]: string[] } = {};
 function addSettingMapping(settingId: string, colorId: string) {

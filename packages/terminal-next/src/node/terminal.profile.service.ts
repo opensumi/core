@@ -6,11 +6,10 @@
 // some code copied and modified from https://github.com/microsoft/vscode/blob/ff383268424b1d4b6620e7ea197fb13ae513414f/src/vs/platform/terminal/node/terminalProfiles.ts
 
 import { readFile } from 'fs-extra';
-import type vscode from 'vscode';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
-import { INodeLogger, path, isWindows } from '@opensumi/ide-core-node';
+import { INodeLogger, isWindows, path } from '@opensumi/ide-core-node';
 
 import { IDetectProfileOptions, ITerminalEnvironment } from '..';
 import {
@@ -20,7 +19,9 @@ import {
   ProfileSource,
 } from '../common/profile';
 
-import { exists, findExecutable, getPowershellPaths, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { WINDOWS_GIT_BASH_PATHS, exists, findExecutable, getPowershellPaths } from './shell';
+
+import type vscode from 'vscode';
 
 function applyConfigProfilesToMap(
   configProfiles: { [key: string]: IUnresolvedTerminalProfile } | undefined,

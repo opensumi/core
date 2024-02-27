@@ -1,19 +1,19 @@
 import { Autowired } from '@opensumi/di';
 import {
-  IContextKeyService,
   ClientAppContribution,
+  EDITOR_COMMANDS,
+  IContextKeyService,
+  IQuickOpenHandlerRegistry,
+  KeybindingRegistry,
+  LAYOUT_COMMANDS,
+  QUICK_OPEN_COMMANDS,
+  QuickOpenContribution,
   SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
+  getIcon,
   slotRendererRegistry,
-  KeybindingRegistry,
-  LAYOUT_COMMANDS,
-  IQuickOpenHandlerRegistry,
-  QuickOpenContribution,
-  QUICK_OPEN_COMMANDS,
-  EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
 import {
   DEBUG_CONSOLE_CONTAINER_ID,
   DEBUG_CONTAINER_ID,
@@ -38,13 +38,13 @@ import {
   MenuContribution as MenuContribution,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
-import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
+import { ContributionProvider, Domain, IEventBus, WithEventBus, localize } from '@opensumi/ide-core-common';
+import { Command, CommandContribution, CommandRegistry, CommandService } from '@opensumi/ide-core-common/lib/command';
 
 import { IMainLayoutService } from '../common';
 
 import { ViewQuickOpenHandler } from './quick-open-view';
-import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
+import { BottomTabRenderer, LeftTabRenderer, RightTabRenderer } from './tabbar/renderer.view';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {

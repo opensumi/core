@@ -3,44 +3,45 @@ import paths from 'path';
 
 import { TextDocument } from 'vscode-languageserver-types';
 
-import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Inject, Injectable, Injector } from '@opensumi/di';
 import {
-  URI,
+  AppConfig,
+  DisposableCollection,
   Emitter,
-  Uri,
   Event,
   FileUri,
   IDisposable,
-  DisposableCollection,
-  isArray,
-  isEmptyObject,
-  parseGlob,
+  INodeLogger,
   ParsedPattern,
-  match,
+  Schemes,
+  URI,
+  UTF8,
+  Uri,
   getEncodingInfo,
   iconvDecode,
   iconvEncode,
-  UTF8,
-  INodeLogger,
-  AppConfig,
-  Schemes,
+  isArray,
+  isEmptyObject,
+  match,
+  parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
 import {
-  FileSystemError,
-  FileStat,
-  IFileService,
-  FileMoveOptions,
-  FileDeleteOptions,
-  FileAccess,
-  FileSystemProvider,
   DidFilesChangedParams,
-  FileSetContentOptions,
-  FileCreateOptions,
+  FileAccess,
+  FileChangeEvent,
   FileCopyOptions,
-  containsExtraFileMethod,
+  FileCreateOptions,
+  FileDeleteOptions,
+  FileMoveOptions,
+  FileSetContentOptions,
+  FileStat,
+  FileSystemError,
+  FileSystemProvider,
   IDiskFileProvider,
+  IFileService,
+  TextDocumentContentChangeEvent,
+  containsExtraFileMethod,
 } from '../common';
 
 import { FileSystemManage } from './file-system-manage';

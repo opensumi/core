@@ -5,23 +5,23 @@ import {
   CommandService,
   Disposable,
   Emitter,
-  formatLocalize,
   IEventBus,
   ILogger,
   IRange,
   IReporterService,
-  isThenable,
-  isUndefinedOrNull,
-  localize,
   PreferenceService,
   REPORT_NAME,
   SaveTaskErrorCause,
   SaveTaskResponseState,
   Throttler,
   URI,
+  formatLocalize,
+  isThenable,
+  isUndefinedOrNull,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { monaco, URI as MonacoURI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { URI as MonacoURI, monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { EOL, EndOfLineSequence, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IMessageService } from '@opensumi/ide-overlay';
 import {
@@ -30,20 +30,21 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import {
-  ITextBuffer,
-  EndOfLinePreference,
   DefaultEndOfLine,
+  EndOfLinePreference,
+  ITextBuffer,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { createTextBuffer } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
 import {
   IDocCache,
   IDocPersistentCacheProvider,
+  IEditorDocumentModelContentChange,
+  SaveReason,
   isDocContentCache,
   parseRangeFrom,
-  SaveReason,
-  IEditorDocumentModelContentChange,
 } from '../../common';
+import { IEditorDocumentModel } from '../../common/editor';
 import { EditorPreferences } from '../preference/schema';
 import { createEditorPreferenceProxy } from '../preference/util';
 import { CompareResult, ICompareService } from '../types';
@@ -55,12 +56,11 @@ import {
   EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelRemovalEvent,
   EditorDocumentModelSavedEvent,
-  IEditorDocumentModel,
+  EditorDocumentModelWillSaveEvent,
+  IDocModelUpdateOptions,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   ORIGINAL_DOC_SCHEME,
-  EditorDocumentModelWillSaveEvent,
-  IDocModelUpdateOptions,
 } from './types';
 
 export interface EditorDocumentModelConstructionOptions {

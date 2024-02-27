@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
+import { Align, FixedSizeList, ListOnScrollProps, VariableSizeList } from 'react-window';
 
 import { Scrollbars } from '../scrollbars';
 

@@ -1,9 +1,9 @@
-import { IDisposable, DisposableCollection } from '@opensumi/ide-utils';
+import { DisposableCollection, IDisposable } from '@opensumi/ide-utils';
 
-import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../types';
-import { TreeNode, CompositeTreeNode } from '../TreeNode';
+import { ITreeNodeOrCompositeTreeNode, TreeNodeEvent } from '../../types';
+import { CompositeTreeNode, TreeNode } from '../TreeNode';
 
-import { CompositeDecoration, CompositeDecorationType, ClasslistComposite } from './CompositeDecoration';
+import { ClasslistComposite, CompositeDecoration, CompositeDecorationType } from './CompositeDecoration';
 import { Decoration, IDecorationTargetChangeEventData } from './Decoration';
 
 interface IDecorationMeta {

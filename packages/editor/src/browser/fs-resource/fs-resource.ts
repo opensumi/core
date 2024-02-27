@@ -1,21 +1,20 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  IApplicationService,
+  LRUMap,
+  MessageType,
   OperatingSystem,
   URI,
   WithEventBus,
-  localize,
   formatLocalize,
-  MessageType,
-  LRUMap,
-  IApplicationService,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileChangeType, path } from '@opensumi/ide-core-common';
-import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 
-import { IResourceProvider, IResource, ResourceNeedUpdateEvent, AskSaveResult } from '../../common';
-import { DIFF_SCHEME } from '../../common';
+import { AskSaveResult, DIFF_SCHEME, IResource, IResourceProvider, ResourceNeedUpdateEvent } from '../../common';
 import { IEditorDocumentModelService } from '../doc-model/types';
 
 import { FileTreeSet } from './file-tree-set';

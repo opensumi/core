@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CancellationToken,
   IDisposable,
   IPosition,
-  arrays,
   RefCountedDisposable,
-  onUnexpectedExternalError,
   URI,
   Uri,
+  arrays,
+  onUnexpectedExternalError,
 } from '@opensumi/ide-core-common';
 import {
   CallHierarchyItem,

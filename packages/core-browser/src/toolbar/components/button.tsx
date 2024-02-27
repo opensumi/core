@@ -3,7 +3,7 @@ import React, { PropsWithChildren } from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMClient from 'react-dom/client';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Button } from '@opensumi/ide-components';
 import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
 
@@ -12,13 +12,13 @@ import { PreferenceService } from '../../preferences';
 import { useInjectable } from '../../react-hooks';
 import { AppConfig, ConfigProvider } from '../../react-providers/config-provider';
 import {
-  IToolbarActionReactElement,
-  IToolbarActionElementProps,
-  IToolbarActionBtnProps,
   IToolbarActionBtnDelegate,
+  IToolbarActionBtnProps,
   IToolbarActionBtnState,
-  IToolbarPopoverStyle,
+  IToolbarActionElementProps,
+  IToolbarActionReactElement,
   IToolbarPopoverRegistry,
+  IToolbarPopoverStyle,
 } from '../types';
 
 enum BUTTON_TITLE_STYLE {

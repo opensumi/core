@@ -2,11 +2,11 @@ import cls from 'classnames';
 import React from 'react';
 
 import {
-  Select,
-  SelectOptionsList,
-  ISelectOptionsListProps,
   IDataOption,
   IDataOptionGroup,
+  ISelectOptionsListProps,
+  Select,
+  SelectOptionsList,
   isDataOptionGroups,
 } from '@opensumi/ide-components';
 import { Emitter } from '@opensumi/ide-core-common';

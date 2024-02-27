@@ -1,5 +1,5 @@
 import { LogLevel } from '@opensumi/ide-core-common';
-import { extProcessInit, IBuiltInCommand } from '@opensumi/ide-extension/lib/hosted/ext.process-base';
+import { IBuiltInCommand, extProcessInit } from '@opensumi/ide-extension/lib/hosted/ext.process-base';
 
 const builtinCommands: IBuiltInCommand[] = [
   {

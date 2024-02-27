@@ -1,5 +1,3 @@
-import type * as vscode from 'vscode';
-
 import { Autowired } from '@opensumi/di';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { Disposable, Domain, URI } from '@opensumi/ide-core-common';
@@ -8,6 +6,8 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ILsifService } from './lsif-service/base';
 import { SimpleLanguageService } from './simple.service';
+
+import type * as vscode from 'vscode';
 
 @Domain(ClientAppContribution)
 export class LanguageServiceContribution extends Disposable implements ClientAppContribution {

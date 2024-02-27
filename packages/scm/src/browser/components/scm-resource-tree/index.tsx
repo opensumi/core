@@ -1,8 +1,8 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { FC, useState, useRef, useEffect, useCallback, memo } from 'react';
+import React, { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
-import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
+import { IRecycleTreeHandle, RecycleTree, TreeModel, TreeNodeType } from '@opensumi/ide-components';
 import { isOSX } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
@@ -10,7 +10,7 @@ import { ViewModelContext } from '../../scm-model';
 
 import styles from './index.module.less';
 import { SCMTreeModelService } from './scm-tree-model.service';
-import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceNotRoot } from './scm-tree-node';
+import { SCMResourceFile, SCMResourceFolder, SCMResourceGroup, SCMResourceNotRoot } from './scm-tree-node';
 import { ISCMTreeNodeProps, SCMTreeNode, SCM_TREE_NODE_HEIGHT } from './scm-tree-node.view';
 import { SCMTreeService } from './scm-tree.service';
 

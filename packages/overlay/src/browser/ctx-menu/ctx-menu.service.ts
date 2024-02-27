@@ -1,4 +1,4 @@
-import { observable, action, makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';

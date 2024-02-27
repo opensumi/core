@@ -1,4 +1,4 @@
-import { PreferenceItem, Event, GeneralSettingsId, getLanguageId } from '@opensumi/ide-core-common';
+import { Event, GeneralSettingsId, PreferenceItem, getLanguageId } from '@opensumi/ide-core-common';
 
 import { IPreferences } from '../bootstrap';
 

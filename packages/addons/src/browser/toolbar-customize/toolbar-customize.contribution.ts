@@ -1,15 +1,15 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
+  AppConfig,
   CommandContribution,
   CommandRegistry,
   ComponentContribution,
   ComponentRegistry,
-  AppConfig,
+  Domain,
   SlotLocation,
   localize,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { ToolbarCustomizeComponent, ToolbarCustomizeViewService } from './toolbar-customize';
 

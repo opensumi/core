@@ -1,6 +1,5 @@
 import { getDefaultRegistry } from '@rjsf/core';
-import { FieldProps } from '@rjsf/utils';
-import { FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
+import { FieldProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
 import React, { useCallback } from 'react';
 
 import { isUndefined } from '@opensumi/ide-core-common';

@@ -1,10 +1,9 @@
-import type vscode from 'vscode';
-
-import { Event } from '@opensumi/ide-core-common';
-import { Uri, match as matchGlobPattern } from '@opensumi/ide-core-common';
+import { Event, Uri, match as matchGlobPattern } from '@opensumi/ide-core-common';
 import { LanguageSelector } from '@opensumi/ide-editor';
 
 import * as types from '../../../../common/vscode/ext-types';
+
+import type vscode from 'vscode';
 
 export function createToken(): any {
   return Object.freeze({

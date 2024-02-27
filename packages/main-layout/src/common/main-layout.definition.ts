@@ -1,5 +1,5 @@
 import { BasicEvent, IDisposable, SlotLocation } from '@opensumi/ide-core-browser';
-import { ViewContainerOptions, View, SideStateManager } from '@opensumi/ide-core-browser/lib/layout';
+import { SideStateManager, View, ViewContainerOptions } from '@opensumi/ide-core-browser/lib/layout';
 import { ComponentRegistryInfo } from '@opensumi/ide-core-browser/lib/layout/layout.interface';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Deferred, Event } from '@opensumi/ide-core-common';

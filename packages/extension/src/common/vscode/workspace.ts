@@ -1,13 +1,14 @@
-import type vscode from 'vscode';
-
-import { URI, IDisposable, IRange, CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, IDisposable, IRange, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 // eslint-disable-next-line import/no-restricted-paths
-import type { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@opensumi/ide-workspace-edit';
+import { IResourceFileEdit, IResourceTextEdit, IWorkspaceEdit } from '@opensumi/ide-workspace-edit';
 
 import { Uri, UriComponents } from './ext-types';
+
 import type * as model from './model.api';
+// eslint-disable-next-line import/no-restricted-paths
+import type { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type vscode from 'vscode';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;

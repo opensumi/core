@@ -1,13 +1,13 @@
-import React, { useCallback, useState, ReactNode, useEffect, useMemo } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Icon, getIcon, Button, Tabs } from '@opensumi/ide-components';
+import { Button, Icon, Tabs, getIcon } from '@opensumi/ide-components';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Markdown } from '@opensumi/ide-markdown';
 
-import { InstallState, IVSXExtensionService, VSXExtension, VSXExtensionServiceToken } from '../../common';
+import { IVSXExtensionService, InstallState, VSXExtension, VSXExtensionServiceToken } from '../../common';
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
 
 import styles from './overview.module.less';

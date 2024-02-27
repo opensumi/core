@@ -1,24 +1,24 @@
 import { Emitter as Dispatcher } from 'event-kit';
 
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { PreferenceService, OperatingSystem } from '@opensumi/ide-core-browser';
-import { Emitter, ILogger, Event, IApplicationService } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { OperatingSystem, PreferenceService } from '@opensumi/ide-core-browser';
+import { Emitter, Event, IApplicationService, ILogger } from '@opensumi/ide-core-common';
 
 import {
-  generateSessionId,
-  ITerminalService,
+  IDetectProfileOptionsPreference,
+  INodePtyInstance,
+  IPtyExitEvent,
+  IPtyProcessChangeEvent,
+  IShellLaunchConfig,
+  ITerminalConnection,
   ITerminalError,
+  ITerminalProfile,
+  ITerminalService,
   ITerminalServiceClient,
   ITerminalServicePath,
-  ITerminalConnection,
-  IPtyExitEvent,
-  INodePtyInstance,
-  isTerminalError,
-  ITerminalProfile,
-  IShellLaunchConfig,
-  IDetectProfileOptionsPreference,
-  IPtyProcessChangeEvent,
   TERMINAL_ID_SEPARATOR,
+  generateSessionId,
+  isTerminalError,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 

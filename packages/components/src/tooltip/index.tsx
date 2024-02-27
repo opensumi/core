@@ -1,6 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import './style.less';
 

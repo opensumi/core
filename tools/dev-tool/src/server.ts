@@ -8,7 +8,7 @@ import Static from 'koa-static';
 
 import { Injector } from '@opensumi/di';
 import { Deferred } from '@opensumi/ide-core-common';
-import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
+import { IServerAppOpts, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 import {
   IExternalFileArgs,
   IExternalUrlArgs,

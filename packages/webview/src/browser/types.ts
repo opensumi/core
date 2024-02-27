@@ -1,4 +1,4 @@
-import { Event, URI, IDisposable, MaybeNull, MaybePromise } from '@opensumi/ide-core-common';
+import { Event, IDisposable, MaybeNull, MaybePromise, URI } from '@opensumi/ide-core-common';
 import { IEditorGroup } from '@opensumi/ide-editor';
 import { ITheme } from '@opensumi/ide-theme';
 

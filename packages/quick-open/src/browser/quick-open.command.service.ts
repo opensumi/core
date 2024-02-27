@@ -1,12 +1,17 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { localize, IContextKeyService, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { KeybindingRegistry, Keybinding } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import {
+  EDITOR_COMMANDS,
+  IContextKeyService,
+  Keybinding,
+  KeybindingRegistry,
+  localize,
+} from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { AbstractMenuService, MenuId, MenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next';
-import { QuickOpenModel, QuickOpenItem, QuickOpenItemOptions, Mode } from '@opensumi/ide-core-browser/lib/quick-open';
+import { Mode, QuickOpenItem, QuickOpenItemOptions, QuickOpenModel } from '@opensumi/ide-core-browser/lib/quick-open';
 import {
-  CommandRegistry,
   Command,
+  CommandRegistry,
   CommandService,
   Deferred,
   IReporterService,

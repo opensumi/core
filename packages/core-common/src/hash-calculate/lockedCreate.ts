@@ -7,7 +7,7 @@
 // copy and modified from https://github.com/Daninet/hash-wasm/blob/bd3a205ca5603fc80adf71d0966fc72e8d4fa0ef/lib/lockedCreate.ts
 
 import { Mutex } from './mutex';
-import { WASMInterface, IWASMInterface } from './WASMInterface';
+import { IWASMInterface, WASMInterface } from './WASMInterface';
 
 export async function lockedCreate(mutex: Mutex, binary: any, hashLength: number): Promise<IWASMInterface> {
   const unlock = await mutex.lock();

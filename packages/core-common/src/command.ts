@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, IDisposable, MaybePromise } from '@opensumi/ide-utils';
 
 import { ContributionProvider } from './contribution-provider';
-import { createLocalizedStr, ILocalizedStr, replaceLocalizePlaceholder } from './localize';
+import { ILocalizedStr, createLocalizedStr, replaceLocalizePlaceholder } from './localize';
 import { getDebugLogger } from './log';
 import { IExtensionInfo } from './types';
 

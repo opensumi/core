@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
   Event,
   IContextKeyService,
   LinkedText,
-  parseLinkedText,
   PreferenceService,
   URI,
+  parseLinkedText,
 } from '@opensumi/ide-core-browser';
 import {
   BinaryBuffer,
@@ -26,11 +26,11 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import {
+  CompletionEventsType,
+  IResolvedWalkthroughStep,
   IWalkthrough,
   IWalkthroughStep,
-  IResolvedWalkthroughStep,
   StepProgress,
-  CompletionEventsType,
 } from '../common';
 import { IExtensionContributions, IExtensionWalkthroughStep } from '../common/vscode';
 

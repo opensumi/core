@@ -7,12 +7,12 @@ import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model'
 import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
 import {
-  overviewRulerModifiedForeground,
-  overviewRulerDeletedForeground,
-  overviewRulerAddedForeground,
   minimapGutterAddedBackground,
-  minimapGutterModifiedBackground,
   minimapGutterDeletedBackground,
+  minimapGutterModifiedBackground,
+  overviewRulerAddedForeground,
+  overviewRulerDeletedForeground,
+  overviewRulerModifiedForeground,
 } from '../scm-color';
 import { SCMPreferences } from '../scm-preference';
 

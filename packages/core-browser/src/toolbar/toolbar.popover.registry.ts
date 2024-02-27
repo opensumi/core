@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event, Disposable } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 
 import { IToolbarPopoverRegistry } from './types';
 

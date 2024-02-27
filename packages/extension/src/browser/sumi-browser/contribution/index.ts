@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Disposable, IDisposable } from '@opensumi/ide-core-common';
 
 import { AbstractSumiBrowserContributionRunner, IRunTimeParams } from '../types';
 

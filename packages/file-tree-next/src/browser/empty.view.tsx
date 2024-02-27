@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useInjectable, FILE_COMMANDS } from '@opensumi/ide-core-browser';
-import { localize, CommandService } from '@opensumi/ide-core-common';
+import { FILE_COMMANDS, useInjectable } from '@opensumi/ide-core-browser';
+import { CommandService, localize } from '@opensumi/ide-core-common';
 
 import styles from './file-tree.module.less';
 

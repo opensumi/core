@@ -2,7 +2,7 @@ import { Autowired } from '@opensumi/di';
 import { AppConfig, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
-import { ConnectionRTTBrowserServiceToken, ConnectionRTTBrowserService } from './connection-rtt-service';
+import { ConnectionRTTBrowserService, ConnectionRTTBrowserServiceToken } from './connection-rtt-service';
 
 enum DevtoolsEvent {
   Latency = 'devtools:latency',

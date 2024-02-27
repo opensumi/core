@@ -1,21 +1,22 @@
 import capitalize from 'lodash/capitalize';
-import type vscode from 'vscode';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { Event, Emitter } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import {
   ITerminalApiService,
-  ITerminalGroupViewService,
   ITerminalController,
-  ITerminalInfo,
+  ITerminalExitEvent,
   ITerminalExternalClient,
+  ITerminalGroupViewService,
+  ITerminalInfo,
   ITerminalInternalService,
   ITerminalNetwork,
-  ITerminalExitEvent,
-  ITerminalTitleChangeEvent,
   ITerminalProfileInternalService,
+  ITerminalTitleChangeEvent,
 } from '../common';
+
+import type vscode from 'vscode';
 
 @Injectable()
 export class TerminalApiService implements ITerminalApiService {

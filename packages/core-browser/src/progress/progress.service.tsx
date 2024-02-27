@@ -5,40 +5,40 @@
 
 import React = require('react');
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { MessageType, update, close } from '@opensumi/ide-components';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { MessageType, close, update } from '@opensumi/ide-components';
 import {
-  localize,
-  IProgressOptions,
-  IProgressNotificationOptions,
-  IProgressWindowOptions,
-  IProgressCompositeOptions,
-  IProgress,
-  IProgressStep,
-  ProgressLocation,
-  Progress,
-  strings,
   CommandService,
   Disposable,
   Emitter,
   Event,
-  toDisposable,
-  dispose,
-  parseLinkedText,
-  IDisposable,
-  timeout,
   IAction,
+  IDisposable,
+  IProgress,
+  IProgressCompositeOptions,
+  IProgressNotificationOptions,
+  IProgressOptions,
+  IProgressStep,
+  IProgressWindowOptions,
+  Progress,
+  ProgressLocation,
+  dispose,
+  localize,
+  parseLinkedText,
+  strings,
+  timeout,
+  toDisposable,
 } from '@opensumi/ide-core-common';
 
 import { open } from '../components';
 import { toMarkdown } from '../markdown';
 import { IOpenerService } from '../opener';
-import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
+import { StatusBarAlignment, StatusBarEntry, StatusBarEntryAccessor } from '../services';
 
 import { ProgressBar } from './progress-bar';
 import { ProgressIndicator } from './progress-indicator';
 
-import { IProgressService, IProgressIndicator, IProgressRunner } from './index';
+import { IProgressIndicator, IProgressRunner, IProgressService } from './index';
 
 const { format } = strings;
 

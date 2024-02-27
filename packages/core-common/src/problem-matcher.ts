@@ -15,16 +15,16 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/browser/task-problem-matcher-registry.ts
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Emitter, DisposableCollection, Disposable, IDisposable } from '@opensumi/ide-utils';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, DisposableCollection, Emitter, IDisposable, URI } from '@opensumi/ide-utils';
 
 import {
-  IProblemPatternRegistry,
   ApplyToKind,
   FileLocationKind,
-  Severity,
-  ProblemPatternContribution,
+  IProblemPatternRegistry,
   ProblemPattern,
+  ProblemPatternContribution,
+  Severity,
   WatchingPattern,
 } from './problem-pattern';
 

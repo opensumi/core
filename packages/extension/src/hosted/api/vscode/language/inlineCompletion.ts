@@ -1,7 +1,7 @@
-import type vscode from 'vscode';
+// eslint-disable-next-line import/no-unresolved
 import { CancellationToken } from 'vscode';
 
-import { Uri as URI, DisposableStore } from '@opensumi/ide-core-common';
+import { DisposableStore, Uri as URI } from '@opensumi/ide-core-common';
 import { Command } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import * as typeConvert from '../../../../common/vscode/converter';
@@ -10,6 +10,8 @@ import { InlineCompletionTriggerKind } from '../../../../common/vscode/ext-types
 import * as languages from '../../../../common/vscode/languages';
 import { Position } from '../../../../common/vscode/model.api';
 import { CommandsConverter } from '../ext.host.command';
+
+import type vscode from 'vscode';
 
 class ReferenceMap<T> {
   private readonly _references = new Map<number, T>();

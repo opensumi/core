@@ -1,10 +1,9 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import React from 'react';
 
-import type { VALIDATE_TYPE } from '@opensumi/ide-components';
-import type { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
-
 import type { Keybinding } from '../keybinding';
+import type { VALIDATE_TYPE } from '@opensumi/ide-components';
+import type { Event, IDisposable, MaybePromise, URI } from '@opensumi/ide-core-common';
 
 export enum Mode {
   /**

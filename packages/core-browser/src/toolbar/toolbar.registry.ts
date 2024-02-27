@@ -1,20 +1,20 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain, Event } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ContributionProvider, Domain, Emitter, Event, IDisposable, WithEventBus } from '@opensumi/ide-core-common';
 
 import { ClientAppContribution } from '../common';
 import { ContextKeyChangeEvent, IContextKeyService } from '../context-key';
 
 import {
-  IToolbarRegistry,
-  IToolbarActionGroup,
   IToolbarAction,
+  IToolbarActionGroup,
   IToolbarActionGroupForRender,
   IToolbarActionPosition,
-  ToolbarActionsChangedEvent,
+  IToolbarRegistry,
   ToolBarActionContribution,
   ToolbarActionGroupsChangedEvent,
-  ToolbarRegistryReadyEvent,
+  ToolbarActionsChangedEvent,
   ToolbarActionsWhenChangeEvent,
+  ToolbarRegistryReadyEvent,
 } from './types';
 
 type LocationName = string;

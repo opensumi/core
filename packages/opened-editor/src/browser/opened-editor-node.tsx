@@ -2,18 +2,18 @@ import cls from 'classnames';
 import React from 'react';
 
 import {
-  TreeNode,
+  Button,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
+  TreeNode,
   TreeNodeType,
-  Button,
 } from '@opensumi/ide-components';
-import { URI, OPEN_EDITORS_COMMANDS, localize, getIcon, CommandService } from '@opensumi/ide-core-browser';
+import { CommandService, OPEN_EDITORS_COMMANDS, URI, getIcon, localize } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { EDITOR_WEBVIEW_SCHEME } from '@opensumi/ide-webview';
 
-import { EditorFileGroup, EditorFile } from './opened-editor-node.define';
+import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 import styles from './opened-editor-node.module.less';
 import { OpenedEditorDecorationService } from './services/opened-editor-decoration.service';
 

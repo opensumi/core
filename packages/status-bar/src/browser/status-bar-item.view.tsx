@@ -1,18 +1,22 @@
 import cls from 'classnames';
-import React, { useCallback, memo, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 
 import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
-import { IOpenerService, toMarkdown, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
-import { replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
+import {
+  IOpenerService,
+  replaceLocalizePlaceholder,
+  toMarkdown,
+  transformLabelWithCodicon,
+} from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
 import {
-  IThemeColor,
-  isThemeColor,
   CommandService,
-  StatusBarHoverCommand,
   IMarkdownString,
+  IThemeColor,
+  StatusBarHoverCommand,
   isString,
+  isThemeColor,
 } from '@opensumi/ide-core-common';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 

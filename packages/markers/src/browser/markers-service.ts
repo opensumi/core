@@ -1,5 +1,5 @@
 'use strict';
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';

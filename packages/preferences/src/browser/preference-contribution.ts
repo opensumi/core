@@ -1,38 +1,38 @@
 import * as jsoncParser from 'jsonc-parser';
 
-import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
+  COMMON_COMMANDS,
   ClientAppContribution,
-  PreferenceSchemaProvider,
-  URI,
-  Domain,
+  CodeSchemaId,
+  Command,
   CommandContribution,
   CommandRegistry,
-  COMMON_COMMANDS,
-  KeybindingContribution,
-  KeybindingRegistry,
-  PreferenceScope,
-  PreferenceProvider,
-  WithEventBus,
-  MaybePromise,
-  localize,
   CommandService,
+  ContributionProvider,
+  Domain,
   EDITOR_COMMANDS,
-  JsonSchemaContribution,
+  IDisposable,
   IJSONSchemaRegistry,
   IPreferenceSettingsService,
-  ContributionProvider,
   ISettingGroup,
-  IDisposable,
+  ISettingSection,
+  JsonSchemaContribution,
+  KeybindingContribution,
+  KeybindingRegistry,
+  MaybePromise,
+  PreferenceProvider,
+  PreferenceSchemaProvider,
+  PreferenceScope,
+  URI,
+  WithEventBus,
   arrays,
-  Command,
   getIcon,
   isString,
-  ISettingSection,
-  CodeSchemaId,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IResource, IResourceProvider, ResourceService } from '@opensumi/ide-editor';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,

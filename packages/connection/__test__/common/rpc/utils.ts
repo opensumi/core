@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto';
+import { Readable } from 'stream';
 import { MessageChannel, MessagePort } from 'worker_threads';
 
 import { Type } from '@furyjs/fury';
@@ -19,6 +20,8 @@ function createRandomBuffer(size: number): Buffer {
 const bufferSize = 1024 * 1024;
 
 const buffer = createRandomBuffer(bufferSize);
+
+export const longMessage = '"Hello" is a song recorded by English singer-songwriter Adele, released on 23 October 2015 by XL Recordings as the lead single from her third studio album, 25 (2015). Written by Adele and the album\'s producer, Greg Kurstin, "Hello" is a piano ballad with soul influences (including guitar and drums), and lyrics that discuss themes of nostalgia and regret. Upon release, the song garnered critical acclaim, with reviewers comparing it favourably to Adele\'s previous works and praised its lyrics, production and Adele\'s vocal performance. It was recorded in Metropolis Studios, London.';
 
 export function createConnectionPair() {
   const channel = new MessageChannel();
@@ -150,6 +153,7 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   registry2.registerService({
     add: (a: number, b: number) => a + b,
     getContent: () => buffer,
+    readFileStream: (path: string) => stringToStream(longMessage, 5),
   });
 
   const client2 = new ProxySumi(registry2);
@@ -196,4 +200,21 @@ export function createLegacyRPCClientPair(pair: ReturnType<typeof createMessageC
     invoker1,
     invoker2,
   };
+}
+
+function stringToStream(str: string, chunkSize = 1) {
+  let index = 0;
+  const stream = new Readable({
+    read(size) {
+      const chunk = str.slice(index, index + chunkSize);
+      if (chunk) {
+        this.push(chunk);
+        index += chunkSize;
+      } else {
+        this.push(null);
+      }
+    },
+  });
+
+  return stream;
 }

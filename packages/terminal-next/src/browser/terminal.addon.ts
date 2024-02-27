@@ -1,4 +1,4 @@
-import { Terminal, ITerminalAddon } from 'xterm';
+import { ITerminalAddon, Terminal } from 'xterm';
 
 import { Disposable, Emitter } from '@opensumi/ide-core-common';
 

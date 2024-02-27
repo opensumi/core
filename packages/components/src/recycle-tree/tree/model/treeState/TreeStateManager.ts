@@ -1,6 +1,6 @@
-import { Event, Emitter, path } from '@opensumi/ide-utils';
+import { Emitter, Event, path } from '@opensumi/ide-utils';
 
-import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
+import { ITreeNodeOrCompositeTreeNode, TreeNodeEvent } from '../../../types';
 import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 
 import { ISerializableState } from './types';

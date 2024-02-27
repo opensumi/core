@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
-import { objects, IDisposable, Disposable } from '@opensumi/ide-utils';
+import { Disposable, IDisposable, objects } from '@opensumi/ide-utils';
 
-import { IJSONSchemaMap, IJSONSchema } from './json-schema';
+import { IJSONSchema, IJSONSchemaMap } from './json-schema';
 import { formatLocalize } from './localize';
 import { IStringDictionary } from './types/string';
 

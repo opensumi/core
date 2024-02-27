@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Dropdown } from '../dropdown';
 import { Placement } from '../dropdown/dropdown';
-import { Icon, DefaultIconKeys, getIcon } from '../icon';
+import { DefaultIconKeys, Icon, getIcon } from '../icon';
 import './style.less';
 
 export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link' | 'icon' | 'default';

@@ -1,7 +1,7 @@
-import { IDisposable, IEventBus, MaybeNull, Emitter } from '@opensumi/ide-core-browser';
+import { Emitter, IDisposable, IEventBus, MaybeNull } from '@opensumi/ide-core-browser';
 import { makeRandomHexString } from '@opensumi/ide-core-common';
 
-import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
+import { Direction, IEditorGroup, IEditorGroupState } from '../../common';
 import { GridResizeEvent } from '../types';
 
 export const editorGridUid = new Set();

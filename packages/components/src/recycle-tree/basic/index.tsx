@@ -1,8 +1,8 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 
 import { ClickOutside } from '../../click-outside';
-import { RecycleTree, IRecycleTreeHandle } from '../RecycleTree';
+import { IRecycleTreeHandle, RecycleTree } from '../RecycleTree';
 import { INodeRendererWrapProps } from '../TreeNodeRendererWrap';
 import { ITreeNodeOrCompositeTreeNode } from '../types';
 

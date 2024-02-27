@@ -5,11 +5,10 @@
 // some code copied and modified from https://github.com/microsoft/vscode/blob/d5277e8e2b73134126cabd4fe570a15b821e96c1/src/vs/workbench/api/common/extHostLocalizationService.ts
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { LANGUAGE_DEFAULT, Uri as URI, IExtensionLogger, path, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, IExtensionLogger, LANGUAGE_DEFAULT, Uri as URI, path } from '@opensumi/ide-core-common';
 import { format2 } from '@opensumi/ide-utils/lib/strings';
 
-import { MainThreadAPIIdentifier } from '../../../common/vscode';
-import { IExtensionDescription } from '../../../common/vscode';
+import { IExtensionDescription, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IExtHostLocalization, IMainThreadLocalization, IStringDetails } from '../../../common/vscode/localization';
 
 export class ExtHostLocalization implements IExtHostLocalization {

@@ -7,8 +7,8 @@ import {
   CommentRoot,
 } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { URI, positionToRange, Disposable, Emitter } from '@opensumi/ide-core-common';
-import { IEditor, EditorCollectionService, ResourceService } from '@opensumi/ide-editor';
+import { Disposable, Emitter, URI, positionToRange } from '@opensumi/ide-core-common';
+import { EditorCollectionService, IEditor, ResourceService } from '@opensumi/ide-editor';
 import { IEditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { IIconService } from '@opensumi/ide-theme';
@@ -18,7 +18,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
-import { ICommentsService, CommentMode } from '../../src/common';
+import { CommentMode, ICommentsService } from '../../src/common';
 
 describe('comment service test', () => {
   let injector: MockInjector;

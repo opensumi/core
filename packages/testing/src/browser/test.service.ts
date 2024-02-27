@@ -1,13 +1,13 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CancellationToken,
   CancellationTokenSource,
   Disposable,
   Emitter,
-  getIcon,
   IDisposable,
-  localize,
   SlotLocation,
+  getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { TestingCanRefreshTests, TestingServiceProviderCount } from '@opensumi/ide-core-browser/lib/contextkey/testing';
@@ -15,12 +15,11 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AmbiguousRunTestsRequest, ITestController, ITestService, TestId } from '../common';
 import { Testing } from '../common/constants';
-import { canUseProfileWithTest, ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
-import { ITestResultService, TestResultServiceToken } from '../common/test-result';
+import { ITestProfileService, TestProfileServiceToken, canUseProfileWithTest } from '../common/test-profile';
+import { ITestResult, ITestResultService, TestResultServiceToken } from '../common/test-result';
 import { MainThreadTestCollection, ResolvedTestRunRequest, TestDiffOpType, TestsDiff } from '../common/testCollection';
 import { TestingContainerId } from '../common/testing-view';
 
-import { ITestResult } from './../common/test-result';
 import { TestingView } from './components/testing.view';
 
 @Injectable()

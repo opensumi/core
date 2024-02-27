@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Schemes } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Schemes, URI } from '@opensumi/ide-core-common';
 
 import { IWindowService } from '../window';
 

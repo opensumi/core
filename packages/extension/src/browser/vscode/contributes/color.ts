@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { replaceLocalizePlaceholder, localize } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { ExtColorContribution, IThemeService } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 export type ColorsSchema = Array<ExtColorContribution>;
 const colorIdPattern = '^\\w+[.\\w+]*$';

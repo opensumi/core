@@ -1,18 +1,17 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
-import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
-import { RecycleList } from '@opensumi/ide-components';
+import { Input, RecycleList, VALIDATE_TYPE, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import {
-  localize,
-  useInjectable,
+  Key,
+  KeyCode,
   KeybindingScope,
   NO_KEYBINDING_NAME,
-  KeyCode,
-  Key,
   formatLocalize,
+  getIcon,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 import { IKeymapService, KeybindingItem } from '../common';

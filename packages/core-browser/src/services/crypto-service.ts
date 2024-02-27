@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { INativeCryptoService, CryptoServicePath } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { CryptoServicePath, INativeCryptoService } from '@opensumi/ide-core-common';
 
 export const ICryptoService = Symbol('ICryptoService');
 

@@ -1,14 +1,14 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger } from '@opensumi/ide-core-browser/lib/logger';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 
 import {
-  VSCodeContributePoint,
   Contributes,
-  SemanticTokenTypeSchema,
-  validateTypeOrModifier,
   LifeCycle,
+  SemanticTokenTypeSchema,
+  VSCodeContributePoint,
+  validateTypeOrModifier,
 } from '../../../common';
 
 @Injectable()

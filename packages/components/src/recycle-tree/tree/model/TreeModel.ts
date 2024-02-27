@@ -1,4 +1,4 @@
-import { Event, Emitter } from '@opensumi/ide-utils';
+import { Emitter, Event } from '@opensumi/ide-utils';
 
 import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
 import { CompositeTreeNode, TreeNode } from '../TreeNode';

@@ -1,7 +1,7 @@
-import { Provider, Autowired } from '@opensumi/di';
-import { BrowserModule, EffectDomain, ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
+import { Autowired, Provider } from '@opensumi/di';
+import { BrowserModule, ClientAppContribution, Domain, EffectDomain } from '@opensumi/ide-core-browser';
 
-import { IExtensionStorageService, IExtensionStoragePathServer, IExtensionStorageServer } from '../common';
+import { IExtensionStoragePathServer, IExtensionStorageServer, IExtensionStorageService } from '../common';
 
 import { ExtensionStorageServer } from './storage';
 import { ExtensionStoragePathServer } from './storage-path';

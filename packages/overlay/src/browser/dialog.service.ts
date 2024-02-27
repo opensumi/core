@@ -1,9 +1,9 @@
-import { observable, action, makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, MessageType } from '@opensumi/ide-core-common';
 
-import { IDialogService, AbstractMessageService, Icon } from '../common';
+import { AbstractMessageService, IDialogService, Icon } from '../common';
 
 import { DialogContextKey } from './dialog.contextkey';
 

@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { OnEvent, FileChangeType, IPosition } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { FileChangeType, IPosition, OnEvent } from '@opensumi/ide-core-common';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus';
 
 import { RecentStorage } from '../common/common.storage';

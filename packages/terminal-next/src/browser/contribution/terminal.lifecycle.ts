@@ -1,9 +1,9 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
 import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 
 import { ITerminalController, ITerminalRestore } from '../../common';
-import { IEnvironmentVariableService, EnvironmentVariableServiceToken } from '../../common/environmentVariable';
+import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../../common/environmentVariable';
 import { registerTerminalColors } from '../terminal.color';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 

@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  Emitter,
-  Disposable,
-  Event,
   AuthenticationProviderInformation,
-  AuthenticationSessionsChangeEvent,
   AuthenticationSession,
+  AuthenticationSessionsChangeEvent,
+  Disposable,
+  Emitter,
+  Event,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
 
-import { MainThreadAPIIdentifier, IExtHostAuthentication, IMainThreadAuthentication } from '../../../common/vscode';
+import { IExtHostAuthentication, IMainThreadAuthentication, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
+
+import type vscode from 'vscode';
 
 interface GetSessionsRequest {
   scopes: string;

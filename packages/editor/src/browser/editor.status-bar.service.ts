@@ -1,9 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { localize, WithEventBus, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
+import { Autowired, Injectable } from '@opensumi/di';
+import { EDITOR_COMMANDS, WithEventBus, localize } from '@opensumi/ide-core-browser';
+import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser/lib/services';
 
-import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';
-
+import { CursorStatus, IEditor, ILanguageService, WorkbenchEditorService } from '../common';
 
 import { EditorDocumentModelOptionChangedEvent } from './doc-model/types';
 

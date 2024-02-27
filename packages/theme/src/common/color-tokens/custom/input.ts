@@ -2,7 +2,7 @@ import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor } from '../../utils';
 import { contrastBorder, selectionBackground } from '../base';
-import { inputBorder, inputActiveOptionBorder } from '../input';
+import { inputActiveOptionBorder, inputBorder } from '../input';
 
 export const ktInputBorder = registerColor(
   'kt.input.border',

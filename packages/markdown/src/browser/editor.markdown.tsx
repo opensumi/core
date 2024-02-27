@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@opensumi/ide-core-browser';
-import { ReactEditorComponent, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { CancellationTokenSource, Disposable, Emitter, useInjectable } from '@opensumi/ide-core-browser';
+import { IEditorDocumentModelService, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 import { IMarkdownService } from '../common';
 

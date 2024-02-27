@@ -1,11 +1,11 @@
 import {
-  Domain,
-  localize,
-  ToolbarRegistry,
-  ComponentRegistry,
   ComponentContribution,
-  TabBarToolbarContribution,
+  ComponentRegistry,
+  Domain,
   TERMINAL_COMMANDS,
+  TabBarToolbarContribution,
+  ToolbarRegistry,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 

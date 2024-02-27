@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IQuickPickItemButtonEvent, QuickInputButton } from '@opensumi/ide-core-browser/lib/quick-open';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { Emitter, Event } from '@opensumi/ide-core-common';
-import { IconType, IIconService, IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService, IconType } from '@opensumi/ide-theme';
 
 import { iconPath2URI } from '../common/icon';
 

@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
-  RecycleTree,
-  IRecycleTreeHandle,
   INodeRendererWrapProps,
-  TreeNodeType,
+  IRecycleTreeHandle,
+  RecycleTree,
   TreeModel,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { ViewState, CancellationToken, localize, CancellationTokenSource } from '@opensumi/ide-core-browser';
+import { CancellationToken, CancellationTokenSource, ViewState, localize } from '@opensumi/ide-core-browser';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 

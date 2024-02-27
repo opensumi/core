@@ -1,14 +1,14 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  LifeCyclePhase,
-  IProblemPatternRegistry,
-  ProblemPatternContribution,
   IJSONSchema,
-  objects,
+  IProblemPatternRegistry,
+  LifeCyclePhase,
+  ProblemPatternContribution,
   localize,
+  objects,
 } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 const { deepClone } = objects;
 export namespace PatternSchemas {

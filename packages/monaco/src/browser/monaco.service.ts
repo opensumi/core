@@ -1,17 +1,20 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   Disposable,
+  ILogger,
   KeybindingRegistry,
   MonacoOverrideServiceRegistry,
   ServiceNames,
-  ILogger,
 } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
-import { isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import {
+  IDiffEditorConstructionOptions,
+  MouseTargetType,
+  isDiffEditor,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 

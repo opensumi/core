@@ -1,25 +1,25 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Deferred,
-  URI,
   ILogger,
   StoragePaths,
   ThrottledDelayer,
   Throttler,
+  URI,
   Uri,
-  path,
   isEmptyObject,
+  path,
 } from '@opensumi/ide-core-common';
-import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
-  IExtensionStorageUri,
+  DEFAULT_EXTENSION_STORAGE_DIR_NAME,
   IExtensionStoragePathServer,
   IExtensionStorageServer,
+  IExtensionStorageTask,
+  IExtensionStorageUri,
   KeysToAnyValues,
   KeysToKeysToAnyValue,
-  DEFAULT_EXTENSION_STORAGE_DIR_NAME,
-  IExtensionStorageTask,
 } from '../common/';
 
 const { Path } = path;

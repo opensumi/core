@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
-import { IFileDropFrontendServiceToken, FileDropServicePath, ConnectionBackServicePath } from '../common';
+import { ConnectionBackServicePath, FileDropServicePath, IFileDropFrontendServiceToken } from '../common';
 
 import { ChromeDevtoolsContribution } from './chrome-devtools.contribution';
 import { ConnectionRTTContribution } from './connection-rtt-contribution';

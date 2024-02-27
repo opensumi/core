@@ -2,9 +2,9 @@ import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor } from '../utils';
 
-import { contrastBorder, activeContrastBorder, foreground } from './base';
+import { activeContrastBorder, contrastBorder, foreground } from './base';
 import { selectBackground, selectForeground } from './dropdown';
-import { listActiveSelectionForeground, listActiveSelectionBackground } from './list-tree';
+import { listActiveSelectionBackground, listActiveSelectionForeground } from './list-tree';
 
 export const menuBorder = registerColor(
   'menu.border',

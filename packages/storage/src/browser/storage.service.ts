@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Deferred, URI, Emitter, Event, ILogger, STORAGE_SCHEMA, path } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Deferred, Emitter, Event, ILogger, STORAGE_SCHEMA, URI, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange, StringKeyToAnyValue } from '../common';
+import { IStoragePathServer, IStorageServer, IUpdateRequest, StorageChange, StringKeyToAnyValue } from '../common';
 
 const { Path } = path;
 

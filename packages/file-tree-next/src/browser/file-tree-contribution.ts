@@ -1,45 +1,45 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  IApplicationService,
-  URI,
+  AppConfig,
   ClientAppContribution,
-  localize,
   CommandContribution,
-  KeybindingContribution,
-  TabBarToolbarContribution,
-  FILE_COMMANDS,
   CommandRegistry,
   CommandService,
-  SEARCH_COMMANDS,
-  IElectronNativeDialogService,
-  ToolbarRegistry,
-  KeybindingRegistry,
-  IWindowService,
+  FILE_COMMANDS,
+  IApplicationService,
   IClipboardService,
-  PreferenceService,
-  formatLocalize,
-  QuickOpenService,
+  IElectronNativeDialogService,
+  IWindowService,
+  KeybindingContribution,
+  KeybindingRegistry,
   Mode,
+  OperatingSystem,
+  PreferenceService,
   QuickOpenItem,
   QuickOpenItemOptions,
-  OperatingSystem,
-  WORKSPACE_COMMANDS,
-  AppConfig,
-  Throttler,
-  match,
+  QuickOpenService,
+  SEARCH_COMMANDS,
   Schemes,
   TERMINAL_COMMANDS,
+  TabBarToolbarContribution,
+  Throttler,
+  ToolbarRegistry,
+  URI,
+  WORKSPACE_COMMANDS,
+  formatLocalize,
+  localize,
+  match,
 } from '@opensumi/ide-core-browser';
-import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
+  FilesExplorerFilteredContext,
   FilesExplorerFocusedContext,
   FilesExplorerInputFocusedContext,
 } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
-  MenuContribution,
-  IMenuRegistry,
-  MenuId,
   ExplorerContextCallback,
+  IMenuRegistry,
+  MenuContribution,
+  MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
@@ -48,7 +48,7 @@ import { EditorOpenType, IEditorOpenType, WorkbenchEditorService } from '@opensu
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
-import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
+import { IOpenDialogOptions, ISaveDialogOptions, IWindowDialogService } from '@opensumi/ide-overlay';
 import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 
 import { IFileTreeService, PasteTypes, RESOURCE_VIEW_ID } from '../common';

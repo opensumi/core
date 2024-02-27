@@ -1,14 +1,14 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor, lighten, darken } from '../utils';
+import { darken, lighten, registerColor } from '../utils';
 
 import { contrastBorder } from './base';
 import {
+  editorErrorForeground,
+  editorInfoForeground,
+  editorWarningForeground,
   editorWidgetBackground,
   editorWidgetForeground,
-  editorErrorForeground,
-  editorWarningForeground,
-  editorInfoForeground,
 } from './editor';
 import { textLinkForeground } from './text';
 

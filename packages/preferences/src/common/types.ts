@@ -1,9 +1,9 @@
 import {
+  IDisposable,
+  IResolvedPreferenceViewDesc,
   ISettingGroup,
   ISettingSection,
-  IDisposable,
   PreferenceScope,
-  IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
 export const SettingContribution = Symbol('SettingContribution');

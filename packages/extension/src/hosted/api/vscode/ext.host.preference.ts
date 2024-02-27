@@ -18,17 +18,17 @@
 import cloneDeep from 'lodash/cloneDeep';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, PreferenceScope, isObject, mixin, isUndefined } from '@opensumi/ide-core-common';
+import { Emitter, Event, PreferenceScope, isObject, isUndefined, mixin } from '@opensumi/ide-core-common';
 
 import {
-  MainThreadAPIIdentifier,
-  IMainThreadPreference,
+  ConfigurationTarget,
   IExtHostPreference,
+  IExtHostWorkspace,
+  IMainThreadPreference,
+  MainThreadAPIIdentifier,
   PreferenceChangeExt,
   PreferenceData,
   WorkspaceConfiguration,
-  IExtHostWorkspace,
-  ConfigurationTarget,
 } from '../../../common/vscode';
 import { Uri } from '../../../common/vscode/ext-types';
 

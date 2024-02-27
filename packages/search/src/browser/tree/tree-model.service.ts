@@ -1,14 +1,14 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeModel } from '@opensumi/ide-components';
 import {
+  Disposable,
   DisposableCollection,
   Emitter,
   Event,
-  URI,
-  SearchSettingId,
-  formatLocalize,
   Schemes,
-  Disposable,
+  SearchSettingId,
+  URI,
+  formatLocalize,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next/index';

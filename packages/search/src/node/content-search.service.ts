@@ -1,19 +1,19 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { FileUri, path } from '@opensumi/ide-core-node';
-import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
-import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
+import { ILogService, ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-logs/lib/node';
+import { IProcess, IProcessFactory, ProcessOptions } from '@opensumi/ide-process';
 import { rgPath } from '@opensumi/vscode-ripgrep';
 
 import {
-  IContentSearchServer,
   ContentSearchOptions,
   ContentSearchResult,
+  FilterFileWithGlobRelativePath,
+  IContentSearchServer,
   SEARCH_STATE,
   SendClientResult,
   anchorGlob,
   cutShortSearchResult,
-  FilterFileWithGlobRelativePath,
 } from '../common';
 
 interface SearchInfo {

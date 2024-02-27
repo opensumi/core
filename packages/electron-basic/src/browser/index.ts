@@ -1,25 +1,25 @@
-import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Provider } from '@opensumi/di';
 import {
-  BrowserModule,
-  Domain,
   AppConfig,
-  isOSX,
+  BrowserModule,
   ClientAppContribution,
-  IElectronMainMenuService,
-  SlotLocation,
-  IElectronNativeDialogService,
   CommandContribution,
   CommandRegistry,
+  Domain,
+  IClipboardService,
+  IElectronMainMenuService,
+  IElectronNativeDialogService,
+  IEventBus,
+  ILogger,
   KeybindingContribution,
   KeybindingRegistry,
-  isWindows,
-  electronEnv,
-  URI,
-  ILogger,
-  formatLocalize,
-  IEventBus,
   Schemes,
-  IClipboardService,
+  SlotLocation,
+  URI,
+  electronEnv,
+  formatLocalize,
+  isOSX,
+  isWindows,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -27,8 +27,8 @@ import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/nex
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import {
-  EditorGroupFileDropEvent,
   DragOverPosition,
+  EditorGroupFileDropEvent,
   getSplitActionFromDragDrop,
 } from '@opensumi/ide-editor/lib/browser';
 import { IMessageService } from '@opensumi/ide-overlay/lib/common';

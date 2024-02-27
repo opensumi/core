@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { KeybindingRegistry, OS, Keybinding, KeybindingWeight, OperatingSystem } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Keybinding, KeybindingRegistry, KeybindingWeight, OS, OperatingSystem } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface ContributedKeyBinding {

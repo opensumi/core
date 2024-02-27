@@ -2,8 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Button, Dialog as DialogView } from '@opensumi/ide-components';
-import { useInjectable, localize } from '@opensumi/ide-core-browser';
-import { strings } from '@opensumi/ide-core-browser';
+import { localize, strings, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IDialogService } from '../common';
 

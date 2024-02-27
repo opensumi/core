@@ -14,29 +14,29 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/file-system-event-service-ext-impl.ts
-
+// eslint-disable-next-line import/no-unresolved
 import vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  Event,
-  Emitter,
-  Disposable,
-  URI,
   AsyncEmitter,
-  WaitUntilEvent,
   CancellationToken,
-  getDebugLogger,
+  Disposable,
+  Emitter,
+  Event,
   IRelativePattern,
+  URI,
+  WaitUntilEvent,
+  getDebugLogger,
   parseGlob,
 } from '@opensumi/ide-core-common';
 import { FileOperation } from '@opensumi/ide-workspace-edit';
 
 import {
   ExtensionDocumentDataManager,
+  IExtensionDescription,
   IMainThreadWorkspace,
   MainThreadAPIIdentifier,
-  IExtensionDescription,
 } from '../../../common/vscode';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { WorkspaceEdit } from '../../../common/vscode/ext-types';

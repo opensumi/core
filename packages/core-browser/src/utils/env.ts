@@ -1,4 +1,4 @@
-import { isWindows, isElectronRenderer } from '@opensumi/ide-core-common';
+import { isElectronRenderer, isWindows } from '@opensumi/ide-core-common';
 
 export function getElectronEnv(): any {
   return (global as any).env || {};

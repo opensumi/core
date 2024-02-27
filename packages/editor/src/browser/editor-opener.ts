@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IOpener, URI, IRange } from '@opensumi/ide-core-browser';
+import { IOpener, IRange, URI } from '@opensumi/ide-core-browser';
 
-import { WorkbenchEditorService, ResourceService } from '../common';
+import { ResourceService, WorkbenchEditorService } from '../common';
 
 @Injectable()
 export class EditorOpener implements IOpener {
