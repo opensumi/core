@@ -609,10 +609,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             e.payload.topic === 'onExtensionActivated' &&
             (e.payload.data?.id as string).endsWith('.merge-conflict')
           ) {
-            if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
-              this.registerCodeLensProvider();
-              loadStyleString(true);
-            }
+            this.registerCodeLensProvider();
+            loadStyleString(true);
           }
         }),
         // TODO 优化使用 registerEditorFeature
