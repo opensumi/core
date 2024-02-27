@@ -565,6 +565,7 @@ export default {
     'inputValidation.warningBackground': '#332510',
     'inputValidation.warningBorder': '#DBA936',
     'inputValidation.warningText': '#DBA936',
+    'inputValidation.warningForeground': '#d7dbde',
     'keybinding.background': '#5F656B33',
     'kt.accentForeground': '#FFFFFF',
     'kt.actionbar.disableForeground': '#5F656B',

@@ -163,10 +163,18 @@ html {
   }
 }
 
-/* 设置滚动条宽度 */
+/* 终端滚动条宽度 */
 .xterm .xterm-viewport {
   &::-webkit-scrollbar {
     width: 4px;
+  }
+}
+
+/* 左侧面板滚动条 */
+div[class*='kt_split_panel_body__'] {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 }
 
@@ -208,6 +216,13 @@ html {
 }
 
 // 全局按钮、下拉框、输入框设置调整
+.input-box .validate-message.popup {
+  padding: 8px;
+}
+.input-box .validate-message.popup.validate-warning {
+  border-radius: 6px;
+}
+
 .kt-input {
   border-radius: 6px;
 }
