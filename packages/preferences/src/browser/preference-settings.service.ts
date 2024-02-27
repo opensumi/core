@@ -89,7 +89,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   tabIndex = 0;
   tabList = [WorkspaceScope, UserScope] as PreferenceScopeWithLabel[];
 
-  _currentScope: PreferenceScopeWithLabel = this.tabList[0];
+  protected _currentScope: PreferenceScopeWithLabel = this.tabList[0];
 
   get currentScope() {
     return this._currentScope.id;
