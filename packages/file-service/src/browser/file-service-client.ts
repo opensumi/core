@@ -170,7 +170,7 @@ export class FileServiceClient implements IFileServiceClient {
   async readFileStream(uri: string) {
     const _uri = this.convertUri(uri);
     const provider = await this.getProvider(_uri.scheme);
-    return await provider.readFileStream(_uri.codeUri);
+    return await provider.readFileStream!(_uri.codeUri);
   }
 
   async getFileStat(uri: string, withChildren = true) {
