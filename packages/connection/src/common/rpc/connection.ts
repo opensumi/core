@@ -79,7 +79,10 @@ export class SumiConnection implements IDisposable {
   sendNotification(method: string, ...args: any[]) {
     const processor = this.protocolRepository.getProcessor(method);
     const payload = processor.serializeRequest(args);
-    this.socket.send(MessageIO.Request(this._requestId++, OperationType.Notification, method, nullHeaders, payload));
+    MessageIO.send(
+      this.socket,
+      MessageIO.Request(this._requestId++, OperationType.Notification, method, nullHeaders, payload),
+    );
   }
 
   sendRequest(method: string, ...args: any[]) {
@@ -121,13 +124,14 @@ export class SumiConnection implements IDisposable {
       }
 
       const payload = processor.serializeRequest(args);
-      this.socket.send(
+      MessageIO.send(
+        this.socket,
         MessageIO.Request(
           requestId,
           OperationType.Request,
           method,
           {
-            cancelable: cancellationToken ? true : false,
+            cancelable: Boolean(cancellationToken) || undefined,
           },
           payload,
         ),
@@ -150,7 +154,7 @@ export class SumiConnection implements IDisposable {
   }
 
   cancelRequest(requestId: number) {
-    this.socket.send(MessageIO.Cancel(requestId));
+    MessageIO.send(this.socket, MessageIO.Cancel(requestId));
   }
 
   private _handleTimeout(method: string, requestId: number) {
@@ -186,10 +190,10 @@ export class SumiConnection implements IDisposable {
         };
         listenReadable(result, {
           onData: (data) => {
-            this.socket.send(MessageIO.Response(requestId, method, responseHeaders, data));
+            MessageIO.send(this.socket, MessageIO.Response(requestId, method, responseHeaders, data));
           },
           onEnd: () => {
-            this.socket.send(MessageIO.Response(requestId, method, responseHeaders, emptyBuffer));
+            MessageIO.send(this.socket, MessageIO.Response(requestId, method, responseHeaders, emptyBuffer));
           },
         });
         return;
@@ -197,12 +201,12 @@ export class SumiConnection implements IDisposable {
 
       const processor = this.protocolRepository.getProcessor(method);
       const payload = processor.serializeResult(result);
-      this.socket.send(MessageIO.Response(requestId, method, nullHeaders, payload));
+      MessageIO.send(this.socket, MessageIO.Response(requestId, method, nullHeaders, payload));
       this._cancellationTokenSources.delete(requestId);
     };
 
     const onError = (err: Error) => {
-      this.socket.send(MessageIO.Error(requestId, Status.Err, nullHeaders, err));
+      MessageIO.send(this.socket, MessageIO.Error(requestId, method, nullHeaders, err));
       this._cancellationTokenSources.delete(requestId);
     };
 
@@ -269,6 +273,8 @@ export class SumiConnection implements IDisposable {
             callback(headers, error, result);
           };
 
+          const headers = responseHeadersSerializer.read();
+
           // if status code is not 0, it's an error
           if (status === Status.Err) {
             // TODO: use binary codec
@@ -278,7 +284,6 @@ export class SumiConnection implements IDisposable {
             return;
           }
 
-          const headers = responseHeadersSerializer.read();
           if (headers && headers.chunked) {
             let activeReq: ActiveRequest;
             if (this.activeRequestPool.has(requestId)) {
