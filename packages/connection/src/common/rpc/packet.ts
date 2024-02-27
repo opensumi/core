@@ -6,6 +6,8 @@ import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
 import { furyFactory } from '../fury-extends/shared';
 
+import type { BaseConnection } from '../connection';
+
 const ProtoVersionV1 = 1;
 
 export enum OperationType {
@@ -65,7 +67,7 @@ export class MessageIO {
     writer.varUInt32(payload.length);
     writer.buffer(payload);
 
-    return writer.dump();
+    return writer.dumpAndOwn();
   }
 
   static Cancel(requestId: number) {
@@ -75,7 +77,7 @@ export class MessageIO {
     writer.uint8(OperationType.Cancel);
     writer.uint32(requestId);
 
-    return writer.dump();
+    return writer.dumpAndOwn();
   }
 
   static Response(requestId: number, method: string, headers: Record<string, any>, payload: Uint8Array) {
@@ -90,19 +92,25 @@ export class MessageIO {
     writer.varUInt32(payload.length);
     writer.buffer(payload);
 
-    return writer.dump();
+    return writer.dumpAndOwn();
   }
 
-  static Error(requestId: number, status: number, headers: Record<string, any>, error: any) {
+  static Error(requestId: number, method: string, headers: Record<string, any>, error: any) {
     writer.reset();
 
     writer.uint8(ProtoVersionV1);
     writer.uint8(OperationType.Response);
     writer.uint32(requestId);
-    writer.uint16(status);
+    writer.stringOfVarUInt32(method);
+    writer.uint16(Status.Err);
     responseHeadersSerializer.write(headers);
     writer.stringOfVarUInt32(stringifyError(error));
 
-    return writer.dump();
+    return writer.dumpAndOwn();
+  }
+
+  static send(socket: BaseConnection<Uint8Array>, buf: { get(): Uint8Array; dispose(): void }): void {
+    socket.send(buf.get());
+    buf.dispose();
   }
 }
