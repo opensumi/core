@@ -2038,6 +2038,7 @@ __metadata:
     semver: ^7.5.2
     simple-git: ^3.3.0
     temp: ^0.9.4
+    tinybench: ^2.6.0
     ts-jest: ^29.1.0
     ts-loader: ^9.5.1
     ts-node: ^10.9.1
@@ -18677,6 +18678,13 @@ __metadata:
   dependencies:
     setimmediate: ^1.0.4
   checksum: ec37ae299066bef6c464dcac29c7adafba1999e7227a9bdc4e105a459bee0f0b27234a46bfd7ab4041da79619e06a58433472867a913d01c26f8a203f87cee70
+  languageName: node
+  linkType: hard
+
+"tinybench@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "tinybench@npm:2.6.0"
+  checksum: a621ac66ac17ec5da7e9ac10b3c27040e58c3cd843ccedd8e1e3fab5702d6337b80d02b7bfbf420ab5f029dcb7895657fb80ce21181896e170fa4e6d2c2eebc4
   languageName: node
   linkType: hard
 

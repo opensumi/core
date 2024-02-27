@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import { Readable } from 'stream';
 import { MessageChannel, MessagePort } from 'worker_threads';
 
@@ -10,6 +11,15 @@ import { NodeMessagePortConnection } from '../../../src/common/connection/driver
 import { SumiConnection } from '../../../src/common/rpc/connection';
 import { ServiceRegistry } from '../../../src/common/rpc-service/proxy/registry';
 import { ProxySumi } from '../../../src/common/rpc-service/proxy/sumi';
+
+function createRandomBuffer(size: number): Buffer {
+  const randomContent = randomBytes(size);
+  return Buffer.from(randomContent);
+}
+
+const bufferSize = 1024 * 1024;
+
+const buffer = createRandomBuffer(bufferSize);
 
 export const longMessage = '"Hello" is a song recorded by English singer-songwriter Adele, released on 23 October 2015 by XL Recordings as the lead single from her third studio album, 25 (2015). Written by Adele and the album\'s producer, Greg Kurstin, "Hello" is a piano ballad with soul influences (including guitar and drums), and lyrics that discuss themes of nostalgia and regret. Upon release, the song garnered critical acclaim, with reviewers comparing it favourably to Adele\'s previous works and praised its lyrics, production and Adele\'s vocal performance. It was recorded in Metropolis Studios, London.';
 
@@ -108,6 +118,15 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
         },
       },
     },
+    getContent: {
+      protocol: {
+        method: 'getContent',
+        request: [],
+        response: {
+          type: Type.binary(),
+        },
+      },
+    },
   };
 
   const repo = new ProtocolRepository();
@@ -115,7 +134,7 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   repo.loadProtocolMethod(protocols.shortUrl.protocol);
   repo.loadProtocolMethod(protocols.returnUndefined.protocol);
   repo.loadProtocolMethod(protocols.add.protocol);
-
+  repo.loadProtocolMethod(protocols.getContent.protocol);
   pair.connection1.setProtocolRepository(repo);
   pair.connection2.setProtocolRepository(repo);
 
@@ -133,6 +152,7 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   const registry2 = new ServiceRegistry();
   registry2.registerService({
     add: (a: number, b: number) => a + b,
+    getContent: () => buffer,
     readFileStream: (path: string) => stringToStream(longMessage, 5),
   });
 
@@ -165,6 +185,7 @@ export function createLegacyRPCClientPair(pair: ReturnType<typeof createMessageC
   const registry2 = new ServiceRegistry();
   registry2.registerService({
     add: (a: number, b: number) => a + b,
+    getContent: () => buffer,
   });
 
   const client2 = new ProxyLegacy(registry2);
