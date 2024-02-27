@@ -28,6 +28,7 @@ const baseConfig = {
   ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
+    '^vscode-languageserver-types$': '<rootDir>/node_modules/vscode-languageserver-types/lib/umd/main.js',
     '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js',
   },
   testPathIgnorePatterns: [
