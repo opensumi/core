@@ -302,11 +302,11 @@ export class SumiConnection implements IDisposable {
               break;
             }
 
-            const buf = reader.bufferRef(contentLen);
+            const buf = reader.buffer(contentLen);
             activeReq.emit(buf);
           } else {
             const contentLen = reader.varUInt32();
-            const buffer = reader.bufferRef(contentLen);
+            const buffer = reader.buffer(contentLen);
             const processor = this.protocolRepository.getProcessor(method);
 
             const result = processor.deserializeResult(buffer);
@@ -320,7 +320,7 @@ export class SumiConnection implements IDisposable {
           const headers = requestHeadersSerializer.read() as IRequestHeaders;
 
           const contentLen = reader.varUInt32();
-          const content = reader.bufferRef(contentLen);
+          const content = reader.buffer(contentLen);
           const processor = this.protocolRepository.getProcessor(method);
 
           const args = processor.deserializeRequest(content);

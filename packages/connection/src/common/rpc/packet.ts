@@ -54,7 +54,6 @@ export const responseHeadersSerializer = generateSerializer(fury, responseHeader
   IResponseHeaders,
   IResponseHeaders
 >;
-
 export class MessageIO {
   static Request(requestId: number, rpcType: number, method: string, headers: IRequestHeaders, payload: Uint8Array) {
     writer.reset();
@@ -67,7 +66,7 @@ export class MessageIO {
     writer.varUInt32(payload.length);
     writer.buffer(payload);
 
-    return writer.dumpAndOwn();
+    return writer.dump();
   }
 
   static Cancel(requestId: number) {
@@ -77,7 +76,7 @@ export class MessageIO {
     writer.uint8(OperationType.Cancel);
     writer.uint32(requestId);
 
-    return writer.dumpAndOwn();
+    return writer.dump();
   }
 
   static Response(requestId: number, method: string, headers: Record<string, any>, payload: Uint8Array) {
@@ -92,7 +91,7 @@ export class MessageIO {
     writer.varUInt32(payload.length);
     writer.buffer(payload);
 
-    return writer.dumpAndOwn();
+    return writer.dump();
   }
 
   static Error(requestId: number, method: string, headers: Record<string, any>, error: any) {
@@ -106,11 +105,10 @@ export class MessageIO {
     responseHeadersSerializer.write(headers);
     writer.stringOfVarUInt32(stringifyError(error));
 
-    return writer.dumpAndOwn();
+    return writer.dump();
   }
 
-  static send(socket: BaseConnection<Uint8Array>, buf: { get(): Uint8Array; dispose(): void }): void {
-    socket.send(buf.get());
-    buf.dispose();
+  static send(socket: BaseConnection<Uint8Array>, buf: Uint8Array): void {
+    socket.send(buf);
   }
 }
