@@ -11,14 +11,14 @@
   "scripts": {
     "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.connection.json",
-    "benchmark": "tsx ./benchmarks/rpc-service-center.bench.ts > ./docs/benchmark.txt"
+    "benchmark": "tsx ./benchmarks/rpc.bench.ts > ./docs/benchmark.txt"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@furyjs/fury": "0.5.8-beta",
+    "@furyjs/fury": "0.5.9-beta",
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",

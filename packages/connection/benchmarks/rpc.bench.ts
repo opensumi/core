@@ -10,12 +10,12 @@ import {
 } from '../__test__/common/rpc/utils';
 
 const bench = new Bench({
-  time: 20000,
+  time: 2000,
 });
 
 const messagePair = createMessageConnectionPair();
 const messagePortPair = createConnectionPair();
-console.log(process.pid);
+console.error('pid', process.pid);
 
 const legacy = createLegacyRPCClientPair(messagePair);
 
