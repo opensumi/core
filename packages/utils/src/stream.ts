@@ -1,8 +1,10 @@
 import type { Readable } from 'stream';
 
 export interface IReadableStream<T> {
-  onData(callback: (data: T) => void): void;
-  onEnd(callback: () => void): void;
+  on(event: 'data', listener: (chunk: T) => void): this;
+  on(event: 'end', listener: () => void): this;
+  on(event: 'error', listener: (err: Error) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this;
 }
 
 export function isNodeReadable<T>(stream: any): stream is Readable {
@@ -15,7 +17,7 @@ export interface IListenReadableOptions {
   onError?(error: Error): void;
 }
 
-export function listenReadable(stream: Readable, options: IListenReadableOptions): void {
+export function listenReadable(stream: IReadableStream<Uint8Array>, options: IListenReadableOptions): void {
   stream.on('data', (chunk: Uint8Array) => {
     options.onData(chunk);
   });

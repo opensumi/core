@@ -1,10 +1,17 @@
 import { Injectable } from '@opensumi/di';
 import { BinaryBuffer, Emitter, Event, FileSystemProviderCapabilities, Uri } from '@opensumi/ide-core-browser';
+import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileChangeEvent, FileStat, FileSystemProvider, FileType } from '../common';
 
 @Injectable()
 export class ShadowFileSystemProvider implements FileSystemProvider {
+  unwatch?(watcherId: number): void | Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  readFileStream(uri: Uri): Promise<IReadableStream<Uint8Array>> {
+    throw new Error('Method not implemented.');
+  }
   capabilities = FileSystemProviderCapabilities.Readonly;
   onDidChangeCapabilities = Event.None;
 
