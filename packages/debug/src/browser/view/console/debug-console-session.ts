@@ -151,7 +151,7 @@ export class DebugConsoleSession implements IDebugConsoleSession {
   ) {
     const ansiNode = await handleANSIOutput(output, this.linkDetector, this.themeService, undefined);
     this.treeModel.root.insertItem(
-      new AnsiConsoleNode(output, this.treeModel?.root, this.linkDetector, ansiNode, severity, source, line, this.aiNativeConfig.capabilities.supportsDebugConsole, this.commandService),
+      new AnsiConsoleNode(output, this.treeModel?.root, this.linkDetector, ansiNode, severity, source, line, this.aiNativeConfig.capabilities.supportsDebugConsoleExplain, this.commandService),
     );
   }
 

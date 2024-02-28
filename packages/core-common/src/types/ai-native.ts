@@ -26,7 +26,7 @@ export interface IAiNativeCapabilities {
   /**
    * 使用 ai 调试控制台问题诊断能力
    */
-  supportsDebugConsole?: boolean;
+  supportsDebugConsoleExplain?: boolean;
 }
 
 export interface AiNativeConfig {
