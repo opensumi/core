@@ -781,6 +781,7 @@ export default {
     'editor.background': '#00000026',
     'quickInput.background': '#222830',
     'list.focusBackground': '#ffffff1f',
+    'textLink.foreground': '#3c8dff',
   },
   semanticHighlighting: true,
   semanticTokenColors: {

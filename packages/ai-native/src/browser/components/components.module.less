@@ -99,7 +99,7 @@
   border: 1px solid var(--kt-input-border);
   background-color: var(--ai-native-charinput-background);
   &.active {
-    border-color: #3c8dff;
+    border-color: rgba(60, 141, 255, 0.65);
   }
   .theme_container {
     padding: 8px 12px 2px;
@@ -508,12 +508,14 @@
     align-items: start;
     line-height: 22px;
     > * {
+      display: block;
       margin-top: 4px;
     }
   }
 }
 
 .markdown_container {
+  line-height: 22px;
   h1,
   h2,
   h3,
