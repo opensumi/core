@@ -13,11 +13,11 @@ import {
   ExtensionConnectOption,
   IReporterTimer,
   SupportLogNamespace,
-  findFreePort,
   getDebugLogger,
   isUndefined,
   timeout,
 } from '@opensumi/ide-core-common';
+import { findFreePort } from '@opensumi/ide-core-common/lib/node/port';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import {
   AppConfig,

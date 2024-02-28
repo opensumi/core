@@ -10,8 +10,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.connection.json",
-    "benchmark": "tsx ./benchmarks/rpc.bench.ts > ./docs/benchmark.txt"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.connection.json"
   },
   "repository": {
     "type": "git",

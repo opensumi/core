@@ -21,7 +21,8 @@ const bufferSize = 1024 * 1024;
 
 const buffer = createRandomBuffer(bufferSize);
 
-export const longMessage = '"Hello" is a song recorded by English singer-songwriter Adele, released on 23 October 2015 by XL Recordings as the lead single from her third studio album, 25 (2015). Written by Adele and the album\'s producer, Greg Kurstin, "Hello" is a piano ballad with soul influences (including guitar and drums), and lyrics that discuss themes of nostalgia and regret. Upon release, the song garnered critical acclaim, with reviewers comparing it favourably to Adele\'s previous works and praised its lyrics, production and Adele\'s vocal performance. It was recorded in Metropolis Studios, London.';
+export const longMessage =
+  '"Hello" is a song recorded by English singer-songwriter Adele, released on 23 October 2015 by XL Recordings as the lead single from her third studio album, 25 (2015). Written by Adele and the album\'s producer, Greg Kurstin, "Hello" is a piano ballad with soul influences (including guitar and drums), and lyrics that discuss themes of nostalgia and regret. Upon release, the song garnered critical acclaim, with reviewers comparing it favourably to Adele\'s previous works and praised its lyrics, production and Adele\'s vocal performance. It was recorded in Metropolis Studios, London.';
 
 export function createConnectionPair() {
   const channel = new MessageChannel();
