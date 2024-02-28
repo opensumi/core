@@ -1,6 +1,6 @@
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
+import { Emitter, readUInt32LE, writeUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
 
@@ -21,6 +21,12 @@ export function prependLengthField(content: Uint8Array) {
   writer.uint32(content.byteLength);
   writer.buffer(content);
   return writer.dump();
+}
+
+const shareBuf = new Uint8Array(4);
+export function createByteLength(length: number) {
+  writeUInt32LE(shareBuf, length, 0);
+  return shareBuf;
 }
 
 export class LengthFieldBasedFrameDecoder {

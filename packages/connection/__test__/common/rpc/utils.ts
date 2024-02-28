@@ -76,60 +76,60 @@ export function createMessageConnectionPair() {
   };
 }
 
-export function createSumiRPCClientPair(pair: ReturnType<typeof createConnectionPair>) {
-  const protocols = {
-    shortUrl: {
-      protocol: {
-        method: 'shortUrl',
-        request: [
-          {
-            name: 'url',
-            type: Type.string(),
-          },
-        ],
-        response: {
+export const protocols = {
+  shortUrl: {
+    protocol: {
+      method: 'shortUrl',
+      request: [
+        {
+          name: 'url',
           type: Type.string(),
         },
+      ],
+      response: {
+        type: Type.string(),
       },
     },
-    returnUndefined: {
-      protocol: {
-        method: 'returnUndefined',
-        request: [],
-        response: {
-          type: Type.any(),
-        },
+  },
+  returnUndefined: {
+    protocol: {
+      method: 'returnUndefined',
+      request: [],
+      response: {
+        type: Type.any(),
       },
     },
-    add: {
-      protocol: {
-        method: 'add',
-        request: [
-          {
-            name: 'a',
-            type: Type.uint32(),
-          },
-          {
-            name: 'b',
-            type: Type.uint32(),
-          },
-        ],
-        response: {
+  },
+  add: {
+    protocol: {
+      method: 'add',
+      request: [
+        {
+          name: 'a',
           type: Type.uint32(),
         },
-      },
-    },
-    getContent: {
-      protocol: {
-        method: 'getContent',
-        request: [],
-        response: {
-          type: Type.binary(),
+        {
+          name: 'b',
+          type: Type.uint32(),
         },
+      ],
+      response: {
+        type: Type.uint32(),
       },
     },
-  };
+  },
+  getContent: {
+    protocol: {
+      method: 'getContent',
+      request: [],
+      response: {
+        type: Type.binary(),
+      },
+    },
+  },
+};
 
+export function createSumiRPCClientPair(pair: ReturnType<typeof createConnectionPair>) {
   const repo = new ProtocolRepository();
 
   repo.loadProtocolMethod(protocols.shortUrl.protocol);

@@ -146,10 +146,18 @@ bench
   });
 
 async function main() {
+  document.write(`<style>
+  code {
+    display: block;
+    white-space: pre;
+  }
+  </style>
+  `);
   await bench.warmup();
   await bench.run();
 
   console.table(bench.table());
+  document.write(`<code>${JSON.stringify(bench.table(), null, 2)}</code>`);
 
   messagePortPair.close();
 }

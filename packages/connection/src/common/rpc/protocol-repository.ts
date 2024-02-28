@@ -1,31 +1,45 @@
-import Fury, { Type, TypeDescription } from '@furyjs/fury';
+import Fury, { Serializer, Type, TypeDescription } from '@furyjs/fury';
+import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
+import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
 
-import { anySerializer } from '../fury-extends/any';
+import { stringifyError } from '@opensumi/ide-core-common/lib/utils';
 
-import { TSumiProtocol, TSumiProtocolMethod } from './types';
+import { AnySerializer } from '../fury-extends/any';
+import { furyFactory } from '../fury-extends/shared';
 
-export type TRequestTransferable = ITransferable[];
+import {
+  IProtocolProcessor,
+  IRequestHeaders,
+  IResponseHeaders,
+  ITransferable,
+  TRequestTransferable,
+  TSerializer,
+  TSumiProtocol,
+  TSumiProtocolMethod,
+} from './types';
 
-export interface ITransferable {
-  /**
-   * transfer raw value
-   */
-  r: any;
+const ProtoVersionV1 = 1;
 
-  /**
-   * value that cannot be transferred, use string instead
-   */
-  $?: string;
+export enum OperationType {
+  Request,
+  Notification,
+  Response,
+  Heartbeat,
+  Cancel,
 }
 
-type TSerializer = ReturnType<Fury['registerSerializer']>;
-
-interface IProtocolProcessor {
-  serializeRequest(args: any[]): Uint8Array;
-  deserializeRequest(buffer: Uint8Array): any[];
-  serializeResult<T = any>(result: T): Uint8Array;
-  deserializeResult<T = any>(buffer: Uint8Array): T;
+export enum Status {
+  OK,
+  Err,
 }
+
+const requestHeadersProto = Type.object('req-headers', {
+  cancelable: Type.bool(),
+});
+
+export const responseHeadersProto = Type.object('resp-headers', {
+  chunked: Type.bool(),
+});
 
 const createTransferable = (name: string, type?: TypeDescription) => {
   const props = {
@@ -59,6 +73,29 @@ class SumiProtocolProcessor implements IProtocolProcessor {
     this.request = this.fury.registerSerializer(requestProto);
     this.result = this.fury.registerSerializer(resultProto);
   }
+  writeRequest(args: any[]): void {
+    const newArray: TRequestTransferable = new Array(args.length);
+    for (let i = 0; i < args.length; i++) {
+      newArray[i] = ObjectTransfer.replacer(args[i]);
+    }
+
+    return this.request.serializer.write(newArray);
+  }
+  readRequest(): any[] {
+    const result = new Array(this.requestArgsLength);
+    const argsArray = this.request.serializer.read() as TRequestTransferable;
+    for (let i = 0; i < this.requestArgsLength; i++) {
+      result[i] = ObjectTransfer.reviver(argsArray[i]);
+    }
+    return result;
+  }
+  writeResponse<T = any>(result: T): void {
+    return this.result.serializer.write(ObjectTransfer.replacer(result));
+  }
+  readResponse<T = any>(): T {
+    const payload = this.result.serializer.read() as ITransferable;
+    return ObjectTransfer.reviver(payload);
+  }
 
   serializeRequest(args: any[]): Uint8Array {
     const newArray: TRequestTransferable = new Array(args.length);
@@ -89,29 +126,65 @@ class SumiProtocolProcessor implements IProtocolProcessor {
 }
 
 class AnyProtocolProcessor implements IProtocolProcessor {
+  anySerializer: AnySerializer;
+
+  constructor(public writer: BinaryWriter, public reader: BinaryReader) {
+    this.anySerializer = new AnySerializer(this.writer, this.reader);
+  }
+
+  writeRequest(args: any[]): void {
+    this.anySerializer.serializeWorker(args);
+  }
+  readRequest(): any[] {
+    return this.anySerializer.deserializeWorker();
+  }
+  writeResponse<T = any>(result: T): void {
+    this.anySerializer.serializeWorker(result);
+  }
+  readResponse<T = any>(): T {
+    return this.anySerializer.deserializeWorker();
+  }
+
   serializeRequest(args: any[]): Uint8Array {
-    return anySerializer.serialize(args);
+    return this.anySerializer.serialize(args);
   }
 
   deserializeRequest(buffer: Uint8Array): any[] {
-    return anySerializer.deserialize(buffer);
+    return this.anySerializer.deserialize(buffer);
   }
 
   serializeResult<T = any>(result: T): Uint8Array {
-    return anySerializer.serialize(result);
+    return this.anySerializer.serialize(result);
   }
 
   deserializeResult<T = any>(buffer: Uint8Array): T {
-    return anySerializer.deserialize(buffer);
+    return this.anySerializer.deserialize(buffer);
   }
 }
 
 export class ProtocolRepository {
-  fury = new Fury();
+  fury: Fury;
+  reader: BinaryReader;
+  writer: BinaryWriter;
 
   private processorMap = new Map<string, SumiProtocolProcessor>();
 
-  private anyProcessor = new AnyProtocolProcessor();
+  private anyProcessor: AnyProtocolProcessor;
+
+  requestHeadersSerializer: Serializer<IRequestHeaders, IRequestHeaders>;
+  responseHeadersSerializer: Serializer<IResponseHeaders, IRequestHeaders>;
+
+  constructor() {
+    const fury = furyFactory();
+    this.fury = fury.fury;
+    this.reader = fury.reader;
+    this.writer = fury.writer;
+
+    this.requestHeadersSerializer = generateSerializer(this.fury, requestHeadersProto);
+    this.responseHeadersSerializer = generateSerializer(this.fury, responseHeadersProto);
+
+    this.anyProcessor = new AnyProtocolProcessor(this.writer, this.reader);
+  }
 
   has(name: string) {
     return this.processorMap.has(name);
@@ -150,6 +223,61 @@ export class ProtocolRepository {
       return processor;
     }
     return this.anyProcessor;
+  }
+
+  Request(requestId: number, opType: number, method: string, headers: IRequestHeaders, args: any[]) {
+    const { writer } = this;
+    writer.reset();
+
+    writer.uint8(ProtoVersionV1);
+    writer.uint8(opType);
+    writer.uint32(requestId);
+    writer.stringOfVarUInt32(method);
+    this.requestHeadersSerializer.write(headers);
+    this.getProcessor(method).writeRequest(args);
+
+    return writer.dump();
+  }
+
+  Cancel(requestId: number) {
+    const { writer } = this;
+    writer.reset();
+
+    writer.uint8(ProtoVersionV1);
+    writer.uint8(OperationType.Cancel);
+    writer.uint32(requestId);
+
+    return writer.dump();
+  }
+
+  Response(requestId: number, method: string, headers: Record<string, any>, result: any) {
+    const { writer } = this;
+    writer.reset();
+
+    writer.uint8(ProtoVersionV1);
+    writer.uint8(OperationType.Response);
+    writer.uint32(requestId);
+    writer.stringOfVarUInt32(method);
+    writer.uint16(Status.OK);
+    this.responseHeadersSerializer.write(headers);
+    this.getProcessor(method).writeResponse(result);
+
+    return writer.dump();
+  }
+
+  Error(requestId: number, method: string, headers: Record<string, any>, error: any) {
+    const { writer } = this;
+    writer.reset();
+
+    writer.uint8(ProtoVersionV1);
+    writer.uint8(OperationType.Response);
+    writer.uint32(requestId);
+    writer.stringOfVarUInt32(method);
+    writer.uint16(Status.Err);
+    this.responseHeadersSerializer.write(headers);
+    writer.stringOfVarUInt32(stringifyError(error));
+
+    return writer.dump();
   }
 }
 

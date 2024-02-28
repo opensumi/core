@@ -1,11 +1,13 @@
-import { TypeDescription } from '@furyjs/fury';
-
 import {
+  Headers,
   RPCProtocol as _RPCProtocol,
   RPCProtocolMethod as _RPCProtocolMethod,
   Request as _Request,
   Response as _Response,
 } from '@opensumi/ide-core-common/lib/types/rpc';
+
+import type Fury from '@furyjs/fury';
+import type { Serializer, TypeDescription } from '@furyjs/fury';
 
 export type TSumiProtocol = _RPCProtocol<TypeDescription>;
 export type TSumiProtocolMethod = _RPCProtocolMethod<TypeDescription>;
@@ -21,3 +23,42 @@ export type TGenericRequestHandler<R> = (...args: any[]) => THandlerResult<R>;
 
 export type TOnRequestNotFoundHandler = (method: string, args: any[]) => THandlerResult<any>;
 export type TOnNotificationNotFoundHandler = (method: string, args: any[]) => THandlerResult<void>;
+
+export type TSerializer = { serializer: Serializer } & Omit<ReturnType<Fury['registerSerializer']>, 'serializer'>;
+
+export interface IRequestHeaders extends Headers {
+  /**
+   * If set to true, the request can be canceled.
+   *
+   * the server will push a `CancellationToken` to the request arguments.
+   */
+  cancelable?: boolean;
+}
+
+export type IResponseHeaders = Headers;
+
+export type TRequestTransferable = ITransferable[];
+
+export interface ITransferable {
+  /**
+   * transfer raw value
+   */
+  r: any;
+
+  /**
+   * value that cannot be transferred, use string instead
+   */
+  $?: string;
+}
+
+export interface IProtocolProcessor {
+  writeRequest(args: any[]): void;
+  readRequest(): any[];
+  writeResponse<T = any>(result: T): void;
+  readResponse<T = any>(): T;
+
+  serializeRequest(args: any[]): Uint8Array;
+  deserializeRequest(buffer: Uint8Array): any[];
+  serializeResult<T = any>(result: T): Uint8Array;
+  deserializeResult<T = any>(buffer: Uint8Array): T;
+}

@@ -1,7 +1,7 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
-import { LengthFieldBasedFrameDecoder, prependLengthField } from './frame-decoder';
+import { LengthFieldBasedFrameDecoder, createByteLength, indicator } from './frame-decoder';
 
 import type { Readable, Writable } from 'stream';
 
@@ -21,7 +21,9 @@ export class StreamConnection extends BaseConnection<Uint8Array> {
   }
 
   send(data: Uint8Array): void {
-    this.writable.write(prependLengthField(data));
+    this.writable.write(indicator);
+    this.writable.write(createByteLength(data.byteLength));
+    this.writable.write(data);
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {

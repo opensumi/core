@@ -1,7 +1,7 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
-import { LengthFieldBasedFrameDecoder, prependLengthField } from './frame-decoder';
+import { LengthFieldBasedFrameDecoder, createByteLength, indicator } from './frame-decoder';
 
 import type net from 'net';
 
@@ -25,7 +25,9 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
   }
 
   send(data: Uint8Array): void {
-    this.socket.write(prependLengthField(data));
+    this.socket.write(indicator);
+    this.socket.write(createByteLength(data.byteLength));
+    this.socket.write(data);
   }
 
   onMessage(cb: (data: Uint8Array) => void): IDisposable {

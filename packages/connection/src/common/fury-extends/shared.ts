@@ -15,3 +15,5 @@ export const furyFactory = (config?: Config) => {
 };
 
 export type FuryFactoryReturn = ReturnType<typeof furyFactory>;
+export type Writer = FuryFactoryReturn['writer'];
+export type Reader = FuryFactoryReturn['reader'];
