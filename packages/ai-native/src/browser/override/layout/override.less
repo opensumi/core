@@ -163,10 +163,18 @@ html {
   }
 }
 
-/* 设置滚动条宽度 */
+/* 终端滚动条宽度 */
 .xterm .xterm-viewport {
   &::-webkit-scrollbar {
     width: 4px;
+  }
+}
+
+/* 左侧面板滚动条 */
+div[class*='kt_split_panel_body__'] {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 }
 
@@ -186,11 +194,13 @@ html {
 }
 
 // 对话框
-.kt-modal-content {
+.kt-modal-content,
+.ant-modal-content {
   border-radius: 8px;
   background-color: transparent;
 }
-.kt-overlay .kt-modal-body {
+.kt-overlay .kt-modal-body,
+.ant-modal-body {
   border-radius: 8px;
   border: 0 none !important;
   box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
@@ -206,12 +216,20 @@ html {
 }
 
 // 全局按钮、下拉框、输入框设置调整
+.input-box .validate-message.popup {
+  padding: 8px;
+}
+.input-box .validate-message.popup.validate-warning {
+  border-radius: 6px;
+}
+
 .kt-input {
   border-radius: 6px;
 }
 
 .default-button-size,
-.kt-button {
+.kt-button,
+.ant-btn {
   border-radius: 4px;
 }
 

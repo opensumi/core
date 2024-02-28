@@ -159,6 +159,10 @@
       flex-wrap: wrap;
       width: 100%;
       background: var(--editorGroupHeader-tabsBackground);
+      &.kt_editor_tabs_current_last {
+        // TODO
+        display: flex;
+      }
       &::before {
         content: '';
         height: 1px;
@@ -318,6 +322,14 @@
             background-color: var(--kt-dirtyDot-foreground);
           }
         }
+      }
+      &.kt_editor_tab_current_prev {
+        // TODO
+        display: flex;
+      }
+      &.kt_editor_tab_current_next {
+        // TODO
+        display: flex;
       }
       &.kt_editor_tab_dirty {
         // TODO

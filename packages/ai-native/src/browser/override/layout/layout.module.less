@@ -38,9 +38,9 @@
         align-items: center;
         background-color: transparent;
 
-        // 最有一个元素分割线隐藏
-        &:last-child {
-          > div::after {
+        // 第一个元素分割线隐藏
+        &:first-child {
+          > div::before {
             content: none;
           }
         }
@@ -81,10 +81,27 @@
       }
 
       div[class*='kt_editor_tab_current___'] {
-        // background-color: var(--kt-panelTitle-background) !important;
-
         div[class*='close_tab___'] {
           display: block;
+        }
+      }
+
+      div[class*='kt_editor_tab_current_prev___'] {
+        background-color: var(--panel-background);
+        div[class*='ai_editor_tab_block_container___'] {
+          border-radius: 0 0 12px 0;
+          background-color: var(--editorGroupHeader-tabsBackground);
+        }
+      }
+
+      div[class*='kt_editor_tab_current_next___'] {
+        background-color: var(--panel-background);
+        div[class*='ai_editor_tab_block_container___'] {
+          background-color: var(--editorGroupHeader-tabsBackground);
+          border-radius: 0 0 0 12px;
+          &::before {
+            content: none;
+          }
         }
       }
 
@@ -96,6 +113,34 @@
           div[class*='close_tab___'] {
             display: block;
           }
+        }
+      }
+    }
+
+    // 最后一个元素选中时增加圆角
+    div[class*='kt_editor_group___'] div[class*='kt_editor_tabs_current_last___'] {
+      div[class*='kt_editor_tab_current___'] {
+        padding-right: 12px !important;
+        &::before {
+          content: '';
+          position: absolute;
+          left: auto;
+          right: 0;
+          top: 0;
+          width: 12px;
+          height: 100%;
+          background-color: var(--editorGroupHeader-tabsBackground);
+          border-radius: 0 0 0 12px;
+        }
+        &::after {
+          content: '';
+          position: absolute;
+          left: auto;
+          top: 0;
+          right: 0;
+          width: 12px;
+          height: 100%;
+          background-color: var(--panel-background);
         }
       }
     }
@@ -230,6 +275,7 @@
   }
 
   div[class*='kt_split_panel___'] {
+    padding-bottom: 8px;
     &::-webkit-scrollbar {
       width: 4px;
     }
@@ -242,6 +288,16 @@
     div[class*='actions_wrap___'] {
       margin: 0 8px;
     }
+  }
+
+  div[class*='scmMenu___'] {
+    button {
+      border-radius: 4px !important;
+    }
+  }
+
+  div[class*='section_badge__'] {
+    border-radius: 4px !important;
   }
 
   // 标题右边Icon行动点
@@ -462,7 +518,6 @@
 
   div[class*='kt-select-value-small'] {
     height: 24px;
-    border: 0 none;
     border-radius: 4px;
   }
 
@@ -479,7 +534,6 @@
       border-radius: 4px;
       width: 240px;
       max-width: 240px;
-      border: 0 none;
     }
   }
 
@@ -492,7 +546,6 @@
       border-radius: 4px;
       width: 240px;
       max-width: 240px;
-      border: 0 none;
       span[class*='kt-icon'] {
         color: var(--ai-native-input-color);
       }
@@ -515,10 +568,13 @@
 
   div[class*='item_container__'] {
     border: 0 none;
-    &::after {
+    &:first-child::before {
+      display: none;
+    }
+    &::before {
       content: '';
       position: absolute;
-      right: 0;
+      left: 0;
       top: 12px;
       display: inline-block;
       width: 1px;
@@ -565,7 +621,13 @@
   }
 
   div[class*='item_selected___'] {
-    // background-color: rgba(21, 27, 33, 1);
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+
+  div[class*='item_selected___'] + div {
     &::before,
     &::after {
       display: none;
@@ -673,7 +735,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding-bottom: 32px;
+      padding-bottom: 38px;
     }
 
     .rce-ai-msg {

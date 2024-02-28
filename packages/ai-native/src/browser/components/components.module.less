@@ -4,9 +4,8 @@
   height: 100%;
   .stop {
     position: absolute;
-    bottom: -34px;
+    bottom: -38px;
     padding-top: 12px;
-    // TODO
     left: -8px;
     width: 105%;
   }
@@ -17,7 +16,7 @@
     font-size: 12px;
     color: var(--ai-native-text-color-normal);
     cursor: pointer;
-    margin-left: 10px;
+    margin: 4px 0 0 10px;
 
     span {
       color: var(--ai-native-text-color-normal);
@@ -100,7 +99,7 @@
   border: 1px solid var(--kt-input-border);
   background-color: var(--ai-native-charinput-background);
   &.active {
-    border-color: #3c8dff;
+    border-color: rgba(60, 141, 255, 0.65);
   }
   .theme_container {
     padding: 8px 12px 2px;
@@ -192,7 +191,7 @@
           }
 
           .block {
-            margin: 0 8px;
+            margin: 0 16px 0 8px;
             .ai_enhance_icon {
               background-color: var(--kt-icon-hoverBackground);
             }
@@ -304,6 +303,7 @@
   margin-top: 4px;
   .monaco_wrapper {
     position: relative;
+    min-width: 130px;
     > pre {
       margin-bottom: 10px;
     }
@@ -508,12 +508,14 @@
     align-items: start;
     line-height: 22px;
     > * {
+      display: block;
       margin-top: 4px;
     }
   }
 }
 
 .markdown_container {
+  line-height: 22px;
   h1,
   h2,
   h3,
