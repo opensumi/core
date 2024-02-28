@@ -23,6 +23,7 @@
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-task": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",
+    "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
     "@rjsf/core": "5.5.2",
     "@rjsf/utils": "5.5.2",
     "@rjsf/validator-ajv6": "5.4.0",

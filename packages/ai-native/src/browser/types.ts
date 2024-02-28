@@ -1,33 +1,12 @@
 import React from 'react';
 
+import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CancellationToken, MaybePromise, IDisposable, Deferred } from '@opensumi/ide-core-common';
 import { CompletionResultModel, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
-
-export type InlineChatOperationalRenderType = 'button' | 'dropdown';
-
-export interface InlineChatAction {
-  /**
-   * 唯一标识的 id
-   */
-  id: string;
-  /**
-   * 用于展示的名称
-   */
-  name: string;
-  /**
-   * hover 上去的 popover 提示
-   */
-  title?: string;
-  renderType?: InlineChatOperationalRenderType;
-  /**
-   * 排序
-   */
-  order?: number;
-}
 
 export class ReplyResponse {
   constructor(readonly message: string) {}
@@ -68,7 +47,7 @@ export interface InlineChatHandler {
 export const IInlineChatFeatureRegistry = Symbol('IInlineChatFeatureRegistry');
 
 export interface IInlineChatFeatureRegistry {
-  registerInlineChat(operational: InlineChatAction, handler: InlineChatHandler): void;
+  registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void;
 }
 
 export type AiRunHandler = () => MaybePromise<void>;

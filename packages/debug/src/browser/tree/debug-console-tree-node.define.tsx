@@ -3,11 +3,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { TreeNode, ITree, CompositeTreeNode } from '@opensumi/ide-components';
-import { MessageType } from '@opensumi/ide-core-browser';
+import { MessageType, CommandService } from '@opensumi/ide-core-browser';
+import { AI_EXPLAIN_DEBUG_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { AIAction } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { LinkDetector } from '../debug-link-detector';
 import debugConsoleStyles from '../view/console/debug-console.module.less';
+
 
 const getColor = (severity?: MessageType): string => {
   if (typeof severity === 'undefined') {
@@ -57,6 +60,8 @@ export class AnsiConsoleNode extends TreeNode {
     public readonly severity?: MessageType,
     public readonly source?: DebugProtocol.Source,
     public readonly line?: string | number,
+    public readonly supportAIFeature?: boolean,
+    public readonly commandService?: CommandService,
   ) {
     super({} as ITree, _compositeTreeNode);
     this.linkDetectorHTML = this.ansiNode ?? this.linkDetector.linkify(this.description);
@@ -72,5 +77,25 @@ export class AnsiConsoleNode extends TreeNode {
 
   get template(): any {
     return () => <TreeWithLinkWrapper className={getColor(this.severity)} html={this.linkDetectorHTML} />;
+  }
+
+  get aiAction(): React.ReactElement | boolean {
+    if (this.severity !== MessageType.Error || !this.supportAIFeature) {
+      return false;
+    }
+
+    return <AIAction
+      operationList={[{
+        id: 'debug',
+        name: 'Debug',
+        title: 'Debug',
+      }]}
+      onClickItem={() => this.handleAIAction()}
+      showClose={false}
+    />;
+  }
+
+  private handleAIAction() {
+    this.commandService?.executeCommand(AI_EXPLAIN_DEBUG_COMMANDS.id, this);
   }
 }

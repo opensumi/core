@@ -23,6 +23,10 @@ export interface IAiNativeCapabilities {
    * 使用 ai 智能解决冲突的能力
    */
   supportsConflictResolve?: boolean;
+  /**
+   * 使用 ai 调试控制台问题诊断能力
+   */
+  supportsDebugConsoleExplain?: boolean;
 }
 
 export interface AiNativeConfig {

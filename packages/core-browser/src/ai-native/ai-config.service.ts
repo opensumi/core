@@ -15,10 +15,11 @@ export class AiNativeConfigService {
     supportsInlineChat: false,
     supportsInlineCompletion: false,
     supportsConflictResolve: false,
+    supportsDebug: false,
   };
 
   private setDefaultCapabilities(value: boolean): void {
-    for (let key in this.config) {
+    for (const key in this.config) {
       if (this.config.hasOwnProperty(key)) {
         this.config[key] = value;
       }

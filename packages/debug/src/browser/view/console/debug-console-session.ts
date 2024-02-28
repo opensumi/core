@@ -1,6 +1,7 @@
 import throttle from 'lodash/throttle';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { AiNativeConfigService, CommandService } from '@opensumi/ide-core-browser';
 import { DisposableCollection, Emitter, Event, MessageType, ILogger, localize } from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
@@ -25,6 +26,12 @@ export class DebugConsoleSession implements IDebugConsoleSession {
 
   @Autowired(IThemeService)
   protected readonly themeService: IThemeService;
+
+  @Autowired(AiNativeConfigService)
+  private readonly aiNativeConfig: AiNativeConfigService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   // 缓冲未完成的append进来的内容
   protected uncompletedItemContent: string | undefined;
@@ -144,7 +151,7 @@ export class DebugConsoleSession implements IDebugConsoleSession {
   ) {
     const ansiNode = await handleANSIOutput(output, this.linkDetector, this.themeService, undefined);
     this.treeModel.root.insertItem(
-      new AnsiConsoleNode(output, this.treeModel?.root, this.linkDetector, ansiNode, severity, source, line),
+      new AnsiConsoleNode(output, this.treeModel?.root, this.linkDetector, ansiNode, severity, source, line, this.aiNativeConfig.capabilities.supportsDebugConsoleExplain, this.commandService),
     );
   }
 

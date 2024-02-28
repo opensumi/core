@@ -7,6 +7,7 @@ import {
   EnhanceIcon,
   EnhanceIconWithCtxMenu,
   HorizontalVertical,
+  EnhancePopover,
 } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -21,7 +22,6 @@ import {
 import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
-import { EnhancePopover } from '../../components/Popover';
 
 import * as styles from './layout.module.less';
 
