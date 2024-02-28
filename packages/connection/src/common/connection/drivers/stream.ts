@@ -1,7 +1,9 @@
-import { IDisposable } from '@opensumi/ide-core-common';
+import { IDisposable, writeUInt32LE } from '@opensumi/ide-core-common';
+
+import { pool } from '../../buffers';
 
 import { BaseConnection } from './base';
-import { LengthFieldBasedFrameDecoder, createByteLength, indicator } from './frame-decoder';
+import { LengthFieldBasedFrameDecoder, indicator } from './frame-decoder';
 
 import type { Readable, Writable } from 'stream';
 
@@ -22,7 +24,11 @@ export class StreamConnection extends BaseConnection<Uint8Array> {
 
   send(data: Uint8Array): void {
     this.writable.write(indicator);
-    this.writable.write(createByteLength(data.byteLength));
+    const buf = pool.alloc(4);
+    writeUInt32LE(buf, length, 0);
+    this.writable.write(buf, () => {
+      pool.free(buf);
+    });
     this.writable.write(data);
   }
 

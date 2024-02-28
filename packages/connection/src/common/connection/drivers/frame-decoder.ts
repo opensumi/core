@@ -1,4 +1,4 @@
-import { Emitter, readUInt32LE, writeUInt32LE } from '@opensumi/ide-core-common';
+import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
 
@@ -6,12 +6,6 @@ import { Buffers } from '../../buffers/buffers';
  * You can use `Buffer.from('\r\n\r\n')` to get this indicator.
  */
 export const indicator = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]);
-
-const shareBuf = new Uint8Array(4);
-export function createByteLength(length: number) {
-  writeUInt32LE(shareBuf, length, 0);
-  return shareBuf;
-}
 
 /**
  * sticky packet unpacking problems are generally problems at the transport layer.
