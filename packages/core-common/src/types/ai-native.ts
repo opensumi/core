@@ -2,27 +2,27 @@ import { CancellationToken } from '../utils';
 
 export interface IAiNativeCapabilities {
   /**
-   * 使用 opensumi design UI 风格
+   * Use opensumi design UI style
    */
   supportsOpenSumiDesign?: boolean;
   /**
-   * 问题面板使用 ai 能力
+   * Problem panel uses ai capabilities
    */
   supportsAiMarkers?: boolean;
   /**
-   * 使用 ai chat 能力
+   * Use ai chat capabilities
    */
   supportsAiChatAssistant?: boolean;
   /**
-   * 使用 inline chat 能力
+   * Use inline chat capabilities
    */
   supportsInlineChat?: boolean;
   /**
-   * 使用代码智能补全能力
+   * Use code intelligent completion capabilities
    */
   supportsInlineCompletion?: boolean;
   /**
-   * 使用 ai 智能解决冲突的能力
+   * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
 }
