@@ -2011,6 +2011,7 @@ __metadata:
     "@commitlint/cli": ^15.0.0
     "@commitlint/config-conventional": ^7.1.2
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@types/classnames": ^2.3.1
     "@types/debug": ^4.1.5
     "@types/fs-extra": ^9.0.13
     "@types/glob": ^7.1.1
@@ -3604,6 +3605,15 @@ __metadata:
   version: 0.12.5
   resolution: "@types/caseless@npm:0.12.5"
   checksum: f6a3628add76d27005495914c9c3873a93536957edaa5b69c63b46fe10b4649a6fecf16b676c1695f46aab851da47ec6047dcf3570fa8d9b6883492ff6d074e0
+  languageName: node
+  linkType: hard
+
+"@types/classnames@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "@types/classnames@npm:2.3.1"
+  dependencies:
+    classnames: "*"
+  checksum: 09a17ea08fcb83380921efdfdac94cfa162f87025cae0bf6f4ba508c2fa5f436459ce7612905a3f968fdddb68c03b8e6ff08e762ed2d0c110c5c4fceb244dc55
   languageName: node
   linkType: hard
 

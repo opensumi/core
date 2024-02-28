@@ -1,5 +1,5 @@
 import clx from 'classnames';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import './styles.less';
 import { Button } from '../button';

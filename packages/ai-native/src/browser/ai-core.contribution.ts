@@ -235,8 +235,8 @@ export class AiNativeBrowserContribution
         const description = node.description;
         if (description) {
           this.aiChatService.launchChatMessage({
-            message: `${InstructionEnum.aiExplainKey} @debugSelection`,
-            prompt: `我在运行并调试我的项目代码，请解释调试运行过程当中的这段日志: \`\`\`\n${description}\n\`\`\` `,
+            message: `分析以下内容：\`\`\`\n${description}\`\`\``,
+            prompt: `在 IDE 中进行调试时，程序输出了一些错误信息，请尝试解释报错并给出解决方案，报错信息如下：\`\`\`\n${description}\n\`\`\` `,
           });
         }
       },

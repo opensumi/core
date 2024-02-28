@@ -3,16 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { message } from '@opensumi/ide-components';
 import { IAiInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
-import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { LineVertical } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { AiInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
+import { AIAction, AiInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
 
 import { AiResponseTips } from '../../common';
 import { Loading } from '../components/Loading';
-import { EnhancePopover } from '../components/Popover';
 import { IInlineChatFeatureRegistry } from '../types';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
@@ -66,36 +63,12 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
     return null;
   }
 
-  return (
-    <div className={styles.ai_inline_operation_panel}>
-      <AILogoAvatar />
-      <LineVertical height={'60%'} margin={'0px 4px 0 8px'} />
-      <div className={styles.operate_container}>
-        {operationList.map(({ name, title, id }, i) => (
-          <EnhancePopover id={id} title={title} key={`popover_${i}`}>
-            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => handleClickActions(id)}>
-              <span key={i}>{name}</span>
-            </EnhanceIcon>
-          </EnhancePopover>
-        ))}
-        {moreOperation.length > 0 && (
-          <EnhanceIconWithCtxMenu
-            icon={'more'}
-            menuNodes={moreOperation}
-            wrapperClassName={styles.operate_btn}
-            skew={{
-              x: -83,
-              y: 5,
-            }}
-          />
-        )}
-        <div className={styles.close_container}>
-          <LineVertical height={'60%'} margin={'0px 4px 0 4px'} />
-          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
-        </div>
-      </div>
-    </div>
-  );
+  return <AIAction
+    operationList={operationList}
+    moreOperation={moreOperation}
+    onClickItem={handleClickActions}
+    onClose={handleClose}
+  />;
 };
 
 export interface IAiInlineChatControllerProps {

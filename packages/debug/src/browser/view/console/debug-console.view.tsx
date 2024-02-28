@@ -11,10 +11,11 @@ import {
   INodeRendererProps,
   CompositeTreeNode,
   TreeNode,
+  Popover,
+  PopoverPosition,
 } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
-import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
-import { PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
+import { useInjectable, ViewState, getIcon, PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
@@ -456,16 +457,25 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     >
       <div className={cls(styles.debug_console_node_content)}>
         {renderTwice(item)}
-        <div
-          className={styles.debug_console_node_overflow_wrap}
-          style={{
-            whiteSpace: isWordWrap ? 'pre-wrap' : 'nowrap',
-            cursor: item instanceof DebugVariableContainer ? 'pointer' : 'initial',
-          }}
+        <Popover
+          id={item.id}
+          content={item.aiAction}
+          style={{ flex: 1, justifyContent: 'flex-start' }}
+          disable={!item.aiAction}
+          position={PopoverPosition.left}
+          popoverClass={styles.ai_popover}
         >
-          {renderDisplayName(item)}
-          {renderDescription(item)}
-        </div>
+          <div
+            className={styles.debug_console_node_overflow_wrap}
+            style={{
+              whiteSpace: isWordWrap ? 'pre-wrap' : 'nowrap',
+              cursor: item instanceof DebugVariableContainer ? 'pointer' : 'initial',
+            }}
+          >
+            {renderDisplayName(item)}
+            {renderDescription(item)}
+          </div>
+        </Popover>
         {renderStatusTail()}
       </div>
       <div className={styles.debug_console_selection}>{filterMode === 'matcher' && renderSelectionFilter()}</div>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { IPopoverProps, Popover } from '@opensumi/ide-components';
 import { uuid } from '@opensumi/ide-core-common';
