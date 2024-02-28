@@ -15,7 +15,7 @@ export class AiNativeConfigService {
     supportsInlineChat: false,
     supportsInlineCompletion: false,
     supportsConflictResolve: false,
-    supportsDebug: false,
+    supportsDebugConsoleExplain: false,
   };
 
   private setDefaultCapabilities(value: boolean): void {

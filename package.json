@@ -49,7 +49,8 @@
     "changelog-old": "node scripts/changelog/index.js",
     "changelog": "ts-node -P scripts/tsconfig.scripts.json scripts/changelog/index.ts",
     "iteration": "ts-node -P scripts/tsconfig.scripts.json scripts/iteration-plan.ts",
-    "manifest": "ts-node ./scripts/generate-manifest-json"
+    "manifest": "ts-node ./scripts/generate-manifest-json",
+    "tsc": "tsc"
   },
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
