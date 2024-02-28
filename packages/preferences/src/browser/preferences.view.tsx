@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
@@ -48,87 +48,31 @@ const kBaseIndent = 8;
 
 export const PreferenceView: ReactEditorComponent<null> = () => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [groups, setGroups] = useState<ISettingGroup[]>([]);
-
-  const currentScope = useEventDrivenState(
-    preferenceService.emitter,
-    'currentScopeChange',
-    () => preferenceService.currentScope,
-  );
-  const currentSearch = useEventDrivenState(
-    preferenceService.emitter,
-    'currentSearchChange',
-    () => preferenceService.currentSearch,
-  );
-  const tabList = useEventDrivenState(preferenceService.emitter, 'tabListChange', () => preferenceService.tabList);
-  const tabIndex = useEventDrivenState(preferenceService.emitter, 'tabIndexChange', () => preferenceService.tabIndex);
+  const [items, setItems] = useState<ISectionItemData[]>([]);
+  const [treeData, setTreeData] = useState<IPreferenceTreeData[]>([]);
 
   const updateGroup = useThrottleFn(() => {
-    const _groups = preferenceService.getSettingGroups(preferenceService.currentScope, preferenceService.currentSearch);
-    const oldGroupKey = groups.map((n) => n.id).join(',');
-    const newGroupKey = _groups.map((n) => n.id).join(',');
-    if (oldGroupKey !== newGroupKey) {
-      const groupsStore = _groups;
-      setGroups(groupsStore);
-    }
-  }, 16);
+    const currentScope = preferenceService.currentScope;
+    const currentSearch = preferenceService.currentSearch;
+    const newGroups = preferenceService.getSettingGroups(currentScope, currentSearch);
 
-  useEffect(() => {
-    const dispose = new Disposable(
-      preferenceService.emitter.on('settingsGroupsChange', () => {
-        updateGroup.run();
-      }),
-      preferenceService.emitter.on('currentSearchChange', () => {
-        updateGroup.run();
-      }),
-      preferenceService.emitter.on('currentScopeChange', () => {
-        updateGroup.run();
-      }),
-      preferenceService.emitter.on('settingsSectionsChange', () => {
-        updateGroup.run();
-      }),
-    );
-
-    updateGroup.run();
-
-    return () => {
-      dispose.dispose();
-    };
-  }, [preferenceService.getSettingGroups]);
-
-  const labelService = useInjectable<LabelService>(LabelService);
-  const getResourceIcon = useCallback(
-    (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
-    [],
-  );
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const debouncedSearch = debounce(
-    (value: string) => {
-      preferenceService.search(value);
-    },
-    100,
-    { maxWait: 300 },
-  );
-
-  const { items, treeData } = useMemo(() => {
     // 如果是搜索模式，是只展示用户左侧选择的组的内容
     const items: ISectionItemData[] = [];
-    const treeData = [] as IPreferenceTreeData[];
+    const treeData: IPreferenceTreeData[] = [];
 
-    for (let index = 0; index < groups.length; index++) {
-      const group = groups[index];
+    for (let index = 0; index < newGroups.length; index++) {
+      const g = newGroups[index];
+      const sections = preferenceService.getResolvedSections(g.id, currentScope, currentSearch);
 
-      items.push(...collectGroup(group));
-      treeData.push(collectTreeData(index, group));
+      items.push(...collectGroup(g, sections));
+      treeData.push(collectTreeData(index, g, sections));
     }
 
-    return { items, treeData };
+    setItems(items);
+    setTreeData(treeData);
 
-    function collectGroup(group: ISettingGroup) {
+    function collectGroup(group: ISettingGroup, sections: IResolvedSettingSection[]) {
       const groupItems = [] as ISectionItemData[];
-      const sections = preferenceService.getResolvedSections(group.id, currentScope, currentSearch);
 
       const collectItem = (section: IResolvedSettingSection, prefix = '') => {
         let currentItemPath = prefix;
@@ -188,7 +132,7 @@ export const PreferenceView: ReactEditorComponent<null> = () => {
       }
       return groupItems;
     }
-    function collectTreeData(index: number, group: ISettingGroup) {
+    function collectTreeData(index: number, group: ISettingGroup, sections: IResolvedSettingSection[]) {
       const { id, title, iconClass } = group;
       const data = {
         label: toNormalCase(title),
@@ -198,7 +142,6 @@ export const PreferenceView: ReactEditorComponent<null> = () => {
         className: styles.group_item,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
-      const sections = preferenceService.getResolvedSections(id, currentScope, currentSearch);
       sections.forEach((sec, i) => {
         const _treeData = parseTreeData(id, sec, i, 1);
         if (_treeData) {
@@ -214,7 +157,46 @@ export const PreferenceView: ReactEditorComponent<null> = () => {
       }
       return data;
     }
-  }, [groups, preferenceService.getResolvedSections, currentScope, currentSearch]);
+  }, 16);
+
+  useEffect(() => {
+    const dispose = new Disposable(
+      preferenceService.emitter.on('settingsGroupsChange', () => {
+        updateGroup.run();
+      }),
+      preferenceService.emitter.on('currentSearchChange', () => {
+        updateGroup.run();
+      }),
+      preferenceService.emitter.on('currentScopeChange', () => {
+        updateGroup.run();
+      }),
+      preferenceService.emitter.on('settingsSectionsChange', () => {
+        updateGroup.run();
+      }),
+    );
+
+    updateGroup.run();
+
+    return () => {
+      dispose.dispose();
+    };
+  }, []);
+
+  const labelService = useInjectable<LabelService>(LabelService);
+  const getResourceIcon = useCallback(
+    (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
+    [],
+  );
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const debouncedSearch = debounce(
+    (value: string) => {
+      preferenceService.search(value);
+    },
+    100,
+    { maxWait: 300 },
+  );
 
   useEffect(() => {
     const focusDispose = preferenceService.onFocus(() => {
@@ -227,6 +209,15 @@ export const PreferenceView: ReactEditorComponent<null> = () => {
       focusDispose.dispose();
     };
   }, []);
+
+  const currentSearch = useEventDrivenState(
+    preferenceService.emitter,
+    'currentSearchChange',
+    () => preferenceService.currentSearch,
+  );
+
+  const tabList = useEventDrivenState(preferenceService.emitter, 'tabListChange', () => preferenceService.tabList);
+  const tabIndex = useEventDrivenState(preferenceService.emitter, 'tabIndexChange', () => preferenceService.tabIndex);
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
@@ -251,7 +242,7 @@ export const PreferenceView: ReactEditorComponent<null> = () => {
             />
           </div>
         </div>
-        {groups.length > 0 ? (
+        {items.length > 0 ? (
           <SplitPanel
             id='preference-panel'
             resizeHandleClassName={styles.devider}
