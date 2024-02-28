@@ -29,7 +29,7 @@ export class DesignStyleService implements IDesignStyleService {
 
     let _cls = styles.replace(/___\w{5}/, '');
 
-    // design 模块的样式需要添加 design 前缀
+    // Styles of the design module need to add a 'design' prefix
     if (!_cls.startsWith(prefix)) {
       _cls = prefix + _cls;
     }

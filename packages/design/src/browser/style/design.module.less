@@ -54,7 +54,7 @@
 }
 
 /**
-* ---------------- 覆盖 editor tab 样式 ---------------------
+* ---------------- Override editor tab styles ---------------------
 */
 .design-kt_editor_tabs_scroll_wrapper {
   &:after {
@@ -71,7 +71,6 @@
       align-items: center;
       background-color: transparent;
 
-      // 最有一个元素分割线隐藏
       &:last-child {
         > div::after {
           content: none;
@@ -204,7 +203,7 @@
 }
 
 /**
-* ---------------- 覆盖 editor navigation 导航条样式 ---------------------
+* ---------------- Override editor navigation bar style ---------------------
 */
 .design-navigation_container {
   height: 28px;
@@ -231,7 +230,7 @@
 }
 
 /**
-* ---------------- 覆盖 editor component 内容区块样式 ---------------------
+* ---------------- Override editor component content block style ---------------------
 */
 .design-kt_editor_component {
   padding-right: 2px;
@@ -256,7 +255,7 @@ div[class*='design-editor_tab_block_container__'] {
 }
 
 /**
-* ---------------- 覆盖编辑器面板底部 tabbar 样式 ---------------------
+* ---------------- Override editor panel bottom tabbar style ---------------------
 */
 :global(.design_bottom_slot) {
   .design-tab_bar {
@@ -454,9 +453,6 @@ div[class*='design-editor_tab_block_container__'] {
   }
 }
 
-/**
-* ---------------- 覆盖左侧 tabbar 样式 ---------------------
-*/
 :global(.design_left_slot) {
   .design-tab_panel {
     border-right: none;
@@ -490,7 +486,6 @@ div[class*='design-editor_tab_block_container__'] {
     }
   }
 
-  // 标题右边Icon行动点
   .design-titleActions {
     > span {
       display: flex;
@@ -522,9 +517,6 @@ div[class*='design-editor_tab_block_container__'] {
     }
   }
 
-  /**
-  * ---------------- 菜单相关样式 ---------------------
-  */
   .design-titlebar {
     color: var(--design-text-color-common);
 
@@ -614,7 +606,6 @@ div[class*='design-editor_tab_block_container__'] {
     }
   }
 
-  // 底部菜单样式
   .design-extra_bottom_icon {
     &:hover {
       background-color: transparent !important;
@@ -640,7 +631,6 @@ div[class*='design-editor_tab_block_container__'] {
     border-radius: 4px;
   }
 
-  // 插件面板
   .design-extension_item {
     border-radius: 8px;
   }

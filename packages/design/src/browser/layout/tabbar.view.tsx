@@ -12,7 +12,6 @@ export const DesignLeftTabRenderer = ({
   components: ComponentRegistryInfo[];
 }) => <LeftTabRenderer className={cls(className, 'design_left_slot')} components={components} />;
 
-// 编辑器 bottom 面板
 export const DesignBottomTabRenderer = ({
   className,
   components,

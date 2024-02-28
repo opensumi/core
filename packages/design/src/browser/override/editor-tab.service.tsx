@@ -3,7 +3,7 @@ import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Popover } from '@opensumi/ide-core-browser/lib/components';
-import { uuid } from '@opensumi/ide-core-common';
+import { localize, uuid } from '@opensumi/ide-core-common';
 import { EditorTabService } from '@opensumi/ide-editor/lib/browser/editor.tab.service';
 
 import styles from './override.module.less';
@@ -19,7 +19,7 @@ const EditorTabCloseComponent = (props) => {
   }, []);
 
   return (
-    <Popover id={uid} title='关闭' onClickAction={handleClick} display={display}>
+    <Popover id={uid} title={localize('editor.title.context.close')} onClickAction={handleClick} display={display}>
       {children}
     </Popover>
   );
