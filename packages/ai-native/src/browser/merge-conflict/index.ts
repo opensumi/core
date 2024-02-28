@@ -67,6 +67,8 @@ export namespace MERGE_CONFLICT {
   };
 }
 
+const MERGE_CONFLICT_CODELENS_STYLE = 'merge-conflict-codelens-style';
+
 // codelens 无法定义样式 此处通过 css hack
 const cssStyle = `
 .monaco-editor .codelens-decoration {
@@ -102,14 +104,14 @@ const cssStyle = `
 `;
 
 function loadStyleString(load: boolean) {
-  let mergeConflictStyleNode = document.getElementById('merge-conflict-codelens-style');
+  let mergeConflictStyleNode = document.getElementById(MERGE_CONFLICT_CODELENS_STYLE);
   if (!load) {
     mergeConflictStyleNode?.remove();
     return;
   }
   if (!mergeConflictStyleNode && load) {
     mergeConflictStyleNode = document.createElement('style');
-    mergeConflictStyleNode.id = 'merge-conflict-codelens-style';
+    mergeConflictStyleNode.id = MERGE_CONFLICT_CODELENS_STYLE;
     mergeConflictStyleNode.appendChild(document.createTextNode(cssStyle));
     document.getElementsByTagName('head')[0].appendChild(mergeConflictStyleNode);
   }
@@ -225,6 +227,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private loadingRange: Set<IRange> = new Set();
   // for report
   private currentReportMap = new Map<string, IReportData>();
+  // for decoration dispose
+  private decorationId2Dispose = new Map<string, () => void>();
+  private decorationId2Range = new Map<string, IRange>();
 
   constructor() {
     super();
@@ -312,13 +317,46 @@ export class MergeConflictContribution extends Disposable implements CommandCont
               }
             }
             this.resetCacheResolvedConflicts(map);
+
+            for (const [id, value] of this.decorationId2Range.entries()) {
+              const {
+                startLineNumber: decorationStartLineNumber,
+                endLineNumber: decorationEndLineNumber,
+                endColumn: decorationEndColumn,
+              } = value;
+              // 在位置下方改动 不处理
+              if (decorationEndLineNumber < startLineNumber) {
+                continue;
+              }
+              // 在位置上方改动 偏移
+              if (startLineNumber < decorationStartLineNumber && endLineNumber < decorationEndLineNumber) {
+                const newRange = new monaco.Range(
+                  decorationStartLineNumber + offset,
+                  1,
+                  decorationEndLineNumber + offset,
+                  decorationEndColumn,
+                );
+                this.decorationId2Range.set(id, newRange);
+                continue;
+              }
+              // 包含位置 删除
+              if (startLineNumber <= decorationStartLineNumber && endLineNumber >= decorationEndLineNumber) {
+                const newRangeOffset = decorationEndLineNumber - decorationStartLineNumber;
+                if (offset <= newRangeOffset) {
+                  this.cleanDecoration(id);
+                  continue;
+                }
+              }
+              // 内部改动删除
+              if (startLineNumber >= decorationStartLineNumber && endLineNumber <= decorationEndLineNumber) {
+                this.cleanDecoration(id);
+              }
+            }
           });
           this.updateAllWidgets();
-          // this.updateReportData();
         }),
         this.editor.onDidChangeModel(() => {
           this.updateAllWidgets();
-          // this.updateReportData();
         }),
       );
     }
@@ -482,10 +520,10 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     return lineRange;
   }
 
-  public renderSkeletonDecoration(range: LineRange, classNames: string[]) {
+  public renderSkeletonDecoration(range: IRange, classNames: string[]) {
     const model = this.getModel();
     const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
-      range: range.toRange(),
+      range,
       options: {
         isWholeLine: true,
         description: 'skeleton',
@@ -571,10 +609,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             e.payload.topic === 'onExtensionActivated' &&
             (e.payload.data?.id as string).endsWith('.merge-conflict')
           ) {
-            if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
-              this.registerCodeLensProvider();
-              loadStyleString(true);
-            }
+            this.registerCodeLensProvider();
+            loadStyleString(true);
           }
         }),
         // TODO 优化使用 registerEditorFeature
@@ -652,7 +688,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       lineRange = lineRan!;
     }
     const range = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
-    const skeletonDecorationDispose = this.renderSkeletonDecoration(lineRange, [
+    const skeletonDecorationDispose = this.renderSkeletonDecoration(range, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background_black,
     ]);
@@ -693,7 +729,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         text,
       };
       let validEditOperation: IValidEditOperation[] = [];
-      this.getModel()?.pushEditOperations(null, [edit], (operation) => {
+      const selections = this.getModel()?.pushEditOperations(null, [edit], (operation) => {
         validEditOperation = operation;
         const selections: monaco.Selection[] = [];
         operation.forEach((op) => {
@@ -706,10 +742,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             ),
           );
         });
-        // 自动选中
-        // this.editor.setSelections(selections);
         return selections;
       });
+      selections!.forEach((selection) => {
+        const decorationDispose = this.renderSkeletonDecoration(selection, [styles.skeleton_decoration_complete]);
+        this.decorationId2Dispose.set(lineRange.id, decorationDispose);
+        this.decorationId2Range.set(lineRange.id, selection);
+      });
+
       const newLineRange = this.toLineRange(newRange, lineRange.id);
       this.resolveResultWidgetManager.addWidget(newLineRange);
       this.setCacheResolvedConflict(newLineRange.id, {
@@ -890,9 +930,11 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       }
       this.cleanWidget(range.id);
       this.deleteCacheResolvedConflicts(range.id);
+      this.cleanDecoration(range.id);
     } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
       this.cleanWidget(range.id);
       this.conflictAIAccept(undefined, range, true);
+      this.cleanDecoration(range.id);
     } else if (action === IGNORE_ACTIONS) {
       this.cleanWidget(range.id);
       // this.deleteCacheResolvedConflicts(range.id);
@@ -908,6 +950,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     this.hideStopWidget();
     this.hideResolveResultWidget();
     this.getCacheResolvedConflicts().clear();
+    this.decorationId2Dispose.clear();
+    this.decorationId2Range.clear();
   }
 
   private cleanWidget(id: string) {
@@ -918,6 +962,15 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
     this.hideStopWidget();
     this.hideResolveResultWidget();
+  }
+  private cleanDecoration(id: string) {
+    if (this.decorationId2Dispose.has(id)) {
+      this.decorationId2Dispose.get(id)?.call(this);
+      this.decorationId2Dispose.delete(id);
+    }
+    if (this.decorationId2Range.has(id)) {
+      this.decorationId2Range.delete(id);
+    }
   }
 
   // 强制刷新 codelens
@@ -933,6 +986,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }, 1000);
 
   private debounceMessageSuccess = debounce(() => {
-    message.warning('生成成功， AI 已完成冲突的处理');
+    message.warning('生成成功，AI 已完成冲突的处理');
   }, 1000);
 }
