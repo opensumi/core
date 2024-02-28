@@ -26,8 +26,6 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
     this.fileSystem.registerProvider(Schemes.design, this.designThemeFileSystemProvider);
   }
 
-  onStart() {}
-
   registerRenderer(registry: SlotRendererRegistry): void {
     registry.registerSlotRenderer(SlotLocation.left, DesignLeftTabRenderer);
     registry.registerSlotRenderer(SlotLocation.bottom, DesignBottomTabRenderer);
