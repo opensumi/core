@@ -25,7 +25,7 @@ export class StreamConnection extends BaseConnection<Uint8Array> {
   send(data: Uint8Array): void {
     this.writable.write(indicator);
     const buf = pool.alloc(4);
-    writeUInt32LE(buf, length, 0);
+    writeUInt32LE(buf, data.byteLength, 0);
     this.writable.write(buf, () => {
       pool.free(buf);
     });

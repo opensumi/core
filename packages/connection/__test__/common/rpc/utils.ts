@@ -1,11 +1,16 @@
 import { randomBytes } from 'crypto';
+import net from 'net';
 import { Readable } from 'stream';
 import { MessageChannel, MessagePort } from 'worker_threads';
 
 import { Type } from '@furyjs/fury';
 
-import { ProxyLegacy, WSChannel } from '@opensumi/ide-connection';
+import { ProxyLegacy, WSChannel, createWebSocketConnection } from '@opensumi/ide-connection';
+import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ProtocolRepository } from '@opensumi/ide-connection/lib/common/rpc/protocol-repository';
+import { Deferred } from '@opensumi/ide-core-common';
+import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { NodeMessagePortConnection } from '../../../src/common/connection/drivers/node-message-port';
 import { SumiConnection } from '../../../src/common/rpc/connection';
@@ -17,12 +22,30 @@ function createRandomBuffer(size: number): Buffer {
   return Buffer.from(randomContent);
 }
 
+function random(length: number) {
+  const numbers = '0123456789'; // 指定数字范围，
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // 指定字母范围，（也可以指定字符或者小写字母）
+  const total = numbers + letters;
+  let result = '';
+
+  // 从合并的字符串里随机取出一个值
+  while (length > 0) {
+    // 循环次数是指定长度
+    length--;
+    result += total[Math.floor(Math.random() * total.length)];
+  }
+  return result;
+}
+
 const bufferSize = 1024 * 1024;
 
 const buffer = createRandomBuffer(bufferSize);
 
-export const longMessage =
+export const message =
   '"Hello" is a song recorded by English singer-songwriter Adele, released on 23 October 2015 by XL Recordings as the lead single from her third studio album, 25 (2015). Written by Adele and the album\'s producer, Greg Kurstin, "Hello" is a piano ballad with soul influences (including guitar and drums), and lyrics that discuss themes of nostalgia and regret. Upon release, the song garnered critical acclaim, with reviewers comparing it favourably to Adele\'s previous works and praised its lyrics, production and Adele\'s vocal performance. It was recorded in Metropolis Studios, London.';
+
+// 1m
+export const longMessage = random(1024 * 1024);
 
 export function createConnectionPair() {
   const channel = new MessageChannel();
@@ -44,6 +67,30 @@ export function createConnectionPair() {
   };
 }
 
+export async function createIPCConnectionPair() {
+  const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
+
+  const server = new net.Server();
+  const deferred = new Deferred<net.Socket>();
+
+  server.on('connection', (socket) => {
+    deferred.resolve(socket);
+  });
+
+  server.listen(ipcPath);
+
+  const socket2 = net.createConnection(ipcPath);
+
+  return {
+    connection1: new SumiConnection(new NetSocketConnection(socket2)),
+    connection2: new SumiConnection(new NetSocketConnection(await deferred.promise)),
+    close: (): void => {
+      socket2.destroy();
+      server.close();
+    },
+  };
+}
+
 export interface IConnectionPair {
   connection1: any;
   connection2: any;
@@ -52,9 +99,35 @@ export interface IConnectionPair {
   close(): void;
 }
 
-export function createMessageConnectionPair() {
+const ConnectionForMessagePort = (port: MessagePort) =>
+  createWebSocketConnection({
+    onMessage: (cb: any) => {
+      port.on('message', cb);
+    },
+    send: (data: any) => {
+      port.postMessage(data);
+    },
+  });
+
+export function createMessagePortLegacyConnectionPair() {
   const channel = new MessageChannel();
 
+  const { port1, port2 } = channel;
+
+  return {
+    connection1: ConnectionForMessagePort(port1),
+    connection2: ConnectionForMessagePort(port2),
+    port1,
+    port2,
+    close() {
+      port1.close();
+      port2.close();
+    },
+  };
+}
+
+export function createMessagePortWSChannel() {
+  const channel = new MessageChannel();
   const { port1, port2 } = channel;
 
   const channel1 = WSChannel.forClient(new NodeMessagePortConnection(port1), {
@@ -65,11 +138,9 @@ export function createMessageConnectionPair() {
   });
 
   return {
-    connection1: channel1.createMessageConnection(),
-    connection2: channel2.createMessageConnection(),
-    port1,
-    port2,
-    close() {
+    channel1,
+    channel2,
+    close: () => {
       port1.close();
       port2.close();
     },
@@ -129,7 +200,7 @@ export const protocols = {
   },
 };
 
-export function createSumiRPCClientPair(pair: ReturnType<typeof createConnectionPair>) {
+export function createSumiRPCClientPair(pair: { connection1: SumiConnection; connection2: SumiConnection }) {
   const repo = new ProtocolRepository();
 
   repo.loadProtocolMethod(protocols.shortUrl.protocol);
@@ -154,7 +225,9 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   registry2.registerService({
     add: (a: number, b: number) => a + b,
     getContent: () => buffer,
-    readFileStream: (path: string) => stringToStream(longMessage, 5),
+    getMessage: () => message,
+    getLongMessage: () => longMessage,
+    readFileStream: (path: string) => stringToStream(message, 5),
   });
 
   const client2 = new ProxySumi(registry2);
@@ -172,7 +245,7 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   };
 }
 
-export function createLegacyRPCClientPair(pair: ReturnType<typeof createMessageConnectionPair>) {
+export function createLegacyRPCClientPair(pair: { connection1: MessageConnection; connection2: MessageConnection }) {
   const registry = new ServiceRegistry();
   registry.registerService({
     shortUrl: (url: string) => url.slice(0, 10),
@@ -187,6 +260,8 @@ export function createLegacyRPCClientPair(pair: ReturnType<typeof createMessageC
   registry2.registerService({
     add: (a: number, b: number) => a + b,
     getContent: () => buffer,
+    getMessage: () => message,
+    getLongMessage: () => longMessage,
   });
 
   const client2 = new ProxyLegacy(registry2);

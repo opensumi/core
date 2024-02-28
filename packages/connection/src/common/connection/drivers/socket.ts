@@ -1,3 +1,5 @@
+import { IDisposable } from '@opensumi/ide-core-common';
+
 import { StreamConnection } from './stream';
 
 import type net from 'net';
@@ -9,6 +11,15 @@ export class NetSocketConnection extends StreamConnection {
 
   isOpen(): boolean {
     return this.socket.readyState === 'open';
+  }
+
+  onOpen(cb: () => void): IDisposable {
+    this.socket.on('connect', cb);
+    return {
+      dispose: () => {
+        this.socket.off('connect', cb);
+      },
+    };
   }
 
   destroy(): void {

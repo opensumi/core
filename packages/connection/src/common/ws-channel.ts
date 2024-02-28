@@ -236,9 +236,9 @@ export class WSChannel {
 
   createConnection() {
     return {
-      onceClose: (cb) => this.onceClose(cb),
-      onMessage: (cb) => this.onBinary(cb),
-      send: (data) => {
+      onceClose: (cb: (code: number, reason: string) => void) => this.onceClose(cb),
+      onMessage: (cb: (data: Uint8Array) => any) => this.onBinary(cb),
+      send: (data: Uint8Array) => {
         this.sendBinary(data);
       },
       dispose() {},

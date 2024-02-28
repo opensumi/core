@@ -5,7 +5,7 @@ import { Deferred } from '@opensumi/ide-core-common';
 import { IReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { test } from './common-tester';
-import { createConnectionPair, createSumiRPCClientPair, longMessage } from './utils';
+import { createConnectionPair, createSumiRPCClientPair, message } from './utils';
 
 test('sumi rpc', {
   factory: createSumiRPCClientPair,
@@ -94,6 +94,6 @@ describe('sumi rpc only', () => {
     });
 
     await deferred.promise;
-    expect(msg).toBe(longMessage);
+    expect(msg).toBe(message);
   });
 });
