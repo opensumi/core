@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/ai-native/src",
+    "outDir": "../../../packages/ai-native/lib"
+  },
+  "include": ["../../../packages/ai-native/src"]
+}

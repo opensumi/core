@@ -179,6 +179,9 @@
     },
     {
       "path": "./references/tsconfig.playwright.json"
+    },
+    {
+      "path": "./references/tsconfig.ai-native.json"
     }
   ]
 }
