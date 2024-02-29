@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Awareness } from 'y-protocols/awareness';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';

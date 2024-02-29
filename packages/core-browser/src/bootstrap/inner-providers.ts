@@ -38,6 +38,8 @@ import { ClientAppStateService } from '../application/application-state-service'
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
+import { ISplitPanelService, SplitPanelService } from '../components/layout/split-panel.service';
+import { DesignStyleService, IDesignStyleService } from '../design';
 import { ExtensionsPointServiceImpl } from '../extensions';
 import { FsProviderContribution } from '../fs';
 import { KeybindingContribution, KeybindingRegistry, KeybindingRegistryImpl, KeybindingService } from '../keybinding';
@@ -258,6 +260,14 @@ export function injectInnerProviders(injector: Injector) {
       useClass: StaticResourceServiceImpl,
     },
     StaticResourceClientAppContribution,
+    {
+      token: ISplitPanelService,
+      useClass: SplitPanelService,
+    },
+    {
+      token: IDesignStyleService,
+      useClass: DesignStyleService,
+    },
   ];
   injector.addProviders(...providers);
 }

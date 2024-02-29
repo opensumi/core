@@ -9,6 +9,7 @@ import {
   ComponentRenderer,
   ConfigProvider,
   ErrorBoundary,
+  useDesignStyles,
   useInjectable,
   useViewState,
 } from '@opensumi/ide-core-browser';
@@ -46,6 +47,9 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   const appConfig: AppConfig = useInjectable(AppConfig);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
 
+  const styles_tab_panel = useDesignStyles(styles.tab_panel);
+  const styles_tab_panel_hidden = useDesignStyles(styles.tab_panel_hidden);
+
   React.useEffect(() => {
     // panelSize = 384-1-48
     tabbarService.panelSize = customPanelSize || panelSize || 335;
@@ -53,8 +57,8 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   return (
     <div
       id={id}
-      className={cls(styles.tab_panel, {
-        [styles.tab_panel_hidden]: !tabbarService.currentContainerId,
+      className={cls(styles_tab_panel, {
+        [styles_tab_panel_hidden]: !tabbarService.currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -157,6 +161,9 @@ const BottomPanelView: React.FC<{
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const styles_panel_title_bar = useDesignStyles(styles.panel_title_bar);
+  const styles_panel_toolbar_container = useDesignStyles(styles.panel_toolbar_container);
+
   const { component: CustomComponent, containerId } = component.options || {};
   const titleComponent = component.options && component.options.titleComponent;
 
@@ -172,14 +179,14 @@ const BottomPanelView: React.FC<{
 
   return (
     <div ref={containerRef} className={styles.panel_container}>
-      <div className={styles.panel_title_bar} style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}>
+      <div className={styles_panel_title_bar} style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}>
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (
             <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           )}
         </div>
-        <div className={styles.panel_toolbar_container}>
+        <div className={styles_panel_toolbar_container}>
           {titleMenu && <InlineActionBar menus={titleMenu} />}
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>

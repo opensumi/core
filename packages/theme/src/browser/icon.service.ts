@@ -20,12 +20,12 @@ import {
   FontIconDefinition,
   IIconService,
   IIconTheme,
+  IThemeContribution,
   IconFontFamily,
   IconShape,
   IconThemeInfo,
   IconThemeType,
   IconType,
-  ThemeContribution,
   ThemeType,
   getThemeId,
   getThemeTypeSelector,
@@ -63,7 +63,7 @@ export class IconService extends WithEventBus implements IIconService {
 
   private iconThemes: Map<string, IIconTheme> = new Map();
 
-  private iconContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
+  private iconContributionRegistry: Map<string, { contribution: IThemeContribution; basePath: URI }> = new Map();
 
   public currentThemeId: string;
   public currentTheme: IIconTheme;
@@ -320,7 +320,7 @@ export class IconService extends WithEventBus implements IIconService {
     }
   }
 
-  registerIconThemes(iconContributions: ThemeContribution[], basePath: URI) {
+  registerIconThemes(iconContributions: IThemeContribution[], basePath: URI) {
     for (const contribution of iconContributions) {
       const themeId = getThemeId(contribution);
       this.iconContributionRegistry.set(themeId, { contribution, basePath });

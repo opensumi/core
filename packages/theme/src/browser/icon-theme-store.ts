@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 
-import { IIconTheme, ThemeContribution, getThemeId } from '../common';
+import { IIconTheme, IThemeContribution, getThemeId } from '../common';
 
 import { IconThemeData } from './icon-theme-data';
 
@@ -12,7 +12,7 @@ export class IconThemeStore {
 
   private iconThemeMap: Map<string, IIconTheme> = new Map();
 
-  async getIconTheme(contribution?: ThemeContribution, basePath?: URI): Promise<IIconTheme | undefined> {
+  async getIconTheme(contribution?: IThemeContribution, basePath?: URI): Promise<IIconTheme | undefined> {
     if (!contribution || !basePath) {
       return;
     }
@@ -26,7 +26,7 @@ export class IconThemeStore {
     return iconTheme;
   }
 
-  protected async initIconTheme(contribution: ThemeContribution, basePath: URI): Promise<IconThemeData> {
+  protected async initIconTheme(contribution: IThemeContribution, basePath: URI): Promise<IconThemeData> {
     const contributedPath = contribution.path.replace(/^\.\//, '');
     // http 的不作支持
     const themeLocation = basePath.resolve(contributedPath);
