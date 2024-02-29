@@ -4,13 +4,24 @@ import { Deferred, Event, IDisposable, IThemeColor, URI } from '@opensumi/ide-co
 
 import { Color } from './color';
 import { hc_black, hc_light, vs, vs_dark } from './default-themes';
+import { IconContribution, IconDefinition } from './icon-registry';
 
 export const ThemeServicePath = 'themeServicePath';
 
 export const DEFAULT_THEME_ID = 'ide-dark';
+
+export const DEFAULT_PRODUCT_ICON_THEME_ID = 'opensumi-icons';
+export const DEFAULT_PRODUCT_ICON_THEME_LABEL = 'OpenSumi Icons';
+
+export const PRODUCT_ICON_STYLE_ID = 'product-icon-style';
+// codiconStyles 为 monaco 内置样式表
+export const PRODUCT_ICON_CODICON_STYLE_ID = 'codiconStyles';
 // from vscode
 export const colorIdPattern = '^\\w+[.\\w+]*$';
 
+export const IIconService = Symbol('IIconTheme');
+export const IThemeService = Symbol('IThemeService');
+export const IProductIconService = Symbol('IProductIconService');
 export interface IIconTheme {
   hasFileIcons: boolean;
   hasFolderIcons: boolean;
@@ -18,8 +29,27 @@ export interface IIconTheme {
   styleSheetContent: string;
   load(location?: URI): Promise<string>;
 }
+export interface IProductIconTheme {
+  /**
+   * Resolves the definition for the given icon as defined by the theme.
+   *
+   * @param iconContribution The icon
+   */
+  readonly id: string;
+  readonly label: string;
+  readonly extensionData?: ExtensionData;
+  readonly description?: string;
+  readonly settingsId: string | null;
+  styleSheetContent?: string;
+  getIcon(iconContribution: IconContribution): IconDefinition | undefined;
+}
 
-export const IIconService = Symbol('IIconTheme');
+export interface ExtensionData {
+  extensionId: string;
+  extensionPublisher: string;
+  extensionName: string;
+  extensionIsBuiltin: boolean;
+}
 
 export enum IconType {
   Mask = 'mask',
@@ -69,10 +99,6 @@ export interface IIconService {
   ): string | undefined;
   registerIconThemes(iconThemesContribution: IThemeContribution[], extPath: URI): void;
 
-  /**
-   * 注册来自插件的字体图标
-   */
-  registerFontIcons(definitions: FontIconDefinition[], iconFontFamilies: IconFontFamily[]): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
@@ -93,19 +119,6 @@ export const IThemeStore = Symbol('IThemeStore');
 
 export interface IThemeStore {
   getThemeData(contribution?: IThemeContribution, basePath?: URI): Promise<IThemeData>;
-}
-
-export interface FontIconDefinition {
-  id: string;
-  content: string;
-  fontFamily: string;
-}
-
-export interface IconFontFamily {
-  source: string;
-  fontFamily: string;
-  format: string;
-  display: string;
 }
 
 export interface IThemeService {
@@ -130,7 +143,14 @@ export interface IThemeService {
   registerColor(contribution: ExtColorContribution): void;
 }
 
-export const IThemeService = Symbol('IThemeService');
+export interface IProductIconService {
+  currentThemeId: string;
+  currentTheme: IProductIconTheme;
+  onDidProductIconThemeChange: Event<IProductIconTheme>;
+  applyTheme(themeId: string): Promise<void>;
+  registerProductIconThemes(productIconThemesContribution: IThemeContribution[], extPath: URI): void;
+  getAvailableThemeInfos(): IconThemeInfo[];
+}
 
 export interface ITokenColorizationRule {
   name?: string;
@@ -228,6 +248,7 @@ export const HC_LIGHT_THEME_NAME = 'hc-light';
 export interface IThemeContribution {
   id?: string;
   label: string;
+  description?: string;
   // default to be vs
   uiTheme?: BuiltinTheme;
   path: string;

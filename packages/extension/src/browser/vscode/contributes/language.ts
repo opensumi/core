@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { LifeCyclePhase, URI, localize } from '@opensumi/ide-core-common';
+import { IJSONSchema, LifeCyclePhase, URI, localize } from '@opensumi/ide-core-common';
 import { LanguagesContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
@@ -30,7 +30,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   }
 
   // copied from vscode
-  static schema = {
+  static schema: IJSONSchema = {
     allowComments: true,
     allowTrailingCommas: true,
     default: {

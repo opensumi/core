@@ -103,7 +103,10 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
     direction = 'left-to-right',
     resizeKeep = true,
     dynamicTarget,
-  } = React.useMemo(() => splitPanelService.interceptProps.call(splitPanelService, props), [splitPanelService, splitPanelService.interceptProps, props]);
+  } = React.useMemo(
+    () => splitPanelService.interceptProps.call(splitPanelService, props),
+    [splitPanelService, splitPanelService.interceptProps, props],
+  );
 
   const ResizeHandle = Layout.getResizeHandle(direction);
   const childList = React.useMemo(() => React.Children.toArray(children), [children]);

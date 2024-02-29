@@ -30,7 +30,6 @@ export class IconThemeStore {
     const contributedPath = contribution.path.replace(/^\.\//, '');
     // http 的不作支持
     const themeLocation = basePath.resolve(contributedPath);
-
     const iconThemeData = this.injector.get(IconThemeData);
     await iconThemeData.load(themeLocation);
     return iconThemeData;

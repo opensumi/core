@@ -481,7 +481,8 @@ export const localizationBundle = {
     'preference.terminal.integrated.xtermRenderType': 'Xterm Render Type',
     'preference.terminal.integrated.xtermRenderTypeDesc':
       'Choose Xterm render type, Webgl for better performance, Canvas better compatibility',
-    'preference.terminal.integrated.enablePersistentSessionDesc': 'Persist terminal sessions/history for the workspace across window reloads.',
+    'preference.terminal.integrated.enablePersistentSessionDesc':
+      'Persist terminal sessions/history for the workspace across window reloads.',
     'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
@@ -509,7 +510,8 @@ export const localizationBundle = {
     'settings.group.terminal': 'Terminal',
 
     'preference.general.theme': 'Theme',
-    'preference.general.icon': 'Icon Theme',
+    'preference.general.icon': 'File Icon Theme',
+    'preference.general.productIconTheme': 'Product Icon Theme',
     'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
@@ -1053,13 +1055,15 @@ export const localizationBundle = {
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
+    'theme.productIcon.toggle': 'Product Icon Theme',
 
     'theme.base.vs': 'Light Theme',
     'theme.base.vs-dark': 'Dark Theme',
     'theme.base.hc': 'High Contrast Themes',
     'theme.current': 'Current',
     'theme.quickopen.plh': 'Select Color Theme（Up/Down Keys to Preview）',
-    'icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
+    'theme.icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
+    'theme.productIcon.quickopen.plh': 'Select Product Icon Theme（Up/Down Keys to Preview）',
 
     'preference.workbench.list.openMode':
       'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',

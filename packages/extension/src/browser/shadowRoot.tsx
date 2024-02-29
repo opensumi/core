@@ -5,7 +5,14 @@ import ReactDOM from 'react-dom';
 import { ComponentContextProvider, IIconResourceOptions, IconContext } from '@opensumi/ide-components';
 import { DisposableCollection, LabelService, TComponentCDNType, useInjectable } from '@opensumi/ide-core-browser';
 import { ExtensionBrowserStyleSheet, URI, localize } from '@opensumi/ide-core-common';
-import { IIconService, IThemeService, ThemeType, getThemeTypeSelector } from '@opensumi/ide-theme';
+import {
+  IIconService,
+  IProductIconService,
+  IThemeService,
+  PRODUCT_ICON_STYLE_ID,
+  ThemeType,
+  getThemeTypeSelector,
+} from '@opensumi/ide-theme';
 
 import { IExtension } from '../common';
 import { AbstractViewExtProcessService } from '../common/extension.service';
@@ -105,6 +112,7 @@ const ShadowRoot = ({
   const viewExtensionService = useInjectable<AbstractViewExtProcessService>(AbstractViewExtProcessService);
   const themeService = useInjectable<IThemeService>(IThemeService);
   const iconService = useInjectable<IIconService>(IIconService);
+  const productIconService = useInjectable<IProductIconService>(IProductIconService);
   const [themeType, setThemeType] = useState<null | ThemeType>(null);
 
   useEffect(() => {
@@ -130,11 +138,18 @@ const ShadowRoot = ({
         iconStyle.id = 'icon-style';
         iconStyle.innerHTML = iconService.currentTheme?.styleSheetContent;
         newHead.appendChild(iconStyle);
-        disposables.push(
+
+        // 注册 producticon theme
+        const productIconStyle = document.createElement('style');
+        productIconStyle.id = PRODUCT_ICON_STYLE_ID;
+        productIconStyle.innerHTML = productIconService.currentTheme?.styleSheetContent || '';
+        newHead.appendChild(productIconStyle);
+
+        disposables.pushAll([
           iconService.onThemeChange((e) => {
             iconStyle.innerHTML = e.styleSheetContent;
           }),
-        );
+        ]);
         shadowRootElement.appendChild(newHead);
         const portalRoot = viewExtensionService.getPortalShadowRoot(extensionId);
         if (portalRoot) {
