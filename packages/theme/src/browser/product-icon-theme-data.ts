@@ -4,7 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { Logger, ThemeIcon, URI, isString, path } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { ExtensionData, IProductIconTheme, ThemeContribution } from '../common';
+import { ExtensionData, IProductIconTheme, IThemeContribution } from '../common';
 import {
   IconContribution,
   IconDefinition,
@@ -72,7 +72,7 @@ export class ProductIconThemeData implements IProductIconTheme {
   }
 
   static fromExtensionTheme(
-    iconTheme: ThemeContribution,
+    iconTheme: IThemeContribution,
     iconThemeLocation: URI,
     extensionData: ExtensionData,
   ): ProductIconThemeData {

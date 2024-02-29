@@ -24,10 +24,10 @@ import {
   ExtensionData,
   IProductIconService,
   IProductIconTheme,
+  IThemeContribution,
   IconThemeInfo,
   PRODUCT_ICON_CODICON_STYLE_ID,
   PRODUCT_ICON_STYLE_ID,
-  ThemeContribution,
   getThemeId,
 } from '../common';
 import { IconContribution, IconDefinition, IconFontDefinition, getIconRegistry } from '../common/icon-registry';
@@ -80,7 +80,8 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   public currentTheme: IProductIconTheme;
   public productIconThemeLoaded: Deferred<void> = new Deferred<void>();
 
-  private productIconContributionRegistry: Map<string, { contribution: ThemeContribution; basePath?: URI }> = new Map();
+  private productIconContributionRegistry: Map<string, { contribution: IThemeContribution; basePath?: URI }> =
+    new Map();
   private latestApplyTheme: string;
 
   private getIconsStyleSheet: IIconsStyleSheet;
@@ -224,7 +225,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
     return;
   }
 
-  registerProductIconThemes(productIconThemesContribution: ThemeContribution[], basePath: URI): void {
+  registerProductIconThemes(productIconThemesContribution: IThemeContribution[], basePath: URI): void {
     const preferencesProductIcon = this.preferenceService.get<string>(GeneralSettingsId.ProductIconTheme);
     for (const contribution of productIconThemesContribution) {
       const themeId = getThemeId(contribution);

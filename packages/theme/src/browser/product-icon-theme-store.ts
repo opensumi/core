@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 
-import { IProductIconTheme, ThemeContribution, getThemeId } from '../common';
+import { IProductIconTheme, IThemeContribution, getThemeId } from '../common';
 
 import { ProductIconThemeData } from './product-icon-theme-data';
 
@@ -12,7 +12,7 @@ export class ProductIconThemeStore {
 
   private productIconThemeMap: Map<string, IProductIconTheme> = new Map();
 
-  async getProductIconTheme(contribution?: ThemeContribution, basePath?: URI): Promise<IProductIconTheme | undefined> {
+  async getProductIconTheme(contribution?: IThemeContribution, basePath?: URI): Promise<IProductIconTheme | undefined> {
     if (!contribution || !basePath) {
       return;
     }
@@ -27,7 +27,7 @@ export class ProductIconThemeStore {
     return iconTheme;
   }
 
-  protected async initProductIconTheme(contribution: ThemeContribution, basePath: URI): Promise<ProductIconThemeData> {
+  protected async initProductIconTheme(contribution: IThemeContribution, basePath: URI): Promise<ProductIconThemeData> {
     const contributedPath = contribution.path.replace(/^\.\//, '');
     const themeLocation = basePath.resolve(contributedPath);
     const iconThemeData = this.injector.get(ProductIconThemeData, [

@@ -1,11 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { LifeCyclePhase, URI } from '@opensumi/ide-core-common';
-import { IProductIconService, ThemeContribution } from '@opensumi/ide-theme';
+import { IProductIconService, IThemeContribution } from '@opensumi/ide-theme';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
-export type ThemesSchema = Array<ThemeContribution>;
+export type ThemesSchema = Array<IThemeContribution>;
 
 // TODO 需等待 monaco-colors 初始化完成 才能注册
 @Injectable()
