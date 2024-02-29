@@ -148,7 +148,7 @@ export interface IProductIconService {
   currentTheme: IProductIconTheme;
   onDidProductIconThemeChange: Event<IProductIconTheme>;
   applyTheme(themeId: string): Promise<void>;
-  registerProductIconThemes(productIconThemesContribution: ThemeContribution[], extPath: URI): void;
+  registerProductIconThemes(productIconThemesContribution: IThemeContribution[], extPath: URI): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
