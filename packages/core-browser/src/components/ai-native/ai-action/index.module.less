@@ -3,6 +3,18 @@
   align-items: center;
   height: 24px;
   padding: 1px 8px;
+  background-color: var(--kt-modal-background);
+  border-radius: 6px;
+  box-shadow: 0px 9px 28px 8px var(--ai-native-boxShadow-color1), 0px 3px 6px -4px var(--ai-native-boxShadow-color2),
+    0px 6px 16px 0px var(--ai-native-boxShadow-color3);
+  font-size: 12px;
+
+  span {
+    color: var(--ai-native-text-color-normal);
+    &:hover {
+      color: var(--ai-native-text-color-common);
+    }
+  }
 
   .logo-container {
     .avatar {
@@ -25,8 +37,6 @@
   }
 
   .operate-container {
-    color: rgba(255, 255, 255, 0.65);
-    
     .operate-btn {
       padding: 3px 4px;
       border-radius: 4px;

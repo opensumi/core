@@ -6,7 +6,6 @@ import { IAiInlineChatService, useInjectable } from '@opensumi/ide-core-browser'
 import { AIAction, AiInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
-import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
 
 import { AiResponseTips } from '../../common';
 import { Loading } from '../components/Loading';
@@ -173,5 +172,5 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     return <AiInlineOperation hanldeActions={handleClickActions} onClose={onClose} />;
   }, [status]);
 
-  return <ContentWidgetContainerPanel style={translateY}>{renderContent()}</ContentWidgetContainerPanel>;
+  return <div style={translateY}>{renderContent()}</div>;
 };
