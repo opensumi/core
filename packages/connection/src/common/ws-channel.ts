@@ -308,3 +308,18 @@ export function stringify(obj: ChannelMessage): Uint8Array {
 export function parse(input: Uint8Array): ChannelMessage {
   return serializer.deserialize(input) as any;
 }
+
+const _pingMessage: PingMessage = {
+  kind: 'ping',
+  id: '',
+  clientId: '',
+};
+
+const _pongMessage: PongMessage = {
+  kind: 'pong',
+  id: '',
+  clientId: '',
+};
+
+export const pingMessage = stringify(_pingMessage);
+export const pongMessage = stringify(_pongMessage);

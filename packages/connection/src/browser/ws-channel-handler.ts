@@ -3,7 +3,7 @@ import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
 import { ConnectionInfo, WSCloseInfo } from '../common/utils';
-import { WSChannel, parse, stringify } from '../common/ws-channel';
+import { WSChannel, parse, pingMessage } from '../common/ws-channel';
 
 /**
  * Channel Handler in browser
@@ -37,13 +37,7 @@ export class WSChannelHandler {
       clearTimeout(this.heartbeatMessageTimer);
     }
     this.heartbeatMessageTimer = global.setTimeout(() => {
-      this.connection.send(
-        stringify({
-          kind: 'ping',
-          clientId: this.clientId,
-          id: this.clientId,
-        }),
-      );
+      this.connection.send(pingMessage);
       this.heartbeatMessage();
     }, 5000);
   }
@@ -55,22 +49,17 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
-      if (msg.kind === 'pong') {
-        // ignore server2client pong message
-        return;
-      }
-
-      if (!msg.id) {
-        // unknown message
-        this.logger.warn(this.LOG_TAG, 'unknown message', msg);
-        return;
-      }
-
-      const channel = this.channelMap.get(msg.id);
-      if (channel) {
-        channel.dispatchChannelMessage(msg);
-      } else {
-        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+      switch (msg.kind) {
+        case 'pong':
+          break;
+        default: {
+          const channel = this.channelMap.get(msg.id);
+          if (channel) {
+            channel.dispatchChannelMessage(msg);
+          } else {
+            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+          }
+        }
       }
     });
 

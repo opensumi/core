@@ -1,6 +1,6 @@
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
-import { ChannelMessage, WSChannel, parse, stringify } from './ws-channel';
+import { ChannelMessage, WSChannel, parse, pongMessage } from './ws-channel';
 
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
@@ -115,46 +115,45 @@ export abstract class BaseCommonChannelHandler {
   }
 
   receiveConnection(connection: IConnectionShape<Uint8Array>) {
-    connection.onMessage((msg: Uint8Array) => {
-      let msgObj: ChannelMessage;
+    let clientId: string;
+
+    connection.onMessage((data: Uint8Array) => {
+      let msg: ChannelMessage;
       try {
-        msgObj = parse(msg);
+        msg = parse(data);
 
-        if (msgObj.kind === 'ping') {
-          connection.send(
-            stringify({
-              kind: 'pong',
-              id: msgObj.id,
-              clientId,
-            }),
-          );
-        } else if (msgObj.kind === 'open') {
-          const { id, path } = msgObj;
-          clientId = msgObj.clientId;
-          this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
+        switch (msg.kind) {
+          case 'ping':
+            connection.send(pongMessage);
+            break;
+          case 'open': {
+            const { id, path } = msg;
+            clientId = msg.clientId;
+            this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
 
-          this.heartbeat(id, connection);
+            this.heartbeat(id, connection);
 
-          const channel = new WSChannel(connection, { id });
-          this.channelMap.set(id, channel);
+            const channel = new WSChannel(connection, { id });
+            this.channelMap.set(id, channel);
 
-          commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
-          channel.serverReady();
-        } else {
-          const { id } = msgObj;
-          const channel = this.channelMap.get(id);
-          if (channel) {
-            channel.dispatchChannelMessage(msgObj);
-          } else {
-            this.logger.warn(`The channel(${id}) was not found`);
+            commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
+            channel.serverReady();
+            break;
+          }
+          default: {
+            const { id } = msg;
+            const channel = this.channelMap.get(id);
+            if (channel) {
+              channel.dispatchChannelMessage(msg);
+            } else {
+              this.logger.warn(`channel ${id} is not found`);
+            }
           }
         }
       } catch (e) {
         this.logger.error('handle connection message error', e);
       }
     });
-
-    let clientId: string;
 
     connection.onceClose(() => {
       commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
