@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IAiNativeConfig } from '@opensumi/ide-core-common';
+import { IAINativeConfig } from '@opensumi/ide-core-common';
 
 import { ILayoutViewSize } from '../layout/constants';
 
@@ -268,7 +268,7 @@ export interface AppConfig {
   /**
    * AI Native 相关的配置项
    */
-  aiNativeConfig?: IAiNativeConfig;
+  AINativeConfig?: IAINativeConfig;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

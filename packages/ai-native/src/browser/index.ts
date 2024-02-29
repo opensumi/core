@@ -1,12 +1,12 @@
 import { Injectable } from '@opensumi/di';
-import { AiBackSerivcePath, AiBackSerivceToken, BrowserModule } from '@opensumi/ide-core-browser';
+import { AIBackSerivcePath, AIBackSerivceToken, BrowserModule } from '@opensumi/ide-core-browser';
 
 @Injectable()
-export class AiNativeModule extends BrowserModule {
+export class AINativeModule extends BrowserModule {
   backServices = [
     {
-      servicePath: AiBackSerivcePath,
-      token: AiBackSerivceToken,
+      servicePath: AIBackSerivcePath,
+      token: AIBackSerivceToken,
     },
   ];
 }

@@ -4,12 +4,12 @@ import { Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
   CancellationToken,
-  IAiBackService,
-  IAiBackServiceOption,
-  IAiBackServiceResponse,
-  IAiCompletionOption,
-  IAiCompletionResultModel,
-  IAiReportCompletionOption,
+  IAIBackService,
+  IAIBackServiceOption,
+  IAIBackServiceResponse,
+  IAICompletionOption,
+  IAICompletionResultModel,
+  IAIReportCompletionOption,
 } from '@opensumi/ide-core-common';
 
 interface IRPCGptService {
@@ -17,30 +17,30 @@ interface IRPCGptService {
 }
 
 @Injectable()
-export class BaseAiBackService
+export class BaseAIBackService
   extends RPCService<IRPCGptService>
-  implements IAiBackService<IAiBackServiceResponse, Readable>
+  implements IAIBackService<IAIBackServiceResponse, Readable>
 {
-  async request<T = IAiBackServiceResponse<string>>(
+  async request<T = IAIBackServiceResponse<string>>(
     input: string,
-    options: IAiBackServiceOption,
+    options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<T> {
     return void 0 as T;
   }
-  async requestStream<T = IAiBackServiceResponse<string>>(
+  async requestStream<T = IAIBackServiceResponse<string>>(
     input: string,
-    options: IAiBackServiceOption,
+    options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<T> {
     return void 0 as T;
   }
 
-  async requestCompletion<T = IAiCompletionResultModel>(input: IAiCompletionOption, cancelToken?: CancellationToken) {
+  async requestCompletion<T = IAICompletionResultModel>(input: IAICompletionOption, cancelToken?: CancellationToken) {
     return void 0 as T;
   }
 
-  async reportCompletion<T = IAiReportCompletionOption>(input: IAiReportCompletionOption) {}
+  async reportCompletion<T = IAIReportCompletionOption>(input: IAIReportCompletionOption) {}
 
   async destroyStreamRequest(sessionId: string) {}
 }

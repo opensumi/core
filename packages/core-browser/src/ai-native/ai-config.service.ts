@@ -1,17 +1,17 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAiNativeCapabilities } from '@opensumi/ide-core-common';
+import { IAINativeCapabilities } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers/config-provider';
 
 @Injectable({ multiple: false })
-export class AiNativeConfigService {
+export class AINativeConfigService {
   @Autowired(AppConfig)
   public readonly appConfig: AppConfig;
 
-  private config: Required<IAiNativeCapabilities> = {
+  private config: Required<IAINativeCapabilities> = {
     supportsOpenSumiDesign: false,
-    supportsAiMarkers: false,
-    supportsAiChatAssistant: false,
+    supportsMarkers: false,
+    supportsChatAssistant: false,
     supportsInlineChat: false,
     supportsInlineCompletion: false,
     supportsConflictResolve: false,
@@ -33,11 +33,11 @@ export class AiNativeConfigService {
     this.setDefaultCapabilities(false);
   }
 
-  public get capabilities(): Required<IAiNativeCapabilities> {
-    const { aiNativeConfig } = this.appConfig;
+  public get capabilities(): Required<IAINativeCapabilities> {
+    const { AINativeConfig } = this.appConfig;
 
-    if (aiNativeConfig?.capabilities) {
-      return { ...this.config, ...aiNativeConfig.capabilities };
+    if (AINativeConfig?.capabilities) {
+      return { ...this.config, ...AINativeConfig.capabilities };
     }
 
     return this.config;

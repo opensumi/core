@@ -1,6 +1,6 @@
 import { CancellationToken } from '../utils';
 
-export interface IAiNativeCapabilities {
+export interface IAINativeCapabilities {
   /**
    * Use opensumi design UI style
    */
@@ -8,11 +8,11 @@ export interface IAiNativeCapabilities {
   /**
    * Problem panel uses ai capabilities
    */
-  supportsAiMarkers?: boolean;
+  supportsMarkers?: boolean;
   /**
    * Use ai chat capabilities
    */
-  supportsAiChatAssistant?: boolean;
+  supportsChatAssistant?: boolean;
   /**
    * Use inline chat capabilities
    */
@@ -27,33 +27,33 @@ export interface IAiNativeCapabilities {
   supportsConflictResolve?: boolean;
 }
 
-export interface IAiNativeConfig {
-  capabilities?: IAiNativeCapabilities;
+export interface IAINativeConfig {
+  capabilities?: IAINativeCapabilities;
 }
 
-export interface IAiCompletionResultModel {
+export interface IAICompletionResultModel {
   sessionId: string;
   codeModelList: Array<{ content: string }>;
   isCancel?: boolean;
 }
 
-export const AiBackSerivceToken = Symbol('AiBackSerivceToken');
-export const AiBackSerivcePath = 'AiBackSerivcePath';
+export const AIBackSerivceToken = Symbol('AIBackSerivceToken');
+export const AIBackSerivcePath = 'AIBackSerivcePath';
 
-export interface IAiBackServiceResponse<T = string> {
+export interface IAIBackServiceResponse<T = string> {
   errorCode?: number;
   errorMsg?: string;
   isCancel?: boolean;
   data?: T;
 }
 
-export interface IAiBackServiceOption {
+export interface IAIBackServiceOption {
   type?: string;
   model?: string;
   enableGptCache?: boolean;
 }
 
-export interface IAiCompletionOption {
+export interface IAICompletionOption {
   prompt: string;
   suffix?: string;
   language?: string;
@@ -61,7 +61,7 @@ export interface IAiCompletionOption {
   sessionId?: string;
 }
 
-export interface IAiReportCompletionOption {
+export interface IAIReportCompletionOption {
   relationId: string;
   sessionId: string;
   accept: boolean;
@@ -70,25 +70,25 @@ export interface IAiReportCompletionOption {
   renderingTime?: number;
 }
 
-export interface IAiBackService<
-  BaseResponse extends IAiBackServiceResponse = IAiBackServiceResponse,
+export interface IAIBackService<
+  BaseResponse extends IAIBackServiceResponse = IAIBackServiceResponse,
   StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
-  CompletionResponse = IAiCompletionResultModel,
+  CompletionResponse = IAICompletionResultModel,
 > {
-  request<O extends IAiBackServiceOption>(
+  request<O extends IAIBackServiceOption>(
     input: string,
     options: O,
     cancelToken?: CancellationToken,
   ): Promise<BaseResponse>;
-  requestStream<O extends IAiBackServiceOption>(
+  requestStream<O extends IAIBackServiceOption>(
     input: string,
     options: O,
     cancelToken?: CancellationToken,
   ): Promise<StreamResponse>;
-  requestCompletion<I extends IAiCompletionOption>(
+  requestCompletion<I extends IAICompletionOption>(
     input: I,
     cancelToken?: CancellationToken,
   ): Promise<CompletionResponse>;
-  reportCompletion<I extends IAiReportCompletionOption>(input: I): Promise<void>;
+  reportCompletion<I extends IAIReportCompletionOption>(input: I): Promise<void>;
   destroyStreamRequest?: (sessionId: string) => Promise<void>;
 }
