@@ -22,13 +22,12 @@ export const getStorageValue = () => {
 export const DefaultLayout = ToolbarActionBasedLayout;
 
 export function ToolbarActionBasedLayout() {
-  const { colors, layout } = getStorageValue();
+  const { layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={0} slot='top' />
+      <SlotRenderer defaultSize={0} slot='top' />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
-          backgroundColor={colors.sideBarBackground}
           slot='left'
           isTabbar={true}
           // 这里初始状态下会激活左侧第一个 Tab，因此默认宽度应该为侧边栏 (49px)+ 侧边面板宽度 (261px)
@@ -38,18 +37,10 @@ export function ToolbarActionBasedLayout() {
           minSize={49}
         />
         <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
-          <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
-          <SlotRenderer
-            backgroundColor={colors.panelBackground}
-            flex={1}
-            defaultSize={layout.bottom?.size}
-            minResize={160}
-            slot='bottom'
-            isTabbar={true}
-          />
+          <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
+          <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
         </SplitPanel>
         <SlotRenderer
-          backgroundColor={colors.sideBarBackground}
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
@@ -58,7 +49,7 @@ export function ToolbarActionBasedLayout() {
           minSize={0}
         />
       </SplitPanel>
-      <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
+      <SlotRenderer defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
 }
