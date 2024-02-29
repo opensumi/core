@@ -316,9 +316,9 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
 
   public set comments(newComments: CoreComment[] | undefined) {
     if (newComments) {
-      this._thread.comments = newComments.map((comment) => this.convertToIThreadComment(comment));
+      this._thread.updateComments(newComments.map((comment) => this.convertToIThreadComment(comment)));
     } else {
-      this._thread.comments = [];
+      this._thread.updateComments([]);
     }
 
     this._onDidChangeComments.fire(newComments);

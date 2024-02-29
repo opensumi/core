@@ -518,6 +518,11 @@ export interface ICommentsThread extends IDisposable {
    */
   contextKeyService: IContextKeyService;
   /**
+   * 更新当前 thread 的评论列表
+   * @param comments
+   */
+  updateComments(comments: IComment[]): void;
+  /**
    * 添加评论
    * @param comment
    */

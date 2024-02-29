@@ -1,4 +1,4 @@
-import { autorun, computed, makeObservable, observable } from 'mobx';
+import { action, autorun, computed, makeObservable, observable } from 'mobx';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable, Emitter, IContextKeyService, IRange, URI, localize, uuid } from '@opensumi/ide-core-browser';
@@ -32,9 +32,8 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  // FIXME: update by https://github.com/opensumi/core/blob/82ab63b916c8fe90cf5898d55c0fe335dd852b91/packages/extension/src/browser/vscode/api/main.thread.comments.ts#L319
-  @observable
-  public comments: IThreadComment[];
+  @observable.shallow
+  public comments: IThreadComment[] = [];
 
   @observable
   public label: string | undefined;
@@ -127,6 +126,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     });
     this.onDidChangeEmitter.fire();
   }
+
+  @action
+  updateComments(comments: IThreadComment[]) {
+    this.comments = comments;
+  }
+
   getWidgetByEditor(editor: IEditor): ICommentsZoneWidget | undefined {
     return this.widgets.get(editor);
   }
