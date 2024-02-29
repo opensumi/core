@@ -1,4 +1,3 @@
-export * from './env';
 export * from './electron';
 export * from './react-hooks';
 export * from './icon';

@@ -1587,7 +1587,7 @@ export namespace InlayHint {
 export namespace InlayHintLabelPart {
   export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
     const result = new types.InlayHintLabelPart(part.label);
-    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : part.tooltip;
+    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : (part.tooltip as string);
     if (languages.Command.is(part.command)) {
       result.command = converter.fromInternal(part.command);
     }

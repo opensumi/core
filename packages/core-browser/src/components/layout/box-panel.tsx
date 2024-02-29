@@ -3,6 +3,7 @@ import React from 'react';
 
 import { useInjectable } from '../../react-hooks';
 import { AppConfig } from '../../react-providers';
+import { useDesignStyles } from '../../utils';
 
 import { Layout } from './layout';
 import styles from './styles.module.less';
@@ -60,6 +61,7 @@ export const BoxPanel: React.FC<{
   // convert children to list
   const arrayChildren = React.Children.toArray(children) as ChildComponent[];
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const styles_box_panel = useDesignStyles(styles['box-panel']);
 
   return (
     <div
@@ -69,7 +71,7 @@ export const BoxPanel: React.FC<{
         }
       }}
       {...restProps}
-      className={cls(styles['box-panel'], className)}
+      className={cls(styles_box_panel, className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}
     >
       {arrayChildren.map((child, index) => (

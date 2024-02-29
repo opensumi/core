@@ -67,7 +67,7 @@ import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/s
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import { IThemeService, IIconService } from '@opensumi/ide-theme/lib/common';
+import { IThemeService, IIconService, IThemeData, IThemeStore } from '@opensumi/ide-theme/lib/common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -106,6 +106,8 @@ import {
   AbstractWorkerExtProcessService,
 } from '../../../src/common/extension.service';
 import { MockExtensionStorageService } from '../../hosted/__mocks__/extensionStorageService';
+import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
+import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 const mockExtensionProps: IExtensionProps = {
   name: 'sumi-extension',
@@ -568,6 +570,14 @@ export function setupExtensionServiceInjector() {
     {
       token: WalkthroughsService,
       useClass: WalkthroughsService,
+    },
+    {
+      token: IThemeData,
+      useClass: ThemeData,
+    },
+    {
+      token: IThemeStore,
+      useClass: ThemeStore,
     },
     BrowserRequireInterceptorContribution,
   );

@@ -1,13 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 import { ILogger, LifeCyclePhase, URI, localize, path } from '@opensumi/ide-core-common';
-import { IIconService, ThemeContribution } from '@opensumi/ide-theme';
+import { IIconService, IThemeContribution } from '@opensumi/ide-theme';
 import { getIconRegistry } from '@opensumi/ide-theme/lib/common/icon-registry';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
-export type ThemesSchema = Array<ThemeContribution>;
+export type ThemesSchema = Array<IThemeContribution>;
 
 @Injectable()
 @Contributes('iconThemes')

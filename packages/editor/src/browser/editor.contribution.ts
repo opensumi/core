@@ -42,7 +42,6 @@ import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
-import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -218,9 +217,6 @@ export class EditorContribution
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
-
-  @Autowired(IElectronMainUIService)
-  private readonly electronMainUIService: IElectronMainUIService;
 
   registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);

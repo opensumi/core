@@ -16,8 +16,10 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { registerTerminalColors } from '@opensumi/ide-terminal-next/lib/browser/terminal.color';
-import { Color, IThemeService, RGBA } from '@opensumi/ide-theme';
+import { Color, IThemeData, IThemeService, IThemeStore, RGBA } from '@opensumi/ide-theme';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
+import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
+import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
@@ -58,6 +60,14 @@ describe('Debug - ANSI escape sequence', () => {
       {
         token: ISemanticTokenRegistry,
         useClass: SemanticTokenRegistryImpl,
+      },
+      {
+        token: IThemeData,
+        useClass: ThemeData,
+      },
+      {
+        token: IThemeStore,
+        useClass: ThemeStore,
       },
     ]),
   );

@@ -6,7 +6,7 @@ export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
 export interface IPreferenceSettingsService {
   tabList: PreferenceScopeWithLabel[];
 
-  setPreference(key: string, value: any, scope: PreferenceScope);
+  setPreference(key: string, value: any, scope: PreferenceScope): void;
 
   getSettingGroups(scope: PreferenceScope, search?: string): ISettingGroup[];
 

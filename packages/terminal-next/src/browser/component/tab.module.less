@@ -48,7 +48,7 @@
   align-items: center;
   position: relative;
   max-width: 200px;
-  .close_icon {
+  .tab_close_icon {
     transition: opacity 0.2s ease-in-out;
     opacity: 0;
     border-right: 0;
@@ -66,7 +66,7 @@
 }
 
 .item_container:hover {
-  .close_icon {
+  .tab_close_icon {
     opacity: 1;
     color: var(--tab-activeForeground);
   }
@@ -102,7 +102,7 @@
   background-color: inherit;
 }
 
-.item_selected {
+.tab_item_selected {
   color: var(--kt-panelTab-activeForeground);
   background-color: var(--kt-panelTab-activeBackground);
   position: relative;
@@ -128,7 +128,7 @@
   }
 }
 
-.item_wrapper {
+.tab_item_wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,7 +165,7 @@
   }
 }
 
-.close_icon {
+.tab_close_icon {
   &::before {
     font-size: 14px;
   }

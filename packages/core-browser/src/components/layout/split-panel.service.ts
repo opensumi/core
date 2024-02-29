@@ -1,10 +1,32 @@
+import React from 'react';
+
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, IDisposable } from '@opensumi/ide-core-common';
+
+import { SplitPanelProps } from './split-panel';
+
+export const ISplitPanelService = Symbol('ISplitPanelService');
+export interface ISplitPanelService extends IDisposable {
+  panels: HTMLElement[];
+  rootNode: HTMLElement | undefined;
+  isVisible: boolean;
+  getFirstResizablePanel(index: number, direction: boolean, isPrev?: boolean): HTMLElement | undefined;
+  renderSplitPanel(
+    component: React.JSX.Element,
+    children: React.ReactNode[],
+    props: SplitPanelProps,
+  ): React.ReactElement;
+  interceptProps(props: SplitPanelProps): SplitPanelProps;
+  setRootNode(node: HTMLElement): void;
+  whenReady: Promise<void>;
+}
 
 @Injectable({ multiple: true })
-export class SplitPanelService {
+export class SplitPanelService extends Disposable implements ISplitPanelService {
   private static MIN_SIZE = 120;
-  constructor(public panelId: string) {}
+  constructor(protected readonly panelId: string) {
+    super();
+  }
 
   private _whenReadyDeferred: Deferred<void> = new Deferred();
 
@@ -48,6 +70,14 @@ export class SplitPanelService {
       }
     }
   }
+
+  public renderSplitPanel(component: React.JSX.Element, children: React.ReactNode[], props: SplitPanelProps) {
+    return React.cloneElement(component, { ...props, ...component.props }, children);
+  }
+
+  public interceptProps(props: SplitPanelProps): SplitPanelProps {
+    return props;
+  }
 }
 
 @Injectable()
@@ -55,14 +85,14 @@ export class SplitPanelManager {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  services: Map<string, SplitPanelService> = new Map();
+  services: Map<string, ISplitPanelService> = new Map();
 
   getService(panelId: string) {
     let service = this.services.get(panelId);
     if (!service) {
-      service = this.injector.get(SplitPanelService, [panelId]);
-      this.services.set(panelId, service);
+      service = this.injector.get(ISplitPanelService, [panelId]);
+      this.services.set(panelId, service!);
     }
-    return service;
+    return service!;
   }
 }

@@ -1,6 +1,6 @@
 import { isOSX, isWindows } from '@opensumi/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@opensumi/ide-debug';
-import * as path from '@opensumi/ide-utils/lib/path';
+import { join } from '@opensumi/ide-utils/lib/path';
 
 import { DebugAdapterExecutable } from '../../../../common/vscode/ext-types';
 
@@ -15,11 +15,11 @@ export async function resolveDebugAdapterExecutable(
   if (!program) {
     return undefined;
   }
-  program = path.join(pluginPath, program);
+  program = join(pluginPath, program);
   const programArgs = (info && info.args) || debuggerContribution.args || [];
   let runtime = (info && info.runtime) || debuggerContribution.runtime;
   if (runtime && runtime.indexOf('./') === 0) {
-    runtime = path.join(pluginPath, runtime);
+    runtime = join(pluginPath, runtime);
   }
   const runtimeArgs = (info && info.runtimeArgs) || debuggerContribution.runtimeArgs || [];
   const command = runtime ? runtime : program;

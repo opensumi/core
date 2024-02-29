@@ -33,7 +33,11 @@ describe('connection browser', () => {
       });
     });
 
-    const wsChannelHandler = new WSChannelHandler(ReconnectingWebSocketConnection.forURL(fakeWSURL), console);
+    const wsChannelHandler = new WSChannelHandler(
+      ReconnectingWebSocketConnection.forURL(fakeWSURL),
+      console,
+      'test-client-id',
+    );
 
     await wsChannelHandler.initHandler();
     await new Promise<void>((resolve) => {

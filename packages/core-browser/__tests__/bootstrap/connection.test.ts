@@ -30,7 +30,13 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
       done();
     });
     stateService = injector.get(ClientAppStateService);
-    createConnectionService(injector, [], () => {}, ReconnectingWebSocketConnection.forURL(fakeWSURL));
+    createConnectionService(
+      injector,
+      [],
+      () => {},
+      ReconnectingWebSocketConnection.forURL(fakeWSURL),
+      'test-client-id',
+    );
     stateService.state = 'core_module_initialized';
     new Promise<void>((resolve) => {
       setTimeout(() => {

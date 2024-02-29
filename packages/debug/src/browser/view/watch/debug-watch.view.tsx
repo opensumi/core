@@ -13,7 +13,14 @@ import {
   TreeModel,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { Disposable, DisposableCollection, ViewState, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  Disposable,
+  DisposableCollection,
+  ViewState,
+  getIcon,
+  useDesignStyles,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 
 import {
   DebugVariable,
@@ -187,6 +194,8 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   onContextMenu,
   itemType,
 }: IDebugWatchNodeRenderedProps) => {
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
@@ -281,7 +290,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_watch_node_segment, styles.expansion_toggle)}>
+        <div className={cls(styles.debug_watch_node_segment, styles_expansion_toggle)}>
           <Loading />
         </div>
       );
@@ -289,7 +298,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_watch_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={cls(styles.debug_watch_node_segment, styles_expansion_toggle, getIcon('right'), {
           [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
         })}
       />

@@ -157,6 +157,9 @@
       "path": "./references/tsconfig.testing.json"
     },
     {
+      "path": "./references/tsconfig.design.json"
+    },
+    {
       "path": "./references/tsconfig.extension.json"
     },
     {

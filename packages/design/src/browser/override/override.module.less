@@ -1,0 +1,135 @@
+.design-editor_tab_block_container {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  border-radius: 12px 12px 0 0;
+  padding: 0 8px;
+  margin-right: 0 !important;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 12px;
+    display: inline-block;
+    width: 1px;
+    height: 12px;
+    background-color: var(--editorGroup-border);
+  }
+
+  > div:first-child {
+    margin-right: 4px !important;
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    &::before {
+      font-size: 14px;
+      background-size: 14px;
+      background-position: 2px;
+      filter: grayscale(1);
+      color: var(--design-icon-color);
+    }
+  }
+
+  &.active {
+    background-color: var(--panel-background);
+    color: var(--tab-activeForeground);
+
+    &::after {
+      content: none;
+    }
+
+    div:first-child {
+      &::before {
+        filter: grayscale(0);
+      }
+    }
+  }
+}
+
+.menuAction__sub_menu_action_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  user-select: none;
+  padding-left: 12px;
+  padding-right: 12px;
+  min-width: 150px;
+
+  .icon {
+    filter: grayscale(1);
+
+    span {
+      margin-right: 8px;
+    }
+  }
+
+  .extraDesc,
+  .shortcut {
+    justify-content: right;
+    text-align: center;
+    color: var(--kt-menu-descriptionForeground);
+    font-size: 12px;
+  }
+
+  .icon,
+  .submenuIcon {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    :global(.kt-icon) {
+      color: var(--design-text-color-normal);
+    }
+  }
+
+  .label {
+    flex: 1;
+    padding-right: 16px;
+  }
+
+  &.disabled {
+    .shortcut {
+      color: var(--kt-menu-disableForeground);
+    }
+  }
+
+  &:not(.disabled):hover {
+    .shortcut {
+      color: var(--menu-selectionForeground);
+    }
+  }
+
+  &:focus {
+    .shortcut {
+      color: var(--menu-selectionForeground);
+    }
+  }
+
+  .label {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    // stop Flexbox removing trailing whitespace
+    // see https://www.mattstobbs.com/flexbox-removing-trailing-whitespace/
+    white-space: pre-wrap;
+  }
+
+  .submenuIcon {
+    span {
+      font-size: 16px;
+    }
+  }
+}
+
+:global(.design-light) {
+  .editor_tab_block_container {
+    > div:first-child {
+      &::before {
+        filter: grayscale(0);
+      }
+    }
+  }
+}

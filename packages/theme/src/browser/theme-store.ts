@@ -1,13 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { URI, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { ThemeContribution, getThemeId } from '../common/theme.service';
+import { IThemeStore } from '../common/';
+import { IThemeContribution, IThemeData, getThemeId } from '../common/theme.service';
 
-import defaultTheme from './default-theme';
 import { ThemeData } from './theme-data';
 
 @Injectable()
-export class ThemeStore {
+export class ThemeStore implements IThemeStore {
   static STORE_THEME_DATA_KEY = 'latestTheme';
 
   private themes: {
@@ -17,7 +17,7 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  protected async initTheme(contribution: ThemeContribution, extPath: URI): Promise<ThemeData> {
+  protected async initTheme(contribution: IThemeContribution, extPath: URI): Promise<ThemeData> {
     const themePath = contribution.path.replace(/^\.\//, '');
     const themeLocation = extPath.resolve(themePath);
     const themeName = contribution.label;
@@ -28,22 +28,22 @@ export class ThemeStore {
   }
 
   private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: URI) {
-    let themeData = this.themes[id];
+    let themeData = this.getTheme(id);
     if (!themeData) {
-      themeData = this.injector.get(ThemeData);
+      themeData = this.injector.get(IThemeData);
       await themeData.initializeThemeData(id, themeName, themeBase, themeLocation);
       this.themes[id] = themeData;
     }
   }
 
-  loadDefaultTheme() {
+  loadDefaultTheme(): IThemeData {
     getDebugLogger().warn('The default theme extension is not detected, and the default theme style is used.');
-    const theme = this.injector.get(ThemeData);
-    theme.initializeFromData(defaultTheme);
+    const theme = this.injector.get(IThemeData);
+    theme.initializeFromData(theme.getDefaultTheme());
     return theme;
   }
 
-  private async tryLoadLatestTheme() {
+  public async tryLoadLatestTheme() {
     // 尝试使用最近一次缓存的主题信息进行加载
     const themeData = this.getLatestThemeData();
     if (themeData) {
@@ -59,7 +59,7 @@ export class ThemeStore {
     return this.loadDefaultTheme();
   }
 
-  private storeLatestThemeData(contribution?: ThemeContribution, basePath?: URI) {
+  private storeLatestThemeData(contribution?: IThemeContribution, basePath?: URI) {
     localStorage.setItem(
       ThemeStore.STORE_THEME_DATA_KEY,
       JSON.stringify({ contribution, basePath: basePath?.toString() }),
@@ -73,13 +73,17 @@ export class ThemeStore {
     }
   }
 
-  public async getThemeData(contribution?: ThemeContribution, basePath?: URI): Promise<ThemeData> {
+  public getTheme(id: string): ThemeData {
+    return this.themes[id];
+  }
+
+  public async getThemeData(contribution?: IThemeContribution, basePath?: URI): Promise<IThemeData> {
     // 测试情况下传入的contribution为空，尝试加载上次缓存的最新主题
     if (!contribution || !basePath) {
       return await this.tryLoadLatestTheme();
     }
     const id = getThemeId(contribution);
-    if (!this.themes[id]) {
+    if (!this.getTheme(id)) {
       const theme = await this.initTheme(contribution, basePath);
       if (theme) {
         // 正常加载主题
@@ -90,6 +94,6 @@ export class ThemeStore {
       return this.loadDefaultTheme();
     }
     // 主题有缓存
-    return this.themes[id];
+    return this.getTheme(id);
   }
 }

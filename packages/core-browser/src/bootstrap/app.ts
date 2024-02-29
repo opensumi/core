@@ -6,7 +6,6 @@ import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
-import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
@@ -34,9 +33,7 @@ import {
   asExtensionCandidate,
   createContributionProvider,
   getDebugLogger,
-  isElectronRenderer,
   isOSX,
-  isUndefined,
   setLanguageId,
 } from '@opensumi/ide-core-common';
 import {
@@ -48,6 +45,11 @@ import {
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
 import { ClientAppStateService } from '../application';
+import { ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
+import { ESupportRuntime } from '../application/runtime';
+import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
+import { BrowserRuntime } from '../application/runtime/browser';
+import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
@@ -68,13 +70,14 @@ import {
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_CODICONS_CN_CSS, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import { createNetSocketConnection, electronEnv } from '../utils';
+import { electronEnv } from '../utils';
 
 import { IClientAppOpts, IPreferences, IconInfo, IconMap, LayoutConfig, ModuleConstructor } from './app.interface';
 import { IAppRenderer, renderClientApp } from './app.view';
-import { bindConnectionService, createConnectionService } from './connection';
+import { bindConnectionServiceDeprecated, createConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
-import { injectElectronInnerProviders } from './inner-providers-electron';
+
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 // 添加resize observer polyfill
 if (typeof (window as any).ResizeObserver === 'undefined') {
@@ -93,19 +96,18 @@ export class ClientApp implements IClientApp, IDisposable {
 
   private logger: ILogServiceClient;
   private connectionPath: UrlProvider;
-  private connectionProtocols?: string[];
   private keybindingRegistry: KeybindingRegistry;
   private keybindingService: KeybindingService;
   private modules: ModuleConstructor[];
   private contributionsProvider: ContributionProvider<ClientAppContribution>;
   private nextMenuRegistry: MenuRegistryImpl;
   private stateService: ClientAppStateService;
+  runtime: ElectronRendererRuntime | BrowserRuntime;
 
-  constructor(opts: IClientAppOpts) {
+  constructor(protected opts: IClientAppOpts) {
     const {
       modules,
       connectionPath,
-      connectionProtocols,
       iconStyleSheets,
       useCdnIcon,
       editorBackgroundImage,
@@ -122,19 +124,21 @@ export class ClientApp implements IClientApp, IDisposable {
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
-    const isDesktop = opts.isElectronRenderer ?? isElectronRenderer();
+    const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
+
+    this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime();
+
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
       appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
-      appRoot: isUndefined(opts.appRoot) ? (isDesktop ? electronEnv.appPath : '') : opts.appRoot,
+      appRoot: opts.appRoot || '',
       uriScheme: DEFAULT_URI_SCHEME,
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
       // 一些转换和 typo 修复
       isElectronRenderer: isDesktop,
       workspaceDir: opts.workspaceDir || '',
-      extensionDir:
-        opts.extensionDir || (opts.isElectronRenderer || isDesktop ? electronEnv.metadata?.extensionDir : ''),
+      extensionDir: opts.extensionDir || '',
       injector: this.injector,
       wsPath: opts.wsPath || `ws://${window.location.hostname}:8000`,
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -151,10 +155,6 @@ export class ClientApp implements IClientApp, IDisposable {
       window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
     }
 
-    if (this.config.isElectronRenderer && electronEnv.metadata?.extensionDevelopmentHost) {
-      this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;
-    }
-
     if (opts.extensionDevelopmentPath) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
         Array.isArray(opts.extensionDevelopmentPath)
@@ -162,18 +162,12 @@ export class ClientApp implements IClientApp, IDisposable {
           : [asExtensionCandidate(opts.extensionDevelopmentPath, true)],
       );
 
-      this.config.extensionDevelopmentHost = !!opts.extensionDevelopmentPath;
+      this.config.extensionDevelopmentHost = true;
     }
 
-    // 旧方案兼容, 把 `electron.metadata.extensionCandidate` 提前注入 `AppConfig` 的对应配置中
-    if (this.config.isElectronRenderer && electronEnv.metadata?.extensionCandidate) {
-      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
-        electronEnv.metadata.extensionCandidate || [],
-      );
-    }
+    this.config = this.runtime.mergeAppConfig(this.config);
 
     this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
-    this.connectionProtocols = connectionProtocols;
     this.initBaseProvider();
     this.initFields();
     this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);
@@ -209,16 +203,24 @@ export class ClientApp implements IClientApp, IDisposable {
    */
   public async start(
     container: HTMLElement | IAppRenderer,
-    type?: 'electron' | 'web',
-    channel?: WSChannel,
+    type?: ESupportRuntime | `${ESupportRuntime}`,
+    connection?: MessageConnection,
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
-    if (channel) {
-      await bindConnectionService(this.injector, this.modules, channel);
+    if (connection) {
+      // do not allow user use deprecated method start() with connection parameter
+      // because we all use `WSChannelHandler` to create connection
+      // WSChannelHandler hasn't supported user's custom connection.
+
+      // eslint-disable-next-line no-console
+      console.error("You're using deprecated method 'start()' with connection parameter");
+      // eslint-disable-next-line no-console
+      console.error('We introduced a new connection service to replace the old one');
+      bindConnectionServiceDeprecated(this.injector, this.modules, connection);
     } else if (type) {
       await this.createConnection(type);
     }
@@ -240,17 +242,37 @@ export class ClientApp implements IClientApp, IDisposable {
     measureReporter.timeEnd('Framework.ready');
   }
 
-  protected async createConnection(type: 'electron' | 'web') {
-    let connection: ReconnectingWebSocketConnection | NetSocketConnection;
-    let clientId: string | undefined = this.config.clientId;
-    if (type === 'electron') {
-      connection = createNetSocketConnection();
-      clientId = this.config.clientId ?? electronEnv.metadata.windowClientId;
-    } else if (type === 'web') {
-      connection = ReconnectingWebSocketConnection.forURL(this.connectionPath, this.connectionProtocols);
-    } else {
-      throw new Error(`Unknown connection type: ${type}`);
+  protected async createConnection(type: `${ESupportRuntime}`) {
+    let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
+
+    switch (type) {
+      case ESupportRuntime.Electron:
+        connectionHelper = this.injector.get(ElectronConnectionHelper, [
+          {
+            clientId: this.config.clientId,
+          },
+        ]);
+        break;
+      case ESupportRuntime.Web:
+        connectionHelper = this.injector.get(WebConnectionHelper, [
+          {
+            clientId: this.config.clientId,
+            connectionPath: this.connectionPath,
+            connectionProtocols: this.opts.connectionProtocols,
+          },
+        ]);
+        break;
+      default:
+        throw new Error(`Unknown backend type: ${type}`);
     }
+
+    this.injector.addProviders({
+      token: CONNECTION_HELPER_TOKEN,
+      useValue: connectionHelper,
+    });
+
+    const connection: ReconnectingWebSocketConnection | NetSocketConnection = connectionHelper.createConnection();
+    const clientId: string = this.config.clientId ?? connectionHelper.getDefaultClientId();
 
     await createConnectionService(
       this.injector,
@@ -292,9 +314,8 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
-    if (this.config.isElectronRenderer) {
-      injectElectronInnerProviders(this.injector);
-    }
+
+    this.runtime.registerRuntimeInnerProviders(this.injector);
   }
 
   private initFields() {
@@ -317,13 +338,7 @@ export class ClientApp implements IClientApp, IDisposable {
         this.injector.addProviders(...instance.providers);
       }
 
-      if (this.config.isElectronRenderer && instance.electronProviders) {
-        this.injector.addProviders(...instance.electronProviders);
-      }
-
-      if (!this.config.isElectronRenderer && instance.webProviders) {
-        this.injector.addProviders(...instance.webProviders);
-      }
+      this.runtime.registerRuntimeModuleProviders(this.injector, instance);
 
       if (instance.preferences) {
         instance.preferences(this.injector);
@@ -705,4 +720,18 @@ export class ClientApp implements IClientApp, IDisposable {
   private _handleWheel = () => {
     // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
   };
+
+  protected detectRuntime() {
+    const global = window as any;
+    if (
+      global.isElectronRenderer ||
+      (typeof navigator === 'object' &&
+        typeof navigator.userAgent === 'string' &&
+        navigator.userAgent.indexOf('Electron') >= 0)
+    ) {
+      return ESupportRuntime.Electron;
+    }
+
+    return ESupportRuntime.Web;
+  }
 }

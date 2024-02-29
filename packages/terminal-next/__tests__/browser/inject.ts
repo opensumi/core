@@ -202,7 +202,7 @@ export const injector = new MockInjector([
   {
     token: WSChannelHandler,
     useValue: {
-      clientId: 'W_LwPKkmhQA', // fake clientId for test case
+      clientId: 'test-window-client-id', // fake clientId for test case
     },
   },
   {
