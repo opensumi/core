@@ -167,6 +167,19 @@
   match {
     background-color: var(--editor-findMatchHighlightBackground);
   }
+
+  // ai
+  .ai_action {
+    display: none;
+    position: absolute;
+    right: 16px;
+  }
+
+  &:hover {
+    .ai_action {
+      display: block;
+    }
+  }
 }
 
 .debug_console_node_status {
@@ -369,9 +382,4 @@
     font-size: smaller;
     line-height: normal;
   }
-}
-
-// ai
-.ai_popover {
-  padding: 0 !important;
 }

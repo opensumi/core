@@ -11,8 +11,6 @@ import {
   INodeRendererProps,
   CompositeTreeNode,
   TreeNode,
-  Popover,
-  PopoverPosition,
 } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
 import { useInjectable, ViewState, getIcon, PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
@@ -257,6 +255,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
   const [computedStyle, setComputedStyle] = React.useState<string>();
+  const contentEl = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     const computed = window.getComputedStyle(
@@ -443,6 +442,21 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     }
   };
 
+  const renderAIAction = (item) => {
+    if (item.aiAction) {
+      const height = contentEl.current?.offsetHeight;
+      const positionStyle = height && height > 24 ? { top: 4 } : { bottom: 4 };
+
+      return (
+        <div className={styles.ai_action} style={positionStyle}>
+          {item.aiAction}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div
       key={item.id}
@@ -455,28 +469,20 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       }}
       data-id={item.id}
     >
-      <div className={cls(styles.debug_console_node_content)}>
+      <div className={cls(styles.debug_console_node_content)} ref={contentEl}>
         {renderTwice(item)}
-        <Popover
-          id={item.id}
-          content={item.aiAction}
-          style={{ flex: 1, justifyContent: 'flex-start' }}
-          disable={!item.aiAction}
-          position={PopoverPosition.left}
-          popoverClass={styles.ai_popover}
+        <div
+          className={styles.debug_console_node_overflow_wrap}
+          style={{
+            whiteSpace: isWordWrap ? 'pre-wrap' : 'nowrap',
+            cursor: item instanceof DebugVariableContainer ? 'pointer' : 'initial',
+          }}
         >
-          <div
-            className={styles.debug_console_node_overflow_wrap}
-            style={{
-              whiteSpace: isWordWrap ? 'pre-wrap' : 'nowrap',
-              cursor: item instanceof DebugVariableContainer ? 'pointer' : 'initial',
-            }}
-          >
-            {renderDisplayName(item)}
-            {renderDescription(item)}
-          </div>
-        </Popover>
+          {renderDisplayName(item)}
+          {renderDescription(item)}
+        </div>
         {renderStatusTail()}
+        {renderAIAction(item)}
       </div>
       <div className={styles.debug_console_selection}>{filterMode === 'matcher' && renderSelectionFilter()}</div>
     </div>
