@@ -1,6 +1,5 @@
-import { action, computed, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
+import { EventEmitter } from '@opensumi/events';
 import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
 import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
@@ -21,6 +20,7 @@ import {
   PreferenceProviderProvider,
   PreferenceSchemaProvider,
   PreferenceScope,
+  PreferenceScopeWithLabel,
   PreferenceService,
   TerminalSettingsId,
   UserScope,
@@ -73,36 +73,41 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
-  private onSettingsGroupsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
-  public readonly onSettingsGroupsChange: Event<void> = this.onSettingsGroupsChangeEmitter.event;
+  emitter = this.registerDispose(
+    new EventEmitter<{
+      currentSearchChange: [void];
+      settingsGroupsChange: [void];
+      currentSelectIdChange: [string];
+      tabListChange: [void];
+      tabIndexChange: [];
+      currentScopeChange: [];
+      settingsSectionsChange: [groupId: string];
+    }>(),
+  );
 
-  @observable
-  public currentSearch = '';
-
-  @observable
-  currentSelectId = '';
-
-  @observable
-  private userBeforeWorkspace = false;
-
-  @observable
+  currentSearch = '';
   tabIndex = 0;
+  tabList = [WorkspaceScope, UserScope] as PreferenceScopeWithLabel[];
 
-  @computed
-  get tabList() {
-    return this.userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
-  }
+  protected _currentScope: PreferenceScopeWithLabel = this.tabList[0];
 
-  @computed
   get currentScope() {
-    const scope = this.tabList[this.tabIndex];
-    return scope.id;
+    return this._currentScope.id;
   }
 
-  @observable
+  protected _currentSelectId = '';
+
+  get currentSelectId() {
+    return this._currentSelectId;
+  }
+
+  set currentSelectId(id: string) {
+    this._currentSelectId = id;
+    this.emitter.emit('currentSelectIdChange', id);
+  }
+
   settingsGroups: ISettingGroup[] = [];
 
-  @observable
   settingsSections: Map<string, ISettingSection[]> = new Map();
   private settingsSectionsVersioned: Versionizer<string> = new Versionizer();
 
@@ -116,7 +121,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   constructor() {
     super();
-    makeObservable(this);
     this.setEnumLabels(
       'general.language',
       new Proxy(
@@ -131,42 +135,71 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       '\r\n': 'CRLF',
       auto: 'auto',
     });
-    this.userBeforeWorkspace = this.preferenceService.get<boolean>('settings.userBeforeWorkspace', false);
 
-    this.registerDispose(
+    const userBeforeWorkspace = this.preferenceService.get<boolean>('settings.userBeforeWorkspace', false);
+    if (userBeforeWorkspace) {
+      this.updateTabList(userBeforeWorkspace);
+    }
+
+    this.addDispose([
       this.preferenceService.onSpecificPreferenceChange('settings.userBeforeWorkspace', (e) => {
-        this.userBeforeWorkspace = e.newValue;
+        this.updateTabList(e.newValue);
       }),
-    );
+      this.emitter.on('tabListChange', () => {
+        this.updateCurrentScope();
+      }),
+      this.emitter.on('tabIndexChange', () => {
+        this.updateCurrentScope();
+      }),
+    ]);
   }
 
-  @action
+  updateTabList(userBeforeWorkspace: boolean) {
+    let tabList: PreferenceScopeWithLabel[];
+    if (userBeforeWorkspace) {
+      tabList = [UserScope, WorkspaceScope];
+    } else {
+      tabList = [WorkspaceScope, UserScope];
+    }
+
+    this.tabList = tabList;
+    this.emitter.emit('tabListChange');
+  }
+
+  protected updateCurrentScope() {
+    this._currentScope = this.tabList[this.tabIndex];
+    this.emitter.emit('currentScopeChange');
+  }
+
   scrollToGroup(groupId: string): void {
     if (groupId) {
       this.currentSelectId = ESectionItemKind.Group + groupId;
     }
   }
-  @action
+
   scrollToSection(section: string): void {
     if (section) {
       this.currentSelectId = ESectionItemKind.Section + section;
     }
   }
-  @action
+
   scrollToPreference(preferenceId: string): void {
     if (preferenceId) {
       this.currentSelectId = ESectionItemKind.Preference + preferenceId;
     }
   }
 
-  @action.bound
+  updateTabIndex(index: number) {
+    this.tabIndex = index;
+    this.emitter.emit('tabIndexChange');
+  }
+
   selectScope(scope: PreferenceScope) {
-    // 利用副作用强制刷新一下
     let index = this.tabList.findIndex((v) => v.id === scope);
     if (index === -1) {
       index = 0;
     }
-    this.tabIndex = index;
+    this.updateTabIndex(index);
   }
 
   onDidEnumLabelsChange(id: string) {
@@ -186,13 +219,14 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     return Array.isArray(v.hiddenInScope) && v.hiddenInScope.includes(scope);
   }
 
-  @action
   private doSearch(value?: string) {
     if (value) {
       this.currentSearch = value;
     } else {
       this.currentSearch = '';
     }
+
+    this.emitter.emit('currentSearchChange');
   }
 
   openJSON = (scope: PreferenceScope, preferenceId: string) => {
@@ -254,10 +288,10 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       ...group,
       title: replaceLocalizePlaceholder(group.title) || group.title,
     });
-    this.onSettingsGroupsChangeEmitter.fire();
+    this.emitter.emit('settingsGroupsChange');
     return Disposable.create(() => {
       disposable.dispose();
-      this.onSettingsGroupsChangeEmitter.fire();
+      this.emitter.emit('settingsGroupsChange');
     });
   }
 
@@ -273,10 +307,12 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     this.cachedGroupSection.clear();
     const disposable = addElement(this.settingsSections.get(groupId)!, section);
     this.settingsSectionsVersioned.increase(groupId);
+    this.emitter.emit('settingsSectionsChange', groupId);
     return {
       dispose: () => {
         disposable.dispose();
         this.settingsSectionsVersioned.increase(groupId);
+        this.emitter.emit('settingsSectionsChange', groupId);
       },
     };
   }
