@@ -1,6 +1,6 @@
 # 通信模块(connection)
 
-基于 jsonrpc 完成多端远程调用场景，兼容 lsp 等通信方式
+基于 sumi rpc 完成多端远程调用场景，兼容 lsp 等通信方式
 
 ### opensumi 中使用
 

@@ -1,5 +1,5 @@
 import { Uri } from '@opensumi/ide-core-common';
-import * as path from '@opensumi/ide-utils/lib/path';
+import { join } from '@opensumi/ide-utils/lib/path';
 
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
 import { IExtHostStorage, IExtHostTerminal } from '../../../common/vscode';
@@ -93,7 +93,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   }
 
   asAbsolutePath(relativePath: string): string {
-    return path.join(this._extensionLocation.fsPath, relativePath);
+    return join(this._extensionLocation.fsPath, relativePath);
   }
 
   get extensionUri() {

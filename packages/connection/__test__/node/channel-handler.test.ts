@@ -9,6 +9,8 @@ import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/src/uti
 // eslint-disable-next-line import/no-restricted-paths
 import { WSChannelHandler } from '../../src/browser';
 
+const clientId = 'test-client-id';
+
 describe('channel handler', () => {
   it('can handle websocket channel', async () => {
     expect.assertions(2);
@@ -45,7 +47,7 @@ describe('channel handler', () => {
     const socket = new net.Socket();
     socket.connect(ipcPath);
     const connection = new NetSocketConnection(socket);
-    const browserChannel = new WSChannelHandler(connection, console);
+    const browserChannel = new WSChannelHandler(connection, console, clientId);
 
     await browserChannel.initHandler();
 

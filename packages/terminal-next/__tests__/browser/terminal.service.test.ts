@@ -12,7 +12,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MockEnvironmentVariableService } from '../../../extension/__tests__/hosted/__mocks__/environmentVariableService';
 import { NodePtyTerminalService } from '../../src/browser/terminal.service';
-import { IShellLaunchConfig, ITerminalService, ITerminalServicePath } from '../../src/common';
+import { IShellLaunchConfig, ITerminalService, ITerminalServicePath, TERMINAL_ID_SEPARATOR } from '../../src/common';
 
 import { injector } from './inject';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
@@ -95,11 +95,6 @@ describe('terminal service test cases', () => {
         },
       },
     });
-
-    // electronEnv 在环境中就是 global
-    (global as any).metadata = {
-      windowClientId: 'test-window-client-id',
-    };
   });
 
   afterAll(async () => {
@@ -116,8 +111,9 @@ describe('terminal service test cases', () => {
     launchConfig = undefined;
   });
   it('should be generate a session id', async () => {
-    const windowClientId = await terminalService.generateSessionId?.();
-    expect(windowClientId).toMatch(/^test-window-client-id.*/);
+    const sessionId = await terminalService.generateSessionId?.();
+    expect(sessionId).toMatch(/^test-window-client-id.*/);
+    expect(sessionId).toContain(TERMINAL_ID_SEPARATOR);
   });
 
   it('[attachByLaunchConfig] should be valid launchConfig with a valid shell path and ignore type', async () => {

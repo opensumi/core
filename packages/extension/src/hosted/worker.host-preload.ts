@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { DefaultReporter, IReporter } from '@opensumi/ide-core-common';
-import * as path from '@opensumi/ide-utils/lib/path';
+import { basename } from '@opensumi/ide-utils/lib/path';
 
 import { setPerformance } from './api/vscode/language/util';
 import { ExtensionWorkerHost, initRPCProtocol } from './worker.host';
@@ -13,7 +13,7 @@ if (self.Worker) {
   Worker = function (stringUrl: string | URL, options?: WorkerOptions) {
     const js = `importScripts('${stringUrl}');`;
     options = options || {};
-    options.name = options.name || path.basename(stringUrl.toString());
+    options.name = options.name || basename(stringUrl.toString());
     const blob = new Blob([js], { type: 'application/javascript' });
     return new _Worker(URL.createObjectURL(blob));
   } as any;

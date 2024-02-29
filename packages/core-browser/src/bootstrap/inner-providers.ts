@@ -57,16 +57,12 @@ import {
   MenuServiceImpl,
   MenubarServiceImpl,
 } from '../menu/next';
-import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
-import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
-import { ElectronCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/electron';
 import { IToolbarActionService, ToolbarActionService } from '../menu/next/toolbar-action.service';
 import { IOpenerService } from '../opener';
 import { OpenerService } from '../opener/opener.service';
 import { PreferenceContribution } from '../preferences';
 import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
-import { AppConfig } from '../react-providers/config-provider';
 import { SlotRendererContribution } from '../react-providers/slot';
 import { CredentialsService, CryptoService, ICredentialsService, ICryptoService } from '../services';
 import { BrowserClipboardService, IClipboardService } from '../services/clipboard.service';
@@ -97,8 +93,6 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, TabBarToolbarContribution);
   createContributionProvider(injector, ToolBarActionContribution);
   createContributionProvider(injector, StaticResourceContribution);
-
-  const appConfig: AppConfig = injector.get(AppConfig);
 
   // 一些内置抽象实现
   const providers: Provider[] = [
@@ -163,10 +157,6 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IToolbarActionService,
       useClass: ToolbarActionService,
-    },
-    {
-      token: ICtxMenuRenderer,
-      useClass: appConfig.isElectronRenderer ? ElectronCtxMenuRenderer : BrowserCtxMenuRenderer,
     },
     {
       token: AbstractMenubarService,

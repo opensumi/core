@@ -4,8 +4,7 @@ export const IApplicationService = Symbol('IApplicationService');
 
 export interface IApplicationService {
   /**
-   * In Electron environment, if `isRemote` is not specified, use local connection by default: `electronEnv.metadata.windowClientId`
-   * Otherwise, use WebSocket connection: `WSChannelHandler.clientId`
+   * equals to `WSChannelHandler.clientId`, which will be inited when create connection to backend
    */
   clientId: string;
   /**

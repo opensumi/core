@@ -1,4 +1,4 @@
-import { IReporterService, REPORT_NAME, uuid } from '@opensumi/ide-core-common';
+import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
@@ -16,15 +16,11 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
 
-  LOG_TAG = '[WSChannelHandler]';
+  LOG_TAG: string;
 
-  constructor(
-    public connection: ReconnectingWebSocketConnection | NetSocketConnection,
-    logger: any,
-    clientId?: string,
-  ) {
+  constructor(public connection: ReconnectingWebSocketConnection | NetSocketConnection, logger: any, clientId: string) {
     this.logger = logger || this.logger;
-    this.clientId = clientId || `CLIENT_ID_${uuid()}`;
+    this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
   }
   // 为解决建立连接之后，替换成可落盘的 logger
