@@ -10,7 +10,6 @@ import {
 } from '@opensumi/ide-utils';
 import { IReadableStream, isNodeReadable, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
-import { emptyBuffer } from '../buffers/buffers';
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
@@ -185,7 +184,7 @@ export class SumiConnection implements IDisposable {
             this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, data));
           },
           onEnd: () => {
-            this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, emptyBuffer));
+            this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, null));
           },
         });
         return;
@@ -277,37 +276,41 @@ export class SumiConnection implements IDisposable {
 
           const headers = this.protocolRepository.responseHeadersSerializer.read();
 
-          // if status code is not 0, it's an error
-          if (status === Status.Err) {
-            // TODO: use binary codec
-            const content = reader.stringOfVarUInt32();
-            const error = parseError(content);
-            runCallback(nullHeaders, error);
-            return;
-          }
-
-          if (headers && headers.chunked) {
-            let activeReq: ActiveRequest;
-            if (this.activeRequestPool.has(requestId)) {
-              activeReq = this.activeRequestPool.get(requestId)!;
-            } else {
-              activeReq = new ActiveRequest(requestId, headers);
-              this.activeRequestPool.set(requestId, activeReq);
-              runCallback(headers, undefined, activeReq);
-            }
-            const result = this.protocolRepository.getProcessor(method).readResponse() as Uint8Array;
-
-            if (result.byteLength === 0) {
-              activeReq.end();
-              this.activeRequestPool.delete(requestId);
+          switch (status) {
+            case Status.Err: {
+              // TODO: use binary codec
+              const content = reader.stringOfVarUInt32();
+              const error = parseError(content);
+              runCallback(nullHeaders, error);
               break;
             }
+            default: {
+              if (headers && headers.chunked) {
+                let activeReq: ActiveRequest;
+                if (this.activeRequestPool.has(requestId)) {
+                  activeReq = this.activeRequestPool.get(requestId)!;
+                } else {
+                  activeReq = new ActiveRequest(requestId, headers);
+                  this.activeRequestPool.set(requestId, activeReq);
+                  runCallback(headers, undefined, activeReq);
+                }
 
-            activeReq.emit(result);
-          } else {
-            const result = this.protocolRepository.getProcessor(method).readResponse();
-            runCallback(headers, undefined, result);
+                const result = this.protocolRepository.getProcessor(method).readResponse() as Uint8Array;
+
+                if (result) {
+                  activeReq.emit(result);
+                  break;
+                }
+
+                activeReq.end();
+                this.activeRequestPool.delete(requestId);
+              } else {
+                const result = this.protocolRepository.getProcessor(method).readResponse();
+                runCallback(headers, undefined, result);
+              }
+            }
           }
+
           break;
         }
         case OperationType.Notification:

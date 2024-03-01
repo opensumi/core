@@ -3,15 +3,11 @@ import { Type } from '@furyjs/fury';
 import { EventEmitter } from '@opensumi/events';
 import { DisposableCollection } from '@opensumi/ide-core-common';
 
-import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
 import { oneOf7 } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
 import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
 import { ILogger } from './types';
-
-import type net from 'net';
-import type WebSocket from 'ws';
 
 /**
  * `ping` and `pong` are used to detect whether the connection is alive.
@@ -103,7 +99,6 @@ export class WSChannel {
   }>();
 
   public id: string;
-  public LOG_TAG = '[WSChannel]';
 
   public channelPath: string;
 
@@ -129,16 +124,6 @@ export class WSChannel {
     return channel;
   }
 
-  static forWebSocket(socket: WebSocket, options: IWSChannelCreateOptions) {
-    const wsConnection = new WSWebSocketConnection(socket);
-    return WSChannel.forClient(wsConnection, options);
-  }
-
-  static forNetSocket(socket: net.Socket, options: IWSChannelCreateOptions) {
-    const wsConnection = new NetSocketConnection(socket);
-    return WSChannel.forClient(wsConnection, options);
-  }
-
   constructor(public connection: IConnectionShape<Uint8Array>, options: IWSChannelCreateOptions) {
     const { id, logger } = options;
     this.id = id;
@@ -146,8 +131,6 @@ export class WSChannel {
     if (logger) {
       this.logger = logger;
     }
-
-    this.LOG_TAG = `[WSChannel] [id:${id}]`;
   }
 
   onMessage(cb: (data: string) => any) {

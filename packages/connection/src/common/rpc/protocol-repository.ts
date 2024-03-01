@@ -24,7 +24,6 @@ export enum OperationType {
   Request,
   Notification,
   Response,
-  Heartbeat,
   Cancel,
 }
 
