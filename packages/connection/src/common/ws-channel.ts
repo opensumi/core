@@ -5,7 +5,7 @@ import { DisposableCollection } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection, WSWebSocketConnection } from './connection';
 import { IConnectionShape } from './connection/types';
-import { oneOf } from './fury-extends/one-of';
+import { oneOf7 } from './fury-extends/one-of';
 import { createWebSocketConnection } from './message';
 import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
 import { ILogger } from './types';
@@ -291,7 +291,7 @@ export const CloseProtocol = Type.object('close', {
   reason: Type.string(),
 });
 
-const serializer = oneOf([
+const serializer = oneOf7([
   PingProtocol,
   PongProtocol,
   OpenProtocol,

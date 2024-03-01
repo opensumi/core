@@ -6,35 +6,92 @@ const { fury, reader, writer } = furyFactory();
 
 type Writable = Record<string, any> & { kind: string };
 
-export const oneOf = (schemas: TypeDescription[]) => {
-  const serializers = [] as Serializer[];
+export const oneOf7 = (
+  schemas: [
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+  ],
+) => {
+  const serializers = new Array(7) as Serializer[];
+  const kinds = new Array(7) as string[];
 
-  const indexToKind = {} as Record<number, string>;
   const kindToIndex = {} as Record<string, number>;
 
   schemas.forEach((schema, i) => {
     const kind = (schema as ObjectTypeDescription).options.tag;
-    serializers.push(generateSerializer(fury, schema));
-    indexToKind[i] = kind;
+    serializers[i] = generateSerializer(fury, schema);
+    kinds[i] = kind;
     kindToIndex[kind] = i;
   });
 
   const deserialize = (bytes: Uint8Array) => {
     reader.reset(bytes);
     const idx = reader.uint8();
-    const serializer = serializers[idx];
-    const v = serializer.read();
-    v.kind = indexToKind[idx];
+
+    let v: any;
+    switch (idx) {
+      case 0:
+        v = serializers[0].read();
+        break;
+      case 1:
+        v = serializers[1].read();
+        break;
+      case 2:
+        v = serializers[2].read();
+        break;
+      case 3:
+        v = serializers[3].read();
+        break;
+      case 4:
+        v = serializers[4].read();
+        break;
+      case 5:
+        v = serializers[5].read();
+        break;
+      case 6:
+        v = serializers[6].read();
+        break;
+    }
+
+    v.kind = kinds[idx];
     return v;
   };
 
   const serialize = (v: Writable) => {
     const index = kindToIndex[v.kind];
-    const serializer = serializers[index];
 
     writer.reset();
+
     writer.uint8(index);
-    serializer.write(v);
+
+    switch (index) {
+      case 0:
+        serializers[0].write(v);
+        break;
+      case 1:
+        serializers[1].write(v);
+        break;
+      case 2:
+        serializers[2].write(v);
+        break;
+      case 3:
+        serializers[3].write(v);
+        break;
+      case 4:
+        serializers[4].write(v);
+        break;
+      case 5:
+        serializers[5].write(v);
+        break;
+      case 6:
+        serializers[6].write(v);
+        break;
+    }
 
     return writer.dump();
   };

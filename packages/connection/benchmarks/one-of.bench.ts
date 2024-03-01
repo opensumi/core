@@ -2,7 +2,7 @@
 // @ts-ignore
 import { Bench } from 'tinybench';
 
-import { oneOf } from '../src/common/fury-extends/one-of';
+import { oneOf7 } from '../src/common/fury-extends/one-of';
 import {
   BinaryProtocol,
   ChannelMessage,
@@ -20,7 +20,7 @@ const bench = new Bench({
   time: 2000,
 });
 
-const serializer = oneOf([
+const serializer = oneOf7([
   PingProtocol,
   PongProtocol,
   OpenProtocol,
