@@ -5,7 +5,6 @@ import {
   EventQueue,
   IDisposable,
   canceled,
-  isPromise,
   parseError,
 } from '@opensumi/ide-utils';
 import { IReadableStream, isNodeReadable, listenReadable } from '@opensumi/ide-utils/lib/stream';
@@ -30,21 +29,19 @@ import type net from 'net';
 import type { WebSocket } from 'ws';
 
 const nullHeaders = {};
-const star = '*';
 
 export interface ISumiConnectionOptions {
   timeout?: number;
   logger?: ILogger;
 }
 
-type NotificationHandler = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => void;
-type RequestHandler = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => void;
-
 export class SumiConnection implements IDisposable {
   protected disposable = new DisposableCollection();
 
-  private _handlers = new Map<string, RequestHandler>();
-  private _notificationEmitter = new Map<string, NotificationHandler>();
+  private _requestHandlers = new Map<string, TGenericRequestHandler<any>>();
+  private _starRequestHandler: TOnRequestNotFoundHandler | undefined;
+  private _notificationHandlers = new Map<string, TGenericNotificationHandler>();
+  private _starNotificationHandler: TOnNotificationNotFoundHandler | undefined;
 
   private _requestId = 0;
   private _callbacks = new Map<number, TRequestCallback>();
@@ -120,30 +117,6 @@ export class SumiConnection implements IDisposable {
     });
   }
 
-  onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      handler(...args);
-    };
-    this._notificationEmitter.set(method, handlerWrapper);
-    return {
-      dispose: () => {
-        this._notificationEmitter.delete(method);
-      },
-    };
-  }
-
-  onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      handler(method, args);
-    };
-    this._notificationEmitter.set(star, handlerWrapper);
-    return {
-      dispose: () => {
-        this._notificationEmitter.delete(star);
-      },
-    };
-  }
-
   cancelRequest(requestId: number) {
     this.socket.send(this.protocolRepository.Cancel(requestId));
   }
@@ -159,76 +132,38 @@ export class SumiConnection implements IDisposable {
     callback(nullHeaders, new MethodTimeoutError(method));
   }
 
-  private runRequestHandler<T extends (...args: any[]) => any>(
-    requestId: number,
-    method: string,
-    args: any[],
-    handler: T,
-  ) {
-    let result: any;
-    let error: Error | undefined;
-
-    try {
-      result = handler(...args);
-    } catch (err) {
-      error = err;
-    }
-
-    const onSuccess = (result: any) => {
-      if (isNodeReadable(result)) {
-        const responseHeaders: IResponseHeaders = {
-          chunked: true,
-        };
-        listenReadable(result, {
-          onData: (data) => {
-            this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, data));
-          },
-          onEnd: () => {
-            this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, null));
-          },
-        });
-        return;
-      }
-
-      this.socket.send(this.protocolRepository.Response(requestId, method, nullHeaders, result));
-      this._cancellationTokenSources.delete(requestId);
-    };
-
-    const onError = (err: Error) => {
-      this.socket.send(this.protocolRepository.Error(requestId, method, nullHeaders, err));
-      this._cancellationTokenSources.delete(requestId);
-    };
-
-    if (error) {
-      onError(error);
-    } else if (isPromise(result)) {
-      result.then(onSuccess).catch(onError);
-    } else {
-      onSuccess(result);
-    }
-  }
-
   onRequest<T = any>(method: string, handler: TGenericRequestHandler<T>): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      this.runRequestHandler(requestId, method, args, handler);
-    };
-    this._handlers.set(method, handlerWrapper);
+    this._requestHandlers.set(method, handler);
     return {
       dispose: () => {
-        this._handlers.delete(method);
+        this._requestHandlers.delete(method);
       },
     };
   }
 
   onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      this.runRequestHandler(requestId, method, [method, args], handler);
-    };
-
-    this._handlers.set(star, handlerWrapper);
+    this._starRequestHandler = handler;
     return {
       dispose: () => {
-        this._handlers.delete(star);
+        this._starRequestHandler = undefined;
+      },
+    };
+  }
+
+  onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
+    this._notificationHandlers.set(method, handler);
+    return {
+      dispose: () => {
+        this._notificationHandlers.delete(method);
+      },
+    };
+  }
+
+  onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
+    this._starNotificationHandler = handler;
+    return {
+      dispose: () => {
+        this._starNotificationHandler = undefined;
       },
     };
   }
@@ -319,7 +254,75 @@ export class SumiConnection implements IDisposable {
           const headers = this.protocolRepository.requestHeadersSerializer.read() as IRequestHeaders;
           const args = this.protocolRepository.getProcessor(method).readRequest();
 
-          this._receiveRequest(opType, requestId, method, headers, args);
+          if (headers.cancelable) {
+            const tokenSource = new CancellationTokenSource();
+            this._cancellationTokenSources.set(requestId, tokenSource);
+            args.push(tokenSource.token);
+
+            if (this._knownCanceledRequests.has(requestId)) {
+              tokenSource.cancel();
+              this._knownCanceledRequests.delete(requestId);
+            }
+          }
+
+          switch (opType) {
+            case OperationType.Request: {
+              let promise: Promise<any>;
+
+              try {
+                let result: any;
+
+                const handler = this._requestHandlers.get(method);
+                if (handler) {
+                  result = handler(...args);
+                } else if (this._starRequestHandler) {
+                  result = this._starRequestHandler(method, args);
+                }
+
+                promise = Promise.resolve(result);
+              } catch (err) {
+                promise = Promise.reject(err);
+              }
+
+              const onSuccess = (result: any) => {
+                if (isNodeReadable(result)) {
+                  const responseHeaders: IResponseHeaders = {
+                    chunked: true,
+                  };
+                  listenReadable(result, {
+                    onData: (data) => {
+                      this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, data));
+                    },
+                    onEnd: () => {
+                      this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, null));
+                    },
+                  });
+                } else {
+                  this.socket.send(this.protocolRepository.Response(requestId, method, nullHeaders, result));
+                }
+
+                this._cancellationTokenSources.delete(requestId);
+              };
+
+              const onError = (err: Error) => {
+                this.socket.send(this.protocolRepository.Error(requestId, method, nullHeaders, err));
+                this._cancellationTokenSources.delete(requestId);
+              };
+
+              promise.then(onSuccess).catch(onError);
+              break;
+            }
+            case OperationType.Notification: {
+              const handler = this._notificationHandlers.get(method);
+              if (handler) {
+                handler(...args);
+              } else if (this._starNotificationHandler) {
+                this._starNotificationHandler(method, args);
+              }
+              break;
+            }
+          }
+
           break;
         }
         case OperationType.Cancel: {
@@ -343,29 +346,6 @@ export class SumiConnection implements IDisposable {
 
   dispose(): void {
     this.disposable.dispose();
-  }
-
-  protected _receiveRequest(opType: number, requestId: number, method: string, headers: IRequestHeaders, args: any[]) {
-    if (headers.cancelable) {
-      const tokenSource = new CancellationTokenSource();
-      this._cancellationTokenSources.set(requestId, tokenSource);
-      args.push(tokenSource.token);
-
-      if (this._knownCanceledRequests.has(requestId)) {
-        tokenSource.cancel();
-        this._knownCanceledRequests.delete(requestId);
-      }
-    }
-
-    if (opType === OperationType.Request) {
-      const eventName = this._handlers.has(method) ? method : star;
-      const handler = this._handlers.get(eventName);
-      handler && handler(requestId, method, headers, args);
-    } else {
-      const eventName = this._notificationEmitter.has(method) ? method : star;
-      const handler = this._notificationEmitter.get(eventName);
-      handler && handler(requestId, method, headers, args);
-    }
   }
 
   static forWSWebSocket(socket: WebSocket, options: ISumiConnectionOptions = {}) {

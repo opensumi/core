@@ -46,6 +46,7 @@ export const message =
 
 // 1m
 export const longMessage = random(1024 * 1024);
+const msg200k = random(200 * 1024);
 
 export function createConnectionPair() {
   const channel = new MessageChannel();
@@ -226,6 +227,7 @@ export function createSumiRPCClientPair(pair: { connection1: SumiConnection; con
     add: (a: number, b: number) => a + b,
     getContent: () => buffer,
     getMessage: () => message,
+    get200kMessage: () => msg200k,
     getLongMessage: () => longMessage,
     readFileStream: (path: string) => stringToStream(message, 5),
   });
@@ -261,6 +263,7 @@ export function createLegacyRPCClientPair(pair: { connection1: MessageConnection
     add: (a: number, b: number) => a + b,
     getContent: () => buffer,
     getMessage: () => message,
+    get200kMessage: () => msg200k,
     getLongMessage: () => longMessage,
   });
 

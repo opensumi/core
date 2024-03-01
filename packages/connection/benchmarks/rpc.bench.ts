@@ -44,7 +44,7 @@ async function main() {
   equal(resultForLegacy, 3, '[json rpc] result is not correct');
 
   const resultForSumi = await sumi.invoker1.add(1, 2);
-  equal(resultForSumi, 3, '[sumi rpc] result is not correct');
+  equal(resultForSumi, 3, '[sumi rpc] result is not correct, got' + resultForSumi);
 
   const resultForIpc = await ipcSumi.invoker1.add(1, 2);
   equal(resultForIpc, 3, '[sumi rpc] use socket result is not correct');
@@ -56,12 +56,11 @@ async function main() {
   equal(resultForSumiOverChannel, 3, '[sumi rpc] over channel result is not correct');
 
   bench
-
-    .add('1+2: [sumi rpc] over message port', async () => {
-      await sumi.invoker1.add(1, 2);
-    })
     .add('1+2: [sumi rpc] over socket', async () => {
       await ipcSumi.invoker1.add(1, 2);
+    })
+    .add('1+2: [sumi rpc] over message port', async () => {
+      await sumi.invoker1.add(1, 2);
     })
     .add('1+2: [json rpc] over message port', async () => {
       await legacy.invoker1.add(1, 2);
@@ -72,32 +71,41 @@ async function main() {
     .add('1+2: [json rpc] over ws channel', async () => {
       await legacyOverChannel.invoker1.add(1, 2);
     })
-    .add('string(584b): [sumi rpc] over message port', async () => {
-      await sumi.invoker1.getMessage();
-    })
     .add('string(584b): [sumi rpc] over socket', async () => {
-      await ipcSumi.invoker1.getMessage();
+      await ipcSumi.invoker1.getMessage(1, 2, 3, 4, 5, 6);
+    })
+    .add('string(584b): [sumi rpc] over message port', async () => {
+      await sumi.invoker1.getMessage(1, 2, 3, 4, 5, 6);
     })
     .add('string(584b): [json rpc] over message port', async () => {
-      await legacy.invoker1.getMessage();
+      await legacy.invoker1.getMessage(1, 2, 3, 4, 5, 6);
     })
-    .add('string(1m): [sumi rpc] over message port', async () => {
-      await sumi.invoker1.getLongMessage();
+    .add('string(200k): [sumi rpc] over socket', async () => {
+      await ipcSumi.invoker1.get200kMessage(1, 2, 3, 4, 5, 6);
+    })
+    .add('string(200k): [sumi rpc] over message port', async () => {
+      await sumi.invoker1.get200kMessage(1, 2, 3, 4, 5, 6);
+    })
+    .add('string(200k): [json rpc] over message port', async () => {
+      await legacy.invoker1.get200kMessage(1, 2, 3, 4, 5, 6);
     })
     .add('string(1m): [sumi rpc] over socket', async () => {
-      await ipcSumi.invoker1.getLongMessage();
+      await ipcSumi.invoker1.getLongMessage(1, 2, 3, 4, 5, 6);
+    })
+    .add('string(1m): [sumi rpc] over message port', async () => {
+      await sumi.invoker1.getLongMessage(1, 2, 3, 4, 5, 6);
     })
     .add('string(1m): [json rpc] over message port', async () => {
-      await legacy.invoker1.getLongMessage();
+      await legacy.invoker1.getLongMessage(1, 2, 3, 4, 5, 6);
     })
     .add('buffer(1m): [sumi rpc] over message port', async () => {
-      await sumi.invoker1.getContent();
+      await sumi.invoker1.getContent(1, 2, 3, 4, 5, 6);
     })
     .add('buffer(1m): [sumi rpc] over socket', async () => {
-      await ipcSumi.invoker1.getContent();
+      await ipcSumi.invoker1.getContent(1, 2, 3, 4, 5, 6);
     })
     .add('buffer(1m): [json rpc] over message port', async () => {
-      await legacy.invoker1.getContent();
+      await legacy.invoker1.getContent(1, 2, 3, 4, 5, 6);
     });
 
   await bench.warmup();
