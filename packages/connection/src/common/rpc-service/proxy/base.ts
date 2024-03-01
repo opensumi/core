@@ -1,4 +1,4 @@
-import { Deferred, isDefined } from '@opensumi/ide-core-common';
+import { Deferred } from '@opensumi/ide-core-common';
 
 import { ILogger, IRPCServiceMap } from '../../types';
 import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../../utils';
@@ -19,9 +19,12 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   protected connectionPromise: Deferred<void> = new Deferred<void>();
 
   protected abstract engine: 'legacy' | 'sumi';
+  capturer: (data: any) => void;
 
   constructor(public registry: ServiceRegistry, logger?: ILogger) {
     this.logger = logger || console;
+
+    this.capturer = getCapturer();
 
     this.registry.onServicesUpdate((services) => {
       if (this.connection) {
@@ -32,9 +35,8 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   // capture messages for opensumi devtools
   private capture(message: ICapturedMessage): void {
-    const capturer = getCapturer();
-    if (isDefined(capturer)) {
-      capturer({
+    if (this.capturer) {
+      this.capturer({
         ...message,
         engine: this.engine,
       });

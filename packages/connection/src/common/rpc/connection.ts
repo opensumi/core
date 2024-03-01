@@ -74,6 +74,8 @@ export class SumiConnection implements IDisposable {
       this._callbacks.set(requestId, (headers, error, result) => {
         if (error) {
           if (error === METHOD_NOT_REGISTERED) {
+            // we should not treat `METHOD_NOT_REGISTERED` as an error.
+            // it is a special case, it means the method is not registered on the other side.
             resolve(error);
             return;
           }
@@ -232,6 +234,7 @@ export class SumiConnection implements IDisposable {
 
                 const result = this.protocolRepository.getProcessor(method).readResponse() as Uint8Array;
 
+                // when result is null, it means the stream is ended.
                 if (result) {
                   activeReq.emit(result);
                   break;
