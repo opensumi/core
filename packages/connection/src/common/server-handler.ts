@@ -133,7 +133,7 @@ export abstract class BaseCommonChannelHandler {
 
             this.heartbeat(id, connection);
 
-            const channel = new WSChannel(connection, { id });
+            const channel = new WSChannel(connection, { id, logger: this.logger });
             this.channelMap.set(id, channel);
 
             commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
