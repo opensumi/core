@@ -1,6 +1,6 @@
 import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
 
-import { Uri, UriComponents, isUint8Array } from '@opensumi/ide-core-common';
+import { Uri, isUint8Array } from '@opensumi/ide-core-common';
 
 export enum ProtocolType {
   String,
@@ -111,14 +111,26 @@ export class AnySerializer {
 
 class ObjectTransfer {
   static replacer(key: string | undefined, value: any) {
+    if (value) {
+      switch (value.$mid) {
+        case 1: {
+          // `$mid === 1` is defined in `vscode-uri` package
+          const uri = Uri.revive(value);
+          return {
+            $type: 'VSCODE_URI',
+            data: uri.toString(),
+          };
+        }
+      }
+    }
+
     return value;
   }
   static reviver(key: string | undefined, value: any) {
-    if (value && value.$mid !== undefined) {
-      // `$mid === 1` is defined in `vscode-uri` package
-      switch (value.$mid) {
-        case 1:
-          return Uri.revive(value as UriComponents);
+    if (value && value.$type !== undefined && value.data !== undefined) {
+      switch (value.$type) {
+        case 'VSCODE_URI':
+          return Uri.parse(value.data);
       }
     }
     return value;
