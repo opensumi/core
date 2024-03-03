@@ -13,48 +13,61 @@ export enum ProtocolType {
   Union,
   Object,
   Undefined,
+  Null,
   Boolean,
 }
 
 export class AnySerializer {
   constructor(protected writer: BinaryWriter, protected reader: BinaryReader) {}
 
-  write(data: unknown) {
+  write(data: any) {
     const { writer } = this;
-    if (typeof data === 'undefined') {
-      writer.uint8(ProtocolType.Undefined);
-    } else if (Array.isArray(data)) {
-      writer.uint8(ProtocolType.Array);
-      writer.varUInt32(data.length);
-      for (const element of data) {
-        this.write(element);
-      }
-    } else if (typeof data === 'boolean') {
-      writer.uint8(ProtocolType.Boolean);
-      writer.uint8(data ? 1 : 0);
-    } else if (typeof data === 'number') {
-      if ((data | 0) === data) {
-        writer.uint8(ProtocolType.Int32);
-        writer.int32(data);
-      } else {
-        writer.uint8(ProtocolType.Number);
-        writer.double(data);
-      }
-    } else if (typeof data === 'string') {
-      writer.uint8(ProtocolType.String);
-      writer.stringOfVarUInt32(data);
-    } else if (isUint8Array(data)) {
-      writer.uint8(ProtocolType.Buffer);
-      writer.varUInt32(data.byteLength);
-      writer.buffer(data);
-    } else if (typeof data === 'bigint') {
-      writer.uint8(ProtocolType.BigInt);
-      writer.int64(data);
-    } else if (typeof data === 'object') {
-      writer.uint8(ProtocolType.JSONObject);
-      writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
-    } else {
-      throw new Error(`Unknown type ${typeof data}`);
+    const type = typeof data;
+    switch (type) {
+      case 'undefined':
+        writer.uint8(ProtocolType.Undefined);
+        break;
+      case 'string':
+        writer.uint8(ProtocolType.String);
+        writer.stringOfVarUInt32(data);
+        break;
+      case 'boolean':
+        writer.uint8(ProtocolType.Boolean);
+        writer.uint8(data ? 1 : 0);
+        break;
+      case 'number':
+        if ((data | 0) === data) {
+          writer.uint8(ProtocolType.Int32);
+          writer.int32(data);
+        } else {
+          writer.uint8(ProtocolType.Number);
+          writer.double(data);
+        }
+        break;
+      case 'bigint':
+        writer.uint8(ProtocolType.BigInt);
+        writer.int64(data);
+        break;
+      case 'object':
+        if (data === null) {
+          writer.uint8(ProtocolType.Null);
+        } else if (Array.isArray(data)) {
+          writer.uint8(ProtocolType.Array);
+          writer.varUInt32(data.length);
+          for (const element of data) {
+            this.write(element);
+          }
+        } else if (isUint8Array(data)) {
+          writer.uint8(ProtocolType.Buffer);
+          writer.varUInt32(data.byteLength);
+          writer.buffer(data);
+        } else {
+          writer.uint8(ProtocolType.JSONObject);
+          writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
+        }
+        break;
+      default:
+        throw new Error(`Unknown type ${type}`);
     }
   }
 
@@ -65,6 +78,8 @@ export class AnySerializer {
     switch (type) {
       case ProtocolType.Undefined:
         return undefined;
+      case ProtocolType.Null:
+        return null;
       case ProtocolType.String:
         return reader.stringOfVarUInt32();
       case ProtocolType.Buffer: {
