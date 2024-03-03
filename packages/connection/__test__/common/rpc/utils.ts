@@ -7,13 +7,13 @@ import { Type } from '@furyjs/fury';
 
 import { ProxyJson, WSChannel, createWebSocketConnection } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { ProtocolRepository } from '@opensumi/ide-connection/lib/common/rpc/protocol-repository';
 import { Deferred } from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { NodeMessagePortConnection } from '../../../src/common/connection/drivers/node-message-port';
 import { SumiConnection } from '../../../src/common/rpc/connection';
+import { MessageIO } from '../../../src/common/rpc/message-io';
 import { ProxySumi } from '../../../src/common/rpc-service/proxy/sumi';
 import { ServiceRegistry } from '../../../src/common/rpc-service/registry';
 
@@ -202,14 +202,14 @@ export const protocols = {
 };
 
 export function createSumiRPCClientPair(pair: { connection1: SumiConnection; connection2: SumiConnection }) {
-  const repo = new ProtocolRepository();
+  const io = new MessageIO();
 
-  repo.loadProtocolMethod(protocols.shortUrl.protocol);
-  repo.loadProtocolMethod(protocols.returnUndefined.protocol);
-  repo.loadProtocolMethod(protocols.add.protocol);
-  repo.loadProtocolMethod(protocols.getContent.protocol);
-  pair.connection1.loadProtocolRepository(repo);
-  pair.connection2.loadProtocolRepository(repo);
+  io.loadProtocolMethod(protocols.shortUrl.protocol);
+  io.loadProtocolMethod(protocols.returnUndefined.protocol);
+  io.loadProtocolMethod(protocols.add.protocol);
+  io.loadProtocolMethod(protocols.getContent.protocol);
+  pair.connection1.io = io;
+  pair.connection2.io = io;
 
   const registry = new ServiceRegistry();
   registry.registerService({
@@ -239,7 +239,7 @@ export function createSumiRPCClientPair(pair: { connection1: SumiConnection; con
   const invoker2 = client2.getInvokeProxy();
 
   return {
-    repo,
+    repo: io,
     client1,
     client2,
     invoker1,

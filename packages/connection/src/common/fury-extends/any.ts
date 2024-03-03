@@ -1,6 +1,6 @@
 import { BinaryReader, BinaryWriter } from '@furyjs/fury/dist/lib/type';
 
-import { Uri, isUint8Array } from '@opensumi/ide-core-common';
+import { Uri, UriComponents, isUint8Array } from '@opensumi/ide-core-common';
 
 export enum ProtocolType {
   String,
@@ -19,7 +19,7 @@ export enum ProtocolType {
 export class AnySerializer {
   constructor(protected writer: BinaryWriter, protected reader: BinaryReader) {}
 
-  serializeWorker(data: unknown) {
+  write(data: unknown) {
     const { writer } = this;
     if (typeof data === 'undefined') {
       writer.uint8(ProtocolType.Undefined);
@@ -27,7 +27,7 @@ export class AnySerializer {
       writer.uint8(ProtocolType.Array);
       writer.varUInt32(data.length);
       for (const element of data) {
-        this.serializeWorker(element);
+        this.write(element);
       }
     } else if (typeof data === 'boolean') {
       writer.uint8(ProtocolType.Boolean);
@@ -58,7 +58,7 @@ export class AnySerializer {
     }
   }
 
-  deserializeWorker() {
+  read() {
     const { reader } = this;
 
     const type = reader.uint8();
@@ -85,7 +85,7 @@ export class AnySerializer {
         const length = reader.varUInt32();
         const data = [] as unknown[];
         for (let i = 0; i < length; i++) {
-          data.push(this.deserializeWorker());
+          data.push(this.read());
         }
         return data;
       }
@@ -98,19 +98,12 @@ export class AnySerializer {
 
   deserialize = (bytes: Uint8Array) => {
     this.reader.reset(bytes);
-    return this.deserializeWorker();
-  };
-
-  serializeVolatile = (v: any) => {
-    this.writer.reset();
-    this.serializeWorker(v);
-
-    return this.writer.dumpAndOwn();
+    return this.read();
   };
 
   serialize = (v: any) => {
     this.writer.reset();
-    this.serializeWorker(v);
+    this.write(v);
 
     return this.writer.dump();
   };
@@ -118,22 +111,14 @@ export class AnySerializer {
 
 class ObjectTransfer {
   static replacer(key: string | undefined, value: any) {
-    if (value) {
-      if (value.$mid === 1) {
-        const uri = Uri.revive(value);
-        return {
-          $type: 'VSCODE_URI',
-          data: uri.toString(),
-        };
-      }
-    }
-
     return value;
   }
   static reviver(key: string | undefined, value: any) {
-    if (value && value.$type !== undefined && value.data !== undefined) {
-      if (value.$type === 'VSCODE_URI') {
-        return Uri.parse(value.data);
+    if (value && value.$mid !== undefined) {
+      // `$mid === 1` is defined in `vscode-uri` package
+      switch (value.$mid) {
+        case 1:
+          return Uri.revive(value as UriComponents);
       }
     }
     return value;

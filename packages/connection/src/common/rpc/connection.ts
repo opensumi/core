@@ -14,15 +14,15 @@ import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
 import { MethodTimeoutError } from './errors';
-import { OperationType, ProtocolRepository, Status } from './protocol-repository';
+import { MessageIO, OperationType, Status } from './message-io';
 import {
   IRequestHeaders,
   IResponseHeaders,
   TGenericNotificationHandler,
   TGenericRequestHandler,
-  TOnNotificationNotFoundHandler,
-  TOnRequestNotFoundHandler,
+  TNotificationNotFoundHandler,
   TRequestCallback,
+  TRequestNotFoundHandler,
 } from './types';
 
 import type net from 'net';
@@ -39,9 +39,9 @@ export class SumiConnection implements IDisposable {
   protected disposable = new DisposableCollection();
 
   private _requestHandlers = new Map<string, TGenericRequestHandler<any>>();
-  private _starRequestHandler: TOnRequestNotFoundHandler | undefined;
+  private _starRequestHandler: TRequestNotFoundHandler | undefined;
   private _notificationHandlers = new Map<string, TGenericNotificationHandler>();
-  private _starNotificationHandler: TOnNotificationNotFoundHandler | undefined;
+  private _starNotificationHandler: TNotificationNotFoundHandler | undefined;
 
   private _requestId = 0;
   private _callbacks = new Map<number, TRequestCallback>();
@@ -52,7 +52,7 @@ export class SumiConnection implements IDisposable {
 
   protected activeRequestPool = new Map<number, ActiveRequest>();
 
-  public protocolRepository = new ProtocolRepository();
+  public io = new MessageIO();
   protected logger: ILogger = console;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
@@ -62,9 +62,7 @@ export class SumiConnection implements IDisposable {
   }
 
   sendNotification(method: string, ...args: any[]) {
-    this.socket.send(
-      this.protocolRepository.Request(this._requestId++, OperationType.Notification, method, nullHeaders, args),
-    );
+    this.socket.send(this.io.Notification(this._requestId++, method, nullHeaders, args));
   }
 
   sendRequest(method: string, ...args: any[]) {
@@ -106,9 +104,8 @@ export class SumiConnection implements IDisposable {
       }
 
       this.socket.send(
-        this.protocolRepository.Request(
+        this.io.Request(
           requestId,
-          OperationType.Request,
           method,
           {
             cancelable: Boolean(cancellationToken) || undefined,
@@ -120,7 +117,7 @@ export class SumiConnection implements IDisposable {
   }
 
   cancelRequest(requestId: number) {
-    this.socket.send(this.protocolRepository.Cancel(requestId));
+    this.socket.send(this.io.Cancel(requestId));
   }
 
   private _handleTimeout(method: string, requestId: number) {
@@ -143,7 +140,7 @@ export class SumiConnection implements IDisposable {
     };
   }
 
-  onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
+  onRequestNotFound(handler: TRequestNotFoundHandler): IDisposable {
     this._starRequestHandler = handler;
     return {
       dispose: () => {
@@ -161,7 +158,7 @@ export class SumiConnection implements IDisposable {
     };
   }
 
-  onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
+  onNotificationNotFound(handler: TNotificationNotFoundHandler): IDisposable {
     this._starNotificationHandler = handler;
     return {
       dispose: () => {
@@ -171,7 +168,7 @@ export class SumiConnection implements IDisposable {
   }
 
   listen() {
-    const { reader } = this.protocolRepository;
+    const { reader } = this.io;
 
     const toDispose = this.socket.onMessage((data) => {
       reader.reset(data);
@@ -207,7 +204,7 @@ export class SumiConnection implements IDisposable {
             callback(headers, error, result);
           };
 
-          const headers = this.protocolRepository.responseHeadersSerializer.read();
+          const headers = this.io.responseHeadersSerializer.read();
 
           switch (status) {
             case Status.Err: {
@@ -228,7 +225,7 @@ export class SumiConnection implements IDisposable {
                   runCallback(headers, undefined, activeReq);
                 }
 
-                const result = this.protocolRepository.getProcessor(method).readResponse() as Uint8Array;
+                const result = this.io.getProcessor(method).readResponse() as Uint8Array;
 
                 // when result is null, it means the stream is ended.
                 if (result) {
@@ -239,7 +236,7 @@ export class SumiConnection implements IDisposable {
                 activeReq.end();
                 this.activeRequestPool.delete(requestId);
               } else {
-                const result = this.protocolRepository.getProcessor(method).readResponse();
+                const result = this.io.getProcessor(method).readResponse();
                 runCallback(headers, undefined, result);
               }
             }
@@ -250,8 +247,8 @@ export class SumiConnection implements IDisposable {
         case OperationType.Notification:
         // fall through
         case OperationType.Request: {
-          const headers = this.protocolRepository.requestHeadersSerializer.read() as IRequestHeaders;
-          const args = this.protocolRepository.getProcessor(method).readRequest();
+          const headers = this.io.requestHeadersSerializer.read() as IRequestHeaders;
+          const args = this.io.getProcessor(method).readRequest();
 
           if (headers.cancelable) {
             const tokenSource = new CancellationTokenSource();
@@ -290,21 +287,21 @@ export class SumiConnection implements IDisposable {
                   };
                   listenReadable(result, {
                     onData: (data) => {
-                      this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, data));
+                      this.socket.send(this.io.Response(requestId, method, responseHeaders, data));
                     },
                     onEnd: () => {
-                      this.socket.send(this.protocolRepository.Response(requestId, method, responseHeaders, null));
+                      this.socket.send(this.io.Response(requestId, method, responseHeaders, null));
                     },
                   });
                 } else {
-                  this.socket.send(this.protocolRepository.Response(requestId, method, nullHeaders, result));
+                  this.socket.send(this.io.Response(requestId, method, nullHeaders, result));
                 }
 
                 this._cancellationTokenSources.delete(requestId);
               };
 
               const onError = (err: Error) => {
-                this.socket.send(this.protocolRepository.Error(requestId, method, nullHeaders, err));
+                this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
                 this._cancellationTokenSources.delete(requestId);
               };
 

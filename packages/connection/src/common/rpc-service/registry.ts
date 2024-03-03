@@ -1,8 +1,27 @@
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { ProtocolRepository, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
+import { MessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
 import { RPCServiceMethod } from '../types';
-import { getServiceMethods } from '../utils';
+
+export function getServiceMethods(service: any): string[] {
+  let props: any[] = [];
+
+  if (/^\s*class/.test(service.constructor.toString())) {
+    let obj = service;
+    do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+    } while ((obj = Object.getPrototypeOf(obj)));
+    props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
+  } else {
+    for (const prop in service) {
+      if (service[prop] && typeof service[prop] === 'function') {
+        props.push(prop);
+      }
+    }
+  }
+
+  return props;
+}
 
 /**
  * Store all executable services
@@ -59,7 +78,7 @@ export class ServiceRegistry {
 export class ProtocolRegistry {
   protected emitter = new Emitter<string[]>();
 
-  private methodMap = new Map<PropertyKey, TSumiProtocolMethod>();
+  private protocolMap = new Map<PropertyKey, TSumiProtocolMethod>();
 
   onProtocolUpdate = this.emitter.event;
 
@@ -79,28 +98,26 @@ export class ProtocolRegistry {
         method = nameConverter(method);
       }
 
-      const copy = {
+      this.protocolMap.set(method, {
         ...proto,
         method,
-      };
-
-      this.methodMap.set(method, copy);
+      });
       serviceNames.push(method);
     }
 
     this.emitter.fire(serviceNames);
   }
 
-  apply(repo: ProtocolRepository) {
-    for (const method of this.methodMap.values()) {
-      repo.loadProtocolMethod(method);
+  applyTo(io: MessageIO) {
+    for (const protocol of this.protocolMap.values()) {
+      io.loadProtocolMethod(protocol);
     }
 
     this.onProtocolUpdate((methods) => {
       for (const method of methods) {
-        const protocol = this.methodMap.get(method);
+        const protocol = this.protocolMap.get(method);
         if (protocol) {
-          repo.loadProtocolMethod(protocol);
+          io.loadProtocolMethod(protocol);
         }
       }
     });

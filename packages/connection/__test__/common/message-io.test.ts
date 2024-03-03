@@ -1,13 +1,13 @@
-import { OperationType, ProtocolRepository } from '@opensumi/ide-connection/lib/common/rpc';
+import { MessageIO } from '@opensumi/ide-connection/lib/common/rpc';
 
 import { protocols } from './rpc/utils';
 
-describe('protocol repo', () => {
+describe('message io', () => {
   it('should be able to create a request', () => {
-    const repo = new ProtocolRepository();
+    const repo = new MessageIO();
     repo.loadProtocolMethod(protocols.add.protocol);
 
-    const buf = repo.Request(0, OperationType.Request, protocols.add.protocol.method, {}, [1, 2]);
+    const buf = repo.Request(0, protocols.add.protocol.method, {}, [1, 2]);
     expect(buf.byteLength).toBeGreaterThan(20);
 
     repo.reader.reset(buf);
@@ -25,7 +25,7 @@ describe('protocol repo', () => {
     expect(args).toEqual([1, 2]);
   });
   it('should be able to create a response', () => {
-    const repo = new ProtocolRepository();
+    const repo = new MessageIO();
     repo.loadProtocolMethod(protocols.add.protocol);
     const buf = repo.Response(0, protocols.add.protocol.method, {}, 3);
     expect(buf.byteLength).toBeGreaterThan(20);

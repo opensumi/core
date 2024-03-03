@@ -1,7 +1,7 @@
 import { Deferred } from '@opensumi/ide-core-common';
 
+import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../../capturer';
 import { ILogger, IRPCServiceMap } from '../../types';
-import { ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../../utils';
 
 import type { ServiceRegistry } from '../registry';
 

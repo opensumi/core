@@ -1,8 +1,7 @@
 import { ObjectTypeDescription, Serializer, TypeDescription } from '@furyjs/fury';
 import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
-import { furyFactory } from './shared';
-const { fury, reader, writer } = furyFactory();
+import { FuryFactoryReturn, furyFactory } from './shared';
 
 type Writable = Record<string, any> & { kind: string };
 
@@ -16,7 +15,14 @@ export const oneOf7 = (
     TypeDescription,
     TypeDescription,
   ],
+  context?: FuryFactoryReturn,
 ) => {
+  if (!context) {
+    context = furyFactory();
+  }
+
+  const { fury, reader, writer } = context;
+
   const serializers = new Array(7) as Serializer[];
   const kinds = new Array(7) as string[];
 

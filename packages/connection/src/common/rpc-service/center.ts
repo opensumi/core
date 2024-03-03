@@ -5,7 +5,6 @@ import { METHOD_NOT_REGISTERED } from '../constants';
 import { TSumiProtocol } from '../rpc';
 import { SumiConnection } from '../rpc/connection';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
-import { getMethodName } from '../utils';
 
 import { ProtocolRegistry, ProxyJson, ProxySumi, ServiceRegistry } from './proxy';
 import { ProxyBase } from './proxy/base';
@@ -51,18 +50,18 @@ export class RPCServiceCenter {
       this.deferred.resolve();
     }
 
-    this.protocolRegistry.apply(connection.protocolRepository);
+    this.protocolRegistry.applyTo(connection.io);
 
     const index = this.proxies.length - 1;
-    const sumiProxy = new ProxySumi(this.registry, this.logger);
-    sumiProxy.listen(connection);
+    const proxy = new ProxySumi(this.registry, this.logger);
+    proxy.listen(connection);
 
-    this.proxies.push(sumiProxy);
+    this.proxies.push(proxy);
 
     return {
       dispose: () => {
         this.proxies.splice(index, 1);
-        sumiProxy.dispose();
+        proxy.dispose();
       },
     };
   }
@@ -74,15 +73,15 @@ export class RPCServiceCenter {
 
     const index = this.proxies.length - 1;
 
-    const jsonProxy = new ProxyJson(this.registry, this.logger);
-    jsonProxy.listen(connection);
+    const proxy = new ProxyJson(this.registry, this.logger);
+    proxy.listen(connection);
 
-    this.proxies.push(jsonProxy);
+    this.proxies.push(proxy);
 
     return {
       dispose: () => {
         this.proxies.splice(index, 1);
-        jsonProxy.dispose();
+        proxy.dispose();
       },
     };
   }
@@ -126,4 +125,15 @@ export class RPCServiceCenter {
     // or just return `undefined`.
     return result.length === 1 ? result[0] : result;
   }
+}
+
+export function getNotificationName(serviceName: string, name: string) {
+  return `on:${serviceName}:${name}`;
+}
+export function getRequestName(serviceName: string, name: string) {
+  return `${serviceName}:${name}`;
+}
+
+export function getMethodName(serviceName: string, name: string) {
+  return name.startsWith('on') ? getNotificationName(serviceName, name) : getRequestName(serviceName, name);
 }

@@ -2,7 +2,7 @@ import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
-import { ConnectionInfo, WSCloseInfo } from '../common/utils';
+import { ConnectionInfo, WSCloseInfo } from '../common/types';
 import { WSChannel, parse, pingMessage } from '../common/ws-channel';
 
 /**

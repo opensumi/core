@@ -21,8 +21,8 @@ export type THandlerResult<R> = R | Promise<R>;
 export type TGenericNotificationHandler = (...args: any[]) => void | Promise<void>;
 export type TGenericRequestHandler<R> = (...args: any[]) => THandlerResult<R>;
 
-export type TOnRequestNotFoundHandler = (method: string, args: any[]) => THandlerResult<any>;
-export type TOnNotificationNotFoundHandler = (method: string, args: any[]) => THandlerResult<void>;
+export type TRequestNotFoundHandler = (method: string, args: any[]) => THandlerResult<any>;
+export type TNotificationNotFoundHandler = (method: string, args: any[]) => THandlerResult<void>;
 
 export type TSerializer = { serializer: Serializer } & Omit<ReturnType<Fury['registerSerializer']>, 'serializer'>;
 
@@ -37,21 +37,10 @@ export interface IRequestHeaders extends Headers {
 
 export type IResponseHeaders = Headers;
 
+export type ITransferable = any;
 export type TRequestTransferable = ITransferable[];
 
-export interface ITransferable {
-  /**
-   * transfer raw value
-   */
-  r: any;
-
-  /**
-   * value that cannot be transferred, use string instead
-   */
-  $?: string;
-}
-
-export interface IProtocolProcessor {
+export interface IProtocolSerializer {
   writeRequest(args: any[]): void;
   readRequest(): any[];
   writeResponse<T = any>(result: T): void;
