@@ -6,8 +6,8 @@ import { Bench } from 'tinybench';
 import { MessagePortConnection } from '../src/common/connection/drivers/message-port';
 import { SumiConnection } from '../src/common/rpc/connection';
 import { ProtocolRepository } from '../src/common/rpc/protocol-repository';
-import { ServiceRegistry } from '../src/common/rpc-service/proxy/registry';
 import { ProxySumi } from '../src/common/rpc-service/proxy/sumi';
+import { ServiceRegistry } from '../src/common/rpc-service/registry';
 
 const bench = new Bench({
   time: 2000,
@@ -78,8 +78,8 @@ export function createSumiRPCClientPair(pair: ReturnType<typeof createConnection
   repo.loadProtocolMethod(protocols.returnUndefined.protocol);
   repo.loadProtocolMethod(protocols.add.protocol);
   repo.loadProtocolMethod(protocols.getContent.protocol);
-  pair.connection1.setProtocolRepository(repo);
-  pair.connection2.setProtocolRepository(repo);
+  pair.connection1.loadProtocolRepository(repo);
+  pair.connection2.loadProtocolRepository(repo);
 
   const registry = new ServiceRegistry();
   registry.registerService({

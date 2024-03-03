@@ -1,4 +1,3 @@
-export * from './legacy';
+export * from './json';
 export * from './sumi';
-export * from './registry';
-export * from './invoker';
+export * from '../registry';

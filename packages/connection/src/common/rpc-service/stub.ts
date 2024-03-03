@@ -27,16 +27,16 @@ export class RPCServiceStub {
     new Proxy<T extends void ? RPCServiceStub : RPCServiceStub & T>(this as any, {
       // 调用方
       get: (target, prop: string) => {
-        if (!target[prop]) {
-          if (typeof prop === 'symbol') {
-            return Promise.resolve();
-          }
+        if (typeof prop === 'symbol') {
+          return Promise.resolve();
+        }
 
+        if (!target[prop]) {
           target[prop] = (...args: any[]) => this.broadcast(prop, ...args);
           return target[prop];
-        } else {
-          return target[prop];
         }
+
+        return target[prop];
       },
     });
 }

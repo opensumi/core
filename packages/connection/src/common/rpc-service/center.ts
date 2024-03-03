@@ -2,22 +2,23 @@ import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { ProtocolRepository, TSumiProtocol } from '../rpc';
+import { TSumiProtocol } from '../rpc';
 import { SumiConnection } from '../rpc/connection';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { getMethodName } from '../utils';
 
-import { Invoker, ProxyLegacy, ProxySumi, ServiceRegistry } from './proxy';
+import { ProtocolRegistry, ProxyJson, ProxySumi, ServiceRegistry } from './proxy';
+import { ProxyBase } from './proxy/base';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 
 export class RPCServiceCenter {
   public uid: string;
 
-  private invokers: Invoker[] = [];
+  private proxies: ProxyBase<any>[] = [];
 
-  private protocolRepository = new ProtocolRepository();
   private registry = new ServiceRegistry();
+  private protocolRegistry = new ProtocolRegistry();
 
   private deferred = new Deferred<void>();
   private logger: ILogger;
@@ -40,54 +41,48 @@ export class RPCServiceCenter {
   }
 
   loadProtocol(protocol: TSumiProtocol) {
-    this.protocolRepository.loadProtocol(protocol, {
+    this.protocolRegistry.addProtocol(protocol, {
       nameConverter: (name) => getMethodName(protocol.name, name),
     });
   }
 
   setSumiConnection(connection: SumiConnection) {
-    if (this.invokers.length === 0) {
+    if (this.proxies.length === 0) {
       this.deferred.resolve();
     }
 
-    const index = this.invokers.length - 1;
+    this.protocolRegistry.apply(connection.protocolRepository);
 
-    const invoker = new Invoker();
-
+    const index = this.proxies.length - 1;
     const sumiProxy = new ProxySumi(this.registry, this.logger);
-    invoker.attachSumi(sumiProxy);
     sumiProxy.listen(connection);
 
-    this.invokers.push(invoker);
+    this.proxies.push(sumiProxy);
 
     return {
       dispose: () => {
-        this.invokers.splice(index, 1);
-        invoker.dispose();
+        this.proxies.splice(index, 1);
+        sumiProxy.dispose();
       },
     };
   }
 
   setConnection(connection: MessageConnection) {
-    if (this.invokers.length === 0) {
+    if (this.proxies.length === 0) {
       this.deferred.resolve();
     }
 
-    const index = this.invokers.length - 1;
+    const index = this.proxies.length - 1;
 
-    const invoker = new Invoker();
+    const jsonProxy = new ProxyJson(this.registry, this.logger);
+    jsonProxy.listen(connection);
 
-    const legacyProxy = new ProxyLegacy(this.registry, this.logger);
-    legacyProxy.listen(connection);
-
-    invoker.attachLegacy(legacyProxy);
-
-    this.invokers.push(invoker);
+    this.proxies.push(jsonProxy);
 
     return {
       dispose: () => {
-        this.invokers.splice(index, 1);
-        invoker.dispose();
+        this.proxies.splice(index, 1);
+        jsonProxy.dispose();
       },
     };
   }
@@ -106,7 +101,7 @@ export class RPCServiceCenter {
     await this.ready();
 
     const name = getMethodName(serviceName, _name);
-    const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
+    const broadcastResult = await Promise.all(this.proxies.map((proxy) => proxy.invoke(name, ...args)));
 
     const doubtfulResult = [] as any[];
     const result = [] as any[];

@@ -170,10 +170,6 @@ export class SumiConnection implements IDisposable {
     };
   }
 
-  setProtocolRepository(protocolRepository: ProtocolRepository) {
-    this.protocolRepository = protocolRepository;
-  }
-
   listen() {
     const { reader } = this.protocolRepository;
 

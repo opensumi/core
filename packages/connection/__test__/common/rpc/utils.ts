@@ -5,7 +5,7 @@ import { MessageChannel, MessagePort } from 'worker_threads';
 
 import { Type } from '@furyjs/fury';
 
-import { ProxyLegacy, WSChannel, createWebSocketConnection } from '@opensumi/ide-connection';
+import { ProxyJson, WSChannel, createWebSocketConnection } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ProtocolRepository } from '@opensumi/ide-connection/lib/common/rpc/protocol-repository';
 import { Deferred } from '@opensumi/ide-core-common';
@@ -14,8 +14,8 @@ import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { NodeMessagePortConnection } from '../../../src/common/connection/drivers/node-message-port';
 import { SumiConnection } from '../../../src/common/rpc/connection';
-import { ServiceRegistry } from '../../../src/common/rpc-service/proxy/registry';
 import { ProxySumi } from '../../../src/common/rpc-service/proxy/sumi';
+import { ServiceRegistry } from '../../../src/common/rpc-service/registry';
 
 function createRandomBuffer(size: number): Buffer {
   const randomContent = randomBytes(size);
@@ -208,8 +208,8 @@ export function createSumiRPCClientPair(pair: { connection1: SumiConnection; con
   repo.loadProtocolMethod(protocols.returnUndefined.protocol);
   repo.loadProtocolMethod(protocols.add.protocol);
   repo.loadProtocolMethod(protocols.getContent.protocol);
-  pair.connection1.setProtocolRepository(repo);
-  pair.connection2.setProtocolRepository(repo);
+  pair.connection1.loadProtocolRepository(repo);
+  pair.connection2.loadProtocolRepository(repo);
 
   const registry = new ServiceRegistry();
   registry.registerService({
@@ -254,7 +254,7 @@ export function createLegacyRPCClientPair(pair: { connection1: MessageConnection
     returnUndefined: () => undefined,
   });
 
-  const client1 = new ProxyLegacy(registry);
+  const client1 = new ProxyJson(registry);
   client1.listen(pair.connection1);
   const invoker1 = client1.getInvokeProxy();
 
@@ -267,7 +267,7 @@ export function createLegacyRPCClientPair(pair: { connection1: MessageConnection
     getLongMessage: () => longMessage,
   });
 
-  const client2 = new ProxyLegacy(registry2);
+  const client2 = new ProxyJson(registry2);
 
   client2.listen(pair.connection2);
 

@@ -1,7 +1,8 @@
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { RPCServiceMethod } from '../../types';
-import { getServiceMethods } from '../../utils';
+import { ProtocolRepository, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
+import { RPCServiceMethod } from '../types';
+import { getServiceMethods } from '../utils';
 
 /**
  * Store all executable services
@@ -52,5 +53,56 @@ export class ServiceRegistry {
 
   methods() {
     return Array.from(this.serviceMethodMap.keys());
+  }
+}
+
+export class ProtocolRegistry {
+  protected emitter = new Emitter<string[]>();
+
+  private methodMap = new Map<PropertyKey, TSumiProtocolMethod>();
+
+  onProtocolUpdate = this.emitter.event;
+
+  addProtocol(
+    protocol: TSumiProtocol,
+    options?: {
+      nameConverter?: (str: string) => string;
+    },
+  ) {
+    const serviceNames = [] as string[];
+    const { nameConverter } = options || {};
+    const { methods } = protocol;
+
+    for (const proto of methods) {
+      let method = proto.method;
+      if (nameConverter) {
+        method = nameConverter(method);
+      }
+
+      const copy = {
+        ...proto,
+        method,
+      };
+
+      this.methodMap.set(method, copy);
+      serviceNames.push(method);
+    }
+
+    this.emitter.fire(serviceNames);
+  }
+
+  apply(repo: ProtocolRepository) {
+    for (const method of this.methodMap.values()) {
+      repo.loadProtocolMethod(method);
+    }
+
+    this.onProtocolUpdate((methods) => {
+      for (const method of methods) {
+        const protocol = this.methodMap.get(method);
+        if (protocol) {
+          repo.loadProtocolMethod(protocol);
+        }
+      }
+    });
   }
 }
