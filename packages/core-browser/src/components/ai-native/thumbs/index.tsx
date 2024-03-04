@@ -15,7 +15,7 @@ interface ThumbsProps {
 }
 
 export const Thumbs = (props: ThumbsProps) => {
-  const aiInlineChatService = useInjectable<IAiInlineChatService>(IAIInlineChatService);
+  const aiInlineChatService = useInjectable<IAIInlineChatService>(IAIInlineChatService);
   const { relationId, onClick, wrapperClassName } = props;
 
   const [thumbsupIcon, setThumbsupIcon] = useState<boolean | string>('thumbs');

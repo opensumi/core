@@ -23,19 +23,15 @@ export class AIInlineChatService implements IAIInlineChatService {
   private readonly _onChatStatus = new Emitter<EInlineChatStatus>();
   public readonly onChatStatus: Event<EInlineChatStatus> = this._onChatStatus.event;
 
-  // 采纳
   public readonly _onAccept = new Emitter<void>();
   public readonly onAccept: Event<void> = this._onAccept.event;
 
-  // 丢弃
   public readonly _onDiscard = new Emitter<void>();
   public readonly onDiscard: Event<void> = this._onDiscard.event;
 
-  // 重新生成
   public readonly _onRegenerate = new Emitter<void>();
   public readonly onRegenerate: Event<void> = this._onRegenerate.event;
 
-  // 点赞点踩
   private readonly _onThumbs = new Emitter<boolean>();
   public readonly onThumbs: Event<boolean> = this._onThumbs.event;
 

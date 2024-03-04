@@ -27,9 +27,10 @@ export class BaseAIBackService
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<T> {
+    // mock request
+    await sleep(1000);
     return Promise.resolve({
-      errorCode: 0,
-      data: 'Hello, world!',
+      data: 'Hello, OpenSumi!',
     } as T);
   }
   async requestStream<T = IAIBackServiceResponse<string>>(

@@ -20,17 +20,11 @@ import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/a
 import { Schemes, localize } from '@opensumi/ide-core-common';
 import { AI_NATIVE_SETTING_GROUP_ID } from '@opensumi/ide-core-common/src/settings/ai-native';
 import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
-import {
-  BrowserEditorContribution,
-  IEditorDocumentModelContentRegistry,
-  IEditorFeatureRegistry,
-} from '@opensumi/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { SettingContribution } from '@opensumi/ide-preferences';
-
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
-import { AIDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
 import { IAINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
@@ -49,9 +43,6 @@ export class AINativeBrowserContribution
     SettingContribution,
     KeybindingContribution
 {
-  @Autowired()
-  private readonly aiDiffDocumentProvider: AIDiffDocumentProvider;
-
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -127,21 +118,6 @@ export class AINativeBrowserContribution
       execute: (value: boolean) => {
         this.aiNativeService.launchInlineChatVisible(value);
       },
-    });
-  }
-
-  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
-    registry.registerEditorDocumentModelContentProvider(this.aiDiffDocumentProvider);
-  }
-
-  registerResource(resourceService: ResourceService): void {
-    resourceService.registerResourceProvider({
-      scheme: Schemes.ai,
-      provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
-        uri,
-        icon: getIcon('file-text'),
-        name: `AI Diff ${uri.displayName}`,
-      }),
     });
   }
 
