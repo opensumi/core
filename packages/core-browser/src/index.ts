@@ -42,3 +42,4 @@ export * from './markdown';
 export * from './extensions';
 
 export * from './static-resource';
+export * from './ai-native';

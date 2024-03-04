@@ -599,6 +599,7 @@ export const defaultSettingSections: {
       preferences: [
         { id: 'general.theme', localized: 'preference.general.theme' },
         { id: 'general.icon', localized: 'preference.general.icon' },
+        { id: 'general.productIconTheme', localized: 'preference.general.productIconTheme' },
         {
           id: 'general.language',
           localized: 'preference.general.language',

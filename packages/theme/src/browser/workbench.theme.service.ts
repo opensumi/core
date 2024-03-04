@@ -33,6 +33,7 @@ import {
   selectionBackground,
 } from '../common/color-registry';
 import { ThemeChangedEvent } from '../common/event';
+import { getIconRegistry } from '../common/icon-registry';
 import {
   ColorIdentifier,
   DEFAULT_THEME_ID,
@@ -75,6 +76,8 @@ const tokenGroupToScopesMap = {
 @Injectable()
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
   private colorRegistry = getColorRegistry();
+
+  private iconRegistry = getIconRegistry();
 
   private colorClassNameMap = new Map<string, string>();
 

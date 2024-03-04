@@ -1,8 +1,10 @@
+export type JSONSchemaType = string | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object';
+
 export interface IJSONSchema {
   id?: string;
   $id?: string;
   $schema?: string;
-  type?: string | string[];
+  type?: JSONSchemaType | JSONSchemaType[];
   title?: string;
   default?: any;
   definitions?: IJSONSchemaMap;
@@ -39,6 +41,7 @@ export interface IJSONSchema {
   const?: any;
   contains?: IJSONSchema;
   propertyNames?: IJSONSchema;
+  examples?: any[];
 
   // schema draft 07
   $comment?: string;
@@ -46,16 +49,37 @@ export interface IJSONSchema {
   then?: IJSONSchema;
   else?: IJSONSchema;
 
+  unevaluatedProperties?: boolean | IJSONSchema;
+  unevaluatedItems?: boolean | IJSONSchema;
+  minContains?: number;
+  maxContains?: number;
+  deprecated?: boolean;
+  dependentRequired?: { [prop: string]: string[] };
+  dependentSchemas?: IJSONSchemaMap;
+  $defs?: { [name: string]: IJSONSchema };
+  $anchor?: string;
+  $recursiveRef?: string;
+  $recursiveAnchor?: string;
+  $vocabulary?: any;
+
+  prefixItems?: IJSONSchema[];
+  $dynamicRef?: string;
+  $dynamicAnchor?: string;
+
   // VSCode extensions
-  defaultSnippets?: IJSONSchemaSnippet[]; // VSCode extension
-  errorMessage?: string; // VSCode extension
-  patternErrorMessage?: string; // VSCode extension
-  deprecationMessage?: string; // VSCode extension
-  enumDescriptions?: string[]; // VSCode extension
-  markdownEnumDescriptions?: string[]; // VSCode extension
-  markdownDescription?: string; // VSCode extension
-  doNotSuggest?: boolean; // VSCode extension
-  allowComments?: boolean; // VSCode extension
+
+  defaultSnippets?: IJSONSchemaSnippet[];
+  errorMessage?: string;
+  patternErrorMessage?: string;
+  deprecationMessage?: string;
+  markdownDeprecationMessage?: string;
+  enumDescriptions?: string[];
+  markdownEnumDescriptions?: string[];
+  markdownDescription?: string;
+  doNotSuggest?: boolean;
+  suggestSortText?: string;
+  allowComments?: boolean;
+  allowTrailingCommas?: boolean;
 }
 
 export interface IJSONSchemaMap {

@@ -5,9 +5,16 @@ import { IThemeData } from '../common';
 import { ThemeContributionProvider } from '../common/provider';
 import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
 import { ICSSStyleService } from '../common/style';
-import { IIconService, IThemeService, IThemeStore, ThemeServicePath } from '../common/theme.service';
+import {
+  IIconService,
+  IProductIconService,
+  IThemeService,
+  IThemeStore,
+  ThemeServicePath,
+} from '../common/theme.service';
 
 import { IconService } from './icon.service';
+import { ProductIconService } from './product-icon.service';
 import { SemanticTokenRegistryImpl } from './semantic-tokens-registry';
 import { CSSStyleService } from './style.service';
 import { ThemeData } from './theme-data';
@@ -29,6 +36,10 @@ export class ThemeModule extends BrowserModule {
     {
       token: IIconService,
       useClass: IconService,
+    },
+    {
+      token: IProductIconService,
+      useClass: ProductIconService,
     },
     {
       token: ISemanticTokenRegistry,
@@ -56,3 +67,4 @@ export class ThemeModule extends BrowserModule {
 }
 
 export * from './icon.service';
+export * from './product-icon.service';

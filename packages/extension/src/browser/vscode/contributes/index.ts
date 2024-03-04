@@ -20,6 +20,7 @@ import { LocalizationsContributionPoint } from './localization';
 import { MenusContributionPoint, SubmenusContributionPoint } from './menu';
 import { ProblemMatchersContributionPoint, ProblemMatchersContributions } from './problemMatchers';
 import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatterns';
+import { ProductIconThemesContributionPoint } from './productIconTheme';
 import { SemanticTokenModifiersContributionPoint } from './semanticTokenModifiers';
 import { SemanticTokenScopesContributionPoint } from './semanticTokenScopes';
 import { SemanticTokenTypesContributionPoint } from './semanticTokenTypes';
@@ -64,6 +65,7 @@ export class VSCodeContributesService extends ExtensionContributesService {
     IconsContributionPoint,
     LocalizationsContributionPoint,
     CommandsContributionPoint,
+    ProductIconThemesContributionPoint,
     GrammarsContributionPoint,
     LanguagesContributionPoint,
     ConfigurationContributionPoint,

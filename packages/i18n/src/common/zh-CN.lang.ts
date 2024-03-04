@@ -474,7 +474,8 @@ export const localizationBundle = {
     'settings.group.view': '视图',
 
     'preference.general.theme': '主题',
-    'preference.general.icon': '图标主题',
+    'preference.general.icon': '文件图标主题',
+    'preference.general.productIconTheme': '产品图标主题',
     'preference.workbench.colorCustomizations': '覆盖当前所选颜色主题的颜色',
     'preference.general.language': '语言',
     'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
@@ -727,13 +728,15 @@ export const localizationBundle = {
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
+    'theme.productIcon.toggle': '产品图标主题',
 
     'theme.base.vs': '浅色主题',
     'theme.base.vs-dark': '深色主题',
     'theme.base.hc': '高对比度主题',
     'theme.current': '当前主题',
     'theme.quickopen.plh': '选择主题（上下移动光标预览）',
-    'icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
+    'theme.icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
+    'theme.productIcon.quickopen.plh': '选择产品图标主题（上下移动光标预览）',
 
     'preference.workbench.list.openMode':
       '控制如何使用鼠标展开树和打开列表项（若支持）。如果此设置不适用，某些树和列表可能会选择忽略此设置。',

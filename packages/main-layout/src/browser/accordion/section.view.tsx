@@ -71,6 +71,8 @@ export const AccordionSection = ({
   const styles_actions_wrap = useDesignStyles(styles.actions_wrap);
   const styles_kt_split_panel = useDesignStyles(styles.kt_split_panel);
   const styles_kt_split_panel_header = useDesignStyles(styles.kt_split_panel_header);
+  const styles_kt_split_panel_body = useDesignStyles(styles.kt_split_panel_body);
+  const styles_section_badge = useDesignStyles(styles.section_badge);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [metadata, setMetadata] = React.useState({
@@ -161,7 +163,7 @@ export const AccordionSection = ({
                 {transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
-            {metadata.badge && <div className={styles.section_badge}>{metadata.badge}</div>}
+            {metadata.badge && <div className={styles_section_badge}>{metadata.badge}</div>}
           </div>
           {expanded && titleMenu && (
             <div className={styles_actions_wrap}>
@@ -175,7 +177,7 @@ export const AccordionSection = ({
         </div>
       )}
       <div
-        className={cls([styles.kt_split_panel_body, { [styles.hide]: !expanded }])}
+        className={cls([styles_kt_split_panel_body, { [styles.hide]: !expanded }])}
         style={bodyStyle}
         ref={contentRef}
       >

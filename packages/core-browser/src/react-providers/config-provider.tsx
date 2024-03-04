@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { IAINativeConfig } from '@opensumi/ide-core-common';
+
 import { ILayoutViewSize } from '../layout/constants';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
@@ -263,6 +265,10 @@ export interface AppConfig {
    * default -1，it means disable
    */
   rpcMessageTimeout?: number;
+  /**
+   * AI Native 相关的配置项
+   */
+  AINativeConfig?: IAINativeConfig;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

@@ -213,7 +213,7 @@ export const designRceBackground = registerColor(
 
 export const designCharInputBackground = registerColor(
   'design.charinput.background',
-  { dark: new Color(new RGBA(255, 255, 255, 0.08)), light: '#fff', hcDark: null, hcLight: null },
+  { dark: new Color(new RGBA(0, 0, 0, 0.25)), light: '#fff', hcDark: null, hcLight: null },
   '',
   true,
 );
