@@ -191,7 +191,7 @@ export interface IMainThreadOutput {
 export interface IExtHostOutput {
   createOutputChannel(
     name: string,
-    options: { /** literal-type defines return type */ log: true },
+    options: { /** literal-type defines return type */ log: true } | undefined,
   ): types.OutputChannel;
 }
 

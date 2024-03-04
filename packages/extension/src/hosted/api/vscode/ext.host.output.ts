@@ -7,7 +7,9 @@ import * as types from '../../../common/vscode/ext-types';
 export class ExtHostOutput implements IExtHostOutput {
   constructor(private rpcProtocol: IRPCProtocol) {}
 
-  createOutputChannel(name: string, options?: { log: true }): types.OutputChannel {
+  createOutputChannel(name: string): types.OutputChannel;
+  createOutputChannel(name: string, options: { log?: true }): types.LogOutputChannel;
+  createOutputChannel(name: string, options?: { log?: true }): types.OutputChannel {
     if (options?.log) {
       return new LogOutputChannelImpl(name, this.rpcProtocol, types.OutputChannelLogLevel.Info);
     }

@@ -372,12 +372,12 @@ declare module 'vscode' {
     export function createOutputChannel(name: string): OutputChannel;
 
     /**
-   * Creates a new {@link LogOutputChannel log output channel} with the given name.
-   *
-   * @param name Human-readable string which will be used to represent the channel in the UI.
-   * @param options Options for the log output channel.
-   * @returns A new log output channel.
-   */
+     * Creates a new {@link LogOutputChannel log output channel} with the given name.
+     *
+     * @param name Human-readable string which will be used to represent the channel in the UI.
+     * @param options Options for the log output channel.
+     * @returns A new log output channel.
+     */
     export function createOutputChannel(name: string, options: { /** literal-type defines return type */log: true }): LogOutputChannel;
 
     /**
