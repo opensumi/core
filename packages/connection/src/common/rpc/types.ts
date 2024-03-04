@@ -45,9 +45,4 @@ export interface IProtocolSerializer {
   readRequest(): any[];
   writeResponse<T = any>(result: T): void;
   readResponse<T = any>(): T;
-
-  serializeRequest(args: any[]): Uint8Array;
-  deserializeRequest(buffer: Uint8Array): any[];
-  serializeResult<T = any>(result: T): Uint8Array;
-  deserializeResult<T = any>(buffer: Uint8Array): T;
 }

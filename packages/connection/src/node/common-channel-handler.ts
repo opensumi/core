@@ -22,7 +22,7 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
     this.initWSServer();
   }
 
-  doHeartbeat(connectionId: string, connection: WSWebSocketConnection): void {
+  doHeartbeat(connection: WSWebSocketConnection): void {
     connection.socket.ping();
   }
 

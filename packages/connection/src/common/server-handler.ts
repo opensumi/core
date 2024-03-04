@@ -99,23 +99,29 @@ export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSChannel> = new Map();
-  protected heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
+
+  heartbeatTimer: NodeJS.Timeout | null = null;
 
   constructor(public handlerId: string, protected logger: ILogger = console) {}
 
-  abstract doHeartbeat(connectionId: string, connection: any): void;
+  abstract doHeartbeat(connection: any): void;
 
-  private heartbeat(connectionId: string, connection: any) {
+  private heartbeat(connection: any) {
     const timer = global.setTimeout(() => {
-      this.doHeartbeat(connectionId, connection);
-      this.heartbeat(connectionId, connection);
+      this.doHeartbeat(connection);
+      this.heartbeat(connection);
     }, 5000);
 
-    this.heartbeatMap.set(connectionId, timer);
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+    }
+
+    this.heartbeatTimer = timer;
   }
 
   receiveConnection(connection: IConnectionShape<Uint8Array>) {
     let clientId: string;
+    this.heartbeat(connection);
 
     connection.onMessage((data: Uint8Array) => {
       let msg: ChannelMessage;
@@ -130,8 +136,6 @@ export abstract class BaseCommonChannelHandler {
             const { id, path } = msg;
             clientId = msg.clientId;
             this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
-
-            this.heartbeat(id, connection);
 
             const channel = new WSChannel(connection, { id, logger: this.logger });
             this.channelMap.set(id, channel);
@@ -158,13 +162,6 @@ export abstract class BaseCommonChannelHandler {
     connection.onceClose(() => {
       commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
 
-      if (this.heartbeatMap.has(clientId)) {
-        clearTimeout(this.heartbeatMap.get(clientId) as NodeJS.Timeout);
-        this.heartbeatMap.delete(clientId);
-
-        this.logger.log(`Clear heartbeat from channel ${clientId}`);
-      }
-
       Array.from(this.channelMap.values())
         .filter((channel) => channel.id.toString().indexOf(clientId) !== -1)
         .forEach((channel) => {
@@ -174,6 +171,12 @@ export abstract class BaseCommonChannelHandler {
           this.logger.log(`Remove connection channel ${channel.id}`);
         });
     });
+  }
+
+  dispose() {
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+    }
   }
 }
 

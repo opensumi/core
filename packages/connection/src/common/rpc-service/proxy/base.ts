@@ -37,12 +37,10 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   // capture messages for opensumi devtools
   private capture(message: ICapturedMessage): void {
-    if (this.capturer) {
-      this.capturer({
-        ...message,
-        engine: this.engine,
-      });
-    }
+    this.capturer({
+      ...message,
+      engine: this.engine,
+    });
   }
 
   protected nextRequestId() {

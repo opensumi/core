@@ -6,8 +6,9 @@ import { TSumiProtocol } from '../rpc';
 import { SumiConnection } from '../rpc/connection';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 
-import { ProtocolRegistry, ProxyJson, ProxySumi, ServiceRegistry } from './proxy';
+import { ProxyJson, ProxySumi } from './proxy';
 import { ProxyBase } from './proxy/base';
+import { ProtocolRegistry, ServiceRegistry } from './registry';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 
@@ -16,7 +17,7 @@ export class RPCServiceCenter {
 
   private proxies: ProxyBase<any>[] = [];
 
-  private registry = new ServiceRegistry();
+  private serviceRegistry = new ServiceRegistry();
   private protocolRegistry = new ProtocolRegistry();
 
   private deferred = new Deferred<void>();
@@ -53,7 +54,7 @@ export class RPCServiceCenter {
     this.protocolRegistry.applyTo(connection.io);
 
     const index = this.proxies.length - 1;
-    const proxy = new ProxySumi(this.registry, this.logger);
+    const proxy = new ProxySumi(this.serviceRegistry, this.logger);
     proxy.listen(connection);
 
     this.proxies.push(proxy);
@@ -73,7 +74,7 @@ export class RPCServiceCenter {
 
     const index = this.proxies.length - 1;
 
-    const proxy = new ProxyJson(this.registry, this.logger);
+    const proxy = new ProxyJson(this.serviceRegistry, this.logger);
     proxy.listen(connection);
 
     this.proxies.push(proxy);
@@ -87,11 +88,11 @@ export class RPCServiceCenter {
   }
 
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
-    this.registry.register(getMethodName(serviceName, _name), method);
+    this.serviceRegistry.register(getMethodName(serviceName, _name), method);
   }
 
   onRequestService(serviceName: string, service: any) {
-    this.registry.registerService(service, {
+    this.serviceRegistry.registerService(service, {
       nameConverter: (name) => getMethodName(serviceName, name),
     });
   }

@@ -12,7 +12,6 @@ import {
   IRequestHeaders,
   IResponseHeaders,
   ITransferable,
-  TRequestTransferable,
   TSerializer,
   TSumiProtocol,
   TSumiProtocolMethod,
@@ -44,7 +43,6 @@ export const HeadersProto = {
 class SumiProtocolSerializer implements IProtocolSerializer {
   request: TSerializer;
   result: TSerializer;
-  requestArgsLength: number;
 
   constructor(methodProtocol: TSumiProtocolMethod, public fury: Fury) {
     const argsTuple = [] as TypeDescription[];
@@ -55,8 +53,6 @@ class SumiProtocolSerializer implements IProtocolSerializer {
 
     const requestProto = Type.tuple(argsTuple);
     const resultProto = methodProtocol.response.type || Type.any();
-
-    this.requestArgsLength = argsTuple.length;
 
     this.request = this.fury.registerSerializer(requestProto);
     this.result = this.fury.registerSerializer(resultProto);
@@ -73,19 +69,6 @@ class SumiProtocolSerializer implements IProtocolSerializer {
   }
   readResponse<T = ITransferable>(): T {
     return this.result.serializer.read();
-  }
-
-  serializeRequest(args: any[]): Uint8Array {
-    return this.request.serialize(args);
-  }
-  deserializeRequest(buffer: Uint8Array): any[] {
-    return this.request.deserialize(buffer) as TRequestTransferable;
-  }
-  serializeResult<T = any>(result: T): Uint8Array {
-    return this.result.serialize(result);
-  }
-  deserializeResult<T = any>(buffer: Uint8Array): T {
-    return this.result.deserialize(buffer) as ITransferable;
   }
 }
 
@@ -107,22 +90,6 @@ class AnyProtocolSerializer implements IProtocolSerializer {
   }
   readResponse<T = any>(): T {
     return this.anySerializer.read();
-  }
-
-  serializeRequest(args: any[]): Uint8Array {
-    return this.anySerializer.serialize(args);
-  }
-
-  deserializeRequest(buffer: Uint8Array): any[] {
-    return this.anySerializer.deserialize(buffer);
-  }
-
-  serializeResult<T = any>(result: T): Uint8Array {
-    return this.anySerializer.serialize(result);
-  }
-
-  deserializeResult<T = any>(buffer: Uint8Array): T {
-    return this.anySerializer.deserialize(buffer);
   }
 }
 
