@@ -4,7 +4,7 @@ import { AppConfig, useInjectable } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { MenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
-import * as styles from './menu-bar.module.less';
+import styles from './menu-bar.module.less';
 
 /**
  * Custom menu bar component.

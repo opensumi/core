@@ -522,6 +522,9 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} 不是有效选项',
 
+    // AI Native
+    'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
+
     'editor.saveAll': '保存全部',
     'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
     'editor.saveCodeActions.saving': '保存 "{0}"',

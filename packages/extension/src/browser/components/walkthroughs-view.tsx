@@ -16,7 +16,7 @@ import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { CompletionEventsType, IWalkthrough, IWalkthroughStep } from '../../common';
 import { WalkthroughsService } from '../walkthroughs.service';
 
-import * as styles from './walkthroughs-view.module.less';
+import styles from './walkthroughs-view.module.less';
 
 export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ resource: { uri } }) => {
   const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);

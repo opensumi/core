@@ -1,4 +1,5 @@
 import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
+import { AINativeModule } from '@opensumi/ide-ai-native/lib/browser';
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
 import { BrowserModule, ClientCommonModule, ConstructorOf } from '@opensumi/ide-core-browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
@@ -90,4 +91,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   TestingModule,
 
   DesignModule,
+  AINativeModule,
 ];

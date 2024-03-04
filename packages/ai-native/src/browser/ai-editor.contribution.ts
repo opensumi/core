@@ -1,0 +1,346 @@
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { AINativeConfigService, IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
+import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import {
+  AiNativeSettingSectionsId,
+  CancellationToken,
+  Disposable,
+  Event,
+  IDisposable,
+  ILogServiceClient,
+  ILoggerManagerClient,
+  MaybePromise,
+  Schemes,
+  SupportLogNamespace,
+} from '@opensumi/ide-core-common';
+import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
+import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { AiInlineChatContentWidget } from '../common';
+
+import { AINativeService } from './ai-chat.service';
+import { AiDiffWidget } from './diff-widget/ai-diff-widget';
+import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
+import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
+import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
+import { CancelResponse, ErrorResponse, IInlineChatFeatureRegistry, ReplyResponse } from './types';
+
+@Injectable()
+export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
+  @Autowired(IAiInlineChatService)
+  private readonly aiInlineChatService: AiInlineChatService;
+
+  @Autowired(AINativeService)
+  private readonly aiNativeService: AINativeService;
+
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManagerClient: ILoggerManagerClient;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(IBrowserCtxMenu)
+  private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
+
+  @Autowired(IInlineChatFeatureRegistry)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
+
+  private logger: ILogServiceClient;
+
+  constructor() {
+    super();
+
+    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
+  }
+
+  private aiDiffWidget: AiDiffWidget;
+  private aiInlineContentWidget: AiInlineContentWidget;
+  private aiInlineChatDisposed: Disposable = new Disposable();
+  private aiInlineChatOperationDisposed: Disposable = new Disposable();
+
+  private disposeAllWidget() {
+    if (this.aiDiffWidget) {
+      this.aiDiffWidget.dispose();
+    }
+    if (this.aiInlineContentWidget) {
+      this.aiInlineContentWidget.dispose();
+    }
+    if (this.aiInlineChatDisposed) {
+      this.aiInlineChatDisposed.dispose();
+    }
+    if (this.aiInlineChatOperationDisposed) {
+      this.aiInlineChatOperationDisposed.dispose();
+    }
+
+    this.aiNativeService.cancelToken();
+  }
+
+  contribute(editor: IEditor): IDisposable {
+    if (!editor) {
+      return this;
+    }
+
+    const { monacoEditor, currentUri } = editor;
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return this;
+    }
+
+    this.disposables.push(
+      monacoEditor.onDidChangeModel(() => {
+        this.disposeAllWidget();
+      }),
+    );
+
+    this.disposables.push(
+      monacoEditor.onDidScrollChange(() => {
+        /**
+         * 其他的 ctxmenu 服务注册的菜单在 onHide 函数里会有其他逻辑处理，例如在 editor.context.ts 会在 hide 的时候 focus 编辑器，影响使用
+         */
+        this.ctxMenuRenderer.onHide = undefined;
+        this.ctxMenuRenderer.hide(true);
+      }),
+    );
+
+    this.disposables.push(
+      this.aiNativeService.onInlineChatVisible((value: boolean) => {
+        if (value) {
+          this.registerInlineChat(editor);
+        } else {
+          this.disposeAllWidget();
+        }
+      }),
+    );
+
+    let isShowInlineChat = false;
+
+    this.disposables.push(
+      monacoEditor.onMouseDown(() => {
+        isShowInlineChat = false;
+      }),
+      monacoEditor.onMouseUp((event) => {
+        const target = event.target;
+        const detail = (target as any).detail;
+        if (detail && typeof detail === 'string' && detail === AiInlineChatContentWidget) {
+          isShowInlineChat = false;
+        } else {
+          isShowInlineChat = true;
+        }
+      }),
+    );
+
+    Event.debounce(
+      Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp),
+      (_, e) => e,
+      100,
+    )(() => {
+      if (!this.preferenceService.getValid(AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
+        return;
+      }
+
+      if (!isShowInlineChat) {
+        return;
+      }
+
+      if (
+        this.aiInlineChatService.status !== EInlineChatStatus.READY &&
+        this.aiInlineChatService.status !== EInlineChatStatus.ERROR
+      ) {
+        return;
+      }
+
+      this.registerInlineChat(editor);
+    });
+
+    this.logger.log('AiEditorContribution:>>>', editor, monacoEditor);
+
+    return this;
+  }
+
+  private async registerInlineChat(editor: IEditor): Promise<void> {
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat === false) {
+      return;
+    }
+
+    this.disposeAllWidget();
+
+    const { monacoEditor, currentUri } = editor;
+
+    if (!currentUri) {
+      return;
+    }
+
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return;
+    }
+
+    const selection = monacoEditor.getSelection();
+
+    if (!selection) {
+      this.disposeAllWidget();
+      return;
+    }
+
+    const selectCode = monacoEditor.getModel()?.getValueInRange(selection);
+    if (!selectCode?.trim()) {
+      return;
+    }
+
+    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
+
+    this.aiInlineContentWidget = this.injector.get(AiInlineContentWidget, [monacoEditor]);
+
+    this.aiInlineContentWidget.show({
+      selection,
+    });
+
+    this.aiInlineChatDisposed.addDispose(
+      this.aiInlineContentWidget.onClickActions(async (id: string) => {
+        const handler = this.inlineChatFeatureRegistry.getHandler(id);
+        const action = this.inlineChatFeatureRegistry.getAction(id);
+        if (!handler || !action) {
+          return;
+        }
+
+        const { execute, providerDiffPreviewStrategy } = handler;
+
+        if (execute) {
+          execute(editor);
+          this.disposeAllWidget();
+        }
+
+        if (providerDiffPreviewStrategy) {
+          const crossSelection = selection
+            .setStartPosition(selection.startLineNumber, 1)
+            .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
+
+          await this.handleDiffPreviewStrategy(editor, providerDiffPreviewStrategy, crossSelection);
+
+          this.aiInlineChatDisposed.addDispose(
+            this.aiInlineChatService.onDiscard(() => {
+              this.disposeAllWidget();
+            }),
+          );
+
+          this.aiInlineChatDisposed.addDispose(
+            this.aiInlineChatService.onRegenerate(async () => {
+              await this.handleDiffPreviewStrategy(editor, providerDiffPreviewStrategy, crossSelection);
+            }),
+          );
+        }
+      }),
+    );
+  }
+
+  private async handleDiffPreviewStrategy(
+    editor: IEditor,
+    strategy: (
+      editor: IEditor,
+      cancelToken: CancellationToken,
+    ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
+    crossSelection: monaco.Selection,
+  ): Promise<string | undefined> {
+    const model = editor.monacoEditor.getModel();
+    if (!model) {
+      return;
+    }
+
+    if (this.aiDiffWidget) {
+      this.aiDiffWidget.dispose();
+    }
+
+    if (this.aiInlineChatOperationDisposed) {
+      this.aiInlineChatOperationDisposed.dispose();
+    }
+
+    const crossCode = model.getValueInRange(crossSelection);
+
+    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
+
+    const response = await strategy(editor, this.aiNativeService.cancelIndicator.token);
+
+    if (this.aiInlineChatDisposed.disposed || CancelResponse.is(response)) {
+      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
+      return;
+    }
+
+    if (ErrorResponse.is(response)) {
+      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR);
+      return;
+    } else {
+      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE);
+    }
+
+    let answer = response && response.message;
+
+    // 提取代码内容
+    const regex = /```\w*([\s\S]+?)\s*```/;
+    const regExec = regex.exec(answer!);
+    answer = (regExec && regExec[1]) || answer;
+
+    this.logger.log('fetch response answer:>>>> ', answer);
+
+    if (answer) {
+      const regex = /^\s*/;
+      const matches = crossCode.match(regex);
+      let spaceCount = 4;
+      if (matches) {
+        spaceCount = matches[0].length;
+      }
+      const indents = ' '.repeat(spaceCount);
+      const spcode = answer.split('\n');
+      answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
+
+      editor.monacoEditor.setHiddenAreas([crossSelection], AiDiffWidget._hideId);
+
+      this.aiDiffWidget = this.injector.get(AiDiffWidget, [editor.monacoEditor!, crossSelection, answer]);
+      this.aiDiffWidget.create();
+      this.aiDiffWidget.showByLine(
+        crossSelection.startLineNumber - 1,
+        crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
+      );
+
+      this.aiInlineContentWidget?.setOptions({
+        position: {
+          lineNumber: crossSelection.endLineNumber + 1,
+          column: 1,
+        },
+      });
+      this.aiInlineContentWidget?.layoutContentWidget();
+
+      this.aiInlineChatOperationDisposed.addDispose([
+        this.aiInlineChatService.onAccept(() => {
+          editor.monacoEditor.getModel()?.pushEditOperations(
+            null,
+            [
+              {
+                range: crossSelection,
+                text: answer!,
+              },
+            ],
+            () => null,
+          );
+          setTimeout(() => {
+            this.disposeAllWidget();
+          }, 110);
+        }),
+        this.aiDiffWidget.onMaxLincCount((count) => {
+          requestAnimationFrame(() => {
+            if (crossSelection.endLineNumber === model.getLineCount()) {
+              const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+              this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
+            }
+          });
+        }),
+      ]);
+    }
+
+    return answer;
+  }
+}

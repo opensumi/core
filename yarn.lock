@@ -2082,7 +2082,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-ai-native@workspace:packages/ai-native":
+"@opensumi/ide-ai-native@workspace:*, @opensumi/ide-ai-native@workspace:packages/ai-native":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
@@ -2824,6 +2824,7 @@ __metadata:
   resolution: "@opensumi/ide-startup@workspace:packages/startup"
   dependencies:
     "@opensumi/ide-addons": "workspace:*"
+    "@opensumi/ide-ai-native": "workspace:*"
     "@opensumi/ide-collaboration": "workspace:*"
     "@opensumi/ide-comments": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"

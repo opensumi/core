@@ -1,5 +1,6 @@
 import { Injector } from '@opensumi/di';
 import {
+  AiNativeSettingSectionsId,
   GeneralSettingsId,
   MenubarSettingId,
   PreferenceSchema,
@@ -295,6 +296,10 @@ export const corePreferenceSchema: PreferenceSchema = {
     [MenubarSettingId.CompactMode]: {
       type: 'boolean',
       default: false,
+    },
+    [AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE]: {
+      type: 'boolean',
+      default: true,
     },
   },
 };
