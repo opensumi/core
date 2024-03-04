@@ -1,31 +1,31 @@
 import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IAiInlineChatService } from '@opensumi/ide-core-browser';
+import { IAIInlineChatService } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 import {
   BaseInlineContentWidget,
-  ShowAiContentOptions,
+  ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiInlineChatContentWidget } from '../../common/index';
-import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
+import { AIInlineChatContentWidget } from '../../common/index';
+import { AINativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
-import { AiInlineChatController } from './inline-chat-controller';
-import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
+import { AIInlineChatController } from './inline-chat-controller';
+import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable({ multiple: true })
-export class AiInlineContentWidget extends BaseInlineContentWidget {
+export class AIInlineContentWidget extends BaseInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IAiInlineChatService)
-  private aiInlineChatService: AiInlineChatService;
+  @Autowired(IAIInlineChatService)
+  private aiInlineChatService: AIInlineChatService;
 
-  private readonly aiNativeContextKey: AiNativeContextKey;
+  private readonly aiNativeContextKey: AINativeContextKey;
 
   // 记录最开始时的 top 值
   private originTop = 0;
@@ -36,7 +36,7 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
 
-    this.aiNativeContextKey = this.injector.get(AiNativeContextKey, [(this.editor as any)._contextKeyService]);
+    this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(this.editor as any)._contextKeyService]);
     this.addDispose(
       this.editor.onDidLayoutChange(() => {
         if (this.isOutOfArea()) {
@@ -52,10 +52,10 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
   }
 
   public renderView(): React.ReactNode {
-    return <AiInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />;
+    return <AIInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />;
   }
 
-  override async show(options?: ShowAiContentOptions | undefined): Promise<void> {
+  override async show(options?: ShowAIContentOptions | undefined): Promise<void> {
     super.show(options);
     this.aiNativeContextKey.inlineChatIsVisible.set(true);
   }
@@ -68,7 +68,7 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
     return domNode;
   }
 
-  override async hide(options?: ShowAiContentOptions | undefined): Promise<void> {
+  override async hide(options?: ShowAIContentOptions | undefined): Promise<void> {
     this.aiNativeContextKey.inlineChatIsVisible.set(false);
     super.hide();
   }
@@ -87,7 +87,7 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
     return false;
   }
 
-  public setOptions(options: ShowAiContentOptions): void {
+  public setOptions(options: ShowAIContentOptions): void {
     this.options = options;
   }
 
@@ -100,7 +100,7 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
   }
 
   id(): string {
-    return AiInlineChatContentWidget;
+    return AIInlineChatContentWidget;
   }
 
   override getPosition(): monaco.editor.IContentWidgetPosition | null {

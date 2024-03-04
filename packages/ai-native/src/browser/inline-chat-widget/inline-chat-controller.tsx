@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { IAiInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
-import { AIAction, AiInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { IAIInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
+import { AIAction, AIInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
+import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
 
 import { Loading } from '../components/Loading';
 import { IInlineChatFeatureRegistry } from '../types';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import styles from './inline-chat.module.less';
-import { AiInlineChatService, EInlineChatStatus } from './inline-chat.service';
+import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 
-export interface IAiInlineOperationProps {
+export interface IAIInlineOperationProps {
   hanldeActions: (id: string) => void;
   onClose?: () => void;
 }
@@ -20,7 +21,7 @@ export interface IAiInlineOperationProps {
 /**
  * 原始操作项
  */
-const AiInlineOperation = (props: IAiInlineOperationProps) => {
+const AIInlineOperation = (props: IAIInlineOperationProps) => {
   const { hanldeActions, onClose } = props;
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(IInlineChatFeatureRegistry);
 
@@ -69,14 +70,14 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
   );
 };
 
-export interface IAiInlineChatControllerProps {
+export interface IAIInlineChatControllerProps {
   onClickActions: Emitter<string>;
   onClose?: () => void;
 }
 
-export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
+export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const { onClickActions, onClose } = props;
-  const aiInlineChatService: AiInlineChatService = useInjectable(IAiInlineChatService);
+  const aiInlineChatService: AIInlineChatService = useInjectable(IAIInlineChatService);
   const [status, setStatus] = useState<EInlineChatStatus>(EInlineChatStatus.READY);
 
   useEffect(() => {
@@ -152,18 +153,24 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
     }
 
     if (isDone) {
-      return <AiInlineResult iconItems={iconResultItems} />;
+      return (
+        <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
+          <AIInlineResult iconItems={iconResultItems} />
+        </ContentWidgetContainerPanel>
+      );
     }
 
     if (isLoading) {
       return (
-        <EnhancePopover id={'inline_chat_loading'} title={'按 ESC 取消'}>
-          <Loading className={styles.ai_inline_chat_loading} />
-        </EnhancePopover>
+        <ContentWidgetContainerPanel>
+          <EnhancePopover id={'inline_chat_loading'} title={'按 ESC 取消'}>
+            <Loading className={styles.ai_inline_chat_loading} />
+          </EnhancePopover>
+        </ContentWidgetContainerPanel>
       );
     }
 
-    return <AiInlineOperation hanldeActions={handleClickActions} onClose={onClose} />;
+    return <AIInlineOperation hanldeActions={handleClickActions} onClose={onClose} />;
   }, [status]);
 
   return <div style={translateY}>{renderContent()}</div>;

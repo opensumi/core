@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
-import { ConfigProvider } from '@opensumi/ide-core-browser';
+import { AppConfig, ConfigProvider, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
@@ -113,7 +112,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
 });
 
 @Injectable({ multiple: true })
-export class AiDiffWidget extends ZoneWidget {
+export class AIDiffWidget extends ZoneWidget {
   public static readonly _hideId = 'overlayDiff';
 
   @Autowired(AppConfig)
@@ -123,14 +122,16 @@ export class AiDiffWidget extends ZoneWidget {
 
   private selection: monaco.Selection;
   private modifiedValue: string;
+  private root: ReactDOMClient.Root | null;
 
   protected applyClass(): void {}
   protected applyStyle(): void {}
 
   protected _fillContainer(container: HTMLElement): void {
     this.setCssClass('ai_diff-widget');
+    this.root = ReactDOMClient.createRoot(container);
 
-    ReactDOM.render(
+    this.root.render(
       <ConfigProvider value={this.configContext}>
         <div className={styles.ai_diff_editor_container}>
           <DiffContentProvider
@@ -145,7 +146,6 @@ export class AiDiffWidget extends ZoneWidget {
           />
         </div>
       </ConfigProvider>,
-      container,
     );
   }
 
@@ -187,10 +187,10 @@ export class AiDiffWidget extends ZoneWidget {
   }
 
   public override hide(): void {
-    this.editor.setHiddenAreas([], AiDiffWidget._hideId);
+    this.editor.setHiddenAreas([], AIDiffWidget._hideId);
     super.hide();
-    if (this.container) {
-      ReactDOM.unmountComponentAtNode(this.container!);
+    if (this.root) {
+      this.root.unmount();
     }
   }
 

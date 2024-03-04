@@ -44,15 +44,9 @@ export interface IInlineChatFeatureRegistry {
   registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void;
 }
 
-export type AiRunHandler = () => MaybePromise<void>;
-export interface IAiRunAnswerComponentProps {
-  input: { data: string };
-  relationId: string;
-}
+export const IAINativeCoreContribution = Symbol('IAINativeCoreContribution');
 
-export const AiNativeCoreContribution = Symbol('AiNativeCoreContribution');
-
-export interface AiNativeCoreContribution {
+export interface IAINativeCoreContribution {
   /**
    * 注册 inline chat
    * @param registry

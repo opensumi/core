@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAiInlineChatService } from '@opensumi/ide-core-browser';
+import { IAIInlineChatService } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, Emitter, Event, IAIBackService } from '@opensumi/ide-core-common';
 
 export const enum EInlineChatStatus {
@@ -10,7 +10,7 @@ export const enum EInlineChatStatus {
 }
 
 @Injectable({ multiple: false })
-export class AiInlineChatService implements IAiInlineChatService {
+export class AIInlineChatService implements IAIInlineChatService {
   @Autowired(AIBackSerivcePath)
   aiBackService: IAIBackService;
 

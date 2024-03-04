@@ -1,8 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AINativeConfigService, IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
-  AiNativeSettingSectionsId,
+  AINativeSettingSectionsId,
   CancellationToken,
   Disposable,
   Event,
@@ -17,25 +17,25 @@ import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/ov
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AiInlineChatContentWidget } from '../common';
+import { AIInlineChatContentWidget } from '../common';
 
-import { AINativeService } from './ai-chat.service';
-import { AiDiffWidget } from './diff-widget/ai-diff-widget';
+import { AINativeService } from './ai-native.service';
+import { AIDiffWidget } from './diff-widget/ai-diff-widget';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
-import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
-import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
+import { AIInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
+import { AIInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { CancelResponse, ErrorResponse, IInlineChatFeatureRegistry, ReplyResponse } from './types';
 
 @Injectable()
-export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
+export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
-  @Autowired(IAiInlineChatService)
-  private readonly aiInlineChatService: AiInlineChatService;
+  @Autowired(IAIInlineChatService)
+  private readonly aiInlineChatService: AIInlineChatService;
 
   @Autowired(AINativeService)
   private readonly aiNativeService: AINativeService;
@@ -60,8 +60,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
-  private aiDiffWidget: AiDiffWidget;
-  private aiInlineContentWidget: AiInlineContentWidget;
+  private aiDiffWidget: AIDiffWidget;
+  private aiInlineContentWidget: AIInlineContentWidget;
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
 
@@ -103,8 +103,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         /**
          * 其他的 ctxmenu 服务注册的菜单在 onHide 函数里会有其他逻辑处理，例如在 editor.context.ts 会在 hide 的时候 focus 编辑器，影响使用
          */
-        this.ctxMenuRenderer.onHide = undefined;
-        this.ctxMenuRenderer.hide(true);
+        // this.ctxMenuRenderer.onHide = undefined;
+        // this.ctxMenuRenderer.hide(true);
       }),
     );
 
@@ -127,7 +127,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       monacoEditor.onMouseUp((event) => {
         const target = event.target;
         const detail = (target as any).detail;
-        if (detail && typeof detail === 'string' && detail === AiInlineChatContentWidget) {
+        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidget) {
           isShowInlineChat = false;
         } else {
           isShowInlineChat = true;
@@ -140,7 +140,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       (_, e) => e,
       100,
     )(() => {
-      if (!this.preferenceService.getValid(AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
+      if (!this.preferenceService.getValid(AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
         return;
       }
 
@@ -157,8 +157,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       this.registerInlineChat(editor);
     });
-
-    this.logger.log('AiEditorContribution:>>>', editor, monacoEditor);
 
     return this;
   }
@@ -194,7 +192,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
 
-    this.aiInlineContentWidget = this.injector.get(AiInlineContentWidget, [monacoEditor]);
+    this.aiInlineContentWidget = this.injector.get(AIInlineContentWidget, [monacoEditor]);
 
     this.aiInlineContentWidget.show({
       selection,
@@ -297,9 +295,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       const spcode = answer.split('\n');
       answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
 
-      editor.monacoEditor.setHiddenAreas([crossSelection], AiDiffWidget._hideId);
+      editor.monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
 
-      this.aiDiffWidget = this.injector.get(AiDiffWidget, [editor.monacoEditor!, crossSelection, answer]);
+      this.aiDiffWidget = this.injector.get(AIDiffWidget, [editor.monacoEditor!, crossSelection, answer]);
       this.aiDiffWidget.create();
       this.aiDiffWidget.showByLine(
         crossSelection.startLineNumber - 1,

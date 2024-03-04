@@ -4,22 +4,22 @@ import {
   AIBackSerivceToken,
   AINativeConfigService,
   BrowserModule,
-  IAiInlineChatService,
+  IAIInlineChatService,
 } from '@opensumi/ide-core-browser';
 
 import { IAINativeService } from '../common/index';
 
-import { AINativeService } from './ai-chat.service';
-import { AiNativeBrowserContribution } from './ai-core.contribution';
+import { AINativeBrowserContribution } from './ai-core.contribution';
+import { AINativeService } from './ai-native.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
-import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
-import { AiNativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { AIInlineChatService } from './inline-chat-widget/inline-chat.service';
+import { IAINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
 export class AINativeModule extends BrowserModule {
-  contributionProvider = AiNativeCoreContribution;
+  contributionProvider = IAINativeCoreContribution;
   providers: Provider[] = [
-    AiNativeBrowserContribution,
+    AINativeBrowserContribution,
     {
       token: IInlineChatFeatureRegistry,
       useClass: InlineChatFeatureRegistry,
@@ -29,8 +29,8 @@ export class AINativeModule extends BrowserModule {
       useClass: AINativeService,
     },
     {
-      token: IAiInlineChatService,
-      useClass: AiInlineChatService,
+      token: IAIInlineChatService,
+      useClass: AIInlineChatService,
     },
   ];
 

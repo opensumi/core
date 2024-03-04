@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
-  AiNativeSettingSectionsId,
+  AINativeSettingSectionsId,
   ClientAppContribution,
   CommandContribution,
   CommandRegistry,
@@ -17,6 +17,8 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AI_INLINE_CHAT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { Schemes, localize } from '@opensumi/ide-core-common';
+import { AI_NATIVE_SETTING_GROUP_ID } from '@opensumi/ide-core-common/src/settings/ai-native';
 import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
 import {
   BrowserEditorContribution,
@@ -25,12 +27,11 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { SettingContribution } from '@opensumi/ide-preferences';
 
-import { AI_NATIVE_SETTING_GROUP_ID } from '../common';
 
-import { AINativeService } from './ai-chat.service';
-import { AiEditorContribution } from './ai-editor.contribution';
-import { AiDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
-import { AiNativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { AIEditorContribution } from './ai-editor.contribution';
+import { AINativeService } from './ai-native.service';
+import { AIDiffDocumentProvider } from './diff-widget/ai-diff-document.provider';
+import { IAINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
 @Domain(
@@ -40,7 +41,7 @@ import { AiNativeCoreContribution, IInlineChatFeatureRegistry } from './types';
   SettingContribution,
   KeybindingContribution,
 )
-export class AiNativeBrowserContribution
+export class AINativeBrowserContribution
   implements
     ClientAppContribution,
     BrowserEditorContribution,
@@ -49,13 +50,13 @@ export class AiNativeBrowserContribution
     KeybindingContribution
 {
   @Autowired()
-  private readonly aiDiffDocumentProvider: AiDiffDocumentProvider;
+  private readonly aiDiffDocumentProvider: AIDiffDocumentProvider;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(AiNativeCoreContribution)
-  private readonly contributions: ContributionProvider<AiNativeCoreContribution>;
+  @Autowired(IAINativeCoreContribution)
+  private readonly contributions: ContributionProvider<IAINativeCoreContribution>;
 
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
@@ -96,10 +97,10 @@ export class AiNativeBrowserContribution
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       groups.push({
-        title: 'Inline Chat',
+        title: localize('preference.aiNative.inlineChat.title'),
         preferences: [
           {
-            id: AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+            id: AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
             localized: 'preference.aiNative.inlineChat.auto.visible',
           },
         ],
@@ -115,7 +116,7 @@ export class AiNativeBrowserContribution
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
-        const aiEditorContribution = this.injector.get(AiEditorContribution, [editor]);
+        const aiEditorContribution = this.injector.get(AIEditorContribution, [editor]);
         return aiEditorContribution.contribute(editor);
       },
     });
@@ -123,7 +124,7 @@ export class AiNativeBrowserContribution
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
-      execute: (value) => {
+      execute: (value: boolean) => {
         this.aiNativeService.launchInlineChatVisible(value);
       },
     });
@@ -135,7 +136,7 @@ export class AiNativeBrowserContribution
 
   registerResource(resourceService: ResourceService): void {
     resourceService.registerResourceProvider({
-      scheme: 'AI',
+      scheme: Schemes.ai,
       provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
         uri,
         icon: getIcon('file-text'),

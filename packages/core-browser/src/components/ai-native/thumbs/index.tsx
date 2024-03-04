@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { uuid } from '@opensumi/ide-core-common';
 
-import { IAiInlineChatService } from '../../../ai-native';
+import { IAIInlineChatService } from '../../../ai-native';
 import { Popover } from '../../../components';
 import { useInjectable } from '../../../react-hooks';
 import { KTICON_OWNER, getExternalIcon } from '../../../style/icon/icon';
@@ -15,7 +15,7 @@ interface ThumbsProps {
 }
 
 export const Thumbs = (props: ThumbsProps) => {
-  const aiInlineChatService = useInjectable<IAiInlineChatService>(IAiInlineChatService);
+  const aiInlineChatService = useInjectable<IAiInlineChatService>(IAIInlineChatService);
   const { relationId, onClick, wrapperClassName } = props;
 
   const [thumbsupIcon, setThumbsupIcon] = useState<boolean | string>('thumbs');

@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
@@ -9,11 +9,11 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import type { ICodeEditor as IMonacoCodeEditor } from '../../monaco-api/types';
 
 export interface IInlineContentWidget extends monaco.editor.IContentWidget {
-  show: (options?: ShowAiContentOptions | undefined) => void;
-  hide: (options?: ShowAiContentOptions | undefined) => void;
+  show: (options?: ShowAIContentOptions | undefined) => void;
+  hide: (options?: ShowAIContentOptions | undefined) => void;
 }
 
-export interface ShowAiContentOptions {
+export interface ShowAIContentOptions {
   selection?: monaco.Selection;
   position?: monaco.IPosition;
 }
@@ -27,16 +27,15 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
   suppressMouseDown?: boolean | undefined = true;
 
   protected domNode: HTMLElement;
-  protected options: ShowAiContentOptions | undefined;
+  protected options: ShowAIContentOptions | undefined;
+  private root: ReactDOMClient.Root | null;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super();
 
     runWhenIdle(() => {
-      ReactDOM.render(
-        <ConfigProvider value={this.configContext}>{this.renderView()}</ConfigProvider>,
-        this.getDomNode(),
-      );
+      this.root = ReactDOMClient.createRoot(this.getDomNode());
+      this.root.render(<ConfigProvider value={this.configContext}>{this.renderView()}</ConfigProvider>);
       this.layoutContentWidget();
     });
   }
@@ -49,7 +48,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     super.dispose();
   }
 
-  async show(options?: ShowAiContentOptions | undefined): Promise<void> {
+  async show(options?: ShowAIContentOptions | undefined): Promise<void> {
     if (!options) {
       return;
     }
@@ -65,7 +64,9 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
   async hide() {
     this.options = undefined;
     this.editor.removeContentWidget(this);
-    ReactDOM.unmountComponentAtNode(this.getDomNode());
+    if (this.root) {
+      this.root.unmount();
+    }
   }
 
   getId(): string {

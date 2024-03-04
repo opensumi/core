@@ -1,9 +1,10 @@
 import { Injectable } from '@opensumi/di';
 import { Emitter, Event, MaybePromise, URI } from '@opensumi/ide-core-browser';
+import { Schemes } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser/index';
 
 @Injectable()
-export class AiDiffDocumentProvider implements IEditorDocumentModelContentProvider {
+export class AIDiffDocumentProvider implements IEditorDocumentModelContentProvider {
   private _onDidChangeContent = new Emitter<URI>();
 
   onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
@@ -17,6 +18,6 @@ export class AiDiffDocumentProvider implements IEditorDocumentModelContentProvid
   }
 
   handlesScheme(scheme: string) {
-    return scheme === 'AI';
+    return scheme === Schemes.ai;
   }
 }

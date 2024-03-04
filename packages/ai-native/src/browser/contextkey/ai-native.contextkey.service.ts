@@ -5,7 +5,7 @@ import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/
 import { IContextKeyServiceTarget } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 @Injectable()
-export class AiNativeContextKey {
+export class AINativeContextKey {
   @Autowired(IContextKeyService)
   private readonly globalContextKeyService: IContextKeyService;
 

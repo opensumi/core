@@ -46,4 +46,6 @@ export namespace Schemes {
   export const userStorage = 'user_storage';
 
   export const design = 'design';
+
+  export const ai = 'ai';
 }

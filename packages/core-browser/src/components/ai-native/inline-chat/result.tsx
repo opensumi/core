@@ -12,14 +12,14 @@ export interface IAiInlineResultIconItemsProps {
   icon?: string;
 }
 
-export interface IAiInlineResultProps {
+export interface IAIInlineResultProps {
   iconItems: IAiInlineResultIconItemsProps[];
   isRenderThumbs?: boolean;
   isRenderClose?: boolean;
   closeClick?: () => void;
 }
 
-export const AiInlineResult = (props: IAiInlineResultProps) => {
+export const AIInlineResult = (props: IAIInlineResultProps) => {
   const { iconItems, isRenderThumbs = true, isRenderClose = false, closeClick } = props;
 
   return (

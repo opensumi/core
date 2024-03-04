@@ -2089,6 +2089,7 @@ __metadata:
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-core-node": "workspace:*"
+    "@opensumi/ide-design": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
   languageName: unknown
   linkType: soft

@@ -585,6 +585,7 @@ export const localizationBundle = {
     'preference.item.notValid': '{0} is not a valid option',
 
     // AI Native
+    'preference.aiNative.inlineChat.title': 'Inline Chat',
     'preference.aiNative.inlineChat.auto.visible':
       'Does Inline Chat automatically appear when code snippets are selected ?',
 
