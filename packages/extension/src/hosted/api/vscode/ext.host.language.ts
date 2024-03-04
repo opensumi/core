@@ -174,6 +174,10 @@ export function createLanguagesApiFactory(
     ): vscode.Disposable {
       return extHostLanguages.registerInlineCompletionsProvider(selector, provider, extension);
     },
+    getCurrentInlineCompletions() {
+      // @ts-ignore
+      return extHostLanguages.getCurrentInlineCompletions() as any[];
+    },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
       return extHostLanguages.registerDefinitionProvider(selector, provider, extension);
     },
@@ -597,21 +601,31 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
 
-  $provideInlineCompletions(
+  private _currentComplection: IdentifiableInlineCompletions | undefined;
+
+	getCurrentInlineCompletions() {
+		return this._currentComplection;
+	}
+
+	async $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
     position: Position,
     context: InlineCompletionContext,
     token: CancellationToken,
   ): Promise<IdentifiableInlineCompletions | undefined> {
-    return this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
+		this._currentComplection = undefined;
+		const complection = await this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
       handle,
       InlineCompletionAdapterBase,
       (adapter) => adapter.provideInlineCompletions(Uri.revive(resource), position, context, token),
       undefined,
       undefined,
     );
-  }
+		this._currentComplection = complection;
+		return complection;
+	}
+
   $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void {
     this.withAdapter(
       handle,
