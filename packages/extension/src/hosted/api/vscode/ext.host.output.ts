@@ -9,7 +9,7 @@ export class ExtHostOutput implements IExtHostOutput {
 
   createOutputChannel(name: string, options?: { log: true }): types.OutputChannel {
     if (options?.log) {
-      return new OutputChannelImpl(name, this.rpcProtocol);
+      return new LogOutputChannelImpl(name, this.rpcProtocol, types.OutputChannelLogLevel.Info);
     }
     return new OutputChannelImpl(name, this.rpcProtocol);
   }
