@@ -1,4 +1,4 @@
-import { Uri, UriUtils, es5ClassCompat, isStringArray, strings, uuid } from '@opensumi/ide-core-common';
+import { Event, Uri, UriUtils, es5ClassCompat, isStringArray, strings, uuid } from '@opensumi/ide-core-common';
 
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
@@ -1375,6 +1375,69 @@ export interface Memento {
   keys: string[];
 }
 
+/**
+ * A channel for containing log output.
+ *
+ * To get an instance of a `LogOutputChannel` use
+ * {@link window.createOutputChannel createOutputChannel}.
+ */
+export interface LogOutputChannel extends OutputChannel {
+  /**
+   * The current log level of the channel. Defaults to {@link env.logLevel editor log level}.
+   */
+  readonly logLevel: OutputChannelLogLevel;
+
+  /**
+   * An {@link Event} which fires when the log level of the channel changes.
+   */
+  readonly onDidChangeLogLevel: Event<OutputChannelLogLevel>;
+
+  /**
+   * Outputs the given trace message to the channel. Use this method to log verbose information.
+   *
+   * The message is only logged if the channel is configured to display {@link OutputChannelLogLevel.Trace trace} log level.
+   *
+   * @param message trace message to log
+   */
+  trace(message: string, ...args: any[]): void;
+
+  /**
+   * Outputs the given debug message to the channel.
+   *
+   * The message is only logged if the channel is configured to display {@link OutputChannelLogLevel.Debug debug} log level or lower.
+   *
+   * @param message debug message to log
+   */
+  debug(message: string, ...args: any[]): void;
+
+  /**
+   * Outputs the given information message to the channel.
+   *
+   * The message is only logged if the channel is configured to display {@link OutputChannelLogLevel.Info info} log level or lower.
+   *
+   * @param message info message to log
+   */
+  info(message: string, ...args: any[]): void;
+
+  /**
+   * Outputs the given warning message to the channel.
+   *
+   * The message is only logged if the channel is configured to display {@link OutputChannelLogLevel.Warning warning} log level or lower.
+   *
+   * @param message warning message to log
+   */
+  warn(message: string, ...args: any[]): void;
+
+  /**
+   * Outputs the given error or error message to the channel.
+   *
+   * The message is only logged if the channel is configured to display {@link OutputChannelLogLevel.Error error} log level or lower.
+   *
+   * @param error Error or error message to log
+   */
+  error(error: string | Error, ...args: any[]): void;
+}
+
 export interface OutputChannel {
   /**
    * The name of this output channel.
@@ -1658,6 +1721,40 @@ export enum LogLevel {
   Error = 5,
   Critical = 6,
   Off = 7,
+}
+/**
+ * Log levels
+ */
+export enum OutputChannelLogLevel {
+  /**
+   * No messages are logged with this level.
+   */
+  Off = 0,
+
+  /**
+   * All messages are logged with this level.
+   */
+  Trace = 1,
+
+  /**
+   * Messages with debug and higher log level are logged with this level.
+   */
+  Debug = 2,
+
+  /**
+   * Messages with info and higher log level are logged with this level.
+   */
+  Info = 3,
+
+  /**
+   * Messages with warning and higher log level are logged with this level.
+   */
+  Warning = 4,
+
+  /**
+   * Only error messages are logged with this level.
+   */
+  Error = 5,
 }
 
 export enum SourceControlInputBoxValidationType {

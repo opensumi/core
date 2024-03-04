@@ -189,7 +189,10 @@ export interface IMainThreadOutput {
 }
 
 export interface IExtHostOutput {
-  createOutputChannel(name: string): types.OutputChannel;
+  createOutputChannel(
+    name: string,
+    options: { /** literal-type defines return type */ log: true },
+  ): types.OutputChannel;
 }
 
 export interface IExtHostWindowState {
