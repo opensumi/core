@@ -62,12 +62,14 @@ const AiInlineOperation = (props: IAiInlineOperationProps) => {
     return null;
   }
 
-  return <AIAction
-    operationList={operationList}
-    moreOperation={moreOperation}
-    onClickItem={handleClickActions}
-    onClose={handleClose}
-  />;
+  return (
+    <AIAction
+      operationList={operationList}
+      moreOperation={moreOperation}
+      onClickItem={handleClickActions}
+      onClose={handleClose}
+    />
+  );
 };
 
 export interface IAiInlineChatControllerProps {
@@ -163,9 +165,11 @@ export const AiInlineChatController = (props: IAiInlineChatControllerProps) => {
 
     if (isLoading) {
       return (
-        <EnhancePopover id={'inline_chat_loading'} title={'按 ESC 取消'}>
-          <Loading className={styles.ai_inline_chat_loading} />
-        </EnhancePopover>
+        <div className={styles.ai_inline_loading_panel}>
+          <EnhancePopover id={'inline_chat_loading'} title={'按 ESC 取消'}>
+            <Loading className={styles.ai_inline_chat_loading} />
+          </EnhancePopover>
+        </div>
       );
     }
 
