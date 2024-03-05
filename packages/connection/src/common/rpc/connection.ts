@@ -7,7 +7,7 @@ import {
   canceled,
   parseError,
 } from '@opensumi/ide-utils';
-import { IReadableStream, isNodeReadable, listenReadable } from '@opensumi/ide-utils/lib/stream';
+import { IReadableStream, isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
@@ -241,7 +241,6 @@ export class SumiConnection implements IDisposable {
               }
             }
           }
-
           break;
         }
         case OperationType.Notification:
@@ -281,7 +280,7 @@ export class SumiConnection implements IDisposable {
               }
 
               const onSuccess = (result: any) => {
-                if (isNodeReadable(result)) {
+                if (isReadableStream(result)) {
                   const responseHeaders: IResponseHeaders = {
                     chunked: true,
                   };

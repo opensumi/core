@@ -7,7 +7,7 @@ export interface IReadableStream<T> {
   on(event: string, listener: (...args: any[]) => void): this;
 }
 
-export function isNodeReadable(stream: any): stream is Readable {
+export function isReadableStream(stream: any): stream is Readable {
   return stream && typeof stream.read === 'function';
 }
 
