@@ -2,13 +2,13 @@ import { Injectable, Provider } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
 import {
-  IOpentrsMarketplaceService,
+  IAlipayCloudMarketplaceService,
   IOpenvsxMarketplaceService,
   VSXExtensionBackSerivceToken,
   VSXExtensionServicePath,
 } from '../common';
 
-import { OpentrsMarketplaceService, OpenvsxMarketplaceService } from './marketplace';
+import { AlipayCloudMarketplaceService, OpenvsxMarketplaceService } from './marketplace';
 import { VSXExtensionService } from './vsx-extension.service';
 
 @Injectable()
@@ -19,8 +19,8 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
       useClass: VSXExtensionService,
     },
     {
-      token: IOpentrsMarketplaceService,
-      useClass: OpentrsMarketplaceService,
+      token: IAlipayCloudMarketplaceService,
+      useClass: AlipayCloudMarketplaceService,
     },
     {
       token: IOpenvsxMarketplaceService,
