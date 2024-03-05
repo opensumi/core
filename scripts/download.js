@@ -9,19 +9,26 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const retry = require('async-retry');
-const marketplaceType = process.env.MARKETPLACE ?? 'opentrs';
+const MARKETPLACE_TYPE = {
+  OPENVSX: 'openvsx',
+  ALIPAY_CLOUD: 'alipay-cloud',
+};
+const marketplaceType = process.env.MARKETPLACE ?? MARKETPLACE_TYPE.ALIPAY_CLOUD;
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
-const extensionFileName = marketplaceType === 'opentrs' ? 'opentrs-extensions.json' : 'vscode-extensions.json';
+const extensionFileName =
+  marketplaceType === MARKETPLACE_TYPE.ALIPAY_CLOUD ? 'alipay-cloud-extensions.json' : 'vscode-extensions.json';
 const { extensions } = require(path.resolve(__dirname, `../configs/${extensionFileName}`));
 const headers = {};
 
-if (marketplaceType === 'opentrs') {
-  headers['x-master-key'] = '_V_LPJ6Ar-1nrSVa05xDGBYp';
-  headers['x-account-id'] = 'clcJKq_Gea47whxAJGrgoYqf';
+if (marketplaceType === MARKETPLACE_TYPE.ALIPAY_CLOUD) {
+  headers['x-account-id'] = 'WWPLOa7vWXCUTSHCfV5FK7Su';
+  headers['x-master-key'] = 'i6rkupqyvC6Bc6CiO0yVLNqq';
   headers['x-download-mode'] = 'redirect';
+  headers['x-webgw-version'] = '2.0';
+  headers['X-Webgw-Appid'] = '180020010001254774';
 }
 
 // 限制并发数，运行promise
@@ -138,8 +145,8 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 const installExtension = async (namespace, name, version) => {
   let downloadUrl = '';
 
-  if (marketplaceType === 'opentrs') {
-    downloadUrl = `https://marketplace.opentrs.cn/openapi/ide/download/${namespace}.${name}?version=${version}`;
+  if (marketplaceType === MARKETPLACE_TYPE.ALIPAY_CLOUD) {
+    downloadUrl = `https://twebgwnet.alipay.com/atsmarketplace/openapi/ide/download/${namespace}.${name}?version=${version}`;
   } else {
     const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
     const getDetailApi = `https://open-vsx.org/api/${path}`;
