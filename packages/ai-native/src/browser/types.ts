@@ -4,6 +4,10 @@ import { IEditor } from '@opensumi/ide-editor/lib/browser';
 
 export class ReplyResponse {
   constructor(readonly message: string) {}
+
+  static is(response: any): boolean {
+    return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
+  }
 }
 
 export class ErrorResponse {

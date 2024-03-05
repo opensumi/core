@@ -31,7 +31,7 @@ export class BaseAIBackService
     await sleep(1000);
     return Promise.resolve({
       errorCode: 0,
-      data: 'Hello, OpenSumi!',
+      data: 'Hello OpenSumi!',
     } as T);
   }
   async requestStream<T = IAIBackServiceResponse<string>>(

@@ -12,6 +12,7 @@ import {
   MaybePromise,
   Schemes,
   SupportLogNamespace,
+  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
@@ -66,18 +67,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
 
   private disposeAllWidget() {
-    if (this.aiDiffWidget) {
-      this.aiDiffWidget.dispose();
-    }
-    if (this.aiInlineContentWidget) {
-      this.aiInlineContentWidget.dispose();
-    }
-    if (this.aiInlineChatDisposed) {
-      this.aiInlineChatDisposed.dispose();
-    }
-    if (this.aiInlineChatOperationDisposed) {
-      this.aiInlineChatOperationDisposed.dispose();
-    }
+    [
+      this.aiDiffWidget,
+      this.aiInlineContentWidget,
+      this.aiInlineChatDisposed,
+      this.aiInlineChatOperationDisposed,
+    ].forEach((widget) => {
+      widget?.dispose();
+    });
 
     this.aiNativeService.cancelToken();
   }
@@ -162,7 +159,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async registerInlineChat(editor: IEditor): Promise<void> {
-    if (this.aiNativeConfigService.capabilities.supportsInlineChat === false) {
+    if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
       return;
     }
 
@@ -170,23 +167,15 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     const { monacoEditor, currentUri } = editor;
 
-    if (!currentUri) {
-      return;
-    }
-
-    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+    if (!currentUri || currentUri.codeUri.scheme !== Schemes.file) {
       return;
     }
 
     const selection = monacoEditor.getSelection();
+    const selectCode = selection && monacoEditor.getModel()?.getValueInRange(selection);
 
-    if (!selection) {
+    if (!selection || !selectCode?.trim()) {
       this.disposeAllWidget();
-      return;
-    }
-
-    const selectCode = monacoEditor.getModel()?.getValueInRange(selection);
-    if (!selectCode?.trim()) {
       return;
     }
 
@@ -245,20 +234,13 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     crossSelection: monaco.Selection,
   ): Promise<string | undefined> {
     const model = editor.monacoEditor.getModel();
-    if (!model) {
+    if (!model || !crossSelection) {
       return;
     }
 
-    if (this.aiDiffWidget) {
-      this.aiDiffWidget.dispose();
-    }
-
-    if (this.aiInlineChatOperationDisposed) {
-      this.aiInlineChatOperationDisposed.dispose();
-    }
+    this.resetDiffEnvironment();
 
     const crossCode = model.getValueInRange(crossSelection);
-
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
 
     const response = await strategy(editor, this.aiNativeService.cancelIndicator.token);
@@ -271,73 +253,78 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     if (ErrorResponse.is(response)) {
       this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR);
       return;
-    } else {
-      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE);
     }
 
-    let answer = response && response.message;
-
-    const regex = /```\w*([\s\S]+?)\s*```/;
-    const regExec = regex.exec(answer!);
-    answer = (regExec && regExec[1]) || answer;
-
-    this.logger.log('fetch response answer:>>>> ', answer);
-
-    if (answer) {
-      const regex = /^\s*/;
-      const matches = crossCode.match(regex);
-      let spaceCount = 4;
-      if (matches) {
-        spaceCount = matches[0].length;
-      }
-      const indents = ' '.repeat(spaceCount);
-      const spcode = answer.split('\n');
-      answer = spcode.map((s, i) => (i === 0 ? s : indents + s)).join('\n');
-
-      editor.monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
-
-      this.aiDiffWidget = this.injector.get(AIDiffWidget, [editor.monacoEditor!, crossSelection, answer]);
-      this.aiDiffWidget.create();
-      this.aiDiffWidget.showByLine(
-        crossSelection.startLineNumber - 1,
-        crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
-      );
-
-      this.aiInlineContentWidget?.setOptions({
-        position: {
-          lineNumber: crossSelection.endLineNumber + 1,
-          column: 1,
-        },
-      });
-      this.aiInlineContentWidget?.layoutContentWidget();
-
-      this.aiInlineChatOperationDisposed.addDispose([
-        this.aiInlineChatService.onAccept(() => {
-          editor.monacoEditor.getModel()?.pushEditOperations(
-            null,
-            [
-              {
-                range: crossSelection,
-                text: answer!,
-              },
-            ],
-            () => null,
-          );
-          setTimeout(() => {
-            this.disposeAllWidget();
-          }, 110);
-        }),
-        this.aiDiffWidget.onMaxLincCount((count) => {
-          requestAnimationFrame(() => {
-            if (crossSelection.endLineNumber === model.getLineCount()) {
-              const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
-              this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
-            }
-          });
-        }),
-      ]);
+    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE);
+    let answer = this.extractAnswerFromResponse(response as ReplyResponse);
+    if (!answer) {
+      return;
     }
+
+    answer = this.formatAnswer(answer, crossCode);
+    this.visibleDiffWidget(editor, crossSelection, answer);
+
+    this.aiInlineChatOperationDisposed.addDispose([
+      this.aiInlineChatService.onAccept(() => {
+        editor.monacoEditor
+          .getModel()
+          ?.pushEditOperations(null, [{ range: crossSelection, text: answer! }], () => null);
+        runWhenIdle(() => {
+          this.disposeAllWidget();
+        });
+      }),
+      this.aiDiffWidget.onMaxLincCount((count) => {
+        requestAnimationFrame(() => {
+          if (crossSelection.endLineNumber === model.getLineCount()) {
+            const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+            this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
+          }
+        });
+      }),
+    ]);
 
     return answer;
+  }
+
+  private resetDiffEnvironment(): void {
+    this.aiDiffWidget?.dispose();
+    this.aiInlineChatOperationDisposed.dispose();
+  }
+
+  private extractAnswerFromResponse(response: ReplyResponse): string | undefined {
+    const regex = /```\w*([\s\S]+?)\s*```/;
+    const match = regex.exec(response.message);
+    return match ? match[1].trim() : response.message.trim();
+  }
+
+  private formatAnswer(answer: string, crossCode: string): string {
+    const leadingWhitespaceMatch = crossCode.match(/^\s*/);
+    const indent = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : '  ';
+    return answer
+      .split('\n')
+      .map((line, index) => (index === 0 ? line : `${indent}${line}`))
+      .join('\n');
+  }
+
+  private visibleDiffWidget(editor: IEditor, crossSelection: monaco.Selection, answer: string): void {
+    editor.monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
+    this.aiDiffWidget = this.injector.get(AIDiffWidget, [editor.monacoEditor, crossSelection, answer]);
+    this.aiDiffWidget.create();
+    this.aiDiffWidget.showByLine(
+      crossSelection.startLineNumber - 1,
+      crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
+    );
+
+    this.updateInlineContentWidgetPosition(crossSelection);
+  }
+
+  private updateInlineContentWidgetPosition(crossSelection: monaco.Selection): void {
+    this.aiInlineContentWidget?.setOptions({
+      position: {
+        lineNumber: crossSelection.endLineNumber + 1,
+        column: 1,
+      },
+    });
+    this.aiInlineContentWidget?.layoutContentWidget();
   }
 }
