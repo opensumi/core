@@ -7,14 +7,16 @@ import pkg from '@opensumi/ide-core-node/package.json';
 import { IMarketplaceService } from '../../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../../common/vsx-registry-types';
 
-const commonHeaders = {
+const alipayCloudCommonHeaders = {
   'Content-Type': 'application/json',
   Accept: 'application/json',
   'x-framework-version': pkg.version,
+  'x-webgw-version': '2.0',
+  'X-Webgw-Appid': '180020010001254774',
 };
 
 @Injectable()
-export class OpentrsMarketplaceService implements IMarketplaceService {
+export class AlipayCloudMarketplaceService implements IMarketplaceService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -43,7 +45,7 @@ export class OpentrsMarketplaceService implements IMarketplaceService {
     const uri = `${endpoint}/openapi/ide/extension/${param.extensionId}`;
     const res = await nodeFetch(uri, {
       headers: {
-        ...commonHeaders,
+        ...alipayCloudCommonHeaders,
         ...this.getAKHeaders(),
       },
     });
@@ -67,7 +69,7 @@ export class OpentrsMarketplaceService implements IMarketplaceService {
       `${endpoint}/openapi/ide/search?${param && new URLSearchParams(param as any).toString()}`,
       {
         headers: {
-          ...commonHeaders,
+          ...alipayCloudCommonHeaders,
           ...this.getAKHeaders(),
         },
         timeout: 30000,

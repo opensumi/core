@@ -1,2 +1,2 @@
-export { OpentrsMarketplaceService } from './opentrs-marketplace.service';
+export { AlipayCloudMarketplaceService } from './alipay-cloud-marketplace.service';
 export { OpenvsxMarketplaceService } from './openvsx-marketplace.service';

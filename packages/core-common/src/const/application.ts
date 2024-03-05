@@ -4,10 +4,10 @@ export const DEFAULT_APPLICATION_WEB_HOST = 'web';
 export const DEFAULT_URI_SCHEME = 'sumi';
 export const DEFAULT_OPENVSX_REGISTRY = 'https://open-vsx.org'; // Official Registry
 
-export namespace DEFAULT_TRS_REGISTRY {
-  export const ENDPOINT = 'https://marketplace.opentrs.cn';
-  export const ACCOUNT_ID = 'clcJKq_Gea47whxAJGrgoYqf';
-  export const MASTER_KEY = '_V_LPJ6Ar-1nrSVa05xDGBYp';
+export namespace DEFAULT_ALIPAY_CLOUD_REGISTRY {
+  export const ENDPOINT = 'https://twebgwnet.alipay.com/atsmarketplace';
+  export const ACCOUNT_ID = 'WWPLOa7vWXCUTSHCfV5FK7Su';
+  export const MASTER_KEY = 'i6rkupqyvC6Bc6CiO0yVLNqq';
 }
 
 export const DEFAULT_VSCODE_ENGINE_VERSION = '1.68.0';

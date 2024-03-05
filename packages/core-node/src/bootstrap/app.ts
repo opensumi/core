@@ -18,7 +18,7 @@ import {
   getDebugLogger,
   isWindows,
 } from '@opensumi/ide-core-common';
-import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
 import { RPCServiceCenter, createNetServerConnection, createServerConnection2 } from '../connection';
 import { NodeModule } from '../node-module';
@@ -61,7 +61,7 @@ export class ServerApp implements IServerApp {
       LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign(
         {
-          endpoint: DEFAULT_TRS_REGISTRY.ENDPOINT,
+          endpoint: DEFAULT_ALIPAY_CLOUD_REGISTRY.ENDPOINT,
           extensionDir: path.join(
             os.homedir(),
             ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
@@ -69,8 +69,8 @@ export class ServerApp implements IServerApp {
             StoragePaths.MARKETPLACE_DIR,
           ),
           showBuiltinExtensions: false,
-          accountId: DEFAULT_TRS_REGISTRY.ACCOUNT_ID,
-          masterKey: DEFAULT_TRS_REGISTRY.MASTER_KEY,
+          accountId: DEFAULT_ALIPAY_CLOUD_REGISTRY.ACCOUNT_ID,
+          masterKey: DEFAULT_ALIPAY_CLOUD_REGISTRY.MASTER_KEY,
           ignoreId: [],
         },
         opts.marketplace,

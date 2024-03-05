@@ -3,7 +3,7 @@ import inspector from 'inspector';
 import net from 'net';
 
 import { Deferred, LogLevel } from '@opensumi/ide-core-common';
-import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_ALIPAY_CLOUD_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 import { parseArgv } from '@opensumi/ide-utils/lib/argv';
 const argv = parseArgv(process.argv.slice(2));
@@ -12,10 +12,10 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   const deferred = new Deferred<net.Server>();
   let opts: IServerAppOpts = {
     marketplace: {
-      endpoint: DEFAULT_TRS_REGISTRY.ENDPOINT,
+      endpoint: DEFAULT_ALIPAY_CLOUD_REGISTRY.ENDPOINT,
       showBuiltinExtensions: true,
-      accountId: DEFAULT_TRS_REGISTRY.ACCOUNT_ID,
-      masterKey: DEFAULT_TRS_REGISTRY.MASTER_KEY,
+      accountId: DEFAULT_ALIPAY_CLOUD_REGISTRY.ACCOUNT_ID,
+      masterKey: DEFAULT_ALIPAY_CLOUD_REGISTRY.MASTER_KEY,
     },
     logLevel: LogLevel.Verbose,
   };
