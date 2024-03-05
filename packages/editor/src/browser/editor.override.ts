@@ -2,7 +2,6 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IRange, URI } from '@opensumi/ide-core-common';
 import { isEqual } from '@opensumi/monaco-editor-core/esm/vs/base/common/resources';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -18,6 +17,7 @@ import { EditorOpenType, WorkbenchEditorService } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 
 @Injectable()
 export class MonacoCodeService extends AbstractCodeEditorService {

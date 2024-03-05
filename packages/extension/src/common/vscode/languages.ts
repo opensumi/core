@@ -14,6 +14,7 @@ import {
   InlineCompletionItemProvider,
   TypeDefinitionProvider,
   TypeHierarchyProvider,
+  // eslint-disable-next-line import/no-unresolved
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
@@ -24,7 +25,6 @@ import { InlineValue, InlineValueContext } from '@opensumi/ide-debug/lib/common/
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
@@ -74,6 +74,8 @@ import {
   WorkspaceEditDto,
 } from './model.api';
 
+// eslint-disable-next-line import/no-restricted-paths
+import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 // eslint-disable-next-line import/no-restricted-paths
 import type {
   CodeActionContext,

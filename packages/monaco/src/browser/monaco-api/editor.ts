@@ -52,7 +52,7 @@ import {
   setModelLanguage,
   setModelMarkers,
   setTheme,
-  tokenize
+  tokenize,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 import { AccessibilitySupport } from '@opensumi/monaco-editor-core/esm/vs/platform/accessibility/common/accessibility';
 import { IMarkerData } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
@@ -125,5 +125,12 @@ export function createMonacoEditorApi() {
 }
 
 export {
-  ICodeEditor, IDecorationOptions, IDiffEditorOptions, IEditorOptions, IMarkerData, IModelDecorationOptions, IModelDeltaDecoration, ITextModelUpdateOptions
+  ICodeEditor,
+  IDecorationOptions,
+  IDiffEditorOptions,
+  IEditorOptions,
+  IMarkerData,
+  IModelDecorationOptions,
+  IModelDeltaDecoration,
+  ITextModelUpdateOptions,
 };

@@ -1,4 +1,5 @@
 import { ILineChange } from '@opensumi/ide-core-common';
+
 import type { IChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/legacyLinesDiffComputer';
 
 export function compareChanges(a: ILineChange, b: ILineChange): number {
