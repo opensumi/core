@@ -1,50 +1,16 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 
-import { BaseConnection } from './base';
-import { LengthFieldBasedFrameDecoder, prependLengthField } from './frame-decoder';
+import { StreamConnection } from './stream';
 
 import type net from 'net';
 
-export class NetSocketConnection extends BaseConnection<Uint8Array> {
-  protected decoder = new LengthFieldBasedFrameDecoder();
-
+export class NetSocketConnection extends StreamConnection {
   constructor(private socket: net.Socket) {
-    super();
-    const decode = (chunk) => {
-      this.decoder.push(chunk);
-    };
-    this.socket.on('data', decode);
-    this.socket.once('close', () => {
-      this.decoder.dispose();
-      this.socket.off('data', decode);
-    });
+    super(socket, socket);
   }
 
   isOpen(): boolean {
     return this.socket.readyState === 'open';
-  }
-
-  send(data: Uint8Array): void {
-    this.socket.write(prependLengthField(data));
-  }
-
-  onMessage(cb: (data: Uint8Array) => void): IDisposable {
-    return this.decoder.onData(cb);
-  }
-
-  onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
-    const wrapper = (hadError: boolean) => {
-      const code: number = hadError ? 1 : 0;
-      const reason: string = hadError ? 'had error' : '';
-      cb(code, reason);
-    };
-
-    this.socket.once('close', wrapper);
-    return {
-      dispose: () => {
-        this.socket.off('close', wrapper);
-      },
-    };
   }
 
   onOpen(cb: () => void): IDisposable {
@@ -54,18 +20,6 @@ export class NetSocketConnection extends BaseConnection<Uint8Array> {
         this.socket.off('connect', cb);
       },
     };
-  }
-
-  onError(cb: (err: Error) => void): IDisposable {
-    this.socket.on('error', cb);
-    return {
-      dispose: () => {
-        this.socket.off('error', cb);
-      },
-    };
-  }
-  dispose(): void {
-    this.decoder.dispose();
   }
 
   destroy(): void {

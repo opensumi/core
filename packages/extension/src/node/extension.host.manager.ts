@@ -5,7 +5,8 @@ import isRunning from 'is-running';
 import treeKill from 'tree-kill';
 
 import { Injectable } from '@opensumi/di';
-import { Event, MaybePromise, findFreePort } from '@opensumi/ide-core-common';
+import { Event, MaybePromise } from '@opensumi/ide-core-common';
+import { findFreePort } from '@opensumi/ide-core-common/lib/node/port';
 
 import { IExtensionHostManager, Output, OutputType } from '../common';
 

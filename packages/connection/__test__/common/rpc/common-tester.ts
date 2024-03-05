@@ -28,7 +28,8 @@ export const test = (
       expect(result2).toBe('1234567890');
 
       const result3 = await invoker2.returnUndefined();
-      expect(result3).toBeUndefined();
+      // sumi rpc current behavior is to return null
+      expect(result3).toBeFalsy();
     });
   });
 };

@@ -15,3 +15,16 @@ export enum ServiceType {
 export interface IBench {
   registerService: (service: string) => void;
 }
+
+export interface WSCloseInfo {
+  channelPath: string;
+  closeEvent: { code: number; reason: string };
+  connectInfo: ConnectionInfo;
+}
+
+export interface ConnectionInfo {
+  type: string;
+  downlink: number;
+  uplink: number;
+  rtt: number;
+}

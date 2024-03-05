@@ -1,11 +1,17 @@
 import net from 'net';
 
-import { WSChannel } from '@opensumi/ide-connection';
+import { IWSChannelCreateOptions, WSChannel } from '@opensumi/ide-connection';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 import { copy } from '../../src/common/buffers/buffers';
+import { NetSocketConnection } from '../../src/common/connection';
 
 const total = 1000;
+
+const createWSChannel = (socket: net.Socket, options: IWSChannelCreateOptions) => {
+  const wsConnection = new NetSocketConnection(socket);
+  return WSChannel.forClient(wsConnection, options);
+};
 
 describe('ws channel node', () => {
   it('works on net.Socket', async () => {
@@ -14,7 +20,7 @@ describe('ws channel node', () => {
     const server = new net.Server();
 
     server.on('connection', (socket) => {
-      const channel1 = WSChannel.forNetSocket(socket, {
+      const channel1 = createWSChannel(socket, {
         id: 'channel1',
       });
       channel1.send('hello');
@@ -24,7 +30,7 @@ describe('ws channel node', () => {
 
     const socket2 = net.createConnection(ipcPath);
 
-    const channel2 = WSChannel.forNetSocket(socket2, {
+    const channel2 = createWSChannel(socket2, {
       id: 'channel2',
     });
 
@@ -51,7 +57,7 @@ describe('ws channel node', () => {
     const server = new net.Server();
 
     server.on('connection', (socket) => {
-      const channel1 = WSChannel.forNetSocket(socket, {
+      const channel1 = createWSChannel(socket, {
         id: 'channel1',
       });
       channel1.onMessage((d) => {
@@ -63,7 +69,7 @@ describe('ws channel node', () => {
 
     const socket2 = net.createConnection(ipcPath);
 
-    const channel2 = WSChannel.forNetSocket(socket2, {
+    const channel2 = createWSChannel(socket2, {
       id: 'channel2',
     });
 
@@ -99,7 +105,7 @@ describe('ws channel node', () => {
     const server = new net.Server();
 
     server.on('connection', (socket) => {
-      const channel1 = WSChannel.forNetSocket(socket, {
+      const channel1 = createWSChannel(socket, {
         id: 'channel1',
       });
       channel1.onBinary((d) => {
@@ -114,7 +120,7 @@ describe('ws channel node', () => {
 
     const socket2 = net.createConnection(ipcPath);
 
-    const channel2 = WSChannel.forNetSocket(socket2, {
+    const channel2 = createWSChannel(socket2, {
       id: 'channel2',
     });
     const helloBinary = Buffer.from('hello');

@@ -41,7 +41,7 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
       } else {
         throw new Error('unknown message type, expect Blob or ArrayBuffer, received: ' + typeof e.data);
       }
-      buffer.then((v) => cb(new Uint8Array(v)));
+      buffer.then((v) => cb(new Uint8Array(v, 0, v.byteLength)));
     };
 
     this.socket.addEventListener('message', handler);

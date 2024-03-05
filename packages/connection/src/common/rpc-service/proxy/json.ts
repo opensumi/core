@@ -9,8 +9,8 @@ interface IRPCResult {
   data: any;
 }
 
-export class ProxyLegacy extends ProxyBase<MessageConnection> {
-  protected engine = 'legacy' as const;
+export class ProxyJson extends ProxyBase<MessageConnection> {
+  protected engine = 'json' as const;
 
   protected bindMethods(methods: string[]): void {
     for (const method of methods) {
@@ -53,68 +53,58 @@ export class ProxyLegacy extends ProxyBase<MessageConnection> {
     }
   }
 
-  public getInvokeProxy<T = any>(): T {
-    return new Proxy(Object.create(null), {
-      get: (target: any, p: PropertyKey) => {
-        if (!target[p]) {
-          target[p] = async (...args: any[]) => {
-            await this.connectionPromise.promise;
+  async invoke(prop: string, ...args: any[]): Promise<any> {
+    await this.connectionPromise.promise;
 
-            let isSingleArray = false;
-            if (args.length === 1 && Array.isArray(args[0])) {
-              isSingleArray = true;
-            }
-            const prop = p.toString();
+    let isSingleArray = false;
+    if (args.length === 1 && Array.isArray(args[0])) {
+      isSingleArray = true;
+    }
 
-            // 调用方法为 on 开头时，作为单项通知
-            if (prop.startsWith('on')) {
-              this.captureSendNotification(prop, args);
-              if (isSingleArray) {
-                this.connection.sendNotification(prop, [...args]);
-              } else {
-                this.connection.sendNotification(prop, ...args);
-              }
-            } else {
-              // generate a unique requestId to associate request and requestResult
-              const requestId = this.nextRequestId();
+    // 调用方法为 on 开头时，作为单项通知
+    if (prop.startsWith('on')) {
+      this.captureSendNotification(prop, args);
+      if (isSingleArray) {
+        this.connection.sendNotification(prop, [...args]);
+      } else {
+        this.connection.sendNotification(prop, ...args);
+      }
+    } else {
+      // generate a unique requestId to associate request and requestResult
+      const requestId = this.nextRequestId();
 
-              let requestResult: Promise<any>;
+      let requestResult: Promise<any>;
 
-              if (isSingleArray) {
-                requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
-              } else {
-                requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
-              }
+      if (isSingleArray) {
+        requestResult = this.connection.sendRequest(prop, [...args]) as Promise<any>;
+      } else {
+        requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
+      }
 
-              this.captureSendRequest(requestId, prop, args);
+      this.captureSendRequest(requestId, prop, args);
 
-              const result: IRPCResult = await requestResult;
+      const result: IRPCResult = await requestResult;
 
-              if (result.error) {
-                const error = new Error(result.data.message);
-                if (result.data.stack) {
-                  error.stack = result.data.stack;
-                }
-
-                this.captureSendRequestFail(requestId, prop, result.data);
-                throw error;
-              } else {
-                this.captureSendRequestResult(requestId, prop, result.data);
-                return result.data;
-              }
-            }
-          };
+      if (result.error) {
+        const error = new Error(result.data.message);
+        if (result.data.stack) {
+          error.stack = result.data.stack;
         }
-        return target[p];
-      },
-    });
+
+        this.captureSendRequestFail(requestId, prop, result.data);
+        throw error;
+      } else {
+        this.captureSendRequestResult(requestId, prop, result.data);
+        return result.data;
+      }
+    }
   }
 
   /**
    * 对于纯数组参数的情况，收到请求/通知后做展开操作
    * 因为在通信层会为每个 rpc 调用添加一个 CancellationToken 参数
    * 如果参数本身是数组, 在方法中如果使用 spread 运算符获取参数(...args)，则会出现 [...args, MutableToken] 这种情况
-   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link ProxyLegacy.get get} 方法
+   * 所以发送请求时将这类参数统一再用数组包了一层，形如 [[...args]], 参考 {@link ProxyJson.get get} 方法
    * 此时接收到的数组类参数固定长度为 2，且最后一项一定是 MutableToken
    * @param args
    * @returns args

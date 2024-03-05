@@ -216,3 +216,7 @@ export function withNullAsUndefined<T>(x: T | null): T | undefined {
 export function isPromise<T = any>(obj: any): obj is Promise<T> {
   return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 }
+
+export function isUint8Array(obj: any): obj is Uint8Array {
+  return obj instanceof Uint8Array || Object.prototype.toString.call(obj) === '[object Uint8Array]';
+}
