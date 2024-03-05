@@ -157,9 +157,6 @@
       "path": "./references/tsconfig.testing.json"
     },
     {
-      "path": "./references/tsconfig.ai-native.json"
-    },
-    {
       "path": "./references/tsconfig.design.json"
     },
     {
@@ -176,6 +173,9 @@
     },
     {
       "path": "./references/tsconfig.addons.json"
+    },
+    {
+      "path": "./references/tsconfig.ai-native.json"
     },
     {
       "path": "./references/tsconfig.startup.json"
