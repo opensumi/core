@@ -12,11 +12,11 @@
       },
       {
         "name": "js-debug",
-        "version": "1.67.2"
+        "version": "1.68.0"
       },
       {
         "name": "typescript-language-features",
-        "version": "1.60.2"
+        "version": "1.70.2"
       },
       {
         "name": "configuration-editing",
@@ -24,11 +24,11 @@
       },
       {
         "name": "css",
-        "version": "1.55.2"
+        "version": "1.60.2"
       },
       {
         "name": "css-language-features",
-        "version": "1.55.2"
+        "version": "1.60.2"
       },
       {
         "name": "emmet",
@@ -48,7 +48,7 @@
       },
       {
         "name": "html-language-features",
-        "version": "1.55.2"
+        "version": "1.60.2-patch.1"
       },
       {
         "name": "java",
@@ -56,7 +56,7 @@
       },
       {
         "name": "javascript",
-        "version": "1.60.2"
+        "version": "1.71.0"
       },
       {
         "name": "json",
@@ -96,7 +96,7 @@
       },
       {
         "name": "typescript",
-        "version": "1.60.2"
+        "version": "1.71.0"
       },
       {
         "name": "xml",
