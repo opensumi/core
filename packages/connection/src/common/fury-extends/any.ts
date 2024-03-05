@@ -124,6 +124,10 @@ export class AnySerializer {
   };
 }
 
+enum EObjectTransferType {
+  CODE_URI = 'CODE_URI',
+}
+
 class ObjectTransfer {
   static replacer(key: string | undefined, value: any) {
     if (value) {
@@ -132,7 +136,7 @@ class ObjectTransfer {
           // `$mid === 1` is defined in `vscode-uri` package
           const uri = Uri.revive(value);
           return {
-            $type: 'VSCODE_URI',
+            $type: EObjectTransferType.CODE_URI,
             data: uri.toString(),
           };
         }
@@ -144,7 +148,7 @@ class ObjectTransfer {
   static reviver(key: string | undefined, value: any) {
     if (value && value.$type !== undefined && value.data !== undefined) {
       switch (value.$type) {
-        case 'VSCODE_URI':
+        case EObjectTransferType.CODE_URI:
           return Uri.parse(value.data);
       }
     }
