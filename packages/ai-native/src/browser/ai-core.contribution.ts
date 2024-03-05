@@ -27,7 +27,6 @@ import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
 import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
-@Injectable()
 @Domain(
   ClientAppContribution,
   BrowserEditorContribution,
