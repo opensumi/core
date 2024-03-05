@@ -1,54 +1,103 @@
 import { ObjectTypeDescription, Serializer, TypeDescription } from '@furyjs/fury';
 import { generateSerializer } from '@furyjs/fury/dist/lib/gen';
 
-import { furyFactory } from './shared';
-const { fury, reader, writer } = furyFactory();
+import { FuryFactoryReturn, furyFactory } from './shared';
 
 type Writable = Record<string, any> & { kind: string };
 
-export const oneOf = (schemas: TypeDescription[]) => {
-  const registry = new Map<string, Serializer>();
+export const oneOf7 = (
+  schemas: [
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+    TypeDescription,
+  ],
+  context?: FuryFactoryReturn,
+) => {
+  if (!context) {
+    context = furyFactory();
+  }
 
-  schemas.forEach((schema) => {
-    registry.set((schema as ObjectTypeDescription).options.tag, generateSerializer(fury, schema));
+  const { fury, reader, writer } = context;
+
+  const serializers = new Array(7) as Serializer[];
+  const kinds = new Array(7) as string[];
+
+  const kindToIndex = {} as Record<string, number>;
+
+  schemas.forEach((schema, i) => {
+    const kind = (schema as ObjectTypeDescription).options.tag;
+    serializers[i] = generateSerializer(fury, schema);
+    kinds[i] = kind;
+    kindToIndex[kind] = i;
   });
 
   const deserialize = (bytes: Uint8Array) => {
     reader.reset(bytes);
-    const kind = reader.stringOfVarUInt32();
-    const serializer = registry.get(kind);
-    if (!serializer) {
-      throw new Error(`Unknown kind: ${kind}`);
+    const idx = reader.uint8();
+
+    let v: any;
+    switch (idx) {
+      case 0:
+        v = serializers[0].read();
+        break;
+      case 1:
+        v = serializers[1].read();
+        break;
+      case 2:
+        v = serializers[2].read();
+        break;
+      case 3:
+        v = serializers[3].read();
+        break;
+      case 4:
+        v = serializers[4].read();
+        break;
+      case 5:
+        v = serializers[5].read();
+        break;
+      case 6:
+        v = serializers[6].read();
+        break;
     }
 
-    const v = serializer.read();
-    v.kind = kind;
-
+    v.kind = kinds[idx];
     return v;
   };
 
-  const serializeVolatile = (v: Writable) => {
-    const serializer = registry.get(v.kind);
-    if (!serializer) {
-      throw new Error(`Unknown kind: ${v.kind}`);
-    }
-
-    writer.reset();
-    writer.stringOfVarUInt32(v.kind);
-    serializer.write(v);
-
-    return writer.dumpAndOwn();
-  };
-
   const serialize = (v: Writable) => {
-    const serializer = registry.get(v.kind);
-    if (!serializer) {
-      throw new Error(`Unknown kind: ${v.kind}`);
-    }
+    const index = kindToIndex[v.kind];
 
     writer.reset();
-    writer.stringOfVarUInt32(v.kind);
-    serializer.write(v);
+
+    writer.uint8(index);
+
+    switch (index) {
+      case 0:
+        serializers[0].write(v);
+        break;
+      case 1:
+        serializers[1].write(v);
+        break;
+      case 2:
+        serializers[2].write(v);
+        break;
+      case 3:
+        serializers[3].write(v);
+        break;
+      case 4:
+        serializers[4].write(v);
+        break;
+      case 5:
+        serializers[5].write(v);
+        break;
+      case 6:
+        serializers[6].write(v);
+        break;
+    }
 
     return writer.dump();
   };
@@ -56,6 +105,5 @@ export const oneOf = (schemas: TypeDescription[]) => {
   return {
     deserialize,
     serialize,
-    serializeVolatile,
   };
 };

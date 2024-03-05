@@ -1,6 +1,6 @@
 import { IConnectionShape } from './connection/types';
 import { ILogger } from './types';
-import { ChannelMessage, WSChannel, parse, stringify } from './ws-channel';
+import { ChannelMessage, WSChannel, parse, pongMessage } from './ws-channel';
 
 export interface IPathHandler {
   dispose: (channel: WSChannel, connectionId: string) => void;
@@ -99,54 +99,59 @@ export const commonChannelPathHandler = new CommonChannelPathHandler();
 
 export abstract class BaseCommonChannelHandler {
   protected channelMap: Map<string, WSChannel> = new Map();
-  protected heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
+
+  heartbeatTimer: NodeJS.Timeout | null = null;
 
   constructor(public handlerId: string, protected logger: ILogger = console) {}
 
-  abstract doHeartbeat(connectionId: string, connection: any): void;
+  abstract doHeartbeat(connection: any): void;
 
-  private heartbeat(connectionId: string, connection: any) {
+  private heartbeat(connection: any) {
     const timer = global.setTimeout(() => {
-      this.doHeartbeat(connectionId, connection);
-      this.heartbeat(connectionId, connection);
+      this.doHeartbeat(connection);
+      this.heartbeat(connection);
     }, 5000);
 
-    this.heartbeatMap.set(connectionId, timer);
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+    }
+
+    this.heartbeatTimer = timer;
   }
 
   receiveConnection(connection: IConnectionShape<Uint8Array>) {
-    connection.onMessage((msg: Uint8Array) => {
-      let msgObj: ChannelMessage;
+    let clientId: string;
+    this.heartbeat(connection);
+
+    connection.onMessage((data: Uint8Array) => {
+      let msg: ChannelMessage;
       try {
-        msgObj = parse(msg);
+        msg = parse(data);
 
-        if (msgObj.kind === 'ping') {
-          connection.send(
-            stringify({
-              kind: 'pong',
-              id: msgObj.id,
-              clientId,
-            }),
-          );
-        } else if (msgObj.kind === 'open') {
-          const { id, path } = msgObj;
-          clientId = msgObj.clientId;
-          this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
+        switch (msg.kind) {
+          case 'ping':
+            connection.send(pongMessage);
+            break;
+          case 'open': {
+            const { id, path } = msg;
+            clientId = msg.clientId;
+            this.logger.log(`open a new connection channel ${clientId} with path ${path}`);
 
-          this.heartbeat(id, connection);
+            const channel = new WSChannel(connection, { id, logger: this.logger });
+            this.channelMap.set(id, channel);
 
-          const channel = new WSChannel(connection, { id });
-          this.channelMap.set(id, channel);
-
-          commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
-          channel.serverReady();
-        } else {
-          const { id } = msgObj;
-          const channel = this.channelMap.get(id);
-          if (channel) {
-            channel.dispatchChannelMessage(msgObj);
-          } else {
-            this.logger.warn(`The channel(${id}) was not found`);
+            commonChannelPathHandler.dispatchChannelOpen(path, channel, clientId);
+            channel.serverReady();
+            break;
+          }
+          default: {
+            const { id } = msg;
+            const channel = this.channelMap.get(id);
+            if (channel) {
+              channel.dispatchChannelMessage(msg);
+            } else {
+              this.logger.warn(`channel ${id} is not found`);
+            }
           }
         }
       } catch (e) {
@@ -154,17 +159,8 @@ export abstract class BaseCommonChannelHandler {
       }
     });
 
-    let clientId: string;
-
     connection.onceClose(() => {
       commonChannelPathHandler.disposeConnectionClientId(connection, clientId);
-
-      if (this.heartbeatMap.has(clientId)) {
-        clearTimeout(this.heartbeatMap.get(clientId) as NodeJS.Timeout);
-        this.heartbeatMap.delete(clientId);
-
-        this.logger.log(`Clear heartbeat from channel ${clientId}`);
-      }
 
       Array.from(this.channelMap.values())
         .filter((channel) => channel.id.toString().indexOf(clientId) !== -1)
@@ -175,6 +171,12 @@ export abstract class BaseCommonChannelHandler {
           this.logger.log(`Remove connection channel ${channel.id}`);
         });
     });
+  }
+
+  dispose() {
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+    }
   }
 }
 

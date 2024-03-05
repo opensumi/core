@@ -1,5 +1,5 @@
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { IDisposable, isDefined } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
@@ -27,16 +27,15 @@ const getCapturer = () => {
   return;
 };
 
-const capture = (message: IPCMessage) => {
-  const capturer = getCapturer();
-  if (isDefined(capturer)) {
-    // if OpenSumi DevTools is opended
-    capturer(message);
-  }
-};
-
 export function createElectronMainApi(name: string, enableCaptured?: boolean): IElectronMainApi<any> {
   let id = 0;
+  const capturer = getCapturer();
+  const capture = (message: IPCMessage) => {
+    if (capturer) {
+      capturer(message);
+    }
+  };
+
   return new Proxy(
     {
       on: (event: string, listener: (...args) => void): IDisposable => {

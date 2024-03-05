@@ -2,8 +2,8 @@ import http from 'http';
 
 import WebSocket from 'ws';
 
-import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
+import { WSWebSocketConnection } from '@opensumi/ide-connection/src/common/connection';
+import { SumiConnection } from '@opensumi/ide-connection/src/common/rpc/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';

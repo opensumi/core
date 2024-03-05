@@ -12,7 +12,7 @@ export class ElectronChannelHandler extends BaseCommonChannelHandler {
     super('electron-channel-handler', logger);
   }
 
-  doHeartbeat(connectionId: string, connection: any): void {
+  doHeartbeat(connection: any): void {
     // do nothing
   }
 

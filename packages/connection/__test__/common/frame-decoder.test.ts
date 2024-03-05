@@ -1,12 +1,18 @@
 /* eslint-disable no-console */
-
 import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
+import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import {
-  LengthFieldBasedFrameDecoder,
-  indicator,
-  prependLengthField,
-} from '../../src/common/connection/drivers/frame-decoder';
+import { LengthFieldBasedFrameDecoder, indicator } from '../../src/common/connection/drivers/frame-decoder';
+
+const writer = BinaryWriter({});
+
+export function prependLengthField(content: Uint8Array) {
+  writer.reset();
+  writer.buffer(indicator);
+  writer.uint32(content.byteLength);
+  writer.buffer(content);
+  return writer.dump();
+}
 
 function round(x: number, count: number) {
   return Math.round(x * 10 ** count) / 10 ** count;

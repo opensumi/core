@@ -45,7 +45,9 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
 
           this._onData.fire(dataToWrite);
 
-          this._terminal.write(typeof dataToWrite === 'string' ? dataToWrite : new Uint8Array(dataToWrite));
+          this._terminal.write(
+            typeof dataToWrite === 'string' ? dataToWrite : new Uint8Array(dataToWrite, 0, dataToWrite.byteLength),
+          );
 
           // connection.onData 的时候对 lastInputTime 进行差值运算，统计最后一次输入到收到回复的时间间隔
           if (this._lastInputTime) {

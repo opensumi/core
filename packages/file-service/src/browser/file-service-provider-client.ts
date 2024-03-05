@@ -8,6 +8,7 @@ import {
   getDebugLogger,
   isLinux,
 } from '@opensumi/ide-core-common';
+import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import {
   DidFilesChangedParams,
@@ -57,6 +58,13 @@ export abstract class CoreFileServiceProviderClient implements FileSystemProvide
     }
     const buffer = await this.fileServiceProvider.readFile(uri);
     return buffer;
+  }
+
+  readFileStream(uri: Uri): Promise<IReadableStream<Uint8Array>> {
+    if (this.fileServiceProvider.readFileStream) {
+      return this.fileServiceProvider.readFileStream(uri);
+    }
+    throw new Error('readFileStream not supported');
   }
 
   writeFile(uri: Uri, content: Uint8Array, options: { create: boolean; overwrite: boolean }) {
