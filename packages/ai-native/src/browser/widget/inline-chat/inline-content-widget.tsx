@@ -152,10 +152,8 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     let newColumn = column;
 
     if (curNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-      // this.domNode.style.marginTop = '-18px';
       newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
     } else if (curNonWhitespaceColumn >= preNonWhitespaceColumn) {
-      // this.domNode.style.marginTop = '18px';
       newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
     } else {
       newColumn = Math.min(preNonWhitespaceColumn, nextNonWhitespaceColumn);
@@ -217,11 +215,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     let direction: 'above' | 'below' | null = null;
 
     if (startPosition.lineNumber === endPosition.lineNumber) {
-      return this.recheckPosition(
-        cursorPosition.lineNumber,
-        // this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber),
-        cursorPosition.column,
-      );
+      return this.recheckPosition(cursorPosition.lineNumber, cursorPosition.column);
     }
 
     if (cursorPosition.equals(startPosition)) {

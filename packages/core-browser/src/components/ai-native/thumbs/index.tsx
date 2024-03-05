@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { uuid } from '@opensumi/ide-core-common';
+import { localize, uuid } from '@opensumi/ide-core-common';
 
 import { IAIInlineChatService } from '../../../ai-native';
 import { Popover } from '../../../components';
@@ -35,7 +35,6 @@ export const Thumbs = (props: ThumbsProps) => {
 
   const handleClick = useCallback(
     (type: 'up' | 'down') => {
-      // only click once
       if (type === 'up' && thumbsupIcon === 'thumbs') {
         setThumbsupIcon('thumbs-fill');
         setThumbsdownIcon(false);
@@ -56,7 +55,7 @@ export const Thumbs = (props: ThumbsProps) => {
   return (
     <>
       {typeof thumbsupIcon === 'string' && (
-        <Popover id={`ai-chat-thumbsup-${useUUID}`} title='赞'>
+        <Popover id={`ai-chat-thumbsup-${useUUID}`} title={localize('aiNative.inline.chat.operate.thumbsup.title')}>
           <EnhanceIcon
             wrapperClassName={wrapperClassName}
             onClick={() => handleClick('up')}
@@ -65,7 +64,7 @@ export const Thumbs = (props: ThumbsProps) => {
         </Popover>
       )}
       {typeof thumbsdownIcon === 'string' && (
-        <Popover id={`ai-chat-thumbsdown-${useUUID}`} title='踩'>
+        <Popover id={`ai-chat-thumbsdown-${useUUID}`} title={localize('aiNative.inline.chat.operate.thumbsdown.title')}>
           <EnhanceIcon
             wrapperClassName={wrapperClassName}
             onClick={() => handleClick('down')}

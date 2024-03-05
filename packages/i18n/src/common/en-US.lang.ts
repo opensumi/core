@@ -1397,6 +1397,15 @@ export const localizationBundle = {
     'mergeEditor.action.button.accept.right': 'Accept Right',
     'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
 
+    // #region AI Native
+    'aiNative.inline.chat.operate.check.title': 'Check',
+    'aiNative.inline.chat.operate.discard.title': 'Discard',
+    'aiNative.inline.chat.operate.afresh.title': 'Afresh',
+    'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
+    'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
+    'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+    // #endregion AI Native
+
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',

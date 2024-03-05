@@ -47,9 +47,5 @@ export interface IInlineChatFeatureRegistry {
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
-  /**
-   * 注册 inline chat
-   * @param registry
-   */
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
 }

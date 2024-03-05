@@ -522,7 +522,7 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} 不是有效选项',
 
-    // AI Native
+    // AI Native Preference
     'preference.aiNative.inlineChat.title': 'Inline Chat',
     'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
 
@@ -1167,6 +1167,15 @@ export const localizationBundle = {
     'mergeEditor.action.button.accept.right': '接受右边',
     'mergeEditor.open.in.editor': '在合并编辑器中解决',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
+
+    // #region AI Native
+    'aiNative.inline.chat.operate.check.title': '采纳',
+    'aiNative.inline.chat.operate.discard.title': '丢弃',
+    'aiNative.inline.chat.operate.afresh.title': '重新生成',
+    'aiNative.inline.chat.operate.thumbsup.title': '赞',
+    'aiNative.inline.chat.operate.thumbsdown.title': '踩',
+    'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
+    // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
 

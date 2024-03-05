@@ -277,7 +277,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     let answer = response && response.message;
 
-    // 提取代码内容
     const regex = /```\w*([\s\S]+?)\s*```/;
     const regExec = regex.exec(answer!);
     answer = (regExec && regExec[1]) || answer;

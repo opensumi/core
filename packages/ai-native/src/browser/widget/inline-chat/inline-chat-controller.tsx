@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { IAIInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction, AIInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
-import { Emitter } from '@opensumi/ide-core-common';
+import { Emitter, localize } from '@opensumi/ide-core-common';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
 
 import { Loading } from '../../components/Loading';
@@ -18,9 +18,6 @@ export interface IAIInlineOperationProps {
   onClose?: () => void;
 }
 
-/**
- * 原始操作项
- */
 const AIInlineOperation = (props: IAIInlineOperationProps) => {
   const { hanldeActions, onClose } = props;
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(IInlineChatFeatureRegistry);
@@ -106,21 +103,21 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     () => [
       {
         icon: 'check',
-        text: '采纳',
+        text: localize('aiNative.inline.chat.operate.check.title'),
         onClick: () => {
           aiInlineChatService._onAccept.fire();
         },
       },
       {
-        icon: 'diuqi',
-        text: '丢弃',
+        icon: 'discard',
+        text: localize('aiNative.inline.chat.operate.discard.title'),
         onClick: () => {
           aiInlineChatService._onDiscard.fire();
         },
       },
       {
-        icon: 'zhongxin',
-        text: '重新生成',
+        icon: 'afresh',
+        text: localize('aiNative.inline.chat.operate.afresh.title'),
         onClick: () => {
           aiInlineChatService._onRegenerate.fire();
         },
@@ -163,7 +160,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
     if (isLoading) {
       return (
         <ContentWidgetContainerPanel>
-          <EnhancePopover id={'inline_chat_loading'} title={'按 ESC 取消'}>
+          <EnhancePopover id={'inline_chat_loading'} title={localize('aiNative.inline.chat.operate.loading.cancel')}>
             <Loading className={styles.ai_inline_chat_loading} />
           </EnhancePopover>
         </ContentWidgetContainerPanel>

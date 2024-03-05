@@ -47,13 +47,13 @@ export const AIAction = (props: AIActionProps) => {
   }, [onClose]);
 
   return (
-    <div className={styles['ai-action']}>
+    <div className={styles.ai_action}>
       <AILogoAvatar />
       <LineVertical {...{ height: '60%', margin: '0px 4px 0 8px' }} />
-      <div className={styles['operate-container']}>
+      <div className={styles.operate_container}>
         {operationList.map(({ name, title, id }, i) => (
           <EnhancePopover id={id} title={title} key={`popover_${i}`}>
-            <EnhanceIcon wrapperClassName={styles['operate-item']} onClick={() => onClickItem(id)}>
+            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem(id)}>
               <span key={i}>{name}</span>
             </EnhanceIcon>
           </EnhancePopover>
@@ -62,7 +62,7 @@ export const AIAction = (props: AIActionProps) => {
           <EnhanceIconWithCtxMenu
             icon={'more'}
             menuNodes={moreOperation}
-            wrapperClassName={styles['operate-btn']}
+            wrapperClassName={styles.operate_btn}
             skew={{
               x: -83,
               y: 5,
@@ -70,9 +70,9 @@ export const AIAction = (props: AIActionProps) => {
           />
         ) : null}
         {showClose !== false && (
-          <div className={styles['close-container']}>
+          <div className={styles.close_container}>
             <LineVertical {...{ height: '60%', margin: '0px 4px 0 4px' }} />
-            <EnhanceIcon wrapperClassName={styles['operate-btn']} icon={'window-close'} onClick={handleClose} />
+            <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
           </div>
         )}
       </div>
