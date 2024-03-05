@@ -9,8 +9,8 @@ import {
 } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { AIInlineChatContentWidget } from '../../common/index';
-import { AINativeContextKey } from '../contextkey/ai-native.contextkey.service';
+import { AIInlineChatContentWidget } from '../../../common/index';
+import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { AIInlineChatController } from './inline-chat-controller';
 import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
@@ -27,7 +27,6 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
 
   private readonly aiNativeContextKey: AINativeContextKey;
 
-  // 记录最开始时的 top 值
   private originTop = 0;
 
   private readonly _onClickActions = new Emitter<string>();

@@ -44,9 +44,9 @@ export interface IInlineChatFeatureRegistry {
   registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void;
 }
 
-export const IAINativeCoreContribution = Symbol('IAINativeCoreContribution');
+export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
-export interface IAINativeCoreContribution {
+export interface AINativeCoreContribution {
   /**
    * 注册 inline chat
    * @param registry

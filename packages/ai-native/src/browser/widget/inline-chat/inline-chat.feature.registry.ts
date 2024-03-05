@@ -2,7 +2,7 @@ import { Injectable } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { IInlineChatFeatureRegistry, InlineChatHandler } from '../types';
+import { IInlineChatFeatureRegistry, InlineChatHandler } from '../../types';
 
 @Injectable()
 export class InlineChatFeatureRegistry extends Disposable implements IInlineChatFeatureRegistry {

@@ -30,6 +30,7 @@ export class BaseAIBackService
     // mock request
     await sleep(1000);
     return Promise.resolve({
+      errorCode: 0,
       data: 'Hello, OpenSumi!',
     } as T);
   }

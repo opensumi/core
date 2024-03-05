@@ -1,8 +1,8 @@
 import { Autowired } from '@opensumi/di';
 import {
+  AINativeCoreContribution,
   CancelResponse,
   ErrorResponse,
-  IAINativeCoreContribution,
   IInlineChatFeatureRegistry,
   ReplyResponse,
 } from '@opensumi/ide-ai-native/lib/browser/types';
@@ -11,14 +11,12 @@ import { AIBackSerivcePath, IAIBackService } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 
 enum EInlineOperation {
-  Explain = 'Explain',
   Comments = 'Comments',
-  Test = 'Test',
   Optimize = 'Optimize',
 }
 
-@Domain(IAINativeCoreContribution)
-export class AiNativeContribution implements AiNativeCoreContribution {
+@Domain(AINativeCoreContribution)
+export class AiNativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
 

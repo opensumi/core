@@ -6,8 +6,8 @@ import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { Emitter } from '@opensumi/ide-core-common';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
 
-import { Loading } from '../components/Loading';
-import { IInlineChatFeatureRegistry } from '../types';
+import { Loading } from '../../components/Loading';
+import { IInlineChatFeatureRegistry } from '../../types';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import styles from './inline-chat.module.less';

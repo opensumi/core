@@ -25,7 +25,7 @@ import { SettingContribution } from '@opensumi/ide-preferences';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
-import { IAINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
 @Domain(
@@ -46,8 +46,8 @@ export class AINativeBrowserContribution
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IAINativeCoreContribution)
-  private readonly contributions: ContributionProvider<IAINativeCoreContribution>;
+  @Autowired(AINativeCoreContribution)
+  private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;

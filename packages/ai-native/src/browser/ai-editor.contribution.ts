@@ -20,11 +20,11 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AIInlineChatContentWidget } from '../common';
 
 import { AINativeService } from './ai-native.service';
-import { AIDiffWidget } from './diff-widget/ai-diff-widget';
-import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
-import { AIInlineChatService, EInlineChatStatus } from './inline-chat-widget/inline-chat.service';
-import { AIInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { CancelResponse, ErrorResponse, IInlineChatFeatureRegistry, ReplyResponse } from './types';
+import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
+import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inline-chat.service';
+import { AIInlineContentWidget } from './widget/inline-chat/inline-content-widget';
+import { AIDiffWidget } from './widget/inline-diff/inline-diff-widget';
 
 @Injectable()
 export class AIEditorContribution extends Disposable implements IEditorFeatureContribution {
