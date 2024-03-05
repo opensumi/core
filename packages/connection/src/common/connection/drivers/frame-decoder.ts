@@ -1,3 +1,5 @@
+import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
+
 import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
@@ -154,5 +156,15 @@ export class LengthFieldBasedFrameDecoder {
   dispose() {
     this.dataEmitter.dispose();
     this.buffers.dispose();
+  }
+
+  static writer = BinaryWriter({});
+
+  static construct(content: Uint8Array) {
+    LengthFieldBasedFrameDecoder.writer.reset();
+    LengthFieldBasedFrameDecoder.writer.buffer(indicator);
+    LengthFieldBasedFrameDecoder.writer.uint32(content.byteLength);
+    LengthFieldBasedFrameDecoder.writer.buffer(content);
+    return LengthFieldBasedFrameDecoder.writer.dump();
   }
 }
