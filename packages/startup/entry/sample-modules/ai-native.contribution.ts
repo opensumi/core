@@ -51,7 +51,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       {
         providerDiffPreviewStrategy: async (editor: IEditor, token) => {
           const crossCode = this.getCrossCode(editor);
-          const prompt = `为以下代码添加注释: \`\`\`\n ${crossCode}\`\`\`。要求只返回代码结果，不需要解释`;
+          const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
           const result = await this.aiBackService.request(prompt, {}, token);
 
@@ -77,7 +77,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       {
         providerDiffPreviewStrategy: async (editor: IEditor, token) => {
           const crossCode = this.getCrossCode(editor);
-          const prompt = `优化以下代码：\n\`\`\`\n ${crossCode}\`\`\``;
+          const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
           const result = await this.aiBackService.request(prompt, {}, token);
 
