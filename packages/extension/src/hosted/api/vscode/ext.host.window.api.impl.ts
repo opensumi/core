@@ -103,8 +103,9 @@ export function createWindowApiFactory(
       }
       return extHostStatusBar.createStatusBarItem(extension, id, alignment, priority);
     },
-    createOutputChannel(name) {
-      return extHostOutput.createOutputChannel(name);
+    // @ts-ignore
+    createOutputChannel(name: string, options?: { log: true } | undefined) {
+      return extHostOutput.createOutputChannel(name, options);
     },
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable {
       // step2
