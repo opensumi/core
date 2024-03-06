@@ -175,13 +175,13 @@
       "path": "./references/tsconfig.addons.json"
     },
     {
+      "path": "./references/tsconfig.ai-native.json"
+    },
+    {
       "path": "./references/tsconfig.startup.json"
     },
     {
       "path": "./references/tsconfig.playwright.json"
-    },
-    {
-      "path": "./references/tsconfig.ai-native.json"
     }
   ]
 }

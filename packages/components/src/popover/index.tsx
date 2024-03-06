@@ -22,7 +22,7 @@ function noop() {}
 // style 里设置的是 7, 但是在 top 模式下会有一部分与元素遮挡
 const arrowSizeWrap = 8;
 
-export const Popover: React.FC<{
+export interface IPopoverProps {
   id: string;
   insertClass?: string;
   content?: React.ReactNode;
@@ -37,7 +37,10 @@ export const Popover: React.FC<{
   action?: string;
   disable?: boolean;
   onClickAction?: (args: any) => void;
-}> = ({
+  onDisplayChange?: (display: boolean) => void;
+}
+
+export const Popover: React.FC<IPopoverProps> = ({
   delay,
   children,
   trigger,
@@ -51,6 +54,7 @@ export const Popover: React.FC<{
   titleClassName,
   action,
   onClickAction,
+  onDisplayChange,
   disable,
   ...restProps
 }) => {
@@ -124,6 +128,9 @@ export const Popover: React.FC<{
     }
     clearTimeout(hideContentTimer);
     contentEl.current.style.display = 'block';
+    if (onDisplayChange) {
+      onDisplayChange(true);
+    }
     window.requestAnimationFrame(() => {
       if (!childEl.current || !contentEl.current) {
         return;
@@ -148,6 +155,9 @@ export const Popover: React.FC<{
       }
       contentEl.current.style.display = 'none';
       contentEl.current.style.visibility = 'hidden';
+      if (onDisplayChange) {
+        onDisplayChange(false);
+      }
     }, delay);
   }
 

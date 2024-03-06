@@ -10,6 +10,7 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
+  sleep,
 } from '@opensumi/ide-core-common';
 
 interface IRPCGptService {
@@ -26,7 +27,12 @@ export class BaseAIBackService
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
   ): Promise<T> {
-    return void 0 as T;
+    // mock request
+    await sleep(1000);
+    return Promise.resolve({
+      errorCode: 0,
+      data: 'Hello OpenSumi!',
+    } as T);
   }
   async requestStream<T = IAIBackServiceResponse<string>>(
     input: string,

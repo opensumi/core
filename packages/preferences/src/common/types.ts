@@ -8,15 +8,17 @@ import {
 
 export const SettingContribution = Symbol('SettingContribution');
 
+export interface ISettingRegistry {
+  registerSettingGroup: (settingGroup: ISettingGroup) => IDisposable;
+  registerSettingSection: (key: string, section: ISettingSection) => IDisposable;
+}
+
 export interface SettingContribution {
   /**
    * 注册 Setting
    * @param registry
    */
-  registerSetting?(registry: {
-    registerSettingGroup: (settingGroup: ISettingGroup) => IDisposable;
-    registerSettingSection: (key: string, section: ISettingSection) => IDisposable;
-  }): void;
+  registerSetting?(registry: ISettingRegistry): void;
 
   /**
    * 最后处理一次 SettingGroup

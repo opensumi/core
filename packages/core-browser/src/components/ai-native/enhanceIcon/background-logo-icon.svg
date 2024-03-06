@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Fill 1</title>
+    <defs>
+        <linearGradient x1="23.4215067%" y1="15.2651155%" x2="82.7830976%" y2="78.3674094%" id="linearGradient-1">
+            <stop stop-color="#19CFFF" offset="0%"></stop>
+            <stop stop-color="#8429FF" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="典型页面交互新修改（2023-11-09）" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="icon-合集" transform="translate(-89.000000, -61.000000)" fill="url(#linearGradient-1)" fill-rule="nonzero">
+            <g id="logo小" transform="translate(89.000000, 61.000000)">
+                <g id="编组" transform="translate(0.666667, 0.000000)">
+                    <path d="M14.6666667,10.6626122 C14.6666667,11.6123147 14.1579637,12.5018862 13.3223032,12.9707078 L8.68372982,15.6393393 C7.84806935,16.1202202 6.8307472,16.1202202 5.99508673,15.6393393 L1.34436345,12.9707078 C0.508702972,12.4898268 0,11.6123147 0,10.6626122 L0,5.33732543 C0,4.38762295 0.508702972,3.49813455 1.34436345,3.02931304 L5.99508673,0.360598346 C6.8307472,-0.120199449 7.84806935,-0.120199449 8.68372982,0.360598346 L13.3344531,3.02931304 C14.1579637,3.51011084 14.6666667,4.38762295 14.6666667,5.33732543 L14.6666667,10.6626122 Z" id="Fill-1"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
