@@ -4,9 +4,9 @@ import { Margin } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/viewP
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
+import { DetailedLineRangeMapping } from '../../../../../common/diff';
 import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
-import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   ACCEPT_CURRENT_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
@@ -89,7 +89,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     });
   }
 
-  public inputDiffComputingResult(changes: readonly LineRangeMapping[]): void {
+  public inputDiffComputingResult(changes: readonly DetailedLineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
     this.updateDecorations();
     this.registerActionsProvider({

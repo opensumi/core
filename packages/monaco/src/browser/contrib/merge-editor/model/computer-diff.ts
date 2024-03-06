@@ -3,11 +3,11 @@ import { RangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/
 import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
+import { DetailedLineRangeMapping } from '../../../../common/diff';
 import { ITextModel } from '../../../monaco-api/types';
 
 import { InnerRange } from './inner-range';
 import { LineRange } from './line-range';
-import { LineRangeMapping } from './line-range-mapping';
 
 export class ComputerDiffModel {
   private editorWorkerService: IEditorWorkerService;
@@ -26,7 +26,7 @@ export class ComputerDiffModel {
       moves: [],
       changes: result.changes.map(
         (c) =>
-          new LineRangeMapping(
+          new DetailedLineRangeMapping(
             new LineRange(c[0], c[1]),
             new LineRange(c[2], c[3]),
             c[4]?.map(

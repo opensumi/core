@@ -1,11 +1,11 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
+import { DetailedLineRangeMapping } from '../../../../common/diff';
 import { EDiffRangeTurn } from '../types';
 import { flatModified, flatOriginal } from '../utils';
 
 import { LineRange } from './line-range';
-import { LineRangeMapping } from './line-range-mapping';
 
 /**
  * 反映在文档上的 LineRangeMapping 映射关系
@@ -31,14 +31,14 @@ export class DocumentMapping extends Disposable {
     return Array.from(values).sort((a, b) => a.startLineNumber - b.startLineNumber);
   }
 
-  public getMetaLineRangeMapping(): LineRangeMapping[] {
-    const result: LineRangeMapping[] = [];
+  public getMetaLineRangeMapping(): DetailedLineRangeMapping[] {
+    const result: DetailedLineRangeMapping[] = [];
 
     this.computeRangeMap.forEach((range) => {
       if (this.diffRangeTurn === EDiffRangeTurn.ORIGIN) {
-        result.push(new LineRangeMapping(range, this.adjacentComputeRangeMap.get(range.id)!, []));
+        result.push(new DetailedLineRangeMapping(range, this.adjacentComputeRangeMap.get(range.id)!, []));
       } else if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
-        result.push(new LineRangeMapping(this.adjacentComputeRangeMap.get(range.id)!, range, []));
+        result.push(new DetailedLineRangeMapping(this.adjacentComputeRangeMap.get(range.id)!, range, []));
       }
     });
     return result;
@@ -73,7 +73,7 @@ export class DocumentMapping extends Disposable {
     }
   }
 
-  public inputComputeResultRangeMapping(changes: readonly LineRangeMapping[]): void {
+  public inputComputeResultRangeMapping(changes: readonly DetailedLineRangeMapping[]): void {
     const [originalRange, modifiedRange] = [flatOriginal(changes), flatModified(changes)];
 
     if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
