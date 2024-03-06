@@ -1,18 +1,7 @@
 /* eslint-disable no-console */
 import { BinaryReader } from '@furyjs/fury/dist/lib/reader';
-import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
 import { LengthFieldBasedFrameDecoder, indicator } from '../../src/common/connection/drivers/frame-decoder';
-
-const writer = BinaryWriter({});
-
-export function prependLengthField(content: Uint8Array) {
-  writer.reset();
-  writer.buffer(indicator);
-  writer.uint32(content.byteLength);
-  writer.buffer(content);
-  return writer.dump();
-}
 
 function round(x: number, count: number) {
   return Math.round(x * 10 ** count) / 10 ** count;
@@ -46,7 +35,7 @@ console.timeEnd('createPayload');
 // 1m
 const pressure = 1024 * 1024;
 
-const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [prependLengthField(v), v] as const);
+const purePackets = [p1k, p64k, p128k, p5m, p10m].map((v) => [LengthFieldBasedFrameDecoder.construct(v), v] as const);
 
 const size = purePackets.reduce((acc, v) => acc + v[0].byteLength, 0);
 
@@ -59,7 +48,7 @@ purePackets.forEach((v) => {
 });
 
 const mixedPackets = [p1m, p5m].map((v) => {
-  const sumiPacket = prependLengthField(v);
+  const sumiPacket = LengthFieldBasedFrameDecoder.construct(v);
   const newPacket = createPayload(1024 + sumiPacket.byteLength);
   newPacket.set(sumiPacket, 1024);
   return [newPacket, v] as const;
@@ -70,7 +59,7 @@ const packets = [...purePackets, ...mixedPackets];
 describe('frame decoder', () => {
   it('can create frame', () => {
     const content = new Uint8Array([1, 2, 3]);
-    const packet = prependLengthField(content);
+    const packet = LengthFieldBasedFrameDecoder.construct(content);
     const reader = BinaryReader({});
 
     reader.reset(packet);
@@ -127,7 +116,7 @@ describe('frame decoder', () => {
 
   it('can decode a stream it has no valid length info', (done) => {
     const v = createPayload(1024);
-    const sumiPacket = prependLengthField(v);
+    const sumiPacket = LengthFieldBasedFrameDecoder.construct(v);
 
     const decoder = new LengthFieldBasedFrameDecoder();
     decoder.onData((data) => {

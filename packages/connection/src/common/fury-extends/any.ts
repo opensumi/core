@@ -23,6 +23,8 @@ export class AnySerializer {
   write(data: any) {
     const { writer } = this;
     const type = typeof data;
+    writer.reserve(1);
+
     switch (type) {
       case 'undefined':
         writer.uint8(ProtocolType.Undefined);
@@ -32,10 +34,12 @@ export class AnySerializer {
         writer.stringOfVarUInt32(data);
         break;
       case 'boolean':
+        writer.reserve(1);
         writer.uint8(ProtocolType.Boolean);
         writer.uint8(data ? 1 : 0);
         break;
       case 'number':
+        writer.reserve(8);
         if ((data | 0) === data) {
           writer.uint8(ProtocolType.Int32);
           writer.int32(data);
@@ -45,6 +49,7 @@ export class AnySerializer {
         }
         break;
       case 'bigint':
+        writer.reserve(8);
         writer.uint8(ProtocolType.BigInt);
         writer.int64(data);
         break;
@@ -52,12 +57,14 @@ export class AnySerializer {
         if (data === null) {
           writer.uint8(ProtocolType.Null);
         } else if (Array.isArray(data)) {
+          writer.reserve(4);
           writer.uint8(ProtocolType.Array);
           writer.varUInt32(data.length);
           for (const element of data) {
             this.write(element);
           }
         } else if (isUint8Array(data)) {
+          writer.reserve(4);
           writer.uint8(ProtocolType.Buffer);
           writer.varUInt32(data.byteLength);
           writer.buffer(data);
