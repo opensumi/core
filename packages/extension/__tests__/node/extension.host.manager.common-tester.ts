@@ -3,7 +3,7 @@ import path from 'path';
 import { Provider } from '@opensumi/di';
 import { INodeLogger, MaybePromise, getDebugLogger, Deferred, sleep } from '@opensumi/ide-core-node';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionHostManager } from '../../src';
 

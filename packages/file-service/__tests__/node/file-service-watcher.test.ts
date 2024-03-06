@@ -4,7 +4,7 @@ import temp from 'temp';
 import { isMacintosh, sleep } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 

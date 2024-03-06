@@ -2,7 +2,7 @@ import * as fse from 'fs-extra';
 import temp from 'temp';
 
 import { FileUri, sleep } from '@opensumi/ide-core-node';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common/index';
 import { UnRecursiveFileSystemWatcher } from '../../src/node/un-recursive/file-service-watcher';

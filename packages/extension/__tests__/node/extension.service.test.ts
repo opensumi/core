@@ -8,7 +8,7 @@ import { AppConfig, INodeLogger, IReporterService, getDebugLogger } from '@opens
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
 import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
