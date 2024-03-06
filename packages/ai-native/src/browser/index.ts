@@ -34,11 +34,6 @@ export class AINativeModule extends BrowserModule {
     },
   ];
 
-  preferences = (injector: Injector) => {
-    const aiNativeConfig: AINativeConfigService = injector.get(AINativeConfigService);
-    aiNativeConfig.enable();
-  };
-
   backServices = [
     {
       servicePath: AIBackSerivcePath,

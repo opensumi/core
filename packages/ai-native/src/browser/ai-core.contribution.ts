@@ -1,4 +1,4 @@
-import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
@@ -7,21 +7,18 @@ import {
   CommandRegistry,
   ContributionProvider,
   Domain,
-  ISettingGroup,
-  ISettingSection,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
-  URI,
   getIcon,
 } from '@opensumi/ide-core-browser';
 import { AI_INLINE_CHAT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { Schemes, localize } from '@opensumi/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { AI_NATIVE_SETTING_GROUP_ID } from '@opensumi/ide-core-common/src/settings/ai-native';
-import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
+import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
-import { SettingContribution } from '@opensumi/ide-preferences';
+import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
@@ -61,7 +58,9 @@ export class AINativeBrowserContribution
     this.registerFeature();
   }
 
-  onDidStart() {}
+  initialize() {
+    this.aiNativeConfigService.enable();
+  }
 
   private registerFeature() {
     this.contributions.getContributions().forEach((contribution) => {
@@ -71,22 +70,15 @@ export class AINativeBrowserContribution
     });
   }
 
-  handleSettingGroup(settingGroup: ISettingGroup[]) {
-    return [
-      ...settingGroup,
-      {
-        id: AI_NATIVE_SETTING_GROUP_ID,
-        title: AI_NATIVE_SETTING_GROUP_ID,
-        iconClass: getIcon('magic-wand'),
-      },
-    ];
-  }
-
-  handleSettingSections(settingSections: { [key: string]: ISettingSection[] }) {
-    const groups: ISettingSection[] = [];
+  registerSetting(registry: ISettingRegistry) {
+    registry.registerSettingGroup({
+      id: AI_NATIVE_SETTING_GROUP_ID,
+      title: AI_NATIVE_SETTING_GROUP_ID,
+      iconClass: getIcon('magic-wand'),
+    });
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-      groups.push({
+      registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
         title: localize('preference.aiNative.inlineChat.title'),
         preferences: [
           {
@@ -96,11 +88,6 @@ export class AINativeBrowserContribution
         ],
       });
     }
-
-    return {
-      ...settingSections,
-      [AI_NATIVE_SETTING_GROUP_ID]: groups,
-    };
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry): void {
