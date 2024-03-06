@@ -2,9 +2,6 @@ import os from 'os';
 import path from 'path';
 
 import * as fse from 'fs-extra';
-// import { JSDOM } from 'jsdom';
-// const { window } = new JSDOM('');
-// (global as any).UIEvent = window.UIEvent;
 
 import { isWindows } from '@opensumi/ide-core-common';
 import { FileUri, URI } from '@opensumi/ide-core-node';

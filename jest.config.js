@@ -83,7 +83,7 @@ module.exports = {
         // 有个 webview 的 case 应该放在 electron 下测，也会被第一条规则匹配到
         // - packages/webview/__tests__/webview/webview.channel.test.ts
         '**/packages/*/__test?(s)__/!(browser)/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/{core-common,core-electron-main,core-node,electron-basic,utils,i18n}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/{core-common,core-electron-main,core-node,utils,i18n}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         // exclude 的要放最后
         '!**/packages/{components,core-browser}/__tests__/**',
         '!**/packages/extension/__tests__/hosted/**',
@@ -111,7 +111,7 @@ module.exports = {
         '**/packages/*/__test?(s)__/common/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/tools/*/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/extension/__tests__/hosted/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/{components,core-browser,core-common}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/{components,core-browser,core-common,electron-basic}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
       ],
     },
   ],
