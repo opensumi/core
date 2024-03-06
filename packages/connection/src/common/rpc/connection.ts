@@ -175,9 +175,8 @@ export class SumiConnection implements IDisposable {
       // skip version, currently only have version 1
       reader.skip(1);
 
-      const opType = reader.uint8();
+      const opType = reader.uint8() as OperationType;
       const requestId = reader.uint32();
-      const method = reader.stringOfVarUInt32();
 
       if (this._timeoutHandles.has(requestId)) {
         // Ignore some jest test scenarios where clearTimeout is not defined.
@@ -190,6 +189,7 @@ export class SumiConnection implements IDisposable {
 
       switch (opType) {
         case OperationType.Response: {
+          const method = reader.stringOfVarUInt32();
           const status = reader.uint16();
 
           const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
@@ -246,6 +246,7 @@ export class SumiConnection implements IDisposable {
         case OperationType.Notification:
         // fall through
         case OperationType.Request: {
+          const method = reader.stringOfVarUInt32();
           const headers = this.io.requestHeadersSerializer.read() as IRequestHeaders;
           const args = this.io.getProcessor(method).readRequest();
 

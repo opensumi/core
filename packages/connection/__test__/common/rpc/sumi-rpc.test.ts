@@ -1,7 +1,7 @@
 import { Type } from '@furyjs/fury';
 
 import { METHOD_NOT_REGISTERED } from '@opensumi/ide-connection/lib/common/constants';
-import { Deferred } from '@opensumi/ide-core-common';
+import { CancellationToken, CancellationTokenSource, Deferred, sleep } from '@opensumi/ide-core-common';
 import { IReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { test } from './common-tester';
@@ -95,5 +95,25 @@ describe('sumi rpc only', () => {
 
     await deferred.promise;
     expect(msg).toBe(message);
+  });
+
+  it('can cancel a call', (done) => {
+    const method = 'cancelTest';
+    pair.connection2.onRequest(method, async (t: CancellationToken) => {
+      while (!t.isCancellationRequested) {
+        // regular cancellation requires async for it to work
+        await sleep(0);
+      }
+
+      done();
+    });
+
+    pair.connection1.listen();
+    pair.connection2.listen();
+
+    const source = new CancellationTokenSource();
+
+    pair.connection1.sendRequest(method, source.token);
+    source.cancel();
   });
 });
