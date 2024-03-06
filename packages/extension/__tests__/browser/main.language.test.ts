@@ -96,6 +96,7 @@ describe('ExtHostLanguageFeatures', () => {
       undefined,
       monaco.Uri.parse('far://testing/file.a'),
     );
+    model.setLanguage('a');
     extHostDocuments.$fireModelOpenedEvent({
       uri: model.uri.toString(),
       dirty: false,
@@ -1148,7 +1149,8 @@ An error case:
   });
   // #endregion TypeHierarchy
 
-  const textModel = createModel('test.a = "test"', 'test');
+  const textModel = createModel('test.a = "test"', undefined, monaco.Uri.parse('far://testing/file.test'));
+  textModel.setLanguage('test');
   const evaluatableExpressionService = injector.get<IEvaluatableExpressionService>(IEvaluatableExpressionService);
   const expressionProvider = {
     provideEvaluatableExpression(document, position) {
