@@ -6,7 +6,7 @@ import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { IMarketplaceService } from '../../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../../common/vsx-registry-types';
 
-const commonHeaders = {
+const openvsxCommonHeaders = {
   'Content-Type': 'application/json',
   Accept: 'application/json',
 };
@@ -20,7 +20,7 @@ export class OpenvsxMarketplaceService implements IMarketplaceService {
     const uri = `${this.appConfig.marketplace.endpoint}/api/-/query`;
     const res = await nodeFetch(uri, {
       headers: {
-        ...commonHeaders,
+        ...openvsxCommonHeaders,
       },
       method: 'POST',
       body: JSON.stringify(param),
@@ -35,7 +35,7 @@ export class OpenvsxMarketplaceService implements IMarketplaceService {
     }`;
     const res = await nodeFetch(uri, {
       headers: {
-        ...commonHeaders,
+        ...openvsxCommonHeaders,
       },
       timeout: 30000,
     });

@@ -106,7 +106,7 @@ export interface IVSXExtensionBackService {
   getOpenVSXRegistry(): Promise<string>;
 }
 
-export const IOpentrsMarketplaceService = Symbol('IOpentrsMarketplaceService');
+export const IAlipayCloudMarketplaceService = Symbol('IAlipayCloudMarketplaceService');
 export const IOpenvsxMarketplaceService = Symbol('IOpenvsxMarketplaceService');
 
 export interface IMarketplaceService {
