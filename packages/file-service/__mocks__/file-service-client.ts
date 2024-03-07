@@ -6,7 +6,7 @@ import {
   FileChange,
   FileChangeEvent,
   IFileServiceWatcher,
-} from '@opensumi/ide-core-common/src/types/file-watch';
+} from '@opensumi/ide-core-common/lib/types/file-watch';
 import { IFileServiceClientService } from '../src/common/file-service-client';
 import {
   FileCopyOptions,

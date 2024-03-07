@@ -7,7 +7,7 @@ import {
   IDisposable,
   URI,
 } from '@opensumi/ide-core-common';
-import { IFileServiceWatcher } from '@opensumi/ide-core-common/src/types/file-watch';
+import { IFileServiceWatcher } from '@opensumi/ide-core-common/lib/types/file-watch';
 
 import {
   FileCopyOptions,

@@ -1,4 +1,4 @@
-import { Event, URI } from '@opensumi/ide-utils';
+import { Event, URI } from '../utils';
 
 export interface IFileServiceWatcher {
   watchId: number;
