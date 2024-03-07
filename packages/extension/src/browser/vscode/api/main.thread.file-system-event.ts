@@ -6,6 +6,7 @@ import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   CancellationTokenSource,
   Disposable,
+  FileChangeType,
   ILogger,
   ProgressLocation,
   URI,
@@ -13,7 +14,7 @@ import {
   localize,
   raceCancellation,
 } from '@opensumi/ide-core-common';
-import { FileChangeType, FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IDialogService } from '@opensumi/ide-overlay';
 import {

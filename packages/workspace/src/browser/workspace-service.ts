@@ -18,6 +18,7 @@ import {
   path,
 } from '@opensumi/ide-core-browser';
 import {
+  FileChangeEvent,
   IStorage,
   STORAGE_NAMESPACE,
   Schemes,
@@ -27,11 +28,7 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
-import {
-  FileChangeEvent,
-  FileServiceClientToken,
-  IFileServiceClientService,
-} from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 
 import {
   DEFAULT_WORKSPACE_SUFFIX_NAME,

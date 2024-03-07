@@ -1,8 +1,9 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { BinaryBuffer, Disposable, Emitter, Event, IDisposable, URI, Uri, dispose } from '@opensumi/ide-core-browser';
+import { FileChange } from '@opensumi/ide-core-common';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
-import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
+import { FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
 import {
   FileOperationError,
   FileOperationResult,

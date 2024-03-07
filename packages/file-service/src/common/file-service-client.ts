@@ -7,6 +7,7 @@ import {
   IDisposable,
   URI,
 } from '@opensumi/ide-core-common';
+import { IFileServiceWatcher } from '@opensumi/ide-core-common/src/types/file-watch';
 
 import {
   FileCopyOptions,
@@ -20,7 +21,6 @@ import {
   IFileSystemProviderRegistrationEvent,
   TextDocumentContentChangeEvent,
 } from './files';
-import { IFileServiceWatcher } from './watcher';
 
 export const FileServiceClientToken = Symbol('FileServiceClientToken');
 

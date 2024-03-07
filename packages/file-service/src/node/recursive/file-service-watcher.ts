@@ -9,18 +9,22 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
+  FileChangeType,
+  FileSystemWatcherClient,
   FileUri,
   IDisposable,
+  IFileSystemWatcherServer,
   ILogService,
   ILogServiceManager,
   ParsedPattern,
   SupportLogNamespace,
+  WatchOptions,
   isLinux,
   isWindows,
   parseGlob,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../../common';
+import { INsfw } from '../../common';
 import { FileChangeCollection } from '../file-change-collection';
 
 export interface WatcherOptions {

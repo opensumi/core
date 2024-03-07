@@ -1,4 +1,11 @@
-import { URI } from '@opensumi/ide-utils';
+import { Event, URI } from '@opensumi/ide-utils';
+
+export interface IFileServiceWatcher {
+  watchId: number;
+  onFilesChanged: Event<FileChange[]>;
+  dispose(): Promise<void>;
+}
+
 export interface IFileSystemWatcherServer {
   /**
    * 根据给定参数启动文件监听

@@ -7,7 +7,10 @@ import {
   EDITOR_COMMANDS,
   Emitter,
   FILE_COMMANDS,
+  FileChange,
+  FileChangeType,
   IContextKeyService,
+  IFileServiceWatcher,
   ILogger,
   PreferenceService,
   URI,
@@ -16,14 +19,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import {
-  FileChange,
-  FileChangeType,
-  FileServiceClientToken,
-  FileStat,
-  IFileServiceClientService,
-  IFileServiceWatcher,
-} from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 

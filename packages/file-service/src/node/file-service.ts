@@ -6,9 +6,11 @@ import { TextDocument } from 'vscode-languageserver-types';
 import { Autowired, INJECTOR_TOKEN, Inject, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
+  DidFilesChangedParams,
   DisposableCollection,
   Emitter,
   Event,
+  FileChangeEvent,
   FileUri,
   IDisposable,
   INodeLogger,
@@ -27,9 +29,7 @@ import {
 } from '@opensumi/ide-core-node';
 
 import {
-  DidFilesChangedParams,
   FileAccess,
-  FileChangeEvent,
   FileCopyOptions,
   FileCreateOptions,
   FileDeleteOptions,

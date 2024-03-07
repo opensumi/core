@@ -6,7 +6,15 @@ import { Doc as YDoc, Map as YMap, YMapEvent, Text as YText } from 'yjs';
 
 import { Autowired, INJECTOR_TOKEN, Inject, Injectable, Injector } from '@opensumi/di';
 import { AppConfig, DisposableCollection } from '@opensumi/ide-core-browser';
-import { Deferred, ILogger, OnEvent, WithEventBus, uuid } from '@opensumi/ide-core-common';
+import {
+  Deferred,
+  FileChangeEvent,
+  FileChangeType,
+  ILogger,
+  OnEvent,
+  WithEventBus,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorDocumentModelCreationEvent,
@@ -16,12 +24,7 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import {
-  FileChangeEvent,
-  FileChangeType,
-  FileServiceClientToken,
-  IFileServiceClientService,
-} from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { ICodeEditor, ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 

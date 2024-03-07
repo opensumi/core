@@ -18,15 +18,20 @@ import {
   parseGlob,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { FileSystemProviderCapabilities, IEventBus, Schemes } from '@opensumi/ide-core-common';
+import {
+  DidFilesChangedParams,
+  FileChange,
+  FileChangeEvent,
+  FileSystemProviderCapabilities,
+  IEventBus,
+  IFileServiceWatcher,
+  Schemes,
+} from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
-  DidFilesChangedParams,
   FileAccess,
-  FileChange,
-  FileChangeEvent,
   FileCopyOptions,
   FileCreateOptions,
   FileDeleteOptions,
@@ -38,7 +43,6 @@ import {
   IBrowserFileSystemRegistry,
   IDiskFileProvider,
   IFileServiceClientService,
-  IFileServiceWatcher,
   IFileSystemProvider,
   IFileSystemProviderCapabilitiesChangeEvent,
   IFileSystemProviderRegistrationEvent,

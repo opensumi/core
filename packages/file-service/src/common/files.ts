@@ -33,13 +33,11 @@ import { FileStat, FileSystemProvider } from '@opensumi/ide-core-common/lib/type
 
 import type { Range } from 'vscode-languageserver-types';
 export {
-  FileSystemProviderCapabilities,
-  FileSystemProvider,
-  FileType,
   FileStat,
+  FileSystemProvider,
+  FileSystemProviderCapabilities,
+  FileType,
 } from '@opensumi/ide-core-common/lib/types/file';
-
-export * from '@opensumi/ide-core-common/lib/types/file-watch';
 
 export const IDiskFileProvider = Symbol('IDiskFileProvider');
 

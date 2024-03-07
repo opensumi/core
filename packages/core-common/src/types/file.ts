@@ -3,8 +3,6 @@ import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileChangeEvent } from './file-watch';
 
-export * from './file-watch';
-
 export interface FileStat {
   /**
    * 资源路径
