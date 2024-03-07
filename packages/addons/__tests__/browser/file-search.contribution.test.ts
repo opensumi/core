@@ -1,15 +1,15 @@
 import {
+  ILogger,
   KeybindingRegistry,
   KeybindingRegistryImpl,
-  RecentFilesManager,
-  ILogger,
   PreferenceService,
+  RecentFilesManager,
 } from '@opensumi/ide-core-browser';
 import {
+  CommandRegistry,
+  CommandRegistryImpl,
   CommandService,
   CommandServiceImpl,
-  CommandRegistryImpl,
-  CommandRegistry,
   DisposableCollection,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -20,17 +20,17 @@ import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco
 import { PrefixQuickOpenService } from '@opensumi/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ClientAddonModule } from '../../src/browser';
 import {
   FileSearchContribution,
-  quickFileOpen,
   FileSearchQuickCommandHandler,
-  matchLineReg,
   getValidateInput,
+  matchLineReg,
+  quickFileOpen,
 } from '../../src/browser/file-search.contribution';
 
 describe('test for browser/file-search.contribution.ts', () => {
@@ -154,7 +154,7 @@ describe('file-search-quickopen', () => {
       name: 'test1',
       detail: 'test1Detail',
       tags: [],
-      kind: modes.SymbolKind.Class,
+      kind: monaco.languages.SymbolKind.Class,
       containerName: 'test Class',
       range: {
         startColumn: 1,
@@ -172,7 +172,7 @@ describe('file-search-quickopen', () => {
         {
           name: 'test1Method',
           detail: 'test1MethodDetail',
-          kind: modes.SymbolKind.Method,
+          kind: monaco.languages.SymbolKind.Method,
           containerName: 'test1Method',
           tags: [],
           range: {

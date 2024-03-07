@@ -41,6 +41,8 @@ import {
   INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import { matchesFuzzy } from '@opensumi/ide-monaco';
+import { Range } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import {
   PrefixQuickOpenService,
   QuickOpenBaseAction,
@@ -52,8 +54,6 @@ import {
   QuickOpenHandlerRegistry,
 } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
 
@@ -76,7 +76,7 @@ export const quickGoToSymbol: Command = {
 // support /some/file.js:73:84
 export const matchLineReg = /^([^:#(]*)[:#(]?L?(\d+)?[:,]?(\d+)?\)?/;
 
-function getRangeByInput(input = ''): monaco.Range | undefined {
+function getRangeByInput(input = ''): Range | undefined {
   const matchList = input.match(matchLineReg) || [];
 
   if (matchList.length < 2) {
@@ -88,7 +88,7 @@ function getRangeByInput(input = ''): monaco.Range | undefined {
     start: Number(matchList[3] || 0),
   };
 
-  return new monaco.Range(lineInfo.line, lineInfo.start, lineInfo.line, lineInfo.start);
+  return new Range(lineInfo.line, lineInfo.start, lineInfo.line, lineInfo.start);
 }
 
 export function getValidateInput(input: string) {
@@ -265,12 +265,7 @@ export class FileSearchQuickCommandHandler {
       const selections = this.workbenchEditorService.currentEditor?.getSelections();
       if (selections) {
         const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selections[0];
-        currentRange = new monaco.Range(
-          selectionStartLineNumber,
-          selectionStartColumn,
-          positionLineNumber,
-          positionColumn,
-        );
+        currentRange = new Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn);
       }
       this.prevEditorState = {
         uri: this.workbenchEditorService.currentResource.uri,

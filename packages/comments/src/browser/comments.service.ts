@@ -10,7 +10,6 @@ import {
   Emitter,
   Event,
   IDisposable,
-  IRange,
   LRUCache,
   LabelService,
   URI,
@@ -28,10 +27,9 @@ import {
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IModelDecorationOptions, IRange } from '@opensumi/ide-monaco';
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IIconService, IconType } from '@opensumi/ide-theme';
-import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   CommentPanelId,
@@ -140,27 +138,27 @@ export class CommentsService extends Disposable implements ICommentsService {
    * -------------------------------- IMPORTANT --------------------------------
    * @param thread
    */
-  private createThreadDecoration(thread: ICommentsThread): model.IModelDecorationOptions {
+  private createThreadDecoration(thread: ICommentsThread): IModelDecorationOptions {
     // 对于新增的空的 thread，默认显示当前用户的头像，否则使用第一个用户的头像
     const avatar =
       thread.comments.length === 0 ? this.currentAuthorAvatar : thread.comments[0].author.iconPath?.toString();
     const icon = avatar
       ? this.iconService.fromIcon('', avatar, IconType.Background)
       : this.iconService.fromString('$(comment-unresolved)');
-    const decorationOptions: model.IModelDecorationOptions = {
+    const decorationOptions: IModelDecorationOptions = {
       description: 'comments-thread-decoration',
       // 创建评论显示在 glyph margin 处
       glyphMarginClassName: ['comments-decoration', 'comments-thread', icon].join(' '),
     };
-    return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
+    return monaco.editor.ModelDecorationOptions.createDynamic(decorationOptions);
   }
 
-  private createHoverDecoration(): model.IModelDecorationOptions {
-    const decorationOptions: model.IModelDecorationOptions = {
+  private createHoverDecoration(): IModelDecorationOptions {
+    const decorationOptions: IModelDecorationOptions = {
       description: 'comments-hover-decoration',
       linesDecorationsClassName: ['comments-decoration', 'comments-add', getIcon('add-comments')].join(' '),
     };
-    return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
+    return monaco.editor.ModelDecorationOptions.createDynamic(decorationOptions);
   }
 
   public init() {
@@ -255,7 +253,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             oldDecorations = editor.monacoEditor.deltaDecorations(oldDecorations, [
               {
                 range: positionToRange(range.startLineNumber),
-                options: this.createHoverDecoration() as unknown as monaco.editor.IModelDecorationOptions,
+                options: this.createHoverDecoration() as unknown as IModelDecorationOptions,
               },
             ]);
           } else {
@@ -464,7 +462,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     // 消除 document 引用
     model?.dispose();
     // 拍平，去掉 undefined
-    const flattenRange: IRange[] = flattenDeep(res).filter(Boolean) as IRange[];
+    const flattenRange = flattenDeep(res as unknown as IRange[]).filter(Boolean);
     deferredRes.resolve(flattenRange);
     return flattenRange;
   }
@@ -502,8 +500,8 @@ export class CommentsService extends Disposable implements ICommentsService {
             return isCurrentThread;
           })
           .map((thread) => ({
-            range: thread.range,
-            options: this.createThreadDecoration(thread) as unknown as monaco.editor.IModelDecorationOptions,
+            range: thread.range as IRange,
+            options: this.createThreadDecoration(thread) as unknown as IModelDecorationOptions,
           })),
     });
     this.addDispose(this.decorationProviderDisposer);

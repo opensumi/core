@@ -16,7 +16,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Selection, monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { AIInlineChatContentWidget } from '../common';
 
@@ -231,7 +231,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       editor: IEditor,
       cancelToken: CancellationToken,
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
-    crossSelection: monaco.Selection,
+    crossSelection: Selection,
   ): Promise<string | undefined> {
     const model = editor.monacoEditor.getModel();
     if (!model || !crossSelection) {
@@ -306,7 +306,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       .join('\n');
   }
 
-  private visibleDiffWidget(editor: IEditor, crossSelection: monaco.Selection, answer: string): void {
+  private visibleDiffWidget(editor: IEditor, crossSelection: Selection, answer: string): void {
     editor.monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
     this.aiDiffWidget = this.injector.get(AIDiffWidget, [editor.monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
@@ -318,7 +318,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.updateInlineContentWidgetPosition(crossSelection);
   }
 
-  private updateInlineContentWidgetPosition(crossSelection: monaco.Selection): void {
+  private updateInlineContentWidgetPosition(crossSelection: Selection): void {
     this.aiInlineContentWidget?.setOptions({
       position: {
         lineNumber: crossSelection.endLineNumber + 1,

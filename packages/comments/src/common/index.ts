@@ -6,11 +6,11 @@ import {
   IContextKeyService,
   IDisposable,
   IMarkdownString,
-  IRange,
   MaybePromise,
   URI,
   positionToRange,
 } from '@opensumi/ide-core-browser';
+import { IRange } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 
 import type { ITree, ITreeNode } from '@opensumi/ide-components';

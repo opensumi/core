@@ -7,7 +7,8 @@ import {
   BaseInlineContentWidget,
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Selection, monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { IContentWidgetPosition } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 
 import { AIInlineChatContentWidget } from '../../../common/index';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
@@ -102,7 +103,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     return AIInlineChatContentWidget;
   }
 
-  override getPosition(): monaco.editor.IContentWidgetPosition | null {
+  override getPosition(): IContentWidgetPosition | null {
     const position = super.getPosition();
 
     if (position) {
@@ -122,7 +123,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     return model!.getLineLastNonWhitespaceColumn(Math.min(Math.max(1, line), model!.getLineCount()));
   }
 
-  private toAbovePosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
+  private toAbovePosition(lineNumber: number, column: number): IContentWidgetPosition {
     return {
       position: new monaco.Position(lineNumber, column),
       preference: [
@@ -132,7 +133,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     };
   }
 
-  private toBelowPosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
+  private toBelowPosition(lineNumber: number, column: number): IContentWidgetPosition {
     return {
       position: new monaco.Position(lineNumber, column),
       preference: [
@@ -142,7 +143,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     };
   }
 
-  private recheckPosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
+  private recheckPosition(lineNumber: number, column: number): IContentWidgetPosition {
     const preNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber - 1);
     const curNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber);
     const nextNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber + 1);
@@ -199,7 +200,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
    * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
-  private computerPosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
+  private computerPosition(selection: Selection): IContentWidgetPosition | null {
     const startPosition = selection.getStartPosition();
     const endPosition = selection.getEndPosition();
     const model = this.editor.getModel();

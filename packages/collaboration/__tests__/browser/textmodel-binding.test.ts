@@ -4,21 +4,21 @@
 import { Awareness } from 'y-protocols/awareness';
 import { WebsocketProvider } from 'y-websocket';
 import {
+  AbsolutePosition,
+  RelativePosition,
   Doc as YDoc,
   Text as YText,
-  RelativePosition,
-  AbsolutePosition,
   createAbsolutePositionFromRelativePosition,
   // @ts-ignore
 } from 'yjs';
 
 import { Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ICodeEditor, ITextModel } from '@opensumi/ide-monaco';
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
-import { ICollaborationService, COLLABORATION_PORT } from '../../src/common';
+import { COLLABORATION_PORT, ICollaborationService } from '../../src/common';
 
 const injector = new Injector();
 
@@ -211,7 +211,7 @@ describe('TextModelBinding test for editor', () => {
   let doc: YDoc;
   let binding: TextModelBinding;
   let yText: YText;
-  let textModel: monaco.editor.ITextModel;
+  let textModel: ITextModel;
 
   beforeAll(() => {
     doc = new YDoc();

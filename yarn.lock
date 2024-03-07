@@ -2092,6 +2092,7 @@ __metadata:
     "@opensumi/ide-core-node": "workspace:*"
     "@opensumi/ide-design": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
   languageName: unknown
   linkType: soft
 

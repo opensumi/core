@@ -3,7 +3,7 @@
 // @ts-ignore
 import { Text as YText } from 'yjs';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { EventBusImpl, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
@@ -15,13 +15,13 @@ import {
   EditorDocumentModelRemovalEvent,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileService, FileChangeType } from '@opensumi/ide-file-service';
+import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { CollaborationService } from '../../src/browser/collaboration.service';
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
 import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src/common';

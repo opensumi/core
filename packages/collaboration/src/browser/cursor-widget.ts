@@ -5,10 +5,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import {
-  IContentWidget,
-  IContentWidgetPosition,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { IContentWidget, IContentWidgetPosition } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 
 import { ICursorWidgetRegistry, UserInfo, Y_REMOTE_SELECTION } from '../common';
 

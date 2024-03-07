@@ -14,15 +14,10 @@ import {
 } from 'yjs';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { ICodeEditor, ITextModel, Position } from '@opensumi/ide-monaco';
+import { IDisposable } from '@opensumi/ide-core-common';
+import { ICodeEditor, IModelContentChangedEvent, ITextModel, Position, SelectionDirection } from '@opensumi/ide-monaco';
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
-import {
-  IDisposable,
-  Range,
-  Selection,
-  SelectionDirection,
-  editor,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ICollaborationService, ITextModelBinding, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';
 
@@ -110,7 +105,7 @@ export class TextModelBinding implements ITextModelBinding {
               }
 
               newDecorations.push({
-                range: new Range(start.lineNumber, start.column, end.lineNumber, end.column),
+                range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
                 options: {
                   description: 'yjs decoration ' + clientID,
                   className: `${Y_REMOTE_SELECTION} ${Y_REMOTE_SELECTION}-${clientID}`,
@@ -146,13 +141,13 @@ export class TextModelBinding implements ITextModelBinding {
           index += op.retain;
         } else if (op.insert !== undefined) {
           const pos = this.textModel.getPositionAt(index);
-          const range = new Selection(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+          const range = new monaco.Selection(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
           this.textModel.applyEdits([{ range, text: op.insert as string }]);
           index += (op.insert as string).length;
         } else if (op.delete !== undefined) {
           const pos = this.textModel.getPositionAt(index);
           const endPos = this.textModel.getPositionAt(index + op.delete);
-          const range = new Selection(pos.lineNumber, pos.column, endPos.lineNumber, endPos.column);
+          const range = new monaco.Selection(pos.lineNumber, pos.column, endPos.lineNumber, endPos.column);
           this.textModel.applyEdits([{ range, text: '' }]);
         } else {
           throw new Error('Unexpected error');
@@ -206,7 +201,7 @@ export class TextModelBinding implements ITextModelBinding {
     if (start !== null && end !== null && start.type === type && end.type === type) {
       const startPos = model.getPositionAt(start.index);
       const endPos = model.getPositionAt(end.index);
-      return Selection.createWithDirection(
+      return monaco.Selection.createWithDirection(
         startPos.lineNumber,
         startPos.column,
         endPos.lineNumber,
@@ -217,7 +212,7 @@ export class TextModelBinding implements ITextModelBinding {
     return null;
   }
 
-  private textModelOnDidChangeContentHandler = (event: editor.IModelContentChangedEvent) => {
+  private textModelOnDidChangeContentHandler = (event: IModelContentChangedEvent) => {
     // apply changes from right to left
     this.mutex(() => {
       this.doc.transact(() => {

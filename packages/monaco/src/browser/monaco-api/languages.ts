@@ -1,4 +1,4 @@
-import { FoldingRangeKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { FoldingRangeKind, SymbolKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { ILanguageFeaturesService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/languageFeatures';
 import {
   getEncodedLanguageId,
@@ -63,7 +63,7 @@ export function createMonacoLanguageApi() {
     registerSelectionRangeProvider,
     registerCompletionItemProvider,
     // enums
-    // TODO: const enum
+    SymbolKind,
     // Classes
     FoldingRangeKind,
   });

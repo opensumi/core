@@ -3,15 +3,12 @@ import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
-import { ICodeEditor } from '@opensumi/ide-monaco';
-import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { ICodeEditor, ITextModel } from '@opensumi/ide-monaco';
+import { ZoneWidget } from '@opensumi/ide-monaco/lib/browser/contrib';
+import { Selection, monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
-import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
-import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
-import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { ILanguageSelection } from '@opensumi/ide-monaco/lib/common/languages';
 
 import styles from './inline-diff-widget.module.less';
 
@@ -43,7 +40,7 @@ const diffEditorOptions: IDiffEditorOptions = {
 interface IDiffContentProviderProps {
   dto:
     | {
-        selection: monaco.Selection;
+        selection: Selection;
         modifiedValue: string;
       }
     | undefined;
@@ -76,7 +73,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       lineNumbersMinChars: editor.getOption(monaco.editor.EditorOption.lineNumbersMinChars),
     });
 
-    const modelService = StandaloneServices.get(IModelService);
+    const modelService = monaco.services.modelService;
     const languageSelection: ILanguageSelection = { languageId: model.getLanguageId(), onDidChange: Event.None };
 
     const originalModel = modelService.createModel(codeValueInRange, languageSelection);
@@ -121,7 +118,7 @@ export class AIDiffWidget extends ZoneWidget {
   private readonly _onMaxLincCount = new Emitter<number>();
   public readonly onMaxLincCount: Event<number> = this._onMaxLincCount.event;
 
-  private selection: monaco.Selection;
+  private selection: Selection;
   private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
 
@@ -150,7 +147,7 @@ export class AIDiffWidget extends ZoneWidget {
     );
   }
 
-  constructor(editor: ICodeEditor, selection: monaco.Selection, modifiedValue: string) {
+  constructor(editor: ICodeEditor, selection: Selection, modifiedValue: string) {
     super(editor, {
       showArrow: false,
       showFrame: false,

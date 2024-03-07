@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Schemes, URI, Uri, path, strings } from '@opensumi/ide-core-browser';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel } from '@opensumi/ide-monaco';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 

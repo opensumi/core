@@ -2,6 +2,8 @@ import { ScrollbarVisibility } from '@opensumi/monaco-editor-core/esm/vs/base/co
 import {
   ContentWidgetPositionPreference,
   ICodeEditor,
+  IContentWidget,
+  IContentWidgetPosition,
   MouseTargetType,
   OverlayWidgetPositionPreference,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
@@ -32,6 +34,7 @@ import {
   TextModelResolvedOptions,
   TrackedRangeStickiness,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import {
   colorize,
   colorizeElement,
@@ -119,6 +122,7 @@ export function createMonacoEditorApi() {
     FontInfo,
     TextModelResolvedOptions,
     FindMatch,
+    ModelDecorationOptions,
 
     // vars
     EditorType,
@@ -127,12 +131,14 @@ export function createMonacoEditorApi() {
 }
 
 export {
-  IDecorationOptions,
-  IModelDecorationOptions,
   ICodeEditor,
-  IModelDeltaDecoration,
-  IEditorOptions,
-  ITextModelUpdateOptions,
+  IContentWidget,
+  IContentWidgetPosition,
+  IDecorationOptions,
   IDiffEditorOptions,
+  IEditorOptions,
   IMarkerData,
+  IModelDecorationOptions,
+  IModelDeltaDecoration,
+  ITextModelUpdateOptions,
 };

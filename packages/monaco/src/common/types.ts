@@ -2,7 +2,13 @@ import { URI } from '@opensumi/ide-core-common';
 
 import type { IAutoClosingPair, IAutoClosingPairConditional } from './types';
 export type { Position, IPosition } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
-export { ITextModel, EndOfLineSequence } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+export { IRange } from '@opensumi/monaco-editor-core';
+export { SelectionDirection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/selection';
+export {
+  IModelDecorationOptions,
+  ITextModel,
+  EndOfLineSequence,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 export type { Event } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
 export type { ICodeEditor, IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 export { Emitter } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
