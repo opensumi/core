@@ -22,6 +22,7 @@ export class AlipayCloudMarketplaceService implements IMarketplaceService {
 
   public downloadHeaders = {
     ...this.getAKHeaders(),
+    ...alipayCloudCommonHeaders,
     'x-download-model': 'redirect',
   };
 
