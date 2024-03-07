@@ -12,11 +12,11 @@ import {
   OnEvent,
   PreferenceSchemaProvider,
   PreferenceService,
+  StaticResourceService,
   ThemeIcon,
   URI,
   WithEventBus,
 } from '@opensumi/ide-core-browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
   DEFAULT_PRODUCT_ICON_THEME_ID,
