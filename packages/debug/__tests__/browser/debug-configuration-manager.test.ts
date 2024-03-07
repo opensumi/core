@@ -1,11 +1,11 @@
 import {
   Disposable,
-  QuickPickService,
+  FileStat,
   IContextKeyService,
   PreferenceService,
-  URI,
-  FileStat,
+  QuickPickService,
   StorageProvider,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { IDebugServer } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
@@ -13,7 +13,7 @@ import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferen
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
@@ -157,7 +157,7 @@ describe('Debug Configuration Manager', () => {
     });
 
     mockInjector.overrideProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useValue: mockFileServiceClient,
     });
 

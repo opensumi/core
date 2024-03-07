@@ -1,13 +1,13 @@
 import {
+  Disposable,
+  IPreferenceSettingsService,
   PreferenceProviderProvider,
+  PreferenceSchemaProvider,
   PreferenceScope,
   PreferenceService,
-  PreferenceSchemaProvider,
   URI,
-  IPreferenceSettingsService,
-  Disposable,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { PreferenceSettingId } from '@opensumi/ide-preferences';
 import { PREFERENCE_COMMANDS } from '@opensumi/ide-preferences/lib/browser/preference-contribution';
 import {
@@ -86,7 +86,7 @@ describe('PreferenceSettingService should be work', () => {
         },
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useValue: mockFileServiceClient,
       },
       {

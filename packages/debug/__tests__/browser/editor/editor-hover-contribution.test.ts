@@ -9,7 +9,7 @@ import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferen
 import { DebugEditorContribution } from '@opensumi/ide-debug/lib/browser/editor/debug-editor-contribution';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IDebugSessionManager } from './../../../src/common/debug-session';
@@ -36,7 +36,7 @@ describe('Editor Hover Contribution', () => {
         useValue: {},
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useValue: {},
       },
       {

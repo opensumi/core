@@ -16,7 +16,7 @@ import {
   IEditorDocumentModelRef,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -205,8 +205,8 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   @Autowired(RangeHighlightDecorations)
   private readonly rangeHighlightDecorations: RangeHighlightDecorations;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(SearchContextKey)
   private readonly searchContextKey: SearchContextKey;

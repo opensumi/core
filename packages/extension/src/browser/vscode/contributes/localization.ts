@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 
 import {
   Contributes,
@@ -54,8 +54,8 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(ExtensionNodeServiceServerPath)
   private readonly extensionNodeService: IExtensionNodeClientService;

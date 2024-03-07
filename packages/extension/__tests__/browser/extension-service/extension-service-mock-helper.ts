@@ -55,7 +55,7 @@ import {
 } from '@opensumi/ide-extension/lib/browser/types';
 import { WalkthroughsService } from '@opensumi/ide-extension/lib/browser/walkthroughs.service';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
@@ -515,7 +515,7 @@ export function setupExtensionServiceInjector() {
       useClass: WorkbenchThemeService,
     },
     {
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: MockFileServiceClient,
     },
     {

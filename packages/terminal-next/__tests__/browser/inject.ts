@@ -1,30 +1,30 @@
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
+  ApplicationService,
+  CorePreferences,
+  EventBusImpl,
   IContextKeyService,
   PreferenceService,
-  EventBusImpl,
-  CorePreferences,
-  ApplicationService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockLogger, MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
-  IEventBus,
-  CommandService,
-  Disposable,
-  OperatingSystem,
   CommandRegistry,
+  CommandService,
   CoreCommandRegistryImpl,
-  ILoggerManagerClient,
+  Disposable,
+  IApplicationService,
+  IEventBus,
   ILogServiceManager,
   ILogger,
-  IApplicationService,
+  ILoggerManagerClient,
+  OperatingSystem,
 } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
@@ -39,31 +39,31 @@ import { TerminalNetworkService } from '../../src/browser/terminal.network';
 import { TerminalPreference } from '../../src/browser/terminal.preference';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import {
-  ITerminalService,
-  ITerminalTheme,
   ITerminalClientFactory2,
   ITerminalController,
+  ITerminalErrorService,
   ITerminalGroupViewService,
   ITerminalInternalService,
   ITerminalNetwork,
-  ITerminalErrorService,
-  ITerminalProfileService,
   ITerminalProfileInternalService,
+  ITerminalProfileService,
+  ITerminalService,
   ITerminalServicePath,
+  ITerminalTheme,
 } from '../../src/common';
 import { ITerminalPreference } from '../../src/common/preference';
 
 import {
-  MockMainLayoutService,
-  MockTerminalThemeService,
-  MockTerminalService,
-  MockPreferenceService,
-  MockThemeService,
-  MockFileService,
   MockEditorService,
   MockErrorService,
+  MockFileService,
+  MockMainLayoutService,
+  MockPreferenceService,
   MockProfileService,
   MockTerminalProfileInternalService,
+  MockTerminalService,
+  MockTerminalThemeService,
+  MockThemeService,
 } from './mock.service';
 
 const mockPreferences = new Map();
@@ -119,7 +119,7 @@ export const injector = new MockInjector([
     useValue: new MockEditorService(),
   },
   {
-    token: IFileServiceClient,
+    token: FileServiceClientToken,
     useValue: new MockFileService(),
   },
   {

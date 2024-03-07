@@ -16,7 +16,7 @@ import {
   detectEncodingFromBuffer,
   getLanguageIdFromMonaco,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelContentProvider } from '../doc-model/types';
@@ -49,8 +49,8 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
 
   private _detectedEncodingMap = new Map<string, string>();
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(EditorPreferences)
   protected readonly editorPreferences: EditorPreferences;

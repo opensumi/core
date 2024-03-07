@@ -18,7 +18,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
 import { MainThreadConnection } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.connection';
 import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
 import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
@@ -153,7 +153,7 @@ describe('MainThreadDebug API Test Suite', () => {
         useValue: {},
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useValue: {},
       },
       {

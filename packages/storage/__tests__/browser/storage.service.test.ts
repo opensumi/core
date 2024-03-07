@@ -3,19 +3,19 @@ import temp from 'temp';
 
 import { Injectable, Injector } from '@opensumi/di';
 import {
-  URI,
-  FileUri,
-  STORAGE_SCHEMA,
-  Disposable,
-  StorageProvider,
-  DefaultStorageProvider,
-  STORAGE_NAMESPACE,
-  ScopedBrowserStorageService,
-  GlobalBrowserStorageService,
   AppConfig,
+  DefaultStorageProvider,
+  Disposable,
+  FileUri,
+  GlobalBrowserStorageService,
+  STORAGE_NAMESPACE,
+  STORAGE_SCHEMA,
+  ScopedBrowserStorageService,
+  StorageProvider,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -68,7 +68,7 @@ describe('StorageProvider should be work', () => {
     injector = createBrowserInjector([StorageModule]);
     injector.overrideProviders(
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useValue: {
           access: () => false,
           createFolder: () => {},

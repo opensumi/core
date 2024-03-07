@@ -13,7 +13,7 @@ import {
   localize,
   raceCancellation,
 } from '@opensumi/ide-core-common';
-import { FileChangeType, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileChangeType, FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IDialogService } from '@opensumi/ide-overlay';
 import {
@@ -28,8 +28,8 @@ import { FileSystemEvents, IExtHostFileSystemEvent } from '../../../common/vscod
 
 @Injectable({ multiple: true })
 export class MainThreadFileSystemEvent extends Disposable {
-  @Autowired(IFileServiceClient)
-  private readonly fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileService: IFileServiceClientService;
 
   @Autowired(IWorkspaceFileService)
   private readonly workspaceFileService: IWorkspaceFileService;

@@ -5,7 +5,7 @@ import {
   MockPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -159,7 +159,7 @@ describe('icon theme test', () => {
         useClass: MockPreferenceSettingsService,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: MockFileServiceClient,
       },
       {

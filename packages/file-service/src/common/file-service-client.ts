@@ -22,9 +22,9 @@ import {
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 
-export const IFileServiceClient = Symbol('IFileServiceClient');
+export const FileServiceClientToken = Symbol('FileServiceClientToken');
 
-export interface IFileServiceClient {
+export interface IFileServiceClientService {
   onFilesChanged: Event<FileChangeEvent>;
 
   onFileProviderChanged: Event<string[]>;

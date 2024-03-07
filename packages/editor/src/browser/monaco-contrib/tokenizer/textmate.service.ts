@@ -21,7 +21,7 @@ import {
   parseWithComments,
 } from '@opensumi/ide-core-browser';
 import { Disposable, URI, isObject } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import {
   GrammarsContribution,
   ITextmateTokenizerService,
@@ -100,8 +100,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   @Autowired()
   private textmateRegistry: TextmateRegistry;
 
-  @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private fileServiceClient: IFileServiceClientService;
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;

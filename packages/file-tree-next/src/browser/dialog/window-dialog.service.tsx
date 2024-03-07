@@ -12,7 +12,7 @@ import {
   isMacintosh,
 } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IDialogService, IOpenDialogOptions, ISaveDialogOptions, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import { FileTreeDialogModel } from './file-dialog-model.service';
@@ -28,8 +28,8 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;

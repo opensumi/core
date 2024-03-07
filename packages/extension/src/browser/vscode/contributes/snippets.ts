@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
@@ -20,8 +20,8 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(AbstractExtInstanceManagementService)
   protected readonly extensionManageService: AbstractExtInstanceManagementService;

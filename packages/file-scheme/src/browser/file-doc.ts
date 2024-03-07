@@ -18,7 +18,7 @@ import {
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
 import { BaseFileSystemEditorDocumentProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-editor-doc';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
@@ -28,8 +28,8 @@ export class FileSchemeDocumentProvider
   extends BaseFileSystemEditorDocumentProvider
   implements IEditorDocumentModelContentProvider
 {
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(IFileSchemeDocClient)
   protected readonly fileSchemeDocClient: IFileSchemeDocClient;

@@ -50,7 +50,7 @@ import { ExtensionService } from '@opensumi/ide-extension/lib/common';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import * as TypeConverts from '@opensumi/ide-extension/lib/common/vscode/converter';
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { MonacoService } from '@opensumi/ide-monaco';
@@ -171,7 +171,7 @@ describe('MainThreadEditor Test Suites', () => {
           useClass: BaseFileSystemEditorDocumentProvider,
         },
         {
-          token: IFileServiceClient,
+          token: FileServiceClientToken,
           useClass: MockFileServiceClient,
         },
         {

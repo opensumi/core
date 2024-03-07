@@ -2,13 +2,13 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import util from 'util';
-
-import temp = require('temp');
 import vscode from 'vscode';
 
+import temp = require('temp');
+
 import {
-  PreferenceProviderProvider,
   PreferenceProvider,
+  PreferenceProviderProvider,
   PreferenceService,
   PreferenceServiceImpl,
 } from '@opensumi/ide-core-browser';
@@ -17,30 +17,30 @@ import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { StaticResourceServiceImpl } from '@opensumi/ide-core-browser/lib/static-resource/static.service';
 import {
-  Uri as vscodeUri,
+  CommonServerPath,
+  Deferred,
+  DisposableCollection,
   Emitter,
+  FileUri,
+  IApplicationService,
+  IEventBus,
+  ILoggerManagerClient,
+  OS,
+  PreferenceScope,
   URI,
   Uri,
-  IEventBus,
-  PreferenceScope,
-  ILoggerManagerClient,
-  FileUri,
-  CommonServerPath,
-  OS,
-  IApplicationService,
-  DisposableCollection,
-  Deferred,
+  Uri as vscodeUri,
 } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
+  EditorComponentRegistry,
+  EditorDocumentModelCreationEvent,
+  EditorPreferences,
+  EmptyDocCacheImpl,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
-  EmptyDocCacheImpl,
-  EditorDocumentModelCreationEvent,
-  EditorComponentRegistry,
-  EditorPreferences,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import {
@@ -51,6 +51,7 @@ import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.s
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IDocPersistentCacheProvider, ResourceService } from '@opensumi/ide-editor/lib/common';
 import { ExtensionService } from '@opensumi/ide-extension';
+import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
 import { MainThreadExtensionDocumentData } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.doc';
 import { MainThreadFileSystem } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.file-system';
@@ -65,7 +66,6 @@ import { ExtHostPreference } from '@opensumi/ide-extension/lib/hosted/api/vscode
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
-import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
 import { FileSchemeDocumentProvider } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
 import {
   FileServicePath,
@@ -75,21 +75,21 @@ import {
   IDiskFileProvider,
 } from '@opensumi/ide-file-service';
 import {
-  FileServiceClient,
   BrowserFileSystemRegistryImpl,
+  FileServiceClient,
 } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
 import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { MonacoService } from '@opensumi/ide-monaco';
 import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IBulkEditServiceShape, IWorkspaceEditService, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
 import { MonacoBulkEditService } from '@opensumi/ide-workspace-edit/lib/browser/bulk-edit.service';
 import { WorkspaceEditServiceImpl } from '@opensumi/ide-workspace-edit/lib/browser/workspace-edit.service';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
@@ -212,7 +212,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
       useClass: PreferenceServiceImpl,
     },
     {
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: FileServiceClient,
     },
     {
@@ -249,7 +249,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   beforeAll(async () => {
     // prepare
     const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    const fileServiceClient: FileServiceClient = injector.get(FileServiceClientToken);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     const root = FileUri.create(fs.realpathSync(temp.mkdirSync('extension-storage-test')));
     await hashImpl.initialize();
@@ -549,7 +549,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
       expect(e.added[0].name).toBe(path.basename(__dirname));
       defered.resolve();
     });
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    const fileServiceClient: FileServiceClient = injector.get(FileServiceClientToken);
     const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
     workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
 

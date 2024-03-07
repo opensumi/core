@@ -18,7 +18,7 @@ import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/c
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
@@ -65,7 +65,7 @@ describe('Debug console component Test Suites', () => {
       useValue: {},
     });
     mockInjector.overrideProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useValue: {
         onFilesChanged: jest.fn(),
       },

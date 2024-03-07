@@ -4,15 +4,19 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { IEditorDocumentEditChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IContentChange, IFileSchemeDocClient, ISavingContent } from '@opensumi/ide-file-scheme';
-import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/ide-file-service';
+import {
+  FileServiceClientToken,
+  IFileServiceClientService,
+  TextDocumentContentChangeEvent,
+} from '@opensumi/ide-file-service';
 
 /**
  * todo: 重写文档保存逻辑
  */
 @Injectable()
 export class FileSchemeDocClientService implements IFileSchemeDocClient {
-  @Autowired(IFileServiceClient)
-  private fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private fileService: IFileServiceClientService;
 
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;

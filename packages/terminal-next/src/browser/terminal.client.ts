@@ -18,7 +18,7 @@ import {
   debounce,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
@@ -88,8 +88,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(WorkbenchEditorService)
   protected readonly editorService: WorkbenchEditorService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileService: IFileServiceClientService;
 
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;

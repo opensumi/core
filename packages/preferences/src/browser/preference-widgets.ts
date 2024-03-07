@@ -12,7 +12,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandRegistry, Disposable, IDisposable, PreferenceScope, URI, localize } from '@opensumi/ide-core-common';
 import { IEditor, IEditorDocumentModelService, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -37,8 +37,8 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
   @Autowired(IEditorDocumentModelService)
   private editorDocumentModelService: IEditorDocumentModelService;
 
-  @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private fileServiceClient: IFileServiceClientService;
 
   @Autowired(AbstractContextMenuService)
   private menuService: AbstractContextMenuService;

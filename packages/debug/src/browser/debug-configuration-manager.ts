@@ -21,7 +21,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IOpenResourceResult, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorCollectionService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
-import { FileSystemError, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, FileSystemError, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { QuickPickService } from '@opensumi/ide-quick-open';
@@ -73,8 +73,8 @@ export class DebugConfigurationManager {
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(PreferenceService)
   protected readonly preferences: PreferenceService;

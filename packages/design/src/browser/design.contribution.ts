@@ -7,7 +7,7 @@ import {
   SlotRendererRegistry,
 } from '@opensumi/ide-core-browser';
 import { Schemes } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 
 import { DesignBottomTabRenderer, DesignLeftTabRenderer } from './layout/tabbar.view';
@@ -16,7 +16,7 @@ import { DesignThemeFileSystemProvider } from './theme/file-system.provider';
 @Injectable()
 @Domain(ClientAppContribution, SlotRendererContribution)
 export class DesignCoreContribution implements ClientAppContribution, SlotRendererContribution {
-  @Autowired(IFileServiceClient)
+  @Autowired(FileServiceClientToken)
   protected readonly fileSystem: FileServiceClient;
 
   @Autowired()

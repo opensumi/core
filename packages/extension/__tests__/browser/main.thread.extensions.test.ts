@@ -8,7 +8,7 @@ import { AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { IGlobalStorageServer } from '@opensumi/ide-storage';
@@ -150,7 +150,7 @@ describe('MainThreadExtensions Test Suites', () => {
         useClass: MockLoggerManagerClient,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: MockFileServiceClient,
       },
       {

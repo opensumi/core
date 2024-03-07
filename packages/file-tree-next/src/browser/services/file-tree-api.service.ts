@@ -3,7 +3,7 @@ import { ITree } from '@opensumi/ide-components';
 import { CorePreferences, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { CommandService, URI, formatLocalize, localize, path } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
@@ -12,8 +12,8 @@ import { Directory, File } from '../../common/file-tree-node.define';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
-  @Autowired(IFileServiceClient)
-  protected fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected fileServiceClient: IFileServiceClientService;
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;

@@ -3,9 +3,9 @@ import { BrowserModule } from '@opensumi/ide-core-browser';
 
 import {
   DiskFileServicePath,
+  FileServiceClientToken,
   IBrowserFileSystemRegistry,
   IDiskFileProvider,
-  IFileServiceClient,
   IShadowFileProvider,
 } from '../common/index';
 import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
@@ -19,7 +19,7 @@ import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 export class FileServiceClientModule extends BrowserModule {
   providers: Provider[] = [
     {
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: FileServiceClient,
     },
     {

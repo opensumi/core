@@ -25,7 +25,7 @@ import {
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITaskService } from '@opensumi/ide-task';
@@ -129,7 +129,7 @@ describe('Debug Console Tree Model', () => {
       useValue: {},
     });
     mockInjector.overrideProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useValue: {
         onFilesChanged: jest.fn(),
       },

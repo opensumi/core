@@ -1,18 +1,17 @@
-
-import { Injector, Injectable } from '@opensumi/di';
+import { Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
-  IEditorDocumentModelService,
   IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
 import { SearchFileNode, SearchRoot } from '@opensumi/ide-search/lib/browser/tree/tree-node.defined';
@@ -24,9 +23,9 @@ import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
 import { SearchTreeService } from '../../src/browser/tree/search-tree.service';
 import {
-  IContentSearchClientService,
-  ContentSearchServerPath,
   ContentSearchResult,
+  ContentSearchServerPath,
+  IContentSearchClientService,
   ISearchTreeService,
 } from '../../src/common';
 
@@ -155,7 +154,7 @@ describe('search-tree.service.ts', () => {
         useClass: MockContextKeyService,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: MockFileServiceClient,
       },
       {

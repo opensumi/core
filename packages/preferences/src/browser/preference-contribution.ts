@@ -42,7 +42,7 @@ import {
   IResourceOpenResult,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 
 import { PREF_SCHEME, SettingContribution } from '../common';
 
@@ -140,8 +140,8 @@ export class PreferenceContribution
   @Autowired(PreferenceProvider, { tag: PreferenceScope.Workspace })
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(PrefResourceProvider)
   private readonly prefResourceProvider: PrefResourceProvider;

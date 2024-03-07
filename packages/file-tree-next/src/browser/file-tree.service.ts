@@ -19,8 +19,9 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
   FileChange,
   FileChangeType,
+  FileServiceClientToken,
   FileStat,
-  IFileServiceClient,
+  IFileServiceClientService,
   IFileServiceWatcher,
 } from '@opensumi/ide-file-service/lib/common';
 import { IIconService } from '@opensumi/ide-theme';
@@ -75,8 +76,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(FileTreeDecorationService)
   public readonly decorationService: FileTreeDecorationService;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(IIconService)
   public readonly iconService: IIconService;

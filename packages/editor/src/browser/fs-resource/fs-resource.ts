@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileChangeType, path } from '@opensumi/ide-core-common';
-import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import { AskSaveResult, DIFF_SCHEME, IResource, IResourceProvider, ResourceNeedUpdateEvent } from '../../common';
@@ -28,8 +28,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   @Autowired()
   protected labelService: LabelService;
 
-  @Autowired(IFileServiceClient)
-  protected fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected fileServiceClient: IFileServiceClientService;
 
   @Autowired(IDialogService)
   protected dialogService: IDialogService;

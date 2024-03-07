@@ -10,7 +10,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { IWelcomeMetaData } from './common';
@@ -19,7 +19,7 @@ import styles from './welcome.module.less';
 export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({ resource }) => {
   const commandService: CommandService = useInjectable<CommandService>(CommandService);
   const windowService: IWindowService = useInjectable<IWindowService>(IWindowService);
-  const fileService: IFileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
+  const fileService: IFileServiceClientService = useInjectable<IFileServiceClientService>(FileServiceClientToken);
   const messageService: IMessageService = useInjectable<IMessageService>(IMessageService);
 
   return (

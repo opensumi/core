@@ -7,14 +7,14 @@ import {
   Schemes,
 } from '@opensumi/ide-core-browser';
 
-import { IDiskFileProvider, IFileServiceClient } from '../common';
+import { FileServiceClientToken, IDiskFileProvider } from '../common';
 
 import { FileServiceClient } from './file-service-client';
 
 // 常规文件资源读取
 @Domain(ClientAppContribution)
 export class FileServiceContribution implements ClientAppContribution {
-  @Autowired(IFileServiceClient)
+  @Autowired(FileServiceClientToken)
   protected readonly fileSystem: FileServiceClient;
 
   @Autowired(IDiskFileProvider)

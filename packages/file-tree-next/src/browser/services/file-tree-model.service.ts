@@ -38,7 +38,7 @@ import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/re
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
@@ -99,8 +99,8 @@ export class FileTreeModelService {
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;

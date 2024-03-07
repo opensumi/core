@@ -22,7 +22,7 @@ import {
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IResource, IResourceProvider, ResourceService } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { QuickPickItem, QuickPickService } from '@opensumi/ide-quick-open';
 
 import { IKeymapService, KEYMAPS_SCHEME } from '../common';
@@ -87,8 +87,8 @@ export class KeymapsContribution
   @Autowired(KeyboardNativeLayoutService)
   private readonly layoutProvider: KeyboardNativeLayoutService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(KeymapsResourceProvider)
   protected readonly keymapsResourceProvider: KeymapsResourceProvider;

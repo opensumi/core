@@ -6,13 +6,13 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
-import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
+import { FileServiceClientToken, FileServicePath, IDiskFileProvider, IFileServiceClientService } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
 describe('FileServiceClient should be work', () => {
   const injector = createBrowserInjector([FileServiceClientModule]);
-  let fileServiceClient: IFileServiceClient;
+  let fileServiceClient: IFileServiceClientService;
   const track = temp.track();
   const tempDir = FileUri.create(fs.realpathSync(temp.mkdirSync('file-service-client-test')));
 
@@ -31,7 +31,7 @@ describe('FileServiceClient should be work', () => {
     jest.setTimeout(10000);
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
-    fileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient = injector.get(FileServiceClientToken);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   });
 

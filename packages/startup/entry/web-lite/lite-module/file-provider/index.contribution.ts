@@ -4,8 +4,7 @@ import {
   StaticResourceContribution,
   StaticResourceService,
 } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { AbstractHttpFileService } from './browser-fs-provider';
@@ -19,9 +18,6 @@ const EXPRESS_SERVER_PATH = window.location.href;
 // file 文件资源 远程读取
 @Domain(StaticResourceContribution, FsProviderContribution)
 export class FileProviderContribution implements StaticResourceContribution, FsProviderContribution {
-  @Autowired(IFileServiceClient)
-  private readonly fileSystem: FileServiceClient;
-
   @Autowired(AbstractHttpFileService)
   private httpImpl: HttpFileService;
 
@@ -38,7 +34,7 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
     this.httpImpl.initWorkspace(Uri.file(this.appConfig.workspaceDir!));
   }
 
-  registerProvider(registry: IFileServiceClient) {
+  registerProvider(registry: IFileServiceClientService) {
     registry.registerProvider('ext', this.ktExtFsProvider);
   }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { URI, Emitter, Event, FileUri, IDisposable, BinaryBuffer } from '@opensumi/ide-core-common';
 
-import { IFileServiceClient } from '../src/common/file-service-client';
+import { IFileServiceClientService } from '../src/common/file-service-client';
 import {
   FileSetContentOptions,
   FileStat,
@@ -18,7 +18,7 @@ import {
 import { IFileServiceWatcher } from '../src/common/watcher';
 
 @Injectable()
-export class MockFileServiceClient implements IFileServiceClient {
+export class MockFileServiceClient implements IFileServiceClientService {
   listCapabilities() {
     return [];
   }

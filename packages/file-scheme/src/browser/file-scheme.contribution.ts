@@ -12,7 +12,7 @@ import {
   UntitledSchemeDocumentProvider,
   UntitledSchemeResourceProvider,
 } from '@opensumi/ide-editor/lib/browser/untitled-resource';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 
 import { BinaryEditorComponent } from './external.view';
 import {
@@ -61,8 +61,8 @@ export class FileSystemEditorResourceContribution implements BrowserEditorContri
 
 @Domain(BrowserEditorContribution)
 export class FileSystemEditorComponentContribution implements BrowserEditorContribution {
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(PreferenceService)
   private readonly preference: PreferenceService;

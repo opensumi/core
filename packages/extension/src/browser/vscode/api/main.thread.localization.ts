@@ -1,7 +1,7 @@
 import { Autowired, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../../common';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -11,8 +11,8 @@ import { IExtHostLocalization, IMainThreadLocalization } from '../../../common/v
 export class MainThreadLocalization implements IMainThreadLocalization {
   protected readonly proxy: IExtHostLocalization;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileService: IFileServiceClientService;
 
   @Autowired(PreferenceService)
   protected readonly preferenceService: PreferenceService;

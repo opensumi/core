@@ -6,10 +6,11 @@ import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } fro
 import {
   FileOperationError,
   FileOperationResult,
+  FileServiceClientToken,
   FileSystemProvider,
   FileType,
   IBrowserFileSystemRegistry,
-  IFileServiceClient,
+  IFileServiceClientService,
 } from '@opensumi/ide-file-service/lib/common';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -32,8 +33,8 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   private readonly _proxy: IExtHostFileSystemShape;
   private readonly _fileProvider = new Map<number, RemoteFileSystemProvider>();
 
-  @Autowired(IFileServiceClient)
-  private readonly _fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly _fileService: IFileServiceClientService;
 
   @Autowired(IBrowserFileSystemRegistry)
   private schemeRegistry: IBrowserFileSystemRegistry;
@@ -222,7 +223,7 @@ class RemoteFileSystemProvider implements FileSystemProvider {
   }
 
   constructor(
-    fileService: IFileServiceClient,
+    fileService: IFileServiceClientService,
     scheme: string,
     capabilities: FileSystemProviderCapabilities,
     private readonly _handle: number,

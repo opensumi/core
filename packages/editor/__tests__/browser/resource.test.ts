@@ -1,20 +1,20 @@
 import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, IEventBus, Schemes, Deferred } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
-import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
+import { Deferred, IEventBus, Schemes, URI } from '@opensumi/ide-core-common';
+import { ICompareService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { DefaultDiffEditorContribution, DiffResourceProvider } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
 import { UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
-  ResourceService,
   IResourceProvider,
-  ResourceDecorationNeedChangeEvent,
   ResourceDecorationChangeEvent,
-  ResourceNeedUpdateEvent,
+  ResourceDecorationNeedChangeEvent,
   ResourceDidUpdateEvent,
+  ResourceNeedUpdateEvent,
+  ResourceService,
   WorkbenchEditorService,
 } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
@@ -240,7 +240,7 @@ describe('resource service tests', () => {
       getIcon: jest.fn((uri) => uri.toString()),
     });
 
-    injector.mockService(IFileServiceClient, {
+    injector.mockService(FileServiceClientToken, {
       getCurrentUserHome: jest.fn(() => new URI('file:///home')),
     });
 

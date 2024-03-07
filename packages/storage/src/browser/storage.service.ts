@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, Emitter, Event, ILogger, STORAGE_SCHEMA, URI, path } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IStoragePathServer, IStorageServer, IUpdateRequest, StorageChange, StringKeyToAnyValue } from '../common';
 
@@ -8,8 +8,8 @@ const { Path } = path;
 
 @Injectable()
 export abstract class StorageServer implements IStorageServer {
-  @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileSystem: IFileServiceClientService;
 
   private storageExistPromises: Map<string, Promise<boolean>> = new Map();
 

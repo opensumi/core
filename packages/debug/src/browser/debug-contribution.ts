@@ -32,7 +32,7 @@ import {
   IEditor,
   IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IShadowFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
@@ -175,7 +175,7 @@ export class DebugContribution
   @Autowired(IShadowFileProvider)
   private shadowFileServiceProvider: IShadowFileProvider;
 
-  @Autowired(IFileServiceClient)
+  @Autowired(FileServiceClientToken)
   protected readonly fileSystem: FileServiceClient;
 
   @Autowired(IPreferenceSettingsService)

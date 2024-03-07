@@ -1,26 +1,26 @@
 import { Injectable } from '@opensumi/di';
 import {
-  PreferenceSchemaProvider,
-  IPreferenceSettingsService,
-  URI,
   BinaryBuffer,
+  IPreferenceSettingsService,
+  PreferenceSchemaProvider,
+  URI,
   createContributionProvider,
 } from '@opensumi/ide-core-browser';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/__mocks__/preference';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
 import { Color, IThemeData, IThemeStore } from '@opensumi/ide-theme/lib/common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 
+import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
+import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IThemeService, ThemeContributionProvider } from '../../src';
 import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
-import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
-import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 @Injectable()
 class MockFileServiceClient {
@@ -130,7 +130,7 @@ describe('color theme service test', () => {
         useClass: MockPreferenceSettingsService,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: MockFileServiceClient,
       },
       {

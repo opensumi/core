@@ -12,7 +12,7 @@ import {
   localize,
   path,
 } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -26,7 +26,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  constructor(@Optional() private readonly filesystem: IFileServiceClient) {}
+  constructor(@Optional() private readonly filesystem: IFileServiceClientService) {}
 
   protected readonly snippets = new Map<string, Snippet[]>();
   protected readonly pendingSnippets = new Map<string, Promise<void>[]>();

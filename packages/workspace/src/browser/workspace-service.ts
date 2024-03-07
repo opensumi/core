@@ -27,7 +27,11 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
-import { FileChangeEvent, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import {
+  FileChangeEvent,
+  FileServiceClientToken,
+  IFileServiceClientService,
+} from '@opensumi/ide-file-service/lib/common';
 
 import {
   DEFAULT_WORKSPACE_SUFFIX_NAME,
@@ -49,8 +53,8 @@ export class WorkspaceService implements IWorkspaceService {
   private _roots: FileStat[] = [];
   private deferredRoots = new Deferred<FileStat[]>();
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(IWindowService)
   protected readonly windowService: IWindowService;

@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { ILogger, URI, WithEventBus, getLanguageId } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import {
   AbstractExtensionManagementService,
@@ -33,8 +33,8 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   @Autowired(SumiContributionsServiceToken)
   private readonly sumiContributesService: SumiContributionsService;
 
-  @Autowired(IFileServiceClient)
-  private fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private fileService: IFileServiceClientService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;

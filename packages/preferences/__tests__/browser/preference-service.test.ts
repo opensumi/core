@@ -7,26 +7,26 @@ import { Injectable, Provider } from '@opensumi/di';
 import {
   BrowserModule,
   Domain,
-  PreferenceContribution,
-  URI,
   FileUri,
+  IEventBus,
+  PreferenceContribution,
+  PreferenceItem,
+  PreferenceProvider,
   PreferenceProviderProvider,
   PreferenceScope,
-  PreferenceProvider,
   PreferenceService,
   PreferenceServiceImpl,
+  URI,
   injectPreferenceConfigurations,
   injectPreferenceSchemaProvider,
-  IEventBus,
-  PreferenceItem,
-  isString,
   isArray,
-  isNumber,
   isBoolean,
   isNull,
+  isNumber,
   isObject,
+  isString,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
@@ -148,7 +148,7 @@ describe('PreferenceService should be work', () => {
     });
 
     // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
-    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
+    injector.mock(FileServiceClientToken, 'getCurrentUserHome', () => ({
       uri: root!.resolve('userhome').toString(),
       isDirectory: true,
       lastModification: new Date().getTime(),

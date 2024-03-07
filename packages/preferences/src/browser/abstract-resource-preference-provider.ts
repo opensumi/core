@@ -20,7 +20,7 @@ import {
   VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME,
   isUndefined,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IPreferenceTask } from '../common';
 
@@ -43,8 +43,8 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileSystem: IFileServiceClientService;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;

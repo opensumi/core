@@ -20,7 +20,7 @@ import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/c
 import { IDebugServer, IDebugService } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
@@ -71,8 +71,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileService: IFileServiceClientService;
 
   @Autowired(IDebugServer)
   protected readonly adapterContributionRegister: ExtensionDebugService;

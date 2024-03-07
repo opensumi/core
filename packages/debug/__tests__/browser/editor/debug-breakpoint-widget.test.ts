@@ -8,7 +8,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -95,7 +95,7 @@ describe('Debug Breakpoint Widget', () => {
       },
     });
     mockInjector.overrideProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useValue: {
         onFilesChanged: jest.fn(),
       },

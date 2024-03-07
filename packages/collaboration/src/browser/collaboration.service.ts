@@ -16,7 +16,12 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { FileChangeEvent, FileChangeType, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import {
+  FileChangeEvent,
+  FileChangeType,
+  FileServiceClientToken,
+  IFileServiceClientService,
+} from '@opensumi/ide-file-service/lib/common';
 import { ICodeEditor, ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 
@@ -55,8 +60,8 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   @Autowired(IEditorDocumentModelService)
   private docModelManager: IEditorDocumentModelService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;

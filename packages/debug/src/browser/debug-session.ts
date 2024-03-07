@@ -22,7 +22,7 @@ import {
   isDefined,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -135,7 +135,7 @@ export class DebugSession implements IDebugSession {
     protected readonly modelManager: IDebugModelManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
-    protected readonly fileSystem: IFileServiceClient,
+    protected readonly fileSystem: IFileServiceClientService,
     protected readonly sessionManager: IDebugSessionManager,
   ) {
     this.connection.onRequest(

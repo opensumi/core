@@ -3,7 +3,7 @@ import { formatLocalize } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
 import { Uri, WithEventBus, path } from '@opensumi/ide-core-common';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 
 const { Path } = path;
 
@@ -19,8 +19,8 @@ import {
 export class FileDropService extends WithEventBus implements IFileDropFrontendService {
   private pending: Set<string> = new Set();
 
-  @Autowired(IFileServiceClient)
-  protected readonly fs: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fs: IFileServiceClientService;
 
   @Autowired(FileDropServicePath)
   protected readonly dropService: IFileDropBackendService;

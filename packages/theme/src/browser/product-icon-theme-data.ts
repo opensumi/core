@@ -2,7 +2,7 @@ import * as parser from 'jsonc-parser';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Logger, ThemeIcon, URI, isString, path } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { ExtensionData, IProductIconTheme, IThemeContribution } from '../common';
 import {
@@ -37,8 +37,8 @@ export class ProductIconThemeData implements IProductIconTheme {
 
   styleSheetContent?: string;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired()
   private logger: Logger;
@@ -124,7 +124,7 @@ function _resolveIconDefinition(
 }
 
 async function _loadProductIconThemeDocument(
-  fileService: IFileServiceClient,
+  fileService: IFileServiceClientService,
   location: URI,
   warnings: string[],
 ): Promise<ProductIconThemeDocument> {

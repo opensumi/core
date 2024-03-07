@@ -33,7 +33,7 @@ import {
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
 import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
 
@@ -126,8 +126,8 @@ export class TestingContribution
   @Autowired(TestTreeViewModelToken)
   private readonly testTreeViewModel: ITestTreeViewModel;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;

@@ -1,18 +1,22 @@
 import { URI } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
+import { IEditorGroup, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient, FileSystemError } from '@opensumi/ide-file-service/lib/common';
+import {
+  FileServiceClientToken,
+  FileSystemError,
+  IFileServiceClientService,
+} from '@opensumi/ide-file-service/lib/common';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import type {
-  ResourceEdit,
   IBulkEditOptions,
+  ResourceEdit,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { WorkspaceEditModule } from '../../src/browser';
 import { MonacoBulkEditService } from '../../src/browser/bulk-edit.service';
-import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../../src/common';
+import { IResourceFileEdit, IWorkspaceEditService, IWorkspaceFileService } from '../../src/common';
 
 function mockService(target) {
   return new Proxy(target, {
@@ -74,7 +78,7 @@ describe('workspace edit tests', () => {
       }),
     },
     {
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useValue: mockService({
         access: (uri: URI) => true,
         createFile: jest.fn((uri: string, options: { overwrite?: boolean } = {}) => {
@@ -149,7 +153,7 @@ describe('workspace edit tests', () => {
 
   it('file edit tests', async () => {
     const service: IWorkspaceEditService = injector.get(IWorkspaceEditService);
-    const fileServiceClient = injector.get<IFileServiceClient>(IFileServiceClient);
+    const fileServiceClient = injector.get<IFileServiceClientService>(FileServiceClientToken);
     const workspaceFileService: IWorkspaceFileService = injector.get(IWorkspaceFileService);
 
     editorGroups.splice(0, editorGroups.length);
@@ -189,7 +193,7 @@ describe('workspace edit tests', () => {
     };
 
     injector.mock(
-      IFileServiceClient,
+      FileServiceClientToken,
       'exists',
       jest.fn((uri: URI) => true),
     );
@@ -267,7 +271,7 @@ describe('workspace edit tests', () => {
 
   it('monaco bulk edit test', async () => {
     const monacoBulkEditService: MonacoBulkEditService = injector.get(MonacoBulkEditService);
-    const fileServiceClient = injector.get<IFileServiceClient>(IFileServiceClient);
+    const fileServiceClient = injector.get<IFileServiceClientService>(FileServiceClientToken);
 
     await monacoBulkEditService.apply([
       {

@@ -3,7 +3,7 @@
 // @ts-ignore
 import { Text as YText } from 'yjs';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { EventBusImpl, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
 import { INodeLogger } from '@opensumi/ide-core-node';
@@ -15,9 +15,9 @@ import {
   EditorDocumentModelRemovalEvent,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileService, FileChangeType } from '@opensumi/ide-file-service';
+import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -64,7 +64,7 @@ describe('CollaborationService basic routines', () => {
   let server: YWebsocketServerImpl;
   let eventBus: IEventBus;
   let workbenchEditorService: MockWorkbenchEditorService;
-  let fileServiceClient: IFileServiceClient;
+  let fileServiceClient: IFileServiceClientService;
 
   beforeAll(() => {
     injector = createBrowserInjector([]);
@@ -103,7 +103,7 @@ describe('CollaborationService basic routines', () => {
     });
 
     injector.addProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: FileServiceClient,
     });
 
@@ -119,7 +119,7 @@ describe('CollaborationService basic routines', () => {
     server = injector.get(IYWebsocketServer);
     eventBus = injector.get(IEventBus);
     service = injector.get(ICollaborationService);
-    fileServiceClient = injector.get(IFileServiceClient);
+    fileServiceClient = injector.get(FileServiceClientToken);
 
     // mock impl, because origin impl comes with nodejs
     jest.spyOn(server, 'requestInitContent').mockImplementation(async (uri: string) => {

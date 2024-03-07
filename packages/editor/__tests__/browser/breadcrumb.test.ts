@@ -1,4 +1,4 @@
-import { URI, IEventBus } from '@opensumi/ide-core-browser';
+import { IEventBus, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { BreadCrumbServiceImpl } from '@opensumi/ide-editor/lib/browser/breadcrumb';
@@ -6,7 +6,7 @@ import {
   DocumentSymbol,
   DocumentSymbolChangedEvent,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
@@ -19,7 +19,7 @@ describe('breadcrumb test', () => {
 
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.mockService(IFileServiceClient, {
+    injector.mockService(FileServiceClientToken, {
       getFileStat: (uriString: string) => {
         if (uriString.endsWith('testDir1')) {
           return {

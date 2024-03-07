@@ -1,11 +1,11 @@
 import { Injectable } from '@opensumi/di';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, URI } from '@opensumi/ide-core-browser';
+import { IPreferenceSettingsService, PreferenceSchemaProvider, URI } from '@opensumi/ide-core-browser';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -73,7 +73,7 @@ describe('product icon theme test', () => {
         useClass: MockPreferenceSettingsService,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: MockFileServiceClient,
       },
       {

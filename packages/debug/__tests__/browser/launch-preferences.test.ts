@@ -4,19 +4,19 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import {
-  PreferenceService,
-  FileUri,
+  AppConfig,
   Disposable,
   DisposableCollection,
-  PreferenceScope,
-  URI,
+  FileUri,
   IContextKeyService,
-  AppConfig,
+  PreferenceScope,
+  PreferenceService,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { DebugContribution } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
@@ -473,13 +473,13 @@ describe('Launch Preferences', () => {
         );
 
         // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
-        injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
+        injector.mock(FileServiceClientToken, 'getCurrentUserHome', () => ({
           uri: new URI(rootPath).resolve('userhome').toString(),
           isDirectory: true,
           lastModification: new Date().getTime(),
         }));
         injector.mock(
-          IFileServiceClient,
+          FileServiceClientToken,
           'watchFileChanges',
           jest.fn(() =>
             Promise.resolve({

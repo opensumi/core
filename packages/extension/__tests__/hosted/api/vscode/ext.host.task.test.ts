@@ -8,7 +8,7 @@ import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/i
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
 import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
@@ -168,7 +168,7 @@ describe('ExtHostTask API', () => {
       useValue: {},
     },
     {
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: MockFileServiceClient,
     },
     {

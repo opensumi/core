@@ -5,21 +5,21 @@ import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
 import { AppLifeCycleService } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   AppLifeCycleServiceToken,
-  LifeCyclePhase,
   CommandRegistry,
   CommandService,
   CommandServiceImpl,
   EventBusImpl,
   IEventBus,
+  LifeCyclePhase,
   Uri,
 } from '@opensumi/ide-core-common';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
+import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import {
   AbstractExtInstanceManagementService,
   ExtensionWillContributeEvent,
 } from '@opensumi/ide-extension/lib/browser/types';
-import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
 import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
@@ -103,7 +103,7 @@ describe('VSCodeContributeRunner', () => {
           useClass: SchemaRegistry,
         },
         {
-          token: IFileServiceClient,
+          token: FileServiceClientToken,
           useValue: {
             resolveContent: (uri) => ({
               content: '',

@@ -5,21 +5,21 @@ import * as fs from 'fs-extra';
 
 import { Injectable, Provider } from '@opensumi/di';
 import {
+  AppConfig,
+  BrowserModule,
+  Disposable,
+  EDITOR_COMMANDS,
+  FileUri,
   KeybindingRegistry,
+  KeybindingScope,
   KeybindingService,
   URI,
-  EDITOR_COMMANDS,
-  Disposable,
-  KeybindingScope,
   localize,
-  FileUri,
-  BrowserModule,
-  AppConfig,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { MockProgressService } from '@opensumi/ide-core-browser/__mocks__/progress-service';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
@@ -112,7 +112,7 @@ describe('KeymapsService should be work', () => {
     );
 
     // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
-    injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
+    injector.mock(FileServiceClientToken, 'getCurrentUserHome', () => ({
       uri: userhome!.toString(),
       isDirectory: true,
       lastModification: new Date().getTime(),

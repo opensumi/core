@@ -12,7 +12,7 @@ import {
   localize,
   parseWithComments,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { Color } from '../common/color';
@@ -113,8 +113,8 @@ export class ThemeData implements IThemeData {
 
   private semanticTokenRules: SemanticTokenRule[] = [];
 
-  @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private fileServiceClient: IFileServiceClientService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;

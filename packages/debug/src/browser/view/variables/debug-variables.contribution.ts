@@ -18,7 +18,7 @@ import {
   ResourceService,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
@@ -65,7 +65,7 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
   @Autowired(DebugViewModel)
   private readonly viewModel: DebugViewModel;
 
-  @Autowired(IFileServiceClient)
+  @Autowired(FileServiceClientToken)
   protected readonly fileSystem: FileServiceClient;
 
   @Autowired(DebugMemoryFileSystemProvider)

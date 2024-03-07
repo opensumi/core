@@ -17,7 +17,7 @@ import {
   IEventBus,
   ILogger,
 } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { dirname } from '@opensumi/ide-utils/lib/path';
 import {
@@ -53,7 +53,7 @@ export class WalkthroughsService extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  @Autowired(IFileServiceClient)
+  @Autowired(FileServiceClientToken)
   private readonly fileSystem: FileServiceClient;
 
   @Autowired(IContextKeyService)
