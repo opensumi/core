@@ -27,10 +27,24 @@ export class ComputerDiffModel {
       changes: result.changes.map(
         (c) =>
           new DetailedLineRangeMapping(
-            new LineRange(c[0], c[1]),
-            new LineRange(c[2], c[3]),
-            c[4]?.map(
-              (c) => new RangeMapping(new InnerRange(c[0], c[1], c[2], c[3]), new InnerRange(c[4], c[5], c[6], c[7])),
+            new LineRange(c.original.startLineNumber, c.original.endLineNumberExclusive),
+            new LineRange(c.modified.startLineNumber, c.modified.endLineNumberExclusive),
+            c.innerChanges?.map(
+              (c) =>
+                new RangeMapping(
+                  new InnerRange(
+                    c.originalRange.startLineNumber,
+                    c.originalRange.startColumn,
+                    c.originalRange.endLineNumber,
+                    c.originalRange.endColumn,
+                  ),
+                  new InnerRange(
+                    c.modifiedRange.startLineNumber,
+                    c.modifiedRange.startColumn,
+                    c.modifiedRange.endLineNumber,
+                    c.modifiedRange.endColumn,
+                  ),
+                ),
             ),
           ),
       ),
