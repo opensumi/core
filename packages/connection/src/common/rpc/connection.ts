@@ -1,3 +1,4 @@
+import { getDebugLogger } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   CancellationTokenSource,
@@ -53,11 +54,13 @@ export class SumiConnection implements IDisposable {
   protected activeRequestPool = new Map<number, ActiveRequest>();
 
   public io = new MessageIO();
-  protected logger: ILogger = console;
+  protected logger: ILogger;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
     if (options.logger) {
       this.logger = options.logger;
+    } else {
+      this.logger = getDebugLogger();
     }
   }
 
@@ -78,6 +81,7 @@ export class SumiConnection implements IDisposable {
             return;
           }
 
+          this.traceRequestError(method, args, error);
           reject(error);
           return;
         }
@@ -301,6 +305,7 @@ export class SumiConnection implements IDisposable {
               };
 
               const onError = (err: Error) => {
+                this.traceRequestError(method, args, err);
                 this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
                 this._cancellationTokenSources.delete(requestId);
               };
@@ -350,6 +355,10 @@ export class SumiConnection implements IDisposable {
 
   static forNetSocket(socket: net.Socket, options: ISumiConnectionOptions = {}) {
     return new SumiConnection(new NetSocketConnection(socket), options);
+  }
+
+  private traceRequestError(method: string, args: any[], error: any) {
+    this.logger.error(`Error handling request ${method} with args `, args, error);
   }
 }
 
