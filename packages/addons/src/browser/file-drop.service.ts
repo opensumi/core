@@ -3,7 +3,7 @@ import { formatLocalize } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
 import { Uri, WithEventBus, path } from '@opensumi/ide-core-common';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 const { Path } = path;
 

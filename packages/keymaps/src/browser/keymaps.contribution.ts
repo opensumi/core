@@ -22,7 +22,7 @@ import {
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IResource, IResourceProvider, ResourceService } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { QuickPickItem, QuickPickService } from '@opensumi/ide-quick-open';
 
 import { IKeymapService, KEYMAPS_SCHEME } from '../common';

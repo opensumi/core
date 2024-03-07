@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileChangeType, path } from '@opensumi/ide-core-common';
-import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import { AskSaveResult, DIFF_SCHEME, IResource, IResourceProvider, ResourceNeedUpdateEvent } from '../../common';

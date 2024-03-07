@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
 import { SearchFileNode, SearchRoot } from '@opensumi/ide-search/lib/browser/tree/tree-node.defined';

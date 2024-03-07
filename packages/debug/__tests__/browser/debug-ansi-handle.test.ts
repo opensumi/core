@@ -14,7 +14,7 @@ import { LinkDetector } from '@opensumi/ide-debug/lib/browser/debug-link-detecto
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { registerTerminalColors } from '@opensumi/ide-terminal-next/lib/browser/terminal.color';
 import { Color, IThemeData, IThemeService, IThemeStore, RGBA } from '@opensumi/ide-theme';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';

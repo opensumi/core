@@ -42,7 +42,7 @@ import {
   IResourceOpenResult,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { PREF_SCHEME, SettingContribution } from '../common';
 

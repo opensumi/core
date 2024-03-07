@@ -17,11 +17,8 @@ import {
   path,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileStat } from '@opensumi/ide-file-service/lib/common';
-import {
-  FileServiceClientToken,
-  IFileServiceClientService,
-} from '@opensumi/ide-file-service/lib/common/file-service-client';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
+import { FileStat } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace.interface';
 
 import { IEditor } from '../../common';

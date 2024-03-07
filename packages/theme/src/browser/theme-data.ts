@@ -12,7 +12,7 @@ import {
   localize,
   parseWithComments,
 } from '@opensumi/ide-core-browser';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { Color } from '../common/color';

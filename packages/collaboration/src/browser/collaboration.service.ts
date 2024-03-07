@@ -24,7 +24,7 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { ICodeEditor, ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 

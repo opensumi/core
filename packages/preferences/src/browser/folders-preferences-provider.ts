@@ -6,10 +6,7 @@ import {
   PreferenceResolveResult,
   URI,
 } from '@opensumi/ide-core-browser';
-import {
-  FileServiceClientToken,
-  IFileServiceClientService,
-} from '@opensumi/ide-file-service/lib/common/file-service-client';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {

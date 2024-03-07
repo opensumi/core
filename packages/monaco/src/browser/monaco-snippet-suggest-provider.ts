@@ -12,7 +12,7 @@ import {
   localize,
   path,
 } from '@opensumi/ide-core-common';
-import { IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { IFileServiceClientService } from '@opensumi/ide-file-service';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 

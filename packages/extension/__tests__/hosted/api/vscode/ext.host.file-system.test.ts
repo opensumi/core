@@ -3,7 +3,7 @@ import {
   convertToVSCFileStat,
   ExtHostFileSystem,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.file-system';
-import { FileType, FileStat } from '@opensumi/ide-file-service/lib/common';
+import { FileType, FileStat } from '@opensumi/ide-file-service';
 
 describe('convertToVSCFileStat', () => {
   it('Should return normal conversion to VSCode format results.', () => {

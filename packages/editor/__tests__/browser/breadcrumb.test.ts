@@ -6,7 +6,7 @@ import {
   DocumentSymbol,
   DocumentSymbolChangedEvent,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';

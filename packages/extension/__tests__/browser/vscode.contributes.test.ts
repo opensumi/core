@@ -19,7 +19,7 @@ import {
   AbstractExtInstanceManagementService,
   ExtensionWillContributeEvent,
 } from '@opensumi/ide-extension/lib/browser/types';
-import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';

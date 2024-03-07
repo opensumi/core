@@ -12,7 +12,7 @@ import {
   FileType,
   IBrowserFileSystemRegistry,
   IFileServiceClientService,
-} from '@opensumi/ide-file-service/lib/common';
+} from '@opensumi/ide-file-service';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { fromFileStat, toFileStat } from '../../../common/vscode/converter';

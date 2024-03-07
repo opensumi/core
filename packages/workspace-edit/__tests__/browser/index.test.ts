@@ -1,11 +1,7 @@
 import { URI } from '@opensumi/ide-core-browser';
 import { IEditorGroup, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import {
-  FileServiceClientToken,
-  FileSystemError,
-  IFileServiceClientService,
-} from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, FileSystemError, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import type {
   IBulkEditOptions,

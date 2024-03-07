@@ -12,7 +12,7 @@ import {
   UntitledSchemeDocumentProvider,
   UntitledSchemeResourceProvider,
 } from '@opensumi/ide-editor/lib/browser/untitled-resource';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { BinaryEditorComponent } from './external.view';
 import {

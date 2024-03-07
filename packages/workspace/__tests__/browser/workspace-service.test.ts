@@ -3,7 +3,7 @@ import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/stor
 import { Disposable, StorageProvider, URI } from '@opensumi/ide-core-common';
 import { DiskFileServicePath, FileStat } from '@opensumi/ide-file-service';
 import { MockFsProvider } from '@opensumi/ide-file-service/__mocks__/file-system-provider';
-import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 

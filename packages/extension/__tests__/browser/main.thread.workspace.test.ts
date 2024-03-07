@@ -78,7 +78,7 @@ import {
   BrowserFileSystemRegistryImpl,
   FileServiceClient,
 } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { FileServiceClientToken } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { MonacoService } from '@opensumi/ide-monaco';

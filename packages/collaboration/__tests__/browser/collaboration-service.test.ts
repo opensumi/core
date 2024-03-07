@@ -17,7 +17,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

@@ -21,7 +21,7 @@ import {
   parseWithComments,
 } from '@opensumi/ide-core-browser';
 import { Disposable, URI, isObject } from '@opensumi/ide-core-common';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import {
   GrammarsContribution,
   ITextmateTokenizerService,

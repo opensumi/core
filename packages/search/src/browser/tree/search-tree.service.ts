@@ -16,7 +16,7 @@ import {
   IEditorDocumentModelRef,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
-import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
