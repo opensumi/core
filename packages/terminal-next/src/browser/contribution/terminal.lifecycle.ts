@@ -30,7 +30,6 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
     this.environmentService.initEnvironmentVariableCollections();
   }
 
-  // 必须等待这个事件返回，否则 tabHandler 无法保证获取
   onDidRender() {
     this.store.restore().then(() => {
       this.terminalController.firstInitialize();

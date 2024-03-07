@@ -149,8 +149,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   public viewReady = new Deferred<void>();
 
   /**
-   * 如果这个值在被用到的时候还是 undefined，那说明视图渲染出了问题。
-   * 请排查 terminal.view 视图层为什么没有把这个 contextKey 注入进来。
+   * 仅在 viewReady 之后才能使用
    */
   private terminalContextKey: TerminalContextKey;
 
@@ -404,20 +403,41 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async firstInitialize() {
-    await Promise.race([
-      (async () => {
-        await this.layoutService.viewReady.promise;
-        await this.viewReady.promise;
-      })(),
-      new Promise<void>((resolve) => {
-        setTimeout(() => {
-          this.logger.warn("TerminalView didn't initialize in 2s, skip waiting, but may cause some problem");
-          resolve();
-        }, 2000);
-      }),
-    ]);
+    this.layoutService.viewReady.promise.then(() => {
+      this._tabBarHandler = this.layoutService.getTabbarHandler(TERMINAL_CONTAINER_ID)!;
+      this.addDispose(
+        this._tabBarHandler.onActivate(() => {
+          if (this.terminalView.empty()) {
+            const current = this._reset();
+            this.terminalView.selectWidget(current.id);
+          } else {
+            this.terminalView.selectGroup(
+              this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
+            );
+          }
+        }),
+      );
 
-    this._tabBarHandler = this.layoutService.getTabbarHandler(TERMINAL_CONTAINER_ID);
+      this.addDispose(
+        this._tabBarHandler.onInActivate(() => {
+          if (this.editorService.currentEditor) {
+            this.editorService.currentEditor.monacoEditor.focus();
+          }
+        }),
+      );
+
+      if (this._tabBarHandler.isActivated()) {
+        if (this.terminalView.empty()) {
+          const widget = this._reset();
+          this.terminalView.selectWidget(widget.id);
+        } else {
+          this.terminalView.selectGroup(
+            this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
+          );
+        }
+      }
+    });
+
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(
@@ -483,41 +503,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }),
     );
 
-    if (this._tabBarHandler) {
-      this.addDispose(
-        this._tabBarHandler.onActivate(() => {
-          if (this.terminalView.empty()) {
-            const current = this._reset();
-            this.terminalView.selectWidget(current.id);
-          } else {
-            this.terminalView.selectGroup(
-              this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
-            );
-          }
-        }),
-      );
+    this.viewReady.promise.then(() => {
+      this.terminalContextKey.isTerminalViewInitialized.set(true);
+    });
 
-      this.addDispose(
-        this._tabBarHandler.onInActivate(() => {
-          if (this.editorService.currentEditor) {
-            this.editorService.currentEditor.monacoEditor.focus();
-          }
-        }),
-      );
-
-      if (this._tabBarHandler.isActivated()) {
-        if (this.terminalView.empty()) {
-          const widget = this._reset();
-          this.terminalView.selectWidget(widget.id);
-        } else {
-          this.terminalView.selectGroup(
-            this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0,
-          );
-        }
-      }
-    }
-
-    this.terminalContextKey.isTerminalViewInitialized.set(true);
     this._ready.resolve();
   }
 

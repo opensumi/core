@@ -11,7 +11,7 @@ import { TerminalContextMenuService } from '../terminal.context-menu';
 import TabItem from './tab.item';
 import styles from './tab.module.less';
 
-export default observer(() => {
+const TerminalTabs = observer(() => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const provider = useInjectable<ITerminalRenderProvider>(ITerminalRenderProvider);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
@@ -90,3 +90,5 @@ export default observer(() => {
     </div>
   );
 });
+
+export default TerminalTabs;
