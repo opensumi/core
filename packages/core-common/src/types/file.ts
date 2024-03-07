@@ -1,9 +1,13 @@
+import { Injectable } from '@opensumi/di';
 import { BinaryBuffer, Event, Uri } from '@opensumi/ide-utils';
 import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileChangeEvent } from './file-watch';
 
-export interface IFileSystemService {
+export const FileServiceClientToken = Symbol('FileServiceClientToken');
+
+@Injectable()
+export class BaseFileSystemService {
   /**
    * Read the entire contents of a file.
    * @deprecated please use readFile instead
@@ -13,9 +17,26 @@ export interface IFileSystemService {
    * @throws [`FileIsADirectory`](#FileSystemError.FileIsADirectory) when `uri` is a directory.
    * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
    */
-  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
+  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }> {
+    return Promise.resolve({ content: '' });
+  }
 
-  readFile(uri: string): Promise<{ content: BinaryBuffer }>;
+  /**
+   * Read the file stat
+   * @param uri {string} The uri of the file.
+   * @param withChildren {boolean} [true]
+   */
+  getFileStat(uri: string, withChildren?: boolean): Promise<FileStat | undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  readFile(uri: string): Promise<{ content: BinaryBuffer }> {
+    return Promise.resolve({ content: BinaryBuffer.fromString('') });
+  }
+
+  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat | void> {
+    return Promise.resolve(undefined);
+  }
 }
 
 export interface FileStat {

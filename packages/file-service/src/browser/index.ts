@@ -1,13 +1,7 @@
-import { Injectable, Provider } from '@opensumi/di';
-import { BrowserModule } from '@opensumi/ide-core-browser';
+import { Injectable, Injector, Provider } from '@opensumi/di';
+import { BrowserModule, FileServiceClientToken } from '@opensumi/ide-core-browser';
 
-import {
-  DiskFileServicePath,
-  FileServiceClientToken,
-  IBrowserFileSystemRegistry,
-  IDiskFileProvider,
-  IShadowFileProvider,
-} from '../common/index';
+import { DiskFileServicePath, IBrowserFileSystemRegistry, IDiskFileProvider, IShadowFileProvider } from '../common';
 import { DiskFileServiceProtocol } from '../common/protocols/disk-file-service';
 
 import { BrowserFileSystemRegistryImpl, FileServiceClient } from './file-service-client';
@@ -18,10 +12,6 @@ import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 @Injectable()
 export class FileServiceClientModule extends BrowserModule {
   providers: Provider[] = [
-    {
-      token: FileServiceClientToken,
-      useClass: FileServiceClient,
-    },
     {
       token: IBrowserFileSystemRegistry,
       useClass: BrowserFileSystemRegistryImpl,
@@ -36,6 +26,13 @@ export class FileServiceClientModule extends BrowserModule {
     },
     FileServiceContribution,
   ];
+
+  preferences = (inject: Injector) => {
+    inject.overrideProviders({
+      token: FileServiceClientToken,
+      useClass: FileServiceClient,
+    });
+  };
 
   // 依赖 fileService 服务
   backServices = [

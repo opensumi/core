@@ -1,4 +1,5 @@
 import {
+  BaseFileSystemService,
   BinaryBuffer,
   DidFilesChangedParams,
   Event,
@@ -7,7 +8,6 @@ import {
   FileSystemProviderCapabilities,
   IDisposable,
   IFileServiceWatcher,
-  IFileSystemService,
   URI,
 } from '@opensumi/ide-core-common';
 
@@ -23,9 +23,9 @@ import {
   TextDocumentContentChangeEvent,
 } from './files';
 
-export const FileServiceClientToken = Symbol('FileServiceClientToken');
+export { FileServiceClientToken } from '@opensumi/ide-core-common';
 
-export interface IFileServiceClientService extends IFileSystemService {
+export interface IFileServiceClientService extends BaseFileSystemService {
   onFilesChanged: Event<FileChangeEvent>;
 
   onFileProviderChanged: Event<string[]>;
@@ -34,16 +34,7 @@ export interface IFileServiceClientService extends IFileSystemService {
 
   handlesScheme(scheme: string): boolean;
 
-  /**
-   * Read the file stat
-   * @param uri {string} The uri of the file.
-   * @param withChildren {boolean} [true]
-   */
-  getFileStat(uri: string, withChildren?: boolean): Promise<FileStat | undefined>;
-
   getFileType(uri: string): Promise<string | undefined>;
-
-  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat | void>;
 
   updateContent(
     file: FileStat,

@@ -1,11 +1,12 @@
 import * as jsoncparser from 'jsonc-parser';
 
-import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
+  BaseFileSystemService,
   Disposable,
   DisposableCollection,
+  FileServiceClientToken,
   IDisposable,
-  IFileSystemService,
   ILogger,
   IRange,
   Uri,
@@ -23,10 +24,11 @@ const { Path } = path;
 
 @Injectable()
 export class MonacoSnippetSuggestProvider implements monaco.languages.CompletionItemProvider {
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: BaseFileSystemService;
+
   @Autowired(ILogger)
   private readonly logger: ILogger;
-
-  constructor(@Optional() private readonly filesystem: IFileSystemService) {}
 
   protected readonly snippets = new Map<string, Snippet[]>();
   protected readonly pendingSnippets = new Map<string, Promise<void>[]>();

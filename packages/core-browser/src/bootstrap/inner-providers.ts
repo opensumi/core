@@ -1,6 +1,7 @@
 import { Injector, Provider } from '@opensumi/di';
 import {
   AppLifeCycleServiceToken,
+  BaseFileSystemService,
   CommandContribution,
   CommandRegistry,
   CommandRegistryImpl,
@@ -8,6 +9,7 @@ import {
   CommandServiceImpl,
   DefaultReporter,
   EventBusImpl,
+  FileServiceClientToken,
   IApplicationService,
   IAuthenticationService,
   IEventBus,
@@ -257,6 +259,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IDesignStyleService,
       useClass: DesignStyleService,
+    },
+    {
+      token: FileServiceClientToken,
+      useClass: BaseFileSystemService,
     },
   ];
   injector.addProviders(...providers);
