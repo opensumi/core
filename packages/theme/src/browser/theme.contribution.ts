@@ -66,7 +66,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
-  async initialize() {
+  async prepare() {
     this.registerDefaultColorTheme();
     this.registerDefaultProductIconTheme();
 

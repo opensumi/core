@@ -163,7 +163,7 @@ export class MainLayoutModuleContribution
   @Autowired(ViewQuickOpenHandler)
   private quickOpenViewHandler: ViewQuickOpenHandler;
 
-  async initialize() {
+  async prepare() {
     // 全局只要初始化一次
     await this.layoutState.initStorage();
     const componentContributions = this.contributionProvider.getContributions();
@@ -184,6 +184,10 @@ export class MainLayoutModuleContribution
         contribution.registerToolbarItems(this.toolBarRegistry);
       }
     }
+  }
+
+  async initialize(): Promise<void> {
+    await this.layoutState.initialize();
   }
 
   async onStart() {

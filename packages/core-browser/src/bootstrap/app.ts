@@ -32,7 +32,6 @@ import {
   UrlProvider,
   asExtensionCandidate,
   createContributionProvider,
-  getDebugLogger,
   isOSX,
   setLanguageId,
 } from '@opensumi/ide-core-common';
@@ -226,7 +225,7 @@ export class ClientApp implements IClientApp, IDisposable {
     } else if (type) {
       await Promise.all([
         this.createConnection(type),
-        this.measure('Contributions.prepare', () => this.runPrepareContributions()),
+        this.measure('Contributions.prepare', () => this.runPrepareContributions(container)),
       ]);
     }
 
@@ -239,7 +238,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService.state = 'client_connected';
 
     // 在 contributions 执行完 onStart 上报一次耗时
-    await this.measure('Contributions.start', () => this.startContributions(container));
+    await this.measure('Contributions.start', () => this.startContributions());
     this.stateService.state = 'started_contributions';
     this.stateService.state = 'ready';
 
@@ -365,7 +364,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injectPreferenceService(this.injector);
 
     // Register StorageService
-    this.injectStorageProvider(this.injector);
+    this.injectStorageProvider();
 
     for (const instance of this.browserModules) {
       if (instance.contributionProvider && Array.isArray(instance.contributionProvider)) {
@@ -382,16 +381,18 @@ export class ClientApp implements IClientApp, IDisposable {
     return this.contributionsProvider.getContributions();
   }
 
-  protected async runPrepareContributions() {
+  protected async runPrepareContributions(container: HTMLElement | IAppRenderer) {
+    this.initLocalStorageProvider();
+
     await this.runContributionsPhase(this.contributions, 'prepare');
+
+    // Rendering layout
+    await this.measure('RenderApp.render', () => this.renderApp(container));
 
     this.logger.verbose('contributions.prepare done');
   }
 
-  protected async startContributions(container: HTMLElement | IAppRenderer) {
-    // Rendering layout
-    await this.measure('RenderApp.render', () => this.renderApp(container));
-
+  protected async startContributions() {
     this.lifeCycleService.phase = LifeCyclePhase.Initialize;
 
     await this.measure('Contributions.initialize', () => this.initializeContributions());
@@ -448,6 +449,7 @@ export class ClientApp implements IClientApp, IDisposable {
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
   }
+
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
@@ -474,7 +476,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }
@@ -499,7 +501,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }
@@ -590,16 +592,24 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
-  injectStorageProvider(injector: Injector) {
-    injector.addProviders({
+  protected initLocalStorageProvider() {
+    this.injector.addProviders({
       token: DefaultStorageProvider,
       useClass: DefaultStorageProvider,
     });
-    injector.addProviders({
+
+    this.injector.overrideProviders({
       token: StorageProvider,
-      useFactory: () => (storageId) => injector.get(DefaultStorageProvider).get(storageId),
+      useFactory: () => (storageId) => this.injector.get(DefaultStorageProvider).get(storageId),
     });
-    createContributionProvider(injector, StorageResolverContribution);
+  }
+
+  protected injectStorageProvider() {
+    this.injector.overrideProviders({
+      token: StorageProvider,
+      useFactory: () => (storageId) => this.injector.get(DefaultStorageProvider).get(storageId),
+    });
+    createContributionProvider(this.injector, StorageResolverContribution);
   }
 
   /**

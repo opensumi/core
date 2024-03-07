@@ -246,7 +246,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   getTabbarService(location: string) {
     const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location]);
-    if (!this.tabbarServices.get(location)) {
+    if (!this.tabbarServices.has(location)) {
       service.onCurrentChange(({ currentId }) => {
         this.storeState(service, currentId);
         // onView 也支持监听 containerId

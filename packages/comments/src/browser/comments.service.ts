@@ -444,7 +444,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     }
 
     const model = this.documentService.getModelReference(uri, 'get-contribution-rages');
-    const rangePromise: Promise<IRange[] | undefined>[] = [];
+    const rangePromise: Promise<IRange[]>[] = [];
     for (const rangeProvider of this.rangeProviderMap) {
       const [id, provider] = rangeProvider;
       rangePromise.push(
@@ -454,7 +454,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             // FIXME: ranges 会被 Diff uri 的两个 range 互相覆盖，导致可能根据行查不到 provider
             this.rangeOwner.set(id, ranges);
           }
-          return ranges;
+          return ranges!;
         })(),
       );
     }

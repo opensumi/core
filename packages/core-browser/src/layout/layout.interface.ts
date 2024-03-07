@@ -82,7 +82,7 @@ export interface ExtViewContainerOptions {
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
 export interface ComponentRegistry {
-  register(key: string, views: View | View[], options?: ExtViewContainerOptions, location?: SlotLocation): void;
+  register(key: string, views: View | View[], options?: ExtViewContainerOptions): void;
 
   getComponentRegistryInfo(key: string): ComponentRegistryInfo | undefined;
 }

@@ -1,7 +1,7 @@
-import { Autowired, Injectable } from '@opensumi/di';
-import { BasicEvent, getDebugLogger } from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
+import { BasicEvent } from '@opensumi/ide-core-common';
 
-import { AppConfig, SlotLocation } from '../react-providers';
+import { SlotLocation } from '../react-providers';
 
 import { ComponentRegistry, ComponentRegistryInfo, View, ViewContainerOptions } from './layout.interface';
 
@@ -34,10 +34,7 @@ export function measurePriority(weights: number[], weight?: number): number {
 export class ComponentRegistryImpl implements ComponentRegistry {
   componentsMap: Map<string, ComponentRegistryInfo> = new Map();
 
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
-  register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation) {
+  register(key: string, views: View | View[], options?: ViewContainerOptions) {
     if (Array.isArray(views)) {
       this.componentsMap.set(key, {
         views,
@@ -49,24 +46,9 @@ export class ComponentRegistryImpl implements ComponentRegistry {
         options,
       });
     }
-    // deprecated, use layout config instead
-    if (location) {
-      let targetLocation = this.config.layoutConfig[location];
-      if (!targetLocation) {
-        targetLocation = {
-          modules: [],
-        };
-        this.config.layoutConfig[location] = targetLocation;
-      }
-      if (targetLocation.modules.indexOf(key) > -1) {
-        getDebugLogger().warn(`A ${key} module already exists on the ${location}`);
-        return;
-      }
-      targetLocation.modules.push(key);
-    }
   }
 
-  getComponentRegistryInfo(key): ComponentRegistryInfo | undefined {
+  getComponentRegistryInfo(key: string): ComponentRegistryInfo | undefined {
     const componentRegistryInfo = this.componentsMap.get(key);
     return componentRegistryInfo;
   }
