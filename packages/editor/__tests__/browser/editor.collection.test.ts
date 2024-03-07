@@ -83,7 +83,7 @@ describe('editor collection service test', () => {
       prefs[key] = value;
       emitter.fire({
         source: ConfigurationTarget.USER,
-        affectedKeys: new Set(key),
+        affectedKeys: new Set([key]),
         change: {
           keys: [key],
           overrides: [],
