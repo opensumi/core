@@ -58,7 +58,7 @@ export class AINativeBrowserContribution
     this.registerFeature();
   }
 
-  initialize() {
+  prepare() {
     this.aiNativeConfigService.enable();
   }
 

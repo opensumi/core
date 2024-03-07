@@ -226,7 +226,7 @@ export class ClientApp implements IClientApp, IDisposable {
     } else if (type) {
       await Promise.all([
         this.createConnection(type),
-        this.measure('Contributions.connecting', () => this.runConnectingContributions()),
+        this.measure('Contributions.prepare', () => this.runPrepareContributions()),
       ]);
     }
 
@@ -382,14 +382,10 @@ export class ClientApp implements IClientApp, IDisposable {
     return this.contributionsProvider.getContributions();
   }
 
-  protected async runConnectingContributions() {
-    await this.runContributionsPhase(this.contributions, 'connecting');
+  protected async runPrepareContributions() {
+    await this.runContributionsPhase(this.contributions, 'prepare');
 
-    // Core modules initializeed ready
-    this.stateService.state = 'core_module_initialized';
-    await this.initializeCoreRegistry();
-
-    this.logger.verbose('contributions.connecting done');
+    this.logger.verbose('contributions.prepare done');
   }
 
   protected async startContributions(container: HTMLElement | IAppRenderer) {
@@ -402,6 +398,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
     // Initialize Command, Keybinding, Menus
     await this.initializeCoreRegistry();
+    // Core modules initializeed ready
+    this.stateService.state = 'core_module_initialized';
 
     this.lifeCycleService.phase = LifeCyclePhase.Starting;
     await this.measure('Contributions.onStart', () => this.onStartContributions());

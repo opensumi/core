@@ -25,7 +25,7 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
 
   static INTERVAL = 1000;
 
-  initialize() {
+  prepare() {
     // only runs when devtools supoprt is enabled
     if (this.appConfig.devtools) {
       // receive notification from opensumi devtools by custom event

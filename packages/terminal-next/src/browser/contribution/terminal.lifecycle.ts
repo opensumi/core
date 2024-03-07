@@ -21,7 +21,7 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
   @Autowired(EnvironmentVariableServiceToken)
   protected readonly environmentService: IEnvironmentVariableService;
 
-  initialize() {
+  prepare() {
     registerTerminalColors();
   }
 
