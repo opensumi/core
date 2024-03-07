@@ -20,6 +20,7 @@ import {
   DidFilesChangedParams,
   Event,
   FileChangeEvent,
+  FileSetContentOptions,
   IDisposable,
   IFileSystemWatcherServer,
   URI,
@@ -227,10 +228,6 @@ export interface FileMoveOptions {
 
 export interface FileDeleteOptions {
   moveToTrash?: boolean;
-}
-
-export interface FileSetContentOptions {
-  encoding?: string;
 }
 
 export interface FileCreateOptions {

@@ -11,8 +11,8 @@ import {
   URI,
   Uri,
 } from '@opensumi/ide-core-browser';
-import { Event, FileSystemProviderCapabilities, Schemes } from '@opensumi/ide-core-common';
-import { FileServiceClientToken, FileSetContentOptions, IFileServiceClientService } from '@opensumi/ide-file-service';
+import { Event, FileSetContentOptions, FileSystemProviderCapabilities, Schemes } from '@opensumi/ide-core-common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IUserStorageService } from '../../common';
 

@@ -3,18 +3,19 @@ import {
   DidFilesChangedParams,
   Event,
   FileChangeEvent,
+  FileSetContentOptions,
   FileSystemProviderCapabilities,
   IDisposable,
+  IFileServiceWatcher,
+  IFileSystemService,
   URI,
 } from '@opensumi/ide-core-common';
-import { IFileServiceWatcher } from '@opensumi/ide-core-common/lib/types/file-watch';
 
 import {
   FileCopyOptions,
   FileCreateOptions,
   FileDeleteOptions,
   FileMoveOptions,
-  FileSetContentOptions,
   FileStat,
   FileSystemProvider,
   IFileSystemProviderCapabilitiesChangeEvent,
@@ -24,7 +25,7 @@ import {
 
 export const FileServiceClientToken = Symbol('FileServiceClientToken');
 
-export interface IFileServiceClientService {
+export interface IFileServiceClientService extends IFileSystemService {
   onFilesChanged: Event<FileChangeEvent>;
 
   onFileProviderChanged: Event<string[]>;
@@ -32,19 +33,6 @@ export interface IFileServiceClientService {
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable;
 
   handlesScheme(scheme: string): boolean;
-
-  /**
-   * Read the entire contents of a file.
-   * @deprecated please use readFile instead
-   * @param uri The uri of the file.
-   * @return An array of bytes or a thenable that resolves to such.
-   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
-   * @throws [`FileIsADirectory`](#FileSystemError.FileIsADirectory) when `uri` is a directory.
-   * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
-   */
-  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
-
-  readFile(uri: string): Promise<{ content: BinaryBuffer }>;
 
   /**
    * Read the file stat

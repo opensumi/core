@@ -1,7 +1,22 @@
-import { Event, Uri } from '@opensumi/ide-utils';
+import { BinaryBuffer, Event, Uri } from '@opensumi/ide-utils';
 import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileChangeEvent } from './file-watch';
+
+export interface IFileSystemService {
+  /**
+   * Read the entire contents of a file.
+   * @deprecated please use readFile instead
+   * @param uri The uri of the file.
+   * @return An array of bytes or a thenable that resolves to such.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+   * @throws [`FileIsADirectory`](#FileSystemError.FileIsADirectory) when `uri` is a directory.
+   * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
+   */
+  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
+
+  readFile(uri: string): Promise<{ content: BinaryBuffer }>;
+}
 
 export interface FileStat {
   /**
@@ -276,4 +291,8 @@ export const enum FileSystemProviderCapabilities {
    * Provider support to unlock files for writing.
    */
   FileWriteUnlock = 1 << 13,
+}
+
+export interface FileSetContentOptions {
+  encoding?: string;
 }

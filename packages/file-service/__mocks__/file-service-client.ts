@@ -1,6 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { BinaryBuffer, Emitter, Event, FileUri, IDisposable, URI } from '@opensumi/ide-core-common';
 
+import { FileSetContentOptions } from '@opensumi/ide-core-common';
 import {
   DidFilesChangedParams,
   FileChange,
@@ -13,7 +14,6 @@ import {
   FileCreateOptions,
   FileDeleteOptions,
   FileMoveOptions,
-  FileSetContentOptions,
   FileStat,
   FileSystemProvider,
   TextDocumentContentChangeEvent,
