@@ -80,7 +80,6 @@ import { WindowService } from '../window/window.service';
 import { AppLifeCycleService } from './lifecycle.service';
 
 export function injectInnerProviders(injector: Injector) {
-  // 生成 ContributionProvider
   createContributionProvider(injector, ClientAppContribution);
   createContributionProvider(injector, CommandContribution);
   createContributionProvider(injector, FsProviderContribution);
@@ -94,7 +93,6 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, ToolBarActionContribution);
   createContributionProvider(injector, StaticResourceContribution);
 
-  // 一些内置抽象实现
   const providers: Provider[] = [
     {
       token: IEventBus,

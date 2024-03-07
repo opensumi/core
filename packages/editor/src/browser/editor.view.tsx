@@ -74,7 +74,14 @@ export const EditorView = () => {
   }, []);
 
   if (!ready) {
-    return null;
+    // todo: 渲染编辑器骨架屏
+    return (
+      <div className={styles.kt_workbench_editor}>
+        <div className={styles.kt_editor_main_wrapper}>
+          <h1 style={{ color: 'red' }}>hello OpenSumi</h1>
+        </div>
+      </div>
+    );
   }
 
   return (

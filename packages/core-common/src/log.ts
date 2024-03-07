@@ -181,6 +181,8 @@ export interface ILoggerManagerClient {
   onDidLogLevelChanged(level: LogLevel);
   dispose(): Promise<void>;
   getLogFolder(): Promise<string>;
+
+  enableRemoteLogger?(connected: boolean): void;
 }
 
 /**

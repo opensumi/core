@@ -11,6 +11,7 @@ import {
 } from '../common/';
 
 import { LogServiceClient } from './log.service';
+import { LogServiceClientLocal } from './log.service.local';
 
 @Injectable()
 export class LoggerManagerClient implements ILoggerManagerClient {
@@ -18,7 +19,16 @@ export class LoggerManagerClient implements ILoggerManagerClient {
   @Autowired(LogServiceForClientPath)
   logServiceForClient: ILogServiceForClient;
 
+  protected connectedToServer = false;
+  enableRemoteLogger(connected: boolean) {
+    this.connectedToServer = connected;
+  }
+
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient {
+    if (!this.connectedToServer) {
+      return new LogServiceClientLocal(namespace, pid);
+    }
+
     return new LogServiceClient(namespace, this.logServiceForClient, pid);
   }
 

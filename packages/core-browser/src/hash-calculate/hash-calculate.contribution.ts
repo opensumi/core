@@ -9,7 +9,7 @@ export class HashCalculateContribution implements ClientAppContribution {
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 
-  async initialize() {
+  async connecting() {
     try {
       await this.hashCalculateService.initialize();
     } catch (err) {

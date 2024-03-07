@@ -6,6 +6,13 @@ export const ClientAppContribution = Symbol('ClientAppContribution');
 
 export interface ClientAppContribution {
   /**
+   * Called when the application is connecting to the server.
+   * the initialize method is called after connected.
+   * Should return a promise if it runs asynchronously.
+   */
+  connecting?(app: IClientApp): MaybePromise<void>;
+
+  /**
    * Called on application startup before commands, key bindings and menus are initialized.
    * Should return a promise if it runs asynchronously.
    */
