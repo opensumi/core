@@ -7,7 +7,6 @@ import {
   Disposable,
   Domain,
   EDITOR_COMMANDS,
-  IContextKeyService,
   IJSONSchemaRegistry,
   IOpenerService,
   ISchemaStore,
@@ -75,7 +74,6 @@ import {
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { ICodeEditor } from './monaco-api/editor';
 import { MonacoMenus } from './monaco-menu';
-import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 
@@ -125,9 +123,6 @@ export class MonacoClientContribution
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
-  @Autowired(MonacoSnippetSuggestProvider)
-  protected readonly snippetSuggestProvider: MonacoSnippetSuggestProvider;
-
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
 
@@ -139,9 +134,6 @@ export class MonacoClientContribution
 
   @Autowired(KeybindingRegistry)
   private readonly keybindings: KeybindingRegistry;
-
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
 
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;

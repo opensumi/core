@@ -5,7 +5,6 @@ import {
   FileChangeEvent,
   FileSystemProviderCapabilities,
   IDisposable,
-  IFileServiceClient as IFileServiceClientToken,
   URI,
 } from '@opensumi/ide-core-common';
 
@@ -23,7 +22,7 @@ import {
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 
-export const IFileServiceClient = IFileServiceClientToken;
+export const IFileServiceClient = Symbol('IFileServiceClient');
 
 export interface IFileServiceClient {
   onFilesChanged: Event<FileChangeEvent>;

@@ -1,14 +1,13 @@
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { QuickPickService } from '@opensumi/ide-core-browser';
-import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Disposable, IFileServiceClient } from '@opensumi/ide-core-common';
+import { IContextKeyService, QuickPickService } from '@opensumi/ide-core-browser';
+import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable } from '@opensumi/ide-core-common';
 import {
-  IDebugSessionManager,
-  IDebugSession,
-  DebugSessionOptions,
   DebugModelFactory,
+  DebugSessionOptions,
   IDebugServer,
+  IDebugSession,
+  IDebugSessionManager,
 } from '@opensumi/ide-debug';
 import { DebugContextKey } from '@opensumi/ide-debug/lib/browser/contextkeys/debug-contextkey.service';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
@@ -26,6 +25,7 @@ import {
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITaskService } from '@opensumi/ide-task';

@@ -1,5 +1,5 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { Disposable, EventBusImpl, IEventBus, URI } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
@@ -11,9 +11,10 @@ import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceService, IWorkspaceStorageService } from '@opensumi/ide-workspace';
-import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
+import { WorkspaceEditDidDeleteFileEvent, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
 describe('Debug Breakpoints Service', () => {
   const mockInjector = createBrowserInjector(

@@ -1,15 +1,15 @@
 import {
   Disposable,
   IContextKeyService,
-  IFileServiceClient,
   MonacoOverrideServiceRegistry,
+  QuickPickService,
 } from '@opensumi/ide-core-browser';
-import { QuickPickService } from '@opensumi/ide-core-browser';
 import { DebugModelFactory, IDebugModelManager, IDebugServer } from '@opensumi/ide-debug';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugEditorContribution } from '@opensumi/ide-debug/lib/browser/editor/debug-editor-contribution';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IDebugSessionManager } from './../../../src/common/debug-session';

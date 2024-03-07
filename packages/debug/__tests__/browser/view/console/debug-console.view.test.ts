@@ -1,14 +1,14 @@
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
-import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import {
   DebugModelFactory,
-  IDebugServer,
-  IDebugSessionManager,
-  IDebugSession,
   DebugSessionOptions,
+  IDebugServer,
+  IDebugSession,
+  IDebugSessionManager,
 } from '@opensumi/ide-debug';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
@@ -18,6 +18,7 @@ import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/c
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';

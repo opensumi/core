@@ -9,28 +9,27 @@ import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
 import {
-  IContextKeyService,
-  StorageProvider,
-  DefaultStorageProvider,
-  createContributionProvider,
-  StorageResolverContribution,
-  PreferenceProvider,
   AppConfig,
-  Uri,
-  CommandRegistryImpl,
-  CommandRegistry,
-  IPreferenceSettingsService,
-  KeybindingRegistryImpl,
-  KeybindingRegistry,
-  IFileServiceClient,
-  IJSONSchemaRegistry,
-  ISchemaStore,
-  URI,
-  Disposable,
-  ICryptoService,
-  ICredentialsService,
-  Emitter,
   AppLifeCycleServiceToken,
+  CommandRegistry,
+  CommandRegistryImpl,
+  DefaultStorageProvider,
+  Disposable,
+  Emitter,
+  IContextKeyService,
+  ICredentialsService,
+  ICryptoService,
+  IJSONSchemaRegistry,
+  IPreferenceSettingsService,
+  ISchemaStore,
+  KeybindingRegistry,
+  KeybindingRegistryImpl,
+  PreferenceProvider,
+  StorageProvider,
+  StorageResolverContribution,
+  URI,
+  Uri,
+  createContributionProvider,
 } from '@opensumi/ide-core-browser';
 import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { AppLifeCycleService } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
@@ -38,15 +37,16 @@ import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-res
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
+  EditorComponentRegistry,
+  IEditorActionRegistry,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
-  IEditorActionRegistry,
-  EditorComponentRegistry,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { EditorActionRegistryImpl } from '@opensumi/ide-editor/lib/browser/menu/editor.menu';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
+import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
 import {
@@ -54,32 +54,34 @@ import {
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
 import { WalkthroughsService } from '@opensumi/ide-extension/lib/browser/walkthroughs.service';
-import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-import { IWorkspaceStorageServer, IGlobalStorageServer } from '@opensumi/ide-storage';
+import { IGlobalStorageServer, IWorkspaceStorageServer } from '@opensumi/ide-storage';
 import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import { IThemeService, IIconService, IThemeData, IThemeStore } from '@opensumi/ide-theme/lib/common';
+import { IIconService, IThemeData, IThemeService, IThemeStore } from '@opensumi/ide-theme/lib/common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
+import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
+import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { MockExtNodeClientService } from '../../../__mocks__/extension.service.client';
-import { MockWorker, MessagePort } from '../../../__mocks__/worker';
+import { MessagePort, MockWorker } from '../../../__mocks__/worker';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
 import { ExtInstanceManagementService } from '../../../src/browser/extension-instance-management';
 import { ExtensionManagementService } from '../../../src/browser/extension-management.service';
@@ -90,15 +92,15 @@ import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
 import { SumiContributionsService, SumiContributionsServiceToken } from '../../../src/browser/sumi/contributes';
 import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../../src/browser/vscode/contributes';
 import {
+  AbstractExtensionManagementService,
+  ExtensionNodeServiceServerPath,
   ExtensionService,
+  IExtCommandManagement,
   IExtension,
   IExtensionProps,
-  ExtensionNodeServiceServerPath,
-  IExtCommandManagement,
-  AbstractExtensionManagementService,
   IRequireInterceptorService,
-  RequireInterceptorService,
   RequireInterceptorContribution,
+  RequireInterceptorService,
 } from '../../../src/common';
 import {
   AbstractNodeExtProcessService,
@@ -106,8 +108,6 @@ import {
   AbstractWorkerExtProcessService,
 } from '../../../src/common/extension.service';
 import { MockExtensionStorageService } from '../../hosted/__mocks__/extensionStorageService';
-import { ThemeData } from '@opensumi/ide-theme/lib/browser/theme-data';
-import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 const mockExtensionProps: IExtensionProps = {
   name: 'sumi-extension',

@@ -1,11 +1,5 @@
-import { Injectable, Injector, Provider } from '@opensumi/di';
-import {
-  AIBackSerivcePath,
-  AIBackSerivceToken,
-  AINativeConfigService,
-  BrowserModule,
-  IAIInlineChatService,
-} from '@opensumi/ide-core-browser';
+import { Injectable, Provider } from '@opensumi/di';
+import { AIBackSerivcePath, AIBackSerivceToken, BrowserModule, IAIInlineChatService } from '@opensumi/ide-core-browser';
 
 import { IAINativeService } from '../common/index';
 

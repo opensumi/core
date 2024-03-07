@@ -1,5 +1,6 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
@@ -16,13 +17,17 @@ export type SnippetSchema = Array<SnippetContribution>;
 @Contributes('snippets')
 @LifeCycle(LifeCyclePhase.Ready)
 export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSchema> {
-  @Autowired(MonacoSnippetSuggestProvider)
-  protected readonly snippetSuggestProvider: MonacoSnippetSuggestProvider;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
   @Autowired(AbstractExtInstanceManagementService)
   protected readonly extensionManageService: AbstractExtInstanceManagementService;
 
   contribute() {
+    const snippetSuggestProvider = this.injector.get(MonacoSnippetSuggestProvider, [this.filesystem]);
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
@@ -31,7 +36,7 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
       }
       for (const snippet of contributes) {
         this.addDispose(
-          this.snippetSuggestProvider.fromPath(snippet.path, {
+          snippetSuggestProvider.fromPath(snippet.path, {
             extPath: extension.path,
             language: snippet.language,
             source: extension.packageJSON.name,
@@ -39,6 +44,6 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
         );
       }
     }
-    this.addDispose(this.snippetSuggestProvider.registerSnippetsProvider());
+    this.addDispose(snippetSuggestProvider.registerSnippetsProvider());
   }
 }

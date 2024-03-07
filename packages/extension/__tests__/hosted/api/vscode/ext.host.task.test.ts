@@ -2,19 +2,13 @@ import path from 'path';
 
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import {
-  Emitter as EventEmitter,
-  Disposable,
-  StorageProvider,
-  Uri,
-  IFileServiceClient,
-  Deferred,
-} from '@opensumi/ide-core-common';
+import { Deferred, Disposable, Emitter as EventEmitter, StorageProvider, Uri } from '@opensumi/ide-core-common';
 import { ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common/lib/task-definition';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
 import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
@@ -48,15 +42,15 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import {
   MockMainLayoutService,
-  MockTerminalService,
   MockTerminalProfileInternalService,
+  MockTerminalService,
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { mockExtensionProps } from '../../../../__mocks__/extensions';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainthreadTasks } from '../../../../src/browser/vscode/api/main.thread.tasks';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '../../../../src/hosted/api/vscode/tasks/ext.host.tasks';
 import { MockEnvironmentVariableService } from '../../__mocks__/environmentVariableService';

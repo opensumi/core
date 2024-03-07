@@ -1,7 +1,7 @@
 import { IContextKeyService, QuickPickService } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-core-common';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 

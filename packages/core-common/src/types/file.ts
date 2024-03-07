@@ -5,12 +5,6 @@ import { FileChangeEvent } from './file-watch';
 
 export * from './file-watch';
 
-/**
- * @deprecated please import it from '@opensumi/ide-file-service/lib/common'
- * `import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';`
- */
-export const IFileServiceClient = Symbol('IFileServiceClient');
-
 export interface FileStat {
   /**
    * 资源路径

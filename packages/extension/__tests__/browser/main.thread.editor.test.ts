@@ -2,28 +2,19 @@ import path from 'path';
 
 import isEqual from 'lodash/isEqual';
 
-import { URI, IContextKeyService } from '@opensumi/ide-core-browser';
-import { CorePreferences, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
+import { CorePreferences, IContextKeyService, MonacoOverrideServiceRegistry, URI } from '@opensumi/ide-core-browser';
 import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { CommonServerPath, Deferred, Emitter, IApplicationService, IEventBus, OS } from '@opensumi/ide-core-common';
+import { IEditorOpenType, IResource } from '@opensumi/ide-editor';
 import {
-  Emitter,
-  IFileServiceClient,
-  IEventBus,
-  CommonServerPath,
-  OS,
-  IApplicationService,
-  Deferred,
-} from '@opensumi/ide-core-common';
-import { IResource, IEditorOpenType } from '@opensumi/ide-editor';
-import {
+  EditorModule,
+  EditorPreferences,
+  EmptyDocCacheImpl,
   IEditorDecorationCollectionService,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorFeatureRegistry,
-  EditorModule,
-  EmptyDocCacheImpl,
-  EditorPreferences,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import {
@@ -37,20 +28,21 @@ import { BaseFileSystemEditorDocumentProvider } from '@opensumi/ide-editor/lib/b
 import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
 import { LanguageService } from '@opensumi/ide-editor/lib/browser/language/language.service';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser/types';
 import {
+  EditorComponentRegistry,
   EditorGroupChangeEvent,
-  EditorVisibleChangeEvent,
   EditorGroupIndexChangedEvent,
+  EditorOpenType,
   EditorSelectionChangeEvent,
+  EditorVisibleChangeEvent,
 } from '@opensumi/ide-editor/lib/browser/types';
-import { WorkbenchEditorServiceImpl, EditorGroup } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { EditorGroup, WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import {
-  WorkbenchEditorService,
   EditorCollectionService,
-  ResourceService,
-  ILanguageService,
   IDocPersistentCacheProvider,
+  ILanguageService,
+  ResourceService,
+  WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/common';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
 import { MainThreadExtensionDocumentData } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.doc';
@@ -58,6 +50,7 @@ import { ExtensionService } from '@opensumi/ide-extension/lib/common';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import * as TypeConverts from '@opensumi/ide-extension/lib/common/vscode/converter';
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { MonacoService } from '@opensumi/ide-monaco';
@@ -68,9 +61,9 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import {
-  IConfigurationService,
-  IConfigurationChangeEvent,
   ConfigurationTarget,
+  IConfigurationChangeEvent,
+  IConfigurationService,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

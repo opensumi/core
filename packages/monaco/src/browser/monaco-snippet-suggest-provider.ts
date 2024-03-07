@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
@@ -23,11 +23,10 @@ const { Path } = path;
 
 @Injectable()
 export class MonacoSnippetSuggestProvider implements monaco.languages.CompletionItemProvider {
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  constructor(@Optional() private readonly filesystem: IFileServiceClient) {}
 
   protected readonly snippets = new Map<string, Snippet[]>();
   protected readonly pendingSnippets = new Map<string, Promise<void>[]>();
@@ -186,6 +185,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
 
     return toDispose;
   }
+
   /**
    * should NOT throw to prevent load erros on suggest
    */

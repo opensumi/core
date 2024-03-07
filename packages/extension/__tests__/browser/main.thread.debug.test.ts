@@ -1,12 +1,12 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
-import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-common';
+import { Disposable, URI, Uri } from '@opensumi/ide-core-common';
 import {
-  IDebugSessionManager,
-  IDebugService,
-  IDebugServer,
-  IDebugModelManager,
   IDebugConsoleModelService,
+  IDebugModelManager,
+  IDebugServer,
+  IDebugService,
+  IDebugSessionManager,
 } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
@@ -18,6 +18,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
 import { MainThreadConnection } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.connection';
 import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
 import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
