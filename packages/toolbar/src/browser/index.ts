@@ -52,9 +52,8 @@ export class ToolBarModuleContribution
   }
 
   onStart() {
-    this.contributions.getContributions().forEach((c) => {
-      c.registerToolBarElement(this.injector.get(IToolBarViewService));
-    });
+    const tabbarService = this.injector.get(IToolBarViewService) as IToolBarViewService;
+    this.contributions.run('registerToolBarElement', tabbarService);
 
     /**
      * 在这里根据是否是 electron 来给 preferredPosition location 或 strictPosition location 定义枚举项 snippet

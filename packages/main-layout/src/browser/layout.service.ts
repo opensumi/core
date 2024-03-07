@@ -110,11 +110,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         this.collectViewComponent(view, containerId, props);
       });
     }
-    for (const contribution of this.contributions.getContributions()) {
-      if (contribution.onDidRender) {
-        contribution.onDidRender();
-      }
-    }
+
+    this.contributions.run('onDidRender');
+
     const list: Array<Promise<void>> = [];
     // 这里保证的 viewReady 并不是真实的 viewReady，只是保证在此刻之前注册进来的 Tabbar Ready 了
     // 仅确保 tabbar 视图加载完毕
@@ -123,6 +121,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         list.push(service.viewReady.promise);
       }
     });
+
     Promise.all(list).then(() => {
       this.viewReady.resolve();
     });

@@ -41,6 +41,7 @@ export const TabRendererBase: FC<{
       tabbarService.viewReady.resolve();
       return;
     }
+
     tabbarService.registerResizeHandle(resizeHandle);
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);

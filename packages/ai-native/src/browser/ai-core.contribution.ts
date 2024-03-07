@@ -63,11 +63,7 @@ export class AINativeBrowserContribution
   }
 
   private registerFeature() {
-    this.contributions.getContributions().forEach((contribution) => {
-      if (contribution.registerInlineChatFeature) {
-        contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
-      }
-    });
+    this.contributions.run('registerInlineChatFeature', this.inlineChatFeatureRegistry);
   }
 
   registerSetting(registry: ISettingRegistry) {

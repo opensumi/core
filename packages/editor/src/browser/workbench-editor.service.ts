@@ -481,11 +481,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       });
     Promise.all(editorRestorePromises).then(() => {
       this._restoring = false;
-      for (const contribution of this.contributions.getContributions()) {
-        if (contribution.onDidRestoreState) {
-          contribution.onDidRestoreState();
-        }
-      }
+      this.contributions.run('onDidRestoreState');
     });
     return promise;
   }

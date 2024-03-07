@@ -17,8 +17,6 @@ export class StaticResourceClientAppContribution implements ClientAppContributio
   private readonly contributions: ContributionProvider<StaticResourceContribution>;
 
   initialize() {
-    for (const contribution of this.contributions.getContributions()) {
-      contribution.registerStaticResolver(this.staticResourceService);
-    }
+    this.contributions.run('registerStaticResolver', this.staticResourceService);
   }
 }
