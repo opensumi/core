@@ -231,10 +231,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
     measureReporter.timeEnd('ClientApp.createConnection');
 
-    this.logger = this.getLogger();
     this.registerEventListeners();
-    // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
-    await this.injector.get(IApplicationService).initializeData();
     this.stateService.state = 'client_connected';
 
     // 在 contributions 执行完 onStart 上报一次耗时
@@ -293,6 +290,9 @@ export class ClientApp implements IClientApp, IDisposable {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
     this.injector.get(WSChannelHandler).replaceLogger(this.logger);
     this.logger.log('Connection established');
+
+    // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
+    await this.injector.get(IApplicationService).initializeData();
   }
 
   private getLogger() {
