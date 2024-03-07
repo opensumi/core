@@ -247,6 +247,10 @@ export class URI {
     return this.codeUri.toString(skipEncoding);
   }
 
+  toJSON() {
+    return this.codeUri.toJSON();
+  }
+
   isEqualOrParent(uri: URI): boolean {
     return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqualOrParent(uri.path);
   }
