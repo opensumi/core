@@ -74,10 +74,10 @@ export class KeymapService implements IKeymapService {
   protected resource: FileStat | undefined;
 
   protected readonly keymapChangeEmitter = new Emitter<KeybindingItem[]>();
+  onDidKeymapChanges: Event<KeybindingItem[]> = this.keymapChangeEmitter.event;
 
-  get onDidKeymapChanges(): Event<KeybindingItem[]> {
-    return this.keymapChangeEmitter.event;
-  }
+  protected readonly keymapReconcileEmitter = new Emitter<void>();
+  onDidKeymapReconciled: Event<void> = this.keymapReconcileEmitter.event;
 
   protected convertKeySequence: KeySequence = [];
 
@@ -221,6 +221,8 @@ export class KeymapService implements IKeymapService {
       kb.command = kb.command.slice(1);
       this.unregisterDefaultKeybinding(kb, true);
     });
+
+    this.keymapReconcileEmitter.fire();
   }
 
   private unregisterUserKeybinding(kb: Keybinding) {

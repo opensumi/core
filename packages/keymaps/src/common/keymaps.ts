@@ -55,10 +55,17 @@ export interface IKeymapService {
    * 快捷键是否初始化完成
    */
   whenReady: Promise<void>;
+
   /**
-   * 初始化快捷键注册信息
+   * 初始化快捷键注册信息，从 keymaps.json 中读取快捷键信息
    */
   init(): Promise<void>;
+
+  /**
+   * 从 keymaps.json 中读取快捷键信息完成后触发
+   */
+  onDidKeymapReconciled(listener: () => any): IDisposable;
+
   /**
    * 设置快捷键
    * @param {Keybinding} rawKeybinding

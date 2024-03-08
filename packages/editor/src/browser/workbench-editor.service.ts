@@ -110,6 +110,8 @@ const MAX_CONFIRM_RESOURCES = 10;
 
 const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
 
+const defaultEditorGridState: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
+
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
   editorGroups: EditorGroup[] = [];
@@ -306,6 +308,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return name;
   }
 
+  public prepare() {
+    this.prepareEditorGrid();
+  }
+
   public initialize() {
     if (!this.initializing) {
       this.initializing = this.doInitialize();
@@ -460,14 +466,19 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this._onDidEditorGroupsChanged.fire();
   }
 
-  public async restoreState() {
-    let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    state = this.openedResourceState.get<IEditorGridState>('grid', state);
+  prepareEditorGrid() {
     this.topGrid = new EditorGrid();
     this.topGrid.onDidGridAndDesendantStateChange(() => {
       this._sortedEditorGroups = undefined;
       this._onDidEditorGroupsChanged.fire();
     });
+
+    this.topGrid.setEditorGroup(this.createEditorGroup());
+  }
+
+  protected async restoreState() {
+    const state = this.openedResourceState.get<IEditorGridState>('grid', defaultEditorGridState);
+
     const editorRestorePromises = [];
     const promise = this.topGrid
       .deserialize(state, () => this.createEditorGroup(), editorRestorePromises)

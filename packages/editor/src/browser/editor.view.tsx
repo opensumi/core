@@ -50,8 +50,6 @@ import {
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
-const emptyGrid = new EditorGrid();
-
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
@@ -80,7 +78,7 @@ export const EditorView = () => {
     return (
       <div className={styles_kt_workbench_editor} id='workbench-editor'>
         <div className={styles.kt_editor_main_wrapper}>
-          <EditorGridView grid={emptyGrid}></EditorGridView>
+          <EditorGridView grid={workbenchEditorService.topGrid}></EditorGridView>
         </div>
       </div>
     );

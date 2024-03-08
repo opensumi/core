@@ -4,6 +4,7 @@ import {
   ClientAppContribution,
   ContributionProvider,
   Domain,
+  MaybePromise,
   PreferenceService,
   createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
@@ -216,7 +217,7 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
-  async initialize() {
+  prepare(): MaybePromise<void> {
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.registerResource) {
         contribution.registerResource(this.resourceService);
@@ -224,14 +225,21 @@ export class EditorClientAppContribution implements ClientAppContribution {
       if (contribution.registerEditorComponent) {
         contribution.registerEditorComponent(this.editorComponentRegistry);
       }
-      if (contribution.registerEditorDocumentModelContentProvider) {
-        contribution.registerEditorDocumentModelContentProvider(this.modelContentRegistry);
-      }
       if (contribution.registerEditorActions) {
         contribution.registerEditorActions(this.editorActionRegistry);
       }
       if (contribution.registerEditorFeature) {
         contribution.registerEditorFeature(this.editorFeatureRegistry);
+      }
+    }
+
+    return this.workbenchEditorService.prepare();
+  }
+
+  async initialize() {
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.registerEditorDocumentModelContentProvider) {
+        contribution.registerEditorDocumentModelContentProvider(this.modelContentRegistry);
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();

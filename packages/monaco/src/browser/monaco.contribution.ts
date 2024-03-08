@@ -152,7 +152,7 @@ export class MonacoClientContribution
 
   private toDisposeOnKeybindingChange = new DisposableCollection();
 
-  async initialize() {
+  prepare() {
     // 注册 monaco 模块原有的 override services
     // 由于历史原因，这部分实现在 monaco 模块，后需要迁移到 editor 模块
     this.registerOverrideServices();

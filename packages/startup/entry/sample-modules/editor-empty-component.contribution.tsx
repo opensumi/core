@@ -63,7 +63,7 @@ const ShortcutRow = ({ label, keybinding }) => (
  */
 export const EditorEmptyComponent = () => {
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [keyMapLoaded, setKeyMapLoaded] = useState(false);
+  const [keyMapCount, setKeyMapUpdatedCount] = useState(0);
 
   const keybindingRegistry = useInjectable<KeybindingRegistry>(KeybindingRegistry);
   const keymapService = useInjectable<IKeymapService>(IKeymapService);
@@ -81,17 +81,18 @@ export const EditorEmptyComponent = () => {
     return primaryKeybinding || keyBindings[0];
   };
 
-  const init = async () => {
-    await keymapService.whenReady;
-    setKeyMapLoaded(true);
-  };
-
   React.useEffect(() => {
-    init();
+    const toRemove = keymapService.onDidKeymapReconciled(() => {
+      setKeyMapUpdatedCount(keyMapCount + 1);
+    });
+
+    return () => {
+      toRemove.dispose();
+    };
   }, []);
 
   const ShortcutView = useMemo(() => {
-    if (!imgLoaded || !keyMapLoaded) {
+    if (!imgLoaded) {
       return;
     }
 
@@ -125,7 +126,7 @@ export const EditorEmptyComponent = () => {
         ))}
       </div>
     );
-  }, [imgLoaded, keyMapLoaded]);
+  }, [imgLoaded, keyMapCount]);
 
   return (
     <div className={styles.empty_component}>
