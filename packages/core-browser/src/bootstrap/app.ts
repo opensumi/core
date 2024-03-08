@@ -34,6 +34,7 @@ import {
   createContributionProvider,
   isOSX,
   setLanguageId,
+  sleep,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -250,6 +251,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
   protected async createConnection(type: `${ESupportRuntime}`) {
     let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
+
+    await sleep(3000);
 
     switch (type) {
       case ESupportRuntime.Electron:

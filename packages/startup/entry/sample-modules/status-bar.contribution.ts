@@ -47,10 +47,11 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
     this.onDidConnectionChange(undefined, 'var(--button-background)');
   }
 
-  onDidStart() {
+  prepare() {
     if (!this.statusBarElement) {
       this.statusBarElement = this.statusBarService.addElement('OpenSumi', {
         backgroundColor: 'var(--button-background)',
+        text: 'Connecting',
         color: '#FFFFFF',
         tooltip: 'OpenSumi',
         alignment: StatusBarAlignment.LEFT,
