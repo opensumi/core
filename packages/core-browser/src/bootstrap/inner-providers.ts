@@ -12,11 +12,13 @@ import {
   IAuthenticationService,
   IEventBus,
   IExtensionsSchemaService,
+  IPerformance,
   IProblemMatcherRegistry,
   IProblemPatternRegistry,
   IReporter,
   IReporterService,
   ITaskDefinitionRegistry,
+  Performance,
   ProblemMatchersRegistryImpl,
   ProblemPatternRegistryImpl,
   REPORT_HOST,
@@ -173,6 +175,10 @@ export function injectInnerProviders(injector: Injector) {
       useValue: {
         host: REPORT_HOST.BROWSER,
       },
+    },
+    {
+      token: IPerformance,
+      useClass: Performance,
     },
     {
       token: IProgressService,

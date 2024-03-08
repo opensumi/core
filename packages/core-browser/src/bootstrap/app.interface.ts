@@ -44,6 +44,8 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   useCdnIcon?: boolean;
   // 插件开发模式下指定的插件路径
   extensionDevelopmentPath?: string | string[];
+
+  experimentalPreRender?: boolean;
 }
 
 export interface LayoutConfig {

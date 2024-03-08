@@ -1,6 +1,8 @@
 import { Autowired, ConstructorOf, Domain, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 
 import { ILogger } from './log';
+import { IPerformance } from './types';
+import { MaybePromise } from './utils';
 
 export const ContributionProvider = Symbol('ContributionProvider');
 
@@ -9,7 +11,10 @@ export interface ContributionProvider<T extends object> {
   addContribution(...contributionsCls: ConstructorOf<any>[]): void;
   reload(): T[];
 
-  run<K extends keyof T>(method: K, ...args: T[K] extends (...args: any[]) => any ? Parameters<T[K]> : any[]): void;
+  run<K extends keyof T>(
+    method: K,
+    ...args: T[K] extends (...args: any[]) => any ? Parameters<T[K]> : any[]
+  ): MaybePromise<void>;
 }
 
 @Injectable({ multiple: true })
@@ -19,6 +24,9 @@ export class BaseContributionProvider<T extends object> implements ContributionP
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(IPerformance)
+  performance: IPerformance;
 
   protected services: T[] | undefined;
 
@@ -33,12 +41,24 @@ export class BaseContributionProvider<T extends object> implements ContributionP
     }
   }
 
-  run(method: keyof T, ...args: any[]) {
+  run(method: keyof T, ...args: any[]): MaybePromise<any> {
+    const promises = [] as Promise<any>[];
     for (const contribution of this.getContributions()) {
-      if (contribution[method]) {
-        this.logger.log(`Run method ${String(method)} of ${contribution.constructor.name}`);
-        (contribution[method] as any)(...args);
-        this.logger.log(`Run method ${String(method)} of ${contribution.constructor.name} done`);
+      promises.push(this.contributionPhaseRunner(contribution, method, args));
+    }
+    if (promises.length > 0) {
+      return Promise.all(promises);
+    }
+  }
+
+  private async contributionPhaseRunner(contribution: T, phaseName: keyof T, args: any[]) {
+    const phase = contribution[phaseName];
+    if (typeof phase === 'function') {
+      try {
+        const uid = contribution.constructor.name + '.' + String(phaseName);
+        return await this.performance.measure(uid, () => phase.apply(contribution, args));
+      } catch (error) {
+        this.logger.error(`Could not run contribution#${String(phaseName)}`, error);
       }
     }
   }

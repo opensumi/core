@@ -22,9 +22,9 @@ import {
   IEventBus,
   ILogServiceClient,
   ILoggerManagerClient,
+  IPerformance,
   IReporterService,
   LifeCyclePhase,
-  MaybePromise,
   REPORT_NAME,
   StorageProvider,
   StorageResolverContribution,
@@ -102,6 +102,7 @@ export class ClientApp implements IClientApp, IDisposable {
   private lifeCycleService: IAppLifeCycleService;
   private stateService: ClientAppStateService;
   private loggerManager: ILoggerManagerClient;
+  private perf: IPerformance;
 
   private defaultPreferences: IPreferences | undefined;
 
@@ -125,6 +126,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector = opts.injector || new Injector();
     this.modules = modules;
     this.modules.forEach((m) => this.resolveModuleDeps(m));
+
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
@@ -212,6 +214,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
+    const promises = [] as Promise<void>[];
+
     if (connection) {
       // do not allow user use deprecated method start() with connection parameter
       // because we all use `WSChannelHandler` to create connection
@@ -223,11 +227,12 @@ export class ClientApp implements IClientApp, IDisposable {
       console.error('We introduced a new connection service to replace the old one');
       bindConnectionServiceDeprecated(this.injector, this.modules, connection);
     } else if (type) {
-      await Promise.all([
-        this.createConnection(type),
-        this.measure('Contributions.prepare', () => this.runPrepareContributions(container)),
-      ]);
+      promises.push(this.createConnection(type));
     }
+
+    promises.push(this.perf.measure('Contributions.prepare', () => this.prepareContributions(container)));
+
+    await Promise.all(promises);
 
     measureReporter.timeEnd('ClientApp.createConnection');
 
@@ -235,7 +240,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService.state = 'client_connected';
 
     // 在 contributions 执行完 onStart 上报一次耗时
-    await this.measure('Contributions.start', () => this.startContributions());
+    await this.perf.measure('Contributions.start', () => this.startContributions());
     this.stateService.state = 'started_contributions';
     this.stateService.state = 'ready';
 
@@ -285,7 +290,7 @@ export class ClientApp implements IClientApp, IDisposable {
       clientId,
     );
 
-    // refresh logger after connection established
+    // refresh to get a remote logger after connection established
     this.loggerManager.enableRemoteLogger?.(true);
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
     this.injector.get(WSChannelHandler).replaceLogger(this.logger);
@@ -295,23 +300,8 @@ export class ClientApp implements IClientApp, IDisposable {
     await this.injector.get(IApplicationService).initializeData();
   }
 
-  private getLogger() {
-    if (this.logger) {
-      return this.logger;
-    }
-
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
-    return this.logger;
-  }
-
   private onReconnectContributions() {
-    const contributions = this.contributions;
-
-    for (const contribution of contributions) {
-      if (contribution.onReconnect) {
-        contribution.onReconnect(this);
-      }
-    }
+    this.contributionsProvider.run('onReconnect', this);
   }
 
   /**
@@ -333,11 +323,13 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService = this.injector.get(ClientAppStateService);
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
     this.lifeCycleService = this.injector.get(AppLifeCycleServiceToken);
+    this.perf = this.injector.get(IPerformance);
   }
 
   private initFieldsAfterModules() {
     this.loggerManager = this.injector.get(ILoggerManagerClient);
-    this.logger = this.getLogger();
+    // currently lifecycle is prepare, so this logger is a local logger
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
   }
 
   private createBrowserModules() {
@@ -381,13 +373,21 @@ export class ClientApp implements IClientApp, IDisposable {
     return this.contributionsProvider.getContributions();
   }
 
-  protected async runPrepareContributions(container: HTMLElement | IAppRenderer) {
-    this.initLocalStorageProvider();
+  protected async prepareContributions(container: HTMLElement | IAppRenderer) {
+    // Initialize Command
+    this.commandRegistry.initialize();
+    // Initialize Menus
+    this.nextMenuRegistry.initialize();
+    // Initialize Keybinding
+    await this.keybindingRegistry.initialize();
 
-    await this.runContributionsPhase(this.contributions, 'prepare');
+    // Core modules initializeed ready
+    this.stateService.state = 'core_module_initialized';
+
+    await this.contributionsProvider.run('prepare', this);
 
     // Rendering layout
-    await this.measure('RenderApp.render', () => this.renderApp(container));
+    await this.perf.measure('RenderApp.render', () => this.renderApp(container));
 
     this.logger.verbose('contributions.prepare done');
   }
@@ -395,52 +395,23 @@ export class ClientApp implements IClientApp, IDisposable {
   protected async startContributions() {
     this.lifeCycleService.phase = LifeCyclePhase.Initialize;
 
-    await this.measure('Contributions.initialize', () => this.initializeContributions());
-
-    // Initialize Command, Keybinding, Menus
-    await this.initializeCoreRegistry();
-    // Core modules initializeed ready
-    this.stateService.state = 'core_module_initialized';
+    await this.perf.measure('Contributions.initialize', () => this.initializeContributions());
 
     this.lifeCycleService.phase = LifeCyclePhase.Starting;
-    await this.measure('Contributions.onStart', () => this.onStartContributions());
+    await this.perf.measure('Contributions.onStart', () => this.onStartContributions());
 
-    await this.runContributionsPhase(this.contributions, 'onDidStart');
-  }
-
-  private async initializeCoreRegistry() {
-    this.commandRegistry.initialize();
-    await this.keybindingRegistry.initialize();
-    this.nextMenuRegistry.initialize();
+    await this.contributionsProvider.run('onDidStart', this);
   }
 
   private async initializeContributions() {
-    await this.runContributionsPhase(this.contributions, 'initialize');
+    await this.contributionsProvider.run('initialize', this);
     this.appInitialized.resolve();
 
     this.logger.verbose('contributions.initialize done');
   }
 
   private async onStartContributions() {
-    await this.runContributionsPhase(this.contributions, 'onStart');
-  }
-
-  private async runContributionsPhase(contributions: ClientAppContribution[], phaseName: keyof ClientAppContribution) {
-    return await Promise.all(
-      contributions.map((contribution) => this.contributionPhaseRunner(contribution, phaseName)),
-    );
-  }
-
-  private async contributionPhaseRunner(contribution: ClientAppContribution, phaseName: keyof ClientAppContribution) {
-    const phase = contribution[phaseName];
-    if (typeof phase === 'function') {
-      try {
-        const uid = contribution.constructor.name + '.' + phaseName;
-        return await this.measure(uid, () => phase.call(contribution, this));
-      } catch (error) {
-        this.logger.error(`Could not run contribution#${phaseName}`, error);
-      }
-    }
+    await this.contributionsProvider.run('onStart', this);
   }
 
   private async renderApp(container: HTMLElement | IAppRenderer) {
@@ -448,14 +419,6 @@ export class ClientApp implements IClientApp, IDisposable {
 
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
-  }
-
-  protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
-    const reporterService: IReporterService = this.injector.get(IReporterService);
-    const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
-    const result = await fn();
-    measureReporter.timeEnd(name);
-    return result;
   }
 
   /**
@@ -590,18 +553,6 @@ export class ClientApp implements IClientApp, IDisposable {
         defaultPreference.setPreference(key, this.defaultPreferences[key]);
       }
     }
-  }
-
-  protected initLocalStorageProvider() {
-    this.injector.addProviders({
-      token: DefaultStorageProvider,
-      useClass: DefaultStorageProvider,
-    });
-
-    this.injector.overrideProviders({
-      token: StorageProvider,
-      useFactory: () => (storageId) => this.injector.get(DefaultStorageProvider).get(storageId),
-    });
   }
 
   protected injectStorageProvider() {

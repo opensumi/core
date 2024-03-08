@@ -1,8 +1,10 @@
 import { Injector } from '@opensumi/di';
 import {
   DefaultReporter,
+  IPerformance,
   IReporter,
   IReporterService,
+  Performance,
   REPORT_HOST,
   ReporterMetadata,
   ReporterService,
@@ -37,6 +39,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IHashCalculateService,
       useClass: HashCalculateServiceImpl,
+    },
+    {
+      token: IPerformance,
+      useClass: Performance,
     },
   );
 }
