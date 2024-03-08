@@ -1,4 +1,4 @@
-import { Autowired, ConstructorOf, Domain, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { ConstructorOf, Domain, Injector } from '@opensumi/di';
 
 import { ILogger } from './log';
 import { IPerformance } from './types';
@@ -17,20 +17,17 @@ export interface ContributionProvider<T extends object> {
   ): MaybePromise<void>;
 }
 
-@Injectable({ multiple: true })
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
-  @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
-  @Autowired(IPerformance)
   performance: IPerformance;
 
   protected services: T[] | undefined;
 
-  constructor(protected readonly domain: Domain) {}
+  constructor(protected readonly domain: Domain, protected readonly injector: Injector) {
+    this.logger = injector.get(ILogger);
+    this.performance = injector.get(IPerformance);
+  }
 
   addContribution(...contributionsCls: ConstructorOf<T>[]): void {
     for (const contributionCls of contributionsCls) {
@@ -79,7 +76,7 @@ export class BaseContributionProvider<T extends object> implements ContributionP
  * @param domain 用来区分 Contribution 的标识，也是 ContributionProvider 的 Token
  */
 export function createContributionProvider(injector: Injector, domain: Domain) {
-  const contributionProvider = injector.get(BaseContributionProvider, [domain]);
+  const contributionProvider = new BaseContributionProvider(domain, injector);
 
   injector.addProviders({
     token: domain,
