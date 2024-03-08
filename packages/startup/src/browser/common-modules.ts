@@ -1,4 +1,3 @@
-
 import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
 import { AINativeModule } from '@opensumi/ide-ai-native/lib/browser';
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';

@@ -863,12 +863,11 @@ class InlineBreakpointWidget extends Disposable implements monaco.editor.IConten
 
     this.addDispose(
       new DomListener(domNode, 'click', async () => {
-        const uri = URI.parse(this.editor.getModel()!.uri.toString());
         if (this.breakpoint) {
           this.breakpointManager.delBreakpoint(this.breakpoint);
         } else {
           this.breakpointManager.addBreakpoint(
-            DebugBreakpoint.create(uri, {
+            DebugBreakpoint.create(this.editor.getModel()!.uri as unknown as URI, {
               line: this.range!.startLineNumber,
               column: this.range!.startColumn,
             }),
