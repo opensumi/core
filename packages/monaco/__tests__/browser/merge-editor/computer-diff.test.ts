@@ -12,8 +12,8 @@ describe('compute diff test', () => {
     expect(result).toBeDefined();
     expect(result.changes.length).toBe(1);
 
-    let originalRange = result.changes[0].originalRange;
-    const modifiedRange = result.changes[0].modifiedRange;
+    let originalRange = result.changes[0].original;
+    const modifiedRange = result.changes[0].modified;
 
     expect(originalRange.toString()).toBe('[1,2)');
     expect(modifiedRange.toString()).toBe('[1,2)');

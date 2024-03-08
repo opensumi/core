@@ -1,22 +1,22 @@
-import { URI, IEventBus } from '@opensumi/ide-core-browser';
+import { IEventBus, URI } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import {
+  EditorDocumentModelCreationEvent,
+  EmptyDocCacheImpl,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
-  EmptyDocCacheImpl,
-  EditorDocumentModelCreationEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import {
-  EditorDocumentModelServiceImpl,
   EditorDocumentModelContentRegistryImpl,
+  EditorDocumentModelServiceImpl,
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { TestEditorDocumentProvider } from '../test-providers';
-
 
 describe('EditorDocumentModelService', () => {
   let injector: MockInjector;
@@ -45,7 +45,8 @@ describe('EditorDocumentModelService', () => {
   });
 
   it('chooseEncoding', async () => {
-    monaco.languages.register({
+    const languageService = StandaloneServices.get(ILanguageService);
+    languageService.registerLanguage({
       id: 'javascript',
       aliases: ['JavaScript'],
       extensions: ['.js'],
