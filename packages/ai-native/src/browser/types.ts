@@ -1,5 +1,7 @@
+import React from 'react';
+
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
-import { CancellationToken, MaybePromise } from '@opensumi/ide-core-common';
+import { CancellationToken, IDisposable, MaybePromise } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 
 export class ReplyResponse {
@@ -52,4 +54,17 @@ export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
+}
+
+export interface IChatComponentConfig {
+  id: string;
+  component: React.ComponentType<Record<string, unknown>>;
+  initialProps: Record<string, unknown>;
+}
+
+export const IChatAgentViewService = Symbol('IChatAgentViewService');
+
+export interface IChatAgentViewService {
+  registerChatComponent(component: IChatComponentConfig): IDisposable;
+  getChatComponent(componentId: string): IChatComponentConfig | null;
 }

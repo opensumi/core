@@ -6,8 +6,9 @@ import { IAINativeService, IChatAgentService, IChatManagerService } from '../com
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
 import { ChatAgentService } from './chat-agent.service';
+import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
-import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { AINativeCoreContribution, IChatAgentViewService, IInlineChatFeatureRegistry } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 
@@ -35,6 +36,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: IChatAgentService,
       useClass: ChatAgentService,
+    },
+    {
+      token: IChatAgentViewService,
+      useClass: ChatAgentViewService,
     },
   ];
 

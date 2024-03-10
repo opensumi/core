@@ -9,8 +9,20 @@ declare module 'sumi' {
   // eslint-disable-next-line import/no-unresolved
   export * from 'vscode';
   import {
+    CancellationToken,
+    ChatAgent2,
+    ChatAgentContent,
+    ChatAgentContext,
+    ChatAgentFileTree,
+    ChatAgentMarkdownContent,
+    ChatAgentReplyFollowup,
+    ChatAgentRequest,
+    ChatAgentResult2,
+    ChatAgentTask,
     Disposable,
     ExtensionKind,
+    Progress,
+    ProviderResult,
     TextEditor,
     TextEditorEdit,
     ExtensionContext as VSCodeExtensionContext,
@@ -841,5 +853,45 @@ declare module 'sumi' {
      * @param id
      */
     export function getToolbarActionSelectHandle<T = any>(id: string): Promise<IToolbarSelectActionHandle<T>>;
+  }
+
+  export interface ChatAgentSampleQuestionProvider {
+    provideSampleQuestions(token: CancellationToken): ProviderResult<ChatAgentReplyFollowup[]>;
+  }
+
+  export interface ChatAgentPopulateInputParam {
+    command?: string;
+    prompt: string;
+  }
+
+  export interface ChatAgentComponent {
+    component: string;
+    value?: unknown;
+  }
+
+  export type ChatAgentProgress =
+    | ChatAgentContent
+    | ChatAgentMarkdownContent
+    | ChatAgentFileTree
+    | ChatAgentTask
+    | ChatAgentComponent;
+
+  export type ChatAgentHandler = (
+    request: ChatAgentRequest,
+    context: ChatAgentContext,
+    progress: Progress<ChatAgentProgress>,
+    token: CancellationToken,
+  ) => ProviderResult<ChatAgentResult2>;
+
+  export interface ChatAgent extends ChatAgent2 {
+    sampleQuestionProvider?: ChatAgentSampleQuestionProvider;
+    populateChatInput?: (param: ChatAgentPopulateInputParam) => void;
+  }
+
+  export namespace chat {
+    /**
+     * create chat agent
+     */
+    export function createChatAgent(name: string, handler: ChatAgentHandler): ChatAgent;
   }
 }

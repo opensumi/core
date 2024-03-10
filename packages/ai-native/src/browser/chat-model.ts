@@ -4,6 +4,7 @@ import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/e
 
 import {
   IChatAsyncContent,
+  IChatComponent,
   IChatFollowup,
   IChatMarkdownContent,
   IChatModel,
@@ -14,7 +15,7 @@ import {
   IChatTreeData,
 } from '../common';
 
-export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData;
+export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
 
 @Injectable({ multiple: true })
 export class ChatResponseModel extends Disposable {
@@ -111,6 +112,9 @@ export class ChatResponseModel extends Disposable {
     } else if (progress.kind === 'treeData') {
       this.#responseParts.push(progress);
       this.#updateResponseText(quiet);
+    } else if (progress.kind === 'component') {
+      this.#responseParts.push(progress);
+      this.#updateResponseText(quiet);
     }
   }
 
@@ -121,6 +125,9 @@ export class ChatResponseModel extends Disposable {
           return part.content;
         }
         if (part.kind === 'treeData') {
+          return '';
+        }
+        if (part.kind === 'component') {
           return '';
         }
         return part.content.value;
@@ -232,7 +239,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
     const { kind } = progress;
 
-    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData'];
+    const basicKind = ['content', 'markdownContent', 'asyncContent', 'treeData', 'component'];
 
     if (basicKind.includes(kind)) {
       request.response.updateContent(progress, quiet);

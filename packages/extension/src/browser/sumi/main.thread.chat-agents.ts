@@ -11,7 +11,7 @@ import { Deferred, IMarkdownString } from '@opensumi/ide-core-common';
 
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import {
-  ChatInputParam,
+  IChatInputParam,
   IExtHostChatAgents,
   IExtensionChatAgentMetadata,
   IMainThreadChatAgents,
@@ -139,7 +139,7 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
     this.agents.delete(handle);
   }
 
-  $populateChatInput(handle: number, param: ChatInputParam) {
+  $populateChatInput(handle: number, param: IChatInputParam) {
     if (!this.chatAgentService) {
       return;
     }

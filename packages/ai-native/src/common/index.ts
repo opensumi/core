@@ -413,7 +413,13 @@ export interface IChatTreeData {
   kind: 'treeData';
 }
 
-export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData;
+export interface IChatComponent {
+  component: string;
+  value?: unknown;
+  kind: 'component';
+}
+
+export type IChatProgress = IChatContent | IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
 
 export interface IChatResponseErrorDetails {
   message: string;
