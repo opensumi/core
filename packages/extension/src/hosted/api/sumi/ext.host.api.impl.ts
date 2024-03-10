@@ -6,6 +6,7 @@ import { ExtHostSumiAPIIdentifier } from '../../../common/sumi';
 import { ExtHostAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 
+import { ExtHostChatAgents, createChatApiFactory } from './ext.host.chat.impl';
 import { createCommandsApiFactory } from './ext.host.command';
 import { ExtHostCommon, createEventAPIFactory } from './ext.host.common';
 import { ExtHostLayout, createLayoutAPIFactory } from './ext.host.layout';
@@ -52,6 +53,10 @@ export function createAPIFactory(
     ExtHostSumiAPIIdentifier.ExtHostIDEWindow,
     new ExtHostIDEWindow(rpcProtocol),
   ) as ExtHostIDEWindow;
+  const extHostChatAgents = rpcProtocol.set(
+    ExtHostSumiAPIIdentifier.ExtHostChatAgents,
+    new ExtHostChatAgents(rpcProtocol),
+  ) as ExtHostChatAgents;
 
   return (extension: IExtensionDescription) => {
     const reporter = new ReporterService(reporterEmitter, {
@@ -69,6 +74,7 @@ export function createAPIFactory(
       reporter,
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       toolbar: createToolbarAPIFactory(extension, extHostToolbar),
+      chat: createChatApiFactory(extension, extHostChatAgents),
     };
   };
 }

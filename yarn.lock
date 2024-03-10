@@ -2087,11 +2087,25 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-ai-native@workspace:packages/ai-native"
   dependencies:
+    "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-core-browser": "workspace:*"
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-core-node": "workspace:*"
-    "@opensumi/ide-design": "workspace:*"
-    "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-debug": "workspace:*"
+    "@opensumi/ide-editor": "workspace:*"
+    "@opensumi/ide-file-service": "workspace:*"
+    "@opensumi/ide-file-tree-next": "workspace:*"
+    "@opensumi/ide-main-layout": "workspace:*"
+    "@opensumi/ide-markers": "workspace:*"
+    "@opensumi/ide-menu-bar": "workspace:*"
+    "@opensumi/ide-monaco": "workspace:*"
+    "@opensumi/ide-overlay": "workspace:*"
+    "@opensumi/ide-terminal-next": "workspace:*"
+    "@opensumi/ide-theme": "workspace:*"
+    "@opensumi/ide-workspace": "workspace:*"
+    abort-controller: ^3.0.0
+    react-chat-elements: ^12.0.10
+    react-highlight: ^0.15.0
   languageName: unknown
   linkType: soft
 
@@ -2440,6 +2454,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-extension@workspace:packages/extension"
   dependencies:
+    "@opensumi/ide-ai-native": "workspace:*"
     "@opensumi/ide-comments": "workspace:*"
     "@opensumi/ide-components": "workspace:*"
     "@opensumi/ide-connection": "workspace:*"
@@ -10171,6 +10186,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"highlight.js@npm:^10.5.0":
+  version: 10.7.3
+  resolution: "highlight.js@npm:10.7.3"
+  checksum: defeafcd546b535d710d8efb8e650af9e3b369ef53e28c3dc7893eacfe263200bba4c5fcf43524ae66d5c0c296b1af0870523ceae3e3104d24b7abf6374a4fea
+  languageName: node
+  linkType: hard
+
 "hmac-drbg@npm:^1.0.1":
   version: 1.0.1
   resolution: "hmac-drbg@npm:1.0.1"
@@ -13071,6 +13093,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"loaders.css@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "loaders.css@npm:0.1.2"
+  checksum: e1a8ee3b02f92e75cc9b20d7a391f145dbdb21efcd08713a2b94b8ded2bc250f7e21df3f4a8d675ac93a6351f0c43b6c43529d9002c683a19f6599751a29500a
+  languageName: node
+  linkType: hard
+
 "locate-path@npm:^2.0.0":
   version: 2.0.0
   resolution: "locate-path@npm:2.0.0"
@@ -14846,7 +14875,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-assign@npm:4.x, object-assign@npm:^4.0.1, object-assign@npm:^4.1.1":
+"object-assign@npm:4.x, object-assign@npm:^4.0.1, object-assign@npm:^4.1.0, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
@@ -16245,6 +16274,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"progressbar.js@npm:^1.1.0":
+  version: 1.1.1
+  resolution: "progressbar.js@npm:1.1.1"
+  dependencies:
+    lodash.merge: ^4.6.2
+    shifty: ^2.8.3
+  checksum: 40cd6f65f78b744b124e8e8d30df748c8665c5b3f4434e4f7a4f6033a34f1b1558f37c282c87f991ce17aa8bfb04cb21f6f7964d05be9a41ff32ba443e1d65f6
+  languageName: node
+  linkType: hard
+
 "promise-inflight@npm:^1.0.1":
   version: 1.0.1
   resolution: "promise-inflight@npm:1.0.1"
@@ -16726,6 +16765,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-chat-elements@npm:^12.0.10":
+  version: 12.0.14
+  resolution: "react-chat-elements@npm:12.0.14"
+  dependencies:
+    classnames: ^2.2.5
+    progressbar.js: ^1.1.0
+    react-icons: ^4.3.1
+    react-spinkit: ^3.0.0
+    timeago.js: ^4.0.2
+  peerDependencies:
+    react: ^18.2.0
+    react-dom: 18.2.0
+  checksum: 791adf17835211d9a3005b13d31b207348918476c4e4c3d6c2773e52b402125365b7b78d02e90c44fbb7fa8fa89032b4da9b2a5233f08d114a8b635040d37ab2
+  languageName: node
+  linkType: hard
+
 "react-ctxmenu-trigger@npm:^1.0.0":
   version: 1.0.1
   resolution: "react-ctxmenu-trigger@npm:1.0.1"
@@ -16765,6 +16820,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-highlight@npm:^0.15.0":
+  version: 0.15.0
+  resolution: "react-highlight@npm:0.15.0"
+  dependencies:
+    highlight.js: ^10.5.0
+  checksum: 8a0e3f2d9db0a5332b8b33eef8d6c58eb4c6f0a9426b0cedc5331fb4a777cff1895138b54368261d4e2a22338b11aa6b93adb1e3db496524072613255540a911
+  languageName: node
+  linkType: hard
+
+"react-icons@npm:^4.3.1":
+  version: 4.12.0
+  resolution: "react-icons@npm:4.12.0"
+  peerDependencies:
+    react: "*"
+  checksum: db82a141117edcd884ade4229f0294b2ce15d82f68e0533294db07765d6dce00b129cf504338ec7081ce364fe899b296cb7752554ea08665b1d6bad811134e79
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.12.0, react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -16798,6 +16871,18 @@ __metadata:
     react: 16.x
     react-dom: 16.x
   checksum: 69590a6b6c9b42b5a6c2b6d574c73c1e3dcf69a2cbe50c888e6ca0bab22adf25aeb0dc4a2ad5ca5f6c22c828d0167827941bb033b9adc9cfae6177e421d97380
+  languageName: node
+  linkType: hard
+
+"react-spinkit@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "react-spinkit@npm:3.0.0"
+  dependencies:
+    classnames: ^2.2.3
+    loaders.css: ^0.1.2
+    object-assign: ^4.1.0
+    prop-types: ^15.5.8
+  checksum: 78235ee3b37c21d0f34e8c76d2d87de3a0bb4fbcc50d47995345cc5cc28ed8f3ba13cb6314768f06f23acd72d60fc8ec0018c52baa08a7c323096445bc47c90f
   languageName: node
   linkType: hard
 
@@ -17781,9 +17866,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"side-channel@npm:^1.0.4, side-channel@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "side-channel@npm:1.0.6"
+"shifty@npm:^2.8.3":
+  version: 2.20.4
+  resolution: "shifty@npm:2.20.4"
+  dependencies:
+    fsevents: ^2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  checksum: f007d4359b396901f67146fc44a386aec81e86617410b3a3a37267d1f393f412eb2eeada638461b86725732351a399dbcc18c76e4e38627d7543c59dc7165504
+  languageName: node
+  linkType: hard
+
+"side-channel@npm:^1.0.4":
+  version: 1.0.5
+  resolution: "side-channel@npm:1.0.5"
   dependencies:
     call-bind: ^1.0.7
     es-errors: ^1.3.0
@@ -18768,6 +18865,13 @@ __metadata:
   version: 1.1.0
   resolution: "thunky@npm:1.1.0"
   checksum: 993096c472b6b8f30e29dc777a8d17720e4cab448375041f20c0cb802a09a7fb2217f2a3e8cdc11851faa71c957e2db309357367fc9d7af3cb7a4d00f4b66034
+  languageName: node
+  linkType: hard
+
+"timeago.js@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "timeago.js@npm:4.0.2"
+  checksum: c785a06988717cb5a00bb96b00ebaa56e83f4b5ed5d87c4c3931fb1bb2591a0e13a7ddc4b6c12c6ee7de64b440ed903c7bd4e0edddb37aade9bfc9ceab5d0db3
   languageName: node
   linkType: hard
 
