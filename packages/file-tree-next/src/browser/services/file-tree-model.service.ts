@@ -39,6 +39,10 @@ import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import {
+  IS_VISIBLE_BOTTOM_PANEL_COMMAND,
+  RETRACT_BOTTOM_PANEL,
+} from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
@@ -763,7 +767,6 @@ export class FileTreeModelService {
     if (!this.treeModel) {
       return;
     }
-
     if (!item) {
       item = this.treeModel.root as Directory | File;
     }
@@ -802,6 +805,12 @@ export class FileTreeModelService {
         }
         // 对于文件的单击事件，走 openFile 去执行 editor.previewMode 配置项
         this.fileTreeService.openFile(item.uri);
+        // 如果panel打开，则将最大化的panel, 变小
+        this.commandService.executeCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND.id).then((flag) => {
+          if (flag) {
+            this.commandService.executeCommand(RETRACT_BOTTOM_PANEL.id);
+          }
+        });
       }
     }
   };
