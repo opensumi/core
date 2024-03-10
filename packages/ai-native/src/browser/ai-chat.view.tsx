@@ -13,7 +13,7 @@ import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
-import { ChatReply } from './components/ChatReply';
+import { ChatNotify, ChatReply } from './components/ChatReply';
 import { Markdown } from './components/Markdown';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
@@ -245,6 +245,29 @@ export const AiChatView = observer(() => {
     });
     return () => dispose.dispose();
   }, [messageListData, loading]);
+
+  React.useEffect(() => {
+    const disposer = chatAgentService.onDidSendMessage((chunk) => {
+      const relationId = aiReporter.start(AISerivceType.Agent, {
+        msgType: AISerivceType.Agent,
+        message: '',
+      });
+
+      const notifyMessage = createMessageByAI(
+        {
+          id: uuid(6),
+          relationId,
+          text: <ChatNotify relationId={relationId} chunk={chunk} />,
+        },
+        styles.chat_notify,
+      );
+      setMessageListData((msgList) => [...msgList, notifyMessage]);
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    });
+    return () => disposer.dispose();
+  }, []);
 
   const handleAgentReply = React.useCallback(async (value: IChatMessageStructure) => {
     const { message, agentId, command } = value;

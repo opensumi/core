@@ -1,6 +1,7 @@
 import { Injectable, Injector } from '@opensumi/di';
 import {
   IChatAgentService,
+  IChatContent,
   IChatFollowup,
   IChatProgress,
   IChatReplyFollowup,
@@ -151,6 +152,13 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
       command: param.command,
       message: param.prompt,
     });
+  }
+
+  $sendMessage(chunk: IChatContent) {
+    if (!this.chatAgentService) {
+      return;
+    }
+    this.chatAgentService.sendMessage(chunk);
   }
 
   dispose(): void {

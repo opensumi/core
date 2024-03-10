@@ -6,6 +6,7 @@ import type {
   IChatAgentRequest,
   IChatAgentResult,
   IChatAsyncContent,
+  IChatContent,
   IChatFollowup,
   IChatMessage,
   IChatProgress,
@@ -35,6 +36,7 @@ export interface IMainThreadChatAgents {
     responsePartHandle?: number,
   ): Promise<number | void>;
   $populateChatInput: (handle: number, param: IChatInputParam) => void;
+  $sendMessage: (chunk: IChatContent) => void;
 }
 
 export interface IExtHostChatAgents {
