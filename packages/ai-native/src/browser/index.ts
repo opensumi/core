@@ -94,11 +94,6 @@ export class AiNativeModule extends BrowserModule {
         };
       }
 
-      layoutConfig = {
-        ...layoutConfig,
-        ...AiTopLayoutConfig,
-      };
-
       injector.overrideProviders(
         {
           token: IBrowserCtxMenu,
