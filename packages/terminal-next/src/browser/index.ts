@@ -25,6 +25,7 @@ import { ITerminalPreference } from '../common/preference';
 
 import {
   TerminalCommandContribution,
+  TerminalIntellContribution,
   TerminalKeybindingContribution,
   TerminalLifeCycleContribution,
   TerminalMenuContribution,
@@ -60,6 +61,7 @@ export class TerminalNextModule extends BrowserModule {
     TerminalKeybindingContribution,
     TerminalNetworkContribution,
     TerminalPreferenceContribution,
+    TerminalIntellContribution,
     {
       token: ITerminalApiService,
       useClass: TerminalApiService,

@@ -5,3 +5,4 @@ export * from './terminal.view';
 export * from './terminal.keybinding';
 export * from './terminal.network';
 export * from './terminal.preference';
+export * from './terminal.intell';
