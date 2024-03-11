@@ -1,0 +1,119 @@
+/**
+* -------------------------------------------- 右侧 chat 面板样式 --------------------------------------------
+*/
+#ai_chat_panel {
+  height: 100%;
+
+  div[class*='tab_panel___'] {
+    &::before {
+      content: none;
+    }
+  }
+
+  :global {
+    .rce-mbox-left-notch,
+    .rce-mbox-right-notch {
+      display: none;
+    }
+
+    .rce-mbox {
+      background-color: var(--ai-native-block-background-normal);
+      border-radius: 2px 12px 12px 12px;
+      box-shadow: none;
+      padding: 8px 12px;
+      min-width: initial;
+      margin: 0;
+
+      ::after {
+        content: '';
+      }
+    }
+
+    .rce-mbox-text {
+      line-height: 18px;
+      width: inherit;
+      font-size: 14px;
+    }
+
+    .rce-smsg {
+      background-color: var(--ai-native-block-background-normal);
+      box-shadow: none;
+      border-radius: 8px;
+      max-width: initial;
+      border-radius: 2px 12px 12px 12px;
+      width: 100%;
+      flex-direction: initial;
+      justify-content: left;
+      padding: 8px 12px 12px;
+      margin: 0;
+
+      .rce-smsg-text {
+        font-size: 12px;
+        width: 100%;
+        text-align: left;
+      }
+    }
+
+    .rce-container-smsg {
+      width: 100%;
+    }
+
+    .rce-mlist {
+      color: var(--ai-native-text-color-common);
+      font-weight: normal;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding-bottom: 38px;
+    }
+
+    .rce-ai-msg {
+      margin: 8px 32px 8px 16px;
+      > .rce-mbox {
+        // margin-bottom: 28px;
+        width: 100%;
+      }
+
+      .rce-mbox-body {
+        display: flex;
+        align-items: flex-start;
+        position: initial;
+        width: 100%;
+
+        .rce-mbox-title {
+          position: absolute;
+          left: -40px;
+          top: 0;
+        }
+
+        .rce-avatar-container {
+          &.default {
+            height: 32px;
+            width: 32px;
+          }
+        }
+      }
+    }
+
+    .rce-container-mbox {
+      overflow: initial;
+      // margin: 8px 16px;
+      min-width: initial;
+    }
+
+    .rce-user-msg {
+      .rce-mbox-right {
+        background: var(--ai-native-rce-background);
+        border-radius: 12px 12px 2px 12px;
+        margin-right: 0;
+        margin-left: 0;
+        max-width: 100%;
+      }
+    }
+
+    blockquote {
+      background: var(--vscode-textBlockQuote-background);
+      border-color: var(--vscode-textBlockQuote-border);
+    }
+  }
+}

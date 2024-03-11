@@ -287,7 +287,7 @@ export const AiChatView = observer(() => {
       relationId,
       position: 'right',
       title: ME_NAME,
-      text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
+      text: <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />,
       className: styles.chat_message_code,
       role: 'user',
     });
@@ -345,7 +345,7 @@ export const AiChatView = observer(() => {
         relationId,
         position: 'right',
         title: ME_NAME,
-        text: <CodeBlockWrapperInput text={message} agentId={agentId} command={command} />,
+        text: <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />,
         className: styles.chat_message_code,
         role: 'user',
       });

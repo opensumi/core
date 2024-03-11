@@ -2,14 +2,19 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
+  AppConfig,
   ClientAppContribution,
   CommandContribution,
   CommandRegistry,
+  ComponentContribution,
+  ComponentRegistry,
   ContributionProvider,
   Domain,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  SlotRendererContribution,
+  SlotRendererRegistry,
   getIcon,
 } from '@opensumi/ide-core-browser';
 import { AI_INLINE_CHAT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
@@ -20,8 +25,13 @@ import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
+import { Ai_CHAT_CONTAINER_VIEW_ID } from '../common';
+
+import { AiChatView } from './ai-chat.view';
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
+import { AiChatLayoutConfig } from './layout/layout-config';
+import { AiChatTabRenderer } from './layout/tabbar.view';
 import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Domain(
@@ -30,6 +40,8 @@ import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
   CommandContribution,
   SettingContribution,
   KeybindingContribution,
+  ComponentContribution,
+  SlotRendererContribution,
 )
 export class AINativeBrowserContribution
   implements
@@ -37,10 +49,15 @@ export class AINativeBrowserContribution
     BrowserEditorContribution,
     CommandContribution,
     SettingContribution,
-    KeybindingContribution
+    KeybindingContribution,
+    ComponentContribution,
+    SlotRendererContribution
 {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
@@ -60,6 +77,19 @@ export class AINativeBrowserContribution
 
   initialize() {
     this.aiNativeConfigService.enable();
+
+    const supportsAiChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
+
+    let layoutConfig = this.appConfig.layoutConfig;
+
+    if (supportsAiChatAssistant) {
+      layoutConfig = {
+        ...layoutConfig,
+        ...AiChatLayoutConfig,
+      };
+    }
+
+    this.appConfig.layoutConfig = layoutConfig;
   }
 
   private registerFeature() {
@@ -105,6 +135,25 @@ export class AINativeBrowserContribution
         this.aiNativeService.launchInlineChatVisible(value);
       },
     });
+  }
+
+  registerRenderer(registry: SlotRendererRegistry): void {
+    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
+      registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
+    }
+  }
+
+  registerComponent(registry: ComponentRegistry): void {
+    registry.register(
+      Ai_CHAT_CONTAINER_VIEW_ID,
+      {
+        component: AiChatView,
+        id: Ai_CHAT_CONTAINER_VIEW_ID,
+      },
+      {
+        containerId: Ai_CHAT_CONTAINER_VIEW_ID,
+      },
+    );
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
