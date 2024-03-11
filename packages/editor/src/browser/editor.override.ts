@@ -103,7 +103,8 @@ export class MonacoCodeService extends AbstractCodeEditorService {
         );
       }
     }
-    await editorGroup.open(resourceUri as unknown as URI, { index, range: range as IRange, focus: true });
+    const openUri = URI.parse(resourceUri.toString());
+    await editorGroup.open(openUri, { index, range: range as IRange, focus: true });
     return (editorGroup.codeEditor as BrowserCodeEditor).monacoEditor;
   }
 }
