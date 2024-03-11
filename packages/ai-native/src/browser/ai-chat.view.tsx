@@ -9,7 +9,7 @@ import { uuid } from '@opensumi/ide-core-common';
 
 import { AISerivceType, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../common';
 
-import * as styles from './ai-chat.module.less';
+import styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
@@ -56,7 +56,7 @@ const ME_NAME = '';
 
 const defaultSampleQuestions = [
   {
-    icon: getIcon('send2'),
+    icon: getIcon('send-hollow'),
     title: '生成 Java 快速排序算法',
     message: '生成 Java 快速排序算法',
   },
