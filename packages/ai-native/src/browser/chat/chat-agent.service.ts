@@ -15,7 +15,7 @@ import {
   IChatMessage,
   IChatMessageStructure,
   IChatProgress,
-} from '../common';
+} from '../../common';
 
 import { AiChatService } from './ai-chat.service';
 

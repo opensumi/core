@@ -13,7 +13,7 @@ import {
   IChatRequestModel,
   IChatResponseErrorDetails,
   IChatTreeData,
-} from '../common';
+} from '../../common';
 
 export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
 

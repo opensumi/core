@@ -1,129 +1,18 @@
 import capitalize from 'lodash/capitalize';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Highlight from 'react-highlight';
 
-import { IClipboardService, Schemes, URI, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
+import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-core-browser';
 import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { IAIReporter } from '@opensumi/ide-core-common';
-import { EditorCollectionService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
-import { IEditorDocumentModelService, ILanguageService } from '@opensumi/ide-editor/lib/browser/index';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 import { InstructionEnum, highLightLanguageSupport } from '../../common/index';
 
 import styles from './components.module.less';
 import './highlightTheme.less';
-
-const ChatEditor = ({ input, language }) => {
-  const ref = React.useRef<HTMLDivElement | null>(null);
-  const editorCollectionService = useInjectable<EditorCollectionService>(EditorCollectionService);
-  const documentService = useInjectable<IEditorDocumentModelService>(IEditorDocumentModelService);
-  const clipboardService = useInjectable<IClipboardService>(IClipboardService);
-  const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
-  const languageService = useInjectable<ILanguageService>(ILanguageService);
-  // 用于在复制代码的时候切换 popover 的标题
-  const [isCoping, setIsCoping] = useState<boolean>(false);
-  const [codeEditor, setCodeEditor] = useState<ICodeEditor | null>(null);
-  // 这里暂时关闭
-  // const textmateTokenizer = useInjectable<TextmateService>(TextmateService);
-
-  const useUUID = useMemo(() => uuid(12), [ref, ref.current]);
-
-  useEffect(() => {
-    if (input && codeEditor) {
-      codeEditor.monacoEditor.setValue(input);
-    }
-  }, [input, codeEditor]);
-
-  const createEditor = async (container: HTMLElement): Promise<ICodeEditor> => {
-    const codeEditor: ICodeEditor = editorCollectionService.createCodeEditor(container!, {
-      ...getSimpleEditorOptions(),
-      readOnly: true,
-      lineNumbers: 'off',
-      selectOnLineNumbers: true,
-      scrollBeyondLastLine: false,
-      lineDecorationsWidth: 8,
-      dragAndDrop: false,
-      padding: { top: 8, bottom: 8 },
-      mouseWheelZoom: false,
-      scrollbar: {
-        alwaysConsumeMouseWheel: false,
-      },
-      wordWrap: 'off',
-      ariaLabel: 'Code block',
-      automaticLayout: true,
-    });
-
-    const docModel = await documentService.createModelReference(
-      new URI(`ai/chat/editor/${useUUID}`).withScheme(Schemes.walkThroughSnippet),
-    );
-
-    const model = docModel.instance.getMonacoModel();
-    model.updateOptions({ tabSize: 2 });
-    codeEditor.monacoEditor.setModel(model);
-
-    if (language && languageService.getLanguage(language)) {
-      codeEditor.monacoEditor.getModel()?.setMode(language);
-    }
-
-    return codeEditor;
-  };
-
-  React.useEffect(() => {
-    if (ref && ref.current) {
-      createEditor(ref.current!).then((codeEditor) => {
-        if (codeEditor) {
-          codeEditor.monacoEditor.setValue(input);
-          requestAnimationFrame(() => {
-            ref.current!.style.height = codeEditor.monacoEditor.getContentHeight() + 2 + 'px';
-          });
-          setCodeEditor(codeEditor);
-        }
-      });
-    }
-
-    return () => {
-      if (codeEditor) {
-        return codeEditor.dispose();
-      }
-    };
-  }, [ref.current]);
-
-  const handleCopy = useCallback(async () => {
-    setIsCoping(true);
-    await clipboardService.writeText(input);
-    setTimeout(() => {
-      setIsCoping(false);
-    }, 1000);
-  }, [clipboardService, input]);
-
-  const handleInsert = useCallback(() => {
-    const editor = monacoCommandRegistry.getActiveCodeEditor();
-    if (editor) {
-      const selection = editor.getSelection();
-      if (selection) {
-        insertSnippetWithMonacoEditor(editor, input, [selection], { undoStopBefore: false, undoStopAfter: false });
-      }
-    }
-  }, [monacoCommandRegistry]);
-
-  return (
-    <div className={styles.monaco_wrapper}>
-      <div className={styles.action_toolbar}>
-        <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
-          <EnhanceIcon className={getIcon('insert')} onClick={() => handleInsert()} />
-        </Popover>
-        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功' : '复制代码'}>
-          ·
-          <EnhanceIcon className={getIcon('copy')} onClick={() => handleCopy()} />
-        </Popover>
-      </div>
-      <div ref={ref} className={styles.editor}></div>
-    </div>
-  );
-};
 
 export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
   const ref = React.useRef<HTMLDivElement | null>(null);

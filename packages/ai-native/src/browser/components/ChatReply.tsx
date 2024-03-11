@@ -22,8 +22,8 @@ import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { IChatAgentService, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
-import { AiChatService } from '../ai-chat.service';
-import { ChatRequestModel } from '../chat-model';
+import { AiChatService } from '../chat/ai-chat.service';
+import { ChatRequestModel } from '../chat/chat-model';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 

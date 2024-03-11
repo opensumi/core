@@ -1175,6 +1175,9 @@ export const localizationBundle = {
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     // #region AI Native
+    'aiNative.chat.input.placeholder.default': '可以问我任何问题，或键入主题 "/" ',
+    'aiNative.chat.input.placeholder.code': '请输入或者粘贴代码',
+
     'aiNative.inline.chat.operate.check.title': '采纳',
     'aiNative.inline.chat.operate.discard.title': '丢弃',
     'aiNative.inline.chat.operate.afresh.title': '重新生成',

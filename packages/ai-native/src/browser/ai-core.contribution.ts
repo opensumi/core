@@ -27,9 +27,9 @@ import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences
 
 import { Ai_CHAT_CONTAINER_VIEW_ID } from '../common';
 
-import { AiChatView } from './ai-chat.view';
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
+import { AiChatView } from './chat/ai-chat.view';
 import { AiChatLayoutConfig } from './layout/layout-config';
 import { AiChatTabRenderer } from './layout/tabbar.view';
 import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';

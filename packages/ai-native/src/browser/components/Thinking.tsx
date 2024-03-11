@@ -6,10 +6,10 @@ import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/a
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import { AiResponseTips } from '../../common';
-import { AiChatService } from '../ai-chat.service';
+import { AiChatService } from '../chat/ai-chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 interface ITinkingProps {
   children?: React.ReactNode;
   status?: EMsgStreamStatus;
@@ -96,7 +96,7 @@ export const ThinkingResult = ({
 
   const renderContent = useCallback(() => {
     if (
-      (status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && typeof hasMessage
+      (status === EMsgStreamStatus.DONE || status === EMsgStreamStatus.READY) && typeof hasMessage === 'boolean'
         ? !hasMessage
         : !message?.trim()
     ) {

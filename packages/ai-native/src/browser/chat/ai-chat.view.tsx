@@ -7,17 +7,17 @@ import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/component
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { uuid } from '@opensumi/ide-core-common';
 
-import { AISerivceType, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../common';
+import { AISerivceType, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../../common';
+import { CodeBlockWrapperInput } from '../components/ChatEditor';
+import { ChatInput } from '../components/ChatInput';
+import { ChatNotify, ChatReply } from '../components/ChatReply';
+import { Markdown } from '../components/Markdown';
+import { StreamMsgWrapper } from '../components/StreamMsg';
+import { Thinking } from '../components/Thinking';
+import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
-import { CodeBlockWrapperInput } from './components/ChatEditor';
-import { ChatInput } from './components/ChatInput';
-import { ChatNotify, ChatReply } from './components/ChatReply';
-import { Markdown } from './components/Markdown';
-import { StreamMsgWrapper } from './components/StreamMsg';
-import { Thinking } from './components/Thinking';
-import { EMsgStreamStatus, MsgStreamManager } from './model/msg-stream-manager';
 
 import 'react-chat-elements/dist/main.css';
 
@@ -54,13 +54,7 @@ const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
-const defaultSampleQuestions = [
-  {
-    icon: getIcon('send-hollow'),
-    title: '生成 Java 快速排序算法',
-    message: '生成 Java 快速排序算法',
-  },
-];
+const defaultSampleQuestions = [];
 
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
@@ -100,7 +94,6 @@ const InitMsgComponent = () => {
           tooltip,
         };
       });
-      // 每次全量更新数据，避免扩展卸载的问题
       setSampleQuestions([...defaultSampleQuestions, ...lists]);
     });
     return () => disposer.dispose();
@@ -151,7 +144,6 @@ export const AiChatView = observer(() => {
   const [loading, setLoading] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
 
-  // TODO: theme 基于 command 改造成 command 形式
   const [agentId, setAgentId] = React.useState('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);

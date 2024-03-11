@@ -12,11 +12,11 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
-import { AISerivceType, IChatManagerService, IChatMessageStructure, InstructionEnum } from '../common';
+import { AISerivceType, IChatManagerService, IChatMessageStructure, InstructionEnum } from '../../common';
+import { MsgStreamManager } from '../model/msg-stream-manager';
 
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
-import { MsgStreamManager } from './model/msg-stream-manager';
 
 @Injectable()
 export class AiChatService extends Disposable {
@@ -44,9 +44,6 @@ export class AiChatService extends Disposable {
   private readonly _onChangeSessionId = new Emitter<string>();
   public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
 
-  private readonly _onInlineChatVisible = new Emitter<boolean>();
-  public readonly onInlineChatVisible: Event<boolean> = this._onInlineChatVisible.event;
-
   private _latestSessionId: string;
   public get latestSessionId(): string {
     return this._latestSessionId;
@@ -70,17 +67,7 @@ export class AiChatService extends Disposable {
     this._onChatMessageLaunch.fire(data);
   }
 
-  public launchInlineChatVisible(value: boolean) {
-    this._onInlineChatVisible.fire(value);
-  }
-
-  public cancelIndicator = new CancellationTokenSource();
   public cancelIndicatorChatView = new CancellationTokenSource();
-
-  public cancelToken() {
-    this.cancelIndicator.cancel();
-    this.cancelIndicator = new CancellationTokenSource();
-  }
 
   public cancelChatViewToken() {
     this.cancelIndicatorChatView.cancel();
@@ -142,20 +129,6 @@ export class AiChatService extends Disposable {
       return { type: AISerivceType.Run, message: prompt };
     }
 
-    // if (input.startsWith(InstructionEnum.aiSearchDocKey)) {
-    //   type = AISerivceType.SearchDoc;
-    //   message = input.split(InstructionEnum.aiSearchDocKey)[1];
-
-    //   return { type, message };
-    // }
-
-    // if (input.startsWith(InstructionEnum.aiSearchCodeKey)) {
-    //   type = AISerivceType.SearchCode;
-    //   message = input.split(InstructionEnum.aiSearchCodeKey)[1];
-
-    //   return { type, message };
-    // }
-
     return { type, message };
   }
 
@@ -167,7 +140,6 @@ export class AiChatService extends Disposable {
     return `优化以下代码：\n\`\`\`\n ${message}\`\`\``;
   }
 
-  // 解释当前文件的代码或者选中的某个代码片段的 prompt，也可以用于对选中的代码加上用户的描述进行解释
   public explainCodePrompt(message = ''): string {
     if (!this.currentEditor) {
       return '';

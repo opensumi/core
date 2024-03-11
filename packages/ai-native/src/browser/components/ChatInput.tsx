@@ -5,21 +5,15 @@ import { message } from '@opensumi/ide-components';
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { uuid } from '@opensumi/ide-core-common';
+import { localize, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 import { IChatAgentService, InstructionEnum } from '../../common';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 const MAX_WRAPPER_HEIGHT = 160;
-const SHOW_EXPEND_HEIGHT = 68;
 const INSTRUCTION_BOTTOM = 8;
-
-const PLACEHOLDER = {
-  DEFAULT: '可以问我任何问题，或键入主题 ”/“ ',
-  CODE: '请输入或者粘贴代码',
-};
 
 const VALUE_START_WITH_THEME = /^\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
 
@@ -67,14 +61,6 @@ const optionsList: IBlockProps[] = [
     name: InstructionEnum.aiSumiKey,
     text: '执行 IDE 相关命令',
   },
-  // {
-  //   name: InstructionEnum.aiSearchDocKey,
-  //   text: '搜索文档内容',
-  // },
-  // {
-  //   name: InstructionEnum.aiSearchCodeKey,
-  //   text: '搜索代码仓库中的内容',
-  // },
 ];
 
 // 指令命令激活组件
@@ -205,7 +191,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const [showExpand, setShowExpand] = useState(false);
   const [isExpand, setIsExpand] = useState(false);
   const instructionRef = useRef<HTMLDivElement | null>(null);
-  const [placeholder, setPlaceHolder] = useState(PLACEHOLDER.DEFAULT);
+  const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const currentAgentIdRef = useLatest(agentId);
@@ -234,9 +220,9 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       theme === InstructionEnum.aiExplainKey ||
       theme === InstructionEnum.aiOptimzeKey
     ) {
-      setPlaceHolder(PLACEHOLDER.CODE);
+      setPlaceHolder(localize('aiNative.chat.input.placeholder.code'));
     } else {
-      setPlaceHolder(PLACEHOLDER.DEFAULT);
+      setPlaceHolder(localize('aiNative.chat.input.placeholder.default'));
     }
   }, [props.theme]);
 

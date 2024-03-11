@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 
-import { IChatAgentViewService, IChatComponentConfig } from './types';
+import { IChatAgentViewService, IChatComponentConfig } from '../types';
 
 @Injectable()
 export class ChatAgentViewService implements IChatAgentViewService {

@@ -1406,6 +1406,9 @@ export const localizationBundle = {
     'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
 
     // #region AI Native
+    'aiNative.chat.input.placeholder.default': 'Ask Copilot or type / for commands',
+    'aiNative.chat.input.placeholder.code': 'Please enter or paste the code',
+
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.discard.title': 'Discard',
     'aiNative.inline.chat.operate.afresh.title': 'Afresh',

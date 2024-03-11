@@ -6,7 +6,7 @@ import { DisposableCollection, IAIReporter, useInjectable } from '@opensumi/ide-
 import { AiResponseTips } from '../../common';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 import { Thinking, ThinkingResult } from './Thinking';
 
 interface IStreamMsgWrapperProps {

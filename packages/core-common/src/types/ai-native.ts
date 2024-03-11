@@ -51,6 +51,7 @@ export interface IAIBackServiceOption {
   type?: string;
   model?: string;
   enableGptCache?: boolean;
+  sessionId?: string;
 }
 
 export interface IAICompletionOption {

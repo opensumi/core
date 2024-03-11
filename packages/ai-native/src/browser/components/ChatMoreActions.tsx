@@ -3,9 +3,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { IAIReporter, useInjectable } from '@opensumi/ide-core-browser';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
-import { AiChatService } from '../ai-chat.service';
+import { AiChatService } from '../chat/ai-chat.service';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 export interface IChatMoreActionsProps {
   children: React.ReactNode;

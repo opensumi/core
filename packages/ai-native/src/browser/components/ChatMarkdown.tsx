@@ -2,7 +2,7 @@ import React from 'react';
 
 import { DefaultMarkedRenderer, Markdown } from '@opensumi/ide-components/lib/markdown';
 
-import * as styles from './components.module.less';
+import styles from './components.module.less';
 
 const renderSearchLinkBlock = new (class extends DefaultMarkedRenderer {
   link(href: string | null, title: string | null, text: string): string {
