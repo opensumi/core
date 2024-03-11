@@ -500,6 +500,12 @@ div[class*='design-editor_tab_block_container__'] {
 }
 
 :global(.design_left_slot) {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-right: 1px;
+  .design-tab_bar {
+    padding-top: 10px;
+  }
   .design-tab_panel {
     border-right: none;
   }
@@ -602,7 +608,8 @@ div[class*='design-editor_tab_block_container__'] {
     border-radius: 8px;
 
     &:hover {
-      background-color: var(--activityBar-activeBorder);
+      background-color: var(--badge-background);
+      color: var(--badge-foreground);
     }
 
     :global {
@@ -649,7 +656,8 @@ div[class*='design-editor_tab_block_container__'] {
 
       :global(.active) {
         .design-icon_tab {
-          background-color: var(--activityBar-activeBorder);
+          background-color: var(--badge-background);
+          color: var(--badge-foreground);
 
           &::before {
             content: none;
