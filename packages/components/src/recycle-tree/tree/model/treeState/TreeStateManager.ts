@@ -1,6 +1,7 @@
 import { Event, Emitter, path } from '@opensumi/ide-utils';
 
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
+import { relative } from '../../path-process';
 import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 
 import { ISerializableState } from './types';
@@ -153,11 +154,14 @@ export class TreeStateManager {
         this.stashLockingItems.delete(target);
       }
     }
-    let relativePath = this.expandedDirectories.get(target);
+    const relativePath = this.expandedDirectories.get(target);
     if (isExpanded && !relativePath) {
-      relativePath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
-      this.expandedDirectories.set(target, relativePath);
-      this.onDidChangeExpansionStateEmitter.fire({ relativePath, isExpanded, isVisibleAtSurface });
+      const _relativePath = relative(this.root.path, target.path) as string;
+      if (!_relativePath) {
+        return;
+      }
+      this.expandedDirectories.set(target, _relativePath);
+      this.onDidChangeExpansionStateEmitter.fire({ relativePath: _relativePath, isExpanded, isVisibleAtSurface });
     } else if (!isExpanded && relativePath) {
       this.expandedDirectories.delete(target);
       this.onDidChangeExpansionStateEmitter.fire({ relativePath, isExpanded, isVisibleAtSurface });
@@ -167,9 +171,11 @@ export class TreeStateManager {
   private handleDidChangePath = (target: CompositeTreeNode) => {
     if (this.expandedDirectories.has(target)) {
       const prevPath = this.expandedDirectories.get(target) as string;
-      const newPath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
-      this.expandedDirectories.set(target, newPath);
-      this.onDidChangeRelativePathEmitter.fire({ prevPath, newPath });
+      const newPath = relative(this.root.path, target.path) as string;
+      if (newPath) {
+        this.expandedDirectories.set(target, newPath);
+        this.onDidChangeRelativePathEmitter.fire({ prevPath, newPath });
+      }
     }
   };
 
