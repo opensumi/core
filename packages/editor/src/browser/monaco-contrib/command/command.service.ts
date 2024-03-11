@@ -188,7 +188,7 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
    * @param monacoHandler 要处理的 monaco 命令函数
    * @param args 要透传的参数
    */
-  protected execute(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): any {
+  protected async execute(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): any {
     const editor = this.getActiveCodeEditor();
     if (editor) {
       // editor.focus();
@@ -409,7 +409,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   protected newActionHandler(id: string): MonacoEditorCommandHandler {
     return {
-      execute: (editor) => {
+      execute: async (editor) => {
         const action = editor.getAction(id);
         if (action && action.isSupported()) {
           return this.runAction(id, editor);
@@ -423,11 +423,11 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    * @param id 要执行的 action
    * @param editor 执行 action 的 editor，默认为当前 editor
    */
-  protected runAction(id: string, editor: ICodeEditor): Promise<void> {
+  protected async runAction(id: string, editor: ICodeEditor): Promise<void> {
     if (editor) {
       const action = editor.getAction(id);
       if (action) {
-        return action.run();
+        return await action.run();
       }
     }
 
