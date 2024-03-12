@@ -188,7 +188,7 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
    * @param monacoHandler 要处理的 monaco 命令函数
    * @param args 要透传的参数
    */
-  protected async execute(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): any {
+  protected async execute(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): Promise<any> {
     const editor = this.getActiveCodeEditor();
     if (editor) {
       // editor.focus();
