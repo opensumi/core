@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser';
+import { IStatusBarService, StatusBarAlignment, uuid } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
 import {
   AiBackSerivcePath,
@@ -8,9 +8,10 @@ import {
   IAiReportCompletionOption,
 } from '@opensumi/ide-core-common/lib/ai-native';
 import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IProvideInlineCompletionsSignature } from '../../types';
-import { CompletionRequestBean } from '../model/competionModel';
+import { CompletionRequestBean, InlineCompletionItem } from '../model/competionModel';
 
 @Injectable()
 export class AiCompletionsService extends Disposable {
@@ -47,15 +48,22 @@ export class AiCompletionsService extends Disposable {
     this.lastCompletionUseTime = Date.now() - preTime;
   }
 
+  private _completionResult: InlineCompletionItem[]| undefined;
+  public getCompletionResult() {
+    return this._completionResult;
+  }
+
   public async complete(data: CompletionRequestBean, model, position, token): Promise<CompletionResultModel | null> {
     const doCompletion = async (data: CompletionRequestBean) => {
       try {
+        this._completionResult = undefined;
         this.isDefaultCompletionModel = true;
         const now = Date.now();
         const result = (await this.aiBackService.requestCompletion(
           data as any,
           this.cancelIndicator.token,
         )) as unknown as CompletionResultModel;
+        this._completionResult = this.generateResultAndRegist(result, model, position);
         this.recordCompletionUseTime(now);
         return result;
       } catch (error) {
@@ -132,5 +140,63 @@ export class AiCompletionsService extends Disposable {
 
   public hideStatusBarItem() {
     this.statusBarService.removeElement(AiCompletionsService.STATUS_ID);
+  }
+
+  generateResultAndRegist(
+    rs: CompletionResultModel,
+    model: any,
+    position: monaco.Position
+  ): Array<InlineCompletionItem> {
+    const result = new Array<InlineCompletionItem>();
+    for (const codeModel of rs.codeModelList) {
+      const contentText = codeModel.content;
+
+      let str = contentText;
+      while (true) {
+        if (!str.endsWith('\n')) {
+          break;
+        }
+        str = str.slice(0, -1);
+      }
+
+      const insertText = str;
+
+      const textAfterCursor = model.getValueInRange({
+        startLineNumber: position.lineNumber,
+        startColumn: position.column,
+        endLineNumber: position.lineNumber,
+        endColumn: model.getLineMaxColumn(position.lineNumber),
+      });
+
+      // 临时修复方案，用于解决补全后面多了几个括号的问题
+      const removeChars = (a: string, b: string) => {
+        let result = '';
+        for (const char of b) {
+          if (char === ' ' || !a.includes(char)) {
+            result += char;
+          }
+        }
+        return result;
+      };
+
+      const filteredString = removeChars(insertText, textAfterCursor);
+
+      result.push({
+        insertText: insertText + filteredString,
+        range: new monaco.Range(
+          position.lineNumber,
+          position.column,
+          position.lineNumber,
+          position.column + insertText.length + textAfterCursor.length,
+        ),
+        sessionId: rs.sessionId,
+        command: {
+          id: 'ai.inline.completion.reporter',
+          title: '',
+          arguments: [uuid(), rs.sessionId, true],
+        },
+      });
+    }
+    return result;
   }
 }

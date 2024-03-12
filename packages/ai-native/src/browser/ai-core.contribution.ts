@@ -19,6 +19,7 @@ import {
   SlotRendererRegistry,
   URI,
   getIcon,
+  IAiInlineCompletionService,
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_PANEL_TOGGLE_VISIBLE,
@@ -127,7 +128,7 @@ export class AiNativeBrowserContribution
   @Autowired(AiInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AiInlineCompletionsProvider;
 
-  @Autowired(AiCompletionsService)
+  @Autowired(IAiInlineCompletionService)
   private readonly aiCompletionsService: AiCompletionsService;
 
   @Autowired(AiNativeConfigService)

@@ -178,6 +178,9 @@ export function createLanguagesApiFactory(
       // @ts-ignore
       return extHostLanguages.getCurrentInlineCompletions() as any[];
     },
+    getNativeInlineCompletions() {
+      return extHostLanguages.getNativeInlineCompletions() as any[];
+    },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
       return extHostLanguages.registerDefinitionProvider(selector, provider, extension);
     },
@@ -606,6 +609,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
 	getCurrentInlineCompletions() {
 		return this._currentComplection;
 	}
+
+  getNativeInlineCompletions() {
+    return this.proxy.$getNativeInlineCompletions();
+  }
 
 	async $provideInlineCompletions(
     handle: number,

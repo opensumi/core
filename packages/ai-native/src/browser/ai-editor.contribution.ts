@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { AiNativeConfigService, IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, IAiInlineChatService, PreferenceService, IAiInlineCompletionService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   CancellationToken,
@@ -74,7 +74,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(AiNativeCoreContribution)
   private readonly contributions: ContributionProvider<AiNativeCoreContribution>;
 
-  @Autowired(AiCompletionsService)
+  @Autowired(IAiInlineCompletionService)
   private aiCompletionsService: AiCompletionsService;
 
   private latestMiddlewareCollector: IAiMiddleware;

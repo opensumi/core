@@ -68,6 +68,7 @@ declare module 'vscode' {
      */
     export function registerInlineCompletionItemProvider(selector: DocumentSelector, provider: InlineCompletionItemProvider): Disposable;
     export function getCurrentInlineCompletions(): any[] | undefined;
+    export function getNativeInlineCompletions(): any[] | undefined;
     /**
      * Register a code lens provider.
      *

@@ -177,6 +177,7 @@ export interface IMainThreadLanguages {
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
   $setLanguageStatus(handle: number, status: ILanguageStatus): void;
   $removeLanguageStatus(handle: number): void;
+  $getNativeInlineCompletions(): any;
 }
 
 export interface IExtHostLanguages {
