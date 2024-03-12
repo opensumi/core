@@ -129,7 +129,7 @@ export class TabbarService extends WithEventBus {
   private readonly onSizeChangeEmitter = new Emitter<{ size: number }>();
   readonly onSizeChange: Event<{ size: number }> = this.onSizeChangeEmitter.event;
 
-  public barSize: number;
+  protected barSize: number;
   protected panelSize: number;
   private menuId = `tabbar/${this.location}`;
   private moreMenuId = `tabbar/${this.location}/more`;
@@ -234,6 +234,10 @@ export class TabbarService extends WithEventBus {
     if (this.barSize) {
       this.viewReady.resolve();
     }
+  }
+
+  public getBarSize() {
+    return this.barSize;
   }
 
   public updateBarSize(value: number) {

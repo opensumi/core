@@ -102,7 +102,7 @@ export class TabBarHandler {
     this.layoutService.toggleSlot(
       this.tabbarService.location,
       true,
-      size + this.tabbarService.barSize /* border宽(高)度*/,
+      size + this.tabbarService.getBarSize() /* border宽(高)度*/,
     );
   }
   /**
