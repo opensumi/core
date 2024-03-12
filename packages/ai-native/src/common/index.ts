@@ -5,6 +5,8 @@ export const IAINativeService = Symbol('IAINativeService');
 export const AIInlineChatContentWidget = 'AI_Inline_Chat_Content_Widget';
 export const AI_CHAT_CONTAINER_VIEW_ID = 'AI_Chat';
 
+export const AI_SLASH = '/';
+
 export interface IChatMessageStructure {
   /**
    * 用于 chat 面板展示

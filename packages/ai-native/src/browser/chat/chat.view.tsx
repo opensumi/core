@@ -149,6 +149,7 @@ export const AIChatView = observer(() => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
@@ -176,6 +177,8 @@ export const AIChatView = observer(() => {
   const [theme, setTheme] = React.useState<string | null>(null);
 
   const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
+
+  const shortcutCommands = React.useMemo(() => chatFeatureRegistry.getAllShortcutSlashCommand(), [chatFeatureRegistry]);
 
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
@@ -326,7 +329,6 @@ export const AIChatView = observer(() => {
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, prompt, reportType, agentId, command } = value;
-      const preMessagelist = messageListData;
 
       if (agentId) {
         return handleAgentReply({ message, agentId, command });
@@ -445,21 +447,13 @@ export const AIChatView = observer(() => {
           <div className={styles.chat_input_wrap}>
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
-                <Popover id={'ai-chat-header-explain'} title='解释代码'>
-                  <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiExplainKey)}>
-                    Explain
-                  </div>
-                </Popover>
-                <Popover id={'ai-chat-header-test'} title='生成单测'>
-                  <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiTestKey)}>
-                    Test
-                  </div>
-                </Popover>
-                <Popover id={'ai-chat-header-optimize'} title='优化代码'>
-                  <div className={styles.tag} onClick={() => handleThemeClick(InstructionEnum.aiOptimzeKey)}>
-                    Optimize
-                  </div>
-                </Popover>
+                {shortcutCommands.map((command) => (
+                  <Popover id={`ai-chat-shortcut-${command.name}`} title={command.tooltip || command.name}>
+                    <div className={styles.tag} onClick={() => handleThemeClick(command.nameWithSlash)}>
+                      {command.name}
+                    </div>
+                  </Popover>
+                ))}
               </div>
               <div className={styles.header_operate_right}></div>
             </div>

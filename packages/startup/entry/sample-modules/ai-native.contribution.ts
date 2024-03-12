@@ -6,10 +6,11 @@ import {
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
   ReplyResponse,
+  TChatSlashCommandSend,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, IAIBackService } from '@opensumi/ide-core-common';
-import { IEditor } from '@opensumi/ide-editor';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 enum EInlineOperation {
@@ -22,8 +23,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
 
-  private getCrossCode(editor: IEditor): string {
-    const { monacoEditor } = editor;
+  private getCrossCode(monacoEditor: ICodeEditor): string {
     const model = monacoEditor.getModel();
     if (!model) {
       return '';
@@ -51,7 +51,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         renderType: 'button',
       },
       {
-        providerDiffPreviewStrategy: async (editor: IEditor, token) => {
+        providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
@@ -77,7 +77,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         renderType: 'dropdown',
       },
       {
-        providerDiffPreviewStrategy: async (editor: IEditor, token) => {
+        providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Optimize the code:\n\`\`\`\n ${crossCode}\`\`\``;
 
@@ -108,6 +108,28 @@ export class AiNativeContribution implements AINativeCoreContribution {
           message: '生成 Java 快速排序算法',
         },
       ],
+    );
+
+    registry.registerSlashCommand(
+      {
+        name: 'Explain',
+        description: '解释代码',
+        isShortcut: true,
+        tooltip: '解释代码',
+      },
+      {
+        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {},
+      },
+    );
+
+    registry.registerSlashCommand(
+      {
+        name: 'Test',
+        description: '生成单测',
+      },
+      {
+        execute: () => {},
+      },
     );
   }
 }

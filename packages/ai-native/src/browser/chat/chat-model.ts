@@ -3,6 +3,7 @@ import { Disposable, Emitter, ILogger, uuid } from '@opensumi/ide-core-common';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
+  AI_SLASH,
   IChatAsyncContent,
   IChatComponent,
   IChatFollowup,
@@ -16,6 +17,7 @@ import {
   IChatWelcomeMessageContent,
   ISampleQuestions,
 } from '../../common';
+import { IChatSlashCommandItem } from '../types';
 
 export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
 
@@ -272,5 +274,40 @@ export class ChatWelcomeMessageModel extends Disposable {
     super();
 
     this._id = 'welcome_' + ChatWelcomeMessageModel.nextId++;
+  }
+}
+
+@Injectable({ multiple: true })
+export class ChatSlashCommandItemModel extends Disposable implements IChatSlashCommandItem {
+  constructor(
+    private readonly chatCommand: IChatSlashCommandItem,
+    public readonly command?: string,
+    public readonly agentId?: string,
+  ) {
+    super();
+  }
+
+  get name() {
+    return this.chatCommand.name;
+  }
+
+  get isShortcut() {
+    return !!this.chatCommand.isShortcut;
+  }
+
+  get icon() {
+    return this.chatCommand.icon;
+  }
+
+  get description() {
+    return this.chatCommand.description;
+  }
+
+  get tooltip() {
+    return this.chatCommand.tooltip;
+  }
+
+  get nameWithSlash() {
+    return this.name.startsWith(`${AI_SLASH} `) ? this.name : `${AI_SLASH} ${this.name} `;
   }
 }

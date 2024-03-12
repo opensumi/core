@@ -1,14 +1,16 @@
 import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
-import { message } from '@opensumi/ide-components';
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { localize, uuid } from '@opensumi/ide-core-common';
+import { localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { IChatAgentService, InstructionEnum } from '../../common';
+import { AI_SLASH, IChatAgentService, InstructionEnum } from '../../common';
+import { ChatSlashCommandItemModel } from '../chat/chat-model';
+import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
+import { IChatFeatureRegistry, IChatSlashCommandItem } from '../types';
 
 import styles from './components.module.less';
 
@@ -17,82 +19,71 @@ const INSTRUCTION_BOTTOM = 8;
 
 const VALUE_START_WITH_THEME = /^\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
 
-interface IBlockProps {
-  icon?: string;
-  name: string;
-  text?: string;
+interface IBlockProps extends IChatSlashCommandItem {
   command?: string;
   agentId?: string;
-  onClick?: () => void;
 }
 
 const Block = ({
   icon,
   name,
-  onClick,
-  text,
+  description,
   agentId,
   command,
   selectedAgentId,
 }: IBlockProps & { selectedAgentId?: string }) => (
-  <div className={styles.block} onClick={onClick}>
+  <div className={styles.block}>
     {icon && <EnhanceIcon className={icon} />}
     {name && <span className={styles.name}>{name}</span>}
-    {text && <span className={styles.text}>{text}</span>}
+    {description && <span className={styles.text}>{description}</span>}
     {!selectedAgentId && agentId && command && <span className={styles.agent_label}>@{agentId}</span>}
   </div>
 );
 
-// 指令列表
-const optionsList: IBlockProps[] = [
-  {
-    name: InstructionEnum.aiExplainKey,
-    text: '解释代码',
-  },
-  {
-    name: InstructionEnum.aiTestKey,
-    text: '生成单测',
-  },
-  {
-    name: InstructionEnum.aiOptimzeKey,
-    text: '优化代码',
-  },
-  {
-    name: InstructionEnum.aiSumiKey,
-    text: '执行 IDE 相关命令',
-  },
-];
-
-// 指令命令激活组件
 const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId }) => {
-  const [commonlyUsed, setCommonlyUsed] = useState<IBlockProps[]>([]);
-  const [options, setOptions] = useState<IBlockProps[]>([]);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
 
-  useEffect(() => {
+  const agentOptions = useMemo(() => {
     if (trigger === '@') {
-      setOptions(
-        chatAgentService.getAgents().map((a) => ({
-          name: `@${a.id} `,
-          text: a.metadata.description,
-          command: '',
-          agentId: a.id,
-        })),
+      return chatAgentService.getAgents().map(
+        (a) =>
+          new ChatSlashCommandItemModel(
+            {
+              icon: '',
+              name: `@${a.id} `,
+              description: a.metadata.description,
+            },
+            '',
+            a.id,
+          ),
       );
     } else {
-      setOptions(
-        [
-          ...optionsList,
-          ...chatAgentService.getCommands().map((c) => ({
-            name: `/ ${c.name} `,
-            text: c.description,
-            command: c.name,
-            agentId: c.agentId,
-          })),
-        ].filter((item) => !selectedAgentId || item.agentId === selectedAgentId),
-      );
+      return chatAgentService
+        .getCommands()
+        .map(
+          (c) =>
+            new ChatSlashCommandItemModel(
+              {
+                icon: '',
+                name: `/ ${c.name} `,
+                description: c.description,
+              },
+              c.name,
+              c.agentId,
+            ),
+        )
+        .filter((item) => !selectedAgentId || item.agentId === selectedAgentId);
     }
-  }, []);
+  }, [trigger, chatAgentService]);
+
+  const options = useMemo(() => {
+    if (trigger === '@') {
+      return [];
+    }
+
+    return chatFeatureRegistry.getAllSlashCommand();
+  }, [trigger, chatFeatureRegistry]);
 
   const handleClick = useCallback(
     (name: string | undefined, agentId?: string, command?: string) => {
@@ -107,12 +98,12 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
     <div className={styles.instruction_options_container} style={{ bottom: bottom + 'px' }}>
       <div className={styles.options}>
         <ul>
-          {options.map(({ icon, name, text, agentId, command }) => (
-            <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(name, agentId, command)}>
+          {options.concat(agentOptions).map(({ icon, name, nameWithSlash, description, agentId, command }) => (
+            <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(nameWithSlash, agentId, command)}>
               <Block
                 icon={icon}
-                name={name}
-                text={text}
+                name={nameWithSlash}
+                description={description}
                 agentId={agentId}
                 command={command}
                 selectedAgentId={selectedAgentId}
@@ -121,14 +112,6 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
           ))}
         </ul>
       </div>
-      {commonlyUsed.length > 0 && (
-        <div className={styles.commonly_used}>
-          <span>常用指令：</span>
-          {commonlyUsed.map(({ icon, name }, i) => (
-            <Block key={i} icon={icon} name={name} />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -194,12 +177,14 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
+
   const currentAgentIdRef = useLatest(agentId);
 
   useImperativeHandle(ref, () => ({
     setInputValue: (v: string) => {
       setValue(v);
-      setTimeout(() => {
+      runWhenIdle(() => {
         inputRef.current?.focus();
       }, 120);
     },
@@ -238,7 +223,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
 
   useEffect(() => {
     if (enableOptions) {
-      if ((value === '/' || (value === '@' && chatAgentService.getAgents().length > 0)) && !isExpand) {
+      if ((value === AI_SLASH || (value === '@' && chatAgentService.getAgents().length > 0)) && !isExpand) {
         setIsShowOptions(true);
       } else {
         setIsShowOptions(false);
@@ -274,7 +259,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       }
     }
 
-    setTimeout(() => {
+    runWhenIdle(() => {
       // 自适应高度
       if (inputRef && inputRef.current && value && !isExpand) {
         inputRef.current.style.height = 0 + 'px';
@@ -307,7 +292,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
   }, []);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     if (disabled) {
       return;
     }
@@ -322,43 +307,34 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       return;
     }
 
-    const editor = monacoCommandRegistry.getActiveCodeEditor();
-    let selectCode;
-    if (editor) {
-      const selection = editor.getSelection();
-      if (selection) {
-        selectCode = editor.getModel()?.getValueInRange(selection);
-      }
-    }
-
-    let preText = '';
     if (theme) {
-      preText = theme;
-    }
+      const findCommand = chatFeatureRegistry.getAllSlashCommand().find((item) => item.nameWithSlash === theme);
 
-    if (value.trim() && onSend) {
+      if (findCommand) {
+        const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandler(findCommand.name);
+
+        if (chatCommandHandler && chatCommandHandler.execute) {
+          const editor = monacoCommandRegistry.getActiveCodeEditor();
+          await chatCommandHandler.execute(
+            value,
+            (newValue: string) => {
+              setValue('');
+              onSend(theme + newValue);
+              setTheme('');
+            },
+            editor,
+          );
+          return;
+        }
+      }
+    } else {
       setValue('');
-      onSend(preText + value);
+      onSend(value);
       setTheme('');
-      return;
     }
-    if (!value.trim() && theme === InstructionEnum.aiSumiKey) {
-      message.info('很抱歉，您并未输入任何命令，可以试试这么问：/IDE 设置主题');
-      return;
-    }
+  }, [onSend, value, agentId, command, chatFeatureRegistry]);
 
-    // 代码区选中状况
-    if (theme && selectCode && !value.trim()) {
-      onSend(preText + ` \`\`\`\n ${selectCode} \n\`\`\``);
-      setTheme('');
-      return;
-    }
-
-    // 报错提示
-    if (theme && !value.trim() && !selectCode) {
-      message.info('很抱歉，您并未选中或输入任何代码，请先选中或输入代码');
-    }
-  }, [onSend, value, agentId, command]);
+  const optionsList = useMemo(() => chatFeatureRegistry.getAllSlashCommand(), [chatFeatureRegistry]);
 
   const acquireOptionsCheck = useCallback(
     (themeValue: string, agentId?: string, command?: string) => {
@@ -370,10 +346,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         setCommand(command || '');
         if (inputRef?.current) {
           const inputValue = inputRef.current.value;
-          if (inputValue === '@' || (command && inputValue === '/')) {
+          if (inputValue === '@' || (command && inputValue === AI_SLASH)) {
             setValue('');
           }
-          setTimeout(() => inputRef.current?.focus());
+          runWhenIdle(() => inputRef.current?.focus());
         }
       } else if (themeValue) {
         setIsShowOptions(false);
@@ -385,7 +361,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         const match = themeValue.match(regex);
         if (match) {
           const keyword = match[0];
-          if (optionsList.find(({ name }) => name === keyword)) {
+          if (optionsList.find(({ nameWithSlash }) => nameWithSlash === keyword)) {
             setTheme(keyword);
           }
         } else {
@@ -395,7 +371,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         if (inputRef && inputRef.current) {
           inputRef.current.focus();
           const inputValue = inputRef.current.value;
-          if (inputValue.length === 1 && inputValue.startsWith('/')) {
+          if (inputValue.length === 1 && inputValue.startsWith(AI_SLASH)) {
             setValue('');
           }
         }
@@ -445,7 +421,6 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     setIsExpand(!expand);
     if (!expand) {
       const ele = document.querySelector('#ai_chat_left_container');
-      // ai_chat_left_container - (padding + header_operate + border ) - theme_container - padding
       const maxHeight = ele!.clientHeight - 68 - (theme ? 32 : 0) - 16;
       setWrapperHeight(maxHeight);
     } else {
@@ -480,10 +455,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         placeholder={placeholder}
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         style={{
-          // 2px 额外宽度 否则会有滚动条
           height: wrapperHeight - 12 + 2 + 'px',
-          // maxHeight: wrapperHeight-16 + 'px',
-          // minHeight: wrapperHeight-16 + 'px',
         }}
         value={value}
         type={'textarea'}
