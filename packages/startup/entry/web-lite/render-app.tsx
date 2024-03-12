@@ -6,7 +6,7 @@ import { Injector } from '@opensumi/di';
 import { DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME, IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
-import { IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
+import { IDiskFileProvider } from '@opensumi/ide-file-service';
 
 import {
   AbstractHttpFileService,

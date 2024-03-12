@@ -1,28 +1,27 @@
 import { TreeNodeType } from '@opensumi/ide-components';
 import {
-  URI,
   Disposable,
-  IContextKeyService,
-  StorageProvider,
-  IApplicationService,
   Emitter,
+  IApplicationService,
+  IContextKeyService,
   OS,
+  StorageProvider,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IFileTreeService } from '@opensumi/ide-file-tree-next';
-import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
+import { IFileTreeAPI, IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
 
-import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import styles from '../../src/browser/file-tree-node.modules.less';
 import { Directory, File } from '../../src/common/file-tree-node.define';
@@ -143,7 +142,7 @@ describe('FileTreeModelService should be work', () => {
         useValue: mockFileTreeService,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useValue: mockFileService,
       },
       {

@@ -1,19 +1,19 @@
 import { Injector } from '@opensumi/di';
-import { URI, IContextKeyService, Disposable } from '@opensumi/ide-core-browser';
-import { ICtxMenuRenderer, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable, IContextKeyService, URI } from '@opensumi/ide-core-browser';
+import { AbstractMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IDebugModel, IDebugSessionManager } from '@opensumi/ide-debug';
 import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/editor-document-model-service';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
+import { DebugBreakpointWidget, DebugHoverWidget, DebugModel } from '../../../src/browser/editor';
 
 describe('Debug Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -143,7 +143,7 @@ describe('Debug Model', () => {
     });
 
     childInjector.overrideProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: FileServiceClient,
     });
 

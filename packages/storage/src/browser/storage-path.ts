@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, ILogger, StoragePaths, URI, isWindows, path } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IStoragePathServer } from '../common';
 
@@ -24,8 +24,8 @@ export class StoragePathServer implements IStoragePathServer {
 
   private _userHome: Promise<string>;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileSystem: IFileServiceClientService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;

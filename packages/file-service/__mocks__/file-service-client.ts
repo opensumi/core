@@ -1,24 +1,26 @@
 import { Injectable } from '@opensumi/di';
-import { URI, Emitter, Event, FileUri, IDisposable, BinaryBuffer } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Emitter, Event, FileUri, IDisposable, URI } from '@opensumi/ide-core-common';
 
-import { IFileServiceClient } from '../src/common/file-service-client';
+import { FileSetContentOptions } from '@opensumi/ide-core-common';
 import {
-  FileSetContentOptions,
-  FileStat,
-  FileMoveOptions,
-  FileCreateOptions,
-  FileCopyOptions,
-  FileDeleteOptions,
-  FileSystemProvider,
-  TextDocumentContentChangeEvent,
-  FileChangeEvent,
   DidFilesChangedParams,
   FileChange,
+  FileChangeEvent,
+  IFileServiceWatcher,
+} from '@opensumi/ide-core-common/lib/types/file-watch';
+import { IFileServiceClientService } from '../src/common/file-service-client';
+import {
+  FileCopyOptions,
+  FileCreateOptions,
+  FileDeleteOptions,
+  FileMoveOptions,
+  FileStat,
+  FileSystemProvider,
+  TextDocumentContentChangeEvent,
 } from '../src/common/files';
-import { IFileServiceWatcher } from '../src/common/watcher';
 
 @Injectable()
-export class MockFileServiceClient implements IFileServiceClient {
+export class MockFileServiceClient implements IFileServiceClientService {
   listCapabilities() {
     return [];
   }

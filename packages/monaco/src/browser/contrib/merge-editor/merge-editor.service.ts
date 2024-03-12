@@ -9,8 +9,7 @@ import {
   localize,
 } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { URI } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { BaseFileSystemService, FileServiceClientToken, URI } from '@opensumi/ide-core-common';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import { ICodeEditor } from '../../monaco-api/editor';
@@ -38,8 +37,8 @@ export class MergeEditorService extends Disposable {
   @Autowired(MappingManagerService)
   private readonly mappingManagerService: MappingManagerService;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: BaseFileSystemService;
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;

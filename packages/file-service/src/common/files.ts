@@ -20,6 +20,7 @@ import {
   DidFilesChangedParams,
   Event,
   FileChangeEvent,
+  FileSetContentOptions,
   IDisposable,
   IFileSystemWatcherServer,
   URI,
@@ -33,13 +34,11 @@ import { FileStat, FileSystemProvider } from '@opensumi/ide-core-common/lib/type
 
 import type { Range } from 'vscode-languageserver-types';
 export {
-  FileSystemProviderCapabilities,
-  FileSystemProvider,
-  FileType,
   FileStat,
+  FileSystemProvider,
+  FileSystemProviderCapabilities,
+  FileType,
 } from '@opensumi/ide-core-common/lib/types/file';
-
-export * from '@opensumi/ide-core-common/lib/types/file-watch';
 
 export const IDiskFileProvider = Symbol('IDiskFileProvider');
 
@@ -229,10 +228,6 @@ export interface FileMoveOptions {
 
 export interface FileDeleteOptions {
   moveToTrash?: boolean;
-}
-
-export interface FileSetContentOptions {
-  encoding?: string;
 }
 
 export interface FileCreateOptions {

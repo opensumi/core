@@ -1,16 +1,18 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { BinaryBuffer, Disposable, Emitter, Event, IDisposable, URI, Uri, dispose } from '@opensumi/ide-core-browser';
+import { FileChange } from '@opensumi/ide-core-common';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
-import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
+import { FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
 import {
   FileOperationError,
   FileOperationResult,
+  FileServiceClientToken,
   FileSystemProvider,
   FileType,
   IBrowserFileSystemRegistry,
-  IFileServiceClient,
-} from '@opensumi/ide-file-service/lib/common';
+  IFileServiceClientService,
+} from '@opensumi/ide-file-service';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { fromFileStat, toFileStat } from '../../../common/vscode/converter';
@@ -32,8 +34,8 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   private readonly _proxy: IExtHostFileSystemShape;
   private readonly _fileProvider = new Map<number, RemoteFileSystemProvider>();
 
-  @Autowired(IFileServiceClient)
-  private readonly _fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly _fileService: IFileServiceClientService;
 
   @Autowired(IBrowserFileSystemRegistry)
   private schemeRegistry: IBrowserFileSystemRegistry;
@@ -222,7 +224,7 @@ class RemoteFileSystemProvider implements FileSystemProvider {
   }
 
   constructor(
-    fileService: IFileServiceClient,
+    fileService: IFileServiceClientService,
     scheme: string,
     capabilities: FileSystemProviderCapabilities,
     private readonly _handle: number,

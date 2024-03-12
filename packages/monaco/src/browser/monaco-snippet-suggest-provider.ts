@@ -2,8 +2,10 @@ import * as jsoncparser from 'jsonc-parser';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  BaseFileSystemService,
   Disposable,
   DisposableCollection,
+  FileServiceClientToken,
   IDisposable,
   ILogger,
   IRange,
@@ -12,7 +14,6 @@ import {
   localize,
   path,
 } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -23,8 +24,8 @@ const { Path } = path;
 
 @Injectable()
 export class MonacoSnippetSuggestProvider implements monaco.languages.CompletionItemProvider {
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: BaseFileSystemService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -186,6 +187,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
 
     return toDispose;
   }
+
   /**
    * should NOT throw to prevent load erros on suggest
    */

@@ -7,7 +7,10 @@ import {
   EDITOR_COMMANDS,
   Emitter,
   FILE_COMMANDS,
+  FileChange,
+  FileChangeType,
   IContextKeyService,
+  IFileServiceWatcher,
   ILogger,
   PreferenceService,
   URI,
@@ -16,13 +19,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import {
-  FileChange,
-  FileChangeType,
-  FileStat,
-  IFileServiceClient,
-  IFileServiceWatcher,
-} from '@opensumi/ide-file-service/lib/common';
+import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IIconService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -75,8 +72,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(FileTreeDecorationService)
   public readonly decorationService: FileTreeDecorationService;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(IIconService)
   public readonly iconService: IIconService;

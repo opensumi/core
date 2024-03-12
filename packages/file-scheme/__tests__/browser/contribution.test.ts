@@ -8,7 +8,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { FileSystemEditorComponentContribution } from '@opensumi/ide-file-scheme/lib/browser/file-scheme.contribution';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
@@ -40,7 +40,7 @@ describe('contribution test', () => {
     injector.addProviders(FileSystemEditorComponentContribution);
     injector.addProviders(
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useValue: mockFileService,
       },
       {

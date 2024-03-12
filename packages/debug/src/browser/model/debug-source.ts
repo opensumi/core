@@ -18,7 +18,7 @@
 import { IRange, URI, Uri } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileStat, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { IDebugModelManager } from '../../common';
@@ -36,7 +36,7 @@ export class DebugSource extends DebugSourceData {
     protected readonly labelProvider: LabelService,
     protected readonly modelManager: IDebugModelManager,
     protected readonly workbenchEditorService: WorkbenchEditorService,
-    protected readonly fileSystem: IFileServiceClient,
+    protected readonly fileSystem: IFileServiceClientService,
   ) {
     super();
   }

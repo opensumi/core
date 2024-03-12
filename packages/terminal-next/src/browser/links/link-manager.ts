@@ -17,7 +17,7 @@ import {
   path,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { ITerminalClient, ITerminalExternalLinkProvider, ITerminalHoverManagerService } from '../../common';
 import { XTermCore } from '../../common/xterm-private';
@@ -90,11 +90,8 @@ export class TerminalLinkManager extends Disposable {
   @Autowired(IOpenerService)
   private readonly _openerService: IOpenerService;
 
-  @Autowired(IFileServiceClient)
-  private readonly _fileService: IFileServiceClient;
-
-  @Autowired(IFileServiceClient)
-  private readonly _fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly _fileSystem: IFileServiceClientService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -367,7 +364,7 @@ export class TerminalLinkManager extends Disposable {
 
     try {
       const uri = URI.file(linkUrl);
-      const stat = await this._fileService.getFileStat(uri.toString());
+      const stat = await this._fileSystem.getFileStat(uri.toString());
       if (stat) {
         return { uri, isDirectory: stat.isDirectory };
       }

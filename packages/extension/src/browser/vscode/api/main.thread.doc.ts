@@ -30,7 +30,7 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { UntitledDocumentIdCounter } from '@opensumi/ide-editor/lib/browser/untitled-resource';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { ExtHostAPIIdentifier, IExtensionHostDocService, IMainThreadDocumentsShape } from '../../../common/vscode';
 
@@ -97,8 +97,8 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   @Autowired(PreferenceService)
   preference: PreferenceService;
 
-  @Autowired(IFileServiceClient)
-  fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  fileServiceClient: IFileServiceClientService;
 
   provider: ExtensionEditorDocumentProvider;
 

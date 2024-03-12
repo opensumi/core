@@ -6,7 +6,7 @@ import {
   PreferenceResolveResult,
   URI,
 } from '@opensumi/ide-core-browser';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
@@ -26,8 +26,8 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileSystem: IFileServiceClientService;
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;

@@ -6,7 +6,7 @@ import lodashSet from 'lodash/set';
 import { Autowired, Injectable } from '@opensumi/di';
 import { COMMON_COMMANDS } from '@opensumi/ide-core-browser';
 import { CommandService, Emitter, Event, FileType, IJSONSchema, URI } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { JSON_SCHEMA_TYPE } from '../../common';
 import { ILaunchService } from '../../common/debug-service';
@@ -16,8 +16,8 @@ const CONFIGURATIONS_FIELD = 'configurations';
 
 @Injectable()
 export class LaunchService implements ILaunchService {
-  @Autowired(IFileServiceClient)
-  private readonly fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileSystem: IFileServiceClientService;
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;

@@ -5,32 +5,32 @@ import temp from 'temp';
 
 import { TreeNodeEvent, TreeNodeType } from '@opensumi/ide-components';
 import {
-  IContextKeyService,
+  AppConfig,
   CorePreferences,
   EDITOR_COMMANDS,
-  PreferenceService,
   Emitter,
+  IContextKeyService,
+  ILogger,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { ILogger } from '@opensumi/ide-core-browser';
-import { AppConfig } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
-  FileUri,
-  URI,
-  Disposable,
-  StorageProvider,
-  IApplicationService,
-  OS,
   Deferred,
+  Disposable,
+  FileUri,
+  IApplicationService,
   IClipboardService,
+  OS,
+  StorageProvider,
+  URI,
 } from '@opensumi/ide-core-common';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat, FileServicePath, IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, FileServicePath, FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
-import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
+import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -40,8 +40,7 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { FileTreeNextModule } from '../../src';
-import { PasteTypes } from '../../src';
+import { FileTreeNextModule, PasteTypes } from '../../src';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import styles from '../../src/browser/file-tree-node.module.less';
 import { FileTreeService } from '../../src/browser/file-tree.service';
@@ -184,7 +183,7 @@ describe('FileTree should be work while on single workspace model', () => {
         useClass: FileDecorationsService,
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: FileServiceClient,
       },
       {
@@ -200,7 +199,7 @@ describe('FileTree should be work while on single workspace model', () => {
         useValue: mockClipboardService,
       },
     );
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    const fileServiceClient: FileServiceClient = injector.get(FileServiceClientToken);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
 
     const rawFileTreeApi = injector.get(IFileTreeAPI);

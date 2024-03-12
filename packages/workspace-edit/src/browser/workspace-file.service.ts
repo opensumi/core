@@ -12,7 +12,7 @@ import {
   Uri,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import {
   FILE_OPERATION_TIMEOUT,
@@ -62,8 +62,8 @@ export class WorkspaceFileOperationParticipant extends Disposable {
 
 @Injectable()
 export class WorkspaceFileService implements IWorkspaceFileService {
-  @Autowired(IFileServiceClient)
-  private readonly fileService: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileService: IFileServiceClientService;
 
   @Autowired(WorkspaceFileOperationParticipant)
   private readonly fileOperationParticipants: WorkspaceFileOperationParticipant;

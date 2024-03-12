@@ -7,8 +7,8 @@ import utils from 'y-websocket/bin/utils';
 import { Doc as YDoc, Map as YMap, Text as YText } from 'yjs';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { INodeLogger } from '@opensumi/ide-core-node';
-import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
+import { FileChangeType, INodeLogger } from '@opensumi/ide-core-node';
+import { IFileService } from '@opensumi/ide-file-service';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 
 import { COLLABORATION_PORT, IYWebsocketServer, ROOM_NAME } from '../common';

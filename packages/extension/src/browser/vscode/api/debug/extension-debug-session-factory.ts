@@ -8,7 +8,7 @@ import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
 import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser/debug-session-connection';
 import { DebugSessionFactory } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IFileServiceClientService } from '@opensumi/ide-file-service';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -29,7 +29,7 @@ export class ExtensionDebugSession extends DebugSession {
     protected readonly modelManager: IDebugModelManager,
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
-    protected readonly fileSystem: IFileServiceClient,
+    protected readonly fileSystem: IFileServiceClientService,
     protected readonly sessionManager: IDebugSessionManager,
     protected readonly terminalOptionsExt: any,
   ) {
@@ -76,7 +76,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly messageService: IMessageService,
     protected readonly debugPreferences: DebugPreferences,
     protected readonly connectionFactory: (sessionId: string) => Promise<ExtensionConnection>,
-    protected readonly fileSystem: IFileServiceClient,
+    protected readonly fileSystem: IFileServiceClientService,
     protected readonly terminalOptionsExt: any,
     protected readonly debugPreference: DebugPreferences,
     protected readonly outputService: OutputService,

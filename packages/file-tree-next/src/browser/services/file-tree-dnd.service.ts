@@ -12,7 +12,7 @@ import {
   encodeBase64,
 } from '@opensumi/ide-core-browser';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService } from '../../common';
@@ -39,8 +39,8 @@ export class DragAndDropService extends WithEventBus {
   @Autowired(IFileTreeService)
   private readonly fileTreeService: FileTreeService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
 

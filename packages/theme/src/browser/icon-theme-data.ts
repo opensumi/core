@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, formatLocalize, getDebugLogger, parseWithComments } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IIconTheme } from '../common';
 
@@ -12,8 +12,8 @@ export class IconThemeData implements IIconTheme {
   hidesExplorerArrows: boolean;
   styleSheetContent: string;
 
-  @Autowired(IFileServiceClient)
-  private readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  private readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired()
   private readonly staticResourceService: StaticResourceService;

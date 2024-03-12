@@ -11,8 +11,8 @@ import {
   URI,
   Uri,
 } from '@opensumi/ide-core-browser';
-import { Event, FileSystemProviderCapabilities, Schemes } from '@opensumi/ide-core-common';
-import { FileSetContentOptions, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { Event, FileSetContentOptions, FileSystemProviderCapabilities, Schemes } from '@opensumi/ide-core-common';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IUserStorageService } from '../../common';
 
@@ -64,8 +64,8 @@ export class UserStorageServiceImpl implements IUserStorageService {
   private _whenReady: Promise<void>;
   private userStorageFolder: URI;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileServiceClient: IFileServiceClientService;
   @Autowired(ILogger)
   protected readonly logger: ILogger;
   @Autowired(AppConfig)

@@ -17,8 +17,8 @@ import {
   path,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileStat } from '@opensumi/ide-file-service/lib/common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
+import { FileStat } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace.interface';
 
 import { IEditor } from '../../common';
@@ -32,8 +32,8 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   private _onDidUpdateBreadCrumb = new Emitter<URI>();
   public onDidUpdateBreadCrumb: Event<URI> = this._onDidUpdateBreadCrumb.event;
 
-  @Autowired(IFileServiceClient)
-  fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  fileServiceClient: IFileServiceClientService;
 
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;

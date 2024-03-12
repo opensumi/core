@@ -1,6 +1,6 @@
 import { FileUri } from '@opensumi/ide-core-node';
 
-import { FileChangeType } from '../../src/common';
+import { FileChangeType } from '@opensumi/ide-core-common';
 import { FileChangeCollection } from '../../src/node/file-change-collection';
 
 describe('FileChangeCollection', () => {

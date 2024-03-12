@@ -1,6 +1,7 @@
-import { URI, StorageProvider, IFileServiceClient } from '@opensumi/ide-core-browser';
-import { BreakpointManager, BREAKPOINT_KIND, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
+import { StorageProvider, URI } from '@opensumi/ide-core-browser';
+import { BREAKPOINT_KIND, BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
 
@@ -25,7 +26,7 @@ describe('Breakpoints Manager', () => {
       useValue: {},
     });
     mockInjector.overrideProviders({
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: MockFileServiceClient,
     });
     breakpointManager = mockInjector.get(BreakpointManager);

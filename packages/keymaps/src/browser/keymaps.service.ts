@@ -31,7 +31,7 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IKeymapService, KEYMAPS_FILE_NAME, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
 
@@ -60,8 +60,8 @@ export class KeymapService implements IKeymapService {
   @Autowired(KeybindingService)
   protected readonly keybindingService: KeybindingService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly filesystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly filesystem: IFileServiceClientService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;

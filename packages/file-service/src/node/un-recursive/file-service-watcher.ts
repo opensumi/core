@@ -5,8 +5,11 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
   Disposable,
   DisposableCollection,
+  FileChangeType,
+  FileSystemWatcherClient,
   FileUri,
   IDisposable,
+  IFileSystemWatcherServer,
   ILogService,
   ILogServiceManager,
   SupportLogNamespace,
@@ -14,7 +17,6 @@ import {
   path,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';
 const { join, basename, normalize } = path;
 @Injectable({ multiple: true })

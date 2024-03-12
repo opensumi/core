@@ -1,20 +1,18 @@
-import { localize, IJSONSchemaRegistry, ISchemaStore, IApplicationService } from '@opensumi/ide-core-browser';
+import { IApplicationService, IJSONSchemaRegistry, ISchemaStore, localize } from '@opensumi/ide-core-browser';
 import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
-import { CommonServerPath } from '@opensumi/ide-core-common';
-import { BinaryBuffer, Disposable, URI, OperatingSystem } from '@opensumi/ide-core-common';
+import { BinaryBuffer, CommonServerPath, Disposable, OperatingSystem, URI } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+import { EditorPreferences, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
 import { FileSchemeDocNodeServicePath } from '@opensumi/ide-file-scheme';
 import {
   FileSchemeDocumentProvider,
   VscodeSchemeDocumentProvider,
 } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -25,7 +23,7 @@ describe('file scheme tests', () => {
   const injector = createBrowserInjector([FileSchemeModule]);
   injector.overrideProviders(
     {
-      token: IFileServiceClient,
+      token: FileServiceClientToken,
       useClass: MockFileServiceClient,
     },
     {
@@ -69,7 +67,7 @@ describe('file scheme tests', () => {
   injector.mock(IDialogService, 'open', async () => dialogResult);
   injector.mock(DefaultUriLabelProvider, 'getIcon', () => '');
 
-  injector.mock(IFileServiceClient, 'onFilesChanged', () => new Disposable());
+  injector.mock(FileServiceClientToken, 'onFilesChanged', () => new Disposable());
   injector.mock(IEditorDocumentModelService, 'getModelReference', () => ({
     instance: {
       dirty: true,
@@ -131,9 +129,9 @@ describe('file scheme tests', () => {
     const saveByChanges = jest.fn();
     injector.mock(FileSchemeDocNodeServicePath, '$saveByChanges', () => saveByChanges());
 
-    injector.mock(IFileServiceClient, 'resolveContent', (uriString) => ({ content: docContentPrefix + uriString }));
+    injector.mock(FileServiceClientToken, 'resolveContent', (uriString) => ({ content: docContentPrefix + uriString }));
 
-    injector.mock(IFileServiceClient, 'readFile', (uriString) => ({
+    injector.mock(FileServiceClientToken, 'readFile', (uriString) => ({
       content: BinaryBuffer.fromString(docContentPrefix + uriString),
     }));
 

@@ -32,7 +32,7 @@ import {
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { ESectionItemKind, PreferenceSettingId, getPreferenceItemLabel, toPreferenceReadableName } from '../common';
 
@@ -67,8 +67,8 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   @Autowired(PreferenceProviderProvider)
   protected readonly providerProvider: PreferenceProviderProvider;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileServiceClient: IFileServiceClientService;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;

@@ -10,7 +10,7 @@ import {
   isEmptyObject,
   path,
 } from '@opensumi/ide-core-common';
-import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, FileStat, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import {
   DEFAULT_EXTENSION_STORAGE_DIR_NAME,
@@ -39,8 +39,8 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathsServer: IExtensionStoragePathServer;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected readonly fileSystem: IFileServiceClientService;
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;

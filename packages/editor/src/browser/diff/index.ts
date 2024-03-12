@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Domain, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 
 import { IDiffResource, IResourceProvider, ResourceDecorationChangeEvent, ResourceService } from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
@@ -19,8 +19,8 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
   @Autowired(ResourceService)
   resourceService: ResourceService;
 
-  @Autowired(IFileServiceClient)
-  protected fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected fileServiceClient: IFileServiceClientService;
 
   scheme = 'diff';
 

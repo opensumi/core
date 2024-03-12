@@ -1,5 +1,6 @@
 export * from './editor';
 export * from './message';
+export * from './file-watch';
 export * from './file';
 export * from './markers';
 export * from './extension';

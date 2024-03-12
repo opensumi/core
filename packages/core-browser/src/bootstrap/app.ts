@@ -45,8 +45,7 @@ import {
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
 import { ClientAppStateService } from '../application';
-import { ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
-import { ESupportRuntime } from '../application/runtime';
+import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '../application/runtime';
 import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';

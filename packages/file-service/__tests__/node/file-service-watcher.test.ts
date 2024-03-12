@@ -1,11 +1,10 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { isMacintosh, sleep } from '@opensumi/ide-core-common';
+import { DidFilesChangedParams, FileChangeType, isMacintosh, sleep } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
 const sleepTime = 1000;

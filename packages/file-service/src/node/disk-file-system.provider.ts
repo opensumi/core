@@ -10,9 +10,11 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@open
 import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
+  DidFilesChangedParams,
   DisposableCollection,
   Emitter,
   Event,
+  FileChangeEvent,
   FileUri,
   IDisposable,
   IFileStatOptions,
@@ -30,9 +32,7 @@ import {
 } from '@opensumi/ide-core-node';
 
 import {
-  DidFilesChangedParams,
   FileAccess,
-  FileChangeEvent,
   FileMoveOptions,
   FileStat,
   FileSystemError,

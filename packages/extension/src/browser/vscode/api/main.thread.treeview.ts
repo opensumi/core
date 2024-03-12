@@ -29,7 +29,7 @@ import {
   generateCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClientToken, IFileServiceClientService } from '@opensumi/ide-file-service';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
 import { IIconService, IThemeService, IconType } from '@opensumi/ide-theme';
 
@@ -86,8 +86,8 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
 
-  @Autowired(IFileServiceClient)
-  protected fileServiceClient: IFileServiceClient;
+  @Autowired(FileServiceClientToken)
+  protected fileServiceClient: IFileServiceClientService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;

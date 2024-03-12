@@ -1,17 +1,11 @@
-import { Event, FileChange, IRelativePattern, URI } from '@opensumi/ide-core-common';
+import { IRelativePattern, URI } from '@opensumi/ide-core-common';
 
-import { IFileServiceClient } from './file-service-client';
+import { IFileServiceClientService } from './file-service-client';
 
 export interface FileServiceWatcherOptions {
-  fileServiceClient: IFileServiceClient;
+  fileServiceClient: IFileServiceClientService;
   watchId: number;
   uri: URI;
-}
-
-export interface IFileServiceWatcher {
-  watchId: number;
-  onFilesChanged: Event<FileChange[]>;
-  dispose(): Promise<void>;
 }
 
 export interface IRecursiveWatchRequest {

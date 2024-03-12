@@ -4,10 +4,10 @@ import * as fs from 'fs-extra';
 import temp from 'temp';
 
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { FileUri, ILoggerManagerClient, StoragePaths, URI } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
-import { FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { IExtensionStoragePathServer, IExtensionStorageServer } from '@opensumi/ide-extension-storage';
+import { FileServiceClientToken, FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
@@ -34,7 +34,7 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
         useValue: {},
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: FileServiceClient,
       },
       {
@@ -44,7 +44,7 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
     );
     const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
     await hashImpl.initialize();
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    const fileServiceClient: FileServiceClient = injector.get(FileServiceClientToken);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   };
 
@@ -99,7 +99,7 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
         useValue: {},
       },
       {
-        token: IFileServiceClient,
+        token: FileServiceClientToken,
         useClass: FileServiceClient,
       },
       {
@@ -108,7 +108,7 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
       },
     );
 
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    const fileServiceClient: FileServiceClient = injector.get(FileServiceClientToken);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
     await hashImpl.initialize();

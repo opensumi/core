@@ -1,15 +1,43 @@
-import { Event, Uri } from '@opensumi/ide-utils';
+import { Injectable } from '@opensumi/di';
+import { BinaryBuffer, Event, Uri } from '@opensumi/ide-utils';
 import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import { FileChangeEvent } from './file-watch';
 
-export * from './file-watch';
+export const FileServiceClientToken = Symbol('FileServiceClientToken');
 
-/**
- * @deprecated please import it from '@opensumi/ide-file-service/lib/common'
- * `import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';`
- */
-export const IFileServiceClient = Symbol('IFileServiceClient');
+@Injectable()
+export class BaseFileSystemService {
+  /**
+   * Read the entire contents of a file.
+   * @deprecated please use readFile instead
+   * @param uri The uri of the file.
+   * @return An array of bytes or a thenable that resolves to such.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+   * @throws [`FileIsADirectory`](#FileSystemError.FileIsADirectory) when `uri` is a directory.
+   * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
+   */
+  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }> {
+    return Promise.resolve({ content: '' });
+  }
+
+  /**
+   * Read the file stat
+   * @param uri {string} The uri of the file.
+   * @param withChildren {boolean} [true]
+   */
+  getFileStat(uri: string, withChildren?: boolean): Promise<FileStat | undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  readFile(uri: string): Promise<{ content: BinaryBuffer }> {
+    return Promise.resolve({ content: BinaryBuffer.fromString('') });
+  }
+
+  setContent(file: FileStat, content: string | Uint8Array, options?: FileSetContentOptions): Promise<FileStat | void> {
+    return Promise.resolve(undefined);
+  }
+}
 
 export interface FileStat {
   /**
@@ -284,4 +312,8 @@ export const enum FileSystemProviderCapabilities {
    * Provider support to unlock files for writing.
    */
   FileWriteUnlock = 1 << 13,
+}
+
+export interface FileSetContentOptions {
+  encoding?: string;
 }
