@@ -28,6 +28,8 @@ import {
   WatchEvent,
 } from '../types';
 
+import { basename, dirname, parse } from './path-process';
+
 const { Path } = path;
 /**
  * 裁剪数组
@@ -229,9 +231,9 @@ export class TreeNode implements ITreeNode {
   // 节点绝对路径
   get path(): string {
     if (!this.parent) {
-      return new Path(`${Path.separator}${this.name}`).toString();
+      return `${Path.separator}${this.name}`;
     }
-    return new Path(this.parent.path).join(this.name).toString();
+    return `${this.parent.path}${Path.separator}${this.name}`;
   }
 
   get accessibilityInformation(): IAccessibilityInformation {
@@ -1222,24 +1224,28 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 转换节点路径
    */
   private transferItem(oldPath: string, newPath: string) {
-    const oldP = new Path(oldPath);
-    const from = oldP.dir.toString();
-    if (from !== this.path) {
+    // if oldPath is not a child of this.path, return
+    if (!oldPath.startsWith(this.path)) {
       return;
     }
-    const name = oldP.base.toString();
+    const name = basename(oldPath);
     const item = this._children?.find((c) => c.name === name);
     if (!item) {
       return;
     }
-    const newP = new Path(newPath);
-    const to = newP.dir.toString();
-    const destDir = to === from ? this : TreeNode.getTreeNodeByPath(to);
-    if (!CompositeTreeNode.is(destDir)) {
-      this.unlinkItem(item);
-      return;
+
+    const newName = basename(newPath);
+    if (newPath.startsWith(this.path)) {
+      // 如果新路径是当前节点的子节点，则直接移动
+      item.mv(this, newName);
+    } else {
+      const destDir = TreeNode.getTreeNodeByPath(dirname(newPath));
+      if (!CompositeTreeNode.is(destDir)) {
+        this.unlinkItem(item);
+        return;
+      }
     }
-    item.mv(destDir, newP.base.toString());
+
     return item;
   }
 
@@ -1455,11 +1461,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   public removeNode(path: string) {
-    const pathObject = new Path(path);
-    const dirName = pathObject.dir.toString();
-    const name = pathObject.base.toString();
-    if (dirName === this.path && !!this.children) {
-      const item = this.children.find((c) => c.name === name);
+    const { basename, dirname } = parse(path);
+    if (dirname === this.path && !!this.children) {
+      const item = this.children.find((c) => c.name === basename);
       if (item) {
         this.unlinkItem(item);
       }
@@ -1474,47 +1478,59 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    */
   private handleWatchEvent = async (event: IWatcherEvent) => {
     this.watcher.notifyWillProcessWatchEvent(this, event);
-    if (event.type === WatchEvent.Moved) {
-      const { oldPath, newPath } = event;
-      if (typeof oldPath !== 'string') {
-        throw new TypeError('Expected oldPath to be a string');
+
+    switch (event.type) {
+      case WatchEvent.Moved: {
+        const { oldPath, newPath } = event;
+        if (typeof oldPath !== 'string') {
+          throw new TypeError('Expected oldPath to be a string');
+        }
+        if (typeof newPath !== 'string') {
+          throw new TypeError('Expected newPath to be a string');
+        }
+        if (Path.isRelative(oldPath)) {
+          throw new TypeError('oldPath must be absolute');
+        }
+        if (Path.isRelative(newPath)) {
+          throw new TypeError('newPath must be absolute');
+        }
+        this.transferItem(oldPath, newPath);
+        break;
       }
-      if (typeof newPath !== 'string') {
-        throw new TypeError('Expected newPath to be a string');
+      case WatchEvent.Added: {
+        const { node } = event;
+        if (!TreeNode.is(node)) {
+          throw new TypeError('Expected node to be a TreeNode');
+        }
+        this.insertItem(node);
+        break;
       }
-      if (Path.isRelative(oldPath)) {
-        throw new TypeError('oldPath must be absolute');
+      case WatchEvent.Removed: {
+        const { path } = event;
+
+        if (path.startsWith(this.path)) {
+          const name = basename(path);
+          if (this.children) {
+            const item = this.children.find((c) => c.name === name);
+            if (item) {
+              this.unlinkItem(item);
+            }
+          }
+        }
+
+        break;
       }
-      if (Path.isRelative(newPath)) {
-        throw new TypeError('newPath must be absolute');
-      }
-      this.transferItem(oldPath, newPath);
-    } else if (event.type === WatchEvent.Added) {
-      const { node } = event;
-      if (!TreeNode.is(node)) {
-        throw new TypeError('Expected node to be a TreeNode');
-      }
-      this.insertItem(node);
-    } else if (event.type === WatchEvent.Removed) {
-      const { path } = event;
-      const pathObject = new Path(path);
-      const dirName = pathObject.dir.toString();
-      const name = pathObject.base.toString();
-      if (dirName === this.path && !!this.children) {
-        const item = this.children.find((c) => c.name === name);
-        if (item) {
-          this.unlinkItem(item);
+      default: {
+        // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
+        if (!this.isItemVisibleAtRootSurface(this)) {
+          this.isExpanded = false;
+          this._children = null;
+        } else {
+          await this.refresh();
         }
       }
-    } else {
-      // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
-      if (!this.isItemVisibleAtRootSurface(this)) {
-        this.isExpanded = false;
-        this._children = null;
-      } else {
-        await this.refresh();
-      }
     }
+
     this.watcher.notifyDidProcessWatchEvent(this, event);
   };
 
@@ -1564,40 +1580,21 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   private getRefreshNode() {
-    let paths = Array.from(this.toRefreshPathQueue);
+    const paths = Array.from(this.toRefreshPathQueue);
     this.toRefreshPathQueue.clear();
     if (!paths.length) {
       return this.root;
     }
-    // 根据路径层级深度进行排序
-    paths = paths.sort((a, b) => {
-      const depthA = Path.pathDepth(a);
-      const depthB = Path.pathDepth(b);
-      return depthA - depthB;
-    });
-    if (paths.length === 1 || Path.pathDepth(paths[0]) === 1) {
-      // 说明刷新队列中包含根节点，直接返回根节点进行刷新
-      return TreeNode.getTreeNodeByPath(paths[0]);
-    }
-    const sortedPaths = paths.map((p) => new Path(p));
-    let rootPath = sortedPaths[0];
-    for (let i = 1, len = sortedPaths.length; i < len; i++) {
-      if (rootPath.isEqualOrParent(sortedPaths[i])) {
-        continue;
-      } else {
-        while (!rootPath.isRoot) {
-          rootPath = rootPath.dir;
-          if (!rootPath || rootPath.isEqualOrParent(sortedPaths[i])) {
-            break;
-          }
-        }
-      }
-    }
-    if (rootPath) {
-      return TreeNode.getTreeNodeByPath(rootPath.toString());
-    }
 
-    return this.root;
+    // 根据路径层级深度进行排序
+    const pathSorted = paths
+      .map((v) => ({
+        depth: Path.pathDepth(v),
+        path: v,
+      }))
+      .sort((a, b) => a.depth - b.depth);
+
+    return TreeNode.getTreeNodeByPath(pathSorted[0].path) || this.root;
   }
 
   private isItemVisibleAtRootSurface(node: TreeNode) {
