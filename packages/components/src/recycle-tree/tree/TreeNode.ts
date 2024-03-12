@@ -1667,8 +1667,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const token = loadPathCancelToken.token;
 
     const flattenedBranchChilds: CompositeTreeNode[] = [];
-    const { splitPath, isRelative } = Path;
-    const pathFlag = isRelative(path) ? splitPath(path) : this.transformToRelativePath(path);
+    const pathFlag = Path.isRelative(path) ? Path.splitPath(path) : this.transformToRelativePath(path);
     if (pathFlag.length === 0) {
       TreeNode.setGlobalTreeState(this.path, {
         isLoadingPath: false,
@@ -1713,7 +1712,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       // 可能展开后路径发生了变化, 需要重新处理一下当前加载路径
       if (!item && preItem) {
-        const compactPath = splitPath(preItem.name).slice(1);
+        const compactPath = Path.splitPath(preItem.name).slice(1);
         if (compactPath[0] === name) {
           compactPath.shift();
           while (compactPath.length > 0) {
@@ -1735,7 +1734,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (CompositeTreeNode.is(item)) {
         const isCompactName = item.name.indexOf(Path.separator) > 0;
         if (isCompactName) {
-          const compactPath = splitPath(item.name).slice(1);
+          const compactPath = Path.splitPath(item.name).slice(1);
           while (compactPath.length > 0) {
             if (compactPath[0] === pathFlag[0]) {
               compactPath.shift();
@@ -1768,8 +1767,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           if (!!preItemPath && preItemPath !== item.path) {
             // 说明此时已发生了路径压缩，如从 a -> a/b/c
             // 需要根据路径变化移除对应的展开路径, 这里只需考虑短变长场景
-            const prePaths = splitPath(preItemPath);
-            const nextPaths = splitPath(item.path);
+            const prePaths = Path.splitPath(preItemPath);
+            const nextPaths = Path.splitPath(item.path);
             if (nextPaths.length > prePaths.length) {
               pathFlag.splice(0, nextPaths.length - prePaths.length);
             }

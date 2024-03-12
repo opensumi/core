@@ -123,22 +123,20 @@ export class OpenedEditorService extends Tree {
           return;
         }
         const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
-        path = new Path(path)
-          .join(groupName)
-          .join(
-            resource && (resource as IResource).uri
-              ? (resource as IResource).uri.toString()
-              : (resource as URI).toString(),
-          )
-          .toString();
+        path = Path.joinPath(
+          path,
+          groupName,
+          resource && (resource as IResource).uri
+            ? (resource as IResource).uri.toString()
+            : (resource as URI).toString(),
+        );
       } else {
-        path = new Path(path)
-          .join(
-            resource && (resource as IResource).uri
-              ? (resource as IResource).uri.toString()
-              : (resource as URI).toString(),
-          )
-          .toString();
+        path = Path.joinPath(
+          path,
+          resource && (resource as IResource).uri
+            ? (resource as IResource).uri.toString()
+            : (resource as URI).toString(),
+        );
       }
       return this.root?.getTreeNodeByPath(path);
     } else {
@@ -146,7 +144,7 @@ export class OpenedEditorService extends Tree {
         return;
       }
       const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
-      path = new Path(path).join(groupName).toString();
+      path = Path.joinPath(path, groupName);
       return this.root?.getTreeNodeByPath(path);
     }
   }

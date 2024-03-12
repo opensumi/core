@@ -426,7 +426,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(uri)) {
-          return new Path(this.root?.path || '').join(rootUri.relative(uri)?.toString() || '').toString();
+          return Path.joinPath(this.root?.path || '', rootUri.relative(uri)?.toString() || '');
         }
       }
     } else {
@@ -438,10 +438,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(uri)) {
           // 多工作区模式下，路径需要拼接项目名称
-          return new Path(this.root?.path || '/')
-            .join(rootUri.displayName)
-            .join(rootUri.relative(uri)?.toString() || '')
-            .toString();
+          return Path.joinPath(this.root?.path || '', rootUri.displayName, rootUri.relative(uri)?.toString() || '');
         }
       }
     }
@@ -455,8 +452,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     newName: string,
     type: TreeNodeType = TreeNodeType.TreeNode,
   ) {
-    const oldPath = new Path(from.path).join(oldName).toString();
-    const newPath = new Path(to.path).join(newName).toString();
+    const oldPath = Path.joinPath(from.path, oldName);
+    const newPath = Path.joinPath(to.path, newName);
     if (oldPath && newPath && newPath !== oldPath) {
       const movedNode = from.moveNode(oldPath, newPath);
       // 更新节点除了 name 以外的其他属性，如 fileStat，tooltip 等，否则节点数据可能会异常
@@ -503,7 +500,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
-    let tempFileStat: FileStat;
     let tempName: string;
     const namePaths = Path.splitPath(newName);
     // 处理a/b/c/d这类目录
@@ -524,7 +520,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     } else {
       tempName = newName;
     }
-    tempFileStat = {
+    const tempFileStat: FileStat = {
       uri: node.uri.resolve(tempName).toString(),
       isDirectory: type === TreeNodeType.CompositeTreeNode || namePaths.length > 1,
       isSymbolicLink: false,
