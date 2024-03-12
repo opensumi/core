@@ -38,6 +38,7 @@ export const TabRendererBase: FC<{
 
   useLayoutEffect(() => {
     if (components.length <= 0) {
+      tabbarService.viewReady.resolve();
       return;
     }
     tabbarService.registerResizeHandle(resizeHandle);

@@ -130,7 +130,7 @@ export class TabbarService extends WithEventBus {
   readonly onSizeChange: Event<{ size: number }> = this.onSizeChangeEmitter.event;
 
   public barSize: number;
-  public panelSize: number;
+  protected panelSize: number;
   private menuId = `tabbar/${this.location}`;
   private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
