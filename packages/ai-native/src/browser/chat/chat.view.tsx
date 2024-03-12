@@ -51,7 +51,7 @@ const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
 
 const SCROLL_CLASSNAME = 'chat_scroll';
-const ME_NAME = 'Me';
+const ME_NAME = '';
 
 const defaultSampleQuestions = [];
 
@@ -137,19 +137,31 @@ export const AIChatView = observer(() => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
+
+  const [messageListData, dispatchMessage] = React.useReducer(
+    (state: MessageData[], action: { type: 'add' | 'clear' | 'init'; payload?: MessageData[] }) => {
+      switch (action.type) {
+        case 'add':
+          return [...state, ...(action.payload || [])];
+        case 'clear':
+          return [];
+        case 'init':
+          return Array.isArray(action.payload) ? action.payload : [];
+        default:
+          return state;
+      }
+    },
+    [],
+  );
   const [loading, setLoading] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
 
   const [agentId, setAgentId] = React.useState('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
-
-  const [state, updateState] = React.useState<any>();
-
-  const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
 
   const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
 
@@ -186,12 +198,12 @@ export const AIChatView = observer(() => {
   }, [containerRef]);
 
   React.useEffect(() => {
-    setMessageListData([firstMsg]);
+    dispatchMessage({ type: 'init', payload: [firstMsg] });
   }, []);
 
   React.useEffect(() => {
     scrollToBottom();
-  }, [loading, loading2, state]);
+  }, [loading, loading2]);
 
   React.useEffect(() => {
     const dispose = msgStreamManager.onMsgStatus(() => {
@@ -237,7 +249,7 @@ export const AIChatView = observer(() => {
         },
         styles.chat_notify,
       );
-      setMessageListData((msgList) => [...msgList, notifyMessage]);
+      dispatchMessage({ type: 'add', payload: [notifyMessage] });
       requestAnimationFrame(() => {
         scrollToBottom();
       });
@@ -291,7 +303,7 @@ export const AIChatView = observer(() => {
     aiChatService.setLatestSessionId(relationId);
     aiChatService.sendRequest(request);
 
-    setMessageListData((msgList) => [...msgList, userMessage, aiMessage]);
+    dispatchMessage({ type: 'add', payload: [userMessage, aiMessage] });
 
     if (containerRef && containerRef.current) {
       containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
@@ -327,9 +339,7 @@ export const AIChatView = observer(() => {
         role: 'user',
       });
 
-      preMessagelist.push(codeSendMessage);
-      setMessageListData(preMessagelist);
-      updateState({});
+      dispatchMessage({ type: 'add', payload: [codeSendMessage] });
 
       const replayCommandProps = {
         aiChatService,
@@ -358,9 +368,7 @@ export const AIChatView = observer(() => {
       }
 
       if (aiMessage) {
-        messageListData.push(aiMessage);
-        setMessageListData([...messageListData]);
-        updateState({});
+        dispatchMessage({ type: 'add', payload: [aiMessage] });
         if (containerRef && containerRef.current) {
           containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
         }
@@ -375,7 +383,7 @@ export const AIChatView = observer(() => {
     aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
     aiChatService.clearSessionModel();
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
-    setMessageListData([firstMsg]);
+    dispatchMessage({ type: 'init', payload: [firstMsg] });
   }, [messageListData]);
 
   const handleThemeClick = (value) => {

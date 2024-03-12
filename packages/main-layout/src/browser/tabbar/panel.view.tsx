@@ -80,11 +80,11 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
             key={containerId}
             className={cls(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
-            style={tabbarService.currentContainerId === containerId ? panelVisible : panelInVisible}
+            style={currentContainerId === containerId ? panelVisible : panelInVisible}
             id={id}
           >
             <ErrorBoundary>
-              <NoUpdateBoundary visible={tabbarService.currentContainerId === containerId}>
+              <NoUpdateBoundary visible={currentContainerId === containerId}>
                 <PanelView titleMenu={titleMenu} side={side} component={component} />
               </NoUpdateBoundary>
             </ErrorBoundary>
