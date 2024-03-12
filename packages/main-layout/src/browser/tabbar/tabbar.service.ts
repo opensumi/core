@@ -22,6 +22,7 @@ import {
   createFormatLocalizedStr,
   formatLocalize,
   getTabbarCtxKey,
+  isDefined,
   localize,
   toDisposable,
 } from '@opensumi/ide-core-browser';
@@ -56,12 +57,13 @@ const CONTAINER_NAME_MAP = {
   bottom: 'panel',
 };
 
-const NONE_CONTAINER_ID = '__NONE__';
+const NONE_CONTAINER_ID = undefined;
+
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
   @observable
   // currentContainerId 默认值应该为一个非空且唯一的字符串，避免在切换容器时触发 MobX 不变错误
-  currentContainerId = NONE_CONTAINER_ID;
+  currentContainerId?: string = NONE_CONTAINER_ID;
 
   previousContainerId = '';
 
@@ -128,8 +130,8 @@ export class TabbarService extends WithEventBus {
   private readonly onSizeChangeEmitter = new Emitter<{ size: number }>();
   readonly onSizeChange: Event<{ size: number }> = this.onSizeChangeEmitter.event;
 
-  public barSize: number;
-  public panelSize: number;
+  protected barSize: number;
+  protected panelSize: number;
   private menuId = `tabbar/${this.location}`;
   private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
@@ -224,6 +226,26 @@ export class TabbarService extends WithEventBus {
       show = this.containersMap.size > 0;
     }
     this.updatePanel(show);
+  }
+
+  // 原有的 viewReady 依赖 updatePanelVisibility 方法的同步渲染逻辑
+  // 这里通过 panelSize 及 barSize 两个值去判断视图是否渲染完成
+  public updatePanelSize(value: number) {
+    this.panelSize = value;
+    if (isDefined(this.barSize)) {
+      this.viewReady.resolve();
+    }
+  }
+
+  public getBarSize() {
+    return this.barSize;
+  }
+
+  public updateBarSize(value: number) {
+    this.barSize = value;
+    if (isDefined(this.panelSize)) {
+      this.viewReady.resolve();
+    }
   }
 
   public updateTabInMoreKey(containerId: string, value: boolean) {

@@ -128,7 +128,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     });
   }
 
-  storeState(service: TabbarService, currentId: string) {
+  storeState(service: TabbarService, currentId?: string) {
     this.state[service.location] = {
       currentId,
       size: service.prevSize,
@@ -253,8 +253,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: currentId }));
         if (currentId && SUPPORT_ACCORDION_LOCATION.has(service.location)) {
           const accordionService = this.getAccordionService(currentId);
-          accordionService.tryUpdateResize();
-          accordionService.expandedViews.forEach((view) => {
+          accordionService?.tryUpdateResize();
+          accordionService?.expandedViews.forEach((view) => {
             this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: view.id }));
           });
         }
@@ -285,9 +285,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     let service = this.accordionServices.get(containerId);
     if (!service) {
       service = this.injector.get(AccordionService, [containerId, noRestore]);
-      this.accordionServices.set(containerId, service);
+      this.accordionServices.set(containerId, service!);
     }
-    return service;
+    return service!;
   }
 
   getTabbarHandler(viewOrContainerId: string): TabBarHandler | undefined {
@@ -336,7 +336,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
       if (location) {
         activityHandler = this.injector.get(TabBarHandler, [containerId, this.getTabbarService(location)]);
-        this.handleMap.set(containerId, activityHandler);
+        this.handleMap.set(containerId, activityHandler!);
       }
     }
     return activityHandler;
