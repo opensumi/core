@@ -241,7 +241,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService.state = 'client_connected';
 
     // 在 contributions 执行完 onStart 上报一次耗时
-    await this.perf.measure('Contributions.start', () => this.startContributions());
+    await this.perf.measure('Contributions.start', () => this.startContributions(container));
     this.stateService.state = 'started_contributions';
     this.stateService.state = 'ready';
 
@@ -389,13 +389,20 @@ export class ClientApp implements IClientApp, IDisposable {
 
     await this.contributionsProvider.run('prepare', this);
 
-    // Rendering layout
-    await this.perf.measure('RenderApp.render', () => this.renderApp(container));
+    if (this.opts.experimentalPreRender) {
+      // Rendering layout
+      await this.perf.measure('RenderApp.render', () => this.renderApp(container));
+    }
 
     this.logger.verbose('contributions.prepare done');
   }
 
-  protected async startContributions() {
+  protected async startContributions(container: HTMLElement | IAppRenderer) {
+    if (!this.opts.experimentalPreRender) {
+      // Rendering layout
+      await this.perf.measure('RenderApp.render', () => this.renderApp(container));
+    }
+
     this.lifeCycleService.phase = LifeCyclePhase.Initialize;
 
     await this.perf.measure('Contributions.initialize', () => this.initializeContributions());
