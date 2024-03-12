@@ -1,6 +1,6 @@
 import { ConstructorOf, Domain, Injector } from '@opensumi/di';
 
-import { ILogger } from './log';
+import { getDebugLogger } from './log';
 import { IPerformance } from './types';
 import { MaybePromise } from './utils';
 
@@ -18,15 +18,18 @@ export interface ContributionProvider<T extends object> {
 }
 
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
-  logger: ILogger;
+  _performance: IPerformance;
 
-  performance: IPerformance;
-
+  private logger = getDebugLogger();
   protected services: T[] | undefined;
 
-  constructor(protected readonly domain: Domain, protected readonly injector: Injector) {
-    this.logger = injector.get(ILogger);
-    this.performance = injector.get(IPerformance);
+  constructor(protected readonly domain: Domain, protected readonly injector: Injector) {}
+
+  get performance() {
+    if (!this._performance) {
+      this._performance = this.injector.get(IPerformance);
+    }
+    return this._performance;
   }
 
   addContribution(...contributionsCls: ConstructorOf<T>[]): void {
