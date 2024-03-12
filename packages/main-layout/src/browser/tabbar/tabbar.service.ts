@@ -22,6 +22,7 @@ import {
   createFormatLocalizedStr,
   formatLocalize,
   getTabbarCtxKey,
+  isDefined,
   localize,
   toDisposable,
 } from '@opensumi/ide-core-browser';
@@ -231,7 +232,7 @@ export class TabbarService extends WithEventBus {
   // 这里通过 panelSize 及 barSize 两个值去判断视图是否渲染完成
   public updatePanelSize(value: number) {
     this.panelSize = value;
-    if (this.barSize) {
+    if (isDefined(this.barSize)) {
       this.viewReady.resolve();
     }
   }
@@ -242,7 +243,7 @@ export class TabbarService extends WithEventBus {
 
   public updateBarSize(value: number) {
     this.barSize = value;
-    if (this.panelSize) {
+    if (isDefined(this.panelSize)) {
       this.viewReady.resolve();
     }
   }
