@@ -152,6 +152,8 @@ export class TreeNode implements ITreeNode {
   private _uid: number;
   private _disposed: boolean;
 
+  private _path: string;
+
   protected _depth: number;
   protected _watcher: ITreeWatcher;
   protected _tree: ITree;
@@ -164,11 +166,13 @@ export class TreeNode implements ITreeNode {
     optionalMetadata?: { [key: string]: any },
   ) {
     this._uid = TreeNode.nextId();
-    this._parent = parent;
     this._tree = tree;
     this._disposed = false;
     this._visible = true;
     this._metadata = { ...(optionalMetadata || {}) };
+    this._parent = parent;
+    this._path = this.makePath();
+
     this._depth = parent ? parent.depth + 1 : 0;
     if (watcher) {
       this._watcher = watcher;
@@ -194,6 +198,7 @@ export class TreeNode implements ITreeNode {
 
   set parent(node: ICompositeTreeNode | undefined) {
     this._parent = node;
+    this._path = this.makePath();
   }
 
   get type() {
@@ -228,8 +233,12 @@ export class TreeNode implements ITreeNode {
     this.addMetadata('name', name);
   }
 
+  get path() {
+    return this._path;
+  }
+
   // 节点绝对路径
-  get path(): string {
+  private makePath(): string {
     if (!this.parent) {
       return `${Path.separator}${this.name}`;
     }
@@ -310,6 +319,9 @@ export class TreeNode implements ITreeNode {
         this._parent = to;
         (this.parent as CompositeTreeNode).insertItem(this);
       }
+
+      this._path = this.makePath();
+
       if (didChangeParent) {
         this._watcher.notifyDidChangeParent(this, prevParent, to);
       }
@@ -1050,11 +1062,18 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!CompositeTreeNode.isRoot(this)) {
       return;
     }
-    expandedPaths = expandedPaths.sort((a, b) => Path.pathDepth(a) - Path.pathDepth(b));
-    let path;
-    while (expandedPaths.length > 0) {
-      path = expandedPaths.pop();
-      const item = TreeNode.getTreeNodeByPath(path);
+
+    const sortedPaths = expandedPaths
+      .map((v) => ({
+        path: v,
+        depth: Path.pathDepth(v),
+      }))
+      .sort((a, b) => a.depth - b.depth);
+
+    while (sortedPaths.length > 0) {
+      const d = sortedPaths.pop()!;
+
+      const item = TreeNode.getTreeNodeByPath(d.path);
       if (CompositeTreeNode.is(item)) {
         (item as CompositeTreeNode).setCollapsed(true);
       }

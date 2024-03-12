@@ -1,4 +1,4 @@
-import { Emitter, Event, path } from '@opensumi/ide-utils';
+import { Emitter, Event } from '@opensumi/ide-utils';
 
 import { ITreeNodeOrCompositeTreeNode, TreeNodeEvent } from '../../../types';
 import { relative } from '../../path-process';
