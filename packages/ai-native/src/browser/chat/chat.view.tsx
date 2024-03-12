@@ -16,8 +16,8 @@ import { StreamMsgWrapper } from '../components/StreamMsg';
 import { Thinking } from '../components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
-import styles from './ai-chat.module.less';
-import { AIChatService } from './ai-chat.service';
+import styles from './chat.module.less';
+import { ChatService } from './chat.service';
 
 import 'react-chat-elements/dist/main.css';
 
@@ -31,7 +31,7 @@ interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'class
 type AIMessageData = Omit<MessageData, 'role' | 'position' | 'title'>;
 
 interface ReplayComponentParam {
-  aiChatService: AIChatService;
+  aiChatService: ChatService;
   aiReporter: IAIReporter;
   chatAgentService: IChatAgentService;
   relationId: string;
@@ -56,7 +56,7 @@ const ME_NAME = 'Me';
 const defaultSampleQuestions = [];
 
 const InitMsgComponent = () => {
-  const aiChatService = useInjectable<AIChatService>(AIChatService);
+  const aiChatService = useInjectable<ChatService>(ChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
   const [sampleQuestions, setSampleQuestions] =
@@ -133,7 +133,7 @@ const InitMsgComponent = () => {
 };
 
 export const AIChatView = observer(() => {
-  const aiChatService = useInjectable<AIChatService>(AIChatService);
+  const aiChatService = useInjectable<ChatService>(ChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);

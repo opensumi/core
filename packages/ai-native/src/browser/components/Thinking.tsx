@@ -6,8 +6,7 @@ import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/a
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { localize } from '@opensumi/ide-core-common';
 
-import { AIResponseTips } from '../../common';
-import { AIChatService } from '../chat/ai-chat.service';
+import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
@@ -24,7 +23,7 @@ interface ITinkingProps {
 }
 
 export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessage }: ITinkingProps) => {
-  const aiChatService = useInjectable<AIChatService>(AIChatService);
+  const aiChatService = useInjectable<ChatService>(ChatService);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   const handlePause = useCallback(async () => {
@@ -77,7 +76,7 @@ export const ThinkingResult = ({
   hasMessage,
   regenerateDisabled,
 }: ITinkingProps) => {
-  const aiChatService = useInjectable<AIChatService>(AIChatService);
+  const aiChatService = useInjectable<ChatService>(ChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
@@ -101,7 +100,7 @@ export const ThinkingResult = ({
         ? !hasMessage
         : !message?.trim()
     ) {
-      return <span>{AIResponseTips.STOP_IMMEDIATELY}</span>;
+      return <span>{localize('aiNative.chat.stop.immediately')}</span>;
     }
 
     return children;

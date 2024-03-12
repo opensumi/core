@@ -9,9 +9,11 @@ import { IAIReporter } from '@opensumi/ide-core-common';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { InstructionEnum, highLightLanguageSupport } from '../../common/index';
+import { InstructionEnum } from '../../common/index';
 
 import styles from './components.module.less';
+import { highLightLanguageSupport } from './highLight';
+
 import './highlightTheme.less';
 
 export const CodeEditorWithHighlight = ({ input, language, relationId }) => {

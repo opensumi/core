@@ -9,7 +9,6 @@ import { AI_CHAT_CONTAINER_VIEW_ID } from '../../common';
 
 import styles from './layout.module.less';
 
-// ai_chat 面板
 export const AIChatTabRenderer = ({
   className,
   components,

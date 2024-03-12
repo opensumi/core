@@ -19,7 +19,7 @@ import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
 
 @Injectable()
-export class AIChatService extends Disposable {
+export class ChatService extends Disposable {
   @Autowired(AIBackSerivcePath)
   public aiBackService: IAIBackService;
 
@@ -36,7 +36,7 @@ export class AIChatService extends Disposable {
   private readonly aiReporter: IAIReporter;
 
   @Autowired(IChatManagerService)
-  chatManagerService: ChatManagerService;
+  private chatManagerService: ChatManagerService;
 
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;

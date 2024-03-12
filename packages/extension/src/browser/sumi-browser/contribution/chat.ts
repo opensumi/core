@@ -18,7 +18,7 @@ export class ChatBrowserContributionRunner extends AbstractSumiBrowserContributi
   run(param: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     if (!this.injector.creatorMap.has(IChatAgentViewService)) {
-      this.logger.warn('没有找到 IChatAgentViewService');
+      this.logger.warn('Not found IChatAgentViewService');
       return disposer;
     }
 

@@ -1178,6 +1178,8 @@ export const localizationBundle = {
     'aiNative.chat.ai.assistant.name': 'AI 研发助手',
     'aiNative.chat.input.placeholder.default': '可以问我任何问题，或键入主题 "/" ',
     'aiNative.chat.input.placeholder.code': '请输入或者粘贴代码',
+    'aiNative.chat.stop.immediately': '我先不想了，有需要可以随时问我',
+    'aiNative.chat.error.response': '当前与我互动的人太多，请稍后再试，感谢您的理解与支持',
 
     'aiNative.inline.chat.operate.check.title': '采纳',
     'aiNative.inline.chat.operate.discard.title': '丢弃',

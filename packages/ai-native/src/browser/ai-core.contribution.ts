@@ -29,7 +29,7 @@ import { AI_CHAT_CONTAINER_VIEW_ID } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
-import { AIChatView } from './chat/ai-chat.view';
+import { AIChatView } from './chat/chat.view';
 import { AIChatLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer } from './layout/tabbar.view';
 import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';

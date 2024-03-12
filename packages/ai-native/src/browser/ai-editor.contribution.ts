@@ -7,11 +7,9 @@ import {
   Disposable,
   Event,
   IDisposable,
-  ILogServiceClient,
   ILoggerManagerClient,
   MaybePromise,
   Schemes,
-  SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
@@ -52,14 +50,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
-
-  private logger: ILogServiceClient;
-
-  constructor() {
-    super();
-
-    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
-  }
 
   private aiDiffWidget: AIDiffWidget;
   private aiInlineContentWidget: AIInlineContentWidget;
