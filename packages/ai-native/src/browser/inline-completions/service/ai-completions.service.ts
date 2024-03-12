@@ -48,7 +48,7 @@ export class AiCompletionsService extends Disposable {
     this.lastCompletionUseTime = Date.now() - preTime;
   }
 
-  private _completionResult: InlineCompletionItem[]| undefined;
+  private _completionResult: { items: InlineCompletionItem[] } | undefined;
   public getCompletionResult() {
     return this._completionResult;
   }
@@ -63,7 +63,7 @@ export class AiCompletionsService extends Disposable {
           data as any,
           this.cancelIndicator.token,
         )) as unknown as CompletionResultModel;
-        this._completionResult = this.generateResultAndRegist(result, model, position);
+        this._completionResult = { items: this.generateResultAndRegist(result, model, position) };
         this.recordCompletionUseTime(now);
         return result;
       } catch (error) {
