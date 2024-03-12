@@ -270,7 +270,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
       contextValue: comment.contextValue,
       author: {
         name: comment.userName,
-        iconPath: comment.userIconPath,
+        iconPath: new URI(URI.revive(comment.userIconPath)),
       },
       reactions: comment.commentReactions?.map((reaction) => this.convertToCommentReaction(reaction)),
       timestamp: comment.timestamp,
@@ -421,6 +421,8 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     );
     this._isDisposed = false;
   }
+  initialCollapsibleState?: CommentThreadCollapsibleState | undefined;
+  onDidChangeInitialCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
 
   isDocumentCommentThread(): this is CommentThread<IRange> {
     throw new Error('Method not implemented.');

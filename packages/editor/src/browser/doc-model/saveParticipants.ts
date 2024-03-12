@@ -25,14 +25,12 @@ import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { CodeActionProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { getCodeActions } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
 import {
   CodeActionItem,
-  getCodeActions,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
-import {
   CodeActionKind,
   CodeActionTriggerSource,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/types';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/common/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { MonacoCodeService } from '../editor.override';

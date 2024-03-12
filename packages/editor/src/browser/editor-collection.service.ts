@@ -283,7 +283,7 @@ export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IE
     );
     this.addDispose(
       this.configurationService.onDidChangeConfiguration((e) => {
-        const changedEditorKeys = e.affectedKeys.filter((key) => isEditorOption(key));
+        const changedEditorKeys = Array.from(e.affectedKeys.values()).filter((key) => isEditorOption(key));
         if (changedEditorKeys.length > 0) {
           this._doUpdateOptions();
         }
@@ -617,7 +617,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     this.wrapEditors();
     this.addDispose(
       this.configurationService.onDidChangeConfiguration((e) => {
-        const changedEditorKeys = e.affectedKeys.filter((key) => isDiffEditorOption(key));
+        const changedEditorKeys = Array.from(e.affectedKeys.values()).filter((key) => isDiffEditorOption(key));
         if (changedEditorKeys.length > 0) {
           this.doUpdateDiffOptions();
         }

@@ -2,9 +2,9 @@ import { Injectable } from '@opensumi/di';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
+import { DetailedLineRangeMapping } from '../../../../../common/diff';
 import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
-import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   ACCEPT_CURRENT_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
@@ -85,7 +85,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     });
   }
 
-  public inputDiffComputingResult(changes: LineRangeMapping[]): void {
+  public inputDiffComputingResult(changes: readonly DetailedLineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
     this.updateDecorations();
     this.registerActionsProvider({

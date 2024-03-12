@@ -86,7 +86,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
     // 在 monaco-editor 内部，default scope 变化时需要刷新内置所有的 config 打头的对应的值
     if (defaultScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: defaultScopeChanges.map((n) => n.preferenceName),
+        affectedKeys: new Set(defaultScopeChanges.map((n) => n.preferenceName)),
         source: ConfigurationTarget.DEFAULT,
         change: {
           keys: [],
@@ -102,7 +102,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 
     if (userScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        affectedKeys: new Set(userScopeChanges.map((n) => n.preferenceName)),
         source: ConfigurationTarget.USER,
         change: {
           keys: [],
@@ -117,7 +117,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 
     if (workspaceScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: workspaceScopeChanges.map((n) => n.preferenceName),
+        affectedKeys: new Set(workspaceScopeChanges.map((n) => n.preferenceName)),
         source: ConfigurationTarget.WORKSPACE,
         change: {
           keys: [],
@@ -132,7 +132,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 
     if (workspaceFolderScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
-        affectedKeys: workspaceFolderScopeChanges.map((n) => n.preferenceName),
+        affectedKeys: new Set(workspaceFolderScopeChanges.map((n) => n.preferenceName)),
         source: this.workspaceService.isMultiRootWorkspaceOpened
           ? ConfigurationTarget.WORKSPACE_FOLDER
           : ConfigurationTarget.WORKSPACE,

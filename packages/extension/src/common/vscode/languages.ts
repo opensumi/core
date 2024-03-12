@@ -18,13 +18,14 @@ import {
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
-import { IMarkdownString, IMarkerData, IRange, Uri, UriComponents } from '@opensumi/ide-core-common';
+import { IMarkdownString, IMarkerData, IRange, UriComponents } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValue, InlineValueContext } from '@opensumi/ide-debug/lib/common/inline-values';
 // eslint-disable-next-line import/order
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
 
 // eslint-disable-next-line import/no-restricted-paths
+import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
@@ -75,12 +76,12 @@ import {
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
 import type {
   CodeActionContext,
   Command,
   CompletionItemLabel,
   SignatureHelpContext,
-  // eslint-disable-next-line import/no-restricted-paths
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 export interface IMainThreadLanguages {
@@ -726,6 +727,7 @@ export interface SelectedSuggestionInfo {
   text: string;
   isSnippetText: boolean;
   completionKind: CompletionItemKind;
+  equals(other: SelectedSuggestionInfo): boolean;
 }
 
 // inline completion end

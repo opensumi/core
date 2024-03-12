@@ -321,7 +321,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     const model = session.currentEditor();
 
     if (model) {
-      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageId()!);
+      this.inputEditor.monacoEditor.getModel()!.setLanguage(model.getModel()?.getLanguageId()!);
     }
   }
 

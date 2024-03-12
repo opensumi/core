@@ -10,7 +10,7 @@ import {
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileService, FileStat } from '@opensumi/ide-file-service';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IFileSchemeDocNodeService } from '../../src/common';
 import { FileSchemeNodeModule } from '../../src/node';
 import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.service';

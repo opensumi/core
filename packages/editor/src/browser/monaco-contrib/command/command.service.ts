@@ -290,7 +290,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
 
   registerMonacoActions() {
     const editorActions = new Map(
-      this.monacoEditorRegistry.getEditorActions().map(({ id, label, alias }) => [
+      Array.from(this.monacoEditorRegistry.getEditorActions()).map(({ id, label, alias }) => [
         id,
         {
           label,

@@ -685,6 +685,7 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.details.visible' },
         // 行内补全
         { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
+        { id: 'editor.inlineSuggest.showToolbar' },
         {
           id: 'editor.experimental.stickyScroll.enabled',
           localized: 'preference.editor.experimental.stickyScroll.enabled',

@@ -5,7 +5,7 @@ import {
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig, INodeLogger, getDebugLogger, path } from '@opensumi/ide-core-node';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
 import { IFileService, IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
 import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';

@@ -1721,7 +1721,12 @@ declare module 'vscode' {
      * Indicates that this markdown string is from a trusted source. Only *trusted*
      * markdown supports links that execute commands, e.g. `[Run it](command:myCommandId)`.
      */
-    isTrusted?: boolean;
+    isTrusted?: boolean | {
+			/**
+			 * A set of commend ids that are allowed to be executed by this markdown string.
+			 */
+			readonly enabledCommands: readonly string[];
+		};
 
     /**
      * Indicates that this markdown string can contain [ThemeIcons](#ThemeIcon), e.g. `$(zap)`.

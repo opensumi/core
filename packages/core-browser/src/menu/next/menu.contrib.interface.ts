@@ -1,6 +1,6 @@
 import { URI } from '@opensumi/ide-core-common';
 
-import type { IChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/smartLinesDiffComputer';
+import type { IChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/legacyLinesDiffComputer';
 import type vscode from 'vscode';
 
 // explorer/context

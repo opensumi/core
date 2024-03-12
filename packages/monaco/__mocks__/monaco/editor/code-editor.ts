@@ -16,6 +16,25 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     super();
     this.id = ++MockedCodeEditor.ID;
   }
+  contextKeyService: any;
+  hasPendingScrollAnimation(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  writeScreenReaderContent(reason: string): void {
+    throw new Error('Method not implemented.');
+  }
+  addGlyphMarginWidget(widget: monaco.editor.IGlyphMarginWidget): void {
+    throw new Error('Method not implemented.');
+  }
+  layoutGlyphMarginWidget(widget: monaco.editor.IGlyphMarginWidget): void {
+    throw new Error('Method not implemented.');
+  }
+  removeGlyphMarginWidget(widget: monaco.editor.IGlyphMarginWidget): void {
+    throw new Error('Method not implemented.');
+  }
+  handleInitialized?(): void {
+    throw new Error('Method not implemented.');
+  }
 
   getBottomForLineNumber(lineNumber: number): number {
     throw new Error('Method not implemented.');
@@ -46,10 +65,13 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
       onDidChange: new Emitter<IModelDecorationsChangedEvent>().event,
       clear: () => {},
       length: 0,
-      set: () => {},
+      set: () => [],
       getRange: () => null,
       getRanges: () => [],
       has: () => true,
+      append: (newDecorations) => {
+        return [];
+      },
     };
   }
   onDidChangeHiddenAreas: monaco.IEvent<void>;
@@ -376,6 +398,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
         top: 0,
         right: 0,
       },
+      glyphMarginDecorationLaneCount: 0,
     };
   }
   getVisibleRanges(): monaco.Range[] {

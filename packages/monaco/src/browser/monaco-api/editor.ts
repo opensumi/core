@@ -38,7 +38,6 @@ import {
   colorizeModelLine,
   create,
   createDiffEditor,
-  createDiffNavigator,
   createModel,
   createWebWorker,
   defineTheme,
@@ -70,7 +69,6 @@ export function createMonacoEditorApi() {
     create,
     onDidCreateEditor,
     createDiffEditor,
-    createDiffNavigator,
 
     createModel,
     setModelLanguage,
@@ -127,12 +125,12 @@ export function createMonacoEditorApi() {
 }
 
 export {
-  IDecorationOptions,
-  IModelDecorationOptions,
   ICodeEditor,
-  IModelDeltaDecoration,
-  IEditorOptions,
-  ITextModelUpdateOptions,
+  IDecorationOptions,
   IDiffEditorOptions,
+  IEditorOptions,
   IMarkerData,
+  IModelDecorationOptions,
+  IModelDeltaDecoration,
+  ITextModelUpdateOptions,
 };
