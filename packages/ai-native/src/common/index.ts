@@ -255,3 +255,12 @@ export interface IChatResponseModel {
 export interface IChatModel {
   readonly requests: IChatRequestModel[];
 }
+
+export type IChatWelcomeMessageContent = string | IMarkdownString;
+
+export interface ISampleQuestions {
+  title: string;
+  message: string;
+  icon?: string;
+  tooltip?: string;
+}

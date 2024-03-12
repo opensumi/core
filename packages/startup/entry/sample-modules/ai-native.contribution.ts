@@ -3,12 +3,14 @@ import {
   AINativeCoreContribution,
   CancelResponse,
   ErrorResponse,
+  IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
   ReplyResponse,
 } from '@opensumi/ide-ai-native/lib/browser/types';
-import { Domain } from '@opensumi/ide-core-browser';
+import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import { AIBackSerivcePath, IAIBackService } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
+import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 enum EInlineOperation {
   Comments = 'Comments',
@@ -92,6 +94,20 @@ export class AiNativeContribution implements AINativeCoreContribution {
           return new ReplyResponse(result.data!);
         },
       },
+    );
+  }
+
+  registerChatFeature(registry: IChatFeatureRegistry): void {
+    registry.registerWelcome(
+      new MarkdownString(`<img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
+      嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考</br>您可以提问我一些关于代码的问题`),
+      [
+        {
+          icon: getIcon('send-hollow'),
+          title: '生成 Java 快速排序算法',
+          message: '生成 Java 快速排序算法',
+        },
+      ],
     );
   }
 }

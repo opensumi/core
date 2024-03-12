@@ -13,6 +13,8 @@ import {
   IChatRequestModel,
   IChatResponseErrorDetails,
   IChatTreeData,
+  IChatWelcomeMessageContent,
+  ISampleQuestions,
 } from '../../common';
 
 export type IChatProgressResponseContent = IChatMarkdownContent | IChatAsyncContent | IChatTreeData | IChatComponent;
@@ -251,5 +253,24 @@ export class ChatModel extends Disposable implements IChatModel {
   override dispose(): void {
     super.dispose();
     this.#requests.forEach((r) => r.response.dispose());
+  }
+}
+
+@Injectable({ multiple: true })
+export class ChatWelcomeMessageModel extends Disposable {
+  private static nextId = 0;
+
+  private _id: string;
+  public get id(): string {
+    return this._id;
+  }
+
+  constructor(
+    public readonly content: IChatWelcomeMessageContent | React.ReactNode,
+    public readonly sampleQuestions: ISampleQuestions[],
+  ) {
+    super();
+
+    this._id = 'welcome_' + ChatWelcomeMessageModel.nextId++;
   }
 }

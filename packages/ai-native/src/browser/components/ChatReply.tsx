@@ -27,9 +27,9 @@ import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 
+import { ChatMarkdown } from './ChatMarkdown';
 import styles from './components.module.less';
 import { Loading } from './Loading';
-import { Markdown } from './Markdown';
 import { Thinking, ThinkingResult } from './Thinking';
 
 interface IChatReplyProps {
@@ -206,7 +206,7 @@ export const ChatReply = (props: IChatReplyProps) => {
 
   const renderMarkdown = (markdown: IMarkdownString) => (
     // TODO: Markdown 属性限制
-    <Markdown markdown={markdown} fillInIncompleteTokens />
+    <ChatMarkdown markdown={markdown} fillInIncompleteTokens />
   );
   const renderTreeData = (treeData: IChatResponseProgressFileTreeData) => <TreeRenderer treeData={treeData} />;
 
@@ -300,6 +300,6 @@ interface IChatNotifyProps {
 }
 export const ChatNotify = (props: IChatNotifyProps) => (
   <ThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
-    <Markdown markdown={props.chunk.content} relationId={props.relationId} />
+    <ChatMarkdown markdown={props.chunk.content} relationId={props.relationId} />
   </ThinkingResult>
 );

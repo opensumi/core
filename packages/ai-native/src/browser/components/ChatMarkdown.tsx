@@ -19,7 +19,7 @@ interface MarkdownProps {
   markedOptions?: IMarkedOptions;
 }
 
-export const Markdown = (props: MarkdownProps) => {
+export const ChatMarkdown = (props: MarkdownProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
 

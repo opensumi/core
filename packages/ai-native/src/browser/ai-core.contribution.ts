@@ -32,7 +32,7 @@ import { AINativeService } from './ai-native.service';
 import { AIChatView } from './chat/chat.view';
 import { AIChatLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer } from './layout/tabbar.view';
-import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { AINativeCoreContribution, IChatFeatureRegistry, IInlineChatFeatureRegistry } from './types';
 
 @Domain(
   ClientAppContribution,
@@ -65,6 +65,9 @@ export class AINativeBrowserContribution
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
 
+  @Autowired(IChatFeatureRegistry)
+  private readonly chatFeatureRegistry: IChatFeatureRegistry;
+
   @Autowired(AINativeService)
   private readonly aiNativeService: AINativeService;
 
@@ -96,6 +99,9 @@ export class AINativeBrowserContribution
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerInlineChatFeature) {
         contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
+      }
+      if (contribution.registerChatFeature) {
+        contribution.registerChatFeature(this.chatFeatureRegistry);
       }
     });
   }

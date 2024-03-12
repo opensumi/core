@@ -4,6 +4,8 @@ import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-nativ
 import { CancellationToken, Deferred, IDisposable, MaybePromise } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
 
+import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
+
 export class ReplyResponse {
   constructor(readonly message: string) {}
 
@@ -45,15 +47,28 @@ export interface InlineChatHandler {
 }
 
 export const IInlineChatFeatureRegistry = Symbol('IInlineChatFeatureRegistry');
+export const IChatFeatureRegistry = Symbol('IChatFeatureRegistry');
 
 export interface IInlineChatFeatureRegistry {
   registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void;
 }
 
+export interface IChatFeatureRegistry {
+  registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
+  /**
+   * 注册 inline chat 相关功能
+   * @param registry: IInlineChatFeatureRegistry
+   */
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
+  /**
+   * 注册 chat 面板相关功能
+   */
+  registerChatFeature?(registry: IChatFeatureRegistry): void;
 }
 
 export interface IChatComponentConfig {

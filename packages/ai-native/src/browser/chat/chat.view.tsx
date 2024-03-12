@@ -6,20 +6,28 @@ import { CODICON_OWNER, IAIReporter, getExternalIcon, getIcon, useInjectable } f
 import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { localize, uuid } from '@opensumi/ide-core-common';
+import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { AISerivceType, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../../common';
+import 'react-chat-elements/dist/main.css';
+import {
+  AISerivceType,
+  IChatAgentService,
+  IChatMessageStructure,
+  ISampleQuestions,
+  InstructionEnum,
+} from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
+import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
-import { Markdown } from '../components/Markdown';
 import { StreamMsgWrapper } from '../components/StreamMsg';
 import { Thinking } from '../components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
+import { IChatFeatureRegistry } from '../types';
 
+import { ChatFeatureRegistry } from './chat.feature.registry';
 import styles from './chat.module.less';
 import { ChatService } from './chat.service';
-
-import 'react-chat-elements/dist/main.css';
 
 interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
   role: 'user' | 'ai';
@@ -53,14 +61,22 @@ const createMessageByAI = (message: AIMessageData, className?: string) =>
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
-const defaultSampleQuestions = [];
-
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<ChatService>(ChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
 
-  const [sampleQuestions, setSampleQuestions] =
-    React.useState<{ icon: string; title: string; message: string; tooltip?: string }[]>(defaultSampleQuestions);
+  const [sampleQuestions, setSampleQuestions] = React.useState<ISampleQuestions[]>([]);
+
+  const welcomeSampleQuestions = React.useMemo(() => {
+    const { sampleQuestions } = chatFeatureRegistry.chatWelcomeMessageModel;
+    return sampleQuestions || [];
+  }, [chatFeatureRegistry.chatWelcomeMessageModel.sampleQuestions]);
+
+  const welcomeMessage = React.useMemo(() => {
+    const { content } = chatFeatureRegistry.chatWelcomeMessageModel;
+    return isMarkdownString(content) ? <ChatMarkdown markdown={content} /> : content;
+  }, [chatFeatureRegistry.chatWelcomeMessageModel.content]);
 
   React.useEffect(() => {
     const disposer = chatAgentService.onDidChangeAgents(async () => {
@@ -93,20 +109,16 @@ const InitMsgComponent = () => {
           tooltip,
         };
       });
-      setSampleQuestions([...defaultSampleQuestions, ...lists]);
+      setSampleQuestions(lists);
     });
     return () => disposer.dispose();
   }, []);
 
   return (
     <div className={styles.chat_head}>
-      <div className={styles.chat_container_des}>
-        <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
-        嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
-      </div>
-      <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题</div>
+      <div className={styles.chat_container_des}>{welcomeMessage}</div>
       <div className={styles.chat_container_content}>
-        {sampleQuestions.map((data: any, index) => {
+        {welcomeSampleQuestions.concat(sampleQuestions).map((data: any, index) => {
           const node = (
             <a
               href='javascript:void(0)'
@@ -187,6 +199,7 @@ export const AIChatView = observer(() => {
       }),
     [],
   );
+
   const scrollToBottom = React.useCallback(() => {
     if (containerRef && containerRef.current) {
       containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
@@ -488,7 +501,7 @@ const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
           sessionId={relationId}
           prompt={prompt}
           onRegenerate={() => send()}
-          renderContent={(content) => <Markdown markdown={content} fillInIncompleteTokens />}
+          renderContent={(content) => <ChatMarkdown markdown={content} fillInIncompleteTokens />}
         ></StreamMsgWrapper>
       ),
       className: styles.chat_with_more_actions,
