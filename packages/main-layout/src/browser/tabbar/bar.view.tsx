@@ -69,8 +69,7 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
     const styles_bar_content = useDesignStyles(styles.bar_content);
 
     React.useEffect(() => {
-      // 内部只关注总的宽度
-      tabbarService.barSize = barSize + panelBorderSize;
+      tabbarService.updateBarSize(barSize + panelBorderSize);
     }, []);
 
     const { currentContainerId, handleTabClick } = tabbarService;
