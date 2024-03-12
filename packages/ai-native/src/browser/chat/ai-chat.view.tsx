@@ -5,7 +5,7 @@ import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elemen
 import { CODICON_OWNER, IAIReporter, getExternalIcon, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { uuid } from '@opensumi/ide-core-common';
+import { localize, uuid } from '@opensumi/ide-core-common';
 
 import { AISerivceType, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
@@ -17,7 +17,7 @@ import { Thinking } from '../components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './ai-chat.module.less';
-import { AiChatService } from './ai-chat.service';
+import { AIChatService } from './ai-chat.service';
 
 import 'react-chat-elements/dist/main.css';
 
@@ -31,7 +31,7 @@ interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'class
 type AIMessageData = Omit<MessageData, 'role' | 'position' | 'title'>;
 
 interface ReplayComponentParam {
-  aiChatService: AiChatService;
+  aiChatService: AIChatService;
   aiReporter: IAIReporter;
   chatAgentService: IChatAgentService;
   relationId: string;
@@ -50,14 +50,13 @@ const createMessage = (message: MessageData) => ({
 const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
 
-const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
-const ME_NAME = '';
+const ME_NAME = 'Me';
 
 const defaultSampleQuestions = [];
 
 const InitMsgComponent = () => {
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiChatService = useInjectable<AIChatService>(AIChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
   const [sampleQuestions, setSampleQuestions] =
@@ -133,8 +132,8 @@ const InitMsgComponent = () => {
   );
 };
 
-export const AiChatView = observer(() => {
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
+export const AIChatView = observer(() => {
+  const aiChatService = useInjectable<AIChatService>(AIChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
@@ -151,6 +150,8 @@ export const AiChatView = observer(() => {
   const [state, updateState] = React.useState<any>();
 
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
+
+  const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
 
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
@@ -373,7 +374,6 @@ export const AiChatView = observer(() => {
     aiChatService.cancelChatViewToken();
     aiChatService.destroyStreamRequest(msgStreamManager.currentSessionId);
     aiChatService.clearSessionModel();
-    // 清除滚动条出现时的分割线
     containerRef?.current?.classList.remove(SCROLL_CLASSNAME);
     setMessageListData([firstMsg]);
   }, [messageListData]);
@@ -389,7 +389,7 @@ export const AiChatView = observer(() => {
     <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
         <div className={styles.left}>
-          <span className={styles.title}>{AI_NAME}</span>
+          <span className={styles.title}>{aiAssistantName}</span>
         </div>
         <div className={styles.right}>
           <Popover insertClass={styles.popover_icon} id={'ai-chat-header-clear'} title='清空'>
@@ -403,7 +403,6 @@ export const AiChatView = observer(() => {
       <div className={styles.body_container}>
         <div className={styles.left_bar} id='ai_chat_left_container'>
           <div className={styles.chat_container} ref={containerRef}>
-            {/* @ts-ignore */}
             <MessageList
               className={styles.message_list}
               lockable={true}
@@ -413,9 +412,8 @@ export const AiChatView = observer(() => {
             />
             {loading && (
               <div className={styles.chat_loading_msg_box}>
-                {/* @ts-ignore */}
                 <SystemMessage
-                  title={AI_NAME}
+                  title={aiAssistantName}
                   className={styles.smsg}
                   // @ts-ignore
                   text={<Thinking status={EMsgStreamStatus.THINKING} />}

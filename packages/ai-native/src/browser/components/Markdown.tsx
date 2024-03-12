@@ -232,20 +232,20 @@ function completeSingleLinePattern(token: marked.Tokens.ListItem | marked.Tokens
 
     const lines = raw.split('\n');
     const lastLine = lines[lines.length - 1];
-    if (lastLine.includes('`')) {
-      return completeCodespan(token);
-    } else if (lastLine.includes('**')) {
-      return completeDoublestar(token);
-    } else if (lastLine.match(/\*\w/)) {
-      return completeStar(token);
-    } else if (lastLine.match(/(^|\s)__\w/)) {
-      return completeDoubleUnderscore(token);
-    } else if (lastLine.match(/(^|\s)_\w/)) {
-      return completeUnderscore(token);
-    } else if (lastLine.match(/(^|\s)\[.*\]\(\w*/)) {
-      return completeLinkTarget(token);
-    } else if (lastLine.match(/(^|\s)\[\w/)) {
-      return completeLinkText(token);
+    const patterns = [
+      { condition: lastLine.includes('`'), action: completeCodespan },
+      { condition: lastLine.includes('**'), action: completeDoublestar },
+      { condition: lastLine.match(/\*\w/), action: completeStar },
+      { condition: lastLine.match(/(^|\s)__\w/), action: completeDoubleUnderscore },
+      { condition: lastLine.match(/(^|\s)_\w/), action: completeUnderscore },
+      { condition: lastLine.match(/(^|\s)\[.*\]\(\w*/), action: completeLinkTarget },
+      { condition: lastLine.match(/(^|\s)\[\w/), action: completeLinkText },
+    ];
+
+    for (const pattern of patterns) {
+      if (pattern.condition) {
+        return pattern.action(token);
+      }
     }
   }
 

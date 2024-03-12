@@ -1,11 +1,11 @@
 import { Injectable, Provider } from '@opensumi/di';
 import { AIBackSerivcePath, AIBackSerivceToken, BrowserModule, IAIInlineChatService } from '@opensumi/ide-core-browser';
 
-import { IAINativeService, IAiChatService, IChatAgentService, IChatManagerService } from '../common';
+import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerService } from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
-import { AiChatService } from './chat/ai-chat.service';
+import { AIChatService } from './chat/ai-chat.service';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -43,8 +43,8 @@ export class AINativeModule extends BrowserModule {
       useClass: ChatAgentViewService,
     },
     {
-      token: IAiChatService,
-      useClass: AiChatService,
+      token: IAIChatService,
+      useClass: AIChatService,
     },
   ];
 
@@ -52,7 +52,7 @@ export class AINativeModule extends BrowserModule {
     {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
-      clientToken: IAiChatService,
+      clientToken: IAIChatService,
     },
   ];
 }

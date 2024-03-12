@@ -17,7 +17,7 @@ import {
   IChatProgress,
 } from '../../common';
 
-import { AiChatService } from './ai-chat.service';
+import { AIChatService } from './ai-chat.service';
 
 @Injectable()
 export class ChatAgentService extends Disposable implements IChatAgentService {
@@ -32,8 +32,8 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired(AiChatService)
-  aiChatService: AiChatService;
+  @Autowired(AIChatService)
+  aiChatService: AIChatService;
 
   constructor() {
     super();

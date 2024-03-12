@@ -4,9 +4,10 @@ import { IAIReporter, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+import { localize } from '@opensumi/ide-core-common';
 
-import { AiResponseTips } from '../../common';
-import { AiChatService } from '../chat/ai-chat.service';
+import { AIResponseTips } from '../../common';
+import { AIChatService } from '../chat/ai-chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
@@ -23,7 +24,7 @@ interface ITinkingProps {
 }
 
 export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessage }: ITinkingProps) => {
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiChatService = useInjectable<AIChatService>(AIChatService);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   const handlePause = useCallback(async () => {
@@ -59,7 +60,7 @@ export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessa
           </span>
           <div className={styles.block} onClick={handlePause}>
             <Icon className={getIcon('circle-pause')}></Icon>
-            <span>停止</span>
+            <span>{localize('aiNative.operate.stop.title')}</span>
           </div>
         </div>
       </div>
@@ -76,7 +77,7 @@ export const ThinkingResult = ({
   hasMessage,
   regenerateDisabled,
 }: ITinkingProps) => {
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiChatService = useInjectable<AIChatService>(AIChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
@@ -100,7 +101,7 @@ export const ThinkingResult = ({
         ? !hasMessage
         : !message?.trim()
     ) {
-      return <span>{AiResponseTips.STOP_IMMEDIATELY}</span>;
+      return <span>{AIResponseTips.STOP_IMMEDIATELY}</span>;
     }
 
     return children;
@@ -121,7 +122,7 @@ export const ThinkingResult = ({
                 className={styles.transform}
                 onClick={handleRegenerate}
               >
-                <span>重新生成</span>
+                <span>{localize('aiNative.operate.afresh.title')}</span>
               </EnhanceIcon>
             ) : null}
           </div>

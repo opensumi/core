@@ -1,7 +1,7 @@
-import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../common';
+import { AI_CHAT_CONTAINER_VIEW_ID } from '../../common';
 
-export const AiChatLayoutConfig = {
-  [Ai_CHAT_CONTAINER_VIEW_ID]: {
-    modules: [Ai_CHAT_CONTAINER_VIEW_ID],
+export const AIChatLayoutConfig = {
+  [AI_CHAT_CONTAINER_VIEW_ID]: {
+    modules: [AI_CHAT_CONTAINER_VIEW_ID],
   },
 };

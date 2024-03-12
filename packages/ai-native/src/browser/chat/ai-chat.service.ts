@@ -19,7 +19,7 @@ import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
 
 @Injectable()
-export class AiChatService extends Disposable {
+export class AIChatService extends Disposable {
   @Autowired(AIBackSerivcePath)
   public aiBackService: IAIBackService;
 

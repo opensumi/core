@@ -22,7 +22,7 @@ import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import { IChatAgentService, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
-import { AiChatService } from '../chat/ai-chat.service';
+import { AIChatService } from '../chat/ai-chat.service';
 import { ChatRequestModel } from '../chat/chat-model';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
@@ -97,7 +97,6 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
         height={height}
         treeData={recycleTreeData}
         onContextMenu={(e) => e.preventDefault()}
-        // onTwistierClick={e => e.stopPropagation()}
         onClick={(e, item: BasicCompositeTreeNode | BasicTreeNode) => {
           if (!fileHandle.current || !item) {
             return;
@@ -154,7 +153,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const iconService = useInjectable<IIconService>(IIconService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
-  const aiChatService = useInjectable<AiChatService>(AiChatService);
+  const aiChatService = useInjectable<AIChatService>(AIChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;

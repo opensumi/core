@@ -1,12 +1,8 @@
-export const AIInlineChatContentWidget = 'AI-inline-chat-content-widget';
-
-export const IAINativeService = Symbol('IAINativeService');
 import { CancellationToken, Event, FileType, IDisposable, IMarkdownString, Uri } from '@opensumi/ide-core-common';
 
-export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
-
-export const Ai_CHAT_CONTAINER_VIEW_ID = 'ai_chat';
-export const Ai_MENUBAR_CONTAINER_VIEW_ID = 'ai_menubar';
+export const AIInlineChatContentWidget = 'AI-inline-chat-content-widget';
+export const IAINativeService = Symbol('IAINativeService');
+export const AI_CHAT_CONTAINER_VIEW_ID = 'ai_chat';
 
 export interface IChatMessageStructure {
   /**
@@ -86,14 +82,14 @@ export enum AISerivceType {
   Agent = 'agent',
 }
 
-export const IAiChatService = Symbol('IAiChatService');
+export const IAIChatService = Symbol('IAIChatService');
 
 export interface PromptOption {
   language?: string;
   useCot?: boolean;
 }
 
-export namespace AiResponseTips {
+export namespace AIResponseTips {
   export const ERROR_RESPONSE = '当前与我互动的人太多，请稍后再试，感谢您的理解与支持';
 
   export const STOP_IMMEDIATELY = '我先不想了，有需要可以随时问我';

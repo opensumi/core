@@ -25,13 +25,13 @@ import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
-import { Ai_CHAT_CONTAINER_VIEW_ID } from '../common';
+import { AI_CHAT_CONTAINER_VIEW_ID } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
-import { AiChatView } from './chat/ai-chat.view';
-import { AiChatLayoutConfig } from './layout/layout-config';
-import { AiChatTabRenderer } from './layout/tabbar.view';
+import { AIChatView } from './chat/ai-chat.view';
+import { AIChatLayoutConfig } from './layout/layout-config';
+import { AIChatTabRenderer } from './layout/tabbar.view';
 import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Domain(
@@ -78,14 +78,14 @@ export class AINativeBrowserContribution
   initialize() {
     this.aiNativeConfigService.enable();
 
-    const supportsAiChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
+    const supportsChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
 
     let layoutConfig = this.appConfig.layoutConfig;
 
-    if (supportsAiChatAssistant) {
+    if (supportsChatAssistant) {
       layoutConfig = {
         ...layoutConfig,
-        ...AiChatLayoutConfig,
+        ...AIChatLayoutConfig,
       };
     }
 
@@ -139,19 +139,19 @@ export class AINativeBrowserContribution
 
   registerRenderer(registry: SlotRendererRegistry): void {
     if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
-      registry.registerSlotRenderer(Ai_CHAT_CONTAINER_VIEW_ID, AiChatTabRenderer);
+      registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
     }
   }
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register(
-      Ai_CHAT_CONTAINER_VIEW_ID,
+      AI_CHAT_CONTAINER_VIEW_ID,
       {
-        component: AiChatView,
-        id: Ai_CHAT_CONTAINER_VIEW_ID,
+        component: AIChatView,
+        id: AI_CHAT_CONTAINER_VIEW_ID,
       },
       {
-        containerId: Ai_CHAT_CONTAINER_VIEW_ID,
+        containerId: AI_CHAT_CONTAINER_VIEW_ID,
       },
     );
   }
