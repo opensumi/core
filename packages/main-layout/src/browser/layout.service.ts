@@ -8,6 +8,7 @@ import {
   ComponentRegistry,
   ContributionProvider,
   ExtensionActivateEvent,
+  IClientApp,
   IContextKeyService,
   IDisposable,
   ILogger,
@@ -72,6 +73,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   @Autowired(ILogger)
   private logger: ILogger;
+
+  @Autowired(IClientApp)
+  private readonly clientApp: IClientApp;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -261,9 +265,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       service.viewReady.promise
         .then(() => service.restoreState())
         .then(() => this.restoreTabbarService(service))
+        .then(() => {
+          // when app initialized, restore accordion state from remote layout state
+          this.clientApp.appInitialized.promise
+            .then(() => service.restoreState())
+            .then(() => this.restoreTabbarService(service))
+            .catch((err) => {
+              this.logger.error(`[TabbarService:${location}] restore state error`, err);
+            });
+        })
         .catch((err) => {
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
+
       const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId), 100);
       service.onSizeChange(debouncedStoreState);
       if (location === SlotLocation.bottom) {

@@ -390,7 +390,7 @@ export class ClientApp implements IClientApp, IDisposable {
     await this.contributionsProvider.run('prepare', this);
 
     if (this.opts.experimentalPreRender) {
-      // Rendering layout
+      // Rendering layout before connected
       await this.perf.measure('RenderApp.render', () => this.renderApp(container));
     }
 
