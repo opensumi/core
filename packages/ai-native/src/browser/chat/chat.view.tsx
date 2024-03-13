@@ -333,7 +333,7 @@ export const AIChatView = observer(() => {
       setLoading(true);
 
       const userInput = {
-        type: AISerivceType.GPT,
+        type: AISerivceType.Chat,
         message: prompt || message,
       };
 
@@ -382,16 +382,7 @@ export const AIChatView = observer(() => {
 
   const handleReply = React.useCallback(
     async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
-      let aiMessage;
-
-      if (
-        userInput.type === AISerivceType.GPT ||
-        userInput.type === AISerivceType.Explain ||
-        userInput.type === AISerivceType.Optimize ||
-        userInput.type === AISerivceType.Test
-      ) {
-        aiMessage = await AIStreamReply(userInput.message, replayCommandProps);
-      }
+      const aiMessage = await AIStreamReply(userInput.message, replayCommandProps);
 
       if (aiMessage) {
         dispatchMessage({ type: 'add', payload: [aiMessage] });

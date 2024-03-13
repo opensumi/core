@@ -34,18 +34,6 @@ export interface IChatMessageStructure {
   immediate?: boolean;
 }
 
-/**
- * 指令 key
- */
-export enum InstructionEnum {
-  aiExplainKey = '/ Explain ',
-  aiOptimzeKey = '/ Optimize ',
-  aiCommentsKey = '/ Comments ',
-  aiTestKey = '/ Test ',
-  aiSumiKey = '/ IDE ',
-  aiRunKey = '/ RUN ',
-}
-
 export enum ChatCompletionRequestMessageRoleEnum {
   System = 'system',
   User = 'user',
@@ -74,14 +62,7 @@ export interface ChatCompletionRequestMessage {
 }
 
 export enum AISerivceType {
-  Sumi = 'sumi',
-  GPT = 'chat',
-  Explain = 'explain',
-  Run = 'run',
-  Test = 'test',
-  Optimize = 'optimize',
-  Generate = 'generate',
-  Completion = 'completion',
+  Chat = 'chat',
   Agent = 'agent',
 }
 
