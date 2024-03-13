@@ -42,9 +42,6 @@ import {
   SCMRawResource,
   SCMRawResourceSplice,
   SCMRawResourceSplices,
-  IMainThreadSCMShape,
-  IExtHostSCMShape,
-  CommandDto,
   SCMHistoryItemDto,
   SCMHistoryItemChangeDto,
 } from '../../../common/vscode/scm';
