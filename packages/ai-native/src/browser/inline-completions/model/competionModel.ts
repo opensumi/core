@@ -72,7 +72,6 @@ export interface CompletionResultModelCache {
    */
   completionResultModel: IAICompletionResultModel | null;
 }
-/** ********************************代码补全对象 end *********************************/
 
 /**
  * 补全结果item，继承自InlineCompletionItem
@@ -80,4 +79,3 @@ export interface CompletionResultModelCache {
 export interface InlineCompletionItem extends monaco.languages.InlineCompletion {
   sessionId: string;
 }
-/** ********************************青燕配置对象 end *********************************/

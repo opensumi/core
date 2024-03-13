@@ -37,7 +37,7 @@ export class AICompletionsService extends Disposable {
   private lastRelationId: string;
   private lastRenderTime: number;
   private lastCompletionUseTime: number;
-  // 中间间拓展 inlinecompletion
+  // 中间件拓展 inlinecompletion
   private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
   private recordRenderTime(): void {

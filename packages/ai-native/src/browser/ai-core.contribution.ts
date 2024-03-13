@@ -123,7 +123,6 @@ export class AINativeBrowserContribution
 
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
       execute: (relationId: string, sessionId: string, accept: boolean) => {
-        // 补全埋点统计
         this.aiCompletionsService.report({ sessionId, accept, relationId });
       },
     });

@@ -1,32 +1,21 @@
 import * as constants from './constants';
-/**
- * prompt数据前处理
- * 1: 去掉所有空行
- * 2: 如果行数超过{@link constants.codeFuseDefaultConfig.completionPromptMaxLineSize},取最近的{@link constants.codeFuseDefaultConfig.completionPromptMaxLineSize}行
- * @param prompt 代码上文
- * @returns
- */
+
 export function prePromptHandler(prompt: string): string {
+  // remove all empty lines
   prompt = prompt.replace(/^s*[\n]/gm, '');
   const arr = prompt.split('\n');
-  if (arr.length > constants.codeFuseDefaultConfig.completionPromptMaxLineSize) {
-    prompt = arr.slice(-constants.codeFuseDefaultConfig.completionPromptMaxLineSize).join('\n');
+  // if the number of lines is greater than n, take the last n lines
+  if (arr.length > constants.completionModel.completionPromptMaxLineSize) {
+    prompt = arr.slice(-constants.completionModel.completionPromptMaxLineSize).join('\n');
   }
   return prompt;
 }
 
-/**
- * suffix数据前处理
- * 1: 去掉所有空行
- * 2: 如果行数超过{@link constants.codeFuseDefaultConfig.completionPromptMaxLineSize},取最近的{@link constants.codeFuseDefaultConfig.completionPromptMaxLineSize}行
- * @param prompt 代码上文
- * @returns
- */
 export function preSuffixHandler(suffix: string): string {
   suffix = suffix.replace(/^s*[\n]/gm, '');
   const arr = suffix.split('\n');
-  if (arr.length > constants.codeFuseDefaultConfig.completionSuffixMaxLineSize) {
-    suffix = arr.slice(-constants.codeFuseDefaultConfig.completionSuffixMaxLineSize).join('\n');
+  if (arr.length > constants.completionModel.completionSuffixMaxLineSize) {
+    suffix = arr.slice(-constants.completionModel.completionSuffixMaxLineSize).join('\n');
   }
   return suffix;
 }

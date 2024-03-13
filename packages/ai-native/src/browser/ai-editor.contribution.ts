@@ -415,7 +415,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
             );
 
             this.logger.log(
-              'provideInlineCompletions:>>>> ',
+              'provideInlineCompletions: ',
               list.items.map((data) => data.insertText),
             );
 

@@ -5,9 +5,9 @@ const isCacheEnable = () => true;
 
 /**
  * 缓存服务
- * 1、过期时间为1min
- * 2、用prompt的hash值作为key
- * 3、缓存数量为10
+ * 1. 过期时间为 1min
+ * 2. 用 prompt 的 hash 值作为 key
+ * 3. 缓存数量为 10
  */
 
 @Injectable()
