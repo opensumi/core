@@ -432,7 +432,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       {agentId && <AgentWidget agentId={agentId} command={command} />}
       {showExpand && (
         <div className={styles.expand_icon} onClick={() => handleExpandClick()}>
-          <Popover id={'ai_chat_input_expand'} title={isExpand ? '收起' : '展开全屏'}>
+          <Popover
+            id={'ai_chat_input_expand'}
+            title={localize(isExpand ? 'aiNative.chat.expand.unfullscreen' : 'aiNative.chat.expand.fullescreen')}
+          >
             <Icon className={cls(isExpand ? getIcon('unfullscreen') : getIcon('fullescreen'))}></Icon>
           </Popover>
         </div>
@@ -468,7 +471,11 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
                   <div className={styles.loader}></div>
                 </div>
               ) : (
-                <Popover id={`ai_chat_input_send_${uuid(4)}`} title={'Enter 发送'} disable={disabled}>
+                <Popover
+                  id={`ai_chat_input_send_${uuid(4)}`}
+                  title={localize('aiNative.chat.enter.send')}
+                  disable={disabled}
+                >
                   <EnhanceIcon
                     wrapperClassName={styles.send_icon}
                     className={getIcon('send-solid')}
