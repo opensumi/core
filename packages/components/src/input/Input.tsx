@@ -54,10 +54,10 @@ export interface IInputBaseProps<T extends HTMLElement = HTMLInputElement>
 
 // copied from https://github.com/ant-design/ant-design/blob/master/components/input/Input.tsx#L33
 // simulate a Form.ChangeEvent in react.js
-function resolveOnChange(
-  target: HTMLInputElement,
-  e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLElement, MouseEvent>,
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
+function resolveOnChange<T extends HTMLInputElement = HTMLInputElement>(
+  target: T,
+  e: React.ChangeEvent<T> | React.MouseEvent<HTMLElement, MouseEvent>,
+  onChange?: (event: React.ChangeEvent<T>) => void,
 ) {
   if (typeof onChange === 'function') {
     let event = e;
@@ -69,18 +69,18 @@ function resolveOnChange(
       const originalInputValue = target.value;
       // change target ref value cause e.target.value should be '' when clear input
       target.value = '';
-      onChange(event as React.ChangeEvent<HTMLInputElement>);
+      onChange(event as React.ChangeEvent<T>);
       // reset target ref value
       target.value = originalInputValue;
       return;
     }
-    onChange(event as React.ChangeEvent<HTMLInputElement>);
+    onChange(event as React.ChangeEvent<T>);
   }
 }
 
 export const Input = React.forwardRef<
   HTMLTextAreaElement | HTMLInputElement,
-  IInputBaseProps<HTMLTextAreaElement | HTMLInputElement> & { as?: any }
+  IInputBaseProps<HTMLInputElement> & { as?: any }
 >((props, ref) => {
   const {
     defaultValue,
