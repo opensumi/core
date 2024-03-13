@@ -1,15 +1,15 @@
 import cls from 'classnames';
-import React, { useCallback, FC, ReactNode, memo } from 'react';
+import React, { FC, ReactNode, memo, useCallback } from 'react';
 
 import {
-  TreeNode,
+  Badge,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
+  TreeNode,
   TreeNodeType,
-  Badge,
 } from '@opensumi/ide-components';
-import { URI, getIcon, IMatch } from '@opensumi/ide-core-browser';
+import { IMatch, URI, getIcon, useDesignStyles } from '@opensumi/ide-core-browser';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
@@ -134,6 +134,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   decorations,
   onClick,
 }: IMarkerNodeRenderedProps) => {
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       ev.stopPropagation();
@@ -197,7 +198,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: MarkerGroupNode) => (
       <div
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={cls(styles.segment, styles_expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as MarkerGroupNode).expanded,
         })}
       />

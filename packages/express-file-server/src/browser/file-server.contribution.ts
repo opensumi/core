@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, URI, AppConfig, Schemes } from '@opensumi/ide-core-browser';
+import { AppConfig, Domain, Schemes, URI } from '@opensumi/ide-core-browser';
 import {
   StaticResourceContribution,
   StaticResourceService,

@@ -2,7 +2,7 @@
  * 用于实现效率更高的编辑操作
  */
 
-import { IRange, IPosition, IEditOperation } from './types/editor';
+import { IEditOperation, IPosition, IRange } from './types/editor';
 
 export class BasicTextLines {
   constructor(protected readonly _lines: string[], protected _eol: '\n' | '\r\n') {}

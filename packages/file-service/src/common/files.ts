@@ -16,20 +16,22 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
 
-import type { Range } from 'vscode-languageserver-types';
-
-import { IFileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
 import {
+  DidFilesChangedParams,
   Event,
+  FileChangeEvent,
   IDisposable,
-  Uri,
+  IFileSystemWatcherServer,
   URI,
-  isUndefinedOrNull,
+  Uri,
+  WatchOptions,
   hasProperty,
   isFunction,
-  FileChangeEvent,
+  isUndefinedOrNull,
 } from '@opensumi/ide-core-common';
-import { FileSystemProvider, FileStat } from '@opensumi/ide-core-common/lib/types/file';
+import { FileStat, FileSystemProvider } from '@opensumi/ide-core-common/lib/types/file';
+
+import type { Range } from 'vscode-languageserver-types';
 export {
   FileSystemProviderCapabilities,
   FileSystemProvider,

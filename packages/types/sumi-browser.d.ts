@@ -27,17 +27,20 @@ interface IComponentProps<N, W = any> {
  * @deprecated `katian-browser` is deprecated. Please use `sumi-browser` instead.
  */
 declare module 'kaitian-browser' {
+  // eslint-disable-next-line import/no-unresolved
   export * from 'sumi-browser';
 }
 
 declare module 'sumi-browser' {
+  // eslint-disable-next-line import/export
   export * from '@opensumi/ide-components';
 
   import React from 'react';
-  import type vscode from 'vscode';
   import { URI as Uri } from 'vscode-uri';
 
-  import { ROTATE_TYPE, ANIM_TYPE } from '@opensumi/ide-components';
+  import { ANIM_TYPE, ROTATE_TYPE } from '@opensumi/ide-components';
+
+  import type vscode from 'vscode';
 
   interface IRelativePattern {
     base: string;
@@ -217,7 +220,7 @@ declare module 'sumi-browser' {
    * ```
    */
   export function formatLocalize(key: string, ...args: string[]): string;
-
+  // eslint-disable-next-line import/export
   export function getIcon(iconKey: string, options?: { rotate?: ROTATE_TYPE; anim?: ANIM_TYPE }): string;
 
   /**

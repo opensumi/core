@@ -1,27 +1,27 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  Logger,
-  PreferenceService,
-  PreferenceSchemaProvider,
   IPreferenceSettingsService,
+  Logger,
+  PreferenceSchemaProvider,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import {
-  Event,
-  URI,
-  WithEventBus,
-  localize,
-  Emitter,
-  isObject,
+  ContributionProvider,
+  Deferred,
   DisposableCollection,
-  uuid,
-  isLinux,
-  isWindows,
+  Emitter,
+  Event,
+  ExtensionDidContributes,
   IThemeColor,
   OnEvent,
-  ExtensionDidContributes,
-  Deferred,
-  ContributionProvider,
+  URI,
+  WithEventBus,
   isFunction,
+  isLinux,
+  isObject,
+  isWindows,
+  localize,
+  uuid,
 } from '@opensumi/ide-core-common';
 
 import { ICSSStyleService, ThemeContributionProvider } from '../common';
@@ -33,24 +33,27 @@ import {
   selectionBackground,
 } from '../common/color-registry';
 import { ThemeChangedEvent } from '../common/event';
+import { getIconRegistry } from '../common/icon-registry';
 import {
-  ITheme,
-  ThemeType,
   ColorIdentifier,
-  getBuiltinRules,
-  getThemeType,
-  ThemeContribution,
-  IColorMap,
-  ThemeInfo,
-  IThemeService,
-  ExtColorContribution,
-  getThemeId,
-  getThemeTypeSelector,
-  IColorCustomizations,
-  ITokenColorizationRule,
-  ITokenColorCustomizations,
   DEFAULT_THEME_ID,
+  ExtColorContribution,
+  IColorCustomizations,
+  IColorMap,
+  ITheme,
+  IThemeContribution,
+  IThemeData,
+  IThemeService,
+  IThemeStore,
+  ITokenColorCustomizations,
+  ITokenColorizationRule,
+  ThemeInfo,
+  ThemeType,
   colorIdPattern,
+  getBuiltinRules,
+  getThemeId,
+  getThemeType,
+  getThemeTypeSelector,
 } from '../common/theme.service';
 
 import { ThemeData } from './theme-data';
@@ -74,6 +77,8 @@ const tokenGroupToScopesMap = {
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
   private colorRegistry = getColorRegistry();
 
+  private iconRegistry = getIconRegistry();
+
   private colorClassNameMap = new Map<string, string>();
 
   colorThemeLoaded: Deferred<void> = new Deferred();
@@ -83,14 +88,14 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private latestApplyTheme: string;
 
   private themes: Map<string, ThemeData> = new Map();
-  private themeContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
+  private themeContributionRegistry: Map<string, { contribution: IThemeContribution; basePath: URI }> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
   protected extensionReady: boolean;
 
   public onThemeChange: Event<ITheme> = this.themeChangeEmitter.event;
 
-  @Autowired()
+  @Autowired(IThemeStore)
   private themeStore: ThemeStore;
 
   @Autowired()
@@ -136,7 +141,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return this.preferenceService.get<string>(COLOR_THEME_SETTING);
   }
 
-  public registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
+  public registerThemes(themeContributions: IThemeContribution[], extPath: URI) {
     const disposables = new DisposableCollection();
     disposables.push({
       dispose: () => this.doSetPreferenceSchema(),
@@ -428,7 +433,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return Color.red;
   };
 
-  private async getTheme(id: string): Promise<ThemeData> {
+  private async getTheme(id: string): Promise<IThemeData> {
     const theme = this.themes.get(id);
     if (theme) {
       return theme;
@@ -554,7 +559,7 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeData;
+  readonly themeData: IThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined } = Object.create(null);
 
@@ -562,7 +567,7 @@ class Theme implements ITheme {
   private customColorMap: IColorMap = {};
   private customTokenColors: ITokenColorizationRule[] = [];
 
-  constructor(type: ThemeType, themeData: ThemeData) {
+  constructor(type: ThemeType, themeData: IThemeData) {
     this.type = type;
     this.themeData = themeData;
     this.patchColors();
@@ -667,7 +672,10 @@ class Theme implements ITheme {
   private patchTokenColors() {
     // 当默认颜色不在settings当中时，需要补充至颜色值中，默认颜色设置 scope 为 ['']
     // 需要注意的是，后续进行取值时，会依赖数组顺序，初始化后，请不要随意修改
-    if (this.themeData.themeSettings.filter((setting) => setting.scope?.length === 1 && setting.scope[0] === '').length === 0) {
+    if (
+      this.themeData.themeSettings.filter((setting) => setting.scope?.length === 1 && setting.scope[0] === '')
+        .length === 0
+    ) {
       this.themeData.themeSettings.unshift({
         settings: {
           foreground: this.themeData.colors['editor.foreground']

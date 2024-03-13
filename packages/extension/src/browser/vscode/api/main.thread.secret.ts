@@ -1,9 +1,9 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { AppConfig, ICredentialsService, Disposable } from '@opensumi/ide-core-browser';
+import { AppConfig, Disposable, ICredentialsService } from '@opensumi/ide-core-browser';
 import { ICryptoService } from '@opensumi/ide-core-browser/lib/services';
 
-import { ExtHostAPIIdentifier, IMainThreadSecret, IExtHostSecret } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostSecret, IMainThreadSecret } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadSecret extends Disposable implements IMainThreadSecret {

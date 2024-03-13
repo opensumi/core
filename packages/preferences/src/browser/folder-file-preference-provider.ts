@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { URI, PreferenceScope } from '@opensumi/ide-core-browser';
+import { PreferenceScope, URI } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 

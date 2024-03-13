@@ -1,9 +1,9 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { RGBA, Color } from '../color';
+import { Color, RGBA } from '../color';
 import { registerColor, transparent } from '../utils';
 
-import { editorWarningForeground, editorWarningBorder } from './editor';
+import { editorWarningBorder, editorWarningForeground } from './editor';
 import {
   scrollbarSliderActiveBackground,
   scrollbarSliderBackground,

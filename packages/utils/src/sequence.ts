@@ -1,4 +1,4 @@
-import { Event, Emitter } from './event';
+import { Emitter, Event } from './event';
 
 export interface ISplice<T> {
   readonly start: number;

@@ -1,32 +1,30 @@
-import type vscode from 'vscode';
-
-import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  EDITOR_COMMANDS,
-  UriComponents,
+  CUSTOM_EDITOR_SCHEME,
   ClientAppContribution,
   CommandContribution,
   CommandRegistry,
   CommandService,
   Domain,
+  EDITOR_COMMANDS,
   FILE_COMMANDS,
-  formatLocalize,
-  getIcon,
+  IApplicationService,
   IAsyncResult,
   IClientApp,
   IContextKeyService,
   IEventBus,
+  ILogger,
   IPreferenceSettingsService,
-  localize,
   QuickOpenItem,
   QuickOpenService,
-  replaceLocalizePlaceholder,
-  URI,
-  ILogger,
-  CUSTOM_EDITOR_SCHEME,
-  runWhenIdle,
   QuickPickService,
-  IApplicationService,
+  URI,
+  UriComponents,
+  formatLocalize,
+  getIcon,
+  localize,
+  replaceLocalizePlaceholder,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -39,13 +37,13 @@ import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
 
 import {
-  ExtensionNodeServiceServerPath,
-  IExtensionNodeClientService,
   EMIT_EXT_HOST_EVENT,
   ExtensionHostProfilerServicePath,
+  ExtensionHostTypeUpperCase,
+  ExtensionNodeServiceServerPath,
   ExtensionService,
   IExtensionHostProfilerService,
-  ExtensionHostTypeUpperCase,
+  IExtensionNodeClientService,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
@@ -53,13 +51,15 @@ import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from 
 
 import {
   AbstractExtInstanceManagementService,
-  ExtensionApiReadyEvent,
   ExtHostEvent,
+  ExtensionApiReadyEvent,
   IActivationEventService,
   Serializable,
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { WalkthroughsService } from './walkthroughs.service';
+
+import type vscode from 'vscode';
 
 export const getClientId = (injector: Injector) => {
   const service: IApplicationService = injector.get(IApplicationService);

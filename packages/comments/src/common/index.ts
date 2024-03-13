@@ -1,20 +1,20 @@
 import React from 'react';
 
-import type { ITree, ITreeNode } from '@opensumi/ide-components';
 import {
-  IRange,
-  URI,
-  IDisposable,
-  MaybePromise,
-  Event,
   BasicEvent,
-  positionToRange,
+  Event,
   IContextKeyService,
+  IDisposable,
   IMarkdownString,
+  IRange,
+  MaybePromise,
+  URI,
+  positionToRange,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
-// eslint-disable-next-line import/no-restricted-paths
-import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser/doc-model/types';
+
+import type { ITree, ITreeNode } from '@opensumi/ide-components';
+import type { IEditorDocumentModel } from '@opensumi/ide-editor/src/common/editor';
 
 export type Writable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -517,6 +517,11 @@ export interface ICommentsThread extends IDisposable {
    * 评论面板的 context key service
    */
   contextKeyService: IContextKeyService;
+  /**
+   * 更新当前 thread 的评论列表
+   * @param comments
+   */
+  updateComments(comments: IComment[]): void;
   /**
    * 添加评论
    * @param comment

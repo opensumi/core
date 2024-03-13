@@ -7,7 +7,7 @@
 // copy and modified from https://github.com/Daninet/hash-wasm/blob/bd3a205ca5603fc80adf71d0966fc72e8d4fa0ef/lib/WASMInterface.ts
 
 import { Mutex } from './mutex';
-import { decodeBase64, getDigestHex, getUInt8Buffer, IDataType, writeHexToUInt8, hexStringEqualsUInt8 } from './util';
+import { IDataType, decodeBase64, getDigestHex, getUInt8Buffer, hexStringEqualsUInt8, writeHexToUInt8 } from './util';
 
 export const MAX_HEAP = 16 * 1024;
 const WASM_FUNC_HASH_LENGTH = 4;

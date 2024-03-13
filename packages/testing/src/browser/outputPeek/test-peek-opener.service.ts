@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, URI } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
@@ -6,7 +6,7 @@ import { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform
 import { ITestResult, TestResultServiceToken } from '../../common/test-result';
 import { ITestMessage, ITestTaskState, TestResultItem } from '../../common/testCollection';
 import { ITestingPeekOpenerService } from '../../common/testingPeekOpener';
-import { buildTestUri, ParsedTestUri, TestUriType } from '../../common/testingUri';
+import { ParsedTestUri, TestUriType, buildTestUri } from '../../common/testingUri';
 import { TestResultServiceImpl } from '../test.result.service';
 
 import { TestOutputPeekContribution } from './test-output-peek';

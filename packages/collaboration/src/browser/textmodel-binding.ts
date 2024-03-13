@@ -1,26 +1,27 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createMutex } from 'lib0/mutex';
+// @ts-ignore
 import { Awareness } from 'y-protocols/awareness';
 import {
-  Text as YText,
-  Doc as YDoc,
-  UndoManager,
-  createAbsolutePositionFromRelativePosition,
-  YTextEvent,
-  createRelativePositionFromTypeIndex,
   RelativePosition,
+  UndoManager,
+  Doc as YDoc,
+  Text as YText,
+  YTextEvent,
+  createAbsolutePositionFromRelativePosition,
+  createRelativePositionFromTypeIndex,
   // @ts-ignore
 } from 'yjs';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { ITextModel, ICodeEditor, Position } from '@opensumi/ide-monaco';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ICodeEditor, ITextModel, Position } from '@opensumi/ide-monaco';
 import { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import {
-  editor,
-  SelectionDirection,
-  Selection,
-  Range,
   IDisposable,
+  Range,
+  Selection,
+  SelectionDirection,
+  editor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ICollaborationService, ITextModelBinding, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';

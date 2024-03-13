@@ -4,6 +4,7 @@ import { IRelativePattern, match } from './glob';
 import { Path } from './path';
 
 export { URI as Uri, Utils as UriUtils } from 'vscode-uri';
+
 // 3.0 的 vscode-uri 没有导出这个
 export interface UriComponents {
   scheme: string;
@@ -244,6 +245,10 @@ export class URI {
 
   toString(skipEncoding?: boolean) {
     return this.codeUri.toString(skipEncoding);
+  }
+
+  toJSON() {
+    return this.codeUri.toJSON();
   }
 
   isEqualOrParent(uri: URI): boolean {

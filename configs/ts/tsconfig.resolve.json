@@ -122,7 +122,11 @@
       "@opensumi/ide-playwright": ["../../../tools/playwright/src/index.ts"],
       "@opensumi/ide-playwright/lib/*": ["../../../tools/playwright/src/*"],
       "@opensumi/cli-engine": ["../../../tools/cli-engine/src/index.ts"],
-      "@opensumi/cli-engine/lib/*": ["../../../tools/cli-engine/src/*"]
+      "@opensumi/cli-engine/lib/*": ["../../../tools/cli-engine/src/*"],
+      "@opensumi/ide-design": ["../packages/design/src/index.ts"],
+      "@opensumi/ide-design/lib/*": ["../packages/design/src/*"],
+      "@opensumi/ide-ai-native": ["../packages/ai-native/src/index.ts"],
+      "@opensumi/ide-ai-native/lib/*": ["../packages/ai-native/src/*"]
     }
   }
 }

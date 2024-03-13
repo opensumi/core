@@ -1,8 +1,7 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IMarker, MarkerSeverity, URI, Disposable, compareRangesUsingStarts } from '@opensumi/ide-core-common';
-import { arrays } from '@opensumi/ide-core-common';
+import { Disposable, IMarker, MarkerSeverity, URI, arrays, compareRangesUsingStarts } from '@opensumi/ide-core-common';
 
 import { IMarkerService, IRenderableMarkerModel, MarkerModelBuilder } from '../common';
 

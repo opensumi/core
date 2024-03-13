@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { CommentContentNode, CommentRoot } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
-import { IContextKeyService, positionToRange, URI } from '@opensumi/ide-core-browser';
+import { IContextKeyService, URI, positionToRange } from '@opensumi/ide-core-browser';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -9,7 +9,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
-import { ICommentsService, ICommentsFeatureRegistry, CommentMode } from '../../src/common';
+import { CommentMode, ICommentsFeatureRegistry, ICommentsService } from '../../src/common';
 
 describe('comment service test', () => {
   let injector: MockInjector;

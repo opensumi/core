@@ -1,41 +1,46 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  TreeModel,
-  DecorationsManager,
   Decoration,
+  DecorationsManager,
   IRecycleTreeHandle,
+  IWatcherEvent,
+  NewPromptHandle,
+  RenamePromptHandle,
+  TreeModel,
+  TreeNodeEvent,
   TreeNodeType,
   WatchEvent,
-  TreeNodeEvent,
-  NewPromptHandle,
-  IWatcherEvent,
-  RenamePromptHandle,
 } from '@opensumi/ide-components';
 import {
-  Emitter,
-  IContextKeyService,
-  ThrottledDelayer,
   Deferred,
-  Event,
   DisposableCollection,
-  StorageProvider,
-  STORAGE_NAMESPACE,
+  Emitter,
+  Event,
   IClipboardService,
   IContextKey,
+  IContextKeyService,
   IReporterService,
-  path,
+  STORAGE_NAMESPACE,
+  StorageProvider,
+  ThrottledDelayer,
   pSeries,
+  path,
 } from '@opensumi/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugWatch } from '../../model';
-import { ExpressionContainer, DebugWatchNode, DebugWatchRoot } from '../../tree/debug-tree-node.define';
+import {
+  DebugVariable,
+  DebugVariableContainer,
+  DebugWatchNode,
+  DebugWatchRoot,
+  ExpressionContainer,
+} from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 
 import { CONTEXT_WATCH_EXPRESSIONS_FOCUSED, CONTEXT_WATCH_ITEM_TYPE } from './../../../common/constants';
 import { IDebugSessionManager } from './../../../common/debug-session';
-import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-node.define';
 import { DebugWatchModel } from './debug-watch-model';
 import styles from './debug-watch.module.less';
 

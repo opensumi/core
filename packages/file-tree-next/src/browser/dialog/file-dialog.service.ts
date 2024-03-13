@@ -1,5 +1,5 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
 import { Schemes, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileStat } from '@opensumi/ide-file-service';

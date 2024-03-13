@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, Disposable, URI, Schemes } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, IDisposable, Schemes, URI } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
-import { IRunTimeParams, AbstractSumiBrowserContributionRunner, IEditorViewContribution } from '../types';
+import { AbstractSumiBrowserContributionRunner, IEditorViewContribution, IRunTimeParams } from '../types';
 
 @Injectable({ multiple: true })
 export class EditorBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {

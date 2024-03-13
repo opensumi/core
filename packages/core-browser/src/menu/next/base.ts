@@ -1,23 +1,22 @@
 import ReactIs from 'react-is';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ButtonType } from '@opensumi/ide-components';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import {
-  replaceLocalizePlaceholder,
-  ILogger,
-  Disposable,
-  combinedDisposable,
-  CommandRegistry,
-  IDisposable,
-  Event,
-  Emitter,
   Command,
+  CommandRegistry,
   ContributionProvider,
+  Disposable,
+  Emitter,
+  Event,
+  IDisposable,
+  ILogger,
   ISumiMenuExtendInfo,
+  combinedDisposable,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-
 
 import { MenuId } from './menu-id';
 

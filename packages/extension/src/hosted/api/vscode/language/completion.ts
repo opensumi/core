@@ -1,7 +1,4 @@
-import type vscode from 'vscode';
-
-import { Uri as URI, Cache } from '@opensumi/ide-core-common';
-import { DisposableStore } from '@opensumi/ide-core-common';
+import { Cache, DisposableStore, Uri as URI } from '@opensumi/ide-core-common';
 
 import {
   ExtensionDocumentDataManager,
@@ -12,17 +9,19 @@ import {
   RangeSuggestDataDto,
 } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
-import { SnippetString, Range, CompletionList, CompletionItemLabel } from '../../../../common/vscode/ext-types';
+import { CompletionItemLabel, CompletionList, Range, SnippetString } from '../../../../common/vscode/ext-types';
 import {
+  ChainedCacheId,
   CompletionContext,
-  Position,
   CompletionItemInsertTextRule,
   Range as ModelRange,
-  ChainedCacheId,
+  Position,
 } from '../../../../common/vscode/model.api';
 import { CommandsConverter } from '../ext.host.command';
 
 import { getPerformance } from './util';
+
+import type vscode from 'vscode';
 
 export class CompletionAdapter {
   private cache = new Cache<{

@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
+  AppConfig,
   Disposable,
   DomListener,
-  getDebugLogger,
   IDisposable,
-  AppConfig,
   electronEnv,
+  getDebugLogger,
 } from '@opensumi/ide-core-browser';
 
 import { WebviewScheme } from '../common';

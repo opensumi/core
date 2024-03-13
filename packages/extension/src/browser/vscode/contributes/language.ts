@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase, localize, URI } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IJSONSchema, LifeCyclePhase, URI, localize } from '@opensumi/ide-core-common';
 import { LanguagesContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
 export type LanguagesSchema = Array<LanguagesContribution>;
@@ -30,7 +30,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   }
 
   // copied from vscode
-  static schema = {
+  static schema: IJSONSchema = {
     allowComments: true,
     allowTrailingCommas: true,
     default: {

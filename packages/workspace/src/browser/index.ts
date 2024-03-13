@@ -1,8 +1,7 @@
 import { Provider } from '@opensumi/di';
-import { BrowserModule, EffectDomain } from '@opensumi/ide-core-browser';
+import { BrowserModule, Domain } from '@opensumi/ide-core-browser';
 
-import { IWorkspaceStorageService } from '../common';
-import { IWorkspaceService } from '../common';
+import { IWorkspaceService, IWorkspaceStorageService } from '../common';
 
 import { WorkspaceContribution } from './workspace-contribution';
 import { injectWorkspacePreferences } from './workspace-preferences';
@@ -12,7 +11,7 @@ import { WorkspaceVariableContribution } from './workspace-variable-contribution
 
 const pkgJson = require('../../package.json');
 
-@EffectDomain(pkgJson.name)
+@Domain(pkgJson.name)
 export class WorkspaceModule extends BrowserModule {
   providers: Provider[] = [
     {

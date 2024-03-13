@@ -1,5 +1,6 @@
+import { Event, ParsedPattern, URI, parseGlob, strings } from '@opensumi/ide-core-common';
+
 import type { ITree, ValidateMessage } from '@opensumi/ide-components';
-import { parseGlob, ParsedPattern, URI, strings, Event } from '@opensumi/ide-core-common';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 

@@ -1,4 +1,4 @@
-import { formatLocalize, IRange } from '@opensumi/ide-core-browser';
+import { IRange, formatLocalize } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';

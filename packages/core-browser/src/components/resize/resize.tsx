@@ -396,7 +396,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const cachedNextElement = React.useRef<HTMLElement>();
 
   const requestFrame = React.useRef<number>();
-  // direction: true为向下，false为向上
+  // direction: true 为向下，false 为向上
   const setSize = (prev: number, next: number, direction?: boolean) => {
     const prevEle = props.findPrevElement ? props.findPrevElement(direction) : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;

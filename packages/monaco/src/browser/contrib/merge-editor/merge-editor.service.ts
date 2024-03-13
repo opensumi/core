@@ -1,24 +1,24 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   CommandService,
   Disposable,
   EDITOR_COMMANDS,
   Emitter,
   Event,
-  localize,
   MonacoService,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
+import { DetailedLineRangeMapping } from '../../../common/diff';
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
-import { LineRangeMapping } from './model/line-range-mapping';
 import { ACCEPT_CURRENT_ACTIONS, IEditorMountParameter } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
@@ -211,11 +211,11 @@ export class MergeEditorService extends Disposable {
     return this.incomingView.getEditor();
   }
 
-  public getTurnLeftRangeMapping(): LineRangeMapping[] {
+  public getTurnLeftRangeMapping(): DetailedLineRangeMapping[] {
     return this.mappingManagerService.documentMappingTurnLeft.getMetaLineRangeMapping();
   }
 
-  public getTurnRightRangeMapping(): LineRangeMapping[] {
+  public getTurnRightRangeMapping(): DetailedLineRangeMapping[] {
     return this.mappingManagerService.documentMappingTurnRight.getMetaLineRangeMapping();
   }
 
@@ -226,13 +226,13 @@ export class MergeEditorService extends Disposable {
   }
 
   public async compare(
-    memoryMapping1: LineRangeMapping[] = [],
-    memoryMapping2: LineRangeMapping[] = [],
+    memoryMapping1: DetailedLineRangeMapping[] = [],
+    memoryMapping2: DetailedLineRangeMapping[] = [],
   ): Promise<void> {
     this.mappingManagerService.clearMapping();
 
-    let turnLeftMapping: LineRangeMapping[] = memoryMapping1;
-    let turnRightMapping: LineRangeMapping[] = memoryMapping2;
+    let turnLeftMapping: readonly DetailedLineRangeMapping[] = memoryMapping1;
+    let turnRightMapping: readonly DetailedLineRangeMapping[] = memoryMapping2;
 
     if (memoryMapping1.length === 0 && memoryMapping2.length === 0) {
       this.resultView.reset();

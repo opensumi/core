@@ -1,7 +1,7 @@
 import throttle from 'lodash/throttle';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { DisposableCollection, Emitter, Event, MessageType, ILogger, localize } from '@opensumi/ide-core-common';
+import { DisposableCollection, Emitter, Event, ILogger, MessageType, localize } from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -9,7 +9,7 @@ import { IDebugConsoleSession } from '../../../common';
 import { handleANSIOutput } from '../../debug-ansi-handle';
 import { LinkDetector } from '../../debug-link-detector';
 import { DebugSession } from '../../debug-session';
-import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
+import { AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer, ExpressionContainer } from '../../tree';
 
 import { DebugConsoleTreeModel } from './debug-console-model';
 

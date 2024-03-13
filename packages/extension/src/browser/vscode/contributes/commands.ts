@@ -1,14 +1,14 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { AppConfig, CommandRegistry } from '@opensumi/ide-core-browser';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
-import { ThemeType, IIconService, IconType } from '@opensumi/ide-theme';
+import { IIconService, IconType, ThemeType } from '@opensumi/ide-theme';
 
 import {
-  VSCodeContributePoint,
   Contributes,
   ExtensionService,
   IExtCommandManagement,
   LifeCycle,
+  VSCodeContributePoint,
 } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 

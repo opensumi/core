@@ -1,23 +1,23 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { WithEventBus, OnEvent, IExtensionInfo, URI } from '@opensumi/ide-core-common';
+import { IExtensionInfo, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
 
 import {
-  IMainThreadCustomEditor,
-  IExtHostCustomEditor,
   CustomEditorType,
-  ICustomEditorOptions,
   ExtHostAPIIdentifier,
+  ICustomEditorOptions,
+  IExtHostCustomEditor,
+  IMainThreadCustomEditor,
 } from '../../../common/vscode';
 import {
-  CustomEditorShouldDisplayEvent,
   CustomEditorOptionChangeEvent,
-  CustomEditorShouldHideEvent,
-  CustomEditorShouldSaveEvent,
-  CustomEditorShouldRevertEvent,
+  CustomEditorShouldDisplayEvent,
   CustomEditorShouldEditEvent,
+  CustomEditorShouldHideEvent,
+  CustomEditorShouldRevertEvent,
+  CustomEditorShouldSaveEvent,
 } from '../../../common/vscode/custom-editor';
 import { UriComponents } from '../../../common/vscode/models';
 

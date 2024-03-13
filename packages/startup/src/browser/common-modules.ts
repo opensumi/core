@@ -1,8 +1,10 @@
 import { ClientAddonModule } from '@opensumi/ide-addons/lib/browser';
+import { AINativeModule } from '@opensumi/ide-ai-native/lib/browser';
 import { CommentsModule } from '@opensumi/ide-comments/lib/browser';
-import { ClientCommonModule, BrowserModule, ConstructorOf } from '@opensumi/ide-core-browser';
+import { BrowserModule, ClientCommonModule, ConstructorOf } from '@opensumi/ide-core-browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
+import { DesignModule } from '@opensumi/ide-design/lib/browser';
 import { EditorModule } from '@opensumi/ide-editor/lib/browser';
 import { ExplorerModule } from '@opensumi/ide-explorer/lib/browser';
 import { ExtensionModule } from '@opensumi/ide-extension/lib/browser';
@@ -87,4 +89,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   CommentsModule,
   TaskModule,
   TestingModule,
+
+  DesignModule,
+  AINativeModule,
 ];

@@ -5,7 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/event.ts
 
 import { CancellationToken } from './cancellation';
-import { DisposableStore, combinedDisposable, Disposable, IDisposable, toDisposable } from './disposable';
+import { Disposable, DisposableStore, IDisposable, combinedDisposable, toDisposable } from './disposable';
 import { onUnexpectedError } from './errors';
 import { once as onceFn } from './functional';
 import { LinkedList } from './linked-list';
@@ -1047,5 +1047,42 @@ export class Dispatcher<T = void> implements IDisposable {
     if (this._emitter) {
       this._emitter.dispose();
     }
+  }
+}
+
+export class EventQueue<T> {
+  emitter = new Emitter<T>();
+
+  queue: T[] = [];
+
+  isOpened = false;
+  open() {
+    this.isOpened = true;
+    this.queue.forEach((data) => {
+      this.emitter.fire(data);
+    });
+    this.queue = [];
+  }
+
+  push(data: T) {
+    if (this.isOpened) {
+      this.emitter.fire(data);
+    } else {
+      this.queue.push(data);
+    }
+  }
+
+  on(cb: (data: T) => void) {
+    const disposable = this.emitter.event(cb);
+
+    if (!this.isOpened) {
+      this.open();
+    }
+
+    return disposable;
+  }
+
+  dispose() {
+    this.emitter.dispose();
   }
 }

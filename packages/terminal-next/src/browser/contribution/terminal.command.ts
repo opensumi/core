@@ -1,29 +1,29 @@
 import { Autowired } from '@opensumi/di';
 import {
-  URI,
-  Domain,
-  getIcon,
   AppConfig,
-  CommandService,
   COMMON_COMMANDS,
-  CommandRegistry,
-  PreferenceService,
   CommandContribution,
-  IPreferenceSettingsService,
-  ILogger,
+  CommandRegistry,
+  CommandService,
+  Domain,
   IClipboardService,
-  TerminalSettingsId,
+  ILogger,
+  IPreferenceSettingsService,
+  PreferenceService,
   TERMINAL_COMMANDS,
+  TerminalSettingsId,
+  URI,
+  getIcon,
 } from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import {
-  ITerminalController,
-  ITerminalRestore,
-  ITerminalGroupViewService,
-  ITerminalSearchService,
   ITerminalApiService,
   ITerminalClient,
+  ITerminalController,
+  ITerminalGroupViewService,
+  ITerminalRestore,
+  ITerminalSearchService,
 } from '../../common';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';

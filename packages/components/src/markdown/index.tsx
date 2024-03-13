@@ -1,4 +1,4 @@
-import { marked, Renderer } from 'marked';
+import { Renderer, marked } from 'marked';
 import React from 'react';
 
 import { DATA_SET_COMMAND, IOpenerShape, RenderWrapper } from './render';

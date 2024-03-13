@@ -1,17 +1,17 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { arrays, strings, CancellationToken, Uri, toDisposable, getDebugLogger, path } from '@opensumi/ide-core-common';
+import { CancellationToken, Uri, arrays, getDebugLogger, path, strings, toDisposable } from '@opensumi/ide-core-common';
 
 import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import {
-  IMainThreadDecorationsShape,
-  DecorationRequest,
-  DecorationReply,
   DecorationData,
+  DecorationReply,
+  DecorationRequest,
   IExtHostDecorationsShape,
+  IMainThreadDecorationsShape,
 } from '../../../common/vscode/decoration';
 import { FileDecoration } from '../../../common/vscode/ext-types';
+
+import type vscode from 'vscode';
 
 const { asArray, groupBy } = arrays;
 const { compare, count } = strings;

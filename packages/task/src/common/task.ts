@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
-import { IJSONSchemaMap, isString, path, URI, ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
+import { IJSONSchemaMap, ProblemMatch, ProblemMatcher, URI, isString, path } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 
 import { IWorkspaceFolder } from './index';

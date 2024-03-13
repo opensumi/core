@@ -2,10 +2,10 @@ import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
 import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { ICodeEditorViewState } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
+import { DetailedLineRangeMapping } from '../../../common/diff';
 import { IModelDecorationOptions } from '../../monaco-api/editor';
 
 import { LineRange } from './model/line-range';
-import { LineRangeMapping } from './model/line-range-mapping';
 import { BaseCodeEditor } from './view/editors/baseCodeEditor';
 import styles from './view/merge-editor.module.less';
 
@@ -167,8 +167,8 @@ export interface IMergeEditorViewState {
   [EditorViewType.CURRENT]: ICodeEditorViewState | null;
   [EditorViewType.RESULT]: ICodeEditorViewState | null;
   [EditorViewType.INCOMING]: ICodeEditorViewState | null;
-  turnLeft: LineRangeMapping[];
-  turnRight: LineRangeMapping[];
+  turnLeft: DetailedLineRangeMapping[];
+  turnRight: DetailedLineRangeMapping[];
 }
 
 export interface IEditorMountParameter {

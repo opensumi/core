@@ -1,14 +1,14 @@
 import assert from 'assert';
-import { ChildProcess, fork, SpawnOptions, spawn } from 'child_process';
+import { ChildProcess, SpawnOptions, fork, spawn } from 'child_process';
 import net from 'net';
 
-import type vscode from 'vscode';
+import { DebugAdapterForkExecutable, DebugStreamConnection } from '@opensumi/ide-debug';
 
-import { DebugStreamConnection, DebugAdapterForkExecutable } from '@opensumi/ide-debug';
-
-import { CustomChildProcessModule, CustomChildProcess } from '../../../ext.process-base';
+import { CustomChildProcess, CustomChildProcessModule } from '../../../ext.process-base';
 
 import { DirectDebugAdapter } from './abstract-debug-adapter-session';
+
+import type vscode from 'vscode';
 
 /**
  * 启动调试适配器进程

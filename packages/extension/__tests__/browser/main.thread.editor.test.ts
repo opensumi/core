@@ -92,7 +92,7 @@ const mockConfigurationService: any = {
   setValue: (k, v) => {
     emitter.fire({
       source: ConfigurationTarget.USER,
-      affectedKeys: [k],
+      affectedKeys: new Set(k),
       change: {
         keys: [k],
         overrides: [],

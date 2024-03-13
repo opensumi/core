@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor } from '../../utils';
-import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notification';
+import { NOTIFICATIONS_BACKGROUND, NOTIFICATIONS_FOREGROUND } from '../notification';
 
 export const ktPopoverForground = registerColor(
   'kt.popover.foreground',

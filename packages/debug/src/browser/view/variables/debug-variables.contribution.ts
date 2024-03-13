@@ -1,16 +1,16 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
+  ClientAppContribution,
   CommandContribution,
   CommandRegistry,
-  localize,
+  Domain,
   IQuickInputService,
   IReporterService,
   getIcon,
-  ClientAppContribution,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandService, CUSTOM_EDITOR_SCHEME, IExtensionProps, URI } from '@opensumi/ide-core-common';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { CUSTOM_EDITOR_SCHEME, CommandService, IExtensionProps, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
   EditorOpenType,
@@ -30,11 +30,11 @@ import { DebugMemoryFileSystemProvider } from '../../debug-memory';
 import { DebugViewModel } from '../debug-view-model';
 
 import {
-  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
+  CONTEXT_CAN_VIEW_MEMORY,
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_SET_VARIABLE_SUPPORTED,
+  CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
   DEBUG_MEMORY_SCHEME,
-  CONTEXT_CAN_VIEW_MEMORY,
 } from './../../../common/constants';
 import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';

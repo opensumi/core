@@ -1,28 +1,27 @@
 import { visit } from 'jsonc-parser';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  PreferenceConfigurations,
-  IContextKey,
+  CommandService,
+  CommonLanguageId,
+  Deferred,
   Emitter,
   Event,
+  IContextKey,
+  IContextKeyService,
+  IStorage,
+  PreferenceConfigurations,
   PreferenceService,
+  STORAGE_NAMESPACE,
+  StorageProvider,
+  ThrottledDelayer,
   URI,
   WaitUntilEvent,
-  IContextKeyService,
-  CommandService,
   localize,
-  StorageProvider,
-  STORAGE_NAMESPACE,
-  IStorage,
-  ThrottledDelayer,
-  Deferred,
-  CommonLanguageId,
 } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService, IOpenResourceResult } from '@opensumi/ide-editor';
+import { IOpenResourceResult, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorCollectionService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { FileSystemError } from '@opensumi/ide-file-service';
+import { FileSystemError, IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { QuickPickService } from '@opensumi/ide-quick-open';
@@ -31,9 +30,14 @@ import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/brows
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
-import { DebugSessionOptions } from '../common';
-import { DebugConfiguration } from '../common';
+import {
+  DebugConfiguration,
+  DebugServer,
+  DebugSessionOptions,
+  IDebugServer,
+  IDebuggerContribution,
+  launchSchemaUri,
+} from '../common';
 
 import { CONTEXT_DEBUGGERS_AVAILABLE, LAUNCH_VIEW_SCHEME } from './../common/constants';
 import { DebugConfigurationModel } from './debug-configuration-model';

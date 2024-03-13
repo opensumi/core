@@ -1,14 +1,13 @@
-import React from 'react';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import {
-  Domain,
+  AppConfig,
   ComponentContribution,
   ComponentRegistry,
+  Domain,
   EDITOR_COMMANDS,
-  SEARCH_COMMANDS,
-  AppConfig,
   QUICK_OPEN_COMMANDS,
+  SEARCH_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';

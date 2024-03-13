@@ -1,36 +1,36 @@
-import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  Domain,
+  COMMON_COMMANDS,
   ClientAppContribution,
-  localize,
   CommandContribution,
   CommandRegistry,
-  KeybindingContribution,
-  JsonSchemaContribution,
-  IJSONSchemaRegistry,
-  PreferenceSchema,
-  PreferenceContribution,
   CommandService,
-  IReporterService,
-  formatLocalize,
-  CoreConfiguration,
   ComponentContribution,
   ComponentRegistry,
-  KeybindingRegistry,
-  getIcon,
-  PreferenceService,
+  CoreConfiguration,
+  Domain,
+  IJSONSchemaRegistry,
   IPreferenceSettingsService,
-  COMMON_COMMANDS,
+  IReporterService,
+  JsonSchemaContribution,
+  KeybindingContribution,
+  KeybindingRegistry,
+  PreferenceContribution,
+  PreferenceSchema,
+  PreferenceService,
+  formatLocalize,
+  getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
-import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
-import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IExtensionsSchemaService, runWhenIdle, URI } from '@opensumi/ide-core-common';
+import { TabBarToolbarContribution, ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IExtensionsSchemaService, URI, runWhenIdle } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
-  IEditorFeatureRegistry,
   EditorComponentRegistry,
   IEditor,
+  IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
@@ -39,28 +39,28 @@ import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view'
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  IDebugSessionManager,
-  DEBUG_CONTAINER_ID,
-  DEBUG_WATCH_ID,
-  DEBUG_VARIABLES_ID,
-  DEBUG_STACK_ID,
   DEBUG_BREAKPOINTS_ID,
+  DEBUG_COMMANDS,
+  DEBUG_CONTAINER_ID,
   DEBUG_FLOATING_CLICK_WIDGET,
   DEBUG_REPORT_NAME,
-  DEBUG_WELCOME_ID,
   DEBUG_SCHEME,
-  TSourceBrekpointProperties,
-  DEBUG_COMMANDS,
+  DEBUG_STACK_ID,
+  DEBUG_VARIABLES_ID,
+  DEBUG_WATCH_ID,
+  DEBUG_WELCOME_ID,
   IDebugModelManager,
+  IDebugSessionManager,
+  TSourceBrekpointProperties,
   launchDefaultSchemaUri,
 } from '../common';
 
 import {
-  CONTEXT_DEBUGGERS_AVAILABLE,
-  CONTEXT_IN_DEBUG_MODE,
-  CONTEXT_BREAKPOINT_INPUT_FOCUSED,
-  CONTEXT_EXCEPTION_WIDGET_VISIBLE,
   CONTEXT_ACTIVE_BREAKPOINTS,
+  CONTEXT_BREAKPOINT_INPUT_FOCUSED,
+  CONTEXT_DEBUGGERS_AVAILABLE,
+  CONTEXT_EXCEPTION_WIDGET_VISIBLE,
+  CONTEXT_IN_DEBUG_MODE,
 } from './../common/constants';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { FloatingClickWidget } from './components/floating-click-widget';

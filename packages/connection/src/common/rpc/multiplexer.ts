@@ -35,6 +35,9 @@ function extractServiceAndMethod(rpcId: string): [string, string] {
   return [rpcId.substring(0, idx), rpcId.substring(idx + 1)];
 }
 
+/**
+ * A connection multiplexer that allows to register multiple local RPC services and to create proxies for them.
+ */
 export class SumiConnectionMultiplexer extends SumiConnection implements IRPCProtocol {
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;

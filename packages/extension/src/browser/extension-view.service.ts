@@ -1,18 +1,17 @@
-import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
-import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
-import { path, URI } from '@opensumi/ide-core-browser';
+import { AppConfig, IToolbarPopoverRegistry, URI, path } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import {
   ContributionProvider,
+  Disposable,
   IExtensionProps,
   ILogger,
-  replaceLocalizePlaceholder,
   IReporterService,
   REPORT_NAME,
   getDebugLogger,
-  Disposable,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 import { ISCMRepository, SCMService } from '@opensumi/ide-scm';
 
@@ -33,7 +32,7 @@ import {
 
 import { ExtensionNoExportsView } from './components';
 import { Extension } from './extension';
-import { createProxiedWindow, createProxiedDocument } from './proxies';
+import { createProxiedDocument, createProxiedWindow } from './proxies';
 import { retargetEvents } from './retargetEvents';
 import { getShadowRoot } from './shadowRoot';
 import { KtViewLocation } from './sumi/contributes/browser-views';

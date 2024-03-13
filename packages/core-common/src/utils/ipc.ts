@@ -1,7 +1,7 @@
 import { tmpdir } from 'os';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 
-import { ensureDirSync, ensureDir } from 'fs-extra';
+import { ensureDir, ensureDirSync } from 'fs-extra';
 
 import { isWindows, uuid } from '@opensumi/ide-utils';
 

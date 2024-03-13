@@ -1,10 +1,9 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 import React from 'react';
 
-import type { VALIDATE_TYPE } from '@opensumi/ide-components';
-import type { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
-
 import type { Keybinding } from '../keybinding';
+import type { VALIDATE_TYPE } from '@opensumi/ide-components';
+import type { Event, IDisposable, MaybePromise, URI } from '@opensumi/ide-core-common';
 
 export enum Mode {
   /**
@@ -587,7 +586,7 @@ export enum QuickTitleButtonSide {
 /**
  * @deprecated
  */
-export class ThemeIcon {
+class ThemeIcon {
   static readonly File: ThemeIcon = new ThemeIcon('file');
 
   static readonly Folder: ThemeIcon = new ThemeIcon('folder');

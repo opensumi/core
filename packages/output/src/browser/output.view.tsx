@@ -1,9 +1,8 @@
 import { observer } from 'mobx-react-lite';
-import React from 'react';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { Select, Option } from '@opensumi/ide-components';
-import { useInjectable, ViewState, AppConfig } from '@opensumi/ide-core-browser';
+import { Option, Select } from '@opensumi/ide-components';
+import { AppConfig, ViewState, useInjectable } from '@opensumi/ide-core-browser';
 import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';

@@ -1,11 +1,11 @@
 import cls from 'classnames';
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { DropdownButton, DropDownProps } from '@opensumi/ide-components';
+import { DropDownProps, DropdownButton } from '@opensumi/ide-components';
 import { Menu } from '@opensumi/ide-components/lib/menu';
 import { Emitter } from '@opensumi/ide-core-common';
 
-import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionDropdownButtonProps } from '../types';
+import { IToolbarActionDropdownButtonProps, IToolbarActionElementProps, IToolbarActionReactElement } from '../types';
 
 import style from './dropdown-button.module.less';
 

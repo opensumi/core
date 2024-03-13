@@ -2,7 +2,7 @@
  * 提供无依赖的 Logger 供无DI的环境使用
  */
 
-import { IBaseLogService, BaseLogServiceOptions } from '../common';
+import { BaseLogServiceOptions, IBaseLogService } from '../common';
 
 import { BaseLogService, DEFAULT_LOG_FOLDER } from './log.service';
 import { getLogFolder } from './utils';

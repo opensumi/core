@@ -15,8 +15,9 @@ import {
   MaybeNull,
   PreferenceService,
   URI,
-  useDisposable,
   View,
+  useDesignStyles,
+  useDisposable,
 } from '@opensumi/ide-core-browser';
 import {
   IResizeHandleDelegate,
@@ -35,16 +36,16 @@ import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
 import { Tabs } from './tab.view';
 import {
+  CodeEditorDidVisibleEvent,
   DragOverPosition,
   EditorComponentRegistry,
   EditorComponentRenderMode,
   EditorGroupFileDropEvent,
   EditorGroupsResetSizeEvent,
-  RegisterEditorSideComponentEvent,
+  EditorOpenType,
   EditorSide,
   IEditorComponent,
-  CodeEditorDidVisibleEvent,
-  EditorOpenType,
+  RegisterEditorSideComponentEvent,
   ResoucesOfActiveComponentChangedEvent,
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
@@ -57,6 +58,7 @@ export const EditorView = () => {
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.ComponentType<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
   const [ready, setReady] = React.useState<boolean>(workbenchEditorService.gridReady);
+  const styles_kt_workbench_editor = useDesignStyles(styles.kt_workbench_editor);
 
   React.useEffect(() => {
     if (!ready) {
@@ -77,7 +79,7 @@ export const EditorView = () => {
 
   return (
     <div
-      className={styles.kt_workbench_editor}
+      className={styles_kt_workbench_editor}
       id='workbench-editor'
       ref={(ele) => {
         ref.current = ele;
@@ -238,6 +240,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
 
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
   const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
+  const styles_kt_editor_group = useDesignStyles(styles.kt_editor_group);
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroundImage } = appConfig;
@@ -289,7 +292,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   return (
     <div
       ref={groupWrapperRef as any}
-      className={styles.kt_editor_group}
+      className={styles_kt_editor_group}
       tabIndex={1}
       onFocus={(e) => {
         group.gainFocus();
@@ -324,6 +327,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLDivElement>(null);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const eventBus = useInjectable(IEventBus) as IEventBus;
+  const styles_kt_editor_component = useDesignStyles(styles.kt_editor_component);
   const components: React.ReactNode[] = [];
   const codeEditorRef = React.useRef<HTMLDivElement>(null);
   const diffEditorRef = React.useRef<HTMLDivElement>(null);
@@ -450,7 +454,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
       <div className={styles.kt_editor_components}>
         <div
           className={cls({
-            [styles.kt_editor_component]: true,
+            [styles_kt_editor_component]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
           })}
         >
@@ -459,19 +463,19 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         <div
           className={cls({
             [styles.kt_editor_code_editor]: true,
-            [styles.kt_editor_component]: true,
+            [styles_kt_editor_component]: true,
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
           })}
           ref={codeEditorRef}
         />
         <div
-          className={cls(styles.kt_editor_diff_editor, styles.kt_editor_component, {
+          className={cls(styles.kt_editor_diff_editor, styles_kt_editor_component, {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
           })}
           ref={diffEditorRef}
         />
         <div
-          className={cls(styles.kt_editor_diff_3_editor, styles.kt_editor_component, {
+          className={cls(styles.kt_editor_diff_3_editor, styles_kt_editor_component, {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
           })}
           ref={mergeEditorRef}

@@ -1,39 +1,38 @@
-import type vscode from 'vscode';
-import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
+import { Position as P, Range as R, SymbolKind as S, SymbolInformation } from 'vscode-languageserver-types';
 
 import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 import {
+  IMarkdownString,
+  IMarkerData,
+  IRelatedInformation,
+  IRelativePattern,
+  ISelection,
+  IThemeColor,
+  ProgressLocation as MainProgressLocation,
+  MarkerSeverity,
+  MarkerTag,
   URI,
   Uri,
   UriComponents,
-  ISelection,
-  IMarkerData,
-  IRelatedInformation,
-  MarkerTag,
-  MarkerSeverity,
-  ProgressLocation as MainProgressLocation,
-  path,
-  objects,
-  IThemeColor,
-  isDefined,
   arrays,
-  IMarkdownString,
-  IRelativePattern,
+  isDefined,
+  objects,
   once,
+  path,
 } from '@opensumi/ide-core-common';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import {
+  EditorGroupColumn,
+  IContentDecorationRenderOptions,
   IDecorationRenderOptions,
   IThemeDecorationRenderOptions,
-  IContentDecorationRenderOptions,
-  TrackedRangeStickiness,
-  EditorGroupColumn,
-  LanguageSelector,
   LanguageFilter,
+  LanguageSelector,
+  TrackedRangeStickiness,
 } from '@opensumi/ide-editor/lib/common';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/common/types';
+import { CodeActionTriggerType, EndOfLineSequence } from '@opensumi/ide-monaco/lib/common/types';
 import { TestId } from '@opensumi/ide-testing/lib/common';
 import {
   CoverageDetails,
@@ -61,8 +60,10 @@ import * as types from './ext-types';
 import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
 import { isMarkdownString, parseHrefAndDimensions } from './models';
-import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
+import { TestItemImpl, getPrivateApiFor } from './testing/testApi';
 import { DataTransferDTO } from './treeview';
+
+import type vscode from 'vscode';
 
 const { parse } = path;
 const { cloneAndChange } = objects;
@@ -1586,12 +1587,12 @@ export namespace InlayHint {
 export namespace InlayHintLabelPart {
   export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
     const result = new types.InlayHintLabelPart(part.label);
-    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : part.tooltip;
+    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : (part.tooltip as string);
     if (languages.Command.is(part.command)) {
       result.command = converter.fromInternal(part.command);
     }
     if (part.location) {
-      result.location = location.to(part.location);
+      result.location = location.to(part.location as model.Location);
     }
     return result;
   }

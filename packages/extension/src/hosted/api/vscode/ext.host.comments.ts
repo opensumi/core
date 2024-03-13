@@ -5,32 +5,32 @@
 
 // some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostComments.ts#L32
 
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  Uri as URI,
-  MutableDisposable,
-  DisposableStore,
-  IRange,
-  Emitter,
-  debounce,
-  asPromise,
   CancellationToken,
+  DisposableStore,
+  Emitter,
+  IRange,
+  MutableDisposable,
+  Uri as URI,
+  asPromise,
+  debounce,
 } from '@opensumi/ide-core-common';
-import type { UriComponents } from '@opensumi/ide-core-common';
 
 import { getExtensionId } from '../../../common';
 import {
-  MainThreadAPIIdentifier,
-  IExtHostCommands,
   ExtensionDocumentDataManager,
+  IExtHostCommands,
   IExtensionDescription,
+  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import { IExtHostComments, IMainThreadComments } from '../../../common/vscode/comments';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
 import * as models from '../../../common/vscode/models';
+
+import type { UriComponents } from '@opensumi/ide-core-common';
+import type vscode from 'vscode';
 
 type ProviderHandle = number;
 type ReactionHandler = (comment: vscode.Comment, reaction: vscode.CommentReaction) => Promise<void>;
@@ -617,7 +617,7 @@ function convertToModeComment(
   }
 
   const iconPath =
-    vscodeComment.author && vscodeComment.author.iconPath ? vscodeComment.author.iconPath.toString() : undefined;
+    vscodeComment.author && vscodeComment.author.iconPath ? vscodeComment.author.iconPath.toJSON() : undefined;
 
   return {
     mode: vscodeComment.mode,
@@ -650,7 +650,7 @@ function convertFromReaction(reaction: models.CommentReaction): vscode.CommentRe
   return {
     label: reaction.label || '',
     count: reaction.count || 0,
-    iconPath: reaction.iconPath ? URI.revive(reaction.iconPath) : '',
+    iconPath: reaction.iconPath ? URI.revive(reaction.iconPath as UriComponents) : '',
     authorHasReacted: reaction.hasReacted || false,
   };
 }

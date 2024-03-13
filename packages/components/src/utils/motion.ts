@@ -27,7 +27,7 @@ const getCollapsedHeight: MotionFunc = () => ({ height: 0, opacity: 0 });
 const getRealHeight: MotionFunc = (node) => ({ height: node.scrollHeight, opacity: 1 });
 const getCurrentHeight: MotionFunc = (node) => ({ height: node.offsetHeight });
 
-const collapseMotion: Motion = {
+export const collapseMotion: Motion = {
   motionName: 'kt-motion-collapse',
   onAppearStart: getCollapsedHeight,
   onEnterStart: getCollapsedHeight,
@@ -36,5 +36,3 @@ const collapseMotion: Motion = {
   onLeaveStart: getCurrentHeight,
   onLeaveActive: getCollapsedHeight,
 };
-
-export default collapseMotion;

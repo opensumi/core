@@ -8,11 +8,11 @@
 import { IProcessEnvironment, OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
-  IMergedEnvironmentVariableCollection,
-  IExtensionOwnedEnvironmentVariableMutator,
-  IEnvironmentVariableCollection,
-  IMergedEnvironmentVariableCollectionDiff,
   EnvironmentVariableMutatorType,
+  IEnvironmentVariableCollection,
+  IExtensionOwnedEnvironmentVariableMutator,
+  IMergedEnvironmentVariableCollection,
+  IMergedEnvironmentVariableCollectionDiff,
 } from './environmentVariable';
 export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVariableCollection {
   readonly map: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();

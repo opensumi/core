@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, IDisposable, IEventBus, Emitter, LRUMap } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Emitter, IDisposable, IEventBus, LRUMap, URI } from '@opensumi/ide-core-browser';
 
 import {
-  IEditorDocumentModelContentRegistry,
-  IEditorDocumentModelContentProvider,
   EditorDocumentModelOptionExternalUpdatedEvent,
+  IEditorDocumentModelContentProvider,
+  IEditorDocumentModelContentRegistry,
   ORIGINAL_DOC_SCHEME,
 } from './types';
 

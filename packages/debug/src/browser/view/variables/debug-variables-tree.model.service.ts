@@ -1,33 +1,33 @@
 import isEqual from 'lodash/isEqual';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  TreeModel,
-  DecorationsManager,
   Decoration,
+  DecorationsManager,
   IRecycleTreeHandle,
-  TreeNodeType,
+  TreeModel,
   TreeNodeEvent,
+  TreeNodeType,
 } from '@opensumi/ide-components';
 import {
-  Emitter,
-  ThrottledDelayer,
   Deferred,
-  Event,
   DisposableCollection,
+  Emitter,
+  Event,
   IClipboardService,
+  ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
-import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { DebugSession } from '../../debug-session';
 import {
+  DebugScope,
+  DebugVariable,
+  DebugVariableContainer,
+  DebugVariableRoot,
   ExpressionContainer,
   ExpressionNode,
-  DebugVariableRoot,
-  DebugVariableContainer,
-  DebugVariable,
-  DebugScope,
 } from '../../tree/debug-tree-node.define';
 import { DebugViewModel } from '../debug-view-model';
 

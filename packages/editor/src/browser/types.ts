@@ -1,29 +1,31 @@
+import { ReactNode } from 'react';
+
 import {
-  MaybePromise,
-  IDisposable,
   BasicEvent,
-  IRange,
-  MaybeNull,
-  ISelection,
-  URI,
   Event,
+  IDisposable,
+  IRange,
+  ISelection,
+  MaybeNull,
+  MaybePromise,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IThemeColor } from '@opensumi/ide-core-common';
 import { editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  IResource,
-  ResourceService,
-  IEditorGroup,
-  IDecorationRenderOptions,
-  ITextEditorDecorationType,
-  TrackedRangeStickiness,
-  OverviewRulerLane,
-  IEditorOpenType,
-  IEditor,
   DragOverPosition,
   EditorOpenType,
+  IDecorationRenderOptions,
+  IEditor,
+  IEditorGroup,
+  IEditorOpenType,
+  IResource,
+  ITextEditorDecorationType,
+  OverviewRulerLane,
+  ResourceService,
+  TrackedRangeStickiness,
 } from '../common';
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
@@ -482,3 +484,10 @@ export class ResoucesOfActiveComponentChangedEvent extends BasicEvent<{
   component: IEditorComponent;
   resources: IResource[];
 }> {}
+
+export const IEditorTabService = Symbol('IEditorTabService');
+
+export interface IEditorTabService {
+  renderEditorTab(component: ReactNode, isCurrent?: boolean): ReactNode;
+  renderTabCloseComponent(component: ReactNode): ReactNode;
+}

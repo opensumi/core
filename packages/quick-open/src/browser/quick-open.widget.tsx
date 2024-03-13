@@ -1,14 +1,14 @@
-import { observable, computed, action, makeObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  QuickOpenItem,
-  HideReason,
-  QuickOpenActionProvider,
-  addDisposableListener,
-  EventType,
   DisposableCollection,
+  EventType,
+  HideReason,
   IKeyMods,
+  QuickOpenActionProvider,
+  QuickOpenItem,
+  addDisposableListener,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';

@@ -1,11 +1,10 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { ErrorBoundary, getIcon, useDesignStyles, useInjectable, useViewState } from '@opensumi/ide-core-browser';
 import { Layout } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IContextMenu, IMenu, isIMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
@@ -69,6 +68,11 @@ export const AccordionSection = ({
   alignment,
 }: CollapsePanelProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
+  const styles_actions_wrap = useDesignStyles(styles.actions_wrap);
+  const styles_kt_split_panel = useDesignStyles(styles.kt_split_panel);
+  const styles_kt_split_panel_header = useDesignStyles(styles.kt_split_panel_header);
+  const styles_kt_split_panel_body = useDesignStyles(styles.kt_split_panel_body);
+  const styles_section_badge = useDesignStyles(styles.section_badge);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [metadata, setMetadata] = React.useState({
@@ -140,11 +144,11 @@ export const AccordionSection = ({
   }, [expanded, headerSize, alignment]);
 
   return (
-    <div className={styles.kt_split_panel} data-view-id={viewId}>
+    <div className={styles_kt_split_panel} data-view-id={viewId}>
       {!noHeader && (
         <div
           {...attrs}
-          className={cls(styles.kt_split_panel_header, headerClass)}
+          className={cls(styles_kt_split_panel_header, headerClass)}
           onClick={clickHandler}
           onContextMenu={(e) => onContextMenuHandler(e, viewId)}
           style={{ height: computedHeaderSize, lineHeight: computedHeaderSize }}
@@ -159,10 +163,10 @@ export const AccordionSection = ({
                 {transformLabelWithCodicon(metadata.description, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
-            {metadata.badge && <div className={styles.section_badge}>{metadata.badge}</div>}
+            {metadata.badge && <div className={styles_section_badge}>{metadata.badge}</div>}
           </div>
           {expanded && titleMenu && (
-            <div className={styles.actions_wrap}>
+            <div className={styles_actions_wrap}>
               {isIMenu(titleMenu) ? (
                 <InlineActionBar menus={titleMenu} context={titleMenuContext} />
               ) : (
@@ -173,7 +177,7 @@ export const AccordionSection = ({
         </div>
       )}
       <div
-        className={cls([styles.kt_split_panel_body, { [styles.hide]: !expanded }])}
+        className={cls([styles_kt_split_panel_body, { [styles.hide]: !expanded }])}
         style={bodyStyle}
         ref={contentRef}
       >

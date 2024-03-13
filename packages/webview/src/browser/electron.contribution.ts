@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandContribution, CommandRegistry } from '@opensumi/ide-core-browser';
+import { CommandContribution, CommandRegistry, Domain } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
 
 import { IWebviewService } from './types';

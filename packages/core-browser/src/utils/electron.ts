@@ -1,5 +1,5 @@
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
-import { IDisposable, isDefined } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
@@ -27,16 +27,15 @@ const getCapturer = () => {
   return;
 };
 
-const capture = (message: IPCMessage) => {
-  const capturer = getCapturer();
-  if (isDefined(capturer)) {
-    // if OpenSumi DevTools is opended
-    capturer(message);
-  }
-};
-
 export function createElectronMainApi(name: string, enableCaptured?: boolean): IElectronMainApi<any> {
   let id = 0;
+  const capturer = getCapturer();
+  const capture = (message: IPCMessage) => {
+    if (capturer) {
+      capturer(message);
+    }
+  };
+
   return new Proxy(
     {
       on: (event: string, listener: (...args) => void): IDisposable => {
@@ -56,10 +55,8 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
     },
     {
       get: (target, method) => {
-        if (method === 'on') {
-          return target[method];
-        } else {
-          return async (...args: any) =>
+        if (!target[method]) {
+          target[method] = async (...args: any) =>
             new Promise((resolve, reject) => {
               const requestId = id++;
               ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
@@ -87,6 +84,7 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
               ElectronIpcRenderer.on('response:' + name, listener);
             });
         }
+        return target[method];
       },
     },
   );
@@ -104,6 +102,7 @@ export const electronEnv: {
   webviewPreload: string;
   plainWebviewPreload: string;
   metadata: IElectronEnvMetadata;
+  osRelease: string;
   [key: string]: any;
 } = (global as any) || {};
 
@@ -126,8 +125,4 @@ export function createNetSocketConnection(connectPath?: string): NetSocketConnec
     socket = electronEnv.createRPCNetConnection();
   }
   return new NetSocketConnection(socket);
-}
-
-export function fromWindowClientId(suffix: string) {
-  return `${suffix}-${electronEnv.metadata.windowClientId}`;
 }

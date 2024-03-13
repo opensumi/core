@@ -10,16 +10,17 @@ import { URI, Uri, path } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import type {
-  ResourceFileEdit,
-  ResourceTextEdit,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IRefactorPreviewService } from './refactor-preview.service';
 import styles from './refactor_preview.module.less';
 import { isResourceFileEdit } from './utils';
+
+import type {
+  ResourceFileEdit,
+  ResourceTextEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 interface IRefactorNodeProps {
   data: ResourceTextEdit | ResourceFileEdit;

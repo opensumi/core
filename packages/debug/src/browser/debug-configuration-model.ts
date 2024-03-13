@@ -1,4 +1,4 @@
-import { URI, Emitter, Event, IDisposable, DisposableCollection, PreferenceService } from '@opensumi/ide-core-browser';
+import { DisposableCollection, Emitter, Event, IDisposable, PreferenceService, URI } from '@opensumi/ide-core-browser';
 
 import { DebugConfiguration } from '../common';
 

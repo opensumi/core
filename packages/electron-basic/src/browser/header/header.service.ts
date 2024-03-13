@@ -1,17 +1,16 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   AppConfig,
+  DisposableCollection,
+  Emitter,
+  OnEvent,
+  WithEventBus,
+  isMacintosh,
   localize,
   replaceLocalizePlaceholder,
-  Emitter,
-  DisposableCollection,
-  isMacintosh,
-  PreferenceService,
-  WithEventBus,
-  OnEvent,
 } from '@opensumi/ide-core-browser';
 import { ResourceDidUpdateEvent, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
-import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
+import { basename, dirname, posix, toSlashes } from '@opensumi/ide-utils/lib/path';
 import { template } from '@opensumi/ide-utils/lib/strings';
 
 import { IElectronHeaderService } from '../../common/header';
@@ -32,9 +31,6 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
 
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
-
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
@@ -103,9 +99,11 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
     const workspaceDir = appConfig.workspaceDir ? appConfig.workspaceDir : '';
     const workspaceBasename = basename(workspaceDir);
     const activeEditorFull = currentResource?.name ?? '';
-    const activeEditorRelative = activeEditorFull && workspaceDir ? relative(workspaceDir, activeEditorFull) : '';
+    const activeEditorRelative =
+      activeEditorFull && workspaceDir ? makeRelativePath(workspaceDir, activeEditorFull) : '';
     const activeFolderFull = activeEditorFull ? dirname(activeEditorFull) : '';
-    const activeFolderRelative = activeFolderFull && workspaceDir ? relative(workspaceDir, activeFolderFull) : '';
+    const activeFolderRelative =
+      activeFolderFull && workspaceDir ? makeRelativePath(workspaceDir, activeFolderFull) : '';
 
     const activeEditorShort = basename(activeEditorFull);
     const activeEditorMedium = activeEditorRelative;
@@ -151,4 +149,23 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
   dispose() {
     this.disposableCollection.dispose();
   }
+}
+
+function makeRelativePath(workspaceDir: string, path: string) {
+  if (!path || !workspaceDir) {
+    return '';
+  }
+
+  workspaceDir = toSlashes(workspaceDir);
+  path = toSlashes(path);
+
+  if (!workspaceDir.endsWith(posix.sep)) {
+    workspaceDir += posix.sep;
+  }
+
+  if (path.startsWith(workspaceDir)) {
+    return path.substring(workspaceDir.length);
+  }
+
+  return path;
 }

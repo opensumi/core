@@ -1,9 +1,9 @@
 import { Injectable } from '@opensumi/di';
-import { strings, Event, IDisposable } from '@opensumi/ide-core-common';
+import { Event, IDisposable, strings } from '@opensumi/ide-core-common';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languageFeatureRegistry';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-import { ILanguageStatusService, ILanguageStatus } from '../../common';
+import { ILanguageStatus, ILanguageStatusService } from '../../common';
 
 const { compare } = strings;
 

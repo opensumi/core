@@ -1,4 +1,4 @@
-import { URI, Schemes } from '@opensumi/ide-core-common';
+import { Schemes, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 export interface WorkspaceData {

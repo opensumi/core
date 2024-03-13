@@ -3,25 +3,24 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import {
-  INodeRendererProps,
   ClasslistComposite,
-  IRecycleTreeHandle,
-  TreeNodeType,
-  RecycleTree,
-  INodeRendererWrapProps,
-  TreeModel,
   CompositeTreeNode,
+  INodeRendererProps,
+  INodeRendererWrapProps,
+  IRecycleTreeHandle,
+  Loading,
+  RecycleTree,
+  TreeModel,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
-import { ViewState } from '@opensumi/ide-core-browser';
+import { ViewState, getIcon, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
+  DebugScope,
+  DebugVariable,
+  DebugVariableContainer,
   ExpressionContainer,
   ExpressionNode,
-  DebugVariableContainer,
-  DebugVariable,
-  DebugScope,
 } from '../../tree/debug-tree-node.define';
 
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
@@ -179,6 +178,8 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   onContextMenu,
   itemType,
 }: IDebugVariableNodeRenderedProps) => {
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
   };
@@ -257,7 +258,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     };
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
       return (
-        <div className={cls(styles.debug_variables_node_segment, styles.expansion_toggle)}>
+        <div className={cls(styles.debug_variables_node_segment, styles_expansion_toggle)}>
           <Loading />
         </div>
       );
@@ -265,7 +266,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     return (
       <div
         onClick={handleTwiceClick}
-        className={cls(styles.debug_variables_node_segment, styles.expansion_toggle, getIcon('right'), {
+        className={cls(styles.debug_variables_node_segment, styles_expansion_toggle, getIcon('right'), {
           [`${styles.mod_collapsed}`]: !(node as ExpressionContainer).expanded,
         })}
       />

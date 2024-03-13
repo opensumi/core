@@ -1,29 +1,29 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, IDisposable, Emitter, Event, Uri, dispose, Disposable, BinaryBuffer } from '@opensumi/ide-core-browser';
+import { BinaryBuffer, Disposable, Emitter, Event, IDisposable, URI, Uri, dispose } from '@opensumi/ide-core-browser';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { FileChange, FileSystemProviderCapabilities, FileStat as IFileStat } from '@opensumi/ide-file-service';
 import {
-  IFileServiceClient,
-  FileType,
   FileOperationError,
   FileOperationResult,
   FileSystemProvider,
+  FileType,
   IBrowserFileSystemRegistry,
+  IFileServiceClient,
 } from '@opensumi/ide-file-service/lib/common';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import { toFileStat, fromFileStat } from '../../../common/vscode/converter';
+import { fromFileStat, toFileStat } from '../../../common/vscode/converter';
 import { UriComponents } from '../../../common/vscode/ext-types';
 import {
-  IExtHostFileSystemShape,
   FileDeleteOptions,
-  IMainThreadFileSystemShape,
+  FileOverwriteOptions,
+  FilePermission,
   FileStat,
   FileSystemProviderErrorCode,
-  FileOverwriteOptions,
   IExtHostFileSystemInfoShape,
-  FilePermission,
+  IExtHostFileSystemShape,
+  IMainThreadFileSystemShape,
 } from '../../../common/vscode/file-system';
 
 @Injectable({ multiple: true })

@@ -1,11 +1,16 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
-import { strings, Disposable } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import {
+  CommandService,
+  Disposable,
+  IElectronMainMenuService,
+  INativeMenuTemplate,
+  strings,
+} from '@opensumi/ide-core-common';
 
 import { SpecialCases } from '../../../../keyboard';
 import { electronEnv } from '../../../../utils';
 import { MenuNode } from '../../base';
-import { SeparatorMenuItemNode, SubmenuItemNode, AbstractContextMenuService } from '../../menu.interface';
+import { AbstractContextMenuService, SeparatorMenuItemNode, SubmenuItemNode } from '../../menu.interface';
 import { AbstractMenubarService } from '../../menubar-service';
 
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';

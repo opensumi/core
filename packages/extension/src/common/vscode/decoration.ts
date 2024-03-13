@@ -1,6 +1,6 @@
-import type vscode from 'vscode';
+import { CancellationToken, IDisposable, IThemeColor, UriComponents } from '@opensumi/ide-core-common';
 
-import { CancellationToken, IDisposable, UriComponents, IThemeColor } from '@opensumi/ide-core-common';
+import type vscode from 'vscode';
 
 export interface DecorationRequest {
   readonly id: number;

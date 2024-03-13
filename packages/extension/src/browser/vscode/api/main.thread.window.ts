@@ -1,14 +1,14 @@
-import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { URI } from '@opensumi/ide-core-browser';
-import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions } from '@opensumi/ide-overlay';
+import { IDialogService, IOpenDialogOptions, ISaveDialogOptions, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import {
   ExtHostAPIIdentifier,
-  IMainThreadWindow,
   IExtHostWindow,
   IExtOpenDialogOptions,
   IExtSaveDialogOptions,
+  IMainThreadWindow,
 } from '../../../common/vscode';
 
 @Injectable({ multiple: true })

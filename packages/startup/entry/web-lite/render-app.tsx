@@ -3,15 +3,15 @@ import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { Injector } from '@opensumi/di';
-import { IClientAppOpts, DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME } from '@opensumi/ide-core-browser';
+import { DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME, IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
 
 import {
   AbstractHttpFileService,
-  BrowserFsProvider,
   BROWSER_HOME_DIR,
+  BrowserFsProvider,
 } from './lite-module/file-provider/browser-fs-provider';
 import { HttpFileService } from './lite-module/file-provider/http-file.service';
 

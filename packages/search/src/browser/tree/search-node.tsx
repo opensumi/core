@@ -1,14 +1,15 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { INodeRendererProps, ClasslistComposite, Badge, Button } from '@opensumi/ide-components';
+import { Badge, Button, ClasslistComposite, INodeRendererProps } from '@opensumi/ide-components';
 import {
-  getIcon,
   CommandService,
   SEARCH_COMMANDS,
-  localize,
   getExternalIcon,
+  getIcon,
   isDefined,
+  localize,
+  useDesignStyles,
 } from '@opensumi/ide-core-browser';
 
 import { SearchContentNode, SearchFileNode } from './tree-node.defined';
@@ -45,6 +46,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   isUseRegexp,
   isMatchCase,
 }: ISearchNodeRenderedProps) => {
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       onClick(ev, item as SearchContentNode);
@@ -172,7 +174,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   const renderFolderToggle = useCallback(
     (node: SearchFileNode) => (
       <div
-        className={cls(styles.segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={cls(styles.segment, styles_expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as SearchFileNode).expanded,
         })}
       />

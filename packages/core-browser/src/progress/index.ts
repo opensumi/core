@@ -1,11 +1,11 @@
 import {
   IDisposable,
-  IProgressOptions,
-  IProgressNotificationOptions,
-  IProgressWindowOptions,
   IProgress,
-  IProgressStep,
   IProgressCompositeOptions,
+  IProgressNotificationOptions,
+  IProgressOptions,
+  IProgressStep,
+  IProgressWindowOptions,
 } from '@opensumi/ide-core-common';
 
 export interface IProgressModel {

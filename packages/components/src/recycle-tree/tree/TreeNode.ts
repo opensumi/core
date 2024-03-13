@@ -1,31 +1,31 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import {
-  Event,
-  Emitter,
-  DisposableCollection,
-  path,
   CancellationToken,
   CancellationTokenSource,
-  isUndefined,
+  DisposableCollection,
+  Emitter,
+  Event,
   ThrottledDelayer,
+  isUndefined,
+  path,
 } from '@opensumi/ide-utils';
 
 import {
-  IWatcherCallback,
-  IWatchTerminator,
-  IWatcherInfo,
-  ITreeNodeOrCompositeTreeNode,
-  ITreeNode,
+  IAccessibilityInformation,
   ICompositeTreeNode,
-  TreeNodeEvent,
-  IWatcherEvent,
-  MetadataChangeType,
-  ITreeWatcher,
   IMetadataChange,
   ITree,
-  WatchEvent,
+  ITreeNode,
+  ITreeNodeOrCompositeTreeNode,
+  ITreeWatcher,
+  IWatchTerminator,
+  IWatcherCallback,
+  IWatcherEvent,
+  IWatcherInfo,
+  MetadataChangeType,
+  TreeNodeEvent,
   TreeNodeType,
-  IAccessibilityInformation,
+  WatchEvent,
 } from '../types';
 
 const { Path } = path;

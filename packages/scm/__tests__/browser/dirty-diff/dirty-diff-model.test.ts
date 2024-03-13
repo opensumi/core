@@ -1,8 +1,7 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
-import { toDisposable, Event, CommandService, positionToRange, URI, ILineChange } from '@opensumi/ide-core-common';
-import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { EditorCollectionService } from '@opensumi/ide-editor';
+import { CommandService, Event, ILineChange, URI, positionToRange, toDisposable } from '@opensumi/ide-core-common';
+import { EditorCollectionService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -13,11 +12,13 @@ import {
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
+import { DetailedLineRangeMapping } from '@opensumi/ide-monaco';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
-import { SCMService, ISCMRepository } from '../../../src';
+import { ISCMRepository, SCMService } from '../../../src';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
 import { MockSCMProvider } from '../../scm-test-util';
@@ -92,7 +93,15 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
     beforeEach(() => {
       StandaloneServices.get(IEditorWorkerService).canComputeDirtyDiff = () => true;
-      StandaloneServices.get(IEditorWorkerService).computeDiff = async () => computeDiffRet;
+      StandaloneServices.get(IEditorWorkerService).computeDiff = async () => {
+        return {
+          ...computeDiffRet!,
+          changes: computeDiffRet!.changes.map((e) => {
+            return new DetailedLineRangeMapping(new LineRange(e[0], e[1]), new LineRange(e[2], e[3]), []);
+          }),
+          moves: [],
+        };
+      };
 
       injector = createBrowserInjector(
         [],
@@ -166,6 +175,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         quitEarly: false,
         identical: false,
         changes: [change0],
+        moves: [],
       };
       fileTextModel.getMonacoModel().setValue('insert some content for testing');
 
@@ -194,6 +204,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         quitEarly: false,
         identical: false,
         changes: [change0],
+        moves: [],
       };
       provider.onDidChangeEmitter.fire();
 
@@ -222,6 +233,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         quitEarly: false,
         identical: false,
         changes: [change0],
+        moves: [],
       };
       provider.onDidChangeResourcesEmitter.fire();
 

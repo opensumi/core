@@ -2,9 +2,10 @@ import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexe
 import { Deferred } from '@opensumi/ide-core-common';
 
 import { ActivatedExtensionJSON } from './activator';
-import type { SumiWorkerExtensionService, VSCodeExtensionService } from './vscode';
 
 import { IExtension } from './index';
+
+import type { SumiWorkerExtensionService, VSCodeExtensionService } from './vscode';
 
 type ExtensionChangeKind = 'install' | 'uninstall' | 'upgrade' | 'enable' | 'disable';
 

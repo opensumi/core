@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, ILogger } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ILogger, URI } from '@opensumi/ide-core-common';
 
 import { DefaultOpener } from './default-opener';
 
-import { IOpenerService, IOpener } from '.';
+import { IOpener, IOpenerService } from '.';
 
 @Injectable()
 export class OpenerService implements IOpenerService {

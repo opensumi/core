@@ -1,15 +1,13 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   CancellationToken,
-  hookCancellationToken,
-  Event,
-  Emitter,
-  DisposableCollection,
-  MaybePromise,
-  isUndefined,
   Disposable,
+  DisposableCollection,
+  Emitter,
+  Event,
+  MaybePromise,
+  hookCancellationToken,
+  isUndefined,
 } from '@opensumi/ide-core-common';
 import {
   QuickInputButton,
@@ -20,13 +18,15 @@ import {
 } from '@opensumi/ide-quick-open';
 
 import {
-  MainThreadAPIIdentifier,
   IExtHostQuickOpen,
-  IMainThreadQuickOpen,
   IExtHostWorkspace,
+  IMainThreadQuickOpen,
+  MainThreadAPIIdentifier,
   Severity,
 } from '../../../common/vscode';
 import { QuickPickItemKind } from '../../../common/vscode/ext-types';
+
+import type vscode from 'vscode';
 
 type Item = string | vscode.QuickPickItem;
 

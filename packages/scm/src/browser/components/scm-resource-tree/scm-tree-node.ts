@@ -1,7 +1,7 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { URI, memoize, path } from '@opensumi/ide-core-browser';
 
-import { ISCMResourceGroup, ISCMResource } from '../../../common';
+import { ISCMResource, ISCMResourceGroup } from '../../../common';
 import { isSCMResourceGroup } from '../../scm-util';
 
 import { ISCMTreeNodeDescription, collectSCMResourceDesc } from './scm-tree-api';

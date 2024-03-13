@@ -112,7 +112,7 @@ abstract class BaseBrowserStorageService implements StorageService {
   }
 
   /**
-   * 验证是否还有空间生育用来存储另一个工作区配置
+   * 验证是否还有空间用来存储另一个工作区配置
    * 如果超出限制大小，提示用户进行清理
    *
    * @private

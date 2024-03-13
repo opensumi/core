@@ -1,9 +1,9 @@
 import LSTypes from 'vscode-languageserver-types';
 
-import { MarkerSeverity } from '@opensumi/ide-core-common';
-import { CancellationToken, IDisposable, IRelativePattern } from '@opensumi/ide-core-common';
+import { CancellationToken, IDisposable, IRelativePattern, MarkerSeverity } from '@opensumi/ide-core-common';
 import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import type { IRelatedInformation } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
 
 export const ILanguageService = Symbol('ILanguageService');

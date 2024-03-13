@@ -3,11 +3,11 @@ import { localize } from '@opensumi/ide-core-common';
 import { darken, lighten, registerColor } from '../../utils';
 import { selectBackground, selectBorder, selectForeground } from '../dropdown';
 import {
-  inputForeground,
-  inputBackground,
-  inputPlaceholderForeground,
-  inputActiveOptionBorder,
   inputActiveOptionBackground,
+  inputActiveOptionBorder,
+  inputBackground,
+  inputForeground,
+  inputPlaceholderForeground,
 } from '../input';
 import {
   listActiveSelectionBackground,

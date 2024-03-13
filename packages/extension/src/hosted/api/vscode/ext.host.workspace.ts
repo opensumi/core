@@ -1,17 +1,14 @@
-import paths from 'path';
-
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationToken, Emitter, Event, MessageType, path, Schemes, toDisposable } from '@opensumi/ide-core-common';
+import { CancellationToken, Emitter, Event, MessageType, Schemes, path, toDisposable } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
-import { WorkspaceRootsChangeEvent, IExtHostMessage } from '../../../common/vscode';
 import {
-  MainThreadAPIIdentifier,
-  IMainThreadWorkspace,
-  IExtHostWorkspace,
   ExtensionDocumentDataManager,
+  IExtHostMessage,
+  IExtHostWorkspace,
+  IMainThreadWorkspace,
+  MainThreadAPIIdentifier,
+  WorkspaceRootsChangeEvent,
 } from '../../../common/vscode';
 import * as TypeConverts from '../../../common/vscode/converter';
 import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
@@ -23,6 +20,8 @@ import { IExtHostTasks } from '../../../common/vscode/tasks';
 import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 import { ExtHostPreference } from './ext.host.preference';
+
+import type vscode from 'vscode';
 
 const { Path, relative, normalize } = path;
 
@@ -347,10 +346,10 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
     function dirname(resource: Uri): Uri {
       if (resource.scheme === Schemes.file) {
-        return Uri.file(paths.dirname(resource.fsPath));
+        return Uri.file(path.dirname(resource.fsPath));
       }
       return resource.with({
-        path: paths.dirname(resource.path),
+        path: path.dirname(resource.path),
       });
     }
 

@@ -1,14 +1,13 @@
 import cls from 'classnames';
-import React, { useEffect, useState, RefObject, useRef, useCallback } from 'react';
+import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
-import { IRecycleTreeHandle, RecycleTree, Button, TreeNodeEvent } from '@opensumi/ide-components';
-import { localize, formatLocalize, useInjectable, CommandService } from '@opensumi/ide-core-browser';
-import { ViewState } from '@opensumi/ide-core-browser';
+import { Button, IRecycleTreeHandle, RecycleTree, TreeNodeEvent } from '@opensumi/ide-components';
+import { CommandService, ViewState, formatLocalize, localize, useInjectable } from '@opensumi/ide-core-browser';
 
 import { ResultTotal, SEARCH_STATE } from '../../common/content-search';
 import styles from '../search.module.less';
 
-import { SearchNodeRendered, SEARCH_TREE_NODE_HEIGHT, ISearchNodeRenderedProps } from './search-node';
+import { ISearchNodeRenderedProps, SEARCH_TREE_NODE_HEIGHT, SearchNodeRendered } from './search-node';
 import { SearchModelService, SearchTreeModel } from './tree-model.service';
 
 export interface ISearchTreeProp {

@@ -1,11 +1,11 @@
-import type * as vscode from 'vscode';
-
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, Uri } from '@opensumi/ide-core-common';
-import { Position, Range, Location } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { Location, Position, Range } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ILsifPayload } from './base';
+
+import type * as vscode from 'vscode';
 
 const config = {
   headers: {

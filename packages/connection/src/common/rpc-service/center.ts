@@ -2,22 +2,23 @@ import { Deferred } from '@opensumi/ide-core-common';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
-import { TSumiProtocol, ProtocolRepository } from '../rpc';
+import { TSumiProtocol } from '../rpc';
 import { SumiConnection } from '../rpc/connection';
 import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
-import { getMethodName } from '../utils';
 
-import { ServiceRegistry, Invoker, ProxyLegacy, ProxySumi } from './proxy';
+import { ProxyJson, ProxySumi } from './proxy';
+import { ProxyBase } from './proxy/base';
+import { ProtocolRegistry, ServiceRegistry } from './registry';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 
 export class RPCServiceCenter {
   public uid: string;
 
-  private invokers: Invoker[] = [];
+  private proxies: ProxyBase<any>[] = [];
 
-  private protocolRepository = new ProtocolRepository();
-  private registry = new ServiceRegistry();
+  private serviceRegistry = new ServiceRegistry();
+  private protocolRegistry = new ProtocolRegistry();
 
   private deferred = new Deferred<void>();
   private logger: ILogger;
@@ -40,64 +41,58 @@ export class RPCServiceCenter {
   }
 
   loadProtocol(protocol: TSumiProtocol) {
-    this.protocolRepository.loadProtocol(protocol, {
+    this.protocolRegistry.addProtocol(protocol, {
       nameConverter: (name) => getMethodName(protocol.name, name),
     });
   }
 
   setSumiConnection(connection: SumiConnection) {
-    if (this.invokers.length === 0) {
+    if (this.proxies.length === 0) {
       this.deferred.resolve();
     }
 
-    const index = this.invokers.length - 1;
+    this.protocolRegistry.applyTo(connection.io);
 
-    const invoker = new Invoker();
+    const index = this.proxies.length - 1;
+    const proxy = new ProxySumi(this.serviceRegistry, this.logger);
+    proxy.listen(connection);
 
-    const sumiProxy = new ProxySumi(this.registry, this.logger);
-    invoker.attachSumi(sumiProxy);
-    sumiProxy.listen(connection);
-
-    this.invokers.push(invoker);
+    this.proxies.push(proxy);
 
     return {
       dispose: () => {
-        this.invokers.splice(index, 1);
-        invoker.dispose();
+        this.proxies.splice(index, 1);
+        proxy.dispose();
       },
     };
   }
 
   setConnection(connection: MessageConnection) {
-    if (this.invokers.length === 0) {
+    if (this.proxies.length === 0) {
       this.deferred.resolve();
     }
 
-    const index = this.invokers.length - 1;
+    const index = this.proxies.length - 1;
 
-    const invoker = new Invoker();
+    const proxy = new ProxyJson(this.serviceRegistry, this.logger);
+    proxy.listen(connection);
 
-    const legacyProxy = new ProxyLegacy(this.registry, this.logger);
-    legacyProxy.listen(connection);
-
-    invoker.attachLegacy(legacyProxy);
-
-    this.invokers.push(invoker);
+    this.proxies.push(proxy);
 
     return {
       dispose: () => {
-        this.invokers.splice(index, 1);
-        invoker.dispose();
+        this.proxies.splice(index, 1);
+        proxy.dispose();
       },
     };
   }
 
   onRequest(serviceName: string, _name: string, method: RPCServiceMethod) {
-    this.registry.register(getMethodName(serviceName, _name), method);
+    this.serviceRegistry.register(getMethodName(serviceName, _name), method);
   }
 
   onRequestService(serviceName: string, service: any) {
-    this.registry.registerService(service, {
+    this.serviceRegistry.registerService(service, {
       nameConverter: (name) => getMethodName(serviceName, name),
     });
   }
@@ -106,7 +101,7 @@ export class RPCServiceCenter {
     await this.ready();
 
     const name = getMethodName(serviceName, _name);
-    const broadcastResult = await Promise.all(this.invokers.map((proxy) => proxy.invoke(name, ...args)));
+    const broadcastResult = await Promise.all(this.proxies.map((proxy) => proxy.invoke(name, ...args)));
 
     const doubtfulResult = [] as any[];
     const result = [] as any[];
@@ -131,4 +126,15 @@ export class RPCServiceCenter {
     // or just return `undefined`.
     return result.length === 1 ? result[0] : result;
   }
+}
+
+export function getNotificationName(serviceName: string, name: string) {
+  return `on:${serviceName}:${name}`;
+}
+export function getRequestName(serviceName: string, name: string) {
+  return `${serviceName}:${name}`;
+}
+
+export function getMethodName(serviceName: string, name: string) {
+  return name.startsWith('on') ? getNotificationName(serviceName, name) : getRequestName(serviceName, name);
 }

@@ -1,4 +1,4 @@
-import { Injector, Autowired } from '@opensumi/di';
+import { Autowired, Injector } from '@opensumi/di';
 import { BasicModule, CommandRegistry, Deferred } from '@opensumi/ide-core-common';
 
 import { AppConfig } from './react-providers/config-provider';

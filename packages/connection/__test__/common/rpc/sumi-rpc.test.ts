@@ -1,9 +1,11 @@
 import { Type } from '@furyjs/fury';
 
 import { METHOD_NOT_REGISTERED } from '@opensumi/ide-connection/lib/common/constants';
+import { CancellationToken, CancellationTokenSource, Deferred, sleep } from '@opensumi/ide-core-common';
+import { IReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { test } from './common-tester';
-import { createConnectionPair, createSumiRPCClientPair } from './utils';
+import { createConnectionPair, createSumiRPCClientPair, message } from './utils';
 
 test('sumi rpc', {
   factory: createSumiRPCClientPair,
@@ -73,5 +75,45 @@ describe('sumi rpc only', () => {
 
     await expect(invoker1.notFound()).resolves.toEqual(METHOD_NOT_REGISTERED);
     await expect(invoker2.notFound()).resolves.toEqual(METHOD_NOT_REGISTERED);
+  });
+
+  it('support readable stream', async () => {
+    const { invoker1 } = createSumiRPCClientPair(pair);
+    const result = (await invoker1.readFileStream('test.txt')) as IReadableStream<Uint8Array>;
+
+    const deferred = new Deferred<void>();
+    let msg = '';
+
+    listenReadable(result, {
+      onData: (d) => {
+        msg += d.toString();
+      },
+      onEnd() {
+        deferred.resolve();
+      },
+    });
+
+    await deferred.promise;
+    expect(msg).toBe(message);
+  });
+
+  it('can cancel a call', (done) => {
+    const method = 'cancelTest';
+    pair.connection2.onRequest(method, async (t: CancellationToken) => {
+      while (!t.isCancellationRequested) {
+        // regular cancellation requires async for it to work
+        await sleep(0);
+      }
+
+      done();
+    });
+
+    pair.connection1.listen();
+    pair.connection2.listen();
+
+    const source = new CancellationTokenSource();
+
+    pair.connection1.sendRequest(method, source.token);
+    source.cancel();
   });
 });

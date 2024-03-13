@@ -1,10 +1,9 @@
-import { uuid } from '@opensumi/ide-core-common';
 import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
-import { WSCloseInfo, ConnectionInfo } from '../common/utils';
-import { WSChannel, stringify, parse } from '../common/ws-channel';
+import { ConnectionInfo, WSCloseInfo } from '../common/types';
+import { WSChannel, parse, pingMessage } from '../common/ws-channel';
 
 /**
  * Channel Handler in browser
@@ -17,15 +16,11 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timeout | null;
   private reporterService: IReporterService;
 
-  LOG_TAG = '[WSChannelHandler]';
+  LOG_TAG: string;
 
-  constructor(
-    public connection: ReconnectingWebSocketConnection | NetSocketConnection,
-    logger: any,
-    clientId?: string,
-  ) {
+  constructor(public connection: ReconnectingWebSocketConnection | NetSocketConnection, logger: any, clientId: string) {
     this.logger = logger || this.logger;
-    this.clientId = clientId || `CLIENT_ID_${uuid()}`;
+    this.clientId = clientId;
     this.LOG_TAG = `[WSChannelHandler] [client-id:${this.clientId}]`;
   }
   // 为解决建立连接之后，替换成可落盘的 logger
@@ -42,12 +37,7 @@ export class WSChannelHandler {
       clearTimeout(this.heartbeatMessageTimer);
     }
     this.heartbeatMessageTimer = global.setTimeout(() => {
-      const msg = stringify({
-        kind: 'ping',
-        clientId: this.clientId,
-        id: this.clientId,
-      });
-      this.connection.send(msg);
+      this.connection.send(pingMessage);
       this.heartbeatMessage();
     }, 5000);
   }
@@ -59,22 +49,17 @@ export class WSChannelHandler {
 
       const msg = parse(message);
 
-      if (msg.kind === 'pong') {
-        // ignore server2client pong message
-        return;
-      }
-
-      if (!msg.id) {
-        // unknown message
-        this.logger.warn(this.LOG_TAG, 'unknown message', msg);
-        return;
-      }
-
-      const channel = this.channelMap.get(msg.id);
-      if (channel) {
-        channel.dispatchChannelMessage(msg);
-      } else {
-        this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+      switch (msg.kind) {
+        case 'pong':
+          break;
+        default: {
+          const channel = this.channelMap.get(msg.id);
+          if (channel) {
+            channel.dispatchChannelMessage(msg);
+          } else {
+            this.logger.warn(this.LOG_TAG, `channel ${msg.id} not found`);
+          }
+        }
       }
     });
 
@@ -94,6 +79,7 @@ export class WSChannelHandler {
         });
       }
     };
+
     await new Promise<void>((resolve) => {
       if (this.connection.isOpen()) {
         this.heartbeatMessage();
@@ -106,14 +92,14 @@ export class WSChannelHandler {
           reopenExistsChannel();
         });
       }
+    });
 
-      this.connection.onceClose((code, reason) => {
-        if (this.channelMap.size) {
-          this.channelMap.forEach((channel) => {
-            channel.close(code ?? 1000, reason ?? '');
-          });
-        }
-      });
+    this.connection.onceClose((code, reason) => {
+      if (this.channelMap.size) {
+        this.channelMap.forEach((channel) => {
+          channel.close(code ?? 1000, reason ?? '');
+        });
+      }
     });
   }
   public async openChannel(channelPath: string) {
@@ -135,7 +121,7 @@ export class WSChannelHandler {
           closeEvent: { code, reason },
           connectInfo: (navigator as any).connection as ConnectionInfo,
         });
-        this.logger.log(this.LOG_TAG, 'channel close: ', code, reason);
+        this.logger.log(this.LOG_TAG, 'channel close: ', `code: ${code}, reason: ${reason}`);
       });
       channel.open(channelPath, this.clientId);
     });

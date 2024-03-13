@@ -1,12 +1,12 @@
 import { Autowired } from '@opensumi/di';
 import {
-  DIALOG_COMMANDS,
-  Domain,
-  localize,
   CommandContribution,
   CommandRegistry,
+  DIALOG_COMMANDS,
+  Domain,
   KeybindingContribution,
   KeybindingRegistry,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { DialogViewVisibleContext } from '@opensumi/ide-core-browser/lib/contextkey/dialog';
 

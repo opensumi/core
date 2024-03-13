@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, ILogger, IEventBus, ExtensionEnabledEvent } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Disposable, ExtensionEnabledEvent, IEventBus, ILogger } from '@opensumi/ide-core-browser';
 
 import { IExtension } from '../common';
 

@@ -21,7 +21,6 @@ export * from './range';
 export * from './problem-pattern';
 export * from './problem-matcher';
 export * from './task-definition';
-export * from './node/port';
 export * from './line-text';
 export * from './keyboard';
 export * from './theme';

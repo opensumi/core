@@ -1,18 +1,15 @@
-import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { IRPCProtocol, SumiConnectionMultiplexer, WSChannel } from '@opensumi/ide-connection';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   Deferred,
-  electronEnv,
+  IApplicationService,
+  IDisposable,
   IExtensionProps,
   ILogger,
-  IDisposable,
   toDisposable,
-  IApplicationService,
-  fromWindowClientId,
 } from '@opensumi/ide-core-browser';
-import { createNetSocketConnection } from '@opensumi/ide-core-browser';
 
 import {
   CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
@@ -148,23 +145,8 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
   }
 
   private async initExtProtocol() {
-    let channel: WSChannel;
-
-    // Electron 环境下，未指定 isRemote 时默认使用本地连接
-    // 否则使用 WebSocket 连接
-    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
-      const connectPath = await this.extensionNodeClient.getElectronMainThreadListenPath(
-        electronEnv.metadata.windowClientId,
-      );
-      this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-      const connection = createNetSocketConnection(connectPath);
-      channel = WSChannel.forClient(connection, {
-        id: fromWindowClientId('NodeExtProcessService'),
-      });
-    } else {
-      const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
-    }
+    const channelHandler = this.injector.get(IWSChannelHandler);
+    const channel = await channelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
 
     const mainThreadProtocol = new SumiConnectionMultiplexer(channel.createConnection(), {
       timeout: this.appConfig.rpcMessageTimeout,

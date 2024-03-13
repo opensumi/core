@@ -1,5 +1,5 @@
 import { ITree, ITreeNode } from '@opensumi/ide-components';
-import { URI, BasicEvent, IDisposable } from '@opensumi/ide-core-common';
+import { BasicEvent, IDisposable, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import { Directory, File } from './file-tree-node.define';

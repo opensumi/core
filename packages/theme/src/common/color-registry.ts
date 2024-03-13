@@ -8,13 +8,13 @@ import { ITheme } from '../common/theme.service';
 
 import {
   IColorRegistry,
-  registerColor,
-  getColorRegistry,
-  transparent,
   darken,
-  lighten,
+  getColorRegistry,
   lessProminent,
+  lighten,
+  registerColor,
   resolveColorValue,
+  transparent,
 } from './utils';
 
 //  ------ API types

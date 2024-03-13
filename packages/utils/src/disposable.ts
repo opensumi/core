@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { MaybePromise } from './async';
-import { Event, Emitter } from './event';
+import { Emitter, Event } from './event';
 
 export class DisposableStore implements IDisposable {
   private toDispose = new Set<IDisposable>();

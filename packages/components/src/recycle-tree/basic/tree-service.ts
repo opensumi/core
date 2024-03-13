@@ -1,10 +1,10 @@
 import { DisposableCollection, Emitter } from '@opensumi/ide-utils';
 
-import { TreeModel, Tree, Decoration, DecorationsManager } from '../tree';
+import { Decoration, DecorationsManager, Tree, TreeModel } from '../tree';
 import { TreeNodeEvent } from '../types';
 
 import { BasicCompositeTreeNode, BasicTreeNode, BasicTreeRoot } from './tree-node.define';
-import { IBasicTreeData, DECORATIONS } from './types';
+import { DECORATIONS, IBasicTreeData } from './types';
 
 export interface IBasicTreeServiceOptions {
   treeName?: string;

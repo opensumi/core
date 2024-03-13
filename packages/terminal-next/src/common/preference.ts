@@ -1,5 +1,4 @@
-import { Event, TerminalSettingsId } from '@opensumi/ide-core-common';
-import { localize } from '@opensumi/ide-core-common';
+import { Event, TerminalSettingsId, localize } from '@opensumi/ide-core-common';
 import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
 
 import { RenderType } from './xterm';

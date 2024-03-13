@@ -1,21 +1,21 @@
-import { observable, makeObservable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { IEventBus, QuickPickService, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import {
-  Disposable,
   Deferred,
+  Disposable,
   Emitter,
   Event,
-  debounce,
-  ILogger,
-  IDisposable,
-  URI,
   IApplicationService,
+  IDisposable,
+  ILogger,
   IReporter,
-  REPORT_NAME,
   OperatingSystem,
+  REPORT_NAME,
+  URI,
+  debounce,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -24,24 +24,24 @@ import { IVariableResolverService } from '@opensumi/ide-variable/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
 
 import {
-  TerminalOptions,
-  ITerminalController,
-  ITerminalClient,
-  ITerminalTheme,
-  ITerminalGroupViewService,
-  ITerminalInternalService,
-  IWidget,
-  ITerminalDataEvent,
-  ITerminalExitEvent,
-  ITerminalTitleChangeEvent,
-  ITerminalConnection,
-  ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
   IShellLaunchConfig,
+  ITerminalClient,
+  ITerminalConnection,
+  ITerminalController,
+  ITerminalDataEvent,
+  ITerminalExitEvent,
+  ITerminalExternalLinkProvider,
+  ITerminalGroupViewService,
+  ITerminalInternalService,
   ITerminalProfileInternalService,
+  ITerminalTheme,
+  ITerminalTitleChangeEvent,
+  IWidget,
+  TerminalOptions,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import { SupportedOptions, ITerminalPreference, CodeTerminalSettingId } from '../common/preference';
+import { CodeTerminalSettingId, ITerminalPreference, SupportedOptions } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';

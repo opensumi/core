@@ -1,17 +1,20 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   Disposable,
+  ILogger,
   KeybindingRegistry,
   MonacoOverrideServiceRegistry,
   ServiceNames,
-  ILogger,
 } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
+import { KeyCodeChord } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
-import { isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import {
+  IDiffEditorConstructionOptions,
+  MouseTargetType,
+  isDiffEditor,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -57,7 +60,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       },
       automaticLayout: true,
       model: undefined,
-      wordBasedSuggestions: false,
+      wordBasedSuggestions: 'off',
       renderLineHighlight: 'none',
     } as IStandaloneEditorConstructionOptions;
   }
@@ -197,13 +200,13 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry),
     ];
     keybindingService.resolveKeyboardEvent = (keyboardEvent) => {
-      const keybinding = new SimpleKeybinding(
+      const keybinding = new KeyCodeChord(
         keyboardEvent.ctrlKey,
         keyboardEvent.shiftKey,
         keyboardEvent.altKey,
         keyboardEvent.metaKey,
         keyboardEvent.keyCode,
-      ).toChord();
+      ).toKeybinding();
       return new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry);
     };
   }

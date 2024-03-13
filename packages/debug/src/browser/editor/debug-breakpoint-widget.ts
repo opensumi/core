@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable, positionToRange } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

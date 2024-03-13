@@ -1,33 +1,33 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
+  CancellationToken,
   Emitter,
   Event,
-  IExtensionInfo,
   Disposable as IDEDisposable,
-  CancellationToken,
+  IExtensionInfo,
   Schemes,
 } from '@opensumi/ide-core-common';
 
 import {
-  IMainThreadWebview,
   IExtHostWebview,
-  MainThreadAPIIdentifier,
-  IWebviewPanelViewState,
+  IExtHostWebviewView,
+  IExtensionDescription,
+  IMainThreadWebview,
+  IMainThreadWebviewView,
   IWebviewOptions,
-  Webview,
-  WebviewPanel,
   IWebviewPanelOptions,
+  IWebviewPanelViewState,
+  MainThreadAPIIdentifier,
   ViewColumn,
+  Webview,
+  WebviewHandle,
+  WebviewPanel,
   WebviewPanelOnDidChangeViewStateEvent,
   WebviewPanelSerializer,
   WebviewView,
-  WebviewHandle,
-  IMainThreadWebviewView,
-  IExtHostWebviewView,
-  IExtensionDescription,
   WebviewViewProvider,
 } from '../../../common/vscode';
-import { Uri, Disposable } from '../../../common/vscode/ext-types';
+import { Disposable, Uri } from '../../../common/vscode/ext-types';
 
 type IconPath = Uri | { light: Uri; dark: Uri };
 

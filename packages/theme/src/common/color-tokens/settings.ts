@@ -4,9 +4,9 @@ import { Color, RGBA } from '../../common/color';
 import { registerColor, transparent } from '../utils';
 
 import { checkboxBackground, checkboxBorder, checkboxForeground } from './checkbox';
-import { selectBackground, selectForeground, selectBorder } from './dropdown';
+import { selectBackground, selectBorder, selectForeground } from './dropdown';
 import { editorWidgetBorder } from './editor';
-import { inputBackground, inputForeground, inputBorder } from './input';
+import { inputBackground, inputBorder, inputForeground } from './input';
 import { listHoverBackground } from './list-tree';
 import { PANEL_BORDER } from './panel';
 

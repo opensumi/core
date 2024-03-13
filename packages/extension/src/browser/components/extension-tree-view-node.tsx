@@ -1,9 +1,8 @@
 import cls from 'classnames';
-import React, { CSSProperties, FC, MouseEvent, ReactNode, useCallback, useEffect, useState, DragEvent } from 'react';
+import React, { CSSProperties, DragEvent, FC, MouseEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { getIcon } from '@opensumi/ide-core-browser';
+import { ClasslistComposite, INodeRendererProps, Loading, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
+import { getIcon, useDesignStyles } from '@opensumi/ide-core-browser';
 import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
@@ -12,7 +11,7 @@ import { IDecorationsService } from '@opensumi/ide-decoration/lib/common/decorat
 import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import styles from '../vscode/api/tree-view/tree-view-node.module.less';
-import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
+import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
 
 export interface ITreeViewNodeProps {
   item: ExtensionTreeNode | ExtensionCompositeTreeNode;
@@ -53,6 +52,8 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   onDrop,
 }: TreeViewNodeRenderedProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_tree_view_node = useDesignStyles(styles.tree_view_node);
   const [decoration, setDecoration] = useState(item.uri && decorationService.getDecoration(item.uri, false));
 
   useEffect(() => {
@@ -155,7 +156,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
     return (
       <div
         onClick={clickHandler}
-        className={cls(styles.tree_view_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+        className={cls(styles.tree_view_node_segment, styles_expansion_toggle, getIcon('arrow-right'), {
           [`${styles.mod_collapsed}`]: !(node as ExtensionCompositeTreeNode).expanded,
         })}
       />
@@ -269,7 +270,7 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       title={getItemTooltip()}
-      className={cls(styles.tree_view_node, decorations ? decorations.classlist : null)}
+      className={cls(styles_tree_view_node, decorations ? decorations.classlist : null)}
       data-id={item.id}
       style={fileTreeNodeStyle}
       draggable={draggable}

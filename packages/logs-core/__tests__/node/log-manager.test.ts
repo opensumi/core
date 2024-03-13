@@ -5,7 +5,7 @@ import temp from 'temp';
 
 import { toLocalISOString } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';

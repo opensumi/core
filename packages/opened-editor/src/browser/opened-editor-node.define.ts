@@ -1,5 +1,5 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
-import { formatLocalize, URI } from '@opensumi/ide-core-browser';
+import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
+import { URI, formatLocalize } from '@opensumi/ide-core-browser';
 import { IEditorGroup, IResource } from '@opensumi/ide-editor';
 
 import { OpenedEditorService } from './services/opened-editor-tree.service';

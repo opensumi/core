@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
-import type { IDisposable, Uri, UriComponents } from '@opensumi/ide-core-common';
 import { CancellationToken } from '@opensumi/vscode-jsonrpc/lib/common/cancellation';
 
 import { IExtensionDescription } from './extension';
 import { VSCommand } from './model.api';
+
+import type { IDisposable, Uri, UriComponents } from '@opensumi/ide-core-common';
+import type vscode from 'vscode';
 
 export interface ObjectIdentifier {
   $ident?: number;

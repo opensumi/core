@@ -1,23 +1,23 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  ILogger,
-  isOSX,
+  CommandRegistry,
+  CommandService,
+  ContributionProvider,
+  Disposable,
   Emitter,
   Event,
-  CommandRegistry,
-  ContributionProvider,
   IDisposable,
-  Disposable,
+  ILogger,
   formatLocalize,
-  CommandService,
+  isOSX,
   isUndefined,
 } from '@opensumi/ide-core-common';
 import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { IContextKeyService } from '../context-key';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
-import { KeyCode, KeySequence, Key, SpecialCases } from '../keyboard/keys';
-import { StatusBarAlignment, IStatusBarService } from '../services';
+import { Key, KeyCode, KeySequence, SpecialCases } from '../keyboard/keys';
+import { IStatusBarService, StatusBarAlignment } from '../services';
 
 export enum KeybindingScope {
   DEFAULT,

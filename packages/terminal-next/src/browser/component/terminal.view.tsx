@@ -2,16 +2,16 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useInjectable, getIcon, localize } from '@opensumi/ide-core-browser';
+import { getIcon, localize, useInjectable } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
+  ITerminalError,
+  ITerminalErrorService,
   ITerminalGroupViewService,
+  ITerminalNetwork,
   ITerminalSearchService,
   IWidget,
-  ITerminalErrorService,
-  ITerminalNetwork,
-  ITerminalError,
 } from '../../common';
 
 import ResizeView, { ResizeDirection } from './resize.view';

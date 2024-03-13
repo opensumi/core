@@ -1,45 +1,35 @@
-import type net from 'net';
-
-import type { WebSocket } from 'ws';
-
-import { EventEmitter } from '@opensumi/events';
+import { getDebugLogger } from '@opensumi/ide-core-common';
 import {
-  DisposableCollection,
-  IDisposable,
-  parseError,
   CancellationToken,
-  canceled,
   CancellationTokenSource,
-  isPromise,
+  DisposableCollection,
+  EventQueue,
+  IDisposable,
+  canceled,
+  parseError,
 } from '@opensumi/ide-utils';
+import { IReadableStream, isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
 
 import { MethodTimeoutError } from './errors';
+import { MessageIO, OperationType, Status } from './message-io';
 import {
-  BodyCodec,
-  ErrorCode,
-  OperationType,
-  MessageIO,
-  requestHeadersSerializer,
-  reader,
   IRequestHeaders,
-} from './packet';
-import { ProtocolRepository } from './protocol-repository';
-import {
+  IResponseHeaders,
   TGenericNotificationHandler,
   TGenericRequestHandler,
-  TOnNotificationNotFoundHandler,
-  TOnRequestNotFoundHandler,
+  TNotificationNotFoundHandler,
   TRequestCallback,
+  TRequestNotFoundHandler,
 } from './types';
-import { assert } from './utils';
+
+import type net from 'net';
+import type { WebSocket } from 'ws';
 
 const nullHeaders = {};
-
-const star = '*';
 
 export interface ISumiConnectionOptions {
   timeout?: number;
@@ -49,12 +39,10 @@ export interface ISumiConnectionOptions {
 export class SumiConnection implements IDisposable {
   protected disposable = new DisposableCollection();
 
-  private _requestEmitter = new EventEmitter<{
-    [key: string]: [requestId: number, method: string, headers: Record<string, any>, args: any[]];
-  }>();
-  private _notificationEmitter = new EventEmitter<{
-    [key: string]: [requestId: number, method: string, headers: Record<string, any>, args: any[]];
-  }>();
+  private _requestHandlers = new Map<string, TGenericRequestHandler<any>>();
+  private _starRequestHandler: TRequestNotFoundHandler | undefined;
+  private _notificationHandlers = new Map<string, TGenericNotificationHandler>();
+  private _starNotificationHandler: TNotificationNotFoundHandler | undefined;
 
   private _requestId = 0;
   private _callbacks = new Map<number, TRequestCallback>();
@@ -63,39 +51,41 @@ export class SumiConnection implements IDisposable {
   private readonly _cancellationTokenSources = new Map<number, CancellationTokenSource>();
   private readonly _knownCanceledRequests = new Set<number>();
 
-  public protocolRepository = new ProtocolRepository();
-  protected logger: ILogger = console;
+  protected activeRequestPool = new Map<number, ActiveRequest>();
+
+  public io = new MessageIO();
+  protected logger: ILogger;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
     if (options.logger) {
       this.logger = options.logger;
+    } else {
+      this.logger = getDebugLogger();
     }
   }
 
   sendNotification(method: string, ...args: any[]) {
-    const processor = this.protocolRepository.getProcessor(method);
-    const payload = processor.serializeRequest(args);
-    this.socket.send(MessageIO.Request(this._requestId++, OperationType.Notification, method, nullHeaders, payload));
+    this.socket.send(this.io.Notification(this._requestId++, method, nullHeaders, args));
   }
 
   sendRequest(method: string, ...args: any[]) {
     return new Promise<any>((resolve, reject) => {
       const requestId = this._requestId++;
 
-      const processor = this.protocolRepository.getProcessor(method);
-
-      this._callbacks.set(requestId, (headers, error, buffer) => {
+      this._callbacks.set(requestId, (headers, error, result) => {
         if (error) {
           if (error === METHOD_NOT_REGISTERED) {
+            // we should not treat `METHOD_NOT_REGISTERED` as an error.
+            // it is a special case, it means the method is not registered on the other side.
             resolve(error);
             return;
           }
 
+          this.traceRequestError(method, args, error);
           reject(error);
           return;
         }
 
-        const result = processor.deserializeResult(buffer);
         resolve(result);
       });
 
@@ -117,37 +107,21 @@ export class SumiConnection implements IDisposable {
         cancellationToken.onCancellationRequested(() => this.cancelRequest(requestId));
       }
 
-      const payload = processor.serializeRequest(args);
       this.socket.send(
-        MessageIO.Request(
+        this.io.Request(
           requestId,
-          OperationType.Request,
           method,
           {
-            cancelable: cancellationToken ? true : false,
+            cancelable: Boolean(cancellationToken) || undefined,
           },
-          payload,
+          args,
         ),
       );
     });
   }
 
-  onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      handler(...args);
-    };
-    return this._notificationEmitter.on(method, handlerWrapper);
-  }
-
-  onNotificationNotFound(handler: TOnNotificationNotFoundHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      handler(method, args);
-    };
-    return this._notificationEmitter.on(star, handlerWrapper);
-  }
-
   cancelRequest(requestId: number) {
-    this.socket.send(MessageIO.Cancel(requestId));
+    this.socket.send(this.io.Cancel(requestId));
   }
 
   private _handleTimeout(method: string, requestId: number) {
@@ -161,72 +135,52 @@ export class SumiConnection implements IDisposable {
     callback(nullHeaders, new MethodTimeoutError(method));
   }
 
-  private runRequestHandler<T extends (...args: any[]) => any>(
-    requestId: number,
-    method: string,
-    args: any[],
-    handler: T,
-  ) {
-    let result: any;
-    let error: Error | undefined;
-    const processor = this.protocolRepository.getProcessor(method);
-
-    try {
-      result = handler(...args);
-    } catch (err) {
-      error = err;
-    }
-
-    if (error) {
-      this.socket.send(MessageIO.Error(requestId, ErrorCode.Err, nullHeaders, error));
-      this._cancellationTokenSources.delete(requestId);
-    } else if (isPromise(result)) {
-      result
-        .then((result) => {
-          const payload = processor.serializeResult(result);
-          this.socket.send(MessageIO.Response(requestId, nullHeaders, payload));
-          this._cancellationTokenSources.delete(requestId);
-        })
-        .catch((err) => {
-          this.socket.send(MessageIO.Error(requestId, ErrorCode.Err, nullHeaders, err));
-          this._cancellationTokenSources.delete(requestId);
-        });
-    } else {
-      const payload = processor.serializeResult(result);
-      this.socket.send(MessageIO.Response(requestId, nullHeaders, payload));
-      this._cancellationTokenSources.delete(requestId);
-    }
-  }
-
   onRequest<T = any>(method: string, handler: TGenericRequestHandler<T>): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      this.runRequestHandler(requestId, method, args, handler);
+    this._requestHandlers.set(method, handler);
+    return {
+      dispose: () => {
+        this._requestHandlers.delete(method);
+      },
     };
-    return this._requestEmitter.on(method, handlerWrapper);
   }
 
-  onRequestNotFound(handler: TOnRequestNotFoundHandler): IDisposable {
-    const handlerWrapper = (requestId: number, method: string, headers: Record<string, any>, args: any[]) => {
-      this.runRequestHandler(requestId, method, [method, args], handler);
+  onRequestNotFound(handler: TRequestNotFoundHandler): IDisposable {
+    this._starRequestHandler = handler;
+    return {
+      dispose: () => {
+        this._starRequestHandler = undefined;
+      },
     };
-
-    return this._requestEmitter.on(star, handlerWrapper);
   }
 
-  setProtocolRepository(protocolRepository: ProtocolRepository) {
-    this.protocolRepository = protocolRepository;
+  onNotification(method: string, handler: TGenericNotificationHandler): IDisposable {
+    this._notificationHandlers.set(method, handler);
+    return {
+      dispose: () => {
+        this._notificationHandlers.delete(method);
+      },
+    };
+  }
+
+  onNotificationNotFound(handler: TNotificationNotFoundHandler): IDisposable {
+    this._starNotificationHandler = handler;
+    return {
+      dispose: () => {
+        this._starNotificationHandler = undefined;
+      },
+    };
   }
 
   listen() {
+    const { reader } = this.io;
+
     const toDispose = this.socket.onMessage((data) => {
       reader.reset(data);
       // skip version, currently only have version 1
       reader.skip(1);
 
-      const rpcType = reader.uint8();
-
+      const opType = reader.uint8() as OperationType;
       const requestId = reader.uint32();
-      const codec = reader.uint8();
 
       if (this._timeoutHandles.has(requestId)) {
         // Ignore some jest test scenarios where clearTimeout is not defined.
@@ -237,41 +191,59 @@ export class SumiConnection implements IDisposable {
         this._timeoutHandles.delete(requestId);
       }
 
-      switch (rpcType) {
+      switch (opType) {
         case OperationType.Response: {
-          const callback = this._callbacks.get(requestId);
-          if (!callback) {
-            this.logger.error(`Cannot find callback for request ${requestId}`);
-            return;
-          }
-
-          this._callbacks.delete(requestId);
-
+          const method = reader.stringOfVarUInt32();
           const status = reader.uint16();
-          // const headers = headerSerializer.read();
 
-          // if error code is not 0, it's an error
-          if (status === ErrorCode.Err) {
-            // TODO: use binary codec
-            assert(codec === BodyCodec.JSON, 'Error response should be JSON encoded');
-            const content = reader.stringOfVarUInt32();
-            const error = parseError(content);
-            callback(nullHeaders, error);
-            return;
-          }
+          const runCallback = (headers: IResponseHeaders, error?: any, result?: any) => {
+            const callback = this._callbacks.get(requestId);
+            if (!callback) {
+              this.logger.error(`Cannot find callback for request ${requestId}`);
+              return;
+            }
 
-          if (codec === BodyCodec.Binary) {
-            const contentLen = reader.varUInt32();
-            const buffer = reader.buffer(contentLen);
-            callback(nullHeaders, undefined, buffer);
-            return;
-          }
+            this._callbacks.delete(requestId);
 
-          const content = reader.stringOfVarUInt32();
-          if (codec === BodyCodec.JSON) {
-            callback(nullHeaders, undefined, JSON.parse(content));
-          } else {
-            callback(nullHeaders, undefined, content);
+            callback(headers, error, result);
+          };
+
+          const headers = this.io.responseHeadersSerializer.read();
+
+          switch (status) {
+            case Status.Err: {
+              // TODO: use binary codec
+              const content = reader.stringOfVarUInt32();
+              const error = parseError(content);
+              runCallback(nullHeaders, error);
+              break;
+            }
+            default: {
+              if (headers && headers.chunked) {
+                let activeReq: ActiveRequest;
+                if (this.activeRequestPool.has(requestId)) {
+                  activeReq = this.activeRequestPool.get(requestId)!;
+                } else {
+                  activeReq = new ActiveRequest(requestId, headers);
+                  this.activeRequestPool.set(requestId, activeReq);
+                  runCallback(headers, undefined, activeReq);
+                }
+
+                const result = this.io.getProcessor(method).readResponse() as Uint8Array;
+
+                // when result is null, it means the stream is ended.
+                if (result) {
+                  activeReq.emit(result);
+                  break;
+                }
+
+                activeReq.end();
+                this.activeRequestPool.delete(requestId);
+              } else {
+                const result = this.io.getProcessor(method).readResponse();
+                runCallback(headers, undefined, result);
+              }
+            }
           }
           break;
         }
@@ -279,15 +251,79 @@ export class SumiConnection implements IDisposable {
         // fall through
         case OperationType.Request: {
           const method = reader.stringOfVarUInt32();
-          const headers = requestHeadersSerializer.read() as IRequestHeaders;
+          const headers = this.io.requestHeadersSerializer.read() as IRequestHeaders;
+          const args = this.io.getProcessor(method).readRequest();
 
-          const contentLen = reader.varUInt32();
-          const content = reader.buffer(contentLen);
-          const processor = this.protocolRepository.getProcessor(method);
+          if (headers.cancelable) {
+            const tokenSource = new CancellationTokenSource();
+            this._cancellationTokenSources.set(requestId, tokenSource);
+            args.push(tokenSource.token);
 
-          const args = processor.deserializeRequest(content);
+            if (this._knownCanceledRequests.has(requestId)) {
+              tokenSource.cancel();
+              this._knownCanceledRequests.delete(requestId);
+            }
+          }
 
-          this._receiveRequest(rpcType, requestId, method, headers, args);
+          switch (opType) {
+            case OperationType.Request: {
+              let promise: Promise<any>;
+
+              try {
+                let result: any;
+
+                const handler = this._requestHandlers.get(method);
+                if (handler) {
+                  result = handler(...args);
+                } else if (this._starRequestHandler) {
+                  result = this._starRequestHandler(method, args);
+                }
+
+                promise = Promise.resolve(result);
+              } catch (err) {
+                promise = Promise.reject(err);
+              }
+
+              const onSuccess = (result: any) => {
+                if (isReadableStream(result)) {
+                  const responseHeaders: IResponseHeaders = {
+                    chunked: true,
+                  };
+                  listenReadable(result, {
+                    onData: (data) => {
+                      this.socket.send(this.io.Response(requestId, method, responseHeaders, data));
+                    },
+                    onEnd: () => {
+                      this.socket.send(this.io.Response(requestId, method, responseHeaders, null));
+                    },
+                  });
+                } else {
+                  this.socket.send(this.io.Response(requestId, method, nullHeaders, result));
+                }
+
+                this._cancellationTokenSources.delete(requestId);
+              };
+
+              const onError = (err: Error) => {
+                this.traceRequestError(method, args, err);
+                this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
+                this._cancellationTokenSources.delete(requestId);
+              };
+
+              promise.then(onSuccess).catch(onError);
+              break;
+            }
+            case OperationType.Notification: {
+              const handler = this._notificationHandlers.get(method);
+              if (handler) {
+                handler(...args);
+              } else if (this._starNotificationHandler) {
+                this._starNotificationHandler(method, args);
+              }
+              break;
+            }
+          }
+
           break;
         }
         case OperationType.Cancel: {
@@ -313,33 +349,59 @@ export class SumiConnection implements IDisposable {
     this.disposable.dispose();
   }
 
-  protected _receiveRequest(rpcType: number, requestId: number, method: string, headers: IRequestHeaders, args: any[]) {
-    const cancelable = headers.cancelable;
-    if (cancelable) {
-      const tokenSource = new CancellationTokenSource();
-      this._cancellationTokenSources.set(requestId, tokenSource);
-      args.push(tokenSource.token);
-
-      if (this._knownCanceledRequests.has(requestId)) {
-        tokenSource.cancel();
-        this._knownCanceledRequests.delete(requestId);
-      }
-    }
-
-    if (rpcType === OperationType.Request) {
-      const eventName = this._requestEmitter.hasListener(method) ? method : star;
-      this._requestEmitter.emit(eventName, requestId, method, headers, args);
-    } else {
-      const eventName = this._notificationEmitter.hasListener(method) ? method : star;
-      this._notificationEmitter.emit(eventName, requestId, method, headers, args);
-    }
-  }
-
   static forWSWebSocket(socket: WebSocket, options: ISumiConnectionOptions = {}) {
     return new SumiConnection(new WSWebSocketConnection(socket), options);
   }
 
   static forNetSocket(socket: net.Socket, options: ISumiConnectionOptions = {}) {
     return new SumiConnection(new NetSocketConnection(socket), options);
+  }
+
+  private traceRequestError(method: string, args: any[], error: any) {
+    this.logger.error(`Error handling request ${method} with args `, args, error);
+  }
+}
+
+class ActiveRequest implements IReadableStream<Uint8Array> {
+  protected dataQ = new EventQueue<Uint8Array>();
+  protected endQ = new EventQueue<void>();
+
+  on(event: 'data', listener: (chunk: Uint8Array) => void): this;
+  on(event: 'end', listener: () => void): this;
+  on(event: string, listener: (...args: any[]) => void): this;
+  on(event: unknown, listener: unknown): this {
+    if (typeof event === 'string') {
+      switch (event) {
+        case 'data':
+          this.onData(listener as (chunk: Uint8Array) => void);
+          break;
+        case 'end':
+          this.onEnd(listener as () => void);
+          break;
+        default:
+          break;
+      }
+    }
+    return this;
+  }
+
+  onData(cb: (data: Uint8Array) => void): IDisposable {
+    return this.dataQ.on(cb);
+  }
+
+  onEnd(cb: () => void): IDisposable {
+    return this.endQ.on(cb);
+  }
+
+  constructor(protected requestId: number, protected responseHeaders: IResponseHeaders) {}
+
+  emit(buffer: Uint8Array) {
+    this.dataQ.push(buffer);
+  }
+
+  end() {
+    this.dataQ.dispose();
+    this.endQ.push(undefined);
+    this.endQ.dispose();
   }
 }

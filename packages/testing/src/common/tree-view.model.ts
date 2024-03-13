@@ -1,7 +1,7 @@
 import { IBasicTreeData, IRecycleTreeHandle } from '@opensumi/ide-components';
 import { Event } from '@opensumi/ide-core-browser';
 
-import { InternalTestItem, TestResultState, IncrementalTestCollectionItem } from './testCollection';
+import { IncrementalTestCollectionItem, InternalTestItem, TestResultState } from './testCollection';
 
 export const TestTreeViewModelToken = Symbol('TestTreeViewModel');
 

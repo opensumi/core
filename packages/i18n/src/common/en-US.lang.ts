@@ -481,7 +481,8 @@ export const localizationBundle = {
     'preference.terminal.integrated.xtermRenderType': 'Xterm Render Type',
     'preference.terminal.integrated.xtermRenderTypeDesc':
       'Choose Xterm render type, Webgl for better performance, Canvas better compatibility',
-    'preference.terminal.integrated.enablePersistentSessionDesc': 'Persist terminal sessions/history for the workspace across window reloads.',
+    'preference.terminal.integrated.enablePersistentSessionDesc':
+      'Persist terminal sessions/history for the workspace across window reloads.',
     'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
@@ -509,7 +510,8 @@ export const localizationBundle = {
     'settings.group.terminal': 'Terminal',
 
     'preference.general.theme': 'Theme',
-    'preference.general.icon': 'Icon Theme',
+    'preference.general.icon': 'File Icon Theme',
+    'preference.general.productIconTheme': 'Product Icon Theme',
     'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
@@ -581,6 +583,11 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': 'Word Wrap Length',
 
     'preference.item.notValid': '{0} is not a valid option',
+
+    // AI Native
+    'preference.aiNative.inlineChat.title': 'Inline Chat',
+    'preference.aiNative.inlineChat.auto.visible':
+      'Does Inline Chat automatically appear when code snippets are selected ?',
 
     // Editor Configurations
     'editor.configuration.formatOnSaveTimeout':
@@ -662,7 +669,15 @@ export const localizationBundle = {
     'editor.configuration.suggest.preview': 'Enable or disable the rendering of the suggestion preview.',
     'editor.configuration.suggest.details.visible':
       'Controls whether editor code completion expands details by default',
+    // inlineSuggest start
     'editor.configuration.inlineSuggest.enabled': 'Enable or disable the rendering of automatic inline completions.',
+    'editor.configuration.inlineSuggest.showToolbar': 'Controls when to show the inline suggestion toolbar.',
+    'editor.configuration.inlineSuggest.showToolbar.always':
+      'Show the inline suggestion toolbar whenever an inline suggestion is shown.',
+    'editor.configuration.inlineSuggest.showToolbar.onHover':
+      'Show the inline suggestion toolbar when hovering over an inline suggestion.',
+    'editor.configuration.inlineSuggest.showToolbar.never': 'Never show the inline suggestion toolbar.',
+    // inlineSuggest end
     'editor.configuration.experimental.stickyScroll':
       'Shows the nested current scopes during the scroll at the top of the editor.',
     'editor.configuration.customCodeActionMenu.showHeaders':
@@ -1053,13 +1068,15 @@ export const localizationBundle = {
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
+    'theme.productIcon.toggle': 'Product Icon Theme',
 
     'theme.base.vs': 'Light Theme',
     'theme.base.vs-dark': 'Dark Theme',
     'theme.base.hc': 'High Contrast Themes',
     'theme.current': 'Current',
     'theme.quickopen.plh': 'Select Color Theme（Up/Down Keys to Preview）',
-    'icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
+    'theme.icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
+    'theme.productIcon.quickopen.plh': 'Select Product Icon Theme（Up/Down Keys to Preview）',
 
     'preference.workbench.list.openMode':
       'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
@@ -1387,6 +1404,15 @@ export const localizationBundle = {
     'mergeEditor.action.button.accept.left': 'Accept Left',
     'mergeEditor.action.button.accept.right': 'Accept Right',
     'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
+
+    // #region AI Native
+    'aiNative.inline.chat.operate.check.title': 'Check',
+    'aiNative.inline.chat.operate.discard.title': 'Discard',
+    'aiNative.inline.chat.operate.afresh.title': 'Afresh',
+    'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
+    'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
+    'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+    // #endregion AI Native
 
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':

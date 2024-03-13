@@ -1,30 +1,29 @@
-import path from 'path';
-
 import { Injector } from '@opensumi/di';
-import { SumiConnectionMultiplexer, ProxyIdentifier } from '@opensumi/ide-connection';
+import { ProxyIdentifier, SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import {
   Emitter,
+  IExtensionLogger,
+  IExtensionProps,
+  IReporter,
   IReporterService,
   REPORT_HOST,
   REPORT_NAME,
-  IExtensionProps,
-  Uri,
-  timeout,
   ReporterService,
-  IReporter,
-  IExtensionLogger,
+  Uri,
   arrays,
+  timeout,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+import { join } from '@opensumi/ide-utils/lib/path';
 
-import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
-import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
+import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtendProxy, IExtensionHostService, getExtensionId } from '../common';
+import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from '../common/activator';
 import {
   ExtHostAPIIdentifier,
-  MainThreadAPIIdentifier,
-  IExtensionDescription,
   ExtensionIdentifier,
   IExtHostLocalization,
+  IExtensionDescription,
+  MainThreadAPIIdentifier,
 } from '../common/vscode';
 
 import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
@@ -453,7 +452,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     if (extension.packageJSON.sumiContributes && extension.packageJSON.sumiContributes.nodeMain) {
       try {
         const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
-        extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.sumiContributes.nodeMain));
+        extendModule = getNodeRequire()(join(extension.path, extension.packageJSON.sumiContributes.nodeMain));
         reportTimer.timeEnd(extension.id, {
           version: extension.packageJSON.version,
         });
@@ -464,7 +463,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         this.logger.error(`active extension ${extension.id} failure by\n${error}`);
       }
     } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
-      extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
+      extendModule = getNodeRequire()(join(extension.path, extension.extendConfig.node.main));
       if (!extendModule) {
         this.logger.warn(`Can not find extendModule ${extension.id}`);
       }

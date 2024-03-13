@@ -1,12 +1,13 @@
-import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
-import { ContributionProvider, Domain, getDebugLogger, IApplicationService } from '@opensumi/ide-core-common';
+import { ContributionProvider, Domain, IApplicationService, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { IRemoteOpenerService, RemoteOpenerServicePath } from '../common';
 import {
   IRemoteOpenerBrowserService,
+  IRemoteOpenerService,
   RemoteOpenerBrowserServiceToken,
   RemoteOpenerConverterContribution,
+  RemoteOpenerServicePath,
 } from '../common';
 
 // 从extension.contribution.ts中Copy过来，因为直接引入会有一定概率触发IDE初始化问题

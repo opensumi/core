@@ -1,5 +1,5 @@
-import { Optional, Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
 import { IsTerminalFocused, IsTerminalViewInitialized } from '@opensumi/ide-core-browser/lib/contextkey';
 
 @Injectable()

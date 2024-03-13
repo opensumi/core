@@ -2,17 +2,17 @@ import cls from 'classnames';
 import React from 'react';
 
 import {
-  TreeNode,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
-  PromptHandle,
-  TreeNodeType,
-  RenamePromptHandle,
+  Loading,
   NewPromptHandle,
+  PromptHandle,
+  RenamePromptHandle,
+  TreeNode,
+  TreeNodeType,
 } from '@opensumi/ide-components';
-import { Loading } from '@opensumi/ide-components';
-import { getIcon, URI, path, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
+import { URI, getIcon, path, transformLabelWithCodicon, useDesignStyles } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IIconService } from '@opensumi/ide-theme/lib/common/index';
 
@@ -85,6 +85,9 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
   const isCompactName = !isPrompt && item.name.indexOf(Path.separator) >= 0;
+
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_file_tree_node = useDesignStyles(styles.file_tree_node);
 
   const decoration = isPrompt ? null : decorationService.getDecoration(item.uri, Directory.is(item));
 
@@ -227,7 +230,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       if (isDirectory) {
         return (
           <div
-            className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+            className={cls(styles.file_tree_node_segment, styles_expansion_toggle, getIcon('arrow-right'), {
               [`${styles.mod_collapsed}`]:
                 isNewPrompt ||
                 !(
@@ -243,7 +246,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       return (
         <div
           onClick={clickHandler}
-          className={cls(styles.file_tree_node_segment, styles.expansion_toggle, getIcon('arrow-right'), {
+          className={cls(styles.file_tree_node_segment, styles_expansion_toggle, getIcon('arrow-right'), {
             [`${styles.mod_collapsed}`]: !(node as Directory).expanded,
           })}
         />
@@ -422,7 +425,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       title={getItemTooltip()}
-      className={cls(styles.file_tree_node, decorations ? decorations.classlist : null)}
+      className={cls(styles_file_tree_node, decorations ? decorations.classlist : null)}
       style={fileTreeNodeStyle}
       draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
       data-id={item.id}

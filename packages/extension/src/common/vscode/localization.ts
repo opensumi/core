@@ -1,8 +1,7 @@
-import type { Uri } from '@opensumi/ide-core-common';
+import { UriComponents } from './ext-types';
 
 import type { IExtensionDescription } from '../../common/vscode';
-
-import { UriComponents } from './ext-types';
+import type { Uri } from '@opensumi/ide-core-common';
 
 export interface IStringDetails {
   message: string;

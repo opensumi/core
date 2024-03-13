@@ -1,4 +1,4 @@
-import { Injector, Domain, ConstructorOf } from '@opensumi/di';
+import { ConstructorOf, Domain, Injector } from '@opensumi/di';
 
 export const ContributionProvider = Symbol('ContributionProvider');
 

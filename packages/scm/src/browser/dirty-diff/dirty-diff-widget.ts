@@ -1,11 +1,13 @@
-import { URI, path, CommandService, formatLocalize } from '@opensumi/ide-core-browser';
+import { CommandService, URI, formatLocalize, path } from '@opensumi/ide-core-browser';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
 
 import { ChangeType, getChangeType, toChange } from './dirty-diff-util';
+
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 export enum DirtyDiffWidgetActionType {
   close,
@@ -94,7 +96,7 @@ export class DirtyDiffWidget extends ZoneWidget {
     this._content.style.borderBottomColor = borderColor;
 
     // 根据编辑器字号行高设置 header 和 content 高度
-    const editorLineHeight = this.editor.getOption(60 /** EditorOption.lineHeight */);
+    const editorLineHeight = this.editor.getOption(EditorOption.lineHeight /** EditorOption.lineHeight */);
     const headHeight = Math.ceil(editorLineHeight * 1.2);
 
     this._head.style.height = `${headHeight}px`;

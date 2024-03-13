@@ -1,14 +1,9 @@
-import { IDisposable, Event } from '@opensumi/ide-utils';
+import { Event, IDisposable } from '@opensumi/ide-utils';
 
 export const noAccountsId = 'authentication.noAccounts';
 
 export const ACCOUNTS_MENU = ['accounts_menu'];
 export const ACCOUNTS_SUBMENU = [...ACCOUNTS_MENU, '1_accounts_submenu'];
-
-export interface AllowedExtension {
-  id: string;
-  name: string;
-}
 
 export interface AuthenticationSessionsChangeEvent {
   added: ReadonlyArray<AuthenticationSession>;

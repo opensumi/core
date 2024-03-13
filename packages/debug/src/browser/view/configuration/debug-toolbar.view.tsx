@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import { action, observable, makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -13,11 +13,11 @@ import {
   getIcon,
   isMacintosh,
   localize,
+  useDesignStyles,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
-import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { DebugState } from '../../../common';
@@ -268,8 +268,9 @@ const DebugPreferenceHeightKey = 'debug.toolbar.height';
 const FloatDebugToolbarView = observer(() => {
   const controller = useInjectable<FloatController>(FloatController);
   const preference = useInjectable<PreferenceService>(PreferenceService);
-  const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
+  const { isElectronRenderer, layoutViewSize } = useInjectable<AppConfig>(AppConfig);
   const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper);
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
   const { state } = debugToolbarService;
 
@@ -284,8 +285,7 @@ const FloatDebugToolbarView = observer(() => {
         fullScreen
           ? setToolbarOffsetTop(value)
           : setToolbarOffsetTop(
-              value +
-                (isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT),
+              value + (isNewMacHeaderBar() ? layoutViewSize!.titleBarHeight! : layoutViewSize!.bigSurTitleBarHeight!),
             );
       });
       disposableCollection.push(
@@ -295,7 +295,7 @@ const FloatDebugToolbarView = observer(() => {
               ? setToolbarOffsetTop(value)
               : setToolbarOffsetTop(
                   value +
-                    (isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT),
+                    (isNewMacHeaderBar() ? layoutViewSize!.titleBarHeight! : layoutViewSize!.bigSurTitleBarHeight!),
                 );
           }
         }),
@@ -311,7 +311,7 @@ const FloatDebugToolbarView = observer(() => {
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
 
   const debugToolbarWrapperClass = cls({
-    [styles.debug_toolbar_wrapper]: true,
+    [styles_debug_toolbar_wrapper]: true,
     [styles.debug_toolbar_wrapper_electron]: isElectronRenderer,
   });
 

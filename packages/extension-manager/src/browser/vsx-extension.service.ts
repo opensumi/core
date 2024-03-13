@@ -1,30 +1,34 @@
-import { observable, action, makeObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
   Disposable,
-  fuzzyScore,
   IStatusBarService,
-  localize,
   StatusBarAlignment,
   StatusBarEntryAccessor,
   URI,
+  fuzzyScore,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
-import { IIconService, IThemeService } from '@opensumi/ide-theme';
-import { ICON_THEME_TOGGLE_COMMAND, THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
+import { IIconService, IProductIconService, IThemeService } from '@opensumi/ide-theme';
+import {
+  ICON_THEME_TOGGLE_COMMAND,
+  PRODUCT_ICON_THEME_TOGGLE_COMMAND,
+  THEME_TOGGLE_COMMAND,
+} from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 import {
-  InstallState,
   IVSXExtensionBackService,
   IVSXExtensionService,
+  InstallState,
   VSXExtension,
   VSXExtensionServicePath,
 } from '../common';
-import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
+import { QueryParam, VSXExtensionRaw, VSXSearchParam } from '../common/vsx-registry-types';
 
 @Injectable()
 export class VSXExtensionService extends Disposable implements IVSXExtensionService {
@@ -45,6 +49,9 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
+
+  @Autowired(IProductIconService)
+  protected readonly productIconService: IProductIconService;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
@@ -132,6 +139,14 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
       const iconThemes = this.iconService.getAvailableThemeInfos();
       if (iconThemes.some((theme) => theme.extensionId === extension.originId)) {
         this.commandService.executeCommand(ICON_THEME_TOGGLE_COMMAND.id, {
+          extensionId: extension.originId,
+        });
+        return;
+      }
+
+      const productIconThemes = this.productIconService.getAvailableThemeInfos();
+      if (productIconThemes.some((theme) => theme.extensionId === extension.originId)) {
+        this.commandService.executeCommand(PRODUCT_ICON_THEME_TOGGLE_COMMAND.id, {
           extensionId: extension.originId,
         });
         return;

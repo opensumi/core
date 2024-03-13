@@ -1,18 +1,18 @@
-import { Provider, Injector, Injectable } from '@opensumi/di';
+import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 import {
-  PreferenceScope,
+  IPreferenceSettingsService,
   PreferenceConfigurations,
   PreferenceProvider,
-  IPreferenceSettingsService,
+  PreferenceScope,
 } from '@opensumi/ide-core-browser/lib/preferences';
 
 import { IUserStorageService, SettingContribution } from '../common';
 
 import {
+  FolderFilePreferenceProvider,
   FolderFilePreferenceProviderFactory,
   FolderFilePreferenceProviderOptions,
-  FolderFilePreferenceProvider,
 } from './folder-file-preference-provider';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { PreferenceContribution } from './preference-contribution';
@@ -20,9 +20,9 @@ import { PreferenceSettingsService } from './preference-settings.service';
 import { UserPreferenceProvider } from './user-preference-provider';
 import { UserStorageContribution, UserStorageServiceImpl } from './userstorage';
 import {
+  WorkspaceFilePreferenceProvider,
   WorkspaceFilePreferenceProviderFactory,
   WorkspaceFilePreferenceProviderOptions,
-  WorkspaceFilePreferenceProvider,
 } from './workspace-file-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 

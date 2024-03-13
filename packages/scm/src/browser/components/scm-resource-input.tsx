@@ -1,8 +1,7 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 
 import { IInputBaseProps } from '@opensumi/ide-components';
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { strings, isMacintosh, DisposableStore } from '@opensumi/ide-core-browser';
+import { DisposableStore, isMacintosh, strings, useDesignStyles, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
@@ -10,7 +9,7 @@ import { CommandService, isFunction } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 import { IIconService } from '@opensumi/ide-theme';
 
-import { ISCMRepository, InputValidationType, ISCMProvider, scmContainerId } from '../../common';
+import { ISCMProvider, ISCMRepository, InputValidationType, scmContainerId } from '../../common';
 
 import styles from './scm-resource-input.module.less';
 
@@ -28,6 +27,7 @@ export const SCMResourceInput: FC<{
 }> = ({ repository, menus }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const iconService = useInjectable<IIconService>(IIconService);
+  const styles_scmMenu = useDesignStyles(styles.scmMenu);
 
   const [commitMsg, setCommitMsg] = useState('');
   const [placeholder, setPlaceholder] = useState('');
@@ -139,7 +139,7 @@ export const SCMResourceInput: FC<{
       </div>
       {hasInputMenus && (
         <InlineMenuBar<ISCMProvider, string>
-          className={styles.scmMenu}
+          className={styles_scmMenu}
           context={[repository.provider, commitMsg]}
           type='button'
           moreIcon='down'

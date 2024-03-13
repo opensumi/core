@@ -1,21 +1,21 @@
 import debounce from 'lodash/debounce';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  WithEventBus,
-  MaybeNull,
-  OnEvent,
   BasicEvent,
-  URI,
+  CancellationToken,
   CancellationTokenSource,
   Deferred,
-  CancellationToken,
+  MaybeNull,
+  OnEvent,
+  URI,
+  WithEventBus,
 } from '@opensumi/ide-core-browser';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { WorkbenchEditorService } from '../../common';
-import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
+import { EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from '../doc-model/types';
 
 @Injectable()
 export class DocumentSymbolStore extends WithEventBus {

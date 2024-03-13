@@ -1,31 +1,33 @@
 import { Autowired } from '@opensumi/di';
 import {
-  Domain,
+  ClientAppContribution,
+  Command,
   CommandContribution,
   CommandRegistry,
-  Command,
-  localize,
-  PreferenceService,
-  replaceLocalizePlaceholder,
-  PreferenceScope,
-  QuickOpenService,
-  QuickOpenOptions,
-  QuickOpenItem,
-  Mode,
-  ClientAppContribution,
+  Domain,
   GeneralSettingsId,
+  Mode,
+  PreferenceScope,
+  PreferenceService,
+  QuickOpenItem,
+  QuickOpenOptions,
+  QuickOpenService,
+  localize,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import {
-  IThemeService,
-  IIconService,
-  BuiltinThemeComparator,
-  getThemeTypeName,
   BuiltinTheme,
+  BuiltinThemeComparator,
+  DEFAULT_PRODUCT_ICON_THEME_ID,
   DEFAULT_THEME_ID,
+  IIconService,
+  IProductIconService,
+  IThemeService,
   IconThemeInfo,
   ThemeInfo,
+  getThemeTypeName,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 
@@ -39,6 +41,11 @@ export const ICON_THEME_TOGGLE_COMMAND: Command = {
   label: '%theme.icon.toggle%',
 };
 
+export const PRODUCT_ICON_THEME_TOGGLE_COMMAND: Command = {
+  id: 'theme.productIcon.toggle',
+  label: '%theme.productIcon.toggle%',
+};
+
 @Domain(MenuContribution, CommandContribution, ClientAppContribution)
 export class ThemeContribution implements MenuContribution, CommandContribution, ClientAppContribution {
   @Autowired(IThemeService)
@@ -46,6 +53,9 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   @Autowired(IIconService)
   iconService: IIconService;
+
+  @Autowired(IProductIconService)
+  productIconService: IProductIconService;
 
   @Autowired(QuickOpenService)
   private quickOpenService: QuickOpenService;
@@ -58,6 +68,8 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   async initialize() {
     this.registerDefaultColorTheme();
+    this.registerDefaultProductIconTheme();
+
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
@@ -68,11 +80,19 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
    * 如果没有设置默认 theme 或者 设置的 theme 为 dark 类型，为了有体感上的加速，设置默认的 theme
    */
   private registerDefaultColorTheme() {
-    const themeId = this.preferenceService.get<string>('general.theme');
+    const themeId = this.preferenceService.get<string>(GeneralSettingsId.Theme);
     const shouldApplyDefaultThemeId = !themeId || themeId.includes('dark');
 
     if (shouldApplyDefaultThemeId) {
       this.themeService.applyTheme(DEFAULT_THEME_ID);
+    }
+  }
+
+  private registerDefaultProductIconTheme() {
+    const themeId = this.preferenceService.get<string>(GeneralSettingsId.ProductIconTheme);
+    const shouldApplyDefaultThemeId = !themeId;
+    if (shouldApplyDefaultThemeId) {
+      this.productIconService.applyTheme(DEFAULT_PRODUCT_ICON_THEME_ID);
     }
   }
 
@@ -220,6 +240,10 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
       command: ICON_THEME_TOGGLE_COMMAND.id,
       group: '4_theme',
     });
+    menus.registerMenuItem(MenuId.SettingsIconMenu, {
+      command: PRODUCT_ICON_THEME_TOGGLE_COMMAND.id,
+      group: '4_theme',
+    });
   }
 
   registerCommands(commands: CommandRegistry) {
@@ -352,7 +376,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
           items,
           {
             selectIndex: (lookFor) => (lookFor ? -1 : defaultSelected),
-            placeholder: localize('icon.quickopen.plh'),
+            placeholder: localize('theme.icon.quickopen.plh'),
           },
           (value) => {
             this.updateTopPreference(GeneralSettingsId.Icon, value);
@@ -362,6 +386,33 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
           await this.updateTopPreference(GeneralSettingsId.Icon, themeId);
         } else {
           await this.updateTopPreference(GeneralSettingsId.Icon, prevThemeId);
+        }
+      },
+    });
+
+    commands.registerCommand(PRODUCT_ICON_THEME_TOGGLE_COMMAND, {
+      execute: async () => {
+        const productIcons = this.productIconService.getAvailableThemeInfos();
+        const items = productIcons.map((productIcon) => ({
+          label: productIcon.name,
+          value: productIcon.themeId,
+        }));
+        const defaultSelected = items.findIndex((opt) => opt.value === this.productIconService.currentThemeId);
+        const prevThemeId = this.productIconService.currentThemeId;
+        const themeId = await this.showPickWithPreview(
+          items,
+          {
+            selectIndex: () => defaultSelected,
+            placeholder: localize('theme.productIcon.quickopen.plh'),
+          },
+          (value) => {
+            this.updateTopPreference(GeneralSettingsId.ProductIconTheme, value);
+          },
+        );
+        if (themeId) {
+          await this.updateTopPreference(GeneralSettingsId.ProductIconTheme, themeId);
+        } else {
+          await this.updateTopPreference(GeneralSettingsId.ProductIconTheme, prevThemeId);
         }
       },
     });

@@ -1,15 +1,16 @@
 import { Injector } from '@opensumi/di';
 import {
-  localize,
-  getAvailableLanguages,
-  SUPPORTED_ENCODINGS,
+  AINativeSettingSectionsId,
   GeneralSettingsId,
-  PreferenceSchema,
   MenubarSettingId,
+  PreferenceSchema,
+  SUPPORTED_ENCODINGS,
+  getAvailableLanguages,
+  localize,
 } from '@opensumi/ide-core-common';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
-import { createPreferenceProxy, PreferenceProxy, PreferenceService } from './preferences';
+import { PreferenceProxy, PreferenceService, createPreferenceProxy } from './preferences';
 
 const EXPLORER_DEFAULTS = {
   confirmDelete: true,
@@ -40,12 +41,12 @@ export const FILE_TREE_DEFAULTS = {
 export const corePreferenceSchema: PreferenceSchema = {
   type: 'object',
   properties: {
-    'general.language': {
+    [GeneralSettingsId.Language]: {
       type: 'string',
       enum: getAvailableLanguages().map((l) => l.languageId),
       default: LOCALE_TYPES.EN_US,
     },
-    'general.theme': {
+    [GeneralSettingsId.Theme]: {
       type: 'string',
       default: 'vs-dark',
       enum: [],
@@ -59,6 +60,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: 'vs-minimal',
       enum: [],
+    },
+    [GeneralSettingsId.ProductIconTheme]: {
+      type: 'string',
+      default: 'opensumi-icons',
+      enum: ['opensumi-icons'],
     },
     'workbench.colorCustomizations': {
       type: 'object',
@@ -291,6 +297,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE]: {
+      type: 'boolean',
+      default: true,
+    },
   },
 };
 
@@ -318,6 +328,7 @@ export interface CoreConfiguration {
   'files.associations': { [key: string]: string };
   'files.encoding': string;
   'general.language': string;
+  'general.productIconTheme': string;
   'general.theme': string;
   'view.saveLayoutWithWorkspace': boolean;
   'menubar.compactMode': boolean;

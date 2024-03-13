@@ -3,10 +3,10 @@ import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import {
   BrowserConnectionCloseEvent,
   BrowserConnectionOpenEvent,
-  OnEvent,
-  WithEventBus,
   CommandService,
   Domain,
+  OnEvent,
+  WithEventBus,
 } from '@opensumi/ide-core-common';
 
 @Domain(ClientAppContribution)

@@ -3,7 +3,8 @@ import React from 'react';
 import { URI, useInjectable } from '@opensumi/ide-core-browser';
 
 import { EditorCollectionService, ICodeEditor } from '../../common';
-import { IEditorDocumentModelService, IEditorDocumentModelRef } from '../doc-model/types';
+import { IEditorDocumentModelRef } from '../../common/editor';
+import { IEditorDocumentModelService } from '../doc-model/types';
 
 export interface ICodeEditorProps extends React.HTMLAttributes<HTMLDivElement> {
   uri?: URI;

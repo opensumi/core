@@ -1,12 +1,11 @@
-import { observable, action, makeObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService, IReporterService, memoize } from '@opensumi/ide-core-browser';
-import { AbstractContextMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
-import { DebugState, DEBUG_REPORT_NAME } from '../../../common';
+import { DEBUG_REPORT_NAME, DebugState } from '../../../common';
 import { DebugSession } from '../../debug-session';
 import { DebugViewModel } from '../debug-view-model';
 

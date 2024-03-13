@@ -1,18 +1,18 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import {
-  LifeCyclePhase,
   IJSONSchema,
-  IJSONSchemaSnippet,
-  objects,
-  localize,
   IJSONSchemaMap,
+  IJSONSchemaSnippet,
+  LifeCyclePhase,
+  localize,
+  objects,
 } from '@opensumi/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { DebugSchemaManager } from '@opensumi/ide-debug/lib/browser/debug-schema-manager';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { Extension } from '../../extension';
 import { AbstractExtInstanceManagementService } from '../../types';
 

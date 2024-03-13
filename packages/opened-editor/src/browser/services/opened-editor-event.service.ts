@@ -1,12 +1,12 @@
 import { Injectable } from '@opensumi/di';
-import { Event, Emitter, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
+import { Emitter, Event, OnEvent, WithEventBus } from '@opensumi/ide-core-browser';
 import {
-  IResource,
   IEditorGroup,
-  ResourceDecorationChangeEvent,
+  IResource,
   IResourceDecorationChangeEventPayload,
+  ResourceDecorationChangeEvent,
 } from '@opensumi/ide-editor';
-import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@opensumi/ide-editor/lib/browser';
+import { EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 export interface OpenedEditorEvent {

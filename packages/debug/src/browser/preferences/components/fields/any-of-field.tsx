@@ -1,11 +1,11 @@
 import {
-  descriptionId,
   FieldProps,
   FormContextType,
   GenericObjectType,
-  getTemplate,
   RJSFSchema,
   StrictRJSFSchema,
+  descriptionId,
+  getTemplate,
   titleId,
 } from '@rjsf/utils';
 import React from 'react';

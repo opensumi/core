@@ -1,5 +1,5 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { TreeModel, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { CompositeTreeNode, TreeModel, TreeNodeEvent } from '@opensumi/ide-components';
 
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMResourceFolder, SCMResourceRoot } from './scm-tree-node';

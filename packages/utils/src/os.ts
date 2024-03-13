@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { isWindows, isMacintosh, OperatingSystem } from './platform';
+import { OperatingSystem, isMacintosh, isWindows } from './platform';
 
 export type CMD = [string, string[]];
 export function cmd(command: string, ...args: string[]): CMD {
@@ -43,23 +43,7 @@ export function isNodeIntegrated(): boolean {
   return typeof module !== 'undefined' && !!module.exports;
 }
 
-export function isElectronEnv(): boolean {
-  return isElectronRenderer() || isElectronNode();
-}
-
 const safeGlobal: any = typeof global === 'undefined' ? (typeof window === 'undefined' ? {} : window) : global;
-
-/**
- * @deprecated isElectronRenderer will be removed in v2.26, please use appConfig#isElectronRenderer instead.
- */
-export function isElectronRenderer() {
-  return (
-    safeGlobal.isElectronRenderer ||
-    (typeof navigator === 'object' &&
-      typeof navigator.userAgent === 'string' &&
-      navigator.userAgent.indexOf('Electron') >= 0)
-  );
-}
 
 export function isElectronNode() {
   return typeof process !== 'undefined' && process.env && !!process.env.ELECTRON_RUN_AS_NODE;

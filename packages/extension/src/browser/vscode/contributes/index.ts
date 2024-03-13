@@ -1,34 +1,35 @@
 import { Injectable } from '@opensumi/di';
 import { PreferenceSchema, PreferenceSchemaProperties } from '@opensumi/ide-core-browser';
 
-import { VSCodeContributePoint, ExtensionContributesService } from '../../../common';
+import { ExtensionContributesService, VSCodeContributePoint } from '../../../common';
 import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
 
 import { ActionContributionSchema, ActionsContributionPoint } from './actions';
-import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
-import { ColorsSchema, ColorsContributionPoint } from './color';
-import { CommandsSchema, CommandsContributionPoint } from './commands';
+import { BreakpointsContributionPoint, BreakpointsContributionScheme } from './breakpoints';
+import { ColorsContributionPoint, ColorsSchema } from './color';
+import { CommandsContributionPoint, CommandsSchema } from './commands';
 import { ConfigurationContributionPoint } from './configuration';
 import { ConfigurationDefaultsContributionPoint } from './configurationDefaults';
 import { CustomEditorContributionPoint } from './customEditors';
-import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
-import { GrammarsContributionPoint, GrammarSchema } from './grammar';
-import { IconsContributionPoint, IconThemesContributionPoint } from './icon';
-import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
-import { LanguagesSchema, LanguagesContributionPoint } from './language';
+import { DebuggersContributionPoint, DebuggersContributionScheme } from './debuggers';
+import { GrammarSchema, GrammarsContributionPoint } from './grammar';
+import { IconThemesContributionPoint, IconsContributionPoint } from './icon';
+import { KeybindingContributionPoint, KeybindingSchema } from './keybindings';
+import { LanguagesContributionPoint, LanguagesSchema } from './language';
 import { LocalizationsContributionPoint } from './localization';
 import { MenusContributionPoint, SubmenusContributionPoint } from './menu';
-import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from './problemMatchers';
+import { ProblemMatchersContributionPoint, ProblemMatchersContributions } from './problemMatchers';
 import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatterns';
+import { ProductIconThemesContributionPoint } from './productIconTheme';
 import { SemanticTokenModifiersContributionPoint } from './semanticTokenModifiers';
 import { SemanticTokenScopesContributionPoint } from './semanticTokenScopes';
 import { SemanticTokenTypesContributionPoint } from './semanticTokenTypes';
 import { SnippetSchema, SnippetsContributionPoint } from './snippets';
 import { ITaskDefinitionSchema, TaskDefinitionContributionPoint } from './taskDefinition';
 import { TerminalContributionPoint } from './terminal';
-import { ThemesSchema, ThemesContributionPoint } from './theme';
-import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
-import { ViewsSchema, ViewsContributionPoint } from './views';
+import { ThemesContributionPoint, ThemesSchema } from './theme';
+import { ViewContainersContributionPoint, ViewContainersSchema } from './view-containers';
+import { ViewsContributionPoint, ViewsSchema } from './views';
 import { ViewsWelcomeContributionPoint } from './views-welcome';
 import { WalkthroughsContributionPoint } from './walkthroughs';
 
@@ -64,6 +65,7 @@ export class VSCodeContributesService extends ExtensionContributesService {
     IconsContributionPoint,
     LocalizationsContributionPoint,
     CommandsContributionPoint,
+    ProductIconThemesContributionPoint,
     GrammarsContributionPoint,
     LanguagesContributionPoint,
     ConfigurationContributionPoint,
@@ -88,5 +90,5 @@ export class VSCodeContributesService extends ExtensionContributesService {
     SemanticTokenModifiersContributionPoint,
     SemanticTokenScopesContributionPoint,
     TerminalContributionPoint,
-  ] as typeof VSCodeContributePoint[];
+  ] as (typeof VSCodeContributePoint)[];
 }

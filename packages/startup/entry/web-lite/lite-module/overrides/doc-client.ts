@@ -1,9 +1,9 @@
 import { Range } from 'vscode-languageserver-types';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IEditorDocumentEditChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/ide-file-scheme';
+import { IContentChange, IFileSchemeDocClient, ISavingContent } from '@opensumi/ide-file-scheme';
 import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/ide-file-service';
 
 /**

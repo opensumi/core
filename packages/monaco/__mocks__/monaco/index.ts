@@ -68,6 +68,7 @@ export function createMockedMonaco() {
                 return Promise.resolve({
                   identical: false,
                   quitEarly: true,
+                  moves: [],
                   changes: [[1, 5, 0, model.getValue().length - oldValue.length, [[0, 0, 0, 0, 0, 0, 0, 0]]]],
                 });
               },

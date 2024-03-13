@@ -1,4 +1,4 @@
-import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
+import { CompositeTreeNode, ITree, TreeNode } from '@opensumi/ide-components';
 import { MaybeNull, URI } from '@opensumi/ide-core-common';
 import { INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 

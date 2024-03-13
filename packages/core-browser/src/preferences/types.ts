@@ -1,4 +1,4 @@
-import { URI, IDisposable, Event } from '@opensumi/ide-core-common';
+import { Event, IDisposable, URI } from '@opensumi/ide-core-common';
 
 import { PreferenceProvider } from './preference-provider';
 import { PreferenceScope } from './preference-scope';

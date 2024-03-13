@@ -1,8 +1,8 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { transparent, registerColor } from '../../utils';
+import { registerColor, transparent } from '../../utils';
 import { foreground } from '../base';
-import { inputActiveOptionBorder, inputActiveOptionBackground } from '../input';
+import { inputActiveOptionBackground, inputActiveOptionBorder } from '../input';
 
 // action bar
 export const actionbarForeground = registerColor(

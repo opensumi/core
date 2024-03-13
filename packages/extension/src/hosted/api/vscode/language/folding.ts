@@ -1,10 +1,10 @@
-import type vscode from 'vscode';
-
 import { Uri as URI } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import { FoldingContext, FoldingRange } from '../../../../common/vscode/model.api';
+
+import type vscode from 'vscode';
 
 export class FoldingProviderAdapter {
   constructor(private documents: ExtensionDocumentDataManager, private provider: vscode.FoldingRangeProvider) {}

@@ -6,7 +6,7 @@ import { Icon } from '../../icon';
 import { Loading } from '../../loading';
 
 import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
-import { IBasicInlineMenuPosition, IBasicNodeRendererProps, DECORATIONS } from './types';
+import { DECORATIONS, IBasicInlineMenuPosition, IBasicNodeRendererProps } from './types';
 
 import './styles.less';
 

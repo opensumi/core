@@ -1,18 +1,18 @@
 import fs, { watch } from 'fs-extra';
 import debounce from 'lodash/debounce';
 
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
+  Disposable,
+  DisposableCollection,
   FileUri,
+  IDisposable,
   ILogService,
   ILogServiceManager,
   SupportLogNamespace,
-  IDisposable,
-  Disposable,
-  DisposableCollection,
   isMacintosh,
+  path,
 } from '@opensumi/ide-core-node';
-import { path } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer } from '../../common/index';
 import { FileChangeCollection } from '../file-change-collection';

@@ -1,24 +1,24 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { ILogger } from '@opensumi/ide-core-browser';
 import {
-  UriComponents,
-  Uri as URI,
-  Event,
-  Emitter,
-  IDisposable,
-  Disposable,
   CancellationToken,
-  Sequence,
+  Disposable,
+  Emitter,
+  Event,
+  IDisposable,
   ISplice,
+  Sequence,
+  Uri as URI,
+  UriComponents,
 } from '@opensumi/ide-core-common';
 import {
-  ISCMRepository,
-  ISCMProvider,
-  ISCMResource,
-  ISCMResourceGroup,
-  ISCMResourceDecorations,
   IInputValidation,
+  ISCMProvider,
+  ISCMRepository,
+  ISCMResource,
+  ISCMResourceDecorations,
+  ISCMResourceGroup,
   SCMService,
   ISCMHistoryProvider,
   ISCMActionButtonDescriptor,
@@ -32,8 +32,8 @@ import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { VSCommand } from '../../../common/vscode/model.api';
 import {
   IExtHostSCMShape,
-  SCMProviderFeatures,
   SCMGroupFeatures,
+  SCMProviderFeatures,
   SCMRawResourceSplices,
   IMainThreadSCMShape,
   SCMHistoryItemDto,

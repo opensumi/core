@@ -1,8 +1,8 @@
-import { Optional, Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
-import { Disposable, uuid, URI, localize, Deferred, IEventBus, strings, Schemes } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
+import { Deferred, Disposable, IEventBus, Schemes, URI, localize, strings, uuid } from '@opensumi/ide-core-common';
+import { IEditorDocumentModelRef, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

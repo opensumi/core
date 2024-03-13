@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IJSONSchema, IJSONSchemaMap, localize, ILogger } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase, ITaskDefinitionRegistry } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IJSONSchema, IJSONSchemaMap, ILogger, localize } from '@opensumi/ide-core-browser';
+import { ITaskDefinitionRegistry, LifeCyclePhase } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
 
 export const taskDefinitionSchema: IJSONSchema = {
   type: 'object',

@@ -1,13 +1,13 @@
-import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Deferred } from '@opensumi/ide-core-browser';
 import { Disposable, DisposableCollection, ILogger } from '@opensumi/ide-core-common';
 
 import {
-  IInterProcessConnectionService,
+  ExtHostAPIIdentifier,
   ExtensionConnection,
   IInterProcessConnection,
-  ExtHostAPIIdentifier,
+  IInterProcessConnectionService,
 } from '../../../common/vscode';
 
 @Injectable({ multiple: true })

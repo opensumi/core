@@ -6,21 +6,22 @@ import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
 import { isBoolean, strings } from '@opensumi/ide-core-common';
 
 import {
-  MenuNode,
-  ICtxMenuRenderer,
-  SeparatorMenuItemNode,
+  AbstractMenuService,
+  ComponentMenuItemNode,
   IContextMenu,
+  ICtxMenuRenderer,
   IMenu,
+  IMenuAction,
   IMenuSeparator,
   MenuId,
+  MenuNode,
+  SeparatorMenuItemNode,
   SubmenuItemNode,
-  IMenuAction,
-  ComponentMenuItemNode,
-  AbstractMenuService,
   generateMergedCtxMenu,
 } from '../../menu/next';
+import { IMenuRenderProps } from '../../menu/next/renderer/ctxmenu/browser';
 import { useInjectable } from '../../react-hooks';
-import { useMenus, useContextMenus, transformLabelWithCodicon } from '../../utils';
+import { transformLabelWithCodicon, useContextMenus, useDesignStyles, useMenus } from '../../utils';
 
 import placements from './placements';
 import styles from './styles.module.less';
@@ -63,7 +64,9 @@ export const MenuActionList: React.FC<{
   context?: any[];
   style?: React.CSSProperties;
   iconService?: IMenubarIconService;
-}> = ({ data = [], context = [], afterClick, style, iconService }) => {
+  renderSubMenuTitle?: (node: MenuNode, props: IMenuRenderProps) => React.ReactNode | undefined | null;
+  renderMenuItem?: (node: MenuNode, props: IMenuRenderProps) => React.ReactNode | undefined | null;
+}> = ({ data = [], context = [], afterClick, style, iconService, renderSubMenuTitle, renderMenuItem }) => {
   if (!data.length) {
     return null;
   }
@@ -94,6 +97,34 @@ export const MenuActionList: React.FC<{
     [data, context],
   );
 
+  const subMenuTitle = React.useCallback(
+    (menuNode: MenuNode) => {
+      if (renderSubMenuTitle) {
+        const subMenu = renderSubMenuTitle(menuNode, { hasSubmenu: true, disabled: false });
+        if (subMenu) {
+          return subMenu;
+        }
+      }
+
+      return <MenuAction hasSubmenu data={menuNode} iconService={iconService} />;
+    },
+    [renderSubMenuTitle],
+  );
+
+  const menuItem = React.useCallback(
+    (menuNode: MenuNode) => {
+      if (renderMenuItem) {
+        const menuItem = renderMenuItem(menuNode, { hasSubmenu: false, disabled: menuNode.disabled });
+        if (menuItem) {
+          return menuItem;
+        }
+      }
+
+      return <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />;
+    },
+    [renderMenuItem],
+  );
+
   const recursiveRender = React.useCallback(
     (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
@@ -113,7 +144,7 @@ export const MenuActionList: React.FC<{
                 key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}
                 className={styles.submenuItem}
                 popupClassName='kt-menu'
-                title={<MenuAction hasSubmenu data={menuNode} iconService={iconService} />}
+                title={subMenuTitle(menuNode)}
               >
                 {recursiveRender(menuNode.children, menuNode.label)}
               </Menu.SubMenu>
@@ -130,7 +161,7 @@ export const MenuActionList: React.FC<{
               className={styles.menuItem}
               disabled={menuNode.disabled}
             >
-              <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
+              {menuItem(menuNode)}
             </Menu.Item>
             {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
           </React.Fragment>
@@ -160,12 +191,13 @@ const EllipsisWidget: React.FC<{
   onClick?: React.MouseEventHandler<HTMLElement>;
   title?: string;
 }> = ({ type, icon, disabled, onClick, title }) => {
+  const styles_btnAction = useDesignStyles(styles.btnAction);
   if (type === 'icon') {
     return (
       <Button
         size='small'
         type={type}
-        className={styles.btnAction}
+        className={styles_btnAction}
         onClick={onClick}
         title={title}
         icon={icon || 'ellipsis'}
@@ -178,7 +210,7 @@ const EllipsisWidget: React.FC<{
   }
 
   return (
-    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props} title={title}>
+    <Button size='small' type='secondary' className={styles_btnAction} onClick={onClick} {...props} title={title}>
       <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
@@ -195,6 +227,8 @@ const InlineActionWidget: React.FC<
     iconService?: IMenubarIconService;
   } & React.HTMLAttributes<HTMLElement>
 > = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+  const styles_iconAction = useDesignStyles(styles.iconAction);
+  const styles_btnAction = useDesignStyles(styles.btnAction);
   const [loading, setLoading] = useState(false);
   const handleClick = React.useCallback(
     async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
@@ -236,7 +270,7 @@ const InlineActionWidget: React.FC<
     return (
       <Button
         type={data.icon ? 'icon' : 'link'}
-        className={cls(styles.iconAction, className, {
+        className={cls(styles_iconAction, className, {
           [styles.disabled]: data.disabled,
           [styles.submenuIconAction]: isSubmenuNode,
         })}
@@ -253,7 +287,7 @@ const InlineActionWidget: React.FC<
   if (data.type === 'checkbox') {
     return (
       <CheckBox
-        className={cls(className, styles.btnAction)}
+        className={cls(className, styles_btnAction)}
         disabled={data.disabled}
         label={data.label}
         title={title}
@@ -267,7 +301,7 @@ const InlineActionWidget: React.FC<
   return (
     <Button
       loading={loading}
-      className={cls(className, styles.btnAction)}
+      className={cls(className, styles_btnAction)}
       disabled={data.disabled}
       onClick={handleClick}
       size='small'
@@ -372,6 +406,7 @@ export const TitleActionList: React.FC<
   }) => {
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
     const abstractMenuService = useInjectable<AbstractMenuService>(AbstractMenuService);
+    const styles_titleActions = useDesignStyles(styles.titleActions);
     const [primary, secondary] = regroup(nav, more);
     const handleShowMore = React.useCallback(
       (e: React.MouseEvent<HTMLElement>) => {
@@ -406,7 +441,7 @@ export const TitleActionList: React.FC<
       ) : null;
 
     return (
-      <div className={cls([styles.titleActions, className])} data-menu-id={menuId}>
+      <div className={cls([styles_titleActions, className])} data-menu-id={menuId}>
         {moreAtFirst && moreAction}
         {primary.map((item) => {
           if (item.id === ComponentMenuItemNode.ID) {

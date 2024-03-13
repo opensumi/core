@@ -3,12 +3,12 @@ import { Emitter, IDisposable, Uri, UriUtils } from '@opensumi/ide-core-common';
 import { IExtensionStorageUri } from '@opensumi/ide-extension-storage/lib/common/storage';
 
 import {
-  IMainThreadStorage,
   IExtHostStorage,
+  IMainThreadStorage,
+  IStorageChangeEvent,
   KeysToAnyValues,
   KeysToKeysToAnyValue,
   MainThreadAPIIdentifier,
-  IStorageChangeEvent,
 } from '../../../common/vscode';
 import { Memento } from '../../../common/vscode/ext-types';
 

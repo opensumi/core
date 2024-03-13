@@ -1,12 +1,12 @@
 import {
-  FILE_COMMANDS,
+  COMMON_COMMANDS,
   Command,
   EDITOR_COMMANDS,
-  COMMON_COMMANDS,
-  TERMINAL_COMMANDS,
+  FILE_COMMANDS,
+  LAYOUT_COMMANDS,
   MARKER_COMMANDS,
   SEARCH_COMMANDS,
-  LAYOUT_COMMANDS,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug';
 import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';

@@ -1,7 +1,7 @@
 import cls from 'classnames';
-import React, { FormEvent, memo, forwardRef } from 'react';
+import React, { FormEvent, forwardRef, memo } from 'react';
 
-import { ValidateInput, CheckBox, ValidateMessage } from '@opensumi/ide-components';
+import { CheckBox, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IiconContext, IconContextProvider } from './icon';
+import { IconContextProvider, IiconContext } from './icon';
 import { warning } from './utils/warning';
 
 type LocalizeFn = (v: string) => string;

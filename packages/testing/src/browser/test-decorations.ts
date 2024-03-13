@@ -1,13 +1,13 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
 import { Event, IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
-  generateMergedCtxMenu,
   ICtxMenuRenderer,
   IMenu,
   MenuId,
+  generateMergedCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Disposable, IDisposable, IRange, URI, uuid, strings } from '@opensumi/ide-core-common';
+import { Disposable, IDisposable, IRange, URI, strings, uuid } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -20,9 +20,9 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { TestServiceToken } from '../common';
 import {
-  IncrementalTestCollectionItem,
   IRichLocation,
   ITestMessage,
+  IncrementalTestCollectionItem,
   TestMessageType,
   TestResultItem,
   TestResultState,
@@ -30,17 +30,17 @@ import {
   TestsDiff,
 } from '../common/testCollection';
 import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
-import { buildTestUri, TestUriType } from '../common/testingUri';
+import { TestUriType, buildTestUri } from '../common/testingUri';
 
 import { labelForTestInState, testMessageSeverityColors } from './../common/constants';
 import { TestResultImpl, TestResultServiceToken } from './../common/test-result';
 import { maxPriority, parseMarkdownText } from './../common/testingStates';
 import {
   defaultIconColor,
+  testStatesToIconColors,
   testingRunAllIcon,
   testingRunIcon,
   testingStatesToIcons,
-  testStatesToIconColors,
 } from './icons/icons';
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';

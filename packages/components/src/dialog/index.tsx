@@ -4,7 +4,7 @@ import React from 'react';
 import { Button } from '../button';
 import { MessageType } from '../common';
 import { IconContext, getIcon } from '../icon';
-import { Overlay, IOverlayProps } from '../overlay';
+import { IOverlayProps, Overlay } from '../overlay';
 import './styles.less';
 
 export type ModalType = 'basic' | 'confirm' | 'info';

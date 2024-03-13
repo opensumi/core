@@ -1,17 +1,17 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
-  generateSessionId,
-  ITerminalService,
-  ITerminalInternalService,
-  ITerminalError,
   IPtyExitEvent,
-  ITerminalController,
-  ITerminalProfile,
+  IPtyProcessChangeEvent,
   IShellLaunchConfig,
   ITerminalConnection,
-  IPtyProcessChangeEvent,
+  ITerminalController,
+  ITerminalError,
+  ITerminalInternalService,
+  ITerminalProfile,
+  ITerminalService,
+  generateSessionId,
 } from '../common';
 import { IXTerm } from '../common/xterm';
 

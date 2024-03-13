@@ -7,18 +7,18 @@ import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import {
   Emitter,
-  ReporterProcessMessage,
-  LogLevel,
-  IReporter,
-  setLanguageId,
   ILogService,
+  IReporter,
+  LogLevel,
+  ReporterProcessMessage,
   isPromiseCanceledError,
   locale,
+  setLanguageId,
 } from '@opensumi/ide-core-common';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
-import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
+import { IExtensionHostService, KT_APP_CONFIG_KEY, KT_PROCESS_SOCK_OPTION_KEY, ProcessMessageType } from '../common';
 import { CommandHandler } from '../common/vscode';
 
 import { setPerformance } from './api/vscode/language/util';

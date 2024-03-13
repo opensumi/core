@@ -5,13 +5,13 @@ import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService } from '../../../common';
 import {
-  IInterProcessConnectionService,
-  IExtHostDebugService,
   ExtHostAPIIdentifier,
+  IExtHostDebugService,
+  IExtHostTests,
+  IExtensionDescription,
+  IInterProcessConnectionService,
   TextEditorCursorStyle,
   TextEditorSelectionChangeKind,
-  IExtensionDescription,
-  IExtHostTests,
 } from '../../../common/vscode'; // '../../common';
 import { IExtHostEditorTabs } from '../../../common/vscode/editor-tabs';
 import { ViewColumn } from '../../../common/vscode/enums';
@@ -37,7 +37,7 @@ import { createExtensionsApiFactory } from './ext.host.extensions';
 import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
-import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
+import { ExtHostLanguages, createLanguagesApiFactory } from './ext.host.language';
 import { ExtHostLocalization, createLocalizationApiFactory } from './ext.host.localization';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostOutput } from './ext.host.output';
@@ -52,7 +52,7 @@ import { ExtHostTheming } from './ext.host.theming';
 import { ExtHostTreeViews } from './ext.host.treeview';
 import { ExtHostUrls } from './ext.host.urls';
 import { ExtHostWindowState } from './ext.host.window-state';
-import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
+import { ExtHostWindow, createWindowApiFactory } from './ext.host.window.api.impl';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
 

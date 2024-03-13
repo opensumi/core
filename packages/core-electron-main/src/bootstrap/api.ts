@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IDisposable, Disposable, getDebugLogger } from '@opensumi/ide-core-common';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-common';
 import { IElectronURLService, IURLHandler } from '@opensumi/ide-core-common/lib/electron';
 
 import {

@@ -1,19 +1,19 @@
 import React from 'react';
 
-import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
-  electronEnv,
-  URI,
-  MessageType,
-  StorageProvider,
-  IStorage,
-  STORAGE_NAMESPACE,
   AppConfig,
+  IStorage,
+  MessageType,
+  STORAGE_NAMESPACE,
+  StorageProvider,
+  URI,
+  electronEnv,
   isMacintosh,
 } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
+import { IDialogService, IOpenDialogOptions, ISaveDialogOptions, IWindowDialogService } from '@opensumi/ide-overlay';
 
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import styles from './file-dialog.module.less';

@@ -12,12 +12,12 @@ import omit from 'lodash/omit';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, Emitter, INodeLogger, isWindows, path, URI } from '@opensumi/ide-core-node';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, Emitter, INodeLogger, URI, isWindows, path } from '@opensumi/ide-core-node';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
-import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
+import { IProcessExitEvent, IProcessReadyEvent } from '../common/process';
 import { IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';

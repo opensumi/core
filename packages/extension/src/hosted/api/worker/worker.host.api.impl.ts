@@ -1,26 +1,24 @@
-import type * as vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, DefaultReporter, Emitter, Event } from '@opensumi/ide-core-common';
 import { DEFAULT_VSCODE_ENGINE_VERSION } from '@opensumi/ide-core-common/lib/const';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
 import {
-  TextEditorCursorStyle,
-  ViewColumn,
-  TextEditorSelectionChangeKind,
-  IExtensionDescription,
+  ExtHostAPIIdentifier,
   IExtHostLocalization,
+  IExtensionDescription,
+  TextEditorCursorStyle,
+  TextEditorSelectionChangeKind,
+  ViewColumn,
 } from '../../../common/vscode';
-import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 import { ExtHostEnv } from '../vscode/env/ext.host.env';
 import { createWorkerHostEnvAPIFactory } from '../vscode/env/workerEnvApiFactory';
 import { ExtHostWebviewService, ExtHostWebviewViews } from '../vscode/ext.host.api.webview';
-import { createAuthenticationApiFactory, ExtHostAuthentication } from '../vscode/ext.host.authentication';
+import { ExtHostAuthentication, createAuthenticationApiFactory } from '../vscode/ext.host.authentication';
 import { ExtHostCommands } from '../vscode/ext.host.command';
 import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';
 import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
@@ -30,7 +28,7 @@ import { createExtensionsApiFactory } from '../vscode/ext.host.extensions';
 import { ExtHostFileSystem } from '../vscode/ext.host.file-system';
 import { ExtHostFileSystemEvent } from '../vscode/ext.host.file-system-event';
 import { ExtHostFileSystemInfo } from '../vscode/ext.host.file-system-info';
-import { createLanguagesApiFactory, ExtHostLanguages } from '../vscode/ext.host.language';
+import { ExtHostLanguages, createLanguagesApiFactory } from '../vscode/ext.host.language';
 import { ExtHostLocalization, createLocalizationApiFactory } from '../vscode/ext.host.localization';
 import { ExtHostMessage } from '../vscode/ext.host.message';
 import { ExtHostOutput } from '../vscode/ext.host.output';
@@ -44,11 +42,13 @@ import { ExtHostTheming } from '../vscode/ext.host.theming';
 import { ExtHostTreeViews } from '../vscode/ext.host.treeview';
 import { ExtHostUrls } from '../vscode/ext.host.urls';
 import { ExtHostWindowState } from '../vscode/ext.host.window-state';
-import { createWindowApiFactory, ExtHostWindow } from '../vscode/ext.host.window.api.impl';
+import { ExtHostWindow, createWindowApiFactory } from '../vscode/ext.host.window.api.impl';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../vscode/ext.host.workspace';
 import { ExtHostTasks } from '../vscode/tasks/ext.host.tasks';
 
 import * as workerExtTypes from './worker.ext-types';
+
+import type * as vscode from 'vscode';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,

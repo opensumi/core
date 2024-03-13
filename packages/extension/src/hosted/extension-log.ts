@@ -1,7 +1,7 @@
 import { SumiConnectionMultiplexer } from '@opensumi/ide-connection';
 import { DebugLog, IExtensionLogger, SupportLogNamespace } from '@opensumi/ide-core-common';
 
-import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
+import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../common/extension-log';
 
 export class ExtensionLogger implements IExtensionLogger {
   private rpcProtocol: SumiConnectionMultiplexer;

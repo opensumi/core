@@ -1,8 +1,8 @@
-import { Emitter, DisposableCollection } from '@opensumi/ide-utils';
+import { DisposableCollection, Emitter } from '@opensumi/ide-utils';
 
-import { ITreeNodeOrCompositeTreeNode, ITree, ICompositeTreeNode } from '../types';
+import { ICompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '../types';
 
-import { TreeNode, CompositeTreeNode } from './TreeNode';
+import { CompositeTreeNode, TreeNode } from './TreeNode';
 
 export abstract class Tree implements ITree {
   protected _root: CompositeTreeNode | undefined;

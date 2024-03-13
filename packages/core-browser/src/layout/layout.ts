@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { BasicEvent, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { SlotLocation, AppConfig } from '../react-providers';
+import { AppConfig, SlotLocation } from '../react-providers';
 
 import { ComponentRegistry, ComponentRegistryInfo, View, ViewContainerOptions } from './layout.interface';
 

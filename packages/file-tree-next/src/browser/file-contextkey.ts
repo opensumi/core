@@ -1,16 +1,16 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
 import {
-  ExplorerResourceIsFolderContext,
-  ExplorerViewletVisibleContext,
+  ExplorerCompressedFirstFocusContext,
+  ExplorerCompressedFocusContext,
+  ExplorerCompressedLastFocusContext,
   ExplorerFocusedContext,
   ExplorerResourceCut,
+  ExplorerResourceIsFolderContext,
+  ExplorerViewletVisibleContext,
+  FilesExplorerFilteredContext,
   FilesExplorerFocusedContext,
   FilesExplorerInputFocusedContext,
-  FilesExplorerFilteredContext,
-  ExplorerCompressedLastFocusContext,
-  ExplorerCompressedFocusContext,
-  ExplorerCompressedFirstFocusContext,
 } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 
 @Injectable()

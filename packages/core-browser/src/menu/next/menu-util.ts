@@ -1,12 +1,12 @@
 import {
-  MenuItemNode,
-  SubmenuItemNode,
-  SeparatorMenuItemNode,
-  TupleMenuNodeResult,
-  IMenu,
-  IMenuSeparator,
-  IMenuConfig,
   ComponentMenuItemNode,
+  IMenu,
+  IMenuConfig,
+  IMenuSeparator,
+  MenuItemNode,
+  SeparatorMenuItemNode,
+  SubmenuItemNode,
+  TupleMenuNodeResult,
 } from './menu.interface';
 
 export const isPrimaryGroup = (group: string) => group === 'navigation';

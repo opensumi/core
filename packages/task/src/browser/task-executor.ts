@@ -1,22 +1,22 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  Event,
-  formatLocalize,
-  Disposable,
   Deferred,
-  strings,
-  Emitter,
+  Disposable,
   DisposableCollection,
+  Emitter,
+  Event,
   ProblemMatch,
   ProblemMatchData,
+  formatLocalize,
   rangeAreEqual,
+  strings,
 } from '@opensumi/ide-core-common';
 import {
+  IShellLaunchConfig,
+  ITerminalClient,
   ITerminalController,
   ITerminalGroupViewService,
-  ITerminalClient,
   ITerminalService,
-  IShellLaunchConfig,
 } from '@opensumi/ide-terminal-next/lib/common';
 
 import { ITaskExecutor } from '../common';

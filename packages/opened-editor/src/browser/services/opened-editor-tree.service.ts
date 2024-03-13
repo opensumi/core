@@ -1,11 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
-import { URI, formatLocalize, path, Schemes } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ITreeNodeOrCompositeTreeNode, Tree, TreeNodeType } from '@opensumi/ide-components';
+import { Schemes, URI, formatLocalize, path } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@opensumi/ide-editor';
+import { IEditorGroup, IResource, ResourceService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
+import { EditorFile, EditorFileGroup, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
 
 const { Path } = path;
 

@@ -1,11 +1,11 @@
 import {
-  getTemplate,
-  getUiOptions,
-  ArrayFieldTemplateProps,
   ArrayFieldTemplateItemType,
+  ArrayFieldTemplateProps,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
+  getTemplate,
+  getUiOptions,
 } from '@rjsf/utils';
 import cls from 'classnames';
 import React from 'react';

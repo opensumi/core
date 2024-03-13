@@ -5,18 +5,18 @@ import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import uniqBy from 'lodash/uniqBy';
 
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import {
-  FileUri,
-  ParsedPattern,
-  IDisposable,
   Disposable,
   DisposableCollection,
-  isWindows,
-  isLinux,
+  FileUri,
+  IDisposable,
   ILogService,
-  SupportLogNamespace,
   ILogServiceManager,
+  ParsedPattern,
+  SupportLogNamespace,
+  isLinux,
+  isWindows,
   parseGlob,
 } from '@opensumi/ide-core-node';
 

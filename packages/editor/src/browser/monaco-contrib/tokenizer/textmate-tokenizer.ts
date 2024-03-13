@@ -1,4 +1,4 @@
-import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
+import { IGrammar, INITIAL, StackElement } from 'vscode-textmate';
 
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common/lib/utils';
 import {

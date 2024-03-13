@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { ClientAppContribution, getIcon, PreferenceContribution } from '@opensumi/ide-core-browser';
+import { ClientAppContribution, PreferenceContribution, getIcon } from '@opensumi/ide-core-browser';
 import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import {
   ComponentContribution,
@@ -8,13 +8,13 @@ import {
   ToolbarRegistry,
 } from '@opensumi/ide-core-browser/lib/layout';
 import {
-  Disposable,
+  Command,
   CommandContribution,
   CommandRegistry,
-  Command,
-  localize,
-  PreferenceSchema,
   CommonLanguageId,
+  Disposable,
+  PreferenceSchema,
+  localize,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -22,7 +22,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { OutputLinkProvider } from './output-link.provider';
 import { outputPreferenceSchema } from './output-preference';
 import { OutputService } from './output.service';
-import { Output, ChannelSelector } from './output.view';
+import { ChannelSelector, Output } from './output.view';
 
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',

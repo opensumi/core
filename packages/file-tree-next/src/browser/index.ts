@@ -1,5 +1,5 @@
 import { Provider } from '@opensumi/di';
-import { BrowserModule, EffectDomain, ModuleDependencies } from '@opensumi/ide-core-browser';
+import { BrowserModule, Domain, ModuleDependencies } from '@opensumi/ide-core-browser';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
 
@@ -12,10 +12,9 @@ import { FileTreeAPI } from './services/file-tree-api.service';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 
-
 const pkgJson = require('../../package.json');
 
-@EffectDomain(pkgJson.name)
+@Domain(pkgJson.name)
 @ModuleDependencies([WorkspaceModule])
 export class FileTreeNextModule extends BrowserModule {
   providers: Provider[] = [

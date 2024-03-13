@@ -1,4 +1,4 @@
-import { ResizeHandleVertical, ResizeHandleHorizontal } from '../resize/resize';
+import { ResizeHandleHorizontal, ResizeHandleVertical } from '../resize/resize';
 
 export const enum EDirection {
   LeftToRight = 'left-to-right',

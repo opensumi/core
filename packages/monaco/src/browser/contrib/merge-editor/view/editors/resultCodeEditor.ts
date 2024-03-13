@@ -9,17 +9,17 @@ import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
-  EditorViewType,
-  DECORATIONS_CLASSNAME,
-  TActionsType,
+  ACCEPT_COMBINATION_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
   CONFLICT_ACTIONS_ICON,
-  IActionsDescription,
-  REVOKE_ACTIONS,
-  ITimeMachineMetaData,
+  DECORATIONS_CLASSNAME,
   ETurnDirection,
-  ACCEPT_COMBINATION_ACTIONS,
+  EditorViewType,
+  IActionsDescription,
   IConflictActionsEvent,
+  ITimeMachineMetaData,
+  REVOKE_ACTIONS,
+  TActionsType,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';

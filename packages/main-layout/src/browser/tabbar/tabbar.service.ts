@@ -1,47 +1,49 @@
 import debounce from 'lodash/debounce';
-import { observable, action, reaction, makeObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, reaction, runInAction } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  toDisposable,
-  WithEventBus,
+  CommandRegistry,
   ComponentRegistryInfo,
+  ComponentRegistryProvider,
+  Deferred,
+  DisposableCollection,
   Emitter,
   Event,
+  IContextKey,
+  IContextKeyService,
+  IScopedContextKeyService,
+  KeybindingRegistry,
   OnEvent,
   ResizeEvent,
   SlotLocation,
-  CommandRegistry,
-  localize,
-  KeybindingRegistry,
   ViewContextKeyRegistry,
-  IContextKeyService,
-  getTabbarCtxKey,
-  IContextKey,
-  DisposableCollection,
-  IScopedContextKeyService,
-  Deferred,
-  formatLocalize,
+  WithEventBus,
   createFormatLocalizedStr,
+  formatLocalize,
+  getTabbarCtxKey,
+  isDefined,
+  localize,
+  toDisposable,
 } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
+import { LAYOUT_STATE, LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
   AbstractContextMenuService,
   AbstractMenuService,
   IContextMenu,
-  IMenuRegistry,
   ICtxMenuRenderer,
-  generateCtxMenu,
   IMenu,
+  IMenuRegistry,
   MenuId,
+  generateCtxMenu,
   getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
-import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
-import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
+import { IMainLayoutService, SUPPORT_ACCORDION_LOCATION, TabBarRegistrationEvent } from '../../common';
+import { EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL, TOGGLE_BOTTOM_PANEL_COMMAND } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -55,15 +57,17 @@ const CONTAINER_NAME_MAP = {
   bottom: 'panel',
 };
 
+const NONE_CONTAINER_ID = undefined;
+
 @Injectable({ multiple: true })
 export class TabbarService extends WithEventBus {
   @observable
-  currentContainerId = '';
+  // currentContainerId 默认值应该为一个非空且唯一的字符串，避免在切换容器时触发 MobX 不变错误
+  currentContainerId?: string = NONE_CONTAINER_ID;
 
   previousContainerId = '';
 
-  // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
-  containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  containersMap: Map<string, ComponentRegistryProvider> = new Map();
 
   @observable
   state: Map<string, TabState> = new Map();
@@ -118,10 +122,6 @@ export class TabbarService extends WithEventBus {
   @Autowired(IProgressService)
   private progressService: IProgressService;
 
-  // 提供给 Mobx 强刷刷新
-  @observable
-  forceUpdate = 0;
-
   private accordionRestored: Set<string> = new Set();
 
   private readonly onCurrentChangeEmitter = new Emitter<{ previousId: string; currentId: string }>();
@@ -130,8 +130,8 @@ export class TabbarService extends WithEventBus {
   private readonly onSizeChangeEmitter = new Emitter<{ size: number }>();
   readonly onSizeChange: Event<{ size: number }> = this.onSizeChangeEmitter.event;
 
-  public barSize: number;
-  public panelSize: number;
+  protected barSize: number;
+  protected panelSize: number;
   private menuId = `tabbar/${this.location}`;
   private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
@@ -163,20 +163,17 @@ export class TabbarService extends WithEventBus {
   }
 
   @action
-  forceUpdateTabbar() {
-    this.forceUpdate++;
-  }
-
-  @action
   updateCurrentContainerId(containerId: string) {
     this.currentContainerId = containerId;
   }
 
+  @action
   updateBadge(containerId: string, value: string) {
     const component = this.getContainer(containerId);
-    if (component && component.options?.badge) {
+    if (component && component.options) {
       component.options.badge = value;
     }
+    component?.fireChange(component);
   }
 
   registerPanelCommands(): void {
@@ -231,6 +228,26 @@ export class TabbarService extends WithEventBus {
     this.updatePanel(show);
   }
 
+  // 原有的 viewReady 依赖 updatePanelVisibility 方法的同步渲染逻辑
+  // 这里通过 panelSize 及 barSize 两个值去判断视图是否渲染完成
+  public updatePanelSize(value: number) {
+    this.panelSize = value;
+    if (isDefined(this.barSize)) {
+      this.viewReady.resolve();
+    }
+  }
+
+  public getBarSize() {
+    return this.barSize;
+  }
+
+  public updateBarSize(value: number) {
+    this.barSize = value;
+    if (isDefined(this.panelSize)) {
+      this.viewReady.resolve();
+    }
+  }
+
   public updateTabInMoreKey(containerId: string, value: boolean) {
     const ctxKey = this.tabInMoreKeyMap.get(containerId);
     if (ctxKey) {
@@ -239,7 +256,7 @@ export class TabbarService extends WithEventBus {
   }
 
   get visibleContainers() {
-    const components: ComponentRegistryInfo[] = [];
+    const components: ComponentRegistryProvider[] = [];
     this.containersMap.forEach((component) => {
       const state = component.options && this.state.get(component.options.containerId);
       if (!state || !state.hidden) {
@@ -278,7 +295,10 @@ export class TabbarService extends WithEventBus {
     const disposables = new DisposableCollection();
     const options = componentInfo.options || { containerId };
     componentInfo.options = options;
+    const componentChangeEmitter = new Emitter<ComponentRegistryProvider>();
     this.containersMap.set(containerId, {
+      fireChange: (component: ComponentRegistryProvider) => componentChangeEmitter.fire(component),
+      onChange: componentChangeEmitter.event,
       views: componentInfo.views,
       options: observable.object(options, undefined, { deep: false }),
     });
@@ -459,6 +479,14 @@ export class TabbarService extends WithEventBus {
     }
     if (this.currentContainerId === containerId) {
       this.currentContainerId = this.visibleContainers[0].options?.containerId || '';
+    }
+  }
+
+  @action
+  updateTitle(containerId: string, title: string) {
+    const container = this.getContainer(containerId);
+    if (container) {
+      container.options!.title = title;
     }
   }
 
@@ -809,7 +837,7 @@ export class TabbarService extends WithEventBus {
     return reaction(
       () => this.currentContainerId,
       (nextContainerId, previousContainerId) => {
-        this.previousContainerId = previousContainerId;
+        this.previousContainerId = previousContainerId === NONE_CONTAINER_ID ? '' : previousContainerId;
         this.handleChange(nextContainerId, previousContainerId);
       },
     );

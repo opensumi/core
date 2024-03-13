@@ -1,13 +1,13 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
 import {
+  BrowserConnectionCloseEvent,
+  BrowserConnectionOpenEvent,
   OnEvent,
   WithEventBus,
-  BrowserConnectionOpenEvent,
-  BrowserConnectionCloseEvent,
 } from '@opensumi/ide-core-common';
 
-import { ITerminalNetwork, ITerminalInternalService, TerminalNetworkStatus } from '../../common';
+import { ITerminalInternalService, ITerminalNetwork, TerminalNetworkStatus } from '../../common';
 
 @Domain(ClientAppContribution)
 export class TerminalNetworkContribution extends WithEventBus implements ClientAppContribution {

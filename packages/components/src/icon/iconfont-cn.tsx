@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React from 'react';
 
-import { _InternalIcon, IconProps } from './icon';
+import { IconProps, _InternalIcon } from './icon';
 import { getIconShapeClxList } from './util';
 
 // source code from '@ant-design/icons'

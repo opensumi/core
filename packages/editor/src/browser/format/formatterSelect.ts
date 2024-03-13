@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceScope, PreferenceService, QuickPickService, URI, localize } from '@opensumi/ide-core-browser';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { FormattingMode } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

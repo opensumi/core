@@ -2,18 +2,25 @@ import cls from 'classnames';
 import React from 'react';
 
 import {
-  TreeNode,
+  Button,
+  ClasslistComposite,
   CompositeTreeNode,
   INodeRendererProps,
-  ClasslistComposite,
+  TreeNode,
   TreeNodeType,
-  Button,
 } from '@opensumi/ide-components';
-import { URI, OPEN_EDITORS_COMMANDS, localize, getIcon, CommandService } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  OPEN_EDITORS_COMMANDS,
+  URI,
+  getIcon,
+  localize,
+  useDesignStyles,
+} from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { EDITOR_WEBVIEW_SCHEME } from '@opensumi/ide-webview';
 
-import { EditorFileGroup, EditorFile } from './opened-editor-node.define';
+import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 import styles from './opened-editor-node.module.less';
 import { OpenedEditorDecorationService } from './services/opened-editor-decoration.service';
 
@@ -49,6 +56,8 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   decorations,
 }: EditorNodeRenderedProps) => {
   const decoration = EditorFileGroup.is(item) ? null : decorationService.getDecoration(item.uri, false);
+  const styles_opened_editor_node = useDesignStyles(styles.opened_editor_node);
+  const styles_opened_editor_node_overflow_wrap = useDesignStyles(styles.opened_editor_node_overflow_wrap);
 
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
@@ -213,7 +222,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
       className={cls(
-        styles.opened_editor_node,
+        styles_opened_editor_node,
         decorations ? decorations.classlist : null,
         EditorFile.is(item) && item.dirty && styles.dirty,
       )}
@@ -223,7 +232,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
       {renderActionBar()}
       <div className={cls(styles.opened_editor_node_content)}>
         {renderIcon(item)}
-        <div className={styles.opened_editor_node_overflow_wrap}>
+        <div className={styles_opened_editor_node_overflow_wrap}>
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>

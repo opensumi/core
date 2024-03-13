@@ -1,10 +1,10 @@
-import type React from 'react';
-
-import { MaybeNull, BasicEvent } from '@opensumi/ide-core-common';
+import { BasicEvent, Event, MaybeNull } from '@opensumi/ide-core-common';
 
 import { Layout } from '../components/layout/index';
-import type { IMenu, IContextMenu } from '../menu/next';
+
+import type { IContextMenu, IMenu } from '../menu/next';
 import type { SlotLocation } from '../react-providers';
+import type React from 'react';
 
 export type Side = 'left' | 'right' | 'bottom';
 
@@ -36,6 +36,7 @@ export interface View {
   weight?: number;
   priority?: number;
   collapsed?: boolean;
+  badge?: string;
   hidden?: boolean;
   component?: React.ComponentType<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
@@ -89,6 +90,11 @@ export interface ComponentRegistry {
 export interface ComponentRegistryInfo {
   views: View[];
   options?: ViewContainerOptions;
+}
+
+export interface ComponentRegistryProvider extends ComponentRegistryInfo {
+  fireChange: (component: ComponentRegistryProvider) => void;
+  onChange: Event<ComponentRegistryProvider>;
 }
 
 export class ResizePayload {

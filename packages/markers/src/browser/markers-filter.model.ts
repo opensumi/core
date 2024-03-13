@@ -1,15 +1,15 @@
 import {
+  IExpression,
+  IFilter,
   IMarker,
   MarkerSeverity,
-  IFilter,
+  URI,
+  getEmptyExpression,
   matchesFuzzy,
   matchesFuzzy2,
   matchesPrefix,
-  strings,
-  URI,
-  getEmptyExpression,
-  IExpression,
   splitGlobAware,
+  strings,
 } from '@opensumi/ide-core-browser';
 
 import {

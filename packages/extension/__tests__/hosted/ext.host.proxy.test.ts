@@ -3,7 +3,7 @@ import path from 'path';
 import { INodeLogger, Event, getDebugLogger, sleep } from '@opensumi/ide-core-node';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtHostProxy, IExtensionHostManager } from '../../src/common';
 import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';

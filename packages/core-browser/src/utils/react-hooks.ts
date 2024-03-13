@@ -1,11 +1,12 @@
 import _debounce from 'lodash/debounce';
-import { useState, useEffect, DependencyList } from 'react';
+import { DependencyList, useEffect, useMemo, useState } from 'react';
 
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 
+import { IDesignStyleService } from '../design';
 import { MenuNode } from '../menu/next/base';
 import { generateInlineActions } from '../menu/next/menu-util';
-import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
+import { IContextMenu, IMenu, IMenuSeparator } from '../menu/next/menu.interface';
 import { PreferenceService } from '../preferences/types';
 import { useInjectable } from '../react-hooks/injectable-hooks';
 
@@ -115,4 +116,16 @@ export function usePreference<T>(key: string, defaultValue: T) {
     };
   }, []);
   return value;
+}
+
+export function useDesignStyles(styles: string) {
+  const designStyleService = useInjectable<IDesignStyleService>(IDesignStyleService);
+
+  if (!styles) {
+    return '';
+  }
+
+  const designStyle = useMemo(() => designStyleService.wrapStyles(styles), [designStyleService, styles]);
+
+  return designStyle;
 }

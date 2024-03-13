@@ -1,13 +1,13 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, Disposable } from '@opensumi/ide-core-common';
+import { Disposable, URI } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 
 import {
+  IEditorTabDto,
   IExtHostEditorTabsShape,
   IMainThreadEditorTabsShape,
-  IEditorTabDto,
 } from './../../../common/vscode/editor-tabs';
 import { ExtHostAPIIdentifier } from './../../../common/vscode/index';
 

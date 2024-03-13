@@ -1,29 +1,29 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   Command,
-  Emitter,
-  CommandRegistry,
   CommandHandler,
+  CommandRegistry,
+  CommandService,
+  EDITOR_COMMANDS,
+  Emitter,
   HANDLER_NOT_FOUND,
   ILogger,
-  EDITOR_COMMANDS,
-  CommandService,
   IReporterService,
+  MonacoOverrideServiceRegistry,
   REPORT_NAME,
   ServiceNames,
-  memoize,
   Uri,
-  MonacoOverrideServiceRegistry,
+  memoize,
 } from '@opensumi/ide-core-browser';
 import { DELEGATE_COMMANDS } from '@opensumi/ide-monaco';
 import {
-  CommandsRegistry as MonacoCommandsRegistry,
   EditorExtensionsRegistry,
   ICommandEvent,
   ICommandService,
   IMonacoActionRegistry,
   IMonacoCommandService,
   IMonacoCommandsRegistry,
+  CommandsRegistry as MonacoCommandsRegistry,
   MonacoEditorCommandHandler,
 } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
@@ -290,7 +290,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
 
   registerMonacoActions() {
     const editorActions = new Map(
-      this.monacoEditorRegistry.getEditorActions().map(({ id, label, alias }) => [
+      Array.from(this.monacoEditorRegistry.getEditorActions()).map(({ id, label, alias }) => [
         id,
         {
           label,

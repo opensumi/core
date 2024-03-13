@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, ContributionProvider, Disposable, getDebugLogger } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { ContributionProvider, Disposable, IDisposable, getDebugLogger } from '@opensumi/ide-core-browser';
 import {
   DebugSessionContribution,
   DebugSessionContributionRegistry,

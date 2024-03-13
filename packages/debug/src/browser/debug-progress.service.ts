@@ -2,11 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Event, IDisposable } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { DisposableCollection, IProgress, IProgressStep } from '@opensumi/ide-core-common';
-import { ProgressLocation } from '@opensumi/ide-core-common';
+import { DisposableCollection, IProgress, IProgressStep, ProgressLocation } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { IDebugProgress } from '../common/debug-progress';

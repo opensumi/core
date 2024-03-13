@@ -1,19 +1,18 @@
 import merge from 'lodash/merge';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  DisposableCollection,
-  ILogger,
-  Emitter,
-  URI,
   AppConfig,
-  Uri,
-  FileType,
+  DisposableCollection,
+  Emitter,
   FileChangeEvent,
+  FileType,
+  ILogger,
+  URI,
+  Uri,
 } from '@opensumi/ide-core-browser';
 import { Event, FileSystemProviderCapabilities, Schemes } from '@opensumi/ide-core-common';
-import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { FileSetContentOptions, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { IUserStorageService } from '../../common';
 

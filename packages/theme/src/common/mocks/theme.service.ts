@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event, URI, IThemeColor, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, Event, IThemeColor, URI } from '@opensumi/ide-core-common';
 
-import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '../theme.service';
+import { ExtColorContribution, ITheme, IThemeContribution, IThemeService } from '../theme.service';
 
 @Injectable()
 export class MockThemeService implements IThemeService {
@@ -15,7 +15,7 @@ export class MockThemeService implements IThemeService {
     return this._onThemeChange.event;
   }
 
-  registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
+  registerThemes(themeContributions: IThemeContribution[], extPath: URI) {
     return {
       dispose: () => {},
     };

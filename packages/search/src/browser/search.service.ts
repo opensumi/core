@@ -1,37 +1,41 @@
 import debounce from 'lodash/debounce';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
-import { Schemes, CommandService, COMMON_COMMANDS, RecentStorage, PreferenceService } from '@opensumi/ide-core-browser';
 import {
-  strings,
-  parseGlob,
-  ParsedPattern,
+  COMMON_COMMANDS,
+  CommandService,
   Emitter,
   IDisposable,
+  ParsedPattern,
+  PreferenceService,
+  RecentStorage,
+  Schemes,
   URI,
   arrays,
+  parseGlob,
+  strings,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
 import {
+  CancellationToken,
+  CancellationTokenSource,
+  Disposable,
   IEventBus,
-  localize,
   IReporterService,
   IReporterTimer,
   REPORT_NAME,
-  Disposable,
-  CancellationTokenSource,
-  CancellationToken,
+  localize,
 } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
-  ICodeEditor,
-  IEditorDocumentModelService,
-  IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
+  ICodeEditor,
+  IEditorDocumentModel,
   IEditorDocumentModelContentChangedEventPayload,
+  IEditorDocumentModelService,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -40,19 +44,19 @@ import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
-  ContentSearchResult,
-  SEARCH_STATE,
   ContentSearchOptions,
-  IContentSearchServer,
+  ContentSearchResult,
   ContentSearchServerPath,
+  DEFAULT_SEARCH_IN_WORKSPACE_LIMIT,
+  FilterFileWithGlobRelativePath,
+  IContentSearchClientService,
+  IContentSearchServer,
+  IUIState,
   ResultTotal,
+  SEARCH_STATE,
   SendClientResult,
   anchorGlob,
-  IContentSearchClientService,
-  IUIState,
   cutShortSearchResult,
-  FilterFileWithGlobRelativePath,
-  DEFAULT_SEARCH_IN_WORKSPACE_LIMIT,
 } from '../common';
 
 import { replaceAll } from './replace';

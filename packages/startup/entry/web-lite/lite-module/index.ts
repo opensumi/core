@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import { BrowserModule, LogServiceForClientPath } from '@opensumi/ide-core-browser';
 import { CommonServerPath, KeytarServicePath } from '@opensumi/ide-core-common';
 import { IDebugService } from '@opensumi/ide-debug';

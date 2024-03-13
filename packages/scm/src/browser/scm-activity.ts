@@ -1,11 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { strings, path, Event, Disposable, IDisposable, dispose, combinedDisposable } from '@opensumi/ide-core-browser';
-import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
-import { localize, Schemes } from '@opensumi/ide-core-common';
+import { Disposable, Event, IDisposable, combinedDisposable, dispose, path, strings } from '@opensumi/ide-core-browser';
+import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser/lib/services';
+import { Schemes, localize } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { SCMService, ISCMRepository, scmContainerId } from '../common';
+import { ISCMRepository, SCMService, scmContainerId } from '../common';
 
 // 更新 ActivityBar 中 SCM 模块边的数字, 标注当前的 changes 数量
 @Injectable()

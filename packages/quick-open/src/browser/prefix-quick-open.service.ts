@@ -18,20 +18,20 @@
 
 import React from 'react';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { localize, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { QuickOpenActionProvider, localize } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   IQuickOpenHandlerRegistry,
+  PrefixQuickOpenService,
   QuickOpenHandler,
-  QuickOpenTabConfig,
-  QuickOpenTab,
+  QuickOpenItem,
   QuickOpenOptions,
   QuickOpenService,
-  QuickOpenItem,
-  PrefixQuickOpenService,
+  QuickOpenTab,
+  QuickOpenTabConfig,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, IDisposable, ILogger } from '@opensumi/ide-core-common';
 
 import { QuickOpenTabs } from './components/quick-open-tabs';
 import { QuickTitleBar } from './quick-title-bar';

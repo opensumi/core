@@ -2,8 +2,7 @@
 console.time('Render');
 
 import { Injector } from '@opensumi/di';
-import { IClientAppOpts } from '@opensumi/ide-core-browser';
-import { SlotLocation } from '@opensumi/ide-core-browser';
+import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { uuid } from '@opensumi/ide-core-common';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
@@ -79,6 +78,7 @@ export const getDefaultClientAppOpts = ({
     'general.language': defaultLanguage,
     'general.theme': 'opensumi-dark',
     'general.icon': 'vscode-icons',
+    'general.productIconTheme': 'opensumi-icons',
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
   },

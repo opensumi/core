@@ -14,14 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import type vscode from 'vscode';
-
 import { Uri as URI } from '@opensumi/ide-core-common';
 
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import * as types from '../../../../common/vscode/ext-types';
 import { ColorPresentation, RawColorInfo } from '../../../../common/vscode/model.api';
+
+import type vscode from 'vscode';
 
 export class ColorProviderAdapter {
   constructor(private documents: ExtensionDocumentDataManager, private provider: vscode.DocumentColorProvider) {}

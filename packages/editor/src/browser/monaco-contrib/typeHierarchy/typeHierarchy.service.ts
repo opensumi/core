@@ -1,17 +1,17 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
   CancellationToken,
-  IPosition,
   IDisposable,
-  arrays,
+  IPosition,
   RefCountedDisposable,
-  onUnexpectedExternalError,
   URI,
   Uri,
+  arrays,
+  onUnexpectedExternalError,
 } from '@opensumi/ide-core-common';
 import {
-  TypeHierarchyItem,
   ITypeHierarchyService,
+  TypeHierarchyItem,
   TypeHierarchyProvider,
   TypeHierarchyProviderRegistry,
 } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';

@@ -3,55 +3,56 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/api/common/extHostTask.ts
-
-import type vscode from 'vscode';
-import { TaskProvider, Task, TaskExecution, TaskFilter } from 'vscode';
+// eslint-disable-next-line import/no-unresolved
+import { Task, TaskExecution, TaskFilter, TaskProvider } from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
-  getDebugLogger,
-  Event,
   CancellationToken,
-  asPromise,
   CancellationTokenSource,
-  Emitter,
   DisposableStore,
-  Uri,
+  Emitter,
+  Event,
   IDisposable,
+  Uri,
+  asPromise,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor/lib/common';
 
 import { IExtensionProps } from '../../../../common';
 import {
-  MainThreadAPIIdentifier,
   IExtHostTerminal,
   IExtHostWorkspace,
   IExtensionDescription,
+  MainThreadAPIIdentifier,
 } from '../../../../common/vscode';
 import * as types from '../../../../common/vscode/ext-types';
 import {
+  CustomExecution2DTO,
+  CustomExecutionDTO,
   IExtHostTasks,
-  TaskHandlerData,
   IMainThreadTasks,
-  TaskSetDTO,
-  TaskPresentationOptionsDTO,
+  ProcessExecutionDTO,
   ProcessExecutionOptionsDTO,
   ShellExecutionDTO,
-  ProcessExecutionDTO,
-  CustomExecutionDTO,
-  CustomExecution2DTO,
   ShellExecutionOptionsDTO,
-  TaskFilterDTO,
   TaskDTO,
   TaskDefinitionDTO,
-  TaskProcessStartedDTO,
   TaskExecutionDTO,
+  TaskFilterDTO,
   TaskHandleDTO,
+  TaskHandlerData,
+  TaskPresentationOptionsDTO,
   TaskProcessEndedDTO,
+  TaskProcessStartedDTO,
+  TaskSetDTO,
 } from '../../../../common/vscode/tasks';
 import { Terminal } from '../ext.host.terminal';
 
-import { toTask, TaskDto } from './taskTypes';
+import { TaskDto, toTask } from './taskTypes';
+
+import type vscode from 'vscode';
 
 namespace TaskDefinitionDTO {
   export function from(value: vscode.TaskDefinition): TaskDefinitionDTO | undefined {

@@ -1,49 +1,56 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector, Optional } from '@opensumi/di';
+import { ITreeNodeOrCompositeTreeNode, Tree } from '@opensumi/ide-components';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
+  BinaryBuffer,
+  CancellationToken,
+  CancellationTokenSource,
+  CommandRegistry,
+  Disposable,
+  DisposableStore,
   Emitter,
   Event,
-  DisposableStore,
-  toDisposable,
-  isUndefined,
-  CommandRegistry,
-  localize,
-  getIcon,
-  getExternalIcon,
+  IContextKeyService,
   LabelService,
   URI,
-  IContextKeyService,
-  CancellationTokenSource,
   WithEventBus,
-  Disposable,
-  CancellationToken,
-  BinaryBuffer,
+  getExternalIcon,
+  getIcon,
   isString,
+  isUndefined,
+  localize,
+  toDisposable,
 } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
-  generateCtxMenu,
   IMenuRegistry,
   MenuId,
   MenuNode,
+  generateCtxMenu,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
-import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService, IconType } from '@opensumi/ide-theme';
 
 import { ExtensionHostType } from '../../../common';
-import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions, IconUrl } from '../../../common/vscode';
-import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
+import {
+  ExtHostAPIIdentifier,
+  IExtHostTreeView,
+  IMainThreadTreeView,
+  ITreeViewRevealOptions,
+  IconUrl,
+  TreeViewBaseOptions,
+  TreeViewItem,
+} from '../../../common/vscode';
 import { DataTransfer } from '../../../common/vscode/converter';
-import { createStringDataTransferItem, VSDataTransfer } from '../../../common/vscode/data-transfer';
+import { VSDataTransfer, createStringDataTransferItem } from '../../../common/vscode/data-transfer';
 import { DataTransferCache } from '../../../common/vscode/data-transfer-cache';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { ExtensionTabBarTreeView } from '../../components';
 
 import { ExtensionTreeViewModel, ITreeViewDragAndDropController } from './tree-view/tree-view.model.service';
-import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
+import { ExtensionCompositeTreeNode, ExtensionTreeNode, ExtensionTreeRoot } from './tree-view/tree-view.node.defined';
 
 @Injectable({ multiple: true })
 export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeView {

@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { ContributionProvider } from '@opensumi/ide-core-browser';
 
 import { DebugSessionOptions } from '../common';

@@ -1,10 +1,17 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { Badge, Icon } from '@opensumi/ide-components';
-import { ComponentRegistryInfo, useInjectable, KeybindingRegistry, usePreference } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryInfo,
+  ComponentRegistryProvider,
+  KeybindingRegistry,
+  getIcon,
+  useDesignStyles,
+  useInjectable,
+  usePreference,
+} from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -58,10 +65,11 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
   }) => {
     const { side, direction, fullSize } = React.useContext(TabbarConfig);
     const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+    const styles_tab_bar = useDesignStyles(styles.tab_bar);
+    const styles_bar_content = useDesignStyles(styles.bar_content);
 
     React.useEffect(() => {
-      // 内部只关注总的宽度
-      tabbarService.barSize = barSize + panelBorderSize;
+      tabbarService.updateBarSize(barSize + panelBorderSize);
     }, []);
 
     const { currentContainerId, handleTabClick } = tabbarService;
@@ -89,8 +97,8 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
     });
 
     return (
-      <div className={cls([styles.tab_bar, className])}>
-        <div className={styles.bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
+      <div className={cls([styles_tab_bar, className])}>
+        <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
           {visibleContainers.map((component) => {
             const containerId = component.options?.containerId;
             if (!containerId) {
@@ -167,56 +175,84 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
   },
 );
 
-export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => {
-  const progressService: IProgressService = useInjectable(IProgressService);
-  const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
-  const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
+export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
+  ({ component: defaultComponent }) => {
+    const progressService: IProgressService = useInjectable(IProgressService);
+    const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
+    const styles_icon_tab = useDesignStyles(styles.icon_tab);
+    const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
+    const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
+    const title = React.useMemo(() => {
+      const options = component.options;
+      if (options?.activateKeyBinding) {
+        return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
+      }
+      return options?.title;
+    }, [component]);
 
-  const title = React.useMemo(() => {
-    const options = component.options;
-    if (options?.activateKeyBinding) {
-      return `${options?.title} (${keybindingRegistry.acceleratorForKeyString(options.activateKeyBinding, '+')})`;
-    }
-    return options?.title;
-  }, [component]);
+    useEffect(() => {
+      const dispose = component.onChange((newComponent) => {
+        setComponent(newComponent);
+      });
+      return () => {
+        dispose.dispose();
+      };
+    }, []);
 
-  return (
-    <div className={styles.icon_tab}>
-      <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
-      {inProgress ? (
-        <Badge className={styles.tab_badge}>
-          <span className={styles.icon_wrapper}>
-            <Icon icon='time-circle' />
-          </span>
-        </Badge>
-      ) : (
-        component.options?.badge && (
+    return (
+      <div className={styles_icon_tab}>
+        <div className={cls(component.options?.iconClass, 'activity-icon')} title={title}></div>
+        {inProgress ? (
+          <Badge className={styles.tab_badge}>
+            <span className={styles.icon_wrapper}>
+              <Icon icon='time-circle' />
+            </span>
+          </Badge>
+        ) : (
+          component.options?.badge && (
+            <Badge className={styles.tab_badge}>
+              {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
+            </Badge>
+          )
+        )}
+      </div>
+    );
+  },
+);
+
+export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
+  ({ component: defaultComponent }) => {
+    const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
+    useEffect(() => {
+      const dispose = component.onChange((newComponent) => {
+        setComponent(newComponent);
+      });
+      return () => {
+        dispose.dispose();
+      };
+    }, []);
+    return (
+      <div className={styles.text_tab}>
+        <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
+        {component.options?.badge && (
           <Badge className={styles.tab_badge}>
             {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
           </Badge>
-        )
-      )}
+        )}
+      </div>
+    );
+  },
+);
+
+export const IconElipses: React.FC = () => {
+  const styles_icon_tab = useDesignStyles(styles.icon_tab);
+  return (
+    <div className={styles_icon_tab}>
+      {/* i18n */}
+      <div className={cls(getIcon('ellipsis'), 'activity-icon')} title='extra tabs'></div>
     </div>
   );
-});
-
-export const TextTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => (
-  <div className={styles.text_tab}>
-    <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
-    {component.options?.badge && (
-      <Badge className={styles.tab_badge}>
-        {parseInt(component.options.badge, 10) > 99 ? '99+' : component.options.badge}
-      </Badge>
-    )}
-  </div>
-));
-
-export const IconElipses: React.FC = () => (
-  <div className={styles.icon_tab}>
-    {/* i18n */}
-    <div className={cls(getIcon('ellipsis'), 'activity-icon')} title='extra tabs'></div>
-  </div>
-);
+};
 
 export const TextElipses: React.FC = () => (
   <div className={styles.text_tab}>
@@ -255,10 +291,13 @@ export const LeftTabbarRenderer: React.FC = () => {
   const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
 
+  const styles_left_tab_bar = useDesignStyles(styles.left_tab_bar);
+  const styles_left_tab = useDesignStyles(styles.left_tab);
+
   return (
     <div
       id={VIEW_CONTAINERS.LEFT_TABBAR}
-      className={styles.left_tab_bar}
+      className={styles_left_tab_bar}
       onContextMenu={tabbarService.handleContextMenu}
     >
       <InlineMenuBar className={cls(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
@@ -266,7 +305,7 @@ export const LeftTabbarRenderer: React.FC = () => {
         tabSize={48}
         MoreTabView={IconElipses}
         className={styles.left_tab_content}
-        tabClassName={styles.left_tab}
+        tabClassName={styles_left_tab}
         TabView={IconTabView}
         barSize={48}
         margin={90}
@@ -280,17 +319,19 @@ export const LeftTabbarRenderer: React.FC = () => {
 export const BottomTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const styles_bottom_bar_container = useDesignStyles(styles.bottom_bar_container);
+  const styles_bottom_tab = useDesignStyles(styles.bottom_tab);
   return (
     <div
       id={VIEW_CONTAINERS.BOTTOM_TABBAR}
       onContextMenu={tabbarService.handleContextMenu}
-      className={cls(styles.bottom_bar_container, 'next_bottom_bar')}
+      className={cls(styles_bottom_bar_container, 'next_bottom_bar')}
     >
       <TabbarViewBase
         // TODO: 暂时通过预估值来计算是否超出可视范围，实际上需要通过dom尺寸的计算
         tabSize={80}
         MoreTabView={TextElipses}
-        tabClassName={styles.bottom_tab}
+        tabClassName={styles_bottom_tab}
         TabView={TextTabView}
         barSize={24}
         panelBorderSize={1}

@@ -1,10 +1,10 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, memo } from 'react';
+import React, { memo, useCallback } from 'react';
 
-import { StatusBarEntry } from '@opensumi/ide-core-browser';
+import { AppConfig, StatusBarEntry } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-import { generateCtxMenu, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ICtxMenuRenderer, generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
 
@@ -15,6 +15,7 @@ export const StatusBarView = memo(
   observer(() => {
     const statusBar: IStatusBarService = useInjectable(IStatusBarService);
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+    const appConfig = useInjectable<AppConfig>(AppConfig);
     const backgroundColor = statusBar.getBackgroundColor();
     const color = statusBar.getColor();
 
@@ -34,7 +35,7 @@ export const StatusBarView = memo(
       <div
         id={VIEW_CONTAINERS.STATUSBAR}
         className={styles.statusBar}
-        style={{ backgroundColor }}
+        style={{ backgroundColor, height: appConfig.layoutViewSize!.statusBarHeight + 'px' }}
         onContextMenu={handleCtxMenu}
       >
         <div className={cls(styles.area, styles.left)}>

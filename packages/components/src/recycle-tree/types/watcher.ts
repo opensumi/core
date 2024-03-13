@@ -1,6 +1,6 @@
 import { IDisposable } from '@opensumi/ide-utils';
 
-import { ITreeNode, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
+import { ICompositeTreeNode, ITreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
 
 export enum TreeNodeEvent {
   WillChangeExpansionState = 1,

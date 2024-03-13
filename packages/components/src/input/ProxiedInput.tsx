@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IInputBaseProps, Input as BaseInput } from './Input';
+import { Input as BaseInput, IInputBaseProps } from './Input';
 
 export interface ProxiedInputProp extends IInputBaseProps {
   innerRef?: React.Ref<HTMLInputElement>;

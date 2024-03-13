@@ -474,7 +474,8 @@ export const localizationBundle = {
     'settings.group.view': '视图',
 
     'preference.general.theme': '主题',
-    'preference.general.icon': '图标主题',
+    'preference.general.icon': '文件图标主题',
+    'preference.general.productIconTheme': '产品图标主题',
     'preference.workbench.colorCustomizations': '覆盖当前所选颜色主题的颜色',
     'preference.general.language': '语言',
     'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
@@ -520,6 +521,10 @@ export const localizationBundle = {
     'preference.editor.saveCodeActionsNotification': '代码操作执行时是否展示通知信息',
 
     'preference.item.notValid': '{0} 不是有效选项',
+
+    // AI Native Preference
+    'preference.aiNative.inlineChat.title': 'Inline Chat',
+    'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
 
     'editor.saveAll': '保存全部',
     'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
@@ -727,13 +732,15 @@ export const localizationBundle = {
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
+    'theme.productIcon.toggle': '产品图标主题',
 
     'theme.base.vs': '浅色主题',
     'theme.base.vs-dark': '深色主题',
     'theme.base.hc': '高对比度主题',
     'theme.current': '当前主题',
     'theme.quickopen.plh': '选择主题（上下移动光标预览）',
-    'icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
+    'theme.icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
+    'theme.productIcon.quickopen.plh': '选择产品图标主题（上下移动光标预览）',
 
     'preference.workbench.list.openMode':
       '控制如何使用鼠标展开树和打开列表项（若支持）。如果此设置不适用，某些树和列表可能会选择忽略此设置。',
@@ -1080,7 +1087,13 @@ export const localizationBundle = {
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.formatOnSaveTimeout':
       '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
+    // inlineSuggest start
     'editor.configuration.inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
+    'editor.configuration.inlineSuggest.showToolbar': '控制何时显示内联建议工具栏。',
+    'editor.configuration.inlineSuggest.showToolbar.always': '每当显示内联建议时，就显示内联建议工具栏。',
+    'editor.configuration.inlineSuggest.showToolbar.onHover': '将鼠标悬停在内联建议上时显示内联建议工具栏。',
+    'editor.configuration.inlineSuggest.showToolbar.never': '永不显示内联建议工具栏。',
+    // inlineSuggest end
     'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.formatOnSave': '在保存时格式化文件',
     'editor.configuration.formatOnType': '控制编辑器是在键入后自动格式化该行。',
@@ -1160,6 +1173,15 @@ export const localizationBundle = {
     'mergeEditor.action.button.accept.right': '接受右边',
     'mergeEditor.open.in.editor': '在合并编辑器中解决',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
+
+    // #region AI Native
+    'aiNative.inline.chat.operate.check.title': '采纳',
+    'aiNative.inline.chat.operate.discard.title': '丢弃',
+    'aiNative.inline.chat.operate.afresh.title': '重新生成',
+    'aiNative.inline.chat.operate.thumbsup.title': '赞',
+    'aiNative.inline.chat.operate.thumbsdown.title': '踩',
+    'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
+    // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
 

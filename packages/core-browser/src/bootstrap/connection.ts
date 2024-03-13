@@ -3,61 +3,32 @@ import { RPCServiceCenter, WSChannel, initRPCService } from '@opensumi/ide-conne
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
+import { RPCServiceChannelPath } from '@opensumi/ide-connection/lib/common/server-handler';
 import {
-  getDebugLogger,
-  IReporterService,
   BasicModule,
   BrowserConnectionCloseEvent,
-  BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
+  BrowserConnectionOpenEvent,
   IEventBus,
-  UrlProvider,
+  IReporterService,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
-import { createNetSocketConnection, fromWindowClientId } from '../utils';
 
 import { ModuleConstructor } from './app.interface';
 
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
+
 const initialLogger = getDebugLogger();
-
-export async function createClientConnection4Web(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  wsPath: UrlProvider,
-  onReconnect: () => void,
-  protocols?: string[],
-  clientId?: string,
-) {
-  return createConnectionService(
-    injector,
-    modules,
-    onReconnect,
-    ReconnectingWebSocketConnection.forURL(wsPath, protocols),
-    clientId,
-  );
-}
-
-export async function createClientConnection4Electron(
-  injector: Injector,
-  modules: ModuleConstructor[],
-  clientId?: string,
-) {
-  const connection = createNetSocketConnection();
-  const channel = WSChannel.forClient(connection, {
-    id: clientId || fromWindowClientId('RPCService'),
-    logger: console,
-  });
-  return bindConnectionService(injector, modules, channel);
-}
 
 export async function createConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
   onReconnect: () => void,
   connection: ReconnectingWebSocketConnection | NetSocketConnection,
-  clientId?: string,
+  clientId: string,
 ) {
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
@@ -100,14 +71,14 @@ export async function createConnectionService(
     useValue: channelHandler,
   });
 
-  // 重连不会执行后面的逻辑
-  const channel = await channelHandler.openChannel('RPCService');
+  // reconnecting will not execute the following logic
+  const channel = await channelHandler.openChannel(RPCServiceChannelPath);
   channel.onReopen(() => onReconnect());
 
   bindConnectionService(injector, modules, channel);
 }
 
-export async function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
+export function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
 
   const dispose = clientCenter.setSumiConnection(channel.createSumiConnection());
@@ -117,6 +88,29 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     toDispose.dispose();
   });
 
+  initConnectionService(injector, modules, clientCenter);
+}
+
+/**
+ * @deprecated Please use `bindConnectionService` instead
+ */
+export function bindConnectionServiceDeprecated(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  connection: MessageConnection,
+) {
+  const clientCenter = new RPCServiceCenter();
+  const dispose = clientCenter.setConnection(connection);
+
+  const toDispose = connection.onClose(() => {
+    dispose.dispose();
+    toDispose.dispose();
+  });
+
+  initConnectionService(injector, modules, clientCenter);
+}
+
+function initConnectionService(injector: Injector, modules: ModuleConstructor[], clientCenter: RPCServiceCenter) {
   const { getRPCService } = initRPCService(clientCenter);
 
   const backServiceArr: BackService[] = [];

@@ -1,11 +1,11 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CommandService, Disposable, IAccessibilityInformation } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
 import { IMarkdownString, IThemeColor } from '@opensumi/ide-core-common';
-import { getCodiconAriaLabel } from '@opensumi/monaco-editor-core/esm/vs/base/common/codicons';
+import { getCodiconAriaLabel } from '@opensumi/monaco-editor-core/esm/vs/base/common/iconLabels';
 
-import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostStatusBar, IMainThreadStatusBar } from '../../../common/vscode';
 import * as types from '../../../common/vscode/ext-types';
 
 @Injectable({ multiple: true })

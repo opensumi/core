@@ -1,6 +1,6 @@
 import { Domain } from '@opensumi/ide-core-common';
 
-import { MenuContribution, IMenuRegistry } from '../menu/next/base';
+import { IMenuRegistry, MenuContribution } from '../menu/next/base';
 import { MenuId } from '../menu/next/menu-id';
 
 import { COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';

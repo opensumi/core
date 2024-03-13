@@ -7,16 +7,16 @@ import { DocumentMapping } from '../model/document-mapping';
 import { InnerRange } from '../model/inner-range';
 import { LineRange } from '../model/line-range';
 import {
-  IConflictActionsEvent,
-  ACCEPT_CURRENT_ACTIONS,
-  IGNORE_ACTIONS,
-  ADDRESSING_TAG_CLASSNAME,
-  TActionsType,
   ACCEPT_COMBINATION_ACTIONS,
-  REVOKE_ACTIONS,
-  IActionsProvider,
-  ETurnDirection,
+  ACCEPT_CURRENT_ACTIONS,
+  ADDRESSING_TAG_CLASSNAME,
   APPEND_ACTIONS,
+  ETurnDirection,
+  IActionsProvider,
+  IConflictActionsEvent,
+  IGNORE_ACTIONS,
+  REVOKE_ACTIONS,
+  TActionsType,
 } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';

@@ -1,18 +1,18 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import {
-  URI,
-  Domain,
-  localize,
-  Deferred,
-  CommandService,
-  EDITOR_COMMANDS,
   CommandContribution,
   CommandRegistry,
+  CommandService,
+  Deferred,
+  Domain,
+  EDITOR_COMMANDS,
+  URI,
+  getIcon,
+  localize,
 } from '@opensumi/ide-core-browser';
-import { getIcon } from '@opensumi/ide-core-browser';
-import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { ICompareService, CompareResult } from '../types';
+import { CompareResult, ICompareService } from '../types';
 
 @Injectable()
 export class CompareService implements ICompareService {

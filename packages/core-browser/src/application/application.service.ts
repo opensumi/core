@@ -1,12 +1,12 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
+  CommonServerPath,
+  Deferred,
+  IApplicationService,
+  ICommonServer,
   OS,
   OperatingSystem,
-  IApplicationService,
-  CommonServerPath,
-  ICommonServer,
-  Deferred,
 } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers/config-provider';
@@ -55,12 +55,8 @@ export class ApplicationService implements IApplicationService {
   }
 
   get clientId(): string {
-    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
-      return electronEnv.metadata.windowClientId;
-    } else {
-      const wsChannel = this.injector.get(WSChannelHandler);
-      return wsChannel.clientId;
-    }
+    const wsChannel = this.injector.get(WSChannelHandler);
+    return wsChannel.clientId;
   }
 
   get windowId(): string | number {

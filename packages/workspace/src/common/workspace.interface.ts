@@ -1,5 +1,5 @@
 import { StorageService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, Event } from '@opensumi/ide-core-common';
+import { Event, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 export interface WorkspaceInput {

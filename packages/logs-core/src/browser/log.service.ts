@@ -1,5 +1,4 @@
-import { ILogServiceClient, ILogServiceForClient, SupportLogNamespace, LogLevel, format } from '../common/';
-import { DebugLog } from '../common/';
+import { DebugLog, ILogServiceClient, ILogServiceForClient, LogLevel, SupportLogNamespace, format } from '../common/';
 
 export class LogServiceClient implements ILogServiceClient {
   private namespace: SupportLogNamespace;

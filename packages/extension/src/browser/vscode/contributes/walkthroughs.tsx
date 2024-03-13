@@ -1,16 +1,15 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import {
-  CommandService,
   CUSTOM_EDITOR_SCHEME,
+  CommandService,
   LifeCyclePhase,
-  localize,
   Schemes,
   URI,
+  localize,
 } from '@opensumi/ide-core-common';
-import { ResourceService } from '@opensumi/ide-editor';
-import { IResource } from '@opensumi/ide-editor';
+import { IResource, ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 
 import { Contributes, IWalkthrough, LifeCycle, VSCodeContributePoint } from '../../../common';

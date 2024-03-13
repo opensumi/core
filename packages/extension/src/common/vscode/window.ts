@@ -1,19 +1,19 @@
-import type vscode from 'vscode';
-
 import {
   CancellationToken,
-  MessageType,
-  MaybePromise,
+  Event,
   IMarkdownString,
   IThemeColor,
-  Event,
+  MaybePromise,
+  MessageType,
 } from '@opensumi/ide-core-common';
-import { QuickPickItem, QuickPickOptions, QuickInputOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
+import { QuickInputOptions, QuickPickItem, QuickPickOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
 
 import { Severity } from './enums';
 import * as types from './ext-types';
-import { UriComponents, QuickInputButton } from './ext-types';
+import { QuickInputButton, UriComponents } from './ext-types';
 import { IExtensionDescription } from './extension';
+
+import type vscode from 'vscode';
 
 export interface IMainThreadMessage {
   $showMessage(
@@ -189,7 +189,10 @@ export interface IMainThreadOutput {
 }
 
 export interface IExtHostOutput {
-  createOutputChannel(name: string): types.OutputChannel;
+  createOutputChannel(
+    name: string,
+    options: { /** literal-type defines return type */ log: true } | undefined,
+  ): types.OutputChannel;
 }
 
 export interface IExtHostWindowState {

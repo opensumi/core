@@ -1,26 +1,26 @@
 import Ajv from 'ajv';
 
-import { Injectable, Autowired, Injector } from '@opensumi/di';
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import {
-  Mutable,
   ContributionProvider,
+  Disposable,
   Emitter,
   Event,
-  ILogger,
-  Disposable,
   IDisposable,
+  ILogger,
+  Mutable,
 } from '@opensumi/ide-core-common';
 import {
-  PreferenceSchema,
+  PreferenceDataProperty,
   PreferenceDataSchema,
   PreferenceItem,
-  PreferenceDataProperty,
+  PreferenceSchema,
 } from '@opensumi/ide-core-common/lib/preferences/preference-schema';
 
 import { AppConfig } from '../react-providers/config-provider';
 
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
-import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
+import { IResolvedPreferences, PreferenceProvider, PreferenceProviderDataChange } from './preference-provider';
 import { PreferenceScope } from './preference-scope';
 
 export const PreferenceContribution = Symbol('PreferenceContribution');

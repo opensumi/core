@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { Select, Option } from '@opensumi/ide-components';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Option, Select } from '@opensumi/ide-components';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { localize, Emitter, Event } from '@opensumi/ide-core-common';
+import { Emitter, Event, localize } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-editor';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { ICSSStyleService } from '@opensumi/ide-theme';
@@ -183,7 +183,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     const languageIdentifier = this.editor.getModel()?.getLanguageId();
     const model = this.input?.monacoEditor.getModel();
     if (model && languageIdentifier) {
-      model.setMode(this.context === 'logMessage' ? 'plaintext' : languageIdentifier);
+      model.setLanguage(this.context === 'logMessage' ? 'plaintext' : languageIdentifier);
     }
   }
 

@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Domain, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Domain, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
+import { IDiffResource, IResourceProvider, ResourceDecorationChangeEvent, ResourceService } from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
 
 // diff URI:
@@ -75,15 +75,15 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
       // 默认显示 modified 文件路径
       this.getReadableTooltip(modifiedUri),
     ]).then(([icon, title]) => ({
-        name,
-        icon,
-        uri,
-        metadata: {
-          original: originalUri,
-          modified: modifiedUri,
-        },
-        title,
-      }));
+      name,
+      icon,
+      uri,
+      metadata: {
+        original: originalUri,
+        modified: modifiedUri,
+      },
+      title,
+    }));
   }
 
   async shouldCloseResource(resource, openedResources): Promise<boolean> {

@@ -1,10 +1,8 @@
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { readUInt32LE, Emitter } from '@opensumi/ide-core-common';
+import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
-
-const writer = BinaryWriter({});
 
 /**
  * You can use `Buffer.from('\r\n\r\n')` to get this indicator.
@@ -15,14 +13,6 @@ export const indicator = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]);
  * sticky packet unpacking problems are generally problems at the transport layer.
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
-export function prependLengthField(content: Uint8Array) {
-  writer.reset();
-  writer.buffer(indicator);
-  writer.uint32(content.byteLength);
-  writer.buffer(content);
-  return writer.dump();
-}
-
 export class LengthFieldBasedFrameDecoder {
   protected dataEmitter = new Emitter<Uint8Array>();
   onData = this.dataEmitter.event;
@@ -166,5 +156,15 @@ export class LengthFieldBasedFrameDecoder {
   dispose() {
     this.dataEmitter.dispose();
     this.buffers.dispose();
+  }
+
+  static writer = BinaryWriter({});
+
+  static construct(content: Uint8Array) {
+    LengthFieldBasedFrameDecoder.writer.reset();
+    LengthFieldBasedFrameDecoder.writer.buffer(indicator);
+    LengthFieldBasedFrameDecoder.writer.uint32(content.byteLength);
+    LengthFieldBasedFrameDecoder.writer.buffer(content);
+    return LengthFieldBasedFrameDecoder.writer.dump();
   }
 }

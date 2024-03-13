@@ -10,7 +10,7 @@ import {
   MenuCommandDesc,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandRegistry, Disposable, IDisposable, localize, PreferenceScope, URI } from '@opensumi/ide-core-common';
+import { CommandRegistry, Disposable, IDisposable, PreferenceScope, URI, localize } from '@opensumi/ide-core-common';
 import { IEditor, IEditorDocumentModelService, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';

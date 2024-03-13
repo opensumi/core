@@ -1,9 +1,10 @@
 import ReconnectingWebSocket, { Options as ReconnectingWebSocketOptions, UrlProvider } from 'reconnecting-websocket';
-import type { ErrorEvent } from 'reconnecting-websocket';
 
 import { IDisposable } from '@opensumi/ide-core-common';
 
 import { BaseConnection } from './base';
+
+import type { ErrorEvent } from 'reconnecting-websocket';
 
 export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> {
   constructor(private socket: ReconnectingWebSocket) {
@@ -40,7 +41,7 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
       } else {
         throw new Error('unknown message type, expect Blob or ArrayBuffer, received: ' + typeof e.data);
       }
-      buffer.then((v) => cb(new Uint8Array(v)));
+      buffer.then((v) => cb(new Uint8Array(v, 0, v.byteLength)));
     };
 
     this.socket.addEventListener('message', handler);

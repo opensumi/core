@@ -55,6 +55,7 @@ renderApp({
     'editor.quickSuggestionsMaxCount': 50,
     'editor.scrollBeyondLastLine': false,
     'general.language': LOCALE_TYPES.EN_US,
+    'general.productIconTheme': 'opensumi-icons',
   },
   workspaceDir: '/test',
   extraContextProvider: (props) => (

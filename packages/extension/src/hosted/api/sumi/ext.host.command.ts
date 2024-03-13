@@ -1,4 +1,4 @@
-import { IExtHostCommands, Handler, PermittedHandler, IExtensionDescription } from '../../../common/vscode';
+import { Handler, IExtHostCommands, IExtensionDescription, PermittedHandler } from '../../../common/vscode';
 import { Disposable } from '../../../common/vscode/ext-types';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 import { createCommandsApiFactory as createVSCodeCommandsApiFactory } from '../vscode/ext.host.command';

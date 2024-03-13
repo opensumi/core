@@ -1,6 +1,6 @@
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { ISCMResource, ISCMResourceGroup, ISCMProvider } from './scm';
+import { ISCMProvider, ISCMResource, ISCMResourceGroup } from './scm';
 
 export interface ISCMRepositoryMenus {
   readonly titleMenu: IContextMenu;

@@ -1,8 +1,8 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection/lib/common/rpc-service';
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences';
-import { CommandService, Disposable, IDisposable, Uri, URI } from '@opensumi/ide-core-common';
+import { CommandService, Disposable, IDisposable, URI, Uri } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { IRemoteHostConverter, IRemoteOpenerBrowserService } from '../common';

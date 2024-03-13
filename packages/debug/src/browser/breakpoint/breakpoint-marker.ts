@@ -3,7 +3,7 @@ import btoa from 'btoa';
 import { Schemes, URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
-import { IRuntimeBreakpoint, IDebugBreakpoint } from '../../common';
+import { IDebugBreakpoint, IRuntimeBreakpoint } from '../../common';
 import { Marker } from '../markers';
 
 export const BREAKPOINT_KIND = 'breakpoint';
