@@ -9,13 +9,7 @@ import { localize, uuid } from '@opensumi/ide-core-common';
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
-import {
-  AISerivceType,
-  IChatAgentService,
-  IChatMessageStructure,
-  ISampleQuestions,
-  InstructionEnum,
-} from '../../common';
+import { AISerivceType, IChatAgentService, IChatMessageStructure, ISampleQuestions } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';

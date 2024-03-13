@@ -118,6 +118,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
         tooltip: '解释代码',
       },
       {
+        providerInputPlaceholder(value, editor) {
+          return '请输入或者粘贴代码';
+        },
         execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {},
       },
     );

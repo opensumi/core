@@ -65,6 +65,7 @@ export interface IChatSlashCommandItem {
 export type TChatSlashCommandSend = (value: string) => void;
 export interface IChatSlashCommandHandler {
   execute: (value: string, send: TChatSlashCommandSend, editor?: ICodeEditor) => MaybePromise<void>;
+  providerInputPlaceholder?: (value: string, editor?: ICodeEditor) => string;
 }
 
 export interface IChatFeatureRegistry {

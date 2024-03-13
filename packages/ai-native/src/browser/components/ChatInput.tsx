@@ -197,23 +197,28 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   }, [props.value]);
 
   useEffect(() => {
-    setTheme(props.theme || '');
+    setTheme(theme || '');
     textareaRef.current?.focus();
+    const defaultPlaceholder = localize('aiNative.chat.input.placeholder.default');
 
-    if (
-      theme === InstructionEnum.aiTestKey ||
-      theme === InstructionEnum.aiExplainKey ||
-      theme === InstructionEnum.aiOptimzeKey
-    ) {
-      setPlaceHolder(localize('aiNative.chat.input.placeholder.code'));
-    } else {
-      setPlaceHolder(localize('aiNative.chat.input.placeholder.default'));
+    if (!theme) {
+      setPlaceHolder(defaultPlaceholder);
+      return;
     }
-  }, [props.theme]);
+
+    const findCommandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(theme);
+    if (findCommandHandler && findCommandHandler.providerInputPlaceholder) {
+      const editor = monacoCommandRegistry.getActiveCodeEditor();
+      const placeholder = findCommandHandler.providerInputPlaceholder(value, editor);
+      setPlaceHolder(placeholder || defaultPlaceholder);
+    } else {
+      setPlaceHolder(defaultPlaceholder);
+    }
+  }, [theme, chatFeatureRegistry]);
 
   useEffect(() => {
-    acquireOptionsCheck(props.theme || '');
-  }, [props.theme]);
+    acquireOptionsCheck(theme || '');
+  }, [theme]);
 
   useEffect(() => {
     if (textareaRef && autoFocus) {
@@ -308,24 +313,20 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
 
     if (theme) {
-      const findCommand = chatFeatureRegistry.getAllSlashCommand().find((item) => item.nameWithSlash === theme);
+      const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(theme);
 
-      if (findCommand) {
-        const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandler(findCommand.name);
-
-        if (chatCommandHandler && chatCommandHandler.execute) {
-          const editor = monacoCommandRegistry.getActiveCodeEditor();
-          await chatCommandHandler.execute(
-            value,
-            (newValue: string) => {
-              setValue('');
-              onSend(theme + newValue);
-              setTheme('');
-            },
-            editor,
-          );
-          return;
-        }
+      if (chatCommandHandler && chatCommandHandler.execute) {
+        const editor = monacoCommandRegistry.getActiveCodeEditor();
+        await chatCommandHandler.execute(
+          value,
+          (newValue: string) => {
+            setValue('');
+            onSend(theme + newValue);
+            setTheme('');
+          },
+          editor,
+        );
+        return;
       }
     } else {
       setValue('');

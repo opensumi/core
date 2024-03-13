@@ -1408,7 +1408,6 @@ export const localizationBundle = {
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
     'aiNative.chat.input.placeholder.default': 'Ask Copilot or type / for commands',
-    'aiNative.chat.input.placeholder.code': 'Please enter or paste the code',
     'aiNative.chat.stop.immediately': 'I don’t think about it anymore. If you need anything, you can ask me anytime.',
     'aiNative.chat.error.response':
       'There are too many people interacting with me at the moment. Please try again later. Thank you for your understanding and support.',

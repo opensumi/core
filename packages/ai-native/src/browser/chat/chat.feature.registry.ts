@@ -44,6 +44,24 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
     return this.slashCommandsMap.get(name);
   }
 
+  public getSlashCommandHandlerBySlashName(slashName: string): IChatSlashCommandHandler | undefined {
+    const findCommand = this.getAllSlashCommand().find((item) => item.nameWithSlash === slashName);
+    if (!findCommand) {
+      return;
+    }
+
+    return this.getSlashCommandHandler(findCommand.name);
+  }
+
+  public getSlashCommandBySlashName(slashName: string): ChatSlashCommandItemModel | undefined {
+    const findCommand = this.getAllSlashCommand().find((item) => item.nameWithSlash === slashName);
+    if (!findCommand) {
+      return;
+    }
+
+    return this.getSlashCommand(findCommand.name);
+  }
+
   public getAllSlashCommand(): ChatSlashCommandItemModel[] {
     return Array.from(this.slashCommandsMap.values());
   }
