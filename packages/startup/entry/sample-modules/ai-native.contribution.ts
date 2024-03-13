@@ -122,7 +122,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
           return '请输入或者粘贴代码';
         },
         providerPrompt(value, editor) {
-          return `解释代码: \`\`\`\n${value}\n\`\`\``;
+          return `Explain code: \`\`\`\n${value}\n\`\`\``;
         },
         execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
           send(value);
@@ -136,7 +136,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
         description: '生成单测',
       },
       {
-        execute: () => {},
+        execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
+          send(value);
+        },
       },
     );
   }

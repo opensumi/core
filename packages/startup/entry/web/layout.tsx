@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { AI_CHAT_CONTAINER_VIEW_ID } from '@opensumi/ide-ai-native/lib/common';
 import { SlotRenderer } from '@opensumi/ide-core-browser';
 import { BoxPanel, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 
@@ -22,19 +21,11 @@ export function DefaultLayout() {
           <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
         </SplitPanel>
-        {/* <SlotRenderer
+        <SlotRenderer
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
           maxResize={480}
-          minResize={280}
-          minSize={0}
-        /> */}
-        <SlotRenderer
-          slot={AI_CHAT_CONTAINER_VIEW_ID}
-          isTabbar={true}
-          defaultSize={360}
-          maxResize={420}
           minResize={280}
           minSize={0}
         />
