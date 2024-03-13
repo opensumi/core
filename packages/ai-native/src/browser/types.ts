@@ -66,11 +66,11 @@ export type TChatSlashCommandSend = (value: string) => void;
 export interface IChatSlashCommandHandler {
   execute: (value: string, send: TChatSlashCommandSend, editor?: ICodeEditor) => MaybePromise<void>;
   providerInputPlaceholder?: (value: string, editor?: ICodeEditor) => string;
+  providerPrompt?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
 }
 
 export interface IChatFeatureRegistry {
   registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
-
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
 }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
 
-import { IChatWelcomeMessageContent, ISampleQuestions } from '../../common';
+import { AI_SLASH, IChatWelcomeMessageContent, ISampleQuestions } from '../../common';
 import { IChatFeatureRegistry, IChatSlashCommandHandler, IChatSlashCommandItem } from '../types';
 
 import { ChatSlashCommandItemModel, ChatWelcomeMessageModel } from './chat-model';
@@ -68,5 +68,26 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
 
   public getAllShortcutSlashCommand(): ChatSlashCommandItemModel[] {
     return this.getAllSlashCommand().filter((c) => c.isShortcut === true);
+  }
+
+  public parseSlashCommand(value: string): { value: string; nameWithSlash: string } {
+    if (value.startsWith(AI_SLASH)) {
+      const allSlashCommands = this.getAllSlashCommand();
+
+      for (const command of allSlashCommands) {
+        const { nameWithSlash } = command;
+        if (value.startsWith(nameWithSlash)) {
+          return {
+            value: value.slice(nameWithSlash.length),
+            nameWithSlash,
+          };
+        }
+      }
+    }
+
+    return {
+      value,
+      nameWithSlash: '',
+    };
   }
 }

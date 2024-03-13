@@ -7,7 +7,7 @@ import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native
 import { localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { AI_SLASH, IChatAgentService, InstructionEnum } from '../../common';
+import { AI_SLASH, IChatAgentService } from '../../common';
 import { ChatSlashCommandItemModel } from '../chat/chat-model';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { IChatFeatureRegistry, IChatSlashCommandItem } from '../types';
@@ -16,8 +16,6 @@ import styles from './components.module.less';
 
 const MAX_WRAPPER_HEIGHT = 160;
 const INSTRUCTION_BOTTOM = 8;
-
-const VALUE_START_WITH_THEME = /^\/(\s?)(ide|explain|comments|test|searchdoc|run|optimize)\s/i;
 
 interface IBlockProps extends IChatSlashCommandItem {
   command?: string;
@@ -235,17 +233,12 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       }
     }
 
-    const match = value.match(VALUE_START_WITH_THEME);
-    if (match) {
-      const matchValue = match[0];
-      const matchString = match[2].toLowerCase();
-      const resValue = value.replace(matchValue, '');
-      const matchTheme = Object.values(InstructionEnum).find((v) =>
-        v.trim().slice(2).toLowerCase() === matchString ? true : false,
-      );
-      if (matchTheme) {
-        setValue(resValue);
-        setTheme(matchTheme);
+    if (value.startsWith(AI_SLASH)) {
+      const { value: newValue, nameWithSlash } = chatFeatureRegistry.parseSlashCommand(value);
+
+      if (nameWithSlash) {
+        setValue(newValue);
+        setTheme(nameWithSlash);
         return;
       }
     }
@@ -280,7 +273,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         }
       }
     });
-  }, [textareaRef, value, enableOptions]);
+  }, [textareaRef, value, enableOptions, chatFeatureRegistry]);
 
   useEffect(() => {
     if (!value) {
@@ -335,8 +328,6 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     }
   }, [onSend, value, agentId, command, chatFeatureRegistry]);
 
-  const optionsList = useMemo(() => chatFeatureRegistry.getAllSlashCommand(), [chatFeatureRegistry]);
-
   const acquireOptionsCheck = useCallback(
     (themeValue: string, agentId?: string, command?: string) => {
       // 目前仅 ext 的 command 有 agentId，因此有 agentId，则说明是 ext 注册的
@@ -357,14 +348,9 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         setAgentId('');
         setCommand('');
 
-        // 设置 slash widget 块
-        const regex = /\/\s(\w+)\s/;
-        const match = themeValue.match(regex);
-        if (match) {
-          const keyword = match[0];
-          if (optionsList.find(({ nameWithSlash }) => nameWithSlash === keyword)) {
-            setTheme(keyword);
-          }
+        const findCommand = chatFeatureRegistry.getSlashCommandBySlashName(themeValue);
+        if (findCommand) {
+          setTheme(findCommand.nameWithSlash);
         } else {
           setTheme('');
         }
@@ -378,7 +364,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         }
       }
     },
-    [textareaRef],
+    [textareaRef, chatFeatureRegistry],
   );
 
   const optionsBottomPosition = useMemo(() => {

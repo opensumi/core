@@ -9,7 +9,8 @@ import { IAIReporter, runWhenIdle } from '@opensumi/ide-core-common';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { InstructionEnum } from '../../common/index';
+import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
+import { IChatFeatureRegistry } from '../types';
 
 import styles from './components.module.less';
 import { highLightLanguageSupport } from './highLight';
@@ -157,18 +158,19 @@ export const CodeBlockWrapperInput = ({
   agentId?: string;
   command?: string;
 }) => {
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
   const [tag, setTag] = useState<string>('');
   const [txt, setTxt] = useState<string>(text);
 
   React.useEffect(() => {
-    Object.values(InstructionEnum).find((str: string) => {
-      if (txt.startsWith(str)) {
-        setTag(str);
-        setTxt(txt.slice(str.length));
-        return;
-      }
-    });
-  }, [text]);
+    const { value, nameWithSlash } = chatFeatureRegistry.parseSlashCommand(text);
+
+    if (nameWithSlash) {
+      setTag(nameWithSlash);
+      setTxt(value);
+      return;
+    }
+  }, [text, chatFeatureRegistry]);
 
   return (
     <div className={styles.ai_chat_code_wrapper}>

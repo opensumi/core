@@ -308,6 +308,6 @@ export class ChatSlashCommandItemModel extends Disposable implements IChatSlashC
   }
 
   get nameWithSlash() {
-    return this.name.startsWith(`${AI_SLASH} `) ? this.name : `${AI_SLASH} ${this.name} `;
+    return this.name.startsWith(AI_SLASH) ? this.name : `${AI_SLASH}${this.name} `;
   }
 }

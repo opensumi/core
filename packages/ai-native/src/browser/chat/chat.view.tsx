@@ -6,6 +6,7 @@ import { CODICON_OWNER, IAIReporter, getExternalIcon, getIcon, useInjectable } f
 import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { localize, uuid } from '@opensumi/ide-core-common';
+import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
@@ -144,6 +145,7 @@ export const AIChatView = observer(() => {
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
+  const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
@@ -330,7 +332,22 @@ export const AIChatView = observer(() => {
 
       setLoading(true);
 
-      const userInput = await aiChatService.switchAIService(message as string, prompt);
+      const userInput = {
+        type: AISerivceType.GPT,
+        message: prompt || message,
+      };
+
+      const { nameWithSlash } = chatFeatureRegistry.parseSlashCommand(message);
+
+      if (nameWithSlash) {
+        const commandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(nameWithSlash);
+        if (commandHandler && commandHandler.providerPrompt) {
+          const editor = monacoCommandRegistry.getActiveCodeEditor();
+          const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
+
+          userInput.message = slashCommandPrompt;
+        }
+      }
 
       const startTime = +new Date();
       const relationId = aiReporter.start(reportType || userInput.type, {
@@ -360,7 +377,7 @@ export const AIChatView = observer(() => {
 
       await handleReply(userInput, replayCommandProps);
     },
-    [messageListData, containerRef, loading],
+    [messageListData, containerRef, loading, chatFeatureRegistry],
   );
 
   const handleReply = React.useCallback(
