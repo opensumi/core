@@ -112,10 +112,15 @@ interface Config {
    * default -1，it means disable
    */
   rpcMessageTimeout?: number;
+  collaborationOptions?: ICollaborationServerOpts;
 }
 
 export interface AppConfig extends Partial<Config> {
   marketplace: MarketplaceConfig;
+}
+
+export interface ICollaborationServerOpts {
+  port?: number;
 }
 
 export interface IServerAppOpts extends Partial<Config> {
