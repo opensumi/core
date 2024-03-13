@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { Component } from 'react';
 
 import { Icon } from '../icon';
 import warning from '../utils/warning';
@@ -15,7 +15,8 @@ export interface InputSelection {
   end: number;
 }
 
-export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
+export interface IInputBaseProps<T extends HTMLElement = HTMLInputElement>
+  extends Omit<React.InputHTMLAttributes<T>, 'size' | 'prefix'> {
   className?: string;
   autoFocus?: boolean;
   defaultValue?: string;
@@ -30,7 +31,7 @@ export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   /**
    * 处理按下 Enter
    */
-  onPressEnter?: React.KeyboardEventHandler<HTMLInputElement>;
+  onPressEnter?: React.KeyboardEventHandler<T>;
   /**
    * @default true
    * 保持 focus，即使点击到 addon 部分
@@ -77,7 +78,10 @@ function resolveOnChange(
   }
 }
 
-export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props, ref) => {
+export const Input = React.forwardRef<
+  HTMLTextAreaElement | HTMLInputElement,
+  IInputBaseProps<HTMLTextAreaElement | HTMLInputElement> & { as?: any }
+>((props, ref) => {
   const {
     defaultValue,
     className,
@@ -95,6 +99,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     onValueChange,
     onPressEnter,
     onKeyDown,
+    as: Component = 'input',
     ...restProps
   } = props;
 
@@ -204,7 +209,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     <div className={inputClx} style={wrapperStyle}>
       {addonRender(addonBefore, 'kt-input-addon-before')}
       <div className='kt-input-box'>
-        <input
+        <Component
           ref={inputRef}
           type='text'
           autoCapitalize='off'

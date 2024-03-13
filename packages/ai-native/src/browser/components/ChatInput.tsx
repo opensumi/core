@@ -2,7 +2,7 @@ import cls from 'classnames';
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
-import { Icon, Input, Popover, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import { Icon, Popover, TextArea, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
@@ -169,7 +169,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
   const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [focus, setFocus] = useState(false);
   const [showExpand, setShowExpand] = useState(false);
   const [isExpand, setIsExpand] = useState(false);
@@ -185,7 +185,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     setInputValue: (v: string) => {
       setValue(v);
       runWhenIdle(() => {
-        inputRef.current?.focus();
+        textareaRef.current?.focus();
       }, 120);
     },
   }));
@@ -198,7 +198,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
 
   useEffect(() => {
     setTheme(props.theme || '');
-    inputRef.current?.focus();
+    textareaRef.current?.focus();
 
     if (
       theme === InstructionEnum.aiTestKey ||
@@ -216,10 +216,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   }, [props.theme]);
 
   useEffect(() => {
-    if (inputRef && autoFocus) {
-      inputRef.current?.focus();
+    if (textareaRef && autoFocus) {
+      textareaRef.current?.focus();
     }
-  }, [inputRef, autoFocus, props.value]);
+  }, [textareaRef, autoFocus, props.value]);
 
   useEffect(() => {
     if (enableOptions) {
@@ -261,10 +261,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
 
     runWhenIdle(() => {
       // 自适应高度
-      if (inputRef && inputRef.current && value && !isExpand) {
-        inputRef.current.style.height = 0 + 'px';
-        const scrollHeight = inputRef.current.scrollHeight;
-        inputRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
+      if (textareaRef && textareaRef.current && value && !isExpand) {
+        textareaRef.current.style.height = 0 + 'px';
+        const scrollHeight = textareaRef.current.scrollHeight;
+        textareaRef.current.style.height = Math.min(scrollHeight, MAX_WRAPPER_HEIGHT) + 'px';
         const wapperHeight = Math.min(scrollHeight + 12, MAX_WRAPPER_HEIGHT);
 
         setWrapperHeight(wapperHeight);
@@ -275,7 +275,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         }
       }
     });
-  }, [inputRef, value, enableOptions]);
+  }, [textareaRef, value, enableOptions]);
 
   useEffect(() => {
     if (!value) {
@@ -344,12 +344,12 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         setTheme('');
         setAgentId(agentId);
         setCommand(command || '');
-        if (inputRef?.current) {
-          const inputValue = inputRef.current.value;
+        if (textareaRef?.current) {
+          const inputValue = textareaRef.current.value;
           if (inputValue === '@' || (command && inputValue === AI_SLASH)) {
             setValue('');
           }
-          runWhenIdle(() => inputRef.current?.focus());
+          runWhenIdle(() => textareaRef.current?.focus());
         }
       } else if (themeValue) {
         setIsShowOptions(false);
@@ -368,16 +368,16 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
           setTheme('');
         }
 
-        if (inputRef && inputRef.current) {
-          inputRef.current.focus();
-          const inputValue = inputRef.current.value;
+        if (textareaRef && textareaRef.current) {
+          textareaRef.current.focus();
+          const inputValue = textareaRef.current.value;
           if (inputValue.length === 1 && inputValue.startsWith(AI_SLASH)) {
             setValue('');
           }
         }
       }
     },
-    [inputRef],
+    [textareaRef],
   );
 
   const optionsBottomPosition = useMemo(() => {
@@ -395,7 +395,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         handleSend();
       }
     } else if (event.key === 'Backspace') {
-      if (inputRef.current?.selectionEnd === 0 && inputRef.current?.selectionStart === 0) {
+      if (textareaRef.current?.selectionEnd === 0 && textareaRef.current?.selectionStart === 0) {
         setTheme('');
         if (agentId) {
           if (command) {
@@ -414,7 +414,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const handleBlur = useCallback(() => {
     setFocus(false);
     setIsShowOptions(false);
-  }, [inputRef]);
+  }, [textareaRef]);
 
   const handleExpandClick = useCallback(() => {
     const expand = isExpand;
@@ -450,15 +450,14 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
           </Popover>
         </div>
       )}
-      <Input
-        ref={inputRef}
+      <TextArea
+        ref={textareaRef}
         placeholder={placeholder}
         wrapperStyle={{ height: wrapperHeight + 'px' }}
         style={{
           height: wrapperHeight - 12 + 2 + 'px',
         }}
         value={value}
-        type={'textarea'}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
         onBlur={handleBlur}
