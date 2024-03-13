@@ -21,9 +21,9 @@ import { ICodeEditor, ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 
 import {
-  COLLABORATION_PORT,
   CollaborationModuleContribution,
   CollaborationServiceForClientPath,
+  DEFAULT_COLLABORATION_PORT,
   ICollaborationService,
   ICollaborationServiceForClient,
   ROOM_NAME,
@@ -105,14 +105,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   initialize() {
     /**
      * 优先使用 appConfig.collaborationWsPath 配置
-     * 如果没有该配置才根据 wsPath 去转换端口
+     * 如果没有该配置才根据 wsPath 去转换端口，端口可以用 collaborationOpts.port 配置
      */
-    const { collaborationWsPath, wsPath } = this.appConfig;
+    const { collaborationWsPath, wsPath, collaborationOptions } = this.appConfig;
     let serverUrl: string | undefined = collaborationWsPath;
 
     if (!serverUrl) {
       const path = new URL(wsPath.toString());
-      path.port = String(COLLABORATION_PORT);
+      path.port = String(collaborationOptions?.port ?? DEFAULT_COLLABORATION_PORT);
 
       serverUrl = path.toString();
     }

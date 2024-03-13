@@ -6,7 +6,7 @@ import { Text as YText } from 'yjs';
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { EventBusImpl, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -90,11 +90,22 @@ describe('CollaborationService basic routines', () => {
       token: IEventBus,
       useClass: EventBusImpl,
     });
-    injector.addProviders({
+    injector.overrideProviders({
       token: AppConfig,
       useValue: {
         wsPath: { toString: () => 'ws://127.0.0.1:8080' },
+        collaborationOptions: {
+          port: 10010,
+        },
       },
+    });
+    injector.overrideProviders({
+      token: NodeAppConfig,
+      useValue: {
+        collaborationOptions: {
+          port: 10010,
+        },
+      } as NodeAppConfig,
     });
 
     injector.addProviders({
