@@ -1,6 +1,10 @@
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
-import { CancellationToken, MaybePromise } from '@opensumi/ide-core-common';
+import { CancellationToken, IAICompletionResultModel, MaybePromise } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
+
+import { CompletionRequestBean } from './inline-completions/model/competionModel';
+
+import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class ReplyResponse {
   constructor(readonly message: string) {}
@@ -52,4 +56,23 @@ export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
+  /**
+   * 通过中间件扩展部分 ai 能力
+   */
+  middleware?: IAIMiddleware;
+}
+
+export type IProvideInlineCompletionsSignature = (
+  this: void,
+  model: monaco.editor.ITextModel,
+  position: monaco.Position,
+  token: CancellationToken,
+  next: (reqBean: CompletionRequestBean) => MaybePromise<IAICompletionResultModel | null>,
+  completionRequestBean: CompletionRequestBean,
+) => MaybePromise<IAICompletionResultModel | null>;
+
+export interface IAIMiddleware {
+  language?: {
+    provideInlineCompletions?: IProvideInlineCompletionsSignature;
+  };
 }

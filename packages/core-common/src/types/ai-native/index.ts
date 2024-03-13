@@ -1,4 +1,4 @@
-import { CancellationToken } from '../utils';
+import { CancellationToken } from '../../utils';
 
 export interface IAINativeCapabilities {
   /**

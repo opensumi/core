@@ -12,9 +12,13 @@ import {
   KeybindingScope,
   getIcon,
 } from '@opensumi/ide-core-browser';
-import { AI_INLINE_CHAT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import {
+  AI_INLINE_CHAT_VISIBLE,
+  AI_INLINE_COMPLETION_REPORTER,
+  AI_INLINE_COMPLETION_VISIBLE,
+} from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { localize } from '@opensumi/ide-core-common';
+import { CommandService, localize } from '@opensumi/ide-core-common';
 import { AI_NATIVE_SETTING_GROUP_ID } from '@opensumi/ide-core-common/src/settings/ai-native';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
@@ -22,6 +26,8 @@ import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
+import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
+import { AICompletionsService } from './inline-completions/service/ai-completions.service';
 import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
 
 @Domain(
@@ -53,6 +59,15 @@ export class AINativeBrowserContribution
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
+
+  @Autowired(AICompletionsService)
+  private aiCompletionsService: AICompletionsService;
+
+  @Autowired(AIInlineCompletionsProvider)
+  private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   constructor() {
     this.registerFeature();
@@ -103,6 +118,25 @@ export class AINativeBrowserContribution
     commands.registerCommand(AI_INLINE_CHAT_VISIBLE, {
       execute: (value: boolean) => {
         this.aiNativeService.launchInlineChatVisible(value);
+      },
+    });
+
+    commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
+      execute: (relationId: string, sessionId: string, accept: boolean) => {
+        // 补全埋点统计
+        this.aiCompletionsService.report({ sessionId, accept, relationId });
+      },
+    });
+
+    commands.registerCommand(AI_INLINE_COMPLETION_VISIBLE, {
+      execute: async (visible: boolean) => {
+        if (!visible) {
+          await this.commandService.executeCommand('editor.action.inlineSuggest.hide');
+          this.aiCompletionsService.hideStatusBarItem();
+          this.aiInlineCompletionsProvider.resetContextKey();
+          this.aiInlineCompletionsProvider.cancelRequest();
+          this.aiCompletionsService.setVisibleCompletion(false);
+        }
       },
     });
   }
