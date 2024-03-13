@@ -33,7 +33,9 @@ import {
   KeyboardLayoutChangeNotifierService,
   KeyboardNativeLayoutService,
 } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 
+import { AIReporter } from '../ai-native/ai-reporter';
 import { ClientAppStateService } from '../application/application-state-service';
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -257,6 +259,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IDesignStyleService,
       useClass: DesignStyleService,
+    },
+    {
+      token: IAIReporter,
+      useClass: AIReporter,
     },
   ];
   injector.addProviders(...providers);

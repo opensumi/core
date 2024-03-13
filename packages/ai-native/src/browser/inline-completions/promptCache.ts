@@ -1,10 +1,5 @@
-import { createHash } from 'crypto';
-
-function hashString(str: string) {
-  const hash = createHash('sha256');
-  hash.update(str);
-  return hash.digest('hex');
-}
+import { Autowired, Injectable } from '@opensumi/di';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 const isCacheEnable = () => true;
 
@@ -14,7 +9,12 @@ const isCacheEnable = () => true;
  * 2、用prompt的hash值作为key
  * 3、缓存数量为10
  */
-class PromptCache {
+
+@Injectable()
+export class PromptCache {
+  @Autowired(IHashCalculateService)
+  private hashCalculateService: IHashCalculateService;
+
   private expireTime: number;
   private cacheMap: Map<string, any>;
   private size: number;
@@ -27,7 +27,7 @@ class PromptCache {
     if (!isCacheEnable()) {
       return null;
     }
-    const hash = hashString(prompt);
+    const hash = this.hashCalculateService.calculate(prompt);
     if (hash) {
       const res = this.cacheMap.get(hash) || null;
       if (!res) {
@@ -47,7 +47,7 @@ class PromptCache {
     if (!isCacheEnable()) {
       return false;
     }
-    const hash = hashString(prompt);
+    const hash = this.hashCalculateService.calculate(prompt);
     if (res === null) {
       return false;
     }
@@ -67,5 +67,3 @@ class PromptCache {
     return false;
   }
 }
-
-export default new PromptCache();

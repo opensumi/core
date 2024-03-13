@@ -12,7 +12,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { AINativeContextKey } from '../contextkey/ai-native.contextkey.service';
 
 import { CompletionRequestBean, InlayList, InlineCompletionItem } from './model/competionModel';
-import promptCache from './promptCache';
+import { PromptCache } from './promptCache';
 import { prePromptHandler, preSuffixHandler } from './provider';
 import { AICompletionsService } from './service/ai-completions.service';
 
@@ -33,16 +33,15 @@ export const getAcceptText = (cuont: number) => {
 };
 
 class RequestImp {
-  model: monaco.editor.ITextModel;
-  _isManual: boolean;
   isCancelFlag: boolean;
-  aiCompletionsService: AICompletionsService;
   // todo
-  constructor(model: monaco.editor.ITextModel, _isManual: boolean, aiCompletionsService: AICompletionsService) {
-    this.model = model;
-    this._isManual = _isManual;
+  constructor(
+    public model: monaco.editor.ITextModel,
+    public _isManual: boolean,
+    public aiCompletionsService: AICompletionsService,
+    public promptCache: PromptCache,
+  ) {
     this.isCancelFlag = false;
-    this.aiCompletionsService = aiCompletionsService;
   }
   // 发送请求
   async sendRequest(
@@ -103,7 +102,7 @@ class RequestImp {
       return [];
     }
     let rs: IAICompletionResultModel | null;
-    const cacheData = promptCache.getCache(prompt);
+    const cacheData = this.promptCache.getCache(prompt);
 
     const relationId = aiReporter.start(AISerivceType.Completion, { message: AISerivceType.Completion });
     this.aiCompletionsService.setLastRelationId(relationId);
@@ -148,7 +147,7 @@ class RequestImp {
     }
 
     if (rs && rs.codeModelList && rs.codeModelList.length > 0) {
-      promptCache.setCache(prompt, rs);
+      this.promptCache.setCache(prompt, rs);
     }
     let codeModelSize = 0;
     if (rs.codeModelList !== null) {
@@ -287,6 +286,9 @@ export class AIInlineCompletionsProvider extends WithEventBus implements Provide
   private aiNativeContextKey: AINativeContextKey;
 
   private editor: IEditor;
+
+  @Autowired()
+  private promptCache: PromptCache;
 
   isManual: boolean;
   isDelEvent: boolean;
@@ -445,7 +447,7 @@ export class AIInlineCompletionsProvider extends WithEventBus implements Provide
       };
     }
     // 放入队列
-    const requestImp = new RequestImp(model, _isManual, this.aiCompletionsService);
+    const requestImp = new RequestImp(model, _isManual, this.aiCompletionsService, this.promptCache);
     this.reqStack.addReq(requestImp);
     // 如果是自动补全等待300ms
     if (!_isManual) {
