@@ -6,6 +6,7 @@ import { IClipboardService, getIcon, useInjectable, uuid } from '@opensumi/ide-c
 import { Popover } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { IAIReporter, runWhenIdle } from '@opensumi/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { insertSnippetWithMonacoEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
@@ -49,10 +50,13 @@ export const CodeEditorWithHighlight = ({ input, language, relationId }) => {
   return (
     <div className={styles.monaco_wrapper}>
       <div className={styles.action_toolbar}>
-        <Popover id={`ai-chat-inser-${useUUID}`} title='插入代码'>
+        <Popover id={`ai-chat-inser-${useUUID}`} title={localize('aiNative.chat.code.insert')}>
           <EnhanceIcon className={getIcon('insert')} onClick={() => handleInsert()} />
         </Popover>
-        <Popover id={`ai-chat-copy-${useUUID}`} title={isCoping ? '复制成功' : '复制代码'}>
+        <Popover
+          id={`ai-chat-copy-${useUUID}`}
+          title={localize(isCoping ? 'aiNative.chat.code.copy.success' : 'aiNative.chat.code.copy')}
+        >
           <EnhanceIcon className={getIcon('copy')} onClick={() => handleCopy()} />
         </Popover>
       </div>

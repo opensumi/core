@@ -1411,6 +1411,9 @@ export const localizationBundle = {
     'aiNative.chat.stop.immediately': 'I don’t think about it anymore. If you need anything, you can ask me anytime.',
     'aiNative.chat.error.response':
       'There are too many people interacting with me at the moment. Please try again later. Thank you for your understanding and support.',
+    'aiNative.chat.code.insert': 'Insert code',
+    'aiNative.chat.code.copy': 'Copy code',
+    'aiNative.chat.code.copy.success': 'Copied successfully',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.discard.title': 'Discard',

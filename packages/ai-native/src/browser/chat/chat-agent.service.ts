@@ -1,4 +1,4 @@
-import { flatMap } from 'lodash';
+import flatMap from 'lodash/flatMap';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { CancellationToken, Disposable, Emitter, IDisposable, ILogger, toDisposable } from '@opensumi/ide-core-common';
