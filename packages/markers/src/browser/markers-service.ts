@@ -1,9 +1,8 @@
-'use strict';
 import { makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';
 import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType } from '@opensumi/ide-theme';
 import { Themable } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
@@ -38,6 +37,8 @@ export class MarkerService extends Themable implements IMarkerService {
   @Autowired(MarkersContextKey)
   markersContextKey: MarkersContextKey;
 
+  viewReady = new Deferred<void>();
+
   // marker filter 事件
   protected readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
@@ -61,6 +62,7 @@ export class MarkerService extends Themable implements IMarkerService {
 
   initContextKey(dom: HTMLDivElement) {
     this.markersContextKey.initScopedContext(dom);
+    this.viewReady.resolve();
   }
 
   @OnEvent(EditorGroupOpenEvent)

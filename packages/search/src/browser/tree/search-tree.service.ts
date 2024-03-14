@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser';
 import {
+  Deferred,
   Disposable,
   DisposableStore,
   Emitter,
@@ -214,6 +215,8 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
 
+  viewReady = new Deferred<void>();
+
   constructor() {
     super();
     this.addDispose(this.rangeHighlightDecorations);
@@ -236,6 +239,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
 
   initContextKey(dom: HTMLDivElement) {
     this.contextKey.initScopedContext(dom);
+    this.viewReady.resolve();
   }
 
   removeHighlightRange() {

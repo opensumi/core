@@ -194,6 +194,8 @@ export class MarkerModelService {
     }
   };
 
+  isDirtyTree = false;
+
   async refresh() {
     await this.whenReady;
 
@@ -201,6 +203,25 @@ export class MarkerModelService {
       runWhenIdle(() => {
         this.treeModel.root.refresh();
       });
+    } else {
+      this.isDirtyTree = true;
+    }
+  }
+
+  activate() {
+    if (this.markerService.contextKey) {
+      this.markerService.contextKey.markersTreeVisibility.set(true);
+
+      if (this.isDirtyTree) {
+        this.refresh();
+        this.isDirtyTree = false;
+      }
+    }
+  }
+
+  deactivate() {
+    if (this.markerService.contextKey) {
+      this.markerService.contextKey.markersTreeVisibility.set(false);
     }
   }
 
