@@ -5,9 +5,9 @@ export const SearchViewFocusedKey = new RawContextKey<boolean>('searchViewletFoc
 export const SearchInputBoxFocusedKey = new RawContextKey<boolean>('searchInputBoxFocus', false);
 export const ReplaceInputBoxFocusedKey = new RawContextKey<boolean>('replaceInputBoxFocus', false);
 export const HasSearchResults = new RawContextKey<boolean>('hasSearchResult', false);
+export const SearchViewVisibleKey = new RawContextKey<boolean>('searchViewletVisible', true);
 
 // not impliments
-export const SearchViewVisibleKey = new RawContextKey<boolean>('searchViewletVisible', true);
 export const InputBoxFocusedKey = new RawContextKey<boolean>('inputBoxFocus', false);
 export const PatternIncludesFocusedKey = new RawContextKey<boolean>('patternIncludesInputBoxFocus', false);
 export const PatternExcludesFocusedKey = new RawContextKey<boolean>('patternExcludesInputBoxFocus', false);

@@ -87,6 +87,8 @@ export class SearchModelService extends Disposable {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
+  public treeIsDirty = false;
+
   constructor() {
     super();
     this._whenReady = this.initTreeModel();
@@ -145,7 +147,12 @@ export class SearchModelService extends Disposable {
         } else {
           this.searchTreeService.contextKey.hasSearchResults.set(false);
         }
-        this.refresh();
+
+        if (this.searchTreeService.contextKey.searchViewVisibleKey) {
+          this.refresh();
+        } else {
+          this.treeIsDirty = true;
+        }
       }),
     );
 
@@ -314,6 +321,10 @@ export class SearchModelService extends Disposable {
 
   async refresh() {
     await this.whenReady;
+    if (!this.searchTreeService.contextKey.searchViewVisibleKey) {
+      return;
+    }
+
     runWhenIdle(() => {
       this.treeModel.root.refresh();
     });
@@ -333,6 +344,23 @@ export class SearchModelService extends Disposable {
       .withScheme(Schemes.internal)
       .withFragment(REPLACE_PREVIEW)
       .withQuery(JSON.stringify({ scheme: fileResource.scheme }));
+  }
+
+  activate() {
+    if (this.searchTreeService.contextKey) {
+      this.searchTreeService.contextKey.searchViewVisibleKey.set(true);
+    }
+
+    if (this.treeIsDirty) {
+      this.refresh();
+      this.treeIsDirty = false;
+    }
+  }
+
+  deactivate() {
+    if (this.searchTreeService.contextKey) {
+      this.searchTreeService.contextKey.searchViewVisibleKey.set(false);
+    }
   }
 
   dispose() {

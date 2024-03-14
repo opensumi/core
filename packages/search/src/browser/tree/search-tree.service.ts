@@ -209,7 +209,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(SearchContextKey)
-  private readonly searchContextKey: SearchContextKey;
+  public readonly searchContextKey: SearchContextKey;
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
