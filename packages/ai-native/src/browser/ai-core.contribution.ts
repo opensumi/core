@@ -1,6 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
-  AIBackSerivcePath,
   AINativeConfigService,
   AINativeSettingSectionsId,
   AI_NATIVE_SETTING_GROUP_ID,
@@ -12,7 +11,6 @@ import {
   ComponentRegistry,
   ContributionProvider,
   Domain,
-  IAIBackService,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
@@ -54,13 +52,14 @@ import { AINativeCoreContribution, IChatFeatureRegistry, IInlineChatFeatureRegis
 )
 export class AINativeBrowserContribution
   implements
-  ClientAppContribution,
-  BrowserEditorContribution,
-  CommandContribution,
-  SettingContribution,
-  KeybindingContribution,
-  ComponentContribution,
-  SlotRendererContribution {
+    ClientAppContribution,
+    BrowserEditorContribution,
+    CommandContribution,
+    SettingContribution,
+    KeybindingContribution,
+    ComponentContribution,
+    SlotRendererContribution
+{
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -90,9 +89,6 @@ export class AINativeBrowserContribution
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
-
-  @Autowired(AIBackSerivcePath)
-  private readonly aiBackService: IAIBackService;
 
   constructor() {
     this.registerFeature();

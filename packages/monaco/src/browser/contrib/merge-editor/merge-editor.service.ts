@@ -244,13 +244,11 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       const model = this.resultView.getModel();
 
       const allRanges = this.resultView.getAllDiffRanges();
-      // 使用了 ai 冲突点的数量
       const useAiConflictPointNum = allRanges.filter(
         (range) => range.getIntelligentStateModel().isComplete === true,
       ).length;
       let receiveNum = 0;
 
-      // 生成之后没有做二次修改才算采纳
       allRanges
         .filter((range) => range.isAiConflictPoint && range.getIntelligentStateModel().isComplete)
         .forEach((range) => {
@@ -328,7 +326,6 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       let resolveLen = 0;
       let pointLen = conflictPointRanges.length;
 
-      // 错误码列表，如果出现以下错误码，AI 将停止处理
       const errorCodesToStop = [20, 42, 46, 51, 53, 54, 999];
       for await (const range of conflictPointRanges) {
         const flushRange = this.resultView.getFlushRange(range) || range;

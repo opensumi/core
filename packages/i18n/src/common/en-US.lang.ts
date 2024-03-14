@@ -1424,11 +1424,15 @@ export const localizationBundle = {
     'aiNative.chat.enter.send': 'Enter send',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
-    'aiNative.inline.chat.operate.discard.title': 'Discard',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
 
+    'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
+    'aiNative.resolve.conflict.dialog.detection':
+      'It is detected that you have made modifications. Regeneration will overwrite\nyour modifications. Are you sure to regenerate?',
+
+    'aiNative.operate.discard.title': 'Discard',
     'aiNative.operate.afresh.title': 'Afresh',
     'aiNative.operate.stop.title': 'Stop',
     // #endregion AI Native

@@ -1,10 +1,13 @@
 import cls from 'classnames';
 import React from 'react';
 
+import { localize } from '@opensumi/ide-core-common';
+
 import { Button } from '../button';
 import { MessageType } from '../common';
 import { IconContext, getIcon } from '../icon';
 import { IOverlayProps, Overlay } from '../overlay';
+
 import './styles.less';
 
 export type ModalType = 'basic' | 'confirm' | 'info';
@@ -31,18 +34,13 @@ export interface IDialogProps extends IOverlayProps {
   keyboard?: boolean;
 }
 
-export interface IDialogContentProps {
-  icon?: IconDesc;
-  type?: ModalType;
-}
-
 const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
   <>
     <Button size='large' onClick={onCancel} type='secondary'>
-      {cancelText || '取消'}
+      {cancelText || localize('ButtonCancel')}
     </Button>
     <Button size='large' onClick={onOk}>
-      {okText || '确定'}
+      {okText || localize('ButtonOK')}
     </Button>
   </>
 );

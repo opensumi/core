@@ -8,7 +8,7 @@ import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/comp
 import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
 
-import { BaseInlineContentWidget } from '../../../ai-native/content-widget';
+import { BaseInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
 import { LineRange } from '../model/line-range';
 import { AI_RESOLVE_REGENERATE_ACTIONS, AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
@@ -72,8 +72,8 @@ export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
             color: 'var(--notificationsWarningIcon-foreground)',
             className: 'question-circle',
           }}
-          title={'你确定要重新生成吗？'}
-          message={'检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。'}
+          title={localize('aiNative.resolve.conflict.dialog.afresh')}
+          message={localize('aiNative.resolve.conflict.dialog.detection')}
           visible={true}
           messageType={MessageType.Warning}
         />
@@ -91,7 +91,7 @@ export const WapperAiInlineResult = (props: IWapperAiInlineResultProps) => {
         content={popoverContent}
         position={PopoverPosition.bottom}
       >
-        重新生成
+        {localize('aiNative.operate.afresh.title')}
       </Popover>
     ),
     [isVisiablePopover],
@@ -143,8 +143,8 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
   protected iconItems(): IAiInlineResultIconItemsProps[] {
     return [
       {
-        icon: 'diuqi',
-        text: '丢弃',
+        icon: 'discard',
+        text: localize('aiNative.operate.discard.title'),
         onClick: () => {
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,

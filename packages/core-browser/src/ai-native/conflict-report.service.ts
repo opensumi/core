@@ -17,7 +17,11 @@ export class MergeConflictReportService extends Disposable {
   public record(
     uniqueId: string,
     rt: Partial<Exclude<MergeConflictRT, 'type'>>,
-  ): Partial<MergeConflictRT> & { relationId: string } {
+  ): Partial<MergeConflictRT> & { relationId?: string } {
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve === false) {
+      return rt;
+    }
+
     let relationId = '';
 
     if (this.unique2RelationMap.has(uniqueId)) {
@@ -40,8 +44,12 @@ export class MergeConflictReportService extends Disposable {
   }
 
   public report(uniqueId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>): void {
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve === false) {
+      return;
+    }
+
     const reportInfo = this.record(uniqueId, rt);
-    this.aiReporter.end(reportInfo.relationId, reportInfo);
+    this.aiReporter.end(reportInfo.relationId!, reportInfo);
   }
 
   public reportIncrementNum(uniqueId: string, type: 'clickAllNum' | 'clickNum' | 'aiOutputNum' | 'cancelNum'): void {

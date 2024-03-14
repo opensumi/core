@@ -132,7 +132,11 @@ const MergeActions: React.FC = () => {
   }, [mergeEditorService]);
 
   const handleOpenTradition = useCallback(() => {
-    // TODO
+    const uri = mergeEditorService.getResultEditor()?.getModel()?.uri;
+    if (uri) {
+      const fileUri = uri.with({ scheme: 'file', path: uri.path, query: '' });
+      commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, fileUri);
+    }
   }, [mergeEditorService]);
 
   const handleReset = useCallback(async () => {
