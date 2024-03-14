@@ -95,6 +95,13 @@ class MockLogServiceForClient {
 function getBrowserMockInjector() {
   const injector = new MockInjector();
   useMockStorage(injector);
+  return injector;
+}
+
+/**
+ * add mock providers for browser
+ */
+export function patchBrowserInjector(injector: Injector) {
   injector.addProviders(
     {
       token: IContextKeyService,
@@ -123,11 +130,12 @@ function getBrowserMockInjector() {
       useClass: MockLogger,
     },
   );
-  return injector;
 }
 
 export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
   const injector = inj || getBrowserMockInjector();
+  patchBrowserInjector(injector);
+
   const app = new ClientApp({ modules, injector } as any);
   afterAll(() => {
     app.injector.disposeAll();
