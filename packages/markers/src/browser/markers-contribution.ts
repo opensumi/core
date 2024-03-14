@@ -60,24 +60,18 @@ export class MarkersContribution
         }),
       );
 
-      this.markerModelService.whenReady.then(() => {
-        if (this.markerService.contextKey) {
-          this.markerService.contextKey.markersTreeVisibility.set(handler.isActivated());
-        }
+      this.markerService.viewReady.promise.then(() => {
+        this.markerService.contextKey.markersTreeVisibility.set(handler.isActivated());
       });
 
       this.addDispose(
         handler.onActivate(() => {
-          if (this.markerService.contextKey) {
-            this.markerService.contextKey.markersTreeVisibility.set(true);
-          }
+          this.markerModelService.activate();
         }),
       );
       this.addDispose(
         handler.onInActivate(() => {
-          if (this.markerService.contextKey) {
-            this.markerService.contextKey.markersTreeVisibility.set(false);
-          }
+          this.markerModelService.deactivate();
         }),
       );
     }
