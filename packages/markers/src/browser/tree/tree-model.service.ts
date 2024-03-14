@@ -8,6 +8,8 @@ import { IMarkerService } from '../../common/types';
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree-node.defined';
 import styles from './tree-node.module.less';
 
+import type { MarkerService } from '../markers-service';
+
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
@@ -23,7 +25,7 @@ export class MarkerTreeModel extends TreeModel {
 @Injectable()
 export class MarkerModelService {
   @Autowired(IMarkerService)
-  private readonly markerService: IMarkerService;
+  private readonly markerService: MarkerService;
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
@@ -194,9 +196,12 @@ export class MarkerModelService {
 
   async refresh() {
     await this.whenReady;
-    runWhenIdle(() => {
-      this.treeModel.root.refresh();
-    });
+
+    if (this.markerService.contextKey && this.markerService.contextKey.markersTreeVisibility.get()) {
+      runWhenIdle(() => {
+        this.treeModel.root.refresh();
+      });
+    }
   }
 
   dispose() {
