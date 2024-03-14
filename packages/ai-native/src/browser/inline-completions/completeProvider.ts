@@ -142,7 +142,7 @@ class RequestImp {
         isStop: true,
         completionNum: 0,
       });
-      this.aiCompletionsService.updateStatusBarItem('补全已取消', false);
+      this.aiCompletionsService.updateStatusBarItem('canceled', false);
       return [];
     }
 
