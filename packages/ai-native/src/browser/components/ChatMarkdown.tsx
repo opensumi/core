@@ -1,6 +1,6 @@
 import cls from 'classnames';
-import React, { useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom/client';
 
 import { IMarkedOptions, marked } from '@opensumi/ide-components/lib/utils';
 import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
@@ -22,6 +22,7 @@ interface MarkdownProps {
 export const ChatMarkdown = (props: MarkdownProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
+  const [renderDom, setRenderDom] = useState<ReactDOM.Root | null>();
 
   useEffect(() => {
     const element = ref.current;
@@ -40,15 +41,16 @@ export const ChatMarkdown = (props: MarkdownProps) => {
       const id = defaultGenerator.nextId();
       const container = document.createElement('div');
       const language = postProcessCodeBlockLanguageId(lang);
-      ReactDOM.render(
+      const dom = ReactDOM.createRoot(container);
+      dom.render(
         <ConfigProvider value={appConfig}>
           <div className={styles.code_block}>
             <div className={styles.code_language}>{language}</div>
             <CodeEditorWithHighlight input={code} language={language} relationId={props.relationId} />
           </div>
         </ConfigProvider>,
-        container,
       );
+      setRenderDom(dom);
       codeBlocks.push([id, container]);
       return `<div class="code" data-code="${id}">${escape(code)}</div>`;
     };
@@ -87,9 +89,9 @@ export const ChatMarkdown = (props: MarkdownProps) => {
     });
 
     return () => {
-      codeBlocks.forEach(([, renderedElement]) => {
-        ReactDOM.unmountComponentAtNode(renderedElement);
-      });
+      if (renderDom) {
+        renderDom.unmount();
+      }
     };
   }, [props.markdown]);
 
