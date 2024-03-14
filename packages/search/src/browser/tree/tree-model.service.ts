@@ -148,7 +148,7 @@ export class SearchModelService extends Disposable {
           this.searchTreeService.contextKey.hasSearchResults.set(false);
         }
 
-        if (this.searchTreeService.contextKey.searchViewVisibleKey) {
+        if (this.searchTreeService.contextKey.searchViewVisibleKey.get()) {
           this.refresh();
         } else {
           this.treeIsDirty = true;
@@ -321,13 +321,11 @@ export class SearchModelService extends Disposable {
 
   async refresh() {
     await this.whenReady;
-    if (!this.searchTreeService.contextKey.searchViewVisibleKey) {
-      return;
+    if (this.searchTreeService.contextKey && this.searchTreeService.contextKey.searchViewVisibleKey.get()) {
+      runWhenIdle(() => {
+        this.treeModel.root.refresh();
+      });
     }
-
-    runWhenIdle(() => {
-      this.treeModel.root.refresh();
-    });
   }
 
   collapsedAll() {
