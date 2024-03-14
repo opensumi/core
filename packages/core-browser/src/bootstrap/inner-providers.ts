@@ -264,6 +264,10 @@ export function injectInnerProviders(injector: Injector) {
       token: IDesignStyleService,
       useClass: DesignStyleService,
     },
+    {
+      token: IAIReporter,
+      useClass: AIReporter,
+    },
   ];
   injector.addProviders(...providers);
 }
