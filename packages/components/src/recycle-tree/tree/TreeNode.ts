@@ -1485,47 +1485,58 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    */
   private handleWatchEvent = async (event: IWatcherEvent) => {
     this.watcher.notifyWillProcessWatchEvent(this, event);
-    if (event.type === WatchEvent.Moved) {
-      const { oldPath, newPath } = event;
-      if (typeof oldPath !== 'string') {
-        throw new TypeError('Expected oldPath to be a string');
-      }
-      if (typeof newPath !== 'string') {
-        throw new TypeError('Expected newPath to be a string');
-      }
-      if (Path.isRelative(oldPath)) {
-        throw new TypeError('oldPath must be absolute');
-      }
-      if (Path.isRelative(newPath)) {
-        throw new TypeError('newPath must be absolute');
-      }
-      this.transferItem(oldPath, newPath);
-    } else if (event.type === WatchEvent.Added) {
-      const { node } = event;
-      if (!TreeNode.is(node)) {
-        throw new TypeError('Expected node to be a TreeNode');
-      }
-      this.insertItem(node);
-    } else if (event.type === WatchEvent.Removed) {
-      const { path } = event;
-      const pathObject = new Path(path);
-      const dirName = pathObject.dir.toString();
-      const name = pathObject.base.toString();
-      if (dirName === this.path && !!this.children) {
-        const item = this.children.find((c) => c.name === name);
-        if (item) {
-          this.unlinkItem(item);
+
+    switch (event.type) {
+      case WatchEvent.Moved: {
+        const { oldPath, newPath } = event;
+        if (typeof oldPath !== 'string') {
+          throw new TypeError('Expected oldPath to be a string');
         }
+        if (typeof newPath !== 'string') {
+          throw new TypeError('Expected newPath to be a string');
+        }
+        if (Path.isRelative(oldPath)) {
+          throw new TypeError('oldPath must be absolute');
+        }
+        if (Path.isRelative(newPath)) {
+          throw new TypeError('newPath must be absolute');
+        }
+        this.transferItem(oldPath, newPath);
+        break;
       }
-    } else {
-      // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
-      if (!this.isItemVisibleAtRootSurface(this)) {
-        this.isExpanded = false;
-        this._children = null;
-      } else {
-        await this.refresh();
+      case WatchEvent.Added: {
+        const { node } = event;
+        if (!TreeNode.is(node)) {
+          throw new TypeError('Expected node to be a TreeNode');
+        }
+        this.insertItem(node);
+        break;
       }
+
+      case WatchEvent.Removed: {
+        const { path } = event;
+        const pathObject = new Path(path);
+        const dirName = pathObject.dir.toString();
+        const name = pathObject.base.toString();
+        if (dirName === this.path && !!this.children) {
+          const item = this.children.find((c) => c.name === name);
+          if (item) {
+            this.unlinkItem(item);
+          }
+        }
+        break;
+      }
+      default:
+        // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
+        if (!this.isItemVisibleAtRootSurface(this)) {
+          this.isExpanded = false;
+          this._children = null;
+        } else {
+          await this.refresh();
+        }
+        break;
     }
+
     this.watcher.notifyDidProcessWatchEvent(this, event);
   };
 
