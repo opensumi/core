@@ -19,6 +19,7 @@ import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-co
 import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -178,6 +179,13 @@ describe('FileTreeModelService should be work', () => {
         token: IContextKeyService,
         useClass: MockContextKeyService,
       },
+      {
+        token: IMainLayoutService,
+        useValue: {
+          bottomExpanded: true,
+        },
+      },
+
       {
         token: IApplicationService,
         useValue: {
