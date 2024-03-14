@@ -2,14 +2,19 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AINativeConfigService,
   AINativeSettingSectionsId,
+  AppConfig,
   ClientAppContribution,
   CommandContribution,
   CommandRegistry,
+  ComponentContribution,
+  ComponentRegistry,
   ContributionProvider,
   Domain,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  SlotRendererContribution,
+  SlotRendererRegistry,
   getIcon,
 } from '@opensumi/ide-core-browser';
 import {
@@ -24,11 +29,16 @@ import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
+import { AI_CHAT_CONTAINER_VIEW_ID } from '../common';
+
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
+import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { AIChatLayoutConfig } from './layout/layout-config';
+import { AIChatTabRenderer } from './layout/tabbar.view';
+import { AINativeCoreContribution, IChatFeatureRegistry, IInlineChatFeatureRegistry } from './types';
 
 @Domain(
   ClientAppContribution,
@@ -36,6 +46,8 @@ import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
   CommandContribution,
   SettingContribution,
   KeybindingContribution,
+  ComponentContribution,
+  SlotRendererContribution,
 )
 export class AINativeBrowserContribution
   implements
@@ -43,16 +55,24 @@ export class AINativeBrowserContribution
     BrowserEditorContribution,
     CommandContribution,
     SettingContribution,
-    KeybindingContribution
+    KeybindingContribution,
+    ComponentContribution,
+    SlotRendererContribution
 {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
+
+  @Autowired(IChatFeatureRegistry)
+  private readonly chatFeatureRegistry: IChatFeatureRegistry;
 
   @Autowired(AINativeService)
   private readonly aiNativeService: AINativeService;
@@ -75,12 +95,28 @@ export class AINativeBrowserContribution
 
   initialize() {
     this.aiNativeConfigService.enable();
+
+    const supportsChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
+
+    let layoutConfig = this.appConfig.layoutConfig;
+
+    if (supportsChatAssistant) {
+      layoutConfig = {
+        ...layoutConfig,
+        ...AIChatLayoutConfig,
+      };
+    }
+
+    this.appConfig.layoutConfig = layoutConfig;
   }
 
   private registerFeature() {
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerInlineChatFeature) {
         contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
+      }
+      if (contribution.registerChatFeature) {
+        contribution.registerChatFeature(this.chatFeatureRegistry);
       }
     });
   }
@@ -138,6 +174,25 @@ export class AINativeBrowserContribution
         }
       },
     });
+  }
+
+  registerRenderer(registry: SlotRendererRegistry): void {
+    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
+      registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
+    }
+  }
+
+  registerComponent(registry: ComponentRegistry): void {
+    registry.register(
+      AI_CHAT_CONTAINER_VIEW_ID,
+      {
+        component: AIChatView,
+        id: AI_CHAT_CONTAINER_VIEW_ID,
+      },
+      {
+        containerId: AI_CHAT_CONTAINER_VIEW_ID,
+      },
+    );
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
