@@ -14,17 +14,17 @@ import {
 } from '@opensumi/ide-core-common';
 import {
   IInputValidation,
+  ISCMActionButtonDescriptor,
+  ISCMHistoryItem,
+  ISCMHistoryItemChange,
+  ISCMHistoryItemGroup,
+  ISCMHistoryOptions,
+  ISCMHistoryProvider,
   ISCMProvider,
   ISCMRepository,
   ISCMResource,
   ISCMResourceDecorations,
   ISCMResourceGroup,
-  ISCMHistoryProvider,
-  ISCMActionButtonDescriptor,
-  ISCMHistoryItemGroup,
-  ISCMHistoryOptions,
-  ISCMHistoryItem,
-  ISCMHistoryItemChange,
   SCMService,
 } from '@opensumi/ide-scm/lib/common';
 
@@ -33,12 +33,12 @@ import { VSCommand } from '../../../common/vscode/model.api';
 import {
   IExtHostSCMShape,
   IMainThreadSCMShape,
+  SCMActionButtonDto,
   SCMGroupFeatures,
+  SCMHistoryItemDto,
+  SCMHistoryItemGroupDto,
   SCMProviderFeatures,
   SCMRawResourceSplices,
-  SCMHistoryItemDto,
-  SCMActionButtonDto,
-  SCMHistoryItemGroupDto,
 } from '../../../common/vscode/scm';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {

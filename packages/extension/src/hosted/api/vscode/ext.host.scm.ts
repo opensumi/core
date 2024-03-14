@@ -39,11 +39,11 @@ import {
   CommandDto,
   IExtHostSCMShape,
   IMainThreadSCMShape,
+  SCMHistoryItemChangeDto,
+  SCMHistoryItemDto,
   SCMRawResource,
   SCMRawResourceSplice,
   SCMRawResourceSplices,
-  SCMHistoryItemChangeDto,
-  SCMHistoryItemDto,
 } from '../../../common/vscode/scm';
 
 import { ExtHostCommands } from './ext.host.command';
