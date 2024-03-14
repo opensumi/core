@@ -7,15 +7,14 @@ import {
   Disposable,
   Event,
   IDisposable,
-  ILogServiceClient,
   ILoggerManagerClient,
   MaybePromise,
   Schemes,
-  SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AIInlineChatContentWidget } from '../common';
@@ -52,14 +51,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(IInlineChatFeatureRegistry)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
-
-  private logger: ILogServiceClient;
-
-  constructor() {
-    super();
-
-    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
-  }
 
   private aiDiffWidget: AIDiffWidget;
   private aiInlineContentWidget: AIInlineContentWidget;
@@ -198,7 +189,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         const { execute, providerDiffPreviewStrategy } = handler;
 
         if (execute) {
-          execute(editor);
+          execute(monacoEditor);
           this.disposeAllWidget();
         }
 
@@ -207,7 +198,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
             .setStartPosition(selection.startLineNumber, 1)
             .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-          await this.handleDiffPreviewStrategy(editor, providerDiffPreviewStrategy, crossSelection);
+          await this.handleDiffPreviewStrategy(monacoEditor, providerDiffPreviewStrategy, crossSelection);
 
           this.aiInlineChatDisposed.addDispose(
             this.aiInlineChatService.onDiscard(() => {
@@ -217,7 +208,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
           this.aiInlineChatDisposed.addDispose(
             this.aiInlineChatService.onRegenerate(async () => {
-              await this.handleDiffPreviewStrategy(editor, providerDiffPreviewStrategy, crossSelection);
+              await this.handleDiffPreviewStrategy(monacoEditor, providerDiffPreviewStrategy, crossSelection);
             }),
           );
         }
@@ -226,14 +217,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async handleDiffPreviewStrategy(
-    editor: IEditor,
+    monacoEditor: ICodeEditor,
     strategy: (
-      editor: IEditor,
+      editor: ICodeEditor,
       cancelToken: CancellationToken,
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
     crossSelection: monaco.Selection,
   ): Promise<string | undefined> {
-    const model = editor.monacoEditor.getModel();
+    const model = monacoEditor.getModel();
     if (!model || !crossSelection) {
       return;
     }
@@ -243,7 +234,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const crossCode = model.getValueInRange(crossSelection);
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
 
-    const response = await strategy(editor, this.aiNativeService.cancelIndicator.token);
+    const response = await strategy(monacoEditor, this.aiNativeService.cancelIndicator.token);
 
     if (this.aiInlineChatDisposed.disposed || CancelResponse.is(response)) {
       this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
@@ -262,13 +253,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     answer = this.formatAnswer(answer, crossCode);
-    this.visibleDiffWidget(editor, crossSelection, answer);
+    this.visibleDiffWidget(monacoEditor, crossSelection, answer);
 
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineChatService.onAccept(() => {
-        editor.monacoEditor
-          .getModel()
-          ?.pushEditOperations(null, [{ range: crossSelection, text: answer! }], () => null);
+        monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: answer! }], () => null);
         runWhenIdle(() => {
           this.disposeAllWidget();
         });
@@ -276,7 +265,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiDiffWidget.onMaxLincCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model.getLineCount()) {
-            const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+            const lineHeight = monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
             this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
           }
         });
@@ -306,9 +295,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       .join('\n');
   }
 
-  private visibleDiffWidget(editor: IEditor, crossSelection: monaco.Selection, answer: string): void {
-    editor.monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
-    this.aiDiffWidget = this.injector.get(AIDiffWidget, [editor.monacoEditor, crossSelection, answer]);
+  private visibleDiffWidget(monacoEditor: ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
+    monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
+    this.aiDiffWidget = this.injector.get(AIDiffWidget, [monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
     this.aiDiffWidget.showByLine(
       crossSelection.startLineNumber - 1,

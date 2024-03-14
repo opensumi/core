@@ -196,6 +196,10 @@ export interface IBasicRecycleTreeProps {
    * 指定 RecycleTree 的名字
    */
   treeName?: string;
+  /**
+   * 底部是否留白，默认 true
+   */
+  leaveBottomBlank?: boolean;
 }
 
 export interface IBasicNodeProps {

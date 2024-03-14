@@ -6,7 +6,7 @@ import Koa from 'koa';
 import KoaRouter from 'koa-router';
 import Static from 'koa-static';
 
-import { Injector } from '@opensumi/di';
+import { Injector, Provider } from '@opensumi/di';
 import { Deferred } from '@opensumi/ide-core-common';
 import { IServerAppOpts, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 import {
@@ -22,6 +22,7 @@ export async function startServer(
   arg1: NodeModule[] | Partial<IServerAppOpts>,
   options?: {
     mountStaticPath?: string;
+    injector?: Provider;
   },
 ) {
   const app = new Koa();
