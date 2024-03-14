@@ -4,11 +4,11 @@ import { DisposableCollection, Deferred, Emitter, Event, URI, runWhenIdle } from
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { IMarkerService } from '../../common/types';
+import type { MarkerService } from '../markers-service';
 
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree-node.defined';
 import styles from './tree-node.module.less';
 
-import type { MarkerService } from '../markers-service';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -194,6 +194,8 @@ export class MarkerModelService {
     }
   };
 
+  isDirtyTree = false;
+
   async refresh() {
     await this.whenReady;
 
@@ -201,6 +203,25 @@ export class MarkerModelService {
       runWhenIdle(() => {
         this.treeModel.root.refresh();
       });
+    } else {
+      this.isDirtyTree = true;
+    }
+  }
+
+  activate() {
+    if (this.markerService.contextKey) {
+      this.markerService.contextKey.markersTreeVisibility.set(true);
+
+      if (this.isDirtyTree) {
+        this.refresh();
+        this.isDirtyTree = false;
+      }
+    }
+  }
+
+  deactivate() {
+    if (this.markerService.contextKey) {
+      this.markerService.contextKey.markersTreeVisibility.set(false);
     }
   }
 
