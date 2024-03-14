@@ -60,7 +60,7 @@ export class MarkersContribution
         }),
       );
 
-      this.markerService.viewReady.promise.then(() => {
+      this.markerService.viewReady.then(() => {
         this.markerService.contextKey.markersTreeVisibility.set(handler.isActivated());
       });
 

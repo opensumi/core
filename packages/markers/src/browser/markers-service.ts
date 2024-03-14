@@ -37,7 +37,10 @@ export class MarkerService extends Themable implements IMarkerService {
   @Autowired(MarkersContextKey)
   markersContextKey: MarkersContextKey;
 
-  viewReady = new Deferred<void>();
+  private viewReadyDeferred = new Deferred<void>();
+  get viewReady() {
+    return this.viewReadyDeferred.promise;
+  }
 
   // marker filter 事件
   protected readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
@@ -62,7 +65,7 @@ export class MarkerService extends Themable implements IMarkerService {
 
   initContextKey(dom: HTMLDivElement) {
     this.markersContextKey.initScopedContext(dom);
-    this.viewReady.resolve();
+    this.viewReadyDeferred.resolve();
   }
 
   @OnEvent(EditorGroupOpenEvent)

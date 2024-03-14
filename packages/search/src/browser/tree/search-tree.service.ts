@@ -215,7 +215,11 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
 
-  viewReady = new Deferred<void>();
+  private viewReadyDeferered = new Deferred<void>();
+
+  get viewReady() {
+    return this.viewReadyDeferered.promise;
+  }
 
   constructor() {
     super();
@@ -239,7 +243,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
 
   initContextKey(dom: HTMLDivElement) {
     this.contextKey.initScopedContext(dom);
-    this.viewReady.resolve();
+    this.viewReadyDeferered.resolve();
   }
 
   removeHighlightRange() {

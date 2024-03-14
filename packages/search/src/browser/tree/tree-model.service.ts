@@ -148,11 +148,7 @@ export class SearchModelService extends Disposable {
           this.searchTreeService.contextKey.hasSearchResults.set(false);
         }
 
-        if (this.searchTreeService.contextKey.searchViewVisibleKey.get()) {
-          this.refresh();
-        } else {
-          this.treeIsDirty = true;
-        }
+        this.refresh();
       }),
     );
 
@@ -321,11 +317,15 @@ export class SearchModelService extends Disposable {
 
   async refresh() {
     await this.whenReady;
-    if (this.searchTreeService.contextKey && this.searchTreeService.contextKey.searchViewVisibleKey.get()) {
-      runWhenIdle(() => {
+    await this.searchTreeService.viewReady;
+
+    runWhenIdle(() => {
+      if (this.searchTreeService.contextKey && this.searchTreeService.contextKey.searchViewVisibleKey.get()) {
         this.treeModel.root.refresh();
-      });
-    }
+      } else {
+        this.treeIsDirty = true;
+      }
+    });
   }
 
   collapsedAll() {
