@@ -154,6 +154,7 @@ export class TreeNode implements ITreeNode {
   protected _watcher: ITreeWatcher;
   protected _tree: ITree;
   protected _visible: boolean;
+  protected _path: string;
 
   protected constructor(
     tree: ITree,
@@ -192,6 +193,8 @@ export class TreeNode implements ITreeNode {
 
   set parent(node: ICompositeTreeNode | undefined) {
     this._parent = node;
+    // 节点 `parent` 变化，更新当前节点的 `path` 属性
+    this._path = '';
   }
 
   get type() {
@@ -224,14 +227,20 @@ export class TreeNode implements ITreeNode {
 
   set name(name: string) {
     this.addMetadata('name', name);
+    // 节点 `name` 变化，更新当前节点的 `path` 属性
+    this._path = '';
   }
 
   // 节点绝对路径
   get path(): string {
-    if (!this.parent) {
-      return new Path(`${Path.separator}${this.name}`).toString();
+    if (!this._path) {
+      if (!this.parent) {
+        this._path = new Path(`${Path.separator}${this.name}`).toString();
+      } else {
+        this._path = new Path(this.parent.path).join(this.name).toString();
+      }
     }
-    return new Path(this.parent.path).join(this.name).toString();
+    return this._path;
   }
 
   get accessibilityInformation(): IAccessibilityInformation {
@@ -289,7 +298,7 @@ export class TreeNode implements ITreeNode {
     // 一个普通节点必含有父节点，根节点不允许任何操作
     const prevParent = this._parent as CompositeTreeNode;
     if (to === null || !CompositeTreeNode.is(to)) {
-      this._parent = undefined;
+      this.parent = undefined;
       this.dispose();
       return;
     }
@@ -299,13 +308,13 @@ export class TreeNode implements ITreeNode {
     this._depth = to.depth + 1;
 
     if (didChangeParent || name !== this.name) {
-      this.addMetadata('name', name);
+      this.name = name;
       if (didChangeParent) {
         this._watcher.notifyWillChangeParent(this, prevParent, to);
       }
       if (this.parent) {
         (this.parent as CompositeTreeNode).unlinkItem(this, true);
-        this._parent = to;
+        this.parent = to;
         (this.parent as CompositeTreeNode).insertItem(this);
       }
       if (didChangeParent) {
@@ -476,6 +485,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       this.addMetadata('name', name);
     }
+    // 节点 `name` 变化，更新当前节点的 `path` 属性
+    this._path = '';
   }
 
   get name() {
