@@ -42,8 +42,8 @@ import {
   SCMRawResource,
   SCMRawResourceSplice,
   SCMRawResourceSplices,
-  SCMHistoryItemDto,
   SCMHistoryItemChangeDto,
+  SCMHistoryItemDto,
 } from '../../../common/vscode/scm';
 
 import { ExtHostCommands } from './ext.host.command';

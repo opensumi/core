@@ -19,23 +19,23 @@ import {
   ISCMResource,
   ISCMResourceDecorations,
   ISCMResourceGroup,
-  SCMService,
   ISCMHistoryProvider,
   ISCMActionButtonDescriptor,
   ISCMHistoryItemGroup,
   ISCMHistoryOptions,
   ISCMHistoryItem,
   ISCMHistoryItemChange,
+  SCMService,
 } from '@opensumi/ide-scm/lib/common';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { VSCommand } from '../../../common/vscode/model.api';
 import {
   IExtHostSCMShape,
+  IMainThreadSCMShape,
   SCMGroupFeatures,
   SCMProviderFeatures,
   SCMRawResourceSplices,
-  IMainThreadSCMShape,
   SCMHistoryItemDto,
   SCMActionButtonDto,
   SCMHistoryItemGroupDto,
