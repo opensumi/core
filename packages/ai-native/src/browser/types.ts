@@ -96,7 +96,6 @@ export interface AINativeCoreContribution {
    * 通过中间件扩展部分 ai 能力
    */
   middleware?: IAIMiddleware;
-
   /*
    * 注册 chat 面板相关功能
    */

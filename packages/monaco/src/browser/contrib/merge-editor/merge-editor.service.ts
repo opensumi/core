@@ -329,7 +329,7 @@ export class MergeEditorService extends Disposable implements IMergeEditorServic
       const errorCodesToStop = [20, 42, 46, 51, 53, 54, 999];
       for await (const range of conflictPointRanges) {
         const flushRange = this.resultView.getFlushRange(range) || range;
-        const result = await this.actionsManager.handleAiConflictResolve(flushRange, false, true);
+        const result = await this.actionsManager.handleAiConflictResolve(flushRange, { isRegenerate: false });
         if (this.isCancelAllAiResolveConflict) {
           this.isCancelAllAiResolveConflict = false;
           return;

@@ -180,7 +180,7 @@ const MergeActions: React.FC = () => {
           <span>{localize('mergeEditor.open.tradition')}</span>
         </Button>
         <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
-          <Icon icon={'diuqi'} />
+          <Icon icon={'discard'} />
           <span>{localize('mergeEditor.reset')}</span>
         </Button>
         {isSupportAiResolve() && (

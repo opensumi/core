@@ -276,8 +276,9 @@ export class ActionsManager extends Disposable {
    */
   public async handleAiConflictResolve(
     flushRange: LineRange,
-    isRegenerate = false,
-    isFormat = false,
+    options: {
+      isRegenerate: boolean;
+    },
   ): Promise<{ isSuccess: boolean; isCancel: boolean; errorCode: number; errorMsg: string } | undefined> {
     if (!this.resultView) {
       return;
@@ -319,7 +320,7 @@ export class ActionsManager extends Disposable {
     const resolveConflictResult = await this.resultView.requestAiResolveConflict(
       codeAssemble,
       flushRange,
-      isRegenerate,
+      !!options?.isRegenerate,
     );
 
     this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false }, false);
@@ -450,7 +451,9 @@ export class ActionsManager extends Disposable {
         if ((action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) && this.resultView) {
           const flushRange = this.resultView.getFlushRange(range) || range;
 
-          const result = await this.handleAiConflictResolve(flushRange, action === AI_RESOLVE_REGENERATE_ACTIONS, true);
+          const result = await this.handleAiConflictResolve(flushRange, {
+            isRegenerate: action === AI_RESOLVE_REGENERATE_ACTIONS,
+          });
 
           if (result && !result.isSuccess && !result.isCancel) {
             this.debounceMessageWraning(result.errorCode);
