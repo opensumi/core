@@ -1406,12 +1406,26 @@ export const localizationBundle = {
     'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
 
     // #region AI Native
+    'aiNative.chat.ai.assistant.name': 'AI Assistant',
+    'aiNative.chat.input.placeholder.default': 'Ask Copilot or type / for commands',
+    'aiNative.chat.stop.immediately': 'I don’t think about it anymore. If you need anything, you can ask me anytime.',
+    'aiNative.chat.error.response':
+      'There are too many people interacting with me at the moment. Please try again later. Thank you for your understanding and support.',
+    'aiNative.chat.code.insert': 'Insert code',
+    'aiNative.chat.code.copy': 'Copy code',
+    'aiNative.chat.code.copy.success': 'Copied successfully',
+    'aiNative.chat.expand.unfullscreen': 'unfullscreen',
+    'aiNative.chat.expand.fullescreen': 'fullescreen',
+    'aiNative.chat.enter.send': 'Enter send',
+
     'aiNative.inline.chat.operate.check.title': 'Check',
     'aiNative.inline.chat.operate.discard.title': 'Discard',
-    'aiNative.inline.chat.operate.afresh.title': 'Afresh',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+
+    'aiNative.operate.afresh.title': 'Afresh',
+    'aiNative.operate.stop.title': 'Stop',
     // #endregion AI Native
 
     // #endregion merge editor

@@ -1175,12 +1175,25 @@ export const localizationBundle = {
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     // #region AI Native
+    'aiNative.chat.ai.assistant.name': 'AI 研发助手',
+    'aiNative.chat.input.placeholder.default': '可以问我任何问题，或键入主题 "/" ',
+    'aiNative.chat.stop.immediately': '我先不想了，有需要可以随时问我',
+    'aiNative.chat.error.response': '当前与我互动的人太多，请稍后再试，感谢您的理解与支持',
+    'aiNative.chat.code.insert': '插入代码',
+    'aiNative.chat.code.copy': '复制代码',
+    'aiNative.chat.code.copy.success': '复制成功',
+    'aiNative.chat.expand.unfullscreen': '收起',
+    'aiNative.chat.expand.fullescreen': '展开全屏',
+    'aiNative.chat.enter.send': 'Enter 发送',
+
     'aiNative.inline.chat.operate.check.title': '采纳',
     'aiNative.inline.chat.operate.discard.title': '丢弃',
-    'aiNative.inline.chat.operate.afresh.title': '重新生成',
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
+
+    'aiNative.operate.afresh.title': '重新生成',
+    'aiNative.operate.stop.title': '停止',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
