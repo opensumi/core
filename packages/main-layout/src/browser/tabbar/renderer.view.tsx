@@ -45,6 +45,7 @@ export const TabRendererBase: FC<{
       tabbarService.registerContainer(component.options!.containerId, component);
     });
     tabbarService.updatePanelVisibility();
+    tabbarService.ensureViewReady();
   }, [components]);
 
   useEffect(() => {

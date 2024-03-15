@@ -227,6 +227,9 @@ export class TabbarService extends WithEventBus {
       show = this.containersMap.size > 0;
     }
     this.updatePanel(show);
+  }
+
+  public ensureViewReady() {
     if (isDefined(this.barSize) && isDefined(this.panelSize)) {
       this.viewReady.resolve();
     } else {
@@ -234,7 +237,6 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  // 原有的 viewReady 依赖 updatePanelVisibility 方法的同步渲染逻辑
   // 这里通过 panelSize 及 barSize 两个值去判断视图是否渲染完成
   public updatePanelSize(value: number) {
     this.panelSize = value;
@@ -243,15 +245,15 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  public getBarSize() {
-    return this.barSize;
-  }
-
   public updateBarSize(value: number) {
     this.barSize = value;
     if (isDefined(this.panelSize) && this.shouldWaitForViewRender) {
       this.viewReady.resolve();
     }
+  }
+
+  public getBarSize() {
+    return this.barSize;
   }
 
   public updateTabInMoreKey(containerId: string, value: boolean) {
