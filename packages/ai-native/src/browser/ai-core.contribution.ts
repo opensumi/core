@@ -25,7 +25,12 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { CommandService } from '@opensumi/ide-core-common';
+import {
+  ChatFeatureRegistryToken,
+  CommandService,
+  InlineChatFeatureRegistryToken,
+  ResolveConflictRegistryToken,
+} from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
@@ -39,7 +44,12 @@ import { AIInlineCompletionsProvider } from './inline-completions/completeProvid
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
 import { AIChatLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer } from './layout/tabbar.view';
-import { AINativeCoreContribution, IChatFeatureRegistry, IInlineChatFeatureRegistry } from './types';
+import {
+  AINativeCoreContribution,
+  IChatFeatureRegistry,
+  IInlineChatFeatureRegistry,
+  IResolveConflictRegistry,
+} from './types';
 
 @Domain(
   ClientAppContribution,
@@ -69,11 +79,14 @@ export class AINativeBrowserContribution
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
 
-  @Autowired(IInlineChatFeatureRegistry)
+  @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: IInlineChatFeatureRegistry;
 
-  @Autowired(IChatFeatureRegistry)
+  @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: IChatFeatureRegistry;
+
+  @Autowired(ResolveConflictRegistryToken)
+  private readonly resolveConflictRegistry: IResolveConflictRegistry;
 
   @Autowired(AINativeService)
   private readonly aiNativeService: AINativeService;
@@ -118,6 +131,9 @@ export class AINativeBrowserContribution
       }
       if (contribution.registerChatFeature) {
         contribution.registerChatFeature(this.chatFeatureRegistry);
+      }
+      if (contribution.registerResolveConflictFeature) {
+        contribution.registerResolveConflictFeature(this.resolveConflictRegistry);
       }
     });
   }

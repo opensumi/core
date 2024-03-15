@@ -10,11 +10,13 @@ import {
   IDisposable,
   ILogServiceClient,
   ILoggerManagerClient,
+  InlineChatFeatureRegistryToken,
   MaybePromise,
   Schemes,
   SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
+import { CancelResponse, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { ICodeEditor } from '@opensumi/ide-monaco';
@@ -25,14 +27,7 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import {
-  AINativeCoreContribution,
-  CancelResponse,
-  ErrorResponse,
-  IAIMiddleware,
-  IInlineChatFeatureRegistry,
-  ReplyResponse,
-} from './types';
+import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inline-chat.service';
 import { AIInlineContentWidget } from './widget/inline-chat/inline-content-widget';
@@ -61,7 +56,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IBrowserCtxMenu)
   private readonly ctxMenuRenderer: DesignBrowserCtxMenuService;
 
-  @Autowired(IInlineChatFeatureRegistry)
+  @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   @Autowired(AINativeCoreContribution)

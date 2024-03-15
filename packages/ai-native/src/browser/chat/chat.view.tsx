@@ -5,13 +5,12 @@ import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elemen
 import { CODICON_OWNER, getExternalIcon, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { localize, uuid } from '@opensumi/ide-core-common';
-import { IAIReporter } from '@opensumi/ide-core-common';
+import { AISerivceType, ChatFeatureRegistryToken, IAIReporter, localize, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
-import { AISerivceType, IChatAgentService, IChatMessageStructure, ISampleQuestions } from '../../common';
+import { IChatAgentService, IChatMessageStructure, ISampleQuestions } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -19,7 +18,6 @@ import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { StreamMsgWrapper } from '../components/StreamMsg';
 import { Thinking } from '../components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
-import { IChatFeatureRegistry } from '../types';
 
 import { ChatFeatureRegistry } from './chat.feature.registry';
 import styles from './chat.module.less';
@@ -60,7 +58,7 @@ const ME_NAME = '';
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<ChatService>(ChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const [sampleQuestions, setSampleQuestions] = React.useState<ISampleQuestions[]>([]);
 
@@ -145,7 +143,7 @@ export const AIChatView = observer(() => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
 
   const containerRef = React.useRef<HTMLDivElement>(null);

@@ -1,5 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { AISerivceType, Disposable, IAIReporter, MergeConflictRT } from '@opensumi/ide-core-common';
+import {
+  AISerivceType,
+  Disposable,
+  IAIReporter,
+  MergeConflictEditorMode,
+  MergeConflictRT,
+} from '@opensumi/ide-core-common';
 
 import { AINativeConfigService } from './ai-config.service';
 
@@ -32,7 +38,7 @@ export class MergeConflictReportService extends Disposable {
         ...rt,
         msgType: AISerivceType.MergeConflict,
         message: AISerivceType.MergeConflict,
-        editorMode: rt.editorMode || 'traditional',
+        editorMode: rt.editorMode || MergeConflictEditorMode.traditional,
       }).relationId!;
       this.unique2RelationMap.set(uniqueId, relationId);
     }

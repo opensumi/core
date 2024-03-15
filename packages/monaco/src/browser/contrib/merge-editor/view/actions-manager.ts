@@ -3,7 +3,7 @@ import debounce from 'lodash/debounce';
 import { Injectable } from '@opensumi/di';
 import { message } from '@opensumi/ide-components';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
-import { Disposable, Event } from '@opensumi/ide-core-common';
+import { CancelResponse, Disposable, ErrorResponse, Event, ReplyResponse } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
@@ -316,9 +316,8 @@ export class ActionsManager extends Disposable {
 
     this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickNum');
 
-    const codeAssemble = `<<<<<<< HEAD\n${currentValue}\n||||||| base\n${baseValue}\n>>>>>>>\n${incomingValue}`;
     const resolveConflictResult = await this.resultView.requestAiResolveConflict(
-      codeAssemble,
+      { base: baseValue || '', current: currentValue || '', incoming: incomingValue || '' },
       flushRange,
       !!options?.isRegenerate,
     );
@@ -326,8 +325,8 @@ export class ActionsManager extends Disposable {
     this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false }, false);
     skeletonDecorationDispose();
 
-    if (resolveConflictResult && resolveConflictResult.data) {
-      const answerCode = resolveConflictResult.data;
+    if (ReplyResponse.is(resolveConflictResult)) {
+      const answerCode = (resolveConflictResult as ReplyResponse).message;
 
       this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true, answerCode }, true);
       this.applyLineRangeEdits([{ range: flushRange, text: answerCode }]);
@@ -343,13 +342,22 @@ export class ActionsManager extends Disposable {
 
     this.resultView!.updateDecorations().updateActions();
 
-    if (resolveConflictResult?.isCancel) {
+    if (CancelResponse.is(resolveConflictResult)) {
       this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'cancelNum');
       return {
         isSuccess: false,
         isCancel: true,
-        errorCode: resolveConflictResult.errorCode || 0,
-        errorMsg: resolveConflictResult.errorMsg || '',
+        errorCode: 0,
+        errorMsg: '',
+      };
+    }
+
+    if (ErrorResponse.is(resolveConflictResult)) {
+      return {
+        isSuccess: false,
+        isCancel: false,
+        errorCode: (resolveConflictResult as ErrorResponse).error || 0,
+        errorMsg: (resolveConflictResult as ErrorResponse).message || '',
       };
     }
 

@@ -2,11 +2,16 @@ import React from 'react';
 
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native/index';
 import {
+  CancelResponse,
   CancellationToken,
   Deferred,
+  ErrorResponse,
   IAICompletionResultModel,
   IDisposable,
+  IResolveConflictHandler,
   MaybePromise,
+  MergeConflictEditorMode,
+  ReplyResponse,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 
@@ -15,32 +20,6 @@ import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
 
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
-export class ReplyResponse {
-  constructor(readonly message: string) {}
-
-  static is(response: any): boolean {
-    return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
-  }
-}
-
-export class ErrorResponse {
-  constructor(readonly error: any, readonly message?: string) {}
-
-  static is(response: any): boolean {
-    return response instanceof ErrorResponse || (typeof response === 'object' && response.error !== undefined);
-  }
-}
-
-export class CancelResponse {
-  readonly cancellation: boolean = true;
-
-  constructor(readonly message?: string) {}
-
-  static is(response: any): boolean {
-    return response instanceof CancelResponse || (typeof response === 'object' && response.cancellation !== undefined);
-  }
-}
 
 export interface InlineChatHandler {
   /**
@@ -55,9 +34,6 @@ export interface InlineChatHandler {
     cancelToken: CancellationToken,
   ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
 }
-
-export const IInlineChatFeatureRegistry = Symbol('IInlineChatFeatureRegistry');
-export const IChatFeatureRegistry = Symbol('IChatFeatureRegistry');
 
 export interface IInlineChatFeatureRegistry {
   registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void;
@@ -84,6 +60,13 @@ export interface IChatFeatureRegistry {
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
 }
 
+export interface IResolveConflictRegistry {
+  registerResolveConflictProvider(
+    editorMode: keyof typeof MergeConflictEditorMode,
+    handler: IResolveConflictHandler,
+  ): void;
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -100,6 +83,10 @@ export interface AINativeCoreContribution {
    * 注册 chat 面板相关功能
    */
   registerChatFeature?(registry: IChatFeatureRegistry): void;
+  /*
+   * 注册智能解决冲突相关功能
+   */
+  registerResolveConflictFeature?(registry: IResolveConflictRegistry): void;
 }
 
 export interface IChatComponentConfig {
@@ -107,8 +94,6 @@ export interface IChatComponentConfig {
   component: React.ComponentType<Record<string, unknown>>;
   initialProps: Record<string, unknown>;
 }
-
-export const IChatAgentViewService = Symbol('IChatAgentViewService');
 
 export interface IChatAgentViewService {
   registerChatComponent(component: IChatComponentConfig): IDisposable;

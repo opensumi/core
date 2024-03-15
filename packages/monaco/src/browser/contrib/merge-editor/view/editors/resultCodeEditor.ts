@@ -11,7 +11,16 @@ import {
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
-import { AIBackSerivcePath, IAIBackService, IAIBackServiceResponse } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  ChatResponse,
+  IAIBackService,
+  IAIBackServiceResponse,
+  IConflictContentMetadata,
+  IInternalResolveConflictRegistry,
+  MergeConflictEditorMode,
+  ResolveConflictRegistryToken,
+} from '@opensumi/ide-core-common';
 import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import {
@@ -129,6 +138,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
 
   protected aiBackService: IAIBackService;
+  protected resolveConflictRegistry: IInternalResolveConflictRegistry;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -150,6 +160,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       this.aiBackService = injector.get(AIBackSerivcePath);
+      this.resolveConflictRegistry = injector.get(ResolveConflictRegistryToken);
     }
   }
 
@@ -185,22 +196,27 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public async requestAiResolveConflict(
-    codePromptBean: string,
+    metadata: IConflictContentMetadata,
     range: LineRange,
     isRegenerate = false,
-  ): Promise<IAIBackServiceResponse | undefined> {
-    if (this.aiBackService) {
-      let prompt = `你是一个智能解决代码冲突的专家，我遇到了一个代码的冲突，请仔细思考后给我解决冲突后最匹配的一个结果。注意，你需要理解代码语义后再给出答案。以下是代码中的冲突部分: \n ${codePromptBean}`;
-
-      if (isRegenerate) {
-        const newContent = this.getModel()!.getValueInRange(range.toRange());
-        prompt += `\n当前的解决冲突后的代码是 \n ${newContent}，但是我不够满意，希望给出另一种解决方案`;
-      }
-
-      return this.aiBackService.request(prompt, { type: 'resolveConflict' }, this.createRequestToken(range.id).token);
+  ): Promise<ChatResponse | undefined> {
+    if (!this.resolveConflictRegistry) {
+      return;
     }
 
-    return;
+    const handler = this.resolveConflictRegistry.getThreeWayHandler();
+
+    if (!handler) {
+      return;
+    }
+
+    if (isRegenerate) {
+      const newContent = this.getModel()!.getValueInRange(range.toRange());
+      metadata.base = newContent;
+    }
+
+    const response = await handler.providerRequest(metadata, { isRegenerate }, this.createRequestToken(range.id).token);
+    return response;
   }
 
   // 生成 cancel token
@@ -747,7 +763,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     runWhenIdle(() => {
       const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
-      this.mergeConflictReportService.record(this.getUri(), { conflictPointNum: aiConflictNum, editorMode: '3way' });
+      this.mergeConflictReportService.record(this.getUri(), {
+        conflictPointNum: aiConflictNum,
+        editorMode: MergeConflictEditorMode['3way'],
+      });
     });
   }
 }

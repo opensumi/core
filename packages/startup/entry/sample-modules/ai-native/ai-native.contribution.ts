@@ -1,15 +1,21 @@
 import { Autowired } from '@opensumi/di';
 import {
   AINativeCoreContribution,
-  CancelResponse,
-  ErrorResponse,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
-  ReplyResponse,
+  IResolveConflictRegistry,
   TChatSlashCommandSend,
 } from '@opensumi/ide-ai-native/lib/browser/types';
+import { mergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
-import { AIBackSerivcePath, IAIBackService } from '@opensumi/ide-core-common';
+import {
+  AIBackSerivcePath,
+  CancelResponse,
+  ErrorResponse,
+  IAIBackService,
+  MergeConflictEditorMode,
+  ReplyResponse,
+} from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
@@ -141,5 +147,45 @@ export class AiNativeContribution implements AINativeCoreContribution {
         },
       },
     );
+  }
+
+  registerResolveConflictFeature(registry: IResolveConflictRegistry): void {
+    registry.registerResolveConflictProvider(MergeConflictEditorMode['3way'], {
+      providerRequest: async (contentMetadata, options, token) => {
+        const { isRegenerate } = options;
+        const cancelController = new AbortController();
+        const { signal } = cancelController;
+
+        token.onCancellationRequested(() => {
+          cancelController.abort();
+        });
+
+        try {
+          let prompt = '';
+
+          if (isRegenerate) {
+            prompt = mergeConflictPromptManager.convertDefaultThreeWayRegeneratePrompt(contentMetadata);
+          } else {
+            prompt = mergeConflictPromptManager.convertDefaultThreeWayPrompt(contentMetadata);
+          }
+
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(resolve, 2000);
+
+            signal.addEventListener('abort', () => {
+              clearTimeout(timeout);
+              reject(new DOMException('Aborted', 'AbortError'));
+            });
+          });
+
+          return new ReplyResponse('Resolved successfully!');
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            return new CancelResponse();
+          }
+          throw error;
+        }
+      },
+    });
   }
 }
