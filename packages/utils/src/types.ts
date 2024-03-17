@@ -7,6 +7,17 @@ const _typeof = {
 };
 
 /**
+ * Asserts that the argument passed in is neither undefined nor null.
+ */
+export function assertIsDefined<T>(arg: T | null | undefined): T {
+  if (isUndefinedOrNull(arg)) {
+    throw new Error('Assertion Failed: argument is undefined or null');
+  }
+
+  return arg;
+}
+
+/**
  * @returns whether the provided parameter is a JavaScript Array or not.
  */
 export function isArray(array: any): array is any[] {
