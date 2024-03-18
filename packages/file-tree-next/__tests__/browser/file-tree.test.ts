@@ -48,6 +48,7 @@ import { FileTreeService } from '../../src/browser/file-tree.service';
 import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { Directory, File } from '../../src/common/file-tree-node.define';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 describe('FileTree should be work while on single workspace model', () => {
   let track;
@@ -198,6 +199,12 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IClipboardService,
         useValue: mockClipboardService,
+      },
+      {
+        token: IMainLayoutService,
+        useValue: {
+          bottomExpanded: true,
+        },
       },
     );
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
