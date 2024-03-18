@@ -238,7 +238,7 @@ class RequestImp {
 
 class ReqStack {
   queue: any[];
-  constructor(private readonly aiCompletionsService, private readonly aiReporter) {
+  constructor(private readonly aiReporter) {
     this.queue = [];
   }
   addReq(reqRequest: RequestImp) {
@@ -301,7 +301,7 @@ export class AIInlineCompletionsProvider extends WithEventBus implements Provide
 
     this.isManual = false;
     this.isDelEvent = false;
-    this.reqStack = new ReqStack(this.aiCompletionsService, this.aiReporter);
+    this.reqStack = new ReqStack(this.aiReporter);
 
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
     const selectionChange = () => {

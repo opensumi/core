@@ -2,10 +2,11 @@ import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elements';
 
-import { CODICON_OWNER, IAIReporter, getExternalIcon, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { CODICON_OWNER, getExternalIcon, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { localize, uuid } from '@opensumi/ide-core-common';
+import { IAIReporter } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 

@@ -11,13 +11,13 @@ import {
   CommandService,
   DisposableCollection,
   EDITOR_COMMANDS,
-  IAIReporter,
   IContextKeyService,
   LabelService,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { FileType, URI } from '@opensumi/ide-core-common';
+import { IAIReporter } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 

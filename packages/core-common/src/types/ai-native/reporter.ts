@@ -16,7 +16,7 @@ export enum AISerivceType {
 }
 
 export interface CommonLogInfo {
-  msgType: AISerivceType;
+  msgType: AISerivceType | string;
   relationId: string;
   replytime: number;
   success: boolean;
