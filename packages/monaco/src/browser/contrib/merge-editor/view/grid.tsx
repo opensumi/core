@@ -20,7 +20,7 @@ import {
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeEditorService } from '../merge-editor.service';
-import { EditorViewType, IMergeEditorService } from '../types';
+import { EditorViewType } from '../types';
 
 import styles from './merge-editor.module.less';
 import { MiniMap } from './mini-map';
@@ -29,7 +29,7 @@ import { WithViewStickinessConnectComponent } from './stickiness-connect-manager
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
 
-  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const workspaceService = useInjectable<IWorkspaceService>(IWorkspaceService);
   const [head, setHead] = useState<IMergeEditorInputData>();
 
@@ -102,7 +102,7 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
 
 const MergeActions: React.FC = () => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
-  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [isAiResolving, setIsAiResolving] = useState(false);
 
@@ -218,7 +218,7 @@ const MergeActions: React.FC = () => {
 };
 
 export const Grid = () => {
-  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
 
   const incomingEditorContainer = React.useRef<HTMLDivElement | null>(null);
   const currentEditorContainer = React.useRef<HTMLDivElement | null>(null);

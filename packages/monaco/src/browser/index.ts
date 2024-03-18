@@ -12,7 +12,6 @@ import {
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { MergeEditorService } from './contrib/merge-editor/merge-editor.service';
-import { IMergeEditorService } from './contrib/merge-editor/types';
 import { ConfigurationService, MonacoContextKeyService } from './monaco.context-key.service';
 import { MonacoClientContribution } from './monaco.contribution';
 import MonacoServiceImpl from './monaco.service';
@@ -50,10 +49,6 @@ export class MonacoModule extends BrowserModule {
     {
       token: IConfigurationService,
       useClass: ConfigurationService,
-    },
-    {
-      token: IMergeEditorService,
-      useClass: MergeEditorService,
     },
   ];
 }

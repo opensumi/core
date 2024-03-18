@@ -8,7 +8,7 @@ import { ICodeEditor } from '../../../monaco-api/types';
 import { MergeEditorService } from '../merge-editor.service';
 import { LineRange } from '../model/line-range';
 import { StickyPieceModel } from '../model/sticky-piece';
-import { EditorViewType, IMergeEditorService } from '../types';
+import { EditorViewType } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import styles from './merge-editor.module.less';
@@ -54,7 +54,7 @@ const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
 };
 
 export const WithViewStickinessConnectComponent: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
-  const mergeEditorService = useInjectable<MergeEditorService>(IMergeEditorService);
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const [pieces, setPieces] = React.useState<StickyPieceModel[]>([]);
 
   React.useEffect(() => {

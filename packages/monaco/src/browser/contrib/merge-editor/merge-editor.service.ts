@@ -21,7 +21,7 @@ import { ICodeEditor } from '../../monaco-api/editor';
 import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
-import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, IEditorMountParameter, IMergeEditorService } from './types';
+import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, IEditorMountParameter } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -30,7 +30,7 @@ import { ScrollSynchronizer } from './view/scroll-synchronizer';
 import { StickinessConnectManager } from './view/stickiness-connect-manager';
 
 @Injectable()
-export class MergeEditorService extends Disposable implements IMergeEditorService {
+export class MergeEditorService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
