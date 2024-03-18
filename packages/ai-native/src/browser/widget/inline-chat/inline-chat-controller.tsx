@@ -117,7 +117,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       },
       {
         icon: 'afresh',
-        text: localize('aiNative.inline.chat.operate.afresh.title'),
+        text: localize('aiNative.operate.afresh.title'),
         onClick: () => {
           aiInlineChatService._onRegenerate.fire();
         },

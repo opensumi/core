@@ -943,3 +943,34 @@ export const editorImagePreviewBackground = registerColor(
   },
   localize('editorImagePreviewBackground', 'Background color of image preview editor.'),
 );
+
+export const ghostTextBorder = registerColor(
+  'editorGhostText.border',
+  {
+    dark: null,
+    light: null,
+    hcDark: Color.fromHex('#fff').transparent(0.8),
+    hcLight: Color.fromHex('#292929').transparent(0.8),
+  },
+  localize('editorGhostTextBorder', 'Border color of ghost text in the editor.'),
+);
+export const ghostTextForeground = registerColor(
+  'editorGhostText.foreground',
+  {
+    dark: Color.fromHex('#ffffff56'),
+    light: Color.fromHex('#0007'),
+    hcDark: null,
+    hcLight: null,
+  },
+  localize('editorGhostTextForeground', 'Foreground color of the ghost text in the editor.'),
+);
+export const ghostTextBackground = registerColor(
+  'editorGhostText.background',
+  {
+    dark: null,
+    light: null,
+    hcDark: null,
+    hcLight: null,
+  },
+  localize('editorGhostTextBackground', 'Background color of the ghost text in the editor.'),
+);

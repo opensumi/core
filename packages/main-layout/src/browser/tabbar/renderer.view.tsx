@@ -38,7 +38,6 @@ export const TabRendererBase: FC<{
 
   useLayoutEffect(() => {
     if (components.length <= 0) {
-      tabbarService.viewReady.resolve();
       return;
     }
     tabbarService.registerResizeHandle(resizeHandle);
@@ -46,6 +45,7 @@ export const TabRendererBase: FC<{
       tabbarService.registerContainer(component.options!.containerId, component);
     });
     tabbarService.updatePanelVisibility();
+    tabbarService.ensureViewReady();
   }, [components]);
 
   useEffect(() => {

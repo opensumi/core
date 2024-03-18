@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -39,9 +39,11 @@ export interface IBaseTabPanelView {
   // tabPanel的尺寸（横向为宽，纵向高）
   id?: string;
   panelSize?: number;
+  currentContainerId?: string;
 }
 
-export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelView, panelSize, id }) => {
+export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) => {
+  const { PanelView, panelSize, id } = props;
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
@@ -49,6 +51,11 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
 
   const styles_tab_panel = useDesignStyles(styles.tab_panel);
   const styles_tab_panel_hidden = useDesignStyles(styles.tab_panel_hidden);
+
+  const currentContainerId = useMemo(
+    () => props.currentContainerId || tabbarService.currentContainerId,
+    [props.currentContainerId, tabbarService.currentContainerId],
+  );
 
   React.useEffect(() => {
     // panelSize = 384-1-48
@@ -59,7 +66,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
     <div
       id={id}
       className={cls(styles_tab_panel, {
-        [styles_tab_panel_hidden]: !tabbarService.currentContainerId,
+        [styles_tab_panel_hidden]: !currentContainerId,
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
@@ -73,11 +80,11 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
             key={containerId}
             className={cls(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
-            style={tabbarService.currentContainerId === containerId ? panelVisible : panelInVisible}
+            style={currentContainerId === containerId ? panelVisible : panelInVisible}
             id={id}
           >
             <ErrorBoundary>
-              <NoUpdateBoundary visible={tabbarService.currentContainerId === containerId}>
+              <NoUpdateBoundary visible={currentContainerId === containerId}>
                 <PanelView titleMenu={titleMenu} side={side} component={component} />
               </NoUpdateBoundary>
             </ErrorBoundary>
@@ -88,7 +95,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelVi
   );
 });
 
-const ContainerView: React.FC<{
+export const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;

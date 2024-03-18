@@ -8,6 +8,7 @@ import {
   CommandServiceImpl,
   DefaultReporter,
   EventBusImpl,
+  IAIReporter,
   IApplicationService,
   IAuthenticationService,
   IEventBus,
@@ -34,6 +35,7 @@ import {
   KeyboardNativeLayoutService,
 } from '@opensumi/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
+import { AIReporter } from '../ai-native/ai-reporter';
 import { ClientAppStateService } from '../application/application-state-service';
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -255,8 +257,16 @@ export function injectInnerProviders(injector: Injector) {
       useClass: SplitPanelService,
     },
     {
+      token: IAIReporter,
+      useClass: AIReporter,
+    },
+    {
       token: IDesignStyleService,
       useClass: DesignStyleService,
+    },
+    {
+      token: IAIReporter,
+      useClass: AIReporter,
     },
   ];
   injector.addProviders(...providers);
