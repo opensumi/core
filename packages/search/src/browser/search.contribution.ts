@@ -335,7 +335,10 @@ export class SearchContribution
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       this.searchTreeService.viewReady.then(() => {
-        this.searchTreeService.contextKey.searchViewVisibleKey.set(handler.isActivated());
+        const activated = handler.isActivated();
+        if (activated) {
+          this.searchModelService.activate();
+        }
       });
 
       handler.onActivate(() => {

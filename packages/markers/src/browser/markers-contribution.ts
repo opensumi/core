@@ -61,7 +61,10 @@ export class MarkersContribution
       );
 
       this.markerService.viewReady.then(() => {
-        this.markerService.contextKey.markersTreeVisibility.set(handler.isActivated());
+        const activate = handler.isActivated();
+        if (activate) {
+          this.markerModelService.activate();
+        }
       });
 
       this.addDispose(

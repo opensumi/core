@@ -35,8 +35,6 @@ export class MarkerModelService {
 
   private _treeModel: MarkerTreeModel;
 
-  private _whenReady: Promise<void>;
-
   private _decorations: DecorationsManager;
   private _markerTreeHandle: IRecycleTreeHandle;
 
@@ -55,12 +53,10 @@ export class MarkerModelService {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  constructor() {
-    this._whenReady = this.initTreeModel();
-  }
+  private _whenReady = new Deferred<void>();
 
   get whenReady() {
-    return this._whenReady;
+    return this._whenReady.promise;
   }
 
   get flushEventQueuePromise() {
@@ -118,6 +114,7 @@ export class MarkerModelService {
     );
 
     this.onDidUpdateTreeModelEmitter.fire(this._treeModel);
+    this._whenReady.resolve();
   }
 
   initDecorations(root) {
