@@ -1,7 +1,8 @@
-import vscode from 'vscode';
 
 import { IInputBaseProps } from '@opensumi/ide-components';
-import { Event, IDisposable, ISequence, Uri, Command } from '@opensumi/ide-core-common';
+import { Command, Event, IDisposable, ISequence, Uri } from '@opensumi/ide-core-common';
+
+import type vscode from 'vscode';
 
 export interface VSCommand {
   id: string;
