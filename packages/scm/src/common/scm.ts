@@ -1,5 +1,8 @@
+
 import { IInputBaseProps } from '@opensumi/ide-components';
-import { Event, IDisposable, ISequence, Uri } from '@opensumi/ide-core-common';
+import { Command, Event, IDisposable, ISequence, Uri } from '@opensumi/ide-core-common';
+
+import type vscode from 'vscode';
 
 export interface VSCommand {
   id: string;
@@ -21,6 +24,12 @@ export interface IInputValidation {
 
 export type IInputValidator = (value: string, cursorPosition: number) => Promise<IInputValidation | undefined>;
 
+export interface ISCMInputActionButtonDescriptor {
+	command: Command;
+	icon?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
+	enabled: boolean;
+}
+
 export interface ISCMInput {
   value: string;
   readonly onDidChange: Event<string>;
@@ -39,6 +48,9 @@ export interface ISCMInput {
 
   props: IInputBaseProps;
   readonly onDidChangeProps: Event<IInputBaseProps>;
+
+  actionButton: ISCMInputActionButtonDescriptor | undefined;
+	readonly onDidChangeActionButton: Event<void>;
 
   appendProps(props: IInputBaseProps): void;
 }

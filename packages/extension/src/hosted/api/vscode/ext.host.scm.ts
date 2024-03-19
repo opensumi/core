@@ -201,6 +201,17 @@ function historyItemGroupEquals(
   );
 }
 
+function getInputBoxActionButtonIcon(actionButton?: vscode.SourceControlInputBoxActionButton): UriComponents | { light: UriComponents; dark: UriComponents } | vscode.ThemeIcon | undefined {
+	if (!actionButton?.icon) {
+		return undefined;
+	} else if (URI.isUri(actionButton.icon)) {
+		return actionButton.icon;
+	} else {
+		const icon = actionButton.icon as { light: URI; dark: URI };
+		return { light: icon.light, dark: icon.dark };
+	}
+}
+
 export type IValidateInput = (
   value: string,
   cursorPosition: number,
@@ -280,10 +291,32 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
     this._proxy.$setInputBoxVisibility(this._sourceControlHandle, visible);
   }
 
+  private _actionButton: vscode.SourceControlInputBoxActionButton | undefined;
+	private _actionButtonDisposables = new MutableDisposable<DisposableStore>();
+
+	get actionButton(): vscode.SourceControlInputBoxActionButton | undefined {
+		return this._actionButton;
+	}
+
+	set actionButton(actionButton: vscode.SourceControlInputBoxActionButton | undefined) {
+		this._actionButtonDisposables.value = new DisposableStore();
+
+		this._actionButton = actionButton;
+
+		const internal = actionButton !== undefined ?
+			{
+				command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
+				icon: getInputBoxActionButtonIcon(actionButton),
+				enabled: actionButton.enabled,
+			} : undefined;
+		this._proxy.$setInputBoxActionButton(this._sourceControlHandle, internal ?? null);
+	}
+
   constructor(
     private _extension: IExtensionDescription,
     private _proxy: IMainThreadSCMShape,
     private _sourceControlHandle: number,
+    private _commands: ExtHostCommands,
   ) {
     // noop
   }
@@ -682,7 +715,7 @@ class ExtHostSourceControl implements vscode.SourceControl {
     private _label: string,
     private _rootUri?: vscode.Uri,
   ) {
-    this._inputBox = new ExtHostSCMInputBox(_extension, this._proxy, this.handle);
+    this._inputBox = new ExtHostSCMInputBox(_extension, this._proxy, this.handle, this._commands);
     this._proxy.$registerSourceControl(this.handle, _id, _label, _rootUri);
   }
 
