@@ -349,6 +349,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     }
 
     this._updateDisposable = monaco.languages.registerCompletionItemProvider(model.getModel()?.getLanguageId()!, {
+      _debugDisplayName: 'DebugConsoleCompletionProvider',
       triggerCharacters: ['.'],
       provideCompletionItems: async (model, position, ctx) => {
         //  仅在支持自动补全查询的调试器中启用补全逻辑

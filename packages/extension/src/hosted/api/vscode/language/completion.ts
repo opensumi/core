@@ -215,7 +215,9 @@ export class CompletionAdapter {
         item.additionalTextEdits && item.additionalTextEdits.map(Converter.fromTextEdit),
       [ISuggestDataDtoField.command]: this.commandConverter.toInternal(item.command, disposables),
       [ISuggestDataDtoField.commitCharacters]: item.commitCharacters,
-      [ISuggestDataDtoField.insertTextRules]: item.keepWhitespace ? CompletionItemInsertTextRule.KeepWhitespace : 0,
+      [ISuggestDataDtoField.insertTextRules]: item.keepWhitespace
+        ? CompletionItemInsertTextRule.KeepWhitespace
+        : CompletionItemInsertTextRule.None,
     };
 
     const convertRange = this.convertRange(item, defaultInserting, defaultReplacing);

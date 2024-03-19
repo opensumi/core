@@ -89,7 +89,6 @@ describe('editor collection service test', () => {
           overrides: [],
         },
         affectsConfiguration: (() => {}) as any,
-        sourceConfig: {},
       });
     };
     const mockConfigurationService: Partial<IConfigurationService> = {
