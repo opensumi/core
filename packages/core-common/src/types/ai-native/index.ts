@@ -1,5 +1,6 @@
-import { CancellationToken } from '../../utils';
+import { CancellationToken, MaybePromise } from '../../utils';
 
+import { IAIReportCompletionOption } from './reporter';
 export * from './reporter';
 
 export interface IAINativeCapabilities {
@@ -64,15 +65,6 @@ export interface IAICompletionOption {
   sessionId?: string;
 }
 
-export interface IAIReportCompletionOption {
-  relationId: string;
-  sessionId: string;
-  accept: boolean;
-  repo?: string;
-  completionUseTime?: number;
-  renderingTime?: number;
-}
-
 export interface IAIBackService<
   BaseResponse extends IAIBackServiceResponse = IAIBackServiceResponse,
   StreamResponse extends NodeJS.ReadableStream = NodeJS.ReadableStream,
@@ -94,4 +86,61 @@ export interface IAIBackService<
   ): Promise<CompletionResponse>;
   reportCompletion<I extends IAIReportCompletionOption>(input: I): Promise<void>;
   destroyStreamRequest?: (sessionId: string) => Promise<void>;
+}
+
+export class ReplyResponse {
+  constructor(readonly message: string) {}
+
+  static is(response: any): boolean {
+    return response instanceof ReplyResponse || (typeof response === 'object' && response.message !== undefined);
+  }
+}
+
+export class ErrorResponse {
+  constructor(readonly error: any, readonly message?: string) {}
+
+  static is(response: any): boolean {
+    return response instanceof ErrorResponse || (typeof response === 'object' && response.error !== undefined);
+  }
+}
+
+export class CancelResponse {
+  readonly cancellation: boolean = true;
+
+  constructor(readonly message?: string) {}
+
+  static is(response: any): boolean {
+    return response instanceof CancelResponse || (typeof response === 'object' && response.cancellation !== undefined);
+  }
+}
+
+export type ChatResponse = ReplyResponse | ErrorResponse | CancelResponse;
+
+/**
+ * DI Token
+ */
+export const InlineChatFeatureRegistryToken = Symbol('InlineChatFeatureRegistryToken');
+export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
+export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
+
+export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
+
+/**
+ * Contribute Registry
+ */
+export interface IConflictContentMetadata {
+  current: string;
+  base: string;
+  incoming: string;
+}
+export interface IResolveConflictHandler {
+  providerRequest: (
+    contentMetadata: IConflictContentMetadata,
+    options: { isRegenerate: boolean },
+    token: CancellationToken,
+  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
+}
+export interface IInternalResolveConflictRegistry {
+  getThreeWayHandler(): IResolveConflictHandler | undefined;
+  getTraditionalHandler(): IResolveConflictHandler | undefined;
 }

@@ -10,6 +10,7 @@ import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
+
 interface ITinkingProps {
   children?: React.ReactNode;
   status?: EMsgStreamStatus;

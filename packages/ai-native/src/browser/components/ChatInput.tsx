@@ -4,13 +4,13 @@ import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, us
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Popover, TextArea, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
+import { ChatFeatureRegistryToken, localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
 import { AI_SLASH, IChatAgentService } from '../../common';
 import { ChatSlashCommandItemModel } from '../chat/chat-model';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
-import { IChatFeatureRegistry, IChatSlashCommandItem } from '../types';
+import { IChatSlashCommandItem } from '../types';
 
 import styles from './components.module.less';
 
@@ -40,7 +40,7 @@ const Block = ({
 
 const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId }) => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const agentOptions = useMemo(() => {
     if (trigger === '@') {
@@ -175,7 +175,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   const [placeholder, setPlaceHolder] = useState(localize('aiNative.chat.input.placeholder.default'));
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(IChatFeatureRegistry);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const currentAgentIdRef = useLatest(agentId);
 

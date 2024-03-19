@@ -61,13 +61,13 @@ export class DesignModule extends BrowserModule {
         useClass: class extends ThemeStore {
           override async getThemeData(contribution?: IThemeContribution, basePath?: URI) {
             const newTheme = await super.getThemeData(contribution, basePath);
+            document.body.classList.remove(lightTheme.designThemeType);
+            document.body.classList.remove(defaultTheme.designThemeType);
+
             if (defaultTheme.id === contribution?.id) {
               document.body.classList.add(defaultTheme.designThemeType);
             } else if (lightTheme.id === contribution?.id) {
               document.body.classList.add(lightTheme.designThemeType);
-            } else {
-              document.body.classList.remove(lightTheme.designThemeType);
-              document.body.classList.remove(defaultTheme.designThemeType);
             }
             return newTheme;
           }

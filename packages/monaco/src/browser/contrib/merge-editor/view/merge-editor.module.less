@@ -22,6 +22,75 @@
     }
   }
 
+  .merge_editor_float_container {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: var(--kt-panelTab-activeBackground);
+    box-shadow: inset 1px 1px 3px 0px var(--kt-panelTab-border);
+    padding: 16px 28px;
+    z-index: 1;
+
+    .container_box {
+      display: flex;
+      float: right;
+      white-space: nowrap;
+
+      .merge_conflict_bottom_btn {
+        border: 1px solid var(--kt-button-disableForeground);
+        border-radius: 8px;
+        background: var(--editor-background);
+        margin: 0 4px;
+        cursor: pointer;
+
+        // 第一个子元素
+        :first-child {
+          margin-right: 8px;
+        }
+
+        span {
+          white-space: nowrap;
+        }
+      }
+
+      .magic_btn {
+        background-image: radial-gradient(circle at -21% -22%, #19cfff, #8429ff);
+        border: none;
+        font-weight: 500;
+
+        span {
+          color: #fff;
+        }
+
+        :global {
+          .kt-icon {
+            color: #fff;
+            font-size: 12px;
+          }
+        }
+      }
+
+      .merge_editor_apply_btn {
+        border-radius: 8px;
+        margin-left: 4px;
+        white-space: nowrap;
+
+        :first-child {
+          margin-right: 8px;
+        }
+      }
+
+      .line_vertical {
+        background-color: var(--design-border-color-common);
+        width: 1px;
+        min-width: 1px;
+        height: 24px;
+        margin: 4px;
+      }
+    }
+  }
+
   .editor_container {
     display: flex;
     height: inherit;
@@ -31,15 +100,19 @@
   .merge_editor_guide_underline_widget {
     border-style: solid;
     border-top-width: 2px !important;
+
     &.dashed {
       border-style: dashed;
     }
+
     &.insert {
       border-color: var(--mergeEditor-insertedBackground);
     }
+
     &.modify {
       border-color: var(--mergeEditor-modifyBackground);
     }
+
     &.remove {
       border-color: var(--mergeEditor-removedBackground);
     }
@@ -51,9 +124,11 @@
     &.insert {
       background-color: var(--mergeEditor-insertedBackground);
     }
+
     &.modify {
       background-color: var(--mergeEditor-modifyBackground);
     }
+
     &.remove {
       background-color: var(--mergeEditor-removedBackground);
     }
@@ -63,9 +138,11 @@
     &.insert {
       background-color: var(--mergeEditor-insertedInnerCharColor);
     }
+
     &.modify {
       background-color: var(--mergeEditor-modifyInnerCharColor);
     }
+
     &.remove {
       background-color: var(--mergeEditor-removedInnerCharColor);
     }
@@ -95,9 +172,11 @@
             &.insert {
               background-color: var(--mergeEditor-insertedInnerCharColor);
             }
+
             &.modify {
               background-color: var(--mergeEditor-modifyInnerCharColor);
             }
+
             &.remove {
               background-color: var(--mergeEditor-removedInnerCharColor);
             }
@@ -113,21 +192,26 @@
     .stickiness_connect_container {
       height: 100%;
       position: relative;
+
       .piece_view_lines {
         position: absolute;
         z-index: 1;
+
         & svg {
           width: 100%;
           overflow: initial;
+
           & path {
             &.insert {
               fill: var(--mergeEditor-insertedBackground);
               stroke: var(--mergeEditor-insertedBackground);
             }
+
             &.modify {
               fill: var(--mergeEditor-modifyBackground);
               stroke: var(--mergeEditor-modifyBackground);
             }
+
             &.remove {
               fill: var(--mergeEditor-removedBackground);
               stroke: var(--mergeEditor-removedBackground);
@@ -143,6 +227,7 @@
     z-index: 1;
     // 默认图标宽度
     width: 16px !important;
+    height: 18px !important;
     display: flex;
     align-items: center;
 
@@ -164,6 +249,17 @@
     &.rotate_turn_right {
       transform: rotate(50deg);
     }
+
+    &.ai_resolve_icon,
+    &.ai_resolve_loading_icon {
+      background-image: linear-gradient(180deg, #19cfff, #8429ff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    &.ai_resolve_loading_icon {
+      animation: spin 1.5s infinite linear;
+    }
   }
 
   // conflict action 完成后的虚线框效果
@@ -181,9 +277,11 @@
     &.insert {
       border-color: var(--mergeEditor-insertedBackground);
     }
+
     &.modify {
       border-color: var(--mergeEditor-modifyBackground);
     }
+
     &.remove {
       border-color: var(--mergeEditor-removedBackground);
     }
@@ -202,6 +300,16 @@
 
     &.stretch_bottom {
       border-bottom: transparent;
+    }
+
+    &.ai_resolve_complete {
+      background-image: linear-gradient(90deg, #19cfff, #8429ff);
+      opacity: 0.12;
+    }
+
+    &.ai_resolve_complete_lines_decorations {
+      background-color: #19cfff;
+      opacity: 0.12;
     }
   }
 
@@ -257,5 +365,51 @@
         }
       }
     }
+  }
+}
+
+.skeleton_decoration {
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.15) 37%,
+    rgba(255, 255, 255, 0.08) 63%
+  );
+  background-size: 400% 100%;
+  animation-name: skeleton-loading;
+  animation-duration: 1.4s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+  border-radius: 4px;
+  top: 2px;
+  bottom: 2px;
+  left: 2px !important;
+  right: 0;
+  height: initial !important;
+}
+
+.skeleton_decoration_background {
+  background-color: #312f24;
+  z-index: 1;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
   }
 }

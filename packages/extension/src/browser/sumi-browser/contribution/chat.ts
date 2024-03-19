@@ -1,12 +1,12 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IChatAgentViewService } from '@opensumi/ide-ai-native/lib/browser/types';
-import { Disposable, IDisposable, ILogger } from '@opensumi/ide-core-common';
+import { ChatAgentViewServiceToken, Disposable, IDisposable, ILogger } from '@opensumi/ide-core-common';
 
 import { AbstractSumiBrowserContributionRunner, IRunTimeParams } from '../types';
 
 @Injectable({ multiple: true })
 export class ChatBrowserContributionRunner extends AbstractSumiBrowserContributionRunner {
-  @Autowired(IChatAgentViewService)
+  @Autowired(ChatAgentViewServiceToken)
   chatAgentViewService: IChatAgentViewService;
 
   @Autowired(ILogger)
@@ -17,8 +17,8 @@ export class ChatBrowserContributionRunner extends AbstractSumiBrowserContributi
 
   run(param: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
-    if (!this.injector.creatorMap.has(IChatAgentViewService)) {
-      this.logger.warn('Not found IChatAgentViewService');
+    if (!this.injector.creatorMap.has(ChatAgentViewServiceToken)) {
+      this.logger.warn('Not found ChatAgentViewServiceToken');
       return disposer;
     }
 
