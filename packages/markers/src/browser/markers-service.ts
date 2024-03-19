@@ -1,15 +1,15 @@
-'use strict';
 import { makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, Event, IBaseMarkerManager, MarkerManager, OnEvent } from '@opensumi/ide-core-common';
 import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType } from '@opensumi/ide-theme';
 import { Themable } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 
 import { IMarkerService } from '../common/types';
 
+import { MarkersContextKey } from './markers-contextkey';
 import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree/tree-node.defined';
@@ -34,6 +34,14 @@ export class MarkerService extends Themable implements IMarkerService {
   @observable
   public viewSize: ViewSize = { h: 0 };
 
+  @Autowired(MarkersContextKey)
+  markersContextKey: MarkersContextKey;
+
+  private viewReadyDeferred = new Deferred<void>();
+  get viewReady() {
+    return this.viewReadyDeferred.promise;
+  }
+
   // marker filter 事件
   protected readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
@@ -49,6 +57,15 @@ export class MarkerService extends Themable implements IMarkerService {
     super();
     makeObservable(this);
     this.markerViewModel = new MarkerViewModel(this, this.labelService);
+  }
+
+  get contextKey() {
+    return this.markersContextKey;
+  }
+
+  initContextKey(dom: HTMLDivElement) {
+    this.markersContextKey.initScopedContext(dom);
+    this.viewReadyDeferred.resolve();
   }
 
   @OnEvent(EditorGroupOpenEvent)

@@ -31,7 +31,7 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
         });
       }
     }
-  }, [outputRef.current]);
+  }, []);
 
   return (
     <React.Fragment>

@@ -4,6 +4,7 @@ import {
   HasSearchResults,
   SearchInputBoxFocusedKey,
   SearchViewFocusedKey,
+  SearchViewVisibleKey,
 } from '@opensumi/ide-core-browser/lib/contextkey/search';
 
 @Injectable()
@@ -15,6 +16,8 @@ export class SearchContextKey {
   public searchViewFocusedKey: IContextKey<boolean>;
   public searchInputBoxFocusedKey: IContextKey<boolean>;
 
+  public searchViewVisibleKey: IContextKey<boolean>;
+
   private _contextKeyService: IContextKeyService;
 
   initScopedContext(dom: HTMLDivElement) {
@@ -22,6 +25,7 @@ export class SearchContextKey {
     this.searchViewFocusedKey = SearchViewFocusedKey.bind(this._contextKeyService);
     this.searchInputBoxFocusedKey = SearchInputBoxFocusedKey.bind(this._contextKeyService);
     this.hasSearchResults = HasSearchResults.bind(this._contextKeyService);
+    this.searchViewVisibleKey = SearchViewVisibleKey.bind(this._contextKeyService);
   }
 
   get service() {

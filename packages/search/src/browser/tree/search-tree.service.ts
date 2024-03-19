@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser';
 import {
+  Deferred,
   Disposable,
   DisposableStore,
   Emitter,
@@ -209,10 +210,16 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(SearchContextKey)
-  private readonly searchContextKey: SearchContextKey;
+  public readonly searchContextKey: SearchContextKey;
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
+
+  private viewReadyDeferered = new Deferred<void>();
+
+  get viewReady() {
+    return this.viewReadyDeferered.promise;
+  }
 
   constructor() {
     super();
@@ -236,6 +243,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
 
   initContextKey(dom: HTMLDivElement) {
     this.contextKey.initScopedContext(dom);
+    this.viewReadyDeferered.resolve();
   }
 
   removeHighlightRange() {

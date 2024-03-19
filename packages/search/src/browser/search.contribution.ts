@@ -334,13 +334,22 @@ export class SearchContribution
   onDidRender() {
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
+      this.searchTreeService.viewReady.then(() => {
+        const activated = handler.isActivated();
+        if (activated) {
+          this.searchModelService.activate();
+        }
+      });
+
       handler.onActivate(() => {
         this.searchBrowserService.initSearchHistory();
         this.searchBrowserService.focus();
+        this.searchModelService.activate();
       });
       handler.onInActivate(() => {
         this.searchTreeService.removeHighlightRange();
         this.searchBrowserService.blur();
+        this.searchModelService.deactivate();
       });
     }
   }

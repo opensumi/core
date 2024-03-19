@@ -8,6 +8,8 @@ import { IMarkerService } from '../../common/types';
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree-node.defined';
 import styles from './tree-node.module.less';
 
+import type { MarkerService } from '../markers-service';
+
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
@@ -23,7 +25,7 @@ export class MarkerTreeModel extends TreeModel {
 @Injectable()
 export class MarkerModelService {
   @Autowired(IMarkerService)
-  private readonly markerService: IMarkerService;
+  private readonly markerService: MarkerService;
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
@@ -32,8 +34,6 @@ export class MarkerModelService {
   private readonly injector: Injector;
 
   private _treeModel: MarkerTreeModel;
-
-  private _whenReady: Promise<void>;
 
   private _decorations: DecorationsManager;
   private _markerTreeHandle: IRecycleTreeHandle;
@@ -53,12 +53,10 @@ export class MarkerModelService {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  constructor() {
-    this._whenReady = this.initTreeModel();
-  }
+  private _whenReady = new Deferred<void>();
 
   get whenReady() {
-    return this._whenReady;
+    return this._whenReady.promise;
   }
 
   get flushEventQueuePromise() {
@@ -116,6 +114,7 @@ export class MarkerModelService {
     );
 
     this.onDidUpdateTreeModelEmitter.fire(this._treeModel);
+    this._whenReady.resolve();
   }
 
   initDecorations(root) {
@@ -192,11 +191,36 @@ export class MarkerModelService {
     }
   };
 
+  isDirtyTree = false;
+
   async refresh() {
     await this.whenReady;
+    await this.markerService.viewReady;
+
     runWhenIdle(() => {
-      this.treeModel.root.refresh();
+      if (this.markerService.contextKey && this.markerService.contextKey.markersTreeVisibility.get()) {
+        this.treeModel.root.refresh();
+      } else {
+        this.isDirtyTree = true;
+      }
     });
+  }
+
+  activate() {
+    if (this.markerService.contextKey) {
+      this.markerService.contextKey.markersTreeVisibility.set(true);
+
+      if (this.isDirtyTree) {
+        this.refresh();
+        this.isDirtyTree = false;
+      }
+    }
+  }
+
+  deactivate() {
+    if (this.markerService.contextKey) {
+      this.markerService.contextKey.markersTreeVisibility.set(false);
+    }
   }
 
   dispose() {

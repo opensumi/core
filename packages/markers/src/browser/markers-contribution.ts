@@ -20,6 +20,7 @@ import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
 import { MarkerPanel } from './markers-tree.view';
 import Messages from './messages';
+import { MarkerModelService } from './tree/tree-model.service';
 
 function normalize(num: number) {
   const limit = 100;
@@ -46,6 +47,9 @@ export class MarkersContribution
   @Autowired(IStatusBarService)
   private readonly statusBar: IStatusBarService;
 
+  @Autowired(MarkerModelService)
+  private readonly markerModelService: MarkerModelService;
+
   onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
     if (handler) {
@@ -53,6 +57,24 @@ export class MarkersContribution
         this.markerService.getManager().onMarkerChanged(() => {
           const badge = this.markerService.getBadge();
           handler.setBadge(badge || '');
+        }),
+      );
+
+      this.markerService.viewReady.then(() => {
+        const activate = handler.isActivated();
+        if (activate) {
+          this.markerModelService.activate();
+        }
+      });
+
+      this.addDispose(
+        handler.onActivate(() => {
+          this.markerModelService.activate();
+        }),
+      );
+      this.addDispose(
+        handler.onInActivate(() => {
+          this.markerModelService.deactivate();
         }),
       );
     }
