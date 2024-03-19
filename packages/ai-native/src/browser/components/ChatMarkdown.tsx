@@ -22,14 +22,13 @@ interface MarkdownProps {
 export const ChatMarkdown = (props: MarkdownProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const [renderDom, setRenderDom] = useState<ReactDOM.Root | null>();
 
   useEffect(() => {
     const element = ref.current;
     if (!element) {
       return;
     }
-    const codeBlocks: [string, HTMLDivElement][] = [];
+    const codeRenderedElements = new Map<string, { container: HTMLDivElement; root: ReactDOM.Root }>();
 
     const markdown: IMarkdownString =
       typeof props.markdown === 'string' ? new MarkdownString(props.markdown) : props.markdown;
@@ -50,8 +49,7 @@ export const ChatMarkdown = (props: MarkdownProps) => {
           </div>
         </ConfigProvider>,
       );
-      setRenderDom(dom);
-      codeBlocks.push([id, container]);
+      codeRenderedElements.set(id, { container, root: dom });
       return `<div class="code" data-code="${id}">${escape(code)}</div>`;
     };
     renderer.codespan = (code) => `<code class=${styles.code_inline}>${code}</code>`;
@@ -78,19 +76,20 @@ export const ChatMarkdown = (props: MarkdownProps) => {
 
     element.innerHTML = renderedMarkdown;
 
-    const codeRenderedElements = new Map(codeBlocks);
     const codePlaceholderElements = element.querySelectorAll<HTMLDivElement>('div[data-code]');
     codePlaceholderElements.forEach((placeholderElement) => {
       const renderedElement = codeRenderedElements.get(placeholderElement.dataset['code'] ?? '');
-      if (renderedElement) {
+      if (renderedElement && renderedElement.container) {
         placeholderElement.innerText = '';
-        placeholderElement.append(renderedElement);
+        placeholderElement.append(renderedElement.container);
       }
     });
 
     return () => {
-      if (renderDom) {
-        renderDom.unmount();
+      if (codeRenderedElements.size > 0) {
+        codeRenderedElements.forEach(({ root }) => {
+          root.unmount();
+        });
       }
     };
   }, [props.markdown]);

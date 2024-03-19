@@ -24,7 +24,7 @@ export class MergeConflictReportService extends Disposable {
     uniqueId: string,
     rt: Partial<Exclude<MergeConflictRT, 'type'>>,
   ): Partial<MergeConflictRT> & { relationId?: string } {
-    if (this.aiNativeConfigService.capabilities.supportsConflictResolve === false) {
+    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       return rt;
     }
 
@@ -50,7 +50,7 @@ export class MergeConflictReportService extends Disposable {
   }
 
   public report(uniqueId: string, rt: Partial<Exclude<MergeConflictRT, 'type'>>): void {
-    if (this.aiNativeConfigService.capabilities.supportsConflictResolve === false) {
+    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       return;
     }
 
@@ -59,7 +59,7 @@ export class MergeConflictReportService extends Disposable {
   }
 
   public reportIncrementNum(uniqueId: string, type: 'clickAllNum' | 'clickNum' | 'aiOutputNum' | 'cancelNum'): void {
-    if (this.aiNativeConfigService.capabilities.supportsConflictResolve === false) {
+    if (!this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       return;
     }
     const relationId = this.unique2RelationMap.get(uniqueId)!;

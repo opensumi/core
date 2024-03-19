@@ -1431,6 +1431,8 @@ export const localizationBundle = {
     'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
     'aiNative.resolve.conflict.dialog.detection':
       'It is detected that you have made modifications. Regeneration will overwrite\nyour modifications. Are you sure to regenerate?',
+    'aiNative.resolve.conflict.message.not.processed.yet':
+      'AI has processed conflicts at {0}, but conflicts at {1} have not yet been processed (still marked as yellow) and require manual processing.',
 
     'aiNative.operate.discard.title': 'Discard',
     'aiNative.operate.afresh.title': 'Afresh',

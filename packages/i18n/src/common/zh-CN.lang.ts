@@ -1199,6 +1199,8 @@ export const localizationBundle = {
     'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
     'aiNative.resolve.conflict.dialog.detection':
       '检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。',
+    'aiNative.resolve.conflict.message.not.processed.yet':
+      'AI 已处理 {0} 处冲突，{1} 处冲突暂未处理（仍标记为黄色部分），需人工处理',
 
     'aiNative.operate.discard.title': '丢弃',
     'aiNative.operate.afresh.title': '重新生成',

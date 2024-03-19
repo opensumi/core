@@ -11,7 +11,7 @@ import {
 import { message } from '@opensumi/ide-core-browser/lib/components';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
-import { URI, runWhenIdle } from '@opensumi/ide-core-common';
+import { URI, formatLocalize, runWhenIdle } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -326,7 +326,6 @@ export class MergeEditorService extends Disposable {
       let resolveLen = 0;
       let pointLen = conflictPointRanges.length;
 
-      const errorCodesToStop = [20, 42, 46, 51, 53, 54, 999];
       for await (const range of conflictPointRanges) {
         const flushRange = this.resultView.getFlushRange(range) || range;
         const result = await this.actionsManager.handleAiConflictResolve(flushRange, { isRegenerate: false });
@@ -346,19 +345,11 @@ export class MergeEditorService extends Disposable {
         if (result.isSuccess) {
           resolveLen += 1;
         }
-
-        if (result.errorCode !== 0) {
-          this.actionsManager.debounceMessageWraning(result.errorCode);
-        }
-
-        if (errorCodesToStop.includes(result.errorCode)) {
-          break;
-        }
       }
 
       if (resolveLen !== pointLen) {
         message.warning(
-          `AI 已处理 ${resolveLen} 处冲突，${pointLen - resolveLen} 处冲突暂未处理（仍标记为黄色部分），需人工处理`,
+          formatLocalize('aiNative.resolve.conflict.message.not.processed.yet', resolveLen, pointLen - resolveLen),
         );
       }
     }, 2);
