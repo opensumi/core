@@ -122,7 +122,6 @@ export class CompareEditorContribution implements MenuContribution, CommandContr
         const enabled = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
         this.preferenceService.set('diffEditor.hideUnchangedRegions.enabled', !enabled);
       },
-      isToggled: () => this.preferenceService.get<boolean>('diffEditor.hideUnchangedRegions.enabled', false),
     });
   }
 }
