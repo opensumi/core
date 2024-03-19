@@ -363,6 +363,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const OPEN_MERGEEDITOR_DEV: Command = {
+    id: 'editor.open.mergeEditor.dev',
+    category: 'Merge Editor (Dev)',
+    label: 'Open Merge Editor State from Json',
+  };
+
   export const MERGEEDITOR_RESET: Command = {
     id: 'editor.mergeEditor.reset',
     category: CATEGORY,
@@ -642,6 +648,16 @@ export namespace EDITOR_COMMANDS {
   export const TOGGLE_WORD_WRAP: Command = {
     id: 'editor.toggleWordWrap',
     label: '%editor.toggleWordWrap%',
+    category: CATEGORY,
+  };
+
+  export const FORMAT_DOCUMENT: Command = {
+    id: 'editor.action.formatDocument',
+    category: CATEGORY,
+  };
+
+  export const FORMAT_SELECTION: Command = {
+    id: 'editor.action.formatSelection',
     category: CATEGORY,
   };
 

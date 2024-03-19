@@ -6,7 +6,7 @@ import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import type { ICodeEditor as IMonacoCodeEditor } from '../../monaco-api/types';
+import type { ICodeEditor as IMonacoCodeEditor } from '../monaco-api/types';
 
 export interface IInlineContentWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowAIContentOptions | undefined) => void;
@@ -28,7 +28,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
-  private root: ReactDOMClient.Root | null;
+  private root?: ReactDOMClient.Root | null = null;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super();

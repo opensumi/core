@@ -4,6 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   CommandService,
   Disposable,
+  EDITOR_COMMANDS,
   Emitter,
   IEventBus,
   ILogger,
@@ -686,7 +687,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
               reject(err);
             }, formatOnSaveTimeout);
           }),
-          this.commandService.executeCommand('editor.action.formatDocument'),
+          this.commandService.executeCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT.id),
         ]);
       } catch (err) {
         if (err.name === 'FormatOnSaveTimeoutError') {

@@ -1,4 +1,4 @@
-export abstract class PromptManager {
+export abstract class BasePromptManager {
   protected promptHasSpace(str: string) {
     const pattern = /^\s*/;
     const match = str.match(pattern);

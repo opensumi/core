@@ -1,5 +1,14 @@
 import { Injectable, Provider } from '@opensumi/di';
-import { AIBackSerivcePath, AIBackSerivceToken, BrowserModule, IAIInlineChatService } from '@opensumi/ide-core-browser';
+import {
+  AIBackSerivcePath,
+  AIBackSerivceToken,
+  BrowserModule,
+  ChatAgentViewServiceToken,
+  ChatFeatureRegistryToken,
+  IAIInlineChatService,
+  InlineChatFeatureRegistryToken,
+  ResolveConflictRegistryToken,
+} from '@opensumi/ide-core-browser';
 
 import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerService } from '../common';
 
@@ -10,12 +19,8 @@ import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatService } from './chat/chat.service';
-import {
-  AINativeCoreContribution,
-  IChatAgentViewService,
-  IChatFeatureRegistry,
-  IInlineChatFeatureRegistry,
-} from './types';
+import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
+import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 
@@ -25,11 +30,11 @@ export class AINativeModule extends BrowserModule {
   providers: Provider[] = [
     AINativeBrowserContribution,
     {
-      token: IInlineChatFeatureRegistry,
+      token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
     },
     {
-      token: IChatFeatureRegistry,
+      token: ChatFeatureRegistryToken,
       useClass: ChatFeatureRegistry,
     },
     {
@@ -49,12 +54,16 @@ export class AINativeModule extends BrowserModule {
       useClass: ChatAgentService,
     },
     {
-      token: IChatAgentViewService,
+      token: ChatAgentViewServiceToken,
       useClass: ChatAgentViewService,
     },
     {
       token: IAIChatService,
       useClass: ChatService,
+    },
+    {
+      token: ResolveConflictRegistryToken,
+      useClass: ResolveConflictRegistry,
     },
   ];
 

@@ -6,7 +6,7 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 import {
   BaseInlineContentWidget,
   ShowAIContentOptions,
-} from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
+} from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AIInlineChatContentWidget } from '../../../common/index';

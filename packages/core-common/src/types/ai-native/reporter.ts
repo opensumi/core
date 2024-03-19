@@ -1,22 +1,14 @@
 export const AI_REPORTER_NAME = 'AI';
 
 export enum AISerivceType {
-  SearchDoc = 'searchDoc',
-  SearchCode = 'searchCode',
-  Sumi = 'sumi',
-  GPT = 'chat',
-  Explain = 'explain',
-  Run = 'run',
-  Test = 'test',
-  Optimize = 'optimize',
-  Generate = 'generate',
+  Chat = 'chat',
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
 }
 
 export interface CommonLogInfo {
-  msgType: AISerivceType;
+  msgType: AISerivceType | string;
   relationId: string;
   replytime: number;
   success: boolean;
@@ -30,30 +22,6 @@ export interface CommonLogInfo {
   insert: boolean;
 }
 
-export interface QuestionRT extends Partial<CommonLogInfo> {
-  isRetry: boolean;
-  isStop: boolean;
-}
-
-export interface CodeRT extends Partial<CommonLogInfo> {
-  isReceive: boolean;
-  isDrop: boolean;
-}
-
-export interface GenerateRT extends Partial<CommonLogInfo> {
-  fileCount: number;
-  requirment: string;
-}
-
-export interface CommandRT extends Partial<CommonLogInfo> {
-  useCommand: boolean;
-  useCommandSuccess: boolean;
-}
-
-export interface RunRT extends Partial<CommonLogInfo> {
-  runSuccess: boolean;
-}
-
 export interface CompletionRT extends Partial<CommonLogInfo> {
   isReceive?: boolean;
   // 是否取消
@@ -64,9 +32,23 @@ export interface CompletionRT extends Partial<CommonLogInfo> {
   renderingTime?: number;
 }
 
+export interface IAIReportCompletionOption {
+  relationId: string;
+  sessionId: string;
+  accept: boolean;
+  repo?: string;
+  completionUseTime?: number;
+  renderingTime?: number;
+}
+
+export enum MergeConflictEditorMode {
+  '3way' = '3way',
+  'traditional' = 'traditional',
+}
+
 export interface MergeConflictRT extends Partial<CommonLogInfo> {
   // 解决冲突模式 （3-way 或 传统模式）
-  editorMode: '3way' | 'traditional';
+  editorMode: MergeConflictEditorMode;
   // 冲突点数量（仅包含 AI 冲突点）
   conflictPointNum: number;
   // 使用了 ai 处理的冲突点数量
@@ -85,15 +67,6 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
 
 export type ReportInfo =
   | Partial<CommonLogInfo>
-  | ({ type: AISerivceType.GPT } & QuestionRT)
-  | ({ type: AISerivceType.Explain } & QuestionRT)
-  | ({ type: AISerivceType.SearchCode } & QuestionRT)
-  | ({ type: AISerivceType.SearchDoc } & QuestionRT)
-  | ({ type: AISerivceType.Test } & QuestionRT)
-  | ({ type: AISerivceType.Optimize } & CodeRT)
-  | ({ type: AISerivceType.Generate } & GenerateRT)
-  | ({ type: AISerivceType.Sumi } & CommandRT)
-  | ({ type: AISerivceType.Run } & RunRT)
   | ({ type: AISerivceType.Completion } & CompletionRT)
   | ({ type: AISerivceType.MergeConflict } & MergeConflictRT);
 

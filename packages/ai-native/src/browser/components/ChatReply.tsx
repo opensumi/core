@@ -11,13 +11,12 @@ import {
   CommandService,
   DisposableCollection,
   EDITOR_COMMANDS,
-  IAIReporter,
   IContextKeyService,
   LabelService,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { FileType, URI } from '@opensumi/ide-core-common';
+import { ChatAgentViewServiceToken, FileType, IAIReporter, URI } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
@@ -120,7 +119,7 @@ const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) =>
 };
 
 const ComponentRender = (props: { component: string; value?: unknown }) => {
-  const chatAgentViewService = useInjectable<IChatAgentViewService>(IChatAgentViewService);
+  const chatAgentViewService = useInjectable<IChatAgentViewService>(ChatAgentViewServiceToken);
   const [node, setNode] = useState<React.JSX.Element | null>(null);
 
   useEffect(() => {

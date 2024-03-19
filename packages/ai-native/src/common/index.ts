@@ -1,4 +1,12 @@
-import { CancellationToken, Event, FileType, IDisposable, IMarkdownString, Uri } from '@opensumi/ide-core-common';
+import {
+  AISerivceType,
+  CancellationToken,
+  Event,
+  FileType,
+  IDisposable,
+  IMarkdownString,
+  Uri,
+} from '@opensumi/ide-core-common';
 
 export const IAINativeService = Symbol('IAINativeService');
 
@@ -19,7 +27,7 @@ export interface IChatMessageStructure {
   /**
    * 数据采集上报消息类型
    */
-  reportType?: string;
+  reportType?: AISerivceType;
   /*
    * agent id
    */
@@ -59,11 +67,6 @@ export interface ChatCompletionRequestMessage {
    * @memberof ChatCompletionRequestMessage
    */
   name?: string;
-}
-
-export enum AISerivceType {
-  Chat = 'chat',
-  Agent = 'agent',
 }
 
 export const IAIChatService = Symbol('IAIChatService');

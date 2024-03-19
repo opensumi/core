@@ -8,11 +8,78 @@ import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
 
+export interface IIntelligentState {
+  isLoading: boolean;
+  isComplete: boolean;
+  answerCode: string;
+}
+
+class IntelligentStateModel implements IIntelligentState {
+  private _isLoading = false;
+  private _isComplete = false;
+  private _answerCode = '';
+
+  public setAnswerCode(v: string) {
+    this._answerCode = v;
+    return this;
+  }
+
+  public setLoading(v: boolean): this {
+    this._isLoading = v;
+    return this;
+  }
+
+  public setIsComplete(v: boolean): this {
+    this._isComplete = v;
+    return this;
+  }
+
+  public get answerCode(): string {
+    return this._answerCode;
+  }
+
+  public get isLoading(): boolean {
+    return this._isLoading;
+  }
+
+  public get isComplete(): boolean {
+    return this._isComplete;
+  }
+
+  public setAll(state: Partial<IIntelligentState>, isFull = true): this {
+    if (isFull) {
+      this.reset();
+      this.setIsComplete(!!state.isComplete)
+        .setLoading(!!state.isLoading)
+        .setAnswerCode(state.answerCode || '');
+    } else {
+      if (state.isComplete !== undefined) {
+        this.setIsComplete(!!state.isComplete);
+      }
+
+      if (state.isLoading !== undefined) {
+        this.setLoading(!!state.isLoading);
+      }
+
+      if (state.answerCode !== undefined) {
+        this.setAnswerCode(state.answerCode);
+      }
+    }
+    return this;
+  }
+
+  public reset(): void {
+    this.setLoading(false);
+    this.setIsComplete(false);
+    this.setAnswerCode('');
+  }
+}
+
 /**
  * 如果 lineRange 是通过 merge 合并生成的
  * 则跟 merge 相关的数据状态都在该 model 来处理
  */
-export class MergeStateModel {
+class MergeStateModel {
   /**
    * 存储合并前的所有 lineRange 元数据
    */
@@ -113,13 +180,19 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.mergeStateModel.isAllowCombination;
   }
 
+  public get isAiConflictPoint(): boolean {
+    return this.isMerge && this.type === 'modify';
+  }
+
   private mergeStateModel: MergeStateModel;
+  private intelligentStateModel: IntelligentStateModel;
 
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
     this._isComplete = false;
     this._id = uuid(6);
     this.mergeStateModel = new MergeStateModel();
+    this.intelligentStateModel = new IntelligentStateModel();
   }
 
   private setId(id: string): this {
@@ -140,6 +213,15 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   private setMergeStateModel(state: MergeStateModel): this {
     this.mergeStateModel = state;
     return this;
+  }
+
+  public setIntelligentStateModel(state: IntelligentStateModel): this {
+    this.intelligentStateModel = state;
+    return this;
+  }
+
+  public getIntelligentStateModel(): IntelligentStateModel {
+    return this.intelligentStateModel;
   }
 
   public setType(v: LineRangeType): this {
@@ -230,10 +312,10 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.retainState(child).setId(preId);
   }
 
-  public toRange(): IRange {
+  public toRange(startColumn?: number, endColumn?: number): IRange {
     return InnerRange.fromPositions(
-      new Position(this.startLineNumber, 1),
-      new Position(this.endLineNumberExclusive, 1),
+      new Position(this.startLineNumber, startColumn ?? 1),
+      new Position(this.endLineNumberExclusive, endColumn ?? 1),
     ).setType(this._type);
   }
 
@@ -256,7 +338,8 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
       .setType(this._type)
       .setTurnDirection(this._turnDirection)
       .setComplete(this._isComplete)
-      .setMergeStateModel(this.mergeStateModel);
+      .setMergeStateModel(this.mergeStateModel)
+      .setIntelligentStateModel(this.intelligentStateModel);
   }
 
   public override delta(offset: number): LineRange {

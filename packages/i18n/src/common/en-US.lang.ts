@@ -1401,9 +1401,14 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
     'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
     'mergeEditor.action.button.apply': 'Apply',
-    'mergeEditor.action.button.accept.left': 'Accept Left',
-    'mergeEditor.action.button.accept.right': 'Accept Right',
-    'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
+    'mergeEditor.action.button.accept.left': 'Accept left',
+    'mergeEditor.action.button.accept.right': 'Accept right',
+    'mergeEditor.open.3way': '3-way Editor',
+    'mergeEditor.conflict.prev': 'Previous conflict',
+    'mergeEditor.conflict.next': 'Next conflict',
+    'mergeEditor.conflict.resolve.all': 'AI one click solution',
+    'mergeEditor.conflict.resolve.all.stop': 'Stop All',
+    'mergeEditor.open.tradition': 'Tradition editor',
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
@@ -1419,11 +1424,17 @@ export const localizationBundle = {
     'aiNative.chat.enter.send': 'Enter send',
 
     'aiNative.inline.chat.operate.check.title': 'Check',
-    'aiNative.inline.chat.operate.discard.title': 'Discard',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
 
+    'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
+    'aiNative.resolve.conflict.dialog.detection':
+      'It is detected that you have made modifications. Regeneration will overwrite\nyour modifications. Are you sure to regenerate?',
+    'aiNative.resolve.conflict.message.not.processed.yet':
+      'AI has processed conflicts at {0}, but conflicts at {1} have not yet been processed (still marked as yellow) and require manual processing.',
+
+    'aiNative.operate.discard.title': 'Discard',
     'aiNative.operate.afresh.title': 'Afresh',
     'aiNative.operate.stop.title': 'Stop',
     // #endregion AI Native

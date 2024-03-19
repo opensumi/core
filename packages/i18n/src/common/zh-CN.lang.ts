@@ -1171,7 +1171,12 @@ export const localizationBundle = {
     'mergeEditor.action.button.apply': '应用更改',
     'mergeEditor.action.button.accept.left': '接受左边',
     'mergeEditor.action.button.accept.right': '接受右边',
-    'mergeEditor.open.in.editor': '在合并编辑器中解决',
+    'mergeEditor.open.3way': '3-way 编辑器',
+    'mergeEditor.conflict.prev': '上一处冲突',
+    'mergeEditor.conflict.next': '下一处冲突',
+    'mergeEditor.conflict.resolve.all': 'AI一键解决',
+    'mergeEditor.conflict.resolve.all.stop': '全部停止',
+    'mergeEditor.open.tradition': '传统编辑器',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     // #region AI Native
@@ -1187,11 +1192,17 @@ export const localizationBundle = {
     'aiNative.chat.enter.send': 'Enter 发送',
 
     'aiNative.inline.chat.operate.check.title': '采纳',
-    'aiNative.inline.chat.operate.discard.title': '丢弃',
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
 
+    'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
+    'aiNative.resolve.conflict.dialog.detection':
+      '检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。',
+    'aiNative.resolve.conflict.message.not.processed.yet':
+      'AI 已处理 {0} 处冲突，{1} 处冲突暂未处理（仍标记为黄色部分），需人工处理',
+
+    'aiNative.operate.discard.title': '丢弃',
     'aiNative.operate.afresh.title': '重新生成',
     'aiNative.operate.stop.title': '停止',
     // #endregion AI Native

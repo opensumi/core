@@ -88,6 +88,13 @@ export interface ISCMResourceGroup extends ISequence<ISCMResource> {
   toJSON(): { [key: string]: number };
 }
 
+export interface ISCMActionButtonDescriptor {
+  command: VSCommand;
+  secondaryCommands?: VSCommand[][];
+  description?: string;
+  enabled: boolean;
+}
+
 export interface ISCMProvider extends IDisposable {
   readonly label: string;
   readonly id: string;
@@ -104,12 +111,7 @@ export interface ISCMProvider extends IDisposable {
   readonly onDidChangeCommitTemplate?: Event<string>;
   readonly onDidChangeStatusBarCommands?: Event<VSCommand[]>;
   readonly acceptInputCommand?: VSCommand;
-  readonly actionButton?: {
-    command: VSCommand;
-    secondaryCommands?: VSCommand[][];
-    description?: string;
-    enabled: boolean;
-  } | null;
+  readonly actionButton?: ISCMActionButtonDescriptor | null;
   readonly statusBarCommands?: VSCommand[];
   readonly onDidChange: Event<void>;
 

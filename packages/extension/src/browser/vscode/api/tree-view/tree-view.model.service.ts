@@ -243,6 +243,7 @@ export class ExtensionTreeViewModel {
   private readonly treeItemsTransfer = LocalSelectionTransfer.getInstance<DraggedTreeItemsIdentifier>();
 
   private readonly treeMimeType: string;
+  private treeHandlerReadyDeffer = new Deferred<void>();
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -555,6 +556,7 @@ export class ExtensionTreeViewModel {
 
   handleTreeHandler(handle: IExtensionTreeHandle) {
     this._extensionTreeHandle = handle;
+    this.treeHandlerReadyDeffer.resolve();
   }
 
   handleTreeBlur = () => {
@@ -1040,6 +1042,7 @@ export class ExtensionTreeViewModel {
       await this.revealDeferred.promise;
     }
     return this.revealDelayer.trigger(async () => {
+      await this.treeHandlerReadyDeffer.promise;
       this.revealDeferred = new Deferred();
       if (this.treeModel.root.branchSize === 0) {
         // 当Tree为空时，刷新一次Tree
@@ -1059,7 +1062,7 @@ export class ExtensionTreeViewModel {
       // 递归展开几层节点，最多三层
       let expand = Math.min(isNumber(options.expand) ? options.expand : options.expand === true ? 1 : 0, 3);
 
-      let itemsToExpand = await this.extensionTreeHandle.ensureVisible(cache.path);
+      let itemsToExpand = await this.extensionTreeHandle?.ensureVisible(cache.path);
       if (itemsToExpand) {
         if (select) {
           // 更新节点选中态，不会改变焦点态节点

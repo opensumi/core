@@ -16,6 +16,7 @@ import {
   IEventBus,
   IOpenerService,
   IPreferenceSettingsService,
+  IQuickInputService,
   IQuickOpenHandlerRegistry,
   KeybindingContribution,
   KeybindingRegistry,
@@ -171,6 +172,12 @@ export class EditorContribution
 
   @Autowired(IEditorDocumentModelContentRegistry)
   contentRegistry: IEditorDocumentModelContentRegistry;
+
+  @Autowired(IQuickInputService)
+  private readonly quickInputService: IQuickInputService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@opensumi/ide-editor', {
@@ -499,6 +506,35 @@ export class EditorContribution
           }),
           options,
         );
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR_DEV, {
+      execute: async () => {
+        try {
+          const value = await this.quickInputService.open({ value: '' });
+          if (!value) {
+            return;
+          }
+
+          const toArgs = JSON.parse(value);
+
+          /**
+           * @example
+           * {
+           *   input1: {
+           *     uri: 'current 分支的 uri'
+           *   },
+           *   input2: {
+           *     uri: 'incoming 分支的 uri'
+           *   },
+           *   output: '中间视图的文件 uri',
+           *   base: '共同祖先分支的文件 uri'
+           * }
+           */
+
+          this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR.id, toArgs);
+        } catch (error) {}
       },
     });
 

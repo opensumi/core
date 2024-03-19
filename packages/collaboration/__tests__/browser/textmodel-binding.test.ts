@@ -18,7 +18,7 @@ import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
-import { ICollaborationService, COLLABORATION_PORT } from '../../src/common';
+import { ICollaborationService, DEFAULT_COLLABORATION_PORT } from '../../src/common';
 
 const injector = new Injector();
 
@@ -49,7 +49,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
 
   beforeEach(() => {
     doc = new YDoc();
-    wsProvider = new WebsocketProvider(`ws://127.0.0.1:${COLLABORATION_PORT}`, 'test', doc, { connect: false }); // we don't use wsProvider here
+    wsProvider = new WebsocketProvider(`ws://127.0.0.1:${DEFAULT_COLLABORATION_PORT}`, 'test', doc, { connect: false }); // we don't use wsProvider here
     user1 = createBindingWithTextModel(doc, wsProvider.awareness);
     user2 = createBindingWithTextModel(doc, wsProvider.awareness);
     jest.mock('@opensumi/di');
@@ -215,7 +215,9 @@ describe('TextModelBinding test for editor', () => {
 
   beforeAll(() => {
     doc = new YDoc();
-    const wsProvider = new WebsocketProvider(`ws://127.0.0.1:${COLLABORATION_PORT}`, 'test', doc, { connect: false });
+    const wsProvider = new WebsocketProvider(`ws://127.0.0.1:${DEFAULT_COLLABORATION_PORT}`, 'test', doc, {
+      connect: false,
+    });
 
     const {
       binding: _binding,

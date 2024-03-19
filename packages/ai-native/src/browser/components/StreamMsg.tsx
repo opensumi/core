@@ -1,8 +1,8 @@
 import hljs from 'highlight.js';
 import React, { useCallback, useEffect } from 'react';
 
-import { DisposableCollection, IAIReporter, useInjectable } from '@opensumi/ide-core-browser';
-import { localize } from '@opensumi/ide-core-common';
+import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
+import { IAIReporter, localize } from '@opensumi/ide-core-common';
 
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 

@@ -2,12 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { IAIInlineChatService, useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction, AIInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
-import { Emitter, localize } from '@opensumi/ide-core-common';
-import { ContentWidgetContainerPanel } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget/containerPanel';
+import { Emitter, InlineChatFeatureRegistryToken, localize } from '@opensumi/ide-core-common';
 
 import { Loading } from '../../components/Loading';
-import { IInlineChatFeatureRegistry } from '../../types';
 
 import { InlineChatFeatureRegistry } from './inline-chat.feature.registry';
 import styles from './inline-chat.module.less';
@@ -20,7 +19,7 @@ export interface IAIInlineOperationProps {
 
 const AIInlineOperation = (props: IAIInlineOperationProps) => {
   const { hanldeActions, onClose } = props;
-  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(IInlineChatFeatureRegistry);
+  const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
 
   const operationList = useMemo(() => inlineChatFeatureRegistry.getActionButtons(), [inlineChatFeatureRegistry]);
 
@@ -110,7 +109,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
       },
       {
         icon: 'discard',
-        text: localize('aiNative.inline.chat.operate.discard.title'),
+        text: localize('aiNative.operate.discard.title'),
         onClick: () => {
           aiInlineChatService._onDiscard.fire();
         },
