@@ -35,7 +35,8 @@
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
     "react-chat-elements": "^12.0.10",
-    "react-highlight": "^0.15.0"
+    "react-highlight": "^0.15.0",
+    "dom-align": "^1.7.0"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",

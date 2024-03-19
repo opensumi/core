@@ -12,16 +12,17 @@ import omit from 'lodash/omit';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, Emitter, INodeLogger, isWindows, path, URI } from '@opensumi/ide-core-node';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, Emitter, INodeLogger, URI, isWindows, path } from '@opensumi/ide-core-node';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
-import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
+import { IProcessExitEvent, IProcessReadyEvent } from '../common/process';
 import { IPtyProcessProxy, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
+import { bashIntergrationPath, initShellIntergrationFile } from './stupid-shell-intergration';
 
 export const IPtyService = Symbol('IPtyService');
 
@@ -180,6 +181,18 @@ export class PtyService extends Disposable {
         },
         options.env,
       ) as { [key: string]: string };
+    }
+
+    // HACK: 这里的处理逻辑有些黑，后续需要整体去整理下 Shell Intergration，然后整体优化一下
+    // 如果是启动 bash，则使用 init file 植入 Intergration 能力
+    if (options.executable?.includes('bash')) {
+      await initShellIntergrationFile();
+      if (!options.args) {
+        options.args = [];
+      }
+      if (Array.isArray(options.args)) {
+        options.args.push('--init-file', bashIntergrationPath);
+      }
     }
 
     this._ptyOptions['env'] = ptyEnv;

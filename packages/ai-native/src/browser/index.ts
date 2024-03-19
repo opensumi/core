@@ -12,6 +12,7 @@ import { IAiChatService, IChatAgentService, IChatManagerService } from '../commo
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
+import { TerminalAIContribution } from './ai-terminal/terminal-debug.contributon';
 import { ChatAgentService } from './chat-agent.service';
 import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
@@ -21,7 +22,7 @@ import { MergeConflictContribution } from './merge-conflict';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
-import { AiChatLayoutConfig, AiTopLayoutConfig } from './override/layout/layout-config';
+import { AiChatLayoutConfig } from './override/layout/layout-config';
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
 import lightTheme from './override/theme/light-theme';
@@ -78,8 +79,17 @@ export class AiNativeModule extends BrowserModule {
     aiNativeConfig.enable();
 
     const { capabilities } = aiNativeConfig;
-    const { supportsOpenSumiDesign, supportsAiMarkers, supportsAiChatAssistant, supportsConflictResolve } =
-      capabilities;
+    const {
+      supportsOpenSumiDesign,
+      supportsAiMarkers,
+      supportsAiChatAssistant,
+      supportsConflictResolve,
+      supportsAiTerminal,
+    } = capabilities;
+
+    if (supportsAiTerminal) {
+      injector.addProviders(TerminalAIContribution);
+    }
 
     if (supportsOpenSumiDesign) {
       injector.addProviders(AiMenuBarContribution);

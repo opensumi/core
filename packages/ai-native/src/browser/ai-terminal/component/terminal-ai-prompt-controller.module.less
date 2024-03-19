@@ -1,0 +1,143 @@
+.container {
+  position: absolute;
+  // background-color: #262626;
+  background-color: var(--editorGroupHeader-tabsBackground);
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 80px;
+  width: 500px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 12px;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  font-size: 14px;
+}
+
+.statusContainer {
+  position: absolute;
+  bottom: 0;
+  right: 12px;
+  font-size: 8px;
+  opacity: 0.5;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  width: 100%;
+  color: var(--ai-native-text-color-common);
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+  height: 28px;
+  padding-left: 0;
+  background-color: transparent;
+}
+
+.input::placeholder {
+  color: #787878;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--editorGroupHeader-tabsBackground);
+  color: var(--ai-native-text-color-common);
+  max-height: 350px;
+  width: 500px;
+  overflow-y: auto;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.suggestionItem {
+  padding: 6px 10px 6px 16px;
+  cursor: pointer;
+}
+
+.suggestionItemContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestionDesc {
+  font-size: 12px;
+}
+
+.suggestionCmd {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.suggestionItem:hover {
+  filter: brightness(110%);
+  background-color: var(--selection-background);
+}
+
+// AI 加载动画，和聊天框里面的发送按钮一样
+.ai_loading {
+  position: relative;
+  height: 4px;
+  width: 22px;
+  height: 22px;
+  .loader {
+    border-radius: 50%;
+    width: 4px;
+    height: 4px;
+    display: inline-block;
+    animation-fill-mode: both;
+    animation: bblFadInOut 1.5s infinite ease-in-out;
+    color: #315c99;
+    position: absolute;
+    transform: translateZ(0);
+    top: 0;
+  }
+  .loader:nth-child(1) {
+    left: 0;
+    animation-delay: 0.1s;
+  }
+  .loader:nth-child(2) {
+    left: 6px;
+    animation-delay: 0.2s;
+  }
+  .loader:nth-child(3) {
+    left: 12px;
+    animation-delay: 0.3s;
+  }
+
+  @keyframes bblFadInOut {
+    0%,
+    80%,
+    100% {
+      box-shadow: 0 10px 0 -3px;
+    }
+    40% {
+      box-shadow: 0 10px 0 0;
+    }
+  }
+}
+
+.send_icon {
+  > span {
+    &::before {
+      font-size: 16px;
+      color: rgba(60, 141, 255, 0.65);
+    }
+  }
+}
