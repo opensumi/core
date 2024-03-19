@@ -332,7 +332,7 @@ div[class*='design-editor_tab_block_container__'] {
   }
 
   .design-titleActions {
-    > span {
+    > span.design-iconAction {
       margin-left: 4px;
 
       &:first-child {
@@ -550,13 +550,14 @@ div[class*='design-editor_tab_block_container__'] {
   }
 
   .design-titleActions {
-    > span {
+    > span.design-iconAction {
       display: flex;
       width: 22px;
       height: 22px;
       align-items: center;
       justify-content: center;
       margin-left: 0;
+      box-sizing: border-box;
       color: var(--design-text-color-normal);
 
       &::before {
