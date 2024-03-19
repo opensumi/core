@@ -1121,6 +1121,7 @@ export const localizationBundle = {
 
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
+    'diffEditor.action.toggleCollapseUnchangedRegions': '折叠未更改的代码区域',
 
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
 

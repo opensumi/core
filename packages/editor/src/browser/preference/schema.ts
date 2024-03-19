@@ -137,7 +137,7 @@ export const EDITOR_DEFAULTS = {
     extraEditorClassName: '',
     disableMonospaceOptimizations: false,
     rulers: [],
-    ariaLabel: localize('editorViewAccessibleLabel', 'Editor content'),
+    ariaLabel: localize('editorViewAccessibleLabel', 'Editor Content'),
     renderLineNumbers: 0,
     renderCustomLineNumbers: null,
     renderFinalNewline: true,
@@ -236,6 +236,24 @@ export const EDITOR_DEFAULTS = {
     lightbulbEnabled: true,
     codeActionsOnSave: {},
     codeActionsOnSaveTimeout: 750,
+  },
+};
+
+export const DIFF_EDITOR_DEFAULTS = {
+  renderIndicators: true,
+  minimap: false,
+  renderSideBySide: true,
+  ignoreTrimWhitespace: false,
+  hideUnchangedRegions: {
+    enabled: true,
+    revealLineCount: 20,
+    minimumLineCount: 3,
+    contextLineCount: 3,
+  },
+  experimental: {
+    showMoves: false,
+    showEmptyDecorations: true,
+    collapseUnchangedRegions: true,
   },
 };
 
@@ -1412,15 +1430,6 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_MODEL_DEFAULTS.largeFileOptimizations,
     description: '%editor.configuration.largeFileOptimizations%',
   },
-  'diffEditor.renderIndicators': {
-    type: 'boolean',
-    default: true,
-    description: '%editor.configuration.renderIndicators%',
-  },
-  'diffEditor.minimap': {
-    type: 'boolean',
-    default: false,
-  },
   'editor.defaultFormatter': {
     type: 'string',
     description: '%editor.configuration.defaultFormatter%',
@@ -1429,6 +1438,15 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: true,
     description: '%editor.configuration.unicodeHighlight.ambiguousCharacters%',
+  },
+  'diffEditor.renderIndicators': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.renderIndicators,
+    description: '%editor.configuration.renderIndicators%',
+  },
+  'diffEditor.minimap': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.minimap,
   },
 };
 
@@ -1622,16 +1640,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
       type: 'string',
     },
   },
-  'diffEditor.renderSideBySide': {
-    type: 'boolean',
-    default: true,
-    description: '%diffEditor.configuration.renderSideBySide%',
-  },
-  'diffEditor.ignoreTrimWhitespace': {
-    type: 'boolean',
-    default: false,
-    description: '%diffEditor.configuration.ignoreTrimWhitespace%',
-  },
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',
     default: false,
@@ -1641,6 +1649,55 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: true,
     description: '%editor.configuration.mouseBackForwardToNavigate%',
+  },
+  'diffEditor.renderSideBySide': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.renderSideBySide,
+    description: '%diffEditor.configuration.renderSideBySide%',
+  },
+  'diffEditor.ignoreTrimWhitespace': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.ignoreTrimWhitespace,
+    description: '%diffEditor.configuration.ignoreTrimWhitespace%',
+  },
+  'diffEditor.hideUnchangedRegions.enabled': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.hideUnchangedRegions.enabled,
+    description: 'Controls whether the diff editor shows unchanged regions.',
+  },
+  'diffEditor.hideUnchangedRegions.revealLineCount': {
+    type: 'integer',
+    default: DIFF_EDITOR_DEFAULTS.hideUnchangedRegions.revealLineCount,
+    description: 'Controls how many lines are used for unchanged regions.',
+    minimum: 1,
+  },
+  'diffEditor.hideUnchangedRegions.minimumLineCount': {
+    type: 'integer',
+    default: DIFF_EDITOR_DEFAULTS.hideUnchangedRegions.minimumLineCount,
+    description: 'Controls how many lines are used as a minimum for unchanged regions.',
+    minimum: 1,
+  },
+  'diffEditor.hideUnchangedRegions.contextLineCount': {
+    type: 'integer',
+    default: DIFF_EDITOR_DEFAULTS.hideUnchangedRegions.contextLineCount,
+    description: 'Controls how many lines are used as context when comparing unchanged regions.',
+    minimum: 1,
+  },
+  'diffEditor.experimental.showMoves': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.experimental.showMoves,
+    description: 'Controls whether the diff editor should show detected code moves.',
+  },
+  'diffEditor.experimental.showEmptyDecorations': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.experimental.showEmptyDecorations,
+    description:
+      'Controls whether the diff editor shows empty decorations to see where characters got inserted or deleted.',
+  },
+  'diffEditor.experimental.collapseUnchangedRegions': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.experimental.collapseUnchangedRegions,
+    description: 'Controls whether the diff editor shows unchanged regions.',
   },
 };
 

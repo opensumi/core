@@ -686,6 +686,24 @@ export namespace EDITOR_COMMANDS {
   };
 }
 
+export namespace DIFF_EDITOR_COMMANDS {
+  const CATEGORY = 'diff-editor';
+
+  export const REVERT: Command = {
+    id: 'editor.diff.revert',
+    category: CATEGORY,
+  };
+
+  export const ACCEPT: Command = {
+    id: 'editor.diff.accept',
+    category: CATEGORY,
+  };
+
+  export const TOGGLE_COLLAPSE_UNCHANGED_REGIONS: Command = {
+    id: 'editor.diff.toggleCollapseUnchangedRegions',
+    category: CATEGORY,
+  };
+}
 export namespace SEARCH_COMMANDS {
   const CATEGORY = 'search';
 
