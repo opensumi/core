@@ -7,11 +7,11 @@ import utils from 'y-websocket/bin/utils';
 import { Doc as YDoc, Map as YMap, Text as YText } from 'yjs';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 
-import { COLLABORATION_PORT, IYWebsocketServer, ROOM_NAME } from '../common';
+import { DEFAULT_COLLABORATION_PORT, IYWebsocketServer, ROOM_NAME } from '../common';
 
 @Injectable()
 export class YWebsocketServerImpl implements IYWebsocketServer {
@@ -20,6 +20,9 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
 
   @Autowired(IFileService)
   private fileService: FileService;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   private yDoc: YDoc;
 
@@ -52,8 +55,10 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
       this.websocketServer.handleUpgrade(req, socket, head, handleAuth);
     });
 
-    this.server.listen(COLLABORATION_PORT, () => {
-      this.logger.log(`y-websocket server listening on port ${COLLABORATION_PORT}`);
+    const listenPort = this.appConfig.collaborationOptions?.port || DEFAULT_COLLABORATION_PORT;
+
+    this.server.listen(listenPort, () => {
+      this.logger.log(`y-websocket server listening on port ${listenPort}`);
     });
 
     // init
