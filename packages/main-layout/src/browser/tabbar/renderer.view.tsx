@@ -84,10 +84,12 @@ export const RightTabRenderer = ({
   className,
   components,
   tabbarView,
+  tabpanelView,
 }: {
   className: string;
   components: ComponentRegistryInfo[];
   tabbarView?: FC<{}>;
+  tabpanelView?: FC<{}>;
 }) => (
   <TabRendererBase
     side='right'
@@ -96,7 +98,7 @@ export const RightTabRenderer = ({
     className={cls(className, 'right-slot')}
     components={components}
     TabbarView={tabbarView ?? RightTabbarRenderer}
-    TabpanelView={RightTabPanelRenderer}
+    TabpanelView={tabpanelView ?? RightTabPanelRenderer}
   />
 );
 
