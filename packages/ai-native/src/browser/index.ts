@@ -14,6 +14,7 @@ import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerServic
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
+import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -29,6 +30,7 @@ export class AINativeModule extends BrowserModule {
   contributionProvider = AINativeCoreContribution;
   providers: Provider[] = [
     AINativeBrowserContribution,
+    TerminalAIContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,

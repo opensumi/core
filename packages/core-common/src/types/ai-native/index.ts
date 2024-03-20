@@ -28,6 +28,10 @@ export interface IAINativeCapabilities {
    * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
+  /**
+   * Use ai terminal capabilities
+   */
+  supportsAITerminal?: boolean;
 }
 
 export interface IAINativeConfig {
