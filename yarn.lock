@@ -2677,7 +2677,7 @@ __metadata:
     "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-theme": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"
-    "@opensumi/monaco-editor-core": 0.45.0-patch.1
+    "@opensumi/monaco-editor-core": 0.47.0-patch.5
   languageName: unknown
   linkType: soft
 
@@ -3118,10 +3118,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/monaco-editor-core@npm:0.45.0-patch.1":
-  version: 0.45.0-patch.1
-  resolution: "@opensumi/monaco-editor-core@npm:0.45.0-patch.1"
-  checksum: 863632cd57aa8885d93d06df2eb32bc9571902aadbfd2ae9f2f4edefead6a2f878702bf292df91019fc0b06321c162af4ca754c033da2935201decd10e301e0b
+"@opensumi/monaco-editor-core@npm:0.47.0-patch.5":
+  version: 0.47.0-patch.5
+  resolution: "@opensumi/monaco-editor-core@npm:0.47.0-patch.5"
+  checksum: 8240cb192a248d17214893ad10ee9013018c0e8c7cd1713f3269050290cdc905f0581845d0bb3fb66355d23038620aeaab9a988c42bd46a89b4bff9dde854bee
   languageName: node
   linkType: hard
 

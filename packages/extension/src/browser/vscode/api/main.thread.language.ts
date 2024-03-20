@@ -290,6 +290,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(
       handle,
       monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)!, {
+        _debugDisplayName: `ext-${handle}`,
         triggerCharacters,
         provideCompletionItems: async (
           model: ITextModel,

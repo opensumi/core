@@ -230,6 +230,8 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   _onDidChangeModel = new Emitter<monaco.editor.IModelChangedEvent>();
   onDidChangeModel = this._onDidChangeModel.event;
+  _onWillChangeModel = new Emitter<monaco.editor.IModelChangedEvent>();
+  onWillChangeModel = this._onWillChangeModel.event;
 
   _onDidChangeModelDecorations = new Emitter<monaco.editor.IModelDecorationsChangedEvent>();
   onDidChangeModelDecorations = this._onDidChangeModelDecorations.event;
