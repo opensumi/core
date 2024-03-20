@@ -306,7 +306,7 @@ export class PS1TerminalService extends Disposable {
         currentObj.description = line.substring('#Description#:'.length).trim();
         aiCommandSuggestions.push(currentObj);
         if (aiCommandSuggestions.length > 4) {
-          // 如果 AI 返回的命令超过 5 个，就停止 AI 生成 (这种情况下往往是老残模型抽风了)
+          // 如果 AI 返回的命令超过 5 个，就停止 AI 生成 (这种情况下往往是模型不稳定或者出现了幻觉)
           this.stopAIStreamRequest();
         }
         suggestionCallback(aiCommandSuggestions); // 每拿到一个结果就回调一次，优化用户体感
