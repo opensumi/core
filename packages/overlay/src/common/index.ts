@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { MessageType, URI } from '@opensumi/ide-core-common';
+import { Event, MessageType, URI } from '@opensumi/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
 
@@ -44,7 +44,8 @@ export const MAX_MESSAGE_LENGTH = 1000;
 export const IDialogService = Symbol('IDialogService');
 export interface IDialogService extends IMessageService {
   closable?: boolean;
-  isVisible(): boolean;
+  visible: boolean;
+  onDidDialogVisibleChange: Event<boolean>;
   getMessage(): string | React.ReactNode;
   getIcon(): Icon | undefined;
   getButtons(): string[];
