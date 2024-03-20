@@ -69,17 +69,6 @@ export class CompareEditorContribution implements MenuContribution, CommandContr
     menu.registerMenuItems(MenuId.EditorTitle, [
       {
         command: {
-          id: DIFF_EDITOR_COMMANDS.ACCEPT.id,
-          label: localize('editor.action.revert'),
-        },
-        iconClass: getIcon('rollback'),
-        group: 'navigation',
-        when: 'isInDiffEditor && diffResource =~ /%26comparing%3Dtrue$/',
-      },
-    ]);
-    menu.registerMenuItems(MenuId.EditorTitle, [
-      {
-        command: {
           id: DIFF_EDITOR_COMMANDS.REVERT.id,
           label: localize('editor.action.revert'),
         },
