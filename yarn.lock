@@ -2158,18 +2158,18 @@ __metadata:
     marked: 4.0.10
     prop-types: ^15.8.1
     raf: ^3.4.1
-    rc-dialog: ~7.6.0
-    rc-dropdown: ~2.4.1
-    rc-input-number: ^7.4.2
-    rc-menu: ^9.3.2
-    rc-notification: ~3.3.1
-    rc-util: ^4.16.1
-    react-ctxmenu-trigger: ^1.0.0
+    rc-dialog: ^9.4.0
+    rc-dropdown: ^4.2.0
+    rc-input-number: ^9.0.0
+    rc-menu: ^9.13.0
+    rc-notification: ^3.3.1
+    rc-util: ^5.39.1
+    react-ctxmenu-trigger: ^1.0.1
     react-custom-scrollbars: ^4.2.1
     react-lifecycles-compat: ^3.0.4
-    react-virtualized-auto-sizer: ^1.0.2
-    react-virtuoso: ^3.1.5
-    react-window: ^1.8.5
+    react-virtualized-auto-sizer: ^1.0.24
+    react-virtuoso: ^4.7.3
+    react-window: ^1.8.10
   languageName: unknown
   linkType: soft
 
@@ -2208,7 +2208,6 @@ __metadata:
     lodash: ^4.17.21
     mobx: ^6.12.0
     mobx-react-lite: ^4.0.5
-    rc-menu: ^9.3.2
     react: ^18.2.0
     react-autosize-textarea: ^7.0.0
     react-ctxmenu-trigger: ^1.0.0
@@ -3237,7 +3236,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rc-component/portal@npm:^1.1.0":
+"@rc-component/portal@npm:^1.0.0-8, @rc-component/portal@npm:^1.1.0":
   version: 1.1.2
   resolution: "@rc-component/portal@npm:1.1.2"
   dependencies:
@@ -4444,24 +4443,6 @@ __metadata:
   version: 1.2.0
   resolution: "@ungap/structured-clone@npm:1.2.0"
   checksum: 4f656b7b4672f2ce6e272f2427d8b0824ed11546a601d8d5412b9d7704e83db38a8d9f402ecdf2b9063fc164af842ad0ec4a55819f621ed7e7ea4d1efcc74524
-  languageName: node
-  linkType: hard
-
-"@virtuoso.dev/react-urx@npm:^0.2.12":
-  version: 0.2.13
-  resolution: "@virtuoso.dev/react-urx@npm:0.2.13"
-  dependencies:
-    "@virtuoso.dev/urx": ^0.2.13
-  peerDependencies:
-    react: ">=16"
-  checksum: 173e91c21f6a8cd506ad3b72af10656897fe1951124ed9eeb1fd85575534993bea2f97cba3f81c08ae1e88a2613df348e2c80d0ceecb3021f8c8c8fe0e053ee2
-  languageName: node
-  linkType: hard
-
-"@virtuoso.dev/urx@npm:^0.2.12, @virtuoso.dev/urx@npm:^0.2.13":
-  version: 0.2.13
-  resolution: "@virtuoso.dev/urx@npm:0.2.13"
-  checksum: 682a99cf40ccc429241268dd37495cd1ed4695ae58b5a1169c75df1630d5dc3fd8eb3aaa655f71c37f39ba9c23c0aaf4401b76d8a986986d1a38a422d596a6ba
   languageName: node
   linkType: hard
 
@@ -16582,46 +16563,68 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-dialog@npm:~7.6.0":
-  version: 7.6.1
-  resolution: "rc-dialog@npm:7.6.1"
+"rc-dialog@npm:^9.4.0":
+  version: 9.4.0
+  resolution: "rc-dialog@npm:9.4.0"
   dependencies:
-    babel-runtime: 6.x
-    rc-animate: 2.x
-    rc-util: ^4.16.1
-  checksum: 1c6c7ad7fcc055c9d5017ba9da858e6fe4a648dbb88bcf823c5c4725d036386e6daac2464f44e6868cbd50730506040206be1aba0d8ddd883b24f33e70b74390
-  languageName: node
-  linkType: hard
-
-"rc-dropdown@npm:~2.4.1":
-  version: 2.4.1
-  resolution: "rc-dropdown@npm:2.4.1"
-  dependencies:
-    babel-runtime: ^6.26.0
+    "@babel/runtime": ^7.10.1
+    "@rc-component/portal": ^1.0.0-8
     classnames: ^2.2.6
-    prop-types: ^15.5.8
-    rc-trigger: ^2.5.1
-    react-lifecycles-compat: ^3.0.2
-  checksum: 82945cd60847d4c9c1dcc4b07ffb3829e0d4de3fa310c95b9ca21570f624a52ad9578f50d16c8d9fb315b7f8c31e59ae4bbb83c91dd51839e431bf92128cbe97
+    rc-motion: ^2.3.0
+    rc-util: ^5.21.0
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: af21b12e7b4dead085a63570d09d8439e8f75ef6a644f96f87f272ba68308cec4a5b023774c6cf281421315638841b68d9860ab14f9193f7ed95e63a704f97ef
   languageName: node
   linkType: hard
 
-"rc-input-number@npm:^7.4.2":
-  version: 7.4.2
-  resolution: "rc-input-number@npm:7.4.2"
+"rc-dropdown@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "rc-dropdown@npm:4.2.0"
+  dependencies:
+    "@babel/runtime": ^7.18.3
+    "@rc-component/trigger": ^2.0.0
+    classnames: ^2.2.6
+    rc-util: ^5.17.0
+  peerDependencies:
+    react: ">=16.11.0"
+    react-dom: ">=16.11.0"
+  checksum: 436ef23be5436fa730327a83d853cf2cce74823fa72b813068998a180aeca7978e42bf342bc4dfe1b1cb554bfc7e013324a15ed21a9b80b778d1c9312c5c6e05
+  languageName: node
+  linkType: hard
+
+"rc-input-number@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "rc-input-number@npm:9.0.0"
   dependencies:
     "@babel/runtime": ^7.10.1
     "@rc-component/mini-decimal": ^1.0.1
     classnames: ^2.2.5
+    rc-input: ~1.4.0
     rc-util: ^5.28.0
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 36a2b03902f96ec56b66588294b61cf48656e9004dad4ee92ae577d3c329400a2b5bf1f9f8830812b3ca860cf2971fdf340dbf587993740db3c97146c6446662
+  checksum: 4109c5af3f19bde8ee3d46a8b9bbc3f95d1386e5481e207bea567bbddea22a517b11a2ce7b6487d70b9a5287b1d98f08e7c9758d23c8524d073ea56d65871718
   languageName: node
   linkType: hard
 
-"rc-menu@npm:^9.3.2":
+"rc-input@npm:~1.4.0":
+  version: 1.4.5
+  resolution: "rc-input@npm:1.4.5"
+  dependencies:
+    "@babel/runtime": ^7.11.1
+    classnames: ^2.2.1
+    rc-util: ^5.18.1
+  peerDependencies:
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: 8913ec65c1011f23d3f6b304f7fc1911c20d66d9e7941cdbacd098b221b149e7ef2edc7b511865b3c808d621dd7af99516518f1b6bfe464bb3496a7cbcda04b2
+  languageName: node
+  linkType: hard
+
+"rc-menu@npm:^9.13.0":
   version: 9.13.0
   resolution: "rc-menu@npm:9.13.0"
   dependencies:
@@ -16638,7 +16641,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-motion@npm:^2.0.0, rc-motion@npm:^2.4.3":
+"rc-motion@npm:^2.0.0, rc-motion@npm:^2.3.0, rc-motion@npm:^2.4.3":
   version: 2.9.0
   resolution: "rc-motion@npm:2.9.0"
   dependencies:
@@ -16652,7 +16655,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-notification@npm:~3.3.1":
+"rc-notification@npm:^3.3.1":
   version: 3.3.1
   resolution: "rc-notification@npm:3.3.1"
   dependencies:
@@ -16695,22 +16698,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-trigger@npm:^2.5.1":
-  version: 2.6.5
-  resolution: "rc-trigger@npm:2.6.5"
-  dependencies:
-    babel-runtime: 6.x
-    classnames: ^2.2.6
-    prop-types: 15.x
-    rc-align: ^2.4.0
-    rc-animate: 2.x
-    rc-util: ^4.4.0
-    react-lifecycles-compat: ^3.0.4
-  checksum: 749145ae9246c0ca208d9d46f5e215e3832ea54f1e51ad2f55a16b8130f0f057fda387d923f582d8630bc1cb96b17415b74a4dd9b4b502ae9bf06daf07df0434
-  languageName: node
-  linkType: hard
-
-"rc-util@npm:^4.0.4, rc-util@npm:^4.15.3, rc-util@npm:^4.16.1, rc-util@npm:^4.4.0":
+"rc-util@npm:^4.0.4, rc-util@npm:^4.15.3, rc-util@npm:^4.4.0":
   version: 4.21.1
   resolution: "rc-util@npm:4.21.1"
   dependencies:
@@ -16723,7 +16711,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.9.4":
+"rc-util@npm:^5.17.0, rc-util@npm:^5.18.1, rc-util@npm:^5.21.0, rc-util@npm:^5.24.4, rc-util@npm:^5.27.0, rc-util@npm:^5.28.0, rc-util@npm:^5.37.0, rc-util@npm:^5.38.0, rc-util@npm:^5.39.1, rc-util@npm:^5.9.4":
   version: 5.39.1
   resolution: "rc-util@npm:5.39.1"
   dependencies:
@@ -16780,7 +16768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-ctxmenu-trigger@npm:^1.0.0":
+"react-ctxmenu-trigger@npm:^1.0.0, react-ctxmenu-trigger@npm:^1.0.1":
   version: 1.0.1
   resolution: "react-ctxmenu-trigger@npm:1.0.1"
   dependencies:
@@ -16851,7 +16839,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-lifecycles-compat@npm:^3.0.2, react-lifecycles-compat@npm:^3.0.4":
+"react-lifecycles-compat@npm:^3.0.4":
   version: 3.0.4
   resolution: "react-lifecycles-compat@npm:3.0.4"
   checksum: a904b0fc0a8eeb15a148c9feb7bc17cec7ef96e71188280061fc340043fd6d8ee3ff233381f0e8f95c1cf926210b2c4a31f38182c8f35ac55057e453d6df204f
@@ -16885,7 +16873,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtualized-auto-sizer@npm:^1.0.2":
+"react-virtualized-auto-sizer@npm:^1.0.24":
   version: 1.0.24
   resolution: "react-virtualized-auto-sizer@npm:1.0.24"
   peerDependencies:
@@ -16895,20 +16883,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtuoso@npm:^3.1.5":
-  version: 3.1.5
-  resolution: "react-virtuoso@npm:3.1.5"
-  dependencies:
-    "@virtuoso.dev/react-urx": ^0.2.12
-    "@virtuoso.dev/urx": ^0.2.12
+"react-virtuoso@npm:^4.7.3":
+  version: 4.7.3
+  resolution: "react-virtuoso@npm:4.7.3"
   peerDependencies:
     react: ">=16 || >=17 || >= 18"
     react-dom: ">=16 || >=17 || >= 18"
-  checksum: c6dd6921e73ec1f88ae99c0eb002df24cdd73eb9154d71be43ea957b613ca9e976d6b0625b78f25a4dafc415ac680c6de576466847887d1da57bb3313cce7ec8
+  checksum: 554d399893d2fbcfcab816d9b16ef13617819fa766eba0e8fb2a4e3d3e52ab1a0859a15de5065ecbde1bace90a0f9033cb315c8ff82a32ead466e6906da99be2
   languageName: node
   linkType: hard
 
-"react-window@npm:^1.8.5":
+"react-window@npm:^1.8.10, react-window@npm:^1.8.5":
   version: 1.8.10
   resolution: "react-window@npm:1.8.10"
   dependencies:

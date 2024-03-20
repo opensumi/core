@@ -343,7 +343,7 @@ const LaunchIndexs = ({
       <div className={styles.foot_box}>
         <Button
           className={styles.button}
-          placement={'topCenter'}
+          placement={'top'}
           menu={snippetMenu}
           moreVisible={menuOpen}
           onVisibleChange={handleVisibleChange}

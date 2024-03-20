@@ -6,7 +6,7 @@ import React, { PropsWithChildren } from 'react';
 import { tuple } from '../utils/type';
 import { warning } from '../utils/warning';
 
-const Placements = tuple('topLeft', 'topCenter', 'topRight', 'bottomLeft', 'bottomCenter', 'bottomRight');
+const Placements = tuple('topLeft', 'top', 'topRight', 'bottomLeft', 'bottom', 'bottomRight');
 export type Placement = (typeof Placements)[number];
 
 type OverlayFunc = () => React.ReactNode;
@@ -103,7 +103,7 @@ export default class Dropdown extends React.Component<PropsWithChildren<DropDown
             expandIcon,
           });
 
-    return fixedModeOverlay;
+    return fixedModeOverlay as React.ReactElement<any>;
   };
 
   renderDropDown = () => {
