@@ -110,7 +110,6 @@ const mockConfigurationService: any = {
         overrides: [],
       },
       affectsConfiguration: (() => {}) as any,
-      sourceConfig: {},
     });
     preferences.set(k, v);
   },
