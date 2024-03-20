@@ -32,6 +32,10 @@ export interface IAINativeCapabilities {
    * Use ai to provide rename suggestions
    */
   supportsRenameSuggestions?: boolean;
+  /**
+   * Use ai terminal capabilities
+   */
+  supportsAITerminal?: boolean;
 }
 
 export interface IAINativeLayout {

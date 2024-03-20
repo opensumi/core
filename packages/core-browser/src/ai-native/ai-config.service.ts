@@ -16,6 +16,7 @@ export class AINativeConfigService {
     supportsInlineCompletion: false,
     supportsConflictResolve: false,
     supportsRenameSuggestions: false,
+    supportsAITerminal: false,
   };
 
   private internalLayout: Required<IAINativeLayout> = {
