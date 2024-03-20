@@ -44,7 +44,7 @@ import { AINativeService } from './ai-native.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { AIChatLayoutConfig } from './layout/layout-config';
+import { AIChatLayoutConfig, AIMenubarLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import {
   AINativeCoreContribution,
@@ -111,11 +111,12 @@ export class AINativeBrowserContribution
 
   initialize() {
     this.aiNativeConfigService.enableCapabilities();
-    this.aiNativeConfigService.enableLayout();
 
-    const supportsChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
+    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
+    const { useMenubarView } = this.aiNativeConfigService.layout;
 
     let layoutConfig = this.appConfig.layoutConfig;
+    let layoutViewSize = this.appConfig.layoutViewSize;
 
     if (supportsChatAssistant) {
       layoutConfig = {
@@ -124,7 +125,20 @@ export class AINativeBrowserContribution
       };
     }
 
+    if (useMenubarView) {
+      layoutViewSize = {
+        ...layoutViewSize,
+        menubarHeight: 48,
+      };
+
+      layoutConfig = {
+        ...layoutConfig,
+        ...AIMenubarLayoutConfig,
+      };
+    }
+
     this.appConfig.layoutConfig = layoutConfig;
+    this.appConfig.layoutViewSize = layoutViewSize;
   }
 
   private registerFeature() {
