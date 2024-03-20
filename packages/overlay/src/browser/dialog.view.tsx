@@ -57,7 +57,7 @@ export const Dialog: FC = () => {
           ? buttons.map((button, index) => (
               <Button
                 size='large'
-                onClick={handlerClickButton(button)}
+                onClick={() => handlerClickButton(button)}
                 key={button}
                 type={index === buttons.length - 1 ? 'primary' : 'secondary'}
               >
