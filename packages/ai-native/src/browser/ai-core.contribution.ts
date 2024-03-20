@@ -14,6 +14,7 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
   getIcon,
@@ -30,6 +31,7 @@ import {
   CommandService,
   InlineChatFeatureRegistryToken,
   ResolveConflictRegistryToken,
+  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
@@ -43,7 +45,7 @@ import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
 import { AIChatLayoutConfig } from './layout/layout-config';
-import { AIChatTabRenderer } from './layout/tabbar.view';
+import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -108,7 +110,8 @@ export class AINativeBrowserContribution
   }
 
   initialize() {
-    this.aiNativeConfigService.enable();
+    this.aiNativeConfigService.enableCapabilities();
+    this.aiNativeConfigService.enableLayout();
 
     const supportsChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
 
@@ -194,8 +197,10 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
-      registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
+    registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
+    if (this.aiNativeConfigService.layout.useMergeRightWithLeftPanel) {
+      registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
     }
   }
 

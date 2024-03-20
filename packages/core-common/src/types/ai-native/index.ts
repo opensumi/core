@@ -30,8 +30,14 @@ export interface IAINativeCapabilities {
   supportsConflictResolve?: boolean;
 }
 
+export interface IAINativeLayout {
+  // Use Merge right panel with left panel
+  useMergeRightWithLeftPanel?: boolean;
+}
+
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
+  layout?: IAINativeLayout;
 }
 
 export interface IAICompletionResultModel {

@@ -122,6 +122,7 @@
 
       &.design-kt_editor_tab_current_prev {
         background-color: var(--panel-background);
+
         div[class*='design-editor_tab_block_container__'] {
           border-radius: 0 0 12px 0;
           background-color: var(--editorGroupHeader-tabsBackground);
@@ -130,9 +131,11 @@
 
       &.design-kt_editor_tab_current_next {
         background-color: var(--panel-background);
+
         div[class*='design-editor_tab_block_container__'] {
           background-color: var(--editorGroupHeader-tabsBackground);
           border-radius: 0 0 0 12px;
+
           &::before {
             content: none;
           }
@@ -151,9 +154,11 @@
         }
       }
     }
+
     &.design-kt_editor_tabs_current_last {
       .design-kt_editor_tab_current {
         padding-right: 12px !important;
+
         &::before {
           content: '';
           position: absolute;
@@ -165,6 +170,7 @@
           background-color: var(--editorGroupHeader-tabsBackground);
           border-radius: 0 0 0 12px;
         }
+
         &::after {
           content: '';
           position: absolute;
@@ -417,6 +423,7 @@ div[class*='design-editor_tab_block_container__'] {
     &:first-child::before {
       display: none;
     }
+
     &::before {
       content: '';
       position: absolute;
@@ -499,13 +506,16 @@ div[class*='design-editor_tab_block_container__'] {
   }
 }
 
-:global(.design_left_slot) {
+:global(.design_left_slot),
+:global(.design_right_slot) {
   border-radius: 12px;
   overflow: hidden;
   margin-right: 1px;
+
   .design-tab_bar {
     padding-top: 10px;
   }
+
   .design-tab_panel {
     border-right: none;
   }
@@ -524,6 +534,7 @@ div[class*='design-editor_tab_block_container__'] {
 
   .design-kt_split_panel {
     padding-bottom: 8px;
+
     &::-webkit-scrollbar {
       width: 4px;
     }
@@ -604,8 +615,8 @@ div[class*='design-editor_tab_block_container__'] {
   }
 
   .design-icon_tab {
-    height: 32px;
-    width: 32px;
+    height: 32px !important;
+    width: 32px !important;
     border-radius: 8px;
 
     &:hover {
@@ -636,42 +647,6 @@ div[class*='design-editor_tab_block_container__'] {
     display: none;
   }
 
-  li.design-left_tab {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-
-    &:first-child {
-      margin-top: 0;
-    }
-  }
-
-  .design-left_tab_bar {
-    border-right: none;
-    border-top: none;
-    width: 48px;
-
-    .design-bar_content {
-      width: 100%;
-      overflow-y: auto;
-
-      :global(.active) {
-        .design-icon_tab {
-          background-color: var(--badge-background);
-          color: var(--badge-foreground);
-
-          &::before {
-            content: none;
-          }
-        }
-      }
-
-      &::-webkit-scrollbar {
-        display: none !important;
-      }
-    }
-  }
-
   .design-extra_bottom_icon {
     &:hover {
       background-color: transparent !important;
@@ -700,6 +675,55 @@ div[class*='design-editor_tab_block_container__'] {
   .design-extension_item {
     border-radius: 8px;
   }
+}
+
+:global(.design_left_slot),
+:global(.design_right_slot) {
+  li.design-left_tab,
+  li.design-right_tab {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .design-left_tab_bar,
+  .design-right_tab_bar {
+    border-right: none;
+    border-top: none;
+    width: 48px;
+
+    .design-bar_content {
+      width: 100%;
+      overflow-y: auto;
+
+      :global(.active) {
+        .design-icon_tab {
+          background-color: var(--badge-background);
+          color: var(--badge-foreground);
+
+          &::before {
+            content: none;
+          }
+        }
+      }
+
+      &::-webkit-scrollbar {
+        display: none !important;
+      }
+    }
+  }
+}
+
+:global(.design_right_slot) {
+  background-color: var(--panel-background);
+  border: 1px solid var(--sideBar-border);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 100%;
 }
 
 /* 左侧面板滚动条 */

@@ -29,6 +29,7 @@
     "@opensumi/ide-main-layout": "workspace:*",
     "@opensumi/ide-markers": "workspace:*",
     "@opensumi/ide-menu-bar": "workspace:*",
+    "@opensumi/ide-design": "workspace:*",
     "@opensumi/ide-monaco": "workspace:*",
     "@opensumi/ide-overlay": "workspace:*",
     "@opensumi/ide-terminal-next": "workspace:*",

@@ -10,7 +10,7 @@ import { Schemes } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 
-import { DesignBottomTabRenderer, DesignLeftTabRenderer } from './layout/tabbar.view';
+import { DesignBottomTabRenderer, DesignLeftTabRenderer, DesignRightTabRenderer } from './layout/tabbar.view';
 import { DesignThemeFileSystemProvider } from './theme/file-system.provider';
 
 @Injectable()
@@ -29,5 +29,6 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
   registerRenderer(registry: SlotRendererRegistry): void {
     registry.registerSlotRenderer(SlotLocation.left, DesignLeftTabRenderer);
     registry.registerSlotRenderer(SlotLocation.bottom, DesignBottomTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.right, DesignRightTabRenderer);
   }
 }
