@@ -376,7 +376,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       Event.debounce(
-        monacoEditor.onDidChangeModel,
+        monacoEditor.onWillChangeModel,
         (_, e) => e,
         300,
       )(async (event) => {
@@ -449,7 +449,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       Event.debounce(
-        monacoEditor.onDidChangeModel,
+        monacoEditor.onWillChangeModel,
         (_, e) => e,
         300,
       )(async (event) => {
