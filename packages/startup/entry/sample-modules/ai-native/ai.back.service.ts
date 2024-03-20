@@ -37,6 +37,14 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
     cancelToken?: CancellationToken,
   ): Promise<T> {
     await sleep(1000);
+
+    if (options.type === 'rename') {
+      return Promise.resolve({
+        errorCode: 0,
+        data: '```typescript\nnewName\nhaha```',
+      } as T);
+    }
+
     return Promise.resolve({
       errorCode: 0,
       data: 'Hello OpenSumi!',

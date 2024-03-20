@@ -15,6 +15,7 @@ export class AINativeConfigService {
     supportsInlineChat: false,
     supportsInlineCompletion: false,
     supportsConflictResolve: false,
+    supportsRenameSuggestions: false,
   };
 
   private setDefaultCapabilities(value: boolean): void {
