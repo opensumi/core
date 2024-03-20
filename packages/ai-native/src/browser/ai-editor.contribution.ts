@@ -126,7 +126,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     this.disposables.push(
-      monacoEditor.onDidChangeModel(() => {
+      monacoEditor.onWillChangeModel(() => {
         this.disposeAllWidget();
       }),
     );
