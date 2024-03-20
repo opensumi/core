@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   Button,
@@ -30,35 +30,36 @@ export const FILE_TREE_DIALOG_HEIGHT = 22;
 
 export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChildren<IFileDialogProps>) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
-  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
-  const [fileName, setFileName] = React.useState<string>('');
-  const [isReady, setIsReady] = React.useState<boolean>(false);
-  const [selectPath, setSelectPath] = React.useState<string>('');
-  const [directoryList, setDirectoryList] = React.useState<string[]>([]);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [fileName, setFileName] = useState<string>('');
+  const [isReady, setIsReady] = useState<boolean>(false);
+  const [selectPath, setSelectPath] = useState<string>('');
+  const [directoryList, setDirectoryList] = useState<string[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (model) {
+      setIsReady(false);
       ensureIsReady();
-      return () => {
-        model.dispose();
-      };
     }
+    return () => {
+      model.dispose();
+    };
   }, [model]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if ((options as ISaveDialogOptions).defaultFileName) {
       setFileName((options as ISaveDialogOptions).defaultFileName!);
     }
   }, [options]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isReady) {
       const list = model.getDirectoryList();
       setDirectoryList(list);
     }
   }, [isReady]);
 
-  const hide = () => {
+  const hide = useCallback(() => {
     const value: string[] = model.selectedFiles.map((file) => file.uri.path.toString());
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
@@ -76,91 +77,103 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
       }
     }
     setIsReady(false);
-  };
+  }, [isReady, dialogService, model, fileName, options]);
 
-  const close = () => {
+  const close = useCallback(() => {
     setIsReady(false);
     dialogService.hide();
-  };
+  }, [isReady, dialogService]);
 
-  const ensureIsReady = async () => {
+  const ensureIsReady = useCallback(async () => {
     await model.whenReady;
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
     // 这里需要重新取一下treeModel的值确保为最新的TreeModel
     await model.treeModel.ensureReady;
     setSelectPath((model.treeModel.root as Directory).uri.codeUri.fsPath);
     setIsReady(true);
-  };
+  }, [model, selectPath, isReady]);
 
   const isSaveDialog = !isOpenDialog;
 
-  const handleTreeReady = (handle: IRecycleTreeHandle) => {
-    model.handleTreeHandler({
-      ...handle,
-      getModel: () => model.treeModel,
-      hasDirectFocus: () => wrapperRef.current === document.activeElement,
-    });
-  };
+  const handleTreeReady = useCallback(
+    (handle: IRecycleTreeHandle) => {
+      model.handleTreeHandler({
+        ...handle,
+        getModel: () => model.treeModel,
+        hasDirectFocus: () => wrapperRef.current === document.activeElement,
+      });
+    },
+    [model],
+  );
 
-  const handleTwistierClick = (ev: React.MouseEvent, item: Directory) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
+  const handleTwistierClick = useCallback(
+    (ev: React.MouseEvent, item: Directory) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
 
-    const { toggleDirectory } = model;
+      const { toggleDirectory } = model;
 
-    toggleDirectory(item);
-  };
+      toggleDirectory(item);
+    },
+    [model],
+  );
 
-  const hasShiftMask = (event): boolean => {
+  const hasShiftMask = useCallback((event): boolean => {
     // Ctrl/Cmd 权重更高
     if (hasCtrlCmdMask(event)) {
       return false;
     }
     return event.shiftKey;
-  };
+  }, []);
 
-  const hasCtrlCmdMask = (event): boolean => {
+  const hasCtrlCmdMask = useCallback((event): boolean => {
     const { metaKey, ctrlKey } = event;
     return (isMacintosh && metaKey) || ctrlKey;
-  };
+  }, []);
 
-  const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
+  const handleItemClicked = useCallback(
+    (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
 
-    const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
-    if (!item) {
-      return;
-    }
-    const shiftMask = hasShiftMask(event);
-    const ctrlCmdMask = hasCtrlCmdMask(event);
-    if (shiftMask && !isSaveDialog && (options as IOpenDialogOptions).canSelectMany) {
-      handleItemRangeClick(item, type);
-    } else if (ctrlCmdMask && !isSaveDialog && (options as IOpenDialogOptions).canSelectMany) {
-      handleItemToggleClick(item, type);
-    } else {
-      if (isSaveDialog) {
-        if (type === TreeNodeType.CompositeTreeNode) {
-          handleItemClick(item, type);
-        }
+      const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = model;
+      if (!item) {
+        return;
+      }
+      const shiftMask = hasShiftMask(event);
+      const ctrlCmdMask = hasCtrlCmdMask(event);
+      if (shiftMask && !isSaveDialog && (options as IOpenDialogOptions).canSelectMany) {
+        handleItemRangeClick(item, type);
+      } else if (ctrlCmdMask && !isSaveDialog && (options as IOpenDialogOptions).canSelectMany) {
+        handleItemToggleClick(item, type);
       } else {
-        if ((options as IOpenDialogOptions).canSelectFiles && type === TreeNodeType.TreeNode) {
-          handleItemClick(item, type);
-        } else if ((options as IOpenDialogOptions).canSelectFolders && type === TreeNodeType.CompositeTreeNode) {
-          handleItemClick(item, type);
+        if (isSaveDialog) {
+          if (type === TreeNodeType.CompositeTreeNode) {
+            handleItemClick(item, type);
+          }
+        } else {
+          if ((options as IOpenDialogOptions).canSelectFiles && type === TreeNodeType.TreeNode) {
+            handleItemClick(item, type);
+          } else if ((options as IOpenDialogOptions).canSelectFolders && type === TreeNodeType.CompositeTreeNode) {
+            handleItemClick(item, type);
+          }
         }
       }
-    }
-  };
+    },
+    [model, isSaveDialog, options],
+  );
 
-  const onRootChangeHandler = async (value: string) => {
-    setIsReady(false);
-    setSelectPath(value);
-    await model.updateTreeModel(value);
-    setIsReady(true);
-  };
+  const onRootChangeHandler = useCallback(
+    async (value: string) => {
+      setIsReady(false);
+      setSelectPath(value);
+      await model.updateTreeModel(value);
+      setIsReady(true);
+    },
+    [model, isReady, selectPath],
+  );
 
-  const renderDialogTreeNode = React.useCallback(
+  const renderDialogTreeNode = useCallback(
     (props: INodeRendererProps) => (
       <FileTreeDialogNode
         item={props.item}
@@ -176,7 +189,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     [model.treeModel],
   );
 
-  const renderDialogTree = () => {
+  const renderDialogTree = useCallback(() => {
     if (!isReady) {
       return <Progress loading />;
     } else if (model.treeModel) {
@@ -191,9 +204,9 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
         </RecycleTree>
       );
     }
-  };
+  }, [isReady, model]);
 
-  const renderDirectorySelection = () => {
+  const renderDirectorySelection = useCallback(() => {
     if (directoryList.length > 0) {
       return (
         <Select onChange={onRootChangeHandler} className={styles.select_control} size={'small'} value={selectPath}>
@@ -205,7 +218,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
         </Select>
       );
     }
-  };
+  }, [directoryList, selectPath]);
 
   if (isOpenDialog) {
     return (
