@@ -44,7 +44,7 @@
     "test": "jest --forceExit --detectOpenHandles",
     "prepare:test": "yarn && yarn run compile && yarn run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 yarn run test --coverage",
-    "ci": "yarn run init && && yarn run test:cov",
+    "ci": "yarn run init && yarn run test:cov",
     "download-extension": "cross-env DEBUG=InstallExtension node scripts/download.js",
     "update:iconfont": "ts-node ./scripts/download-iconfont.ts",
     "changelog-old": "node scripts/changelog/index.js",
