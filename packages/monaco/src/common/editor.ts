@@ -16,6 +16,9 @@ export {
   ITextModel,
   EndOfLineSequence,
   OverviewRulerLane,
+  TextModelResolvedOptions,
+  ITextBuffer,
+  ITextSnapshot,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 export { IWordAtPosition } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/wordHelper';
 export * from '@opensumi/monaco-editor-core/esm/vs/editor/common/cursorEvents';
