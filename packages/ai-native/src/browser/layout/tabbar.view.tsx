@@ -46,9 +46,9 @@ export const AILeftTabRenderer = ({
 }: {
   className: string;
   components: ComponentRegistryInfo[];
-}) => <DesignLeftTabRenderer className={className} components={components} tabbarView={AiLeftTabbarRenderer} />;
+}) => <DesignLeftTabRenderer className={className} components={components} tabbarView={AILeftTabbarRenderer} />;
 
-const AiLeftTabbarRenderer: React.FC = () => {
+const AILeftTabbarRenderer: React.FC = () => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 

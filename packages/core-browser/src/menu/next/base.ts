@@ -165,6 +165,7 @@ export interface IMenubarItem {
   label: string;
   order?: number;
   nativeRole?: string; // electron menu 使用
+  iconClass?: string;
 }
 
 @Injectable()
