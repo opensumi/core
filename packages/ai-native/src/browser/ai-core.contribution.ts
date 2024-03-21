@@ -33,6 +33,7 @@ import { getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { RenameCandidatesProviderRegistryToken } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
 import {
@@ -68,7 +69,12 @@ import {
 } from './override/layout/tabbar.view';
 import { AiRunService } from './run/run.service';
 import { AIRunToolbar } from './run/toolbar/run-toolbar';
-import { AiNativeCoreContribution, IAiRunFeatureRegistry, IInlineChatFeatureRegistry } from './types';
+import {
+  AiNativeCoreContribution,
+  IAiRunFeatureRegistry,
+  IInlineChatFeatureRegistry,
+  IRenameCandidatesProviderRegistry,
+} from './types';
 
 @Injectable()
 @Domain(
@@ -143,6 +149,9 @@ export class AiNativeBrowserContribution
   @Autowired(LayoutState)
   private layoutState: LayoutState;
 
+  @Autowired(RenameCandidatesProviderRegistryToken)
+  private readonly renameCandidatesProviderRegistry: IRenameCandidatesProviderRegistry;
+
   constructor() {
     this.registerFeature();
   }
@@ -162,6 +171,9 @@ export class AiNativeBrowserContribution
       }
       if (contribution.registerInlineChatFeature) {
         contribution.registerInlineChatFeature(this.inlineChatFeatureRegistry);
+      }
+      if (contribution.registerRenameProvider) {
+        contribution.registerRenameProvider(this.renameCandidatesProviderRegistry);
       }
     });
   }

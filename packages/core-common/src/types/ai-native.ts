@@ -27,8 +27,15 @@ export interface IAiNativeCapabilities {
    * 使用 ai 调试控制台问题诊断能力
    */
   supportsDebugConsoleExplain?: boolean;
+
+  /**
+   * 使用重命名建议能力
+   */
+  supportsRenameSuggestions?: boolean;
 }
 
 export interface AiNativeConfig {
   capabilities?: IAiNativeCapabilities;
 }
+
+export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');

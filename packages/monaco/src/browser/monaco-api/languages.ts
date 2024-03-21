@@ -22,10 +22,10 @@ import {
   registerHoverProvider,
   registerImplementationProvider,
   registerInlayHintsProvider,
-  registerInlineCompletionsProvider,
   registerInlineEditProvider,
-  registerLinkProvider,
   registerLinkedEditingRangeProvider,
+  registerInlineCompletionsProvider,
+  registerLinkProvider,
   registerNewSymbolNameProvider,
   registerOnTypeFormattingEditProvider,
   registerReferenceProvider,
@@ -72,11 +72,8 @@ export function createMonacoLanguageApi() {
     registerDeclarationProvider,
     registerSelectionRangeProvider,
     registerCompletionItemProvider,
-    // enums
-    // TODO: const enum
-    // Classes
-    registerInlineCompletionsProvider,
     registerNewSymbolNameProvider,
+    registerInlineCompletionsProvider,
     FoldingRangeKind,
     onLanguageEncountered,
     registerDocumentRangeSemanticTokensProvider,

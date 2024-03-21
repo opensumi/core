@@ -4,7 +4,8 @@ import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-nativ
 import { CancellationToken, MaybePromise, IDisposable, Deferred } from '@opensumi/ide-core-common';
 import { CompletionResultModel, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { IEditor } from '@opensumi/ide-editor/lib/browser';
-import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { NewSymbolNamesProvider } from '@opensumi/ide-monaco';
+import type * as monaco from '@opensumi/ide-monaco';
 
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
 
@@ -98,6 +99,13 @@ export interface IAiMiddleware {
   };
 }
 
+export type NewSymbolNamesProviderFn = NewSymbolNamesProvider['provideNewSymbolNames'];
+
+export interface IRenameCandidatesProviderRegistry {
+  registerRenameSuggestionsProvider(provider: NewSymbolNamesProviderFn): void;
+  getRenameSuggestionsProviders(): NewSymbolNamesProviderFn[];
+}
+
 export interface AiNativeCoreContribution {
   /**
    * 注册 ai run 的能力
@@ -113,6 +121,8 @@ export interface AiNativeCoreContribution {
    * 通过中间件扩展部分 ai 能力
    */
   middleware?: IAiMiddleware;
+
+  registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
 }
 
 export interface IChatComponentConfig {

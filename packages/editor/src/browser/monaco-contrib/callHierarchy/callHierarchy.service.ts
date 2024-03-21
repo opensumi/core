@@ -17,13 +17,12 @@ import {
   IncomingCall,
   OutgoingCall,
 } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
-import { ITextModel, Position } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { ITextModel, Position, ProviderResult } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
 const { isNonEmptyArray } = arrays;
 
-declare type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 /* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.

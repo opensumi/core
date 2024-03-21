@@ -3,6 +3,7 @@ import { AiNativeConfigService, BrowserModule, IAiInlineChatService, URI } from 
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
+import { RenameCandidatesProviderRegistryToken } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { IEditorTabService } from '@opensumi/ide-editor/lib/browser';
 import { IMarkerService } from '@opensumi/ide-markers';
 import { Color, IThemeData, IThemeStore, registerColor, RGBA, ThemeContribution } from '@opensumi/ide-theme';
@@ -26,6 +27,7 @@ import { AiChatLayoutConfig } from './override/layout/layout-config';
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
 import lightTheme from './override/theme/light-theme';
+import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
 import { AiRunFeatureRegistry } from './run/run.feature.registry';
 import {
   AiNativeCoreContribution,
@@ -70,6 +72,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: LanguageParserFactory,
       useFactory: LanguageParserFactory,
+    },
+    {
+      token: RenameCandidatesProviderRegistryToken,
+      useClass: RenameCandidatesProviderRegistry,
     },
   ];
 
