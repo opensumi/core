@@ -1,5 +1,13 @@
 import { Autowired } from '@opensumi/di';
 import {
+  JavaMatcher,
+  LineMatcher,
+  NPMMatcher,
+  NodeMatcher,
+  ShellMatcher,
+  TSCMatcher,
+} from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
+import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
@@ -49,7 +57,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
-    registry.registerInlineChat(
+    registry.registerEditorInlineChat(
       {
         id: 'ai-comments',
         name: EInlineOperation.Comments,
@@ -76,7 +84,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       },
     );
 
-    registry.registerInlineChat(
+    registry.registerEditorInlineChat(
       {
         id: 'ai-optimize',
         name: EInlineOperation.Optimize,
@@ -99,6 +107,28 @@ export class AiNativeContribution implements AINativeCoreContribution {
 
           return new ReplyResponse(result.data!);
         },
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-explain',
+        name: 'explain',
+      },
+      {
+        triggerRules: 'selection',
+        execute: async (text: string) => {},
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-debug',
+        name: 'debug',
+      },
+      {
+        triggerRules: [NodeMatcher, TSCMatcher, NPMMatcher, ShellMatcher, JavaMatcher],
+        execute: async (text: string) => {},
       },
     );
   }

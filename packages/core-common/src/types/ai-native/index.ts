@@ -126,6 +126,7 @@ export type ChatResponse = ReplyResponse | ErrorResponse | CancelResponse;
 export const InlineChatFeatureRegistryToken = Symbol('InlineChatFeatureRegistryToken');
 export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
+export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 

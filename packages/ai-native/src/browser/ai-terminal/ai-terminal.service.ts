@@ -1,33 +1,31 @@
 import { IMarker } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-common';
+import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { Disposable, InlineChatFeatureRegistryToken } from '@opensumi/ide-core-common';
 import { ITerminalController } from '@opensumi/ide-terminal-next';
 
-import { AITerminaDebuglService } from './ai-terminal-debug.service';
+import { InlineChatFeatureRegistry } from '../widget/inline-chat/inline-chat.feature.registry';
+
 import { AITerminalDecorationService } from './decoration/terminal-decoration';
-import {
-  JavaMatcher,
-  LineMatcher,
-  LineRecord,
-  MatcherType,
-  NPMMatcher,
-  NodeMatcher,
-  ShellMatcher,
-  TSCMatcher,
-} from './matcher';
+import { LineMatcher, LineRecord, MatcherType } from './matcher';
 import { TextStyle, TextWithStyle, ansiParser } from './utils/ansi-parser';
+
+interface IMatcherActions {
+  matcher: LineMatcher;
+  action: AIActionItem;
+}
 
 @Injectable()
 export class AITerminalService extends Disposable {
   @Autowired(ITerminalController)
   private terminalController: ITerminalController;
 
-  @Autowired(AITerminaDebuglService)
-  private terminalDebug: AITerminaDebuglService;
-
   @Autowired(AITerminalDecorationService)
   private terminalDecorations: AITerminalDecorationService;
+
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private isTyping: boolean;
 
@@ -41,15 +39,7 @@ export class AITerminalService extends Disposable {
 
   private lastStyle: TextStyle;
 
-  private outputMatcherList = [
-    new NodeMatcher(),
-    new TSCMatcher(),
-    new NPMMatcher(),
-    new ShellMatcher(),
-    new JavaMatcher(),
-  ];
-
-  private currentMatcher: LineMatcher | null;
+  private currentActions: IMatcherActions | null;
 
   public active() {
     this.disposables.push(this.terminalController.onDidOpenTerminal(({ id }) => this.listenTerminalEvent(id)));
@@ -72,7 +62,7 @@ export class AITerminalService extends Disposable {
     this.inputRecordMap.set(clientId, []);
     this.outputRecordMap.set(clientId, []);
     this.clientCurrentMarker.set(clientId, undefined);
-    this.currentMatcher = null;
+    this.currentActions = null;
   }
   /**
    * 按行解析输出文本
@@ -97,6 +87,34 @@ export class AITerminalService extends Disposable {
       });
     }
   }
+
+  private getMatcherRules(): IMatcherActions[] {
+    const allActions = this.inlineChatFeatureRegistry.getTerminalActions();
+    const matcher: IMatcherActions[] = [];
+
+    allActions.forEach((action) => {
+      const handler = this.inlineChatFeatureRegistry.getTerminalHandler(action.id);
+
+      if (Array.isArray(handler?.triggerRules)) {
+        handler.triggerRules.forEach((rule) => {
+          if (rule instanceof LineMatcher) {
+            matcher.push({
+              matcher: rule,
+              action,
+            });
+          } else if (Object.getPrototypeOf(rule) === LineMatcher) {
+            matcher.push({
+              matcher: new rule(),
+              action,
+            });
+          }
+        });
+      }
+    });
+
+    return matcher;
+  }
+
   /**
    * 匹配错误日志， 两种情况
    * 1. 单行错误：匹配之后直接上报
@@ -105,31 +123,36 @@ export class AITerminalService extends Disposable {
    *    2.2 如果没匹配到，直接上报前面多行的内容
    */
   private matchOutput(clientId: string, styleList: TextWithStyle[], dataLineIndex: number) {
-    if (this.currentMatcher) {
-      if (this.currentMatcher.match(styleList)) {
+    if (this.currentActions) {
+      if (this.currentActions.matcher.match(styleList)) {
         this.outputRecordMap
           .get(clientId)
-          ?.push({ type: this.currentMatcher.type, text: styleList.map((s) => s.content).join('') });
+          ?.push({ type: this.currentActions.matcher.type, text: styleList.map((s) => s.content).join('') });
       } else {
-        this.matchedEnd(clientId, this.currentMatcher);
+        this.matchedEnd(clientId, this.currentActions);
       }
     } else {
-      const matcher = this.outputMatcherList.find((m) => m.match(styleList));
-      if (matcher) {
+      const matcherList = this.getMatcherRules();
+      const findMatcher = matcherList.find((m) => m.matcher.match(styleList));
+
+      if (findMatcher) {
         this.registerMarker(clientId, dataLineIndex);
         this.outputRecordMap
           .get(clientId)
-          ?.push({ type: matcher.type, text: styleList.map((s) => s.content).join('') });
-        if (matcher.isMultiLine) {
-          this.currentMatcher = matcher;
+          ?.push({ type: findMatcher.matcher.type, text: styleList.map((s) => s.content).join('') });
+        if (findMatcher.matcher.isMultiLine) {
+          this.currentActions = {
+            action: findMatcher.action,
+            matcher: findMatcher.matcher,
+          };
         } else {
-          this.matchedEnd(clientId, matcher);
+          this.matchedEnd(clientId, findMatcher);
         }
       }
     }
   }
 
-  private matchedEnd(clientId: string, matcher: LineMatcher) {
+  private matchedEnd(clientId: string, matcher: IMatcherActions) {
     const input = this.resolveDelControl(
       this.inputRecordMap
         .get(clientId)
@@ -140,12 +163,12 @@ export class AITerminalService extends Disposable {
       .get(clientId)
       ?.map((r) => r.text)
       .join('\n');
-    this.addDecoration(clientId, matcher.type, input, output);
-    this.report(matcher.type, input, output);
+    this.addDecoration(clientId, matcher, input, output);
+    this.report(matcher.matcher.type, input, output);
     this.resetState(clientId);
   }
 
-  private addDecoration(clientId: string, type: MatcherType, input?: string, output?: string) {
+  private addDecoration(clientId: string, action: IMatcherActions, input?: string, output?: string) {
     const client = this.terminalController.clients.get(clientId);
     const terminal = client?.term;
     const marker = this.clientCurrentMarker.get(clientId);
@@ -154,17 +177,12 @@ export class AITerminalService extends Disposable {
       const lines = output?.split('\n').length;
 
       this.terminalDecorations.addZoneDecoration(terminal, marker, lines, {
-        text: 'AI Debug',
-        onClick: () => {
-          this.terminalDebug.debug(
-            {
-              type,
-              input,
-              errorText: output,
-              operate: 'debug',
-            },
-            'terminal-explain',
-          );
+        operationList: [action.action],
+        onClickItem: () => {
+          const handler = this.inlineChatFeatureRegistry.getTerminalHandler(action.action.id);
+          if (handler) {
+            handler.execute(output);
+          }
         },
       });
     }

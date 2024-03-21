@@ -3,21 +3,23 @@ import { Root, createRoot } from 'react-dom/client';
 import { IDecoration, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { localize } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-common';
+import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { Disposable, InlineChatFeatureRegistryToken, runWhenIdle } from '@opensumi/ide-core-common';
 import { ITerminalController } from '@opensumi/ide-terminal-next';
 
-import { AITerminaDebuglService } from '../ai-terminal-debug.service';
-import { AiInlineWidgetForAutoDelect, AiInlineWidgetForSelection } from '../component/terminal-inline-chat-controller';
-import { MatcherType } from '../matcher';
+import { InlineChatFeatureRegistry } from '../../widget/inline-chat/inline-chat.feature.registry';
+import {
+  TerminalInlineWidgetForDelect,
+  TerminalInlineWidgetForSelection,
+} from '../component/terminal-inline-chat-controller';
 
 @Injectable()
 export class AITerminalDecorationService extends Disposable {
   @Autowired(ITerminalController)
   private terminalController: ITerminalController;
 
-  @Autowired(AITerminaDebuglService)
-  private terminalDebug: AITerminaDebuglService;
+  @Autowired(InlineChatFeatureRegistryToken)
+  private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
 
   private decorationList: IDecoration[] = [];
   private decorationRootMap = new Map<IDecoration, Root>();
@@ -33,7 +35,7 @@ export class AITerminalDecorationService extends Disposable {
     terminal: Terminal,
     marker: IMarker,
     height: number,
-    buttonConfig: { text: string; onClick: () => void },
+    inlineWidget: { operationList: AIActionItem[]; onClickItem: () => void },
   ) {
     const decoration = terminal.registerDecoration({
       marker,
@@ -50,19 +52,15 @@ export class AITerminalDecorationService extends Disposable {
     let root: Root | undefined;
 
     decoration.onRender((element) => {
-      root = createRoot(element);
+      if (!root) {
+        root = createRoot(element);
+      }
       // 理论上 React 会确保 DOM 不被重复渲染
       root.render(
-        <AiInlineWidgetForAutoDelect
-          options={[
-            {
-              id: 'debug',
-              name: 'Debug',
-              title: localize('ai.terminal.debug.title'),
-            },
-          ]}
-          hanldeActions={() => {
-            buttonConfig.onClick();
+        <TerminalInlineWidgetForDelect
+          actions={inlineWidget.operationList}
+          onClickItem={() => {
+            inlineWidget.onClickItem();
           }}
         />,
       );
@@ -82,79 +80,76 @@ export class AITerminalDecorationService extends Disposable {
       return;
     }
 
-    terminal.onSelectionChange(() => {
-      const oldDecoration = this.decorationList.pop();
-      if (oldDecoration) {
-        setTimeout(() => {
-          // 如果有旧的 decoration，先清除
-          oldDecoration?.dispose();
-          // this.selectionDecoration = undefined;
-        }, 100);
-      }
-      const selection = terminal.getSelectionPosition();
-      const selectionTextTrimed = terminal.getSelection().trim();
-
-      if (selection && selectionTextTrimed.length > 0) {
-        // 获取选区的右上角位置
-        const endRow = selection.end.y;
-        const startRow = selection.start.y;
-
-        const cursorY2 = terminal.buffer.active.cursorY + terminal.buffer.active.baseY;
-        const cursorYOffset = startRow - cursorY2;
-        const selectionHeight = endRow - startRow + 1;
-
-        // 注册一个装饰
-        const marker = terminal.registerMarker(cursorYOffset);
-
-        if (marker) {
-          const selectionDecoration = terminal.registerDecoration({
-            marker,
-            width: terminal.cols,
-            height: selectionHeight,
+    this.addDispose(
+      terminal.onSelectionChange(() => {
+        const oldDecoration = this.decorationList.pop();
+        if (oldDecoration) {
+          runWhenIdle(() => {
+            oldDecoration?.dispose();
           });
+        }
+        const selection = terminal.getSelectionPosition();
+        const selectionTextTrimed = terminal.getSelection().trim();
 
-          if (selectionDecoration) {
-            let root: Root | undefined;
-            selectionDecoration.onRender((element) => {
-              // 创建右上角的 div 元素，用于当 React 容器
-              root = createRoot(element);
+        if (selection && selectionTextTrimed.length > 0) {
+          // 获取选区的右上角位置
+          const endRow = selection.end.y;
+          const startRow = selection.start.y;
 
-              root.render(
-                <AiInlineWidgetForSelection
-                  options={[
-                    {
-                      id: 'explain',
-                      name: 'Explain',
-                      title: localize('ai.terminal.explain.title'),
-                    },
-                  ]}
-                  hanldeActions={() => {
-                    this.terminalDebug.debug(
-                      {
-                        type: MatcherType.base,
-                        input: '',
-                        errorText: selectionTextTrimed,
-                        operate: 'explain',
-                      },
-                      'terminal-selection-explain',
-                    );
-                  }}
-                />,
-              );
+          const cursorY2 = terminal.buffer.active.cursorY + terminal.buffer.active.baseY;
+          const cursorYOffset = startRow - cursorY2;
+          const selectionHeight = endRow - startRow + 1;
+
+          // 注册一个装饰
+          const marker = terminal.registerMarker(cursorYOffset);
+
+          if (marker) {
+            const selectionDecoration = terminal.registerDecoration({
+              marker,
+              width: terminal.cols,
+              height: selectionHeight,
             });
 
-            // Decoration dispose 的时候，卸载 React 组件
-            selectionDecoration.onDispose(() => {
-              if (root) {
-                root.unmount();
-              }
-            });
+            if (selectionDecoration) {
+              let root: Root | undefined;
+              selectionDecoration.onRender((element) => {
+                if (!root) {
+                  // 创建右上角的 div 元素，用于当 React 容器
+                  root = createRoot(element);
+                }
 
-            // this.selectionDecoration.onDispose()
-            this.decorationList.push(selectionDecoration);
+                const allActions = this.inlineChatFeatureRegistry.getTerminalActions();
+                const selectionAction = allActions.filter(
+                  (action) =>
+                    this.inlineChatFeatureRegistry.getTerminalHandler(action.id)?.triggerRules === 'selection',
+                );
+
+                root.render(
+                  <TerminalInlineWidgetForSelection
+                    actions={selectionAction}
+                    onClickItem={(id) => {
+                      const handler = this.inlineChatFeatureRegistry.getTerminalHandler(id);
+                      if (handler) {
+                        handler.execute(selectionTextTrimed);
+                      }
+                    }}
+                  />,
+                );
+              });
+
+              // Decoration dispose 的时候，卸载 React 组件
+              selectionDecoration.onDispose(() => {
+                if (root) {
+                  root.unmount();
+                }
+              });
+
+              // this.selectionDecoration.onDispose()
+              this.decorationList.push(selectionDecoration);
+            }
           }
         }
-      }
-    });
+      }),
+    );
   }
 }

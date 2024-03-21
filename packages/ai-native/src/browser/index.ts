@@ -8,6 +8,7 @@ import {
   IAIInlineChatService,
   InlineChatFeatureRegistryToken,
   ResolveConflictRegistryToken,
+  TerminalRegistryToken,
 } from '@opensumi/ide-core-browser';
 
 import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerService } from '../common';
@@ -15,6 +16,7 @@ import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerServic
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
 import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
+import { TerminalRegistry } from './ai-terminal/terminal.feature.registry';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -40,6 +42,14 @@ export class AINativeModule extends BrowserModule {
       useClass: ChatFeatureRegistry,
     },
     {
+      token: ResolveConflictRegistryToken,
+      useClass: ResolveConflictRegistry,
+    },
+    {
+      token: TerminalRegistryToken,
+      useClass: TerminalRegistry,
+    },
+    {
       token: IAINativeService,
       useClass: AINativeService,
     },
@@ -62,10 +72,6 @@ export class AINativeModule extends BrowserModule {
     {
       token: IAIChatService,
       useClass: ChatService,
-    },
-    {
-      token: ResolveConflictRegistryToken,
-      useClass: ResolveConflictRegistry,
     },
   ];
 
