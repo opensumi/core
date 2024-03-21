@@ -13,8 +13,7 @@ import {
   MergeConflictEditorMode,
   ReplyResponse,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
-import * as monaco from '@opensumi/ide-monaco';
+import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 
 import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 
@@ -66,6 +65,13 @@ export interface IResolveConflictRegistry {
   ): void;
 }
 
+export type NewSymbolNamesProviderFn = NewSymbolNamesProvider['provideNewSymbolNames'];
+
+export interface IRenameCandidatesProviderRegistry {
+  registerRenameSuggestionsProvider(provider: NewSymbolNamesProviderFn): void;
+  getRenameSuggestionsProviders(): NewSymbolNamesProviderFn[];
+}
+
 export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
@@ -86,6 +92,8 @@ export interface AINativeCoreContribution {
    * 注册智能解决冲突相关功能
    */
   registerResolveConflictFeature?(registry: IResolveConflictRegistry): void;
+
+  registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
 }
 
 export interface IChatComponentConfig {
@@ -102,8 +110,8 @@ export interface IChatAgentViewService {
 
 export type IProvideInlineCompletionsSignature = (
   this: void,
-  model: monaco.editor.ITextModel,
-  position: monaco.Position,
+  model: ITextModel,
+  position: Position,
   token: CancellationToken,
   next: (reqBean: CompletionRequestBean) => MaybePromise<IAICompletionResultModel | null>,
   completionRequestBean: CompletionRequestBean,

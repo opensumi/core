@@ -28,6 +28,10 @@ export interface IAINativeCapabilities {
    * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
+  /**
+   * Use ai to provide rename suggestions
+   */
+  supportsRenameSuggestions?: boolean;
 }
 
 export interface IAINativeConfig {
@@ -63,6 +67,11 @@ export interface IAICompletionOption {
   language?: string;
   fileUrl?: string;
   sessionId?: string;
+}
+
+export interface IAIRenameSuggestionOption {
+  prompt: string;
+  language?: string;
 }
 
 export interface IAIBackService<
@@ -122,6 +131,7 @@ export type ChatResponse = ReplyResponse | ErrorResponse | CancelResponse;
 export const InlineChatFeatureRegistryToken = Symbol('InlineChatFeatureRegistryToken');
 export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
+export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
 
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 

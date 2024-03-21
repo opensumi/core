@@ -74,9 +74,6 @@ export function createMonacoLanguageApi() {
     registerCompletionItemProvider,
     registerInlineCompletionsProvider,
     registerNewSymbolNameProvider,
-    // enums
-    // TODO: const enum
-    // Classes
     FoldingRangeKind,
     onLanguageEncountered,
     registerDocumentRangeSemanticTokensProvider,

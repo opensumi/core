@@ -30,6 +30,7 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inline-chat.service';
@@ -67,6 +68,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+
+  @Autowired(RenameSuggestionsService)
+  private readonly renameSuggestionService: RenameSuggestionsService;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -118,8 +122,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.registerCompletion(editor);
     }
 
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.registerRenameSuggestions(editor);
+    }
+
     this.disposables.push(
-      monacoEditor.onDidChangeModel(() => {
+      monacoEditor.onWillChangeModel(() => {
         this.disposeAllWidget();
       }),
     );
@@ -369,7 +377,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       Event.debounce(
-        monacoEditor.onDidChangeModel,
+        monacoEditor.onWillChangeModel,
         (_, e) => e,
         300,
       )(async (event) => {
@@ -429,5 +437,41 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       }),
     );
     return;
+  }
+
+  private async registerRenameSuggestions(editor: IEditor): Promise<void> {
+    const { monacoEditor, currentUri } = editor;
+
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return;
+    }
+
+    let dispose: IDisposable | undefined;
+
+    this.disposables.push(
+      Event.debounce(
+        monacoEditor.onWillChangeModel,
+        (_, e) => e,
+        300,
+      )(async (event) => {
+        if (dispose) {
+          dispose.dispose();
+        }
+
+        const model = monacoEditor.getModel();
+        if (!model) {
+          return;
+        }
+
+        const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+          const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
+          return result;
+        };
+
+        dispose = monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
+          provideNewSymbolNames: provider,
+        });
+      }),
+    );
   }
 }

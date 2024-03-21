@@ -354,7 +354,7 @@ export class AIInlineCompletionsProvider extends WithEventBus implements Provide
     );
 
     this.addDispose(
-      this.editor.monacoEditor.onDidChangeModel(() => {
+      this.editor.monacoEditor.onWillChangeModel(() => {
         this.aiCompletionsService.hideStatusBarItem();
       }),
     );

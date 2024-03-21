@@ -29,6 +29,7 @@ import {
   ChatFeatureRegistryToken,
   CommandService,
   InlineChatFeatureRegistryToken,
+  RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
@@ -48,6 +49,7 @@ import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
+  IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
 } from './types';
 
@@ -87,6 +89,9 @@ export class AINativeBrowserContribution
 
   @Autowired(ResolveConflictRegistryToken)
   private readonly resolveConflictRegistry: IResolveConflictRegistry;
+
+  @Autowired(RenameCandidatesProviderRegistryToken)
+  private readonly renameCandidatesProviderRegistry: IRenameCandidatesProviderRegistry;
 
   @Autowired(AINativeService)
   private readonly aiNativeService: AINativeService;
@@ -134,6 +139,9 @@ export class AINativeBrowserContribution
       }
       if (contribution.registerResolveConflictFeature) {
         contribution.registerResolveConflictFeature(this.resolveConflictRegistry);
+      }
+      if (contribution.registerRenameProvider) {
+        contribution.registerRenameProvider(this.renameCandidatesProviderRegistry);
       }
     });
   }
