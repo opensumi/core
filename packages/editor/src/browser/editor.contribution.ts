@@ -46,7 +46,7 @@ import { ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { Range } from '@opensumi/ide-monaco/lib/common/common';
+import * as monaco from '@opensumi/ide-monaco/lib/common/common';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
@@ -1146,7 +1146,7 @@ export class EditorContribution
             const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } =
               selections[0];
             const selectionText = currentCodeEditor.currentDocumentModel.getText(
-              new Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn),
+              new monaco.Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn),
             );
 
             this.monacoService.testTokenize(selectionText, currentCodeEditor.currentDocumentModel.languageId);

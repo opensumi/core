@@ -1538,7 +1538,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       provideInlayHints: async (
         model: ITextModel,
         range: monaco.Range,
-        token: CancellationToken,
+        token: monaco.CancellationToken,
       ): Promise<modes.InlayHintList | undefined> => {
         const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
         if (!result) {

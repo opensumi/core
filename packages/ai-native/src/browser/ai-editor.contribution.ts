@@ -21,7 +21,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
@@ -263,9 +262,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async handleDiffPreviewStrategy(
-    monacoEditor: ICodeEditor,
+    monacoEditor: monaco.ICodeEditor,
     strategy: (
-      editor: ICodeEditor,
+      editor: monaco.ICodeEditor,
       cancelToken: CancellationToken,
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
     crossSelection: monaco.Selection,
@@ -341,7 +340,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       .join('\n');
   }
 
-  private visibleDiffWidget(monacoEditor: ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
+  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
     monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
     this.aiDiffWidget = this.injector.get(AIDiffWidget, [monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();

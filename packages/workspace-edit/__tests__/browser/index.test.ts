@@ -12,7 +12,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { WorkspaceEditModule } from '../../src/browser';
 import { MonacoBulkEditService } from '../../src/browser/bulk-edit.service';
 import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../../src/common';
-import { Uri as MonacoURI } from '@opensumi/ide-monaco';
+import { Uri } from '@opensumi/ide-monaco';
 
 function mockService(target) {
   return new Proxy(target, {
@@ -49,7 +49,7 @@ describe('workspace edit tests', () => {
       useValue: mockService({
         createModelReference: jest.fn((uri) => ({
           instance: {
-            getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, MonacoURI.parse(uri.toString()))),
+            getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, Uri.parse(uri.toString()))),
             updateContent: jest.fn(),
             dispose: jest.fn(),
             save: jest.fn(),
@@ -58,7 +58,7 @@ describe('workspace edit tests', () => {
         })),
         getModelReference: jest.fn((uri) => ({
           instance: {
-            getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, MonacoURI.parse(uri.toString()))),
+            getMonacoModel: jest.fn(() => monaco.editor.createModel!('', undefined, Uri.parse(uri.toString()))),
             updateContent: jest.fn(),
             dispose: jest.fn(),
           },
@@ -140,7 +140,7 @@ describe('workspace edit tests', () => {
       ],
     });
 
-    const model = monaco.editor.getModel(MonacoURI.parse('file:///test.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///test.ts'))!;
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
 
@@ -271,7 +271,7 @@ describe('workspace edit tests', () => {
 
     await monacoBulkEditService.apply([
       {
-        resource: MonacoURI.parse('file:///monaco-test.ts'),
+        resource: Uri.parse('file:///monaco-test.ts'),
         textEdit: {
           range: {
             startColumn: 1,
@@ -283,8 +283,8 @@ describe('workspace edit tests', () => {
         },
       },
       {
-        newResource: MonacoURI.parse('file:///monaco.newTest.ts'),
-        oldResource: MonacoURI.parse('file:///monaco.oldTest.ts'),
+        newResource: Uri.parse('file:///monaco.newTest.ts'),
+        oldResource: Uri.parse('file:///monaco.oldTest.ts'),
         options: {
           overwrite: true,
         },
@@ -299,7 +299,7 @@ describe('workspace edit tests', () => {
       }),
     );
 
-    const model = monaco.editor.getModel(MonacoURI.parse('file:///monaco-test.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///monaco-test.ts'))!;
 
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
@@ -315,7 +315,7 @@ describe('workspace edit tests', () => {
     await monacoBulkEditService.apply(
       [
         {
-          resource: MonacoURI.parse('file:///monaco-test-2.ts'),
+          resource: Uri.parse('file:///monaco-test-2.ts'),
           textEdit: {
             range: {
               startColumn: 1,
@@ -330,7 +330,7 @@ describe('workspace edit tests', () => {
       { showPreview: true },
     );
 
-    const model = monaco.editor.getModel(MonacoURI.parse('file:///monaco-test-2.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-2.ts'))!;
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
 
@@ -348,7 +348,7 @@ describe('workspace edit tests', () => {
 
     await monacoBulkEditService.apply([
       {
-        resource: MonacoURI.parse('file:///monaco-test-3.ts'),
+        resource: Uri.parse('file:///monaco-test-3.ts'),
         textEdit: {
           range: {
             startColumn: 1,
@@ -364,7 +364,7 @@ describe('workspace edit tests', () => {
       },
     ] as unknown as ResourceEdit[]);
 
-    const model = monaco.editor.getModel(MonacoURI.parse('file:///monaco-test-3.ts'))!;
+    const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-3.ts'))!;
     expect(model.pushEditOperations).toBeCalled();
     expect(model.pushStackElement).toBeCalled();
 

@@ -9,7 +9,7 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-serv
 import { URI, Uri, path } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
-import { Range } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IRefactorPreviewService } from './refactor-preview.service';
@@ -55,8 +55,8 @@ function splitLeftAndRightPadInTextModel(range: IRange, textModel: ITextModel) {
   const lineContent = textModel.getLineContent(range.startLineNumber);
   const base = textModel.getValueInRange(range);
 
-  const leftPadRange = new Range(range.startLineNumber, 0, range.startLineNumber, range.startColumn);
-  const rightPadRange = new Range(
+  const leftPadRange = new monaco.Range(range.startLineNumber, 0, range.startLineNumber, range.startColumn);
+  const rightPadRange = new monaco.Range(
     range.endLineNumber,
     range.startColumn + base.length,
     range.endLineNumber,

@@ -14,7 +14,6 @@ import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
-import { Position } from '@opensumi/ide-monaco';
 
 describe('Debug Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -196,16 +195,16 @@ describe('Debug Model', () => {
 
   it('toggleBreakpoint should be work', () => {
     mockBreakpointManager.getBreakpoints.mockClear();
-    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as Position);
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as monaco.Position);
     expect(mockBreakpointManager.getBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.delBreakpoint).toBeCalledTimes(1);
     mockBreakpointManager.getBreakpoints.mockReturnValueOnce([] as any);
-    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as Position);
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as monaco.Position);
     expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
   });
 
   it('openBreakpointView should be work', () => {
-    debugModel.openBreakpointView({ lineNumber: 1, column: 1 } as Position);
+    debugModel.openBreakpointView({ lineNumber: 1, column: 1 } as monaco.Position);
     expect(mockBreakpointWidget.show).toBeCalledTimes(1);
   });
 

@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 
 import { CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { URI, Uri, Position } from '@opensumi/ide-core-common';
+import { URI, Uri } from '@opensumi/ide-core-common';
 import {
   EvaluatableExpressionServiceImpl,
   IEvaluatableExpressionService,
@@ -1198,7 +1198,7 @@ An error case:
     expect(providers.length).toBe(1);
     expect(providers[0].provideEvaluatableExpression).toBeDefined();
 
-    const pos = new Position(1, 7);
+    const pos = new monaco.Position(1, 7);
 
     const mockProvideFunc = jest.spyOn(expressionProvider, 'provideEvaluatableExpression');
     const tokenSource = new monaco.CancellationTokenSource();

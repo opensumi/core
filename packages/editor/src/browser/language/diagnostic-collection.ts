@@ -1,9 +1,7 @@
-import * as monaco from '@opensumi/ide-monaco';
-// eslint-disable-next-line import/order
 import { Disposable, DisposableCollection, IDisposable } from '@opensumi/ide-core-common';
-
-// eslint-disable-next-line import/order
+import * as monaco from '@opensumi/ide-monaco';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+
 import { Diagnostic, DiagnosticCollection, asMonacoDiagnostics } from '../../common';
 
 type IMonacoModel = monaco.editor.ITextModel;

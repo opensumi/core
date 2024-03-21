@@ -8,5 +8,5 @@ export function createMockedMonacoPositionApi(): typeof monaco.Position {
   }
   const mockedMonacoPositionApi: any = MockedMonacoPosition;
 
-  return partialMock('Position', mockedMonacoPositionApi);
+  return partialMock('monaco.Position', mockedMonacoPositionApi);
 }

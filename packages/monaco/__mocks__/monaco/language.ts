@@ -31,7 +31,7 @@ export interface SelectionRangeProvider {
     token,
   ): Promise<
     {
-      range: Range;
+      range: monaco.Range;
     }[][]
   >;
 }

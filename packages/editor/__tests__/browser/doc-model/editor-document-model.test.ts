@@ -5,7 +5,7 @@ import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calcul
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
-import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
