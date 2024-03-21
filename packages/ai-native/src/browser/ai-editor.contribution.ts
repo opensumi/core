@@ -22,6 +22,7 @@ import {
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { ICodeEditor, IRange, ITextModel } from '@opensumi/ide-monaco';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AIInlineChatContentWidget } from '../common';
@@ -467,7 +468,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           return result;
         };
 
-        dispose = monaco.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
+        dispose = monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
           provideNewSymbolNames: provider,
         });
       }),

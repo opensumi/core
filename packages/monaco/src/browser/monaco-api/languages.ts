@@ -18,7 +18,9 @@ import {
   registerFoldingRangeProvider,
   registerHoverProvider,
   registerImplementationProvider,
+  registerInlineCompletionsProvider,
   registerLinkProvider,
+  registerNewSymbolNameProvider,
   registerOnTypeFormattingEditProvider,
   registerReferenceProvider,
   registerRenameProvider,
@@ -62,6 +64,8 @@ export function createMonacoLanguageApi() {
     registerDeclarationProvider,
     registerSelectionRangeProvider,
     registerCompletionItemProvider,
+    registerNewSymbolNameProvider,
+    registerInlineCompletionsProvider,
     // enums
     // TODO: const enum
     // Classes
