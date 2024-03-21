@@ -17,9 +17,10 @@ import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@open
 
 import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 
+import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
 
-export interface InlineChatHandler {
+export interface IEditorInlineChatHandler {
   /**
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
@@ -33,8 +34,14 @@ export interface InlineChatHandler {
   ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
 }
 
+export interface ITerminalInlineChatHandler {
+  triggerRules?: 'selection' | (BaseTerminalDetectionLineMatcher | typeof BaseTerminalDetectionLineMatcher)[];
+  execute: (stdout: string, stdin: string, rule?: BaseTerminalDetectionLineMatcher) => MaybePromise<void>;
+}
+
 export interface IInlineChatFeatureRegistry {
-  registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void;
+  registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): void;
+  registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): void;
 }
 
 export interface IChatSlashCommandItem {
@@ -92,8 +99,14 @@ export interface AINativeCoreContribution {
    * 注册智能解决冲突相关功能
    */
   registerResolveConflictFeature?(registry: IResolveConflictRegistry): void;
-
+  /**
+   * 注册智能重命名相关功能
+   */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
+  /*
+   * 注册智能终端相关功能
+   */
+  registerTerminalFeature?(registry: IResolveConflictRegistry): void;
 }
 
 export interface IChatComponentConfig {

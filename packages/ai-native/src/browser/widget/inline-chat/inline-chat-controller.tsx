@@ -21,7 +21,7 @@ const AIInlineOperation = (props: IAIInlineOperationProps) => {
   const { hanldeActions, onClose } = props;
   const inlineChatFeatureRegistry: InlineChatFeatureRegistry = useInjectable(InlineChatFeatureRegistryToken);
 
-  const operationList = useMemo(() => inlineChatFeatureRegistry.getActionButtons(), [inlineChatFeatureRegistry]);
+  const operationList = useMemo(() => inlineChatFeatureRegistry.getEditorActionButtons(), [inlineChatFeatureRegistry]);
 
   const handleClickActions = useCallback(
     (id: string) => {
@@ -38,7 +38,7 @@ const AIInlineOperation = (props: IAIInlineOperationProps) => {
 
   const moreOperation = useMemo(
     () =>
-      inlineChatFeatureRegistry.getActionMenus().map(
+      inlineChatFeatureRegistry.getEditorActionMenus().map(
         (data) =>
           new MenuNode({
             id: `ai.menu.operation.${data.id}`,

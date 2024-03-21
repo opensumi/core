@@ -32,6 +32,14 @@ export interface IAINativeCapabilities {
    * Use ai to provide rename suggestions
    */
   supportsRenameSuggestions?: boolean;
+  /**
+   * Use ai terminal detection capabilities
+   */
+  supportsTerminalDetection?: boolean;
+  /**
+   * Use ai terminal command suggets capabilities
+   */
+  supportsTerminalCommandSuggest?: boolean;
 }
 
 export interface IAINativeLayout {
@@ -140,6 +148,7 @@ export const InlineChatFeatureRegistryToken = Symbol('InlineChatFeatureRegistryT
 export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
 export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
+export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 
