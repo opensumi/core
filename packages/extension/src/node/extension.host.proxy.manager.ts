@@ -88,7 +88,7 @@ export class ExtensionHostProxyManager implements IExtensionHostManager {
     });
 
     this.extHostProxyProtocol.set(EXT_SERVER_IDENTIFIER, {
-      $callback: async (callId, ...args) => {
+      $callback: async (callId: number, ...args: any[]) => {
         const callback = this.callbackMap.get(callId);
         if (!callback) {
           return Promise.reject(new Error(`no found callback: ${callId}`));

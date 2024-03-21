@@ -61,6 +61,7 @@ import {
   IDocModelUpdateOptions,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
+  ITextBufferFactory,
   ORIGINAL_DOC_SCHEME,
 } from './types';
 
@@ -155,7 +156,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   private readonly _onDidChangeEncoding = new Emitter<void>();
   readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
-  constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
+  constructor(
+    public readonly uri: URI,
+    content: string | ITextBufferFactory,
+    options: EditorDocumentModelConstructionOptions = {},
+  ) {
     super();
 
     this.onDispose(() => {

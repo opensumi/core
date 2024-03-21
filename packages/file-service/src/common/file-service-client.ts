@@ -6,8 +6,10 @@ import {
   FileSystemProviderCapabilities,
   IDisposable,
   IFileServiceClient as IFileServiceClientToken,
+  IReadFileStreamOptions,
   URI,
 } from '@opensumi/ide-core-common';
+import { IReadableStream } from '@opensumi/ide-utils/lib/stream';
 
 import {
   FileCopyOptions,
@@ -46,6 +48,7 @@ export interface IFileServiceClient {
   resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;
 
   readFile(uri: string): Promise<{ content: BinaryBuffer }>;
+  readFileStream?(uri: string, opts?: IReadFileStreamOptions): Promise<IReadableStream<Uint8Array>>;
 
   /**
    * Read the file stat

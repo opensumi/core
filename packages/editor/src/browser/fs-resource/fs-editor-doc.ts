@@ -18,6 +18,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { createTextBufferFactoryFromStream } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
 import { IEditorDocumentModelContentProvider } from '../doc-model/types';
 import { EditorPreferences } from '../preference/schema';
@@ -99,6 +100,10 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     return backendOS === OperatingSystem.Windows ? EOL.CRLF : EOL.LF;
   }
 
+  async readFileStream(uri: URI) {
+    return this.fileServiceClient.readFileStream!(uri.toString());
+  }
+
   async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string }> {
     const { content: buffer } = await this.fileServiceClient.readFile(uri.toString());
 
@@ -132,7 +137,10 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     // TODO: 这部分要优化成buffer获取（长期来看是stream获取，encoding在哪一层做？）
     // 暂时还是使用 resolveContent 内提供的 decode 功能
     // 之后 encoding 做了分层之后和其他的需要 decode 的地方一起改
-    return (await this.read(uri, { encoding })).content;
+
+    const stream = await this.readFileStream(uri);
+    const buffer = await createTextBufferFactoryFromStream(stream);
+    return buffer;
   }
 
   async isReadonly(uri: URI): Promise<boolean> {

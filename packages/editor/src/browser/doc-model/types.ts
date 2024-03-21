@@ -14,6 +14,8 @@ import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
+import type { ITextBufferFactory } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
   detectIndentation?: boolean;
 }
@@ -37,7 +39,7 @@ export interface IEditorDocumentModelContentProvider {
    * @param uri
    * @param encoding 以某种编码获取内容
    */
-  provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string>;
+  provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string | ITextBufferFactory>;
 
   /**
    * 这个文档是否只读（注意只读和无法保存的区别）
@@ -253,3 +255,5 @@ export const enum EncodingMode {
    */
   Decode,
 }
+
+export { ITextBufferFactory };

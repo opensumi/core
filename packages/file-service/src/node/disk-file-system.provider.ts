@@ -213,10 +213,25 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  async readFileStream(uri: UriComponents, opts: IReadFileStreamOptions): Promise<Readable> {
+  async readFileStream(uri: UriComponents, opts?: IReadFileStreamOptions): Promise<Readable> {
     const _uri = Uri.revive(uri);
     try {
-      return fse.createReadStream(FileUri.fsPath(new URI(_uri)));
+      const readStreamOptions = {
+        highWaterMark: 128 * 1024, // 128kb
+      } as {
+        highWaterMark: number;
+        start?: number;
+        end?: number;
+      };
+
+      if (opts && opts.position !== undefined) {
+        readStreamOptions.start = opts.position;
+        if (opts.length !== undefined) {
+          readStreamOptions.end = opts.position + opts.length;
+        }
+      }
+
+      return fse.createReadStream(FileUri.fsPath(new URI(_uri)), readStreamOptions);
     } catch (error) {
       this.handleReadFileError(error, uri);
     }
