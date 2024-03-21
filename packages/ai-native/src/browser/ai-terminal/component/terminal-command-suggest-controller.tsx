@@ -5,7 +5,7 @@ import { Emitter, localize } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 
-import styles from './terminal-ai-prompt-controller.module.less';
+import styles from './terminal-command-suggest-controller.module.less';
 
 export interface SmartCommandDesc {
   description: string;
@@ -139,7 +139,6 @@ export const AITerminalPrompt = (props: CommandLineInterfaceProps) => {
         setSuggestions([...suggestions].reverse());
       },
     );
-    // setSuggestions(commands);
   };
 
   const debouncedSearch = useCallback(

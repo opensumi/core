@@ -33,9 +33,13 @@ export interface IAINativeCapabilities {
    */
   supportsRenameSuggestions?: boolean;
   /**
-   * Use ai terminal capabilities
+   * Use ai terminal detection capabilities
    */
-  supportsAITerminal?: boolean;
+  supportsTerminalDetection?: boolean;
+  /**
+   * Use ai terminal command suggets capabilities
+   */
+  supportsTerminalCommandSuggest?: boolean;
 }
 
 export interface IAINativeLayout {

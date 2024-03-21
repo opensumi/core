@@ -12,7 +12,7 @@ import { ITerminalConnection, ITerminalController } from '@opensumi/ide-terminal
 import { ChatService } from '../chat/chat.service';
 import { MsgStreamManager } from '../model/msg-stream-manager';
 
-import { AITerminalPrompt, SmartCommandDesc } from './component/terminal-ai-prompt-controller';
+import { AITerminalPrompt, SmartCommandDesc } from './component/terminal-command-suggest-controller';
 
 // 基于 PS1 Hack 的终端 AI 能力集成
 
@@ -38,8 +38,6 @@ export class PS1TerminalService extends Disposable {
 
   private popupContainer: HTMLDivElement; // AI 终端提示 弹出框容器
 
-  private promptStartMarker: IMarker | undefined;
-  private promptStartDecoration: IDecoration | undefined;
   private promptEndMarker: IMarker | undefined;
   private promptEndDecoration: IDecoration | undefined;
   private promptEndReactRoot: Root | undefined;
@@ -62,32 +60,17 @@ export class PS1TerminalService extends Disposable {
     }
   }
 
-  // 在终端中写入空行，之前用于把终端的 Prompt 顶到底部，发现这样可能会导致用户混淆，暂时关闭
-  // @ts-ignore
-  private writeNewLines(terminal: Terminal, numberOfLines: number) {
-    let newLines = '';
-    for (let i = 0; i < numberOfLines; i++) {
-      newLines += '\n';
-    }
-    terminal.write(newLines);
-  }
-
   private initContainer() {
     this.popupContainer = document.createElement('div');
     document.body.appendChild(this.popupContainer);
   }
 
   private listenPromptState(xterm: Terminal) {
-    // this.writeNewLines(xterm, xterm.rows);
-
     xterm.parser.registerOscHandler(6973, (data) => {
       const argsIndex = data.indexOf(';');
       const sequence = argsIndex === -1 ? data : data.substring(0, argsIndex);
 
       switch (sequence) {
-        case IstermOscPt.PromptStarted:
-          // this.handlePromptStart(xterm);
-          break;
         case IstermOscPt.PromptEnded:
           this.handlePromptEnd(xterm);
           break;
@@ -96,30 +79,6 @@ export class PS1TerminalService extends Disposable {
       }
       // 不要阻止事件传递
       return false;
-    });
-  }
-
-  // 暂时不需要处理 Prompt 起始时的事件
-  // @ts-ignore
-  private handlePromptStart(xterm: Terminal) {
-    if (this.promptStartMarker) {
-      this.promptStartMarker.dispose();
-    }
-    if (this.promptStartDecoration) {
-      this.promptStartDecoration.dispose();
-    }
-    this.promptStartMarker = xterm.registerMarker(0);
-    const xOffset = xterm.buffer.active.cursorX;
-    this.promptStartDecoration = xterm.registerDecoration({
-      marker: this.promptStartMarker,
-      width: xterm.cols,
-      // backgroundColor: '#2472C8',
-      height: 1,
-      x: xOffset + 2,
-    });
-    this.promptStartDecoration?.onRender((element) => {
-      element.innerText = localize('terminal.ai.inputSharpToGetHint');
-      element.style.opacity = '0.5';
     });
   }
 

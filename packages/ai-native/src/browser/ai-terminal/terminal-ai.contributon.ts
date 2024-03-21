@@ -20,12 +20,12 @@ export class TerminalAIContribution implements ClientAppContribution {
   aiNativeConfigService: AINativeConfigService;
 
   onDidStart() {
-    // 如果没有启用终端能力
-    if (!this.aiNativeConfigService.capabilities.supportsAITerminal) {
-      return;
+    if (this.aiNativeConfigService.capabilities.supportsTerminalDetection) {
+      this.aiTerminalService.active();
+      this.aiTerminalDecorationService.active();
     }
-    this.aiTerminalService.active();
-    this.aiTerminalDecorationService.active();
-    this.ps1TerminalService.active();
+    if (this.aiNativeConfigService.capabilities.supportsTerminalCommandSuggest) {
+      this.ps1TerminalService.active();
+    }
   }
 }
