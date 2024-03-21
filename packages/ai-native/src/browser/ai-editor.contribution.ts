@@ -226,7 +226,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.aiInlineChatDisposed.addDispose(
       this.aiInlineContentWidget.onClickActions(async (id: string) => {
-        const handler = this.inlineChatFeatureRegistry.getHandler(id);
+        const handler = this.inlineChatFeatureRegistry.getEditorHandler(id);
         const action = this.inlineChatFeatureRegistry.getAction(id);
         if (!handler || !action) {
           return;

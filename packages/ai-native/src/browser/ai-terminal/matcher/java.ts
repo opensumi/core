@@ -1,8 +1,8 @@
 import { TextWithStyle } from '../utils/ansi-parser';
 
-import { LineMatcher, MatcherType } from './base';
+import { BaseTerminalDetectionLineMatcher, MatcherType } from './base';
 
-export class JavaMatcher extends LineMatcher {
+export class JavaMatcher extends BaseTerminalDetectionLineMatcher {
   type = MatcherType.java;
   isMultiLine = true;
 

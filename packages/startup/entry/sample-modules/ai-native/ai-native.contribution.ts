@@ -1,5 +1,14 @@
 import { Autowired } from '@opensumi/di';
 import {
+  BaseTerminalDetectionLineMatcher,
+  JavaMatcher,
+  NPMMatcher,
+  NodeMatcher,
+  ShellMatcher,
+  TSCMatcher,
+} from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
+import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
+import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
@@ -9,6 +18,7 @@ import {
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { mergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
 import { renamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
+import { terminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
@@ -54,7 +64,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
-    registry.registerInlineChat(
+    registry.registerEditorInlineChat(
       {
         id: 'ai-comments',
         name: EInlineOperation.Comments,
@@ -81,7 +91,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       },
     );
 
-    registry.registerInlineChat(
+    registry.registerEditorInlineChat(
       {
         id: 'ai-optimize',
         name: EInlineOperation.Optimize,
@@ -103,6 +113,43 @@ export class AiNativeContribution implements AINativeCoreContribution {
           }
 
           return new ReplyResponse(result.data!);
+        },
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-explain',
+        name: 'explain',
+      },
+      {
+        triggerRules: 'selection',
+        execute: async (stdout: string) => {},
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-debug',
+        name: 'debug',
+      },
+      {
+        triggerRules: [
+          NodeMatcher,
+          TSCMatcher,
+          NPMMatcher,
+          ShellMatcher,
+          JavaMatcher,
+          // 也可以自定义 matcher 规则
+          class extends BaseTerminalDetectionLineMatcher {
+            doMatch(output: TextWithStyle[]): boolean {
+              return output.some((t) => t.content.includes('debug'));
+            }
+          },
+        ],
+        execute: async (stdout: string, stdin: string, rule) => {
+          const prompt = terminalDetectionPromptManager.generateBasePrompt(stdout);
+          // 通过 ai 后端服务请求
         },
       },
     );
