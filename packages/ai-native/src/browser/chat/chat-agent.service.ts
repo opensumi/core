@@ -4,6 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { CancellationToken, Disposable, Emitter, IDisposable, ILogger, toDisposable } from '@opensumi/ide-core-common';
 
 import {
+  IAIChatService,
   IChatAgent,
   IChatAgentCommand,
   IChatAgentMetadata,
@@ -32,7 +33,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired(ChatService)
+  @Autowired(IAIChatService)
   aiChatService: ChatService;
 
   constructor() {
