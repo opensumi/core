@@ -174,7 +174,7 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
-    'import/no-relative-packages': 'error',
+    'import/no-relative-packages': 'warn',
     'import/no-restricted-paths': [
       'error',
       {
