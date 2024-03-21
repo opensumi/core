@@ -38,6 +38,9 @@ test.describe('OpenSumi SCM Panel', () => {
     await explorer.fileTreeView.open();
     const action = await fileTreeView.getTitleActionByName('Refresh');
     await action?.click();
+    // Reinitialize
+    const terminal = await app.open(OpenSumiTerminalView);
+    await terminal.sendText('git init');
     await app.page.waitForTimeout(2000);
     const node = await explorer.getFileStatTreeNodeByPath('a.js');
     const badge = await node?.badge();
