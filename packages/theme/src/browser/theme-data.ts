@@ -52,8 +52,6 @@ import { convertSettings } from '../common/themeCompatibility';
 
 import defaultTheme from './default-theme';
 
-import type * as monaco from '@opensumi/ide-monaco';
-
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
   const ruleScope = rule.scope;
   if (!ruleScope || !rule.settings) {
@@ -384,7 +382,7 @@ export class ThemeData implements IThemeData {
   }
 
   // 将 ITokenColorizationRule 转化为 ITokenThemeRule
-  protected transform(tokenColor: ITokenColorizationRule, acceptor: (rule: monaco.editor.ITokenThemeRule) => void) {
+  protected transform(tokenColor: ITokenColorizationRule, acceptor: (rule: ITokenThemeRule) => void) {
     if (tokenColor.scope && tokenColor.settings && tokenColor.scope === 'token.info-token') {
       this.hasDefaultTokens = true;
     }
