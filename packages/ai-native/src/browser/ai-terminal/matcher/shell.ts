@@ -1,8 +1,8 @@
 import { TextWithStyle } from '../utils/ansi-parser';
 
-import { LineMatcher, MatcherType } from './base';
+import { BaseTerminalDetectionLineMatcher, MatcherType } from './base';
 
-export class ShellMatcher extends LineMatcher {
+export class ShellMatcher extends BaseTerminalDetectionLineMatcher {
   type = MatcherType.shell;
   isMultiLine = false;
   /**

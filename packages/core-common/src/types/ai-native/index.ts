@@ -144,6 +144,7 @@ export const InlineChatFeatureRegistryToken = Symbol('InlineChatFeatureRegistryT
 export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
 export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
+export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 

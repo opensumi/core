@@ -14,14 +14,7 @@ export interface LineRecord {
   text: string;
 }
 
-export interface MatchResult {
-  type: MatcherType;
-  input?: string;
-  errorText: string;
-  operate: 'debug' | 'explain';
-}
-
-export abstract class LineMatcher {
+export abstract class BaseTerminalDetectionLineMatcher {
   type: MatcherType = MatcherType.base;
   // 是否多行报错
   isMultiLine = false;
