@@ -99,7 +99,9 @@ export interface AINativeCoreContribution {
    * 注册智能解决冲突相关功能
    */
   registerResolveConflictFeature?(registry: IResolveConflictRegistry): void;
-
+  /**
+   * 注册智能重命名相关功能
+   */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
   /*
    * 注册智能终端相关功能
