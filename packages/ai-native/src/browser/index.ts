@@ -7,6 +7,7 @@ import {
   ChatFeatureRegistryToken,
   IAIInlineChatService,
   InlineChatFeatureRegistryToken,
+  RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-browser';
 
@@ -20,6 +21,7 @@ import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatService } from './chat/chat.service';
 import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
+import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
 import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
@@ -64,6 +66,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: ResolveConflictRegistryToken,
       useClass: ResolveConflictRegistry,
+    },
+    {
+      token: RenameCandidatesProviderRegistryToken,
+      useClass: RenameCandidatesProviderRegistry,
     },
   ];
 

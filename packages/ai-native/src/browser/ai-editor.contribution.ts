@@ -3,23 +3,26 @@ import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AINativeSettingSectionsId,
+  CancelResponse,
   CancellationToken,
   ContributionProvider,
   Disposable,
+  ErrorResponse,
   Event,
   IDisposable,
   ILogServiceClient,
   ILoggerManagerClient,
   InlineChatFeatureRegistryToken,
   MaybePromise,
+  ReplyResponse,
   Schemes,
   SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { CancelResponse, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { ICodeEditor } from '@opensumi/ide-monaco';
+import { ICodeEditor, IRange, ITextModel } from '@opensumi/ide-monaco';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AIInlineChatContentWidget } from '../common';
@@ -27,6 +30,7 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inline-chat.service';
@@ -64,6 +68,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+
+  @Autowired(RenameSuggestionsService)
+  private readonly renameSuggestionService: RenameSuggestionsService;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -115,8 +122,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.registerCompletion(editor);
     }
 
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.registerRenameSuggestions(editor);
+    }
+
     this.disposables.push(
-      monacoEditor.onDidChangeModel(() => {
+      monacoEditor.onWillChangeModel(() => {
         this.disposeAllWidget();
       }),
     );
@@ -366,7 +377,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       Event.debounce(
-        monacoEditor.onDidChangeModel,
+        monacoEditor.onWillChangeModel,
         (_, e) => e,
         300,
       )(async (event) => {
@@ -426,5 +437,41 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       }),
     );
     return;
+  }
+
+  private async registerRenameSuggestions(editor: IEditor): Promise<void> {
+    const { monacoEditor, currentUri } = editor;
+
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return;
+    }
+
+    let dispose: IDisposable | undefined;
+
+    this.disposables.push(
+      Event.debounce(
+        monacoEditor.onWillChangeModel,
+        (_, e) => e,
+        300,
+      )(async (event) => {
+        if (dispose) {
+          dispose.dispose();
+        }
+
+        const model = monacoEditor.getModel();
+        if (!model) {
+          return;
+        }
+
+        const provider = async (model: ITextModel, range: IRange, token: CancellationToken) => {
+          const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
+          return result;
+        };
+
+        dispose = monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
+          provideNewSymbolNames: provider,
+        });
+      }),
+    );
   }
 }
