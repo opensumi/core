@@ -81,3 +81,5 @@ export {
   IMarkerData,
   IRelatedInformation,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/markers/common/markers';
+
+export { KeyMod } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorBaseApi';
