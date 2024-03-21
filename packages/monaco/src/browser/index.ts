@@ -11,7 +11,6 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
-import { MergeEditorService } from './contrib/merge-editor/merge-editor.service';
 import { ConfigurationService, MonacoContextKeyService } from './monaco.context-key.service';
 import { MonacoClientContribution } from './monaco.contribution';
 import MonacoServiceImpl from './monaco.service';
@@ -19,6 +18,8 @@ import { MonacoOverrideServiceRegistryImpl } from './override.service.registry';
 import { SchemaRegistry, SchemaStore } from './schema-registry';
 
 import './contrib/merge-editor/view/merge-editor.module.less';
+
+export * as monacoBrowser from './monaco-exports';
 
 @Injectable()
 export class MonacoModule extends BrowserModule {

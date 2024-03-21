@@ -10,7 +10,7 @@ import {
   isUndefined,
 } from '@opensumi/ide-core-browser';
 import { Deferred } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { BreakpointsChangeEvent, DEBUG_REPORT_NAME, IDebugBreakpoint, IDebugModel } from '../../common';

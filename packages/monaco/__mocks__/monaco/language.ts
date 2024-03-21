@@ -1,6 +1,7 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '../../src/common';
 
 import { partialMock } from './common/util';
+import { monacoApi } from '../../src/browser/monaco-api';
 
 export type TokensProvider = monaco.languages.TokensProvider;
 export type EncodedTokensProvider = monaco.languages.EncodedTokensProvider;
@@ -30,7 +31,7 @@ export interface SelectionRangeProvider {
     token,
   ): Promise<
     {
-      range: monaco.Range;
+      range: Range;
     }[][]
   >;
 }
@@ -38,10 +39,10 @@ export type IDisposable = monaco.IDisposable;
 
 export const mockFeatureProviderRegistry: Map<string, any> = new Map();
 
-export function createMockedMonacoLanguageApi(): typeof monaco.languages {
+export function createMockedMonacoLanguageApi(): typeof monacoApi.languages {
   const languageRegistry: Map<string, monaco.languages.ILanguageExtensionPoint> = new Map();
   const mockDisposable: IDisposable = { dispose() {} };
-  const mockedMonacoEditorApi: Partial<typeof monaco.languages> = {
+  const mockedMonacoEditorApi: Partial<typeof monacoApi.languages> = {
     onLanguage: (languageId, callback) => {
       const timerId = setTimeout(() => {
         callback();

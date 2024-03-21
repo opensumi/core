@@ -66,7 +66,7 @@ import { MonacoOverrideServiceRegistryImpl } from '@opensumi/ide-monaco/lib/brow
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import {
   IConfigurationService,
   IConfigurationChangeEvent,

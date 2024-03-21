@@ -1,13 +1,13 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
-import IMonacoModel = monaco.editor.IModel;
-import IMonacoMarkerData = monaco.editor.IMarkerData;
-
+import * as monaco from '@opensumi/ide-monaco';
 // eslint-disable-next-line import/order
 import { Disposable, DisposableCollection, IDisposable } from '@opensumi/ide-core-common';
 
 // eslint-disable-next-line import/order
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { Diagnostic, DiagnosticCollection, asMonacoDiagnostics } from '../../common';
+
+type IMonacoModel = monaco.editor.ITextModel;
+type IMonacoMarkerData = monaco.editor.IMarkerData;
 
 export class MonacoDiagnosticCollection implements DiagnosticCollection {
   protected readonly diagnostics = new Map<string, MonacoModelDiagnostics | undefined>();
@@ -48,7 +48,7 @@ export class MonacoModelDiagnostics implements IDisposable {
   constructor(uri: string, diagnostics: Diagnostic[], readonly owner: string) {
     this.uri = monaco.Uri.parse(uri);
     this.diagnostics = diagnostics;
-    monaco.editor.onDidCreateModel((model) => this.doUpdateModelMarkers(model));
+    monacoApi.editor.onDidCreateModel((model) => this.doUpdateModelMarkers(model));
   }
 
   set diagnostics(diagnostics: Diagnostic[]) {
@@ -71,13 +71,13 @@ export class MonacoModelDiagnostics implements IDisposable {
   }
 
   updateModelMarkers(): void {
-    const model = monaco.editor.getModel(this.uri);
+    const model = monacoApi.editor.getModel(this.uri);
     this.doUpdateModelMarkers(model);
   }
 
   protected doUpdateModelMarkers(model: IMonacoModel | null): void {
     if (model && this.uri.toString() === model.uri.toString()) {
-      monaco.editor.setModelMarkers(model, this.owner, this._markers);
+      monacoApi.editor.setModelMarkers(model, this.owner, this._markers);
     }
   }
 }

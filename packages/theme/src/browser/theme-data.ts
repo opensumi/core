@@ -13,7 +13,6 @@ import {
   parseWithComments,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { Color } from '../common/color';
 import { editorBackground, editorForeground } from '../common/color-tokens/editor';
@@ -52,6 +51,8 @@ import {
 import { convertSettings } from '../common/themeCompatibility';
 
 import defaultTheme from './default-theme';
+
+import type * as monaco from '@opensumi/ide-monaco';
 
 function getScopeMatcher(rule: ITextMateThemingRule): Matcher<ProbeScope> {
   const ruleScope = rule.scope;
