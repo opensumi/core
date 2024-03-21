@@ -8,7 +8,6 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { KeyCodeChord } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
-import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
 import {
   IDiffEditorConstructionOptions,
@@ -18,6 +17,7 @@ import {
 import { ShowLightbulbIconMode } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import { StandaloneKeybindingService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { MonacoService } from '../common';
 
@@ -146,30 +146,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   }
 
   private overrideMonacoKeybindingService(editor: IEditorType) {
-    this.removeMonacoKeybindingListener(editor);
     this.overrideKeybindingResolver(editor);
-  }
-
-  /**
-   * 移除 Monaco 中默认的快捷键
-   * 防止用户修改编辑器快捷键后依然会命中默认的快捷键
-   * @param editor
-   */
-  private removeMonacoKeybindingListener(editor: IEditorType) {
-    let keydownListener: IDisposable | undefined;
-    const keybindingService = editor['_standaloneKeybindingService'];
-    if (!keybindingService) {
-      return;
-    }
-    for (const listener of keybindingService._store._toDispose) {
-      if ('_type' in listener && listener['_type'] === 'keydown') {
-        keydownListener = listener;
-        break;
-      }
-    }
-    if (keydownListener) {
-      keydownListener.dispose();
-    }
   }
 
   /**
@@ -177,7 +154,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
    * @param editor
    */
   private overrideKeybindingResolver(editor: IEditorType) {
-    const keybindingService = editor['_standaloneKeybindingService'];
+    const keybindingService = editor['_standaloneKeybindingService'] as StandaloneKeybindingService;
     if (!keybindingService) {
       return;
     }
@@ -193,6 +170,20 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         keyboardEvent.keyCode,
       ).toKeybinding();
       return new MonacoResolvedKeybinding(MonacoResolvedKeybinding.keySequence(keybinding), this.keybindingRegistry);
+    };
+
+    const oldLookup = keybindingService.lookupKeybinding;
+    keybindingService.lookupKeybinding = (commandId: string, context) => {
+      const resolvedKeybinding = oldLookup.call(keybindingService, commandId, context);
+      if (resolvedKeybinding) {
+        return resolvedKeybinding;
+      }
+
+      const keybindings = this.keybindingRegistry.getKeybindingsForCommand(commandId);
+
+      if (keybindings && keybindings.length) {
+        return new MonacoResolvedKeybinding(keybindings[0].resolved!, this.keybindingRegistry);
+      }
     };
   }
 
