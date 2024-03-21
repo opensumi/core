@@ -2,8 +2,8 @@ import cls from 'classnames';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, IEventBus, IMarkdownString, URI } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { IThemeService } from '@opensumi/ide-theme';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IDecorationApplyOptions, IDecorationRenderOptions } from '../common';
 
@@ -180,7 +180,6 @@ function assignModelDecorationOptions(
     if (!target.overviewRuler) {
       target.overviewRuler = {
         color: null as any,
-        range: null as any,
         position: property.overviewRulerLane,
       };
     } else {

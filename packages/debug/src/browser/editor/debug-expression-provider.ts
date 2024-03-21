@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { CancellationTokenSource, IRange, arrays } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEvaluatableExpressionService } from './evaluatable-expression';
 

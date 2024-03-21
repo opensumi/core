@@ -1,12 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
-import {
-  positionToRange,
-  URI,
-  CommandService,
-  ILineChange,
-  registerLocalizationBundle,
-} from '@opensumi/ide-core-common';
+import { URI, CommandService, ILineChange, registerLocalizationBundle } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
@@ -20,6 +14,7 @@ import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.conte
 import { SCMService } from '../../../src';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
+import { positionToRange } from '@opensumi/ide-monaco';
 
 registerLocalizationBundle({
   languageId: 'zh-CN',

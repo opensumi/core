@@ -8,8 +8,8 @@ import {
   MarkerSeverity,
   URI,
 } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   Diagnostic,

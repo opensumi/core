@@ -3,30 +3,33 @@ import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AINativeSettingSectionsId,
+  CancelResponse,
   CancellationToken,
   ContributionProvider,
   Disposable,
+  ErrorResponse,
   Event,
   IDisposable,
   ILogServiceClient,
   ILoggerManagerClient,
   InlineChatFeatureRegistryToken,
   MaybePromise,
+  ReplyResponse,
   Schemes,
   SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { CancelResponse, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { ICodeEditor } from '@opensumi/ide-monaco';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { AIInlineChatContentWidget } from '../common';
 
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService, EInlineChatStatus } from './widget/inline-chat/inline-chat.service';
@@ -64,6 +67,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AIInlineCompletionsProvider)
   private readonly aiInlineCompletionsProvider: AIInlineCompletionsProvider;
+
+  @Autowired(RenameSuggestionsService)
+  private readonly renameSuggestionService: RenameSuggestionsService;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -115,8 +121,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.registerCompletion(editor);
     }
 
+    if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
+      this.registerRenameSuggestions(editor);
+    }
+
     this.disposables.push(
-      monacoEditor.onDidChangeModel(() => {
+      monacoEditor.onWillChangeModel(() => {
         this.disposeAllWidget();
       }),
     );
@@ -215,7 +225,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.aiInlineChatDisposed.addDispose(
       this.aiInlineContentWidget.onClickActions(async (id: string) => {
-        const handler = this.inlineChatFeatureRegistry.getHandler(id);
+        const handler = this.inlineChatFeatureRegistry.getEditorHandler(id);
         const action = this.inlineChatFeatureRegistry.getAction(id);
         if (!handler || !action) {
           return;
@@ -252,9 +262,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async handleDiffPreviewStrategy(
-    monacoEditor: ICodeEditor,
+    monacoEditor: monaco.ICodeEditor,
     strategy: (
-      editor: ICodeEditor,
+      editor: monaco.ICodeEditor,
       cancelToken: CancellationToken,
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
     crossSelection: monaco.Selection,
@@ -300,7 +310,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiDiffWidget.onMaxLincCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model.getLineCount()) {
-            const lineHeight = monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+            const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
             this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
           }
         });
@@ -330,7 +340,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       .join('\n');
   }
 
-  private visibleDiffWidget(monacoEditor: ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
+  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
     monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
     this.aiDiffWidget = this.injector.get(AIDiffWidget, [monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
@@ -366,7 +376,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       Event.debounce(
-        monacoEditor.onDidChangeModel,
+        monacoEditor.onWillChangeModel,
         (_, e) => e,
         300,
       )(async (event) => {
@@ -393,7 +403,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineCompletionsProvider.registerEditor(editor);
 
-        dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
+        dispose = monacoApi.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
             if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
               this.aiCompletionsService.setMiddlewareComplete(
@@ -426,5 +436,41 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       }),
     );
     return;
+  }
+
+  private async registerRenameSuggestions(editor: IEditor): Promise<void> {
+    const { monacoEditor, currentUri } = editor;
+
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return;
+    }
+
+    let dispose: IDisposable | undefined;
+
+    this.disposables.push(
+      Event.debounce(
+        monacoEditor.onWillChangeModel,
+        (_, e) => e,
+        300,
+      )(async (event) => {
+        if (dispose) {
+          dispose.dispose();
+        }
+
+        const model = monacoEditor.getModel();
+        if (!model) {
+          return;
+        }
+
+        const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+          const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
+          return result;
+        };
+
+        dispose = monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
+          provideNewSymbolNames: provider,
+        });
+      }),
+    );
   }
 }

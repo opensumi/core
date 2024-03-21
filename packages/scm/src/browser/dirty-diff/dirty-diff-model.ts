@@ -15,15 +15,14 @@ import {
   arrays,
   dispose,
   first,
-  positionToRange,
   toDisposable,
 } from '@opensumi/ide-core-browser';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { DetailedLineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
 import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { IDirtyDiffModel, ISCMRepository, SCMService } from '../../common';
@@ -394,7 +393,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
       function refreshWidget(current: number, currentChange: ILineChange) {
         widget.updateCurrent(current);
-        widget.show(positionToRange(currentChange[3] - 1), DirtyDiffModel.heightInLines);
+        widget.show(monaco.positionToRange(currentChange[3] - 1), DirtyDiffModel.heightInLines);
         that.isDirtyDiffVisible.set(true);
       }
 

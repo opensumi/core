@@ -1,43 +1,82 @@
 import { Injectable } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
+import { Disposable, getDebugLogger, isUndefined } from '@opensumi/ide-core-common';
 
-import { IInlineChatFeatureRegistry, InlineChatHandler } from '../../types';
+import { IEditorInlineChatHandler, IInlineChatFeatureRegistry, ITerminalInlineChatHandler } from '../../types';
 
 @Injectable()
 export class InlineChatFeatureRegistry extends Disposable implements IInlineChatFeatureRegistry {
   private readonly logger = getDebugLogger();
   private actionsMap: Map<string, AIActionItem> = new Map();
-  private handlerMap: Map<string, InlineChatHandler> = new Map();
+  private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
+  private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
 
   override dispose() {
     super.dispose();
     this.actionsMap.clear();
-    this.handlerMap.clear();
+    this.editorHandlerMap.clear();
   }
 
-  public registerInlineChat(operational: AIActionItem, handler: InlineChatHandler): void {
+  private collectActions(operational: AIActionItem): boolean {
     const { id } = operational;
 
     if (this.actionsMap.has(id)) {
       this.logger.warn(`InlineChatFeatureRegistry: id ${id} already exists`);
-      return;
+      return false;
     }
 
     this.actionsMap.set(id, operational);
-    this.handlerMap.set(id, handler);
+    return true;
   }
 
-  public getActionButtons(): AIActionItem[] {
-    return Array.from(this.actionsMap.values()).filter((item) => item.renderType === 'button');
+  public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): void {
+    const isCollect = this.collectActions(operational);
+
+    if (isCollect) {
+      this.editorHandlerMap.set(operational.id, handler);
+    }
   }
 
-  public getActionMenus(): AIActionItem[] {
-    return Array.from(this.actionsMap.values()).filter((item) => item.renderType === 'dropdown');
+  public registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): void {
+    const isCollect = this.collectActions(operational);
+
+    if (isCollect) {
+      if (isUndefined(handler.triggerRules)) {
+        handler.triggerRules = 'selection';
+      }
+
+      this.terminalHandlerMap.set(operational.id, handler);
+    }
   }
 
-  public getHandler(id: string): InlineChatHandler | undefined {
-    return this.handlerMap.get(id);
+  public getEditorActionButtons(): AIActionItem[] {
+    return Array.from(this.editorHandlerMap.keys())
+      .filter((id) => {
+        const actions = this.actionsMap.get(id);
+        return actions && actions.renderType === 'button';
+      })
+      .map((id) => this.actionsMap.get(id)!);
+  }
+
+  public getEditorActionMenus(): AIActionItem[] {
+    return Array.from(this.editorHandlerMap.keys())
+      .filter((id) => {
+        const actions = this.actionsMap.get(id);
+        return actions && actions.renderType === 'dropdown';
+      })
+      .map((id) => this.actionsMap.get(id)!);
+  }
+
+  public getEditorHandler(id: string): IEditorInlineChatHandler | undefined {
+    return this.editorHandlerMap.get(id);
+  }
+
+  public getTerminalHandler(id: string): ITerminalInlineChatHandler | undefined {
+    return this.terminalHandlerMap.get(id);
+  }
+
+  public getTerminalActions(): AIActionItem[] {
+    return Array.from(this.terminalHandlerMap.keys()).map((id) => this.actionsMap.get(id)!);
   }
 
   public getAction(id: string): AIActionItem | undefined {

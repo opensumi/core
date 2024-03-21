@@ -1,12 +1,24 @@
 import { Autowired } from '@opensumi/di';
 import {
+  BaseTerminalDetectionLineMatcher,
+  JavaMatcher,
+  NPMMatcher,
+  NodeMatcher,
+  ShellMatcher,
+  TSCMatcher,
+} from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
+import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
+import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
   IInlineChatFeatureRegistry,
+  IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
   TChatSlashCommandSend,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { mergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
+import { renamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
+import { terminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
@@ -15,8 +27,9 @@ import {
   IAIBackService,
   MergeConflictEditorMode,
   ReplyResponse,
+  getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
+import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 enum EInlineOperation {
@@ -28,6 +41,8 @@ enum EInlineOperation {
 export class AiNativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
+
+  logger = getDebugLogger();
 
   private getCrossCode(monacoEditor: ICodeEditor): string {
     const model = monacoEditor.getModel();
@@ -49,7 +64,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
   }
 
   registerInlineChatFeature(registry: IInlineChatFeatureRegistry) {
-    registry.registerInlineChat(
+    registry.registerEditorInlineChat(
       {
         id: 'ai-comments',
         name: EInlineOperation.Comments,
@@ -76,7 +91,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       },
     );
 
-    registry.registerInlineChat(
+    registry.registerEditorInlineChat(
       {
         id: 'ai-optimize',
         name: EInlineOperation.Optimize,
@@ -98,6 +113,43 @@ export class AiNativeContribution implements AINativeCoreContribution {
           }
 
           return new ReplyResponse(result.data!);
+        },
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-explain',
+        name: 'explain',
+      },
+      {
+        triggerRules: 'selection',
+        execute: async (stdout: string) => {},
+      },
+    );
+
+    registry.registerTerminalInlineChat(
+      {
+        id: 'terminal-debug',
+        name: 'debug',
+      },
+      {
+        triggerRules: [
+          NodeMatcher,
+          TSCMatcher,
+          NPMMatcher,
+          ShellMatcher,
+          JavaMatcher,
+          // 也可以自定义 matcher 规则
+          class extends BaseTerminalDetectionLineMatcher {
+            doMatch(output: TextWithStyle[]): boolean {
+              return output.some((t) => t.content.includes('debug'));
+            }
+          },
+        ],
+        execute: async (stdout: string, stdin: string, rule) => {
+          const prompt = terminalDetectionPromptManager.generateBasePrompt(stdout);
+          // 通过 ai 后端服务请求
         },
       },
     );
@@ -186,6 +238,33 @@ export class AiNativeContribution implements AINativeCoreContribution {
           throw error;
         }
       },
+    });
+  }
+
+  registerRenameProvider(registry: IRenameCandidatesProviderRegistry): void {
+    registry.registerRenameSuggestionsProvider(async (model, range, token): Promise<NewSymbolName[] | undefined> => {
+      const prompt = renamePromptManager.requestPrompt(model.getValueInRange(range));
+
+      this.logger.info('rename prompt', prompt);
+
+      const result = await this.aiBackService.request(
+        prompt,
+        {
+          type: 'rename',
+        },
+        token,
+      );
+
+      this.logger.info('rename result', result);
+
+      if (result.data) {
+        const names = renamePromptManager.extractResponse(result.data);
+
+        return names.map((name) => ({
+          newSymbolName: name,
+          tags: [NewSymbolNameTag.AIGenerated],
+        }));
+      }
     });
   }
 }

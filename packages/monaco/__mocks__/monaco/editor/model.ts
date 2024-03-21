@@ -1,6 +1,6 @@
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { IAttachedView, IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
 import { MockedMonacoUri } from '../common/uri';
@@ -126,13 +126,9 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   getInjectedTextDecorations(ownerId?: number): monaco.editor.IModelDecoration[] {
     throw new Error('Method not implemented.');
   }
-  _setTrackedRange(id: string | null, newRange: null, newStickiness: monaco.editor.TrackedRangeStickiness): null;
-  _setTrackedRange(
-    id: string | null,
-    newRange: monaco.Range,
-    newStickiness: monaco.editor.TrackedRangeStickiness,
-  ): string;
-  _setTrackedRange(id: any, newRange: any, newStickiness: any): string | null {
+  _setTrackedRange(id: string | null, newRange: null, newStickiness: monaco.TrackedRangeStickiness): null;
+  _setTrackedRange(id: string | null, newRange: monaco.Range, newStickiness: monaco.TrackedRangeStickiness): string;
+  _setTrackedRange(id: unknown, newRange: unknown, newStickiness: unknown): string | null {
     throw new Error('Method not implemented.');
   }
   popStackElement(): void {

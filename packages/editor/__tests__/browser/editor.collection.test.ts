@@ -6,7 +6,7 @@ import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@opensumi/ide-editor
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
 import { MockedMonacoService } from '@opensumi/ide-monaco/__mocks__/monaco.service.mock';
 import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import {
   IConfigurationService,
   IConfigurationChangeEvent,
@@ -89,7 +89,6 @@ describe('editor collection service test', () => {
           overrides: [],
         },
         affectsConfiguration: (() => {}) as any,
-        sourceConfig: {},
       });
     };
     const mockConfigurationService: Partial<IConfigurationService> = {

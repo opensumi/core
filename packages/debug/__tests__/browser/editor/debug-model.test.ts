@@ -10,8 +10,8 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
 
@@ -226,7 +226,7 @@ describe('Debug Model', () => {
   it('onContextMenu should be work', () => {
     const mockEvent = {
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },
@@ -242,7 +242,7 @@ describe('Debug Model', () => {
   it('onMouseDown should be work', () => {
     const mockEvent = {
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },
@@ -258,7 +258,7 @@ describe('Debug Model', () => {
   it('onMouseMove should be work', () => {
     debugModel.onMouseMove({
       target: {
-        type: monaco.editor.MouseTargetType.CONTENT_TEXT,
+        type: monacoBrowser.editor.MouseTargetType.CONTENT_TEXT,
         position: {
           lineNumber: 1,
         },
@@ -270,7 +270,7 @@ describe('Debug Model', () => {
     expect(mockDebugHoverWidget.show).toBeCalledTimes(1);
     debugModel.onMouseMove({
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },
@@ -285,7 +285,7 @@ describe('Debug Model', () => {
   it('onMouseLeave should be work', () => {
     const mockEvent = {
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },

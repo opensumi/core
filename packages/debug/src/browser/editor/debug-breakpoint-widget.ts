@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKey, IContextKeyService } from '@opensumi/ide-core-browser';
-import { Disposable, positionToRange } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 
 import {
   DebugBreakpointWidgetContext,
@@ -90,7 +90,7 @@ export class DebugBreakpointWidget extends Disposable implements IDebugBreakpoin
         this.breakpointWidgetInputFocus.set(false);
       }),
     );
-    this.zone.show(positionToRange(position), DebugBreakpointWidget.LINE_HEIGHT_NUMBER);
+    this.zone.show(monaco.positionToRange(position), DebugBreakpointWidget.LINE_HEIGHT_NUMBER);
   }
 
   hide() {

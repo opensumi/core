@@ -48,132 +48,149 @@ export interface ITabbarViewProps {
   // tab上预留的位置，用来控制tab过多的显示效果
   margin?: number;
   canHideTabbar?: boolean;
+  renderOtherVisibleContainers?: React.FC<{
+    props: ITabbarViewProps;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      handleTabClick,
+      currentContainerId: string,
+    ) => JSX.Element | null;
+  }>;
 }
 
-export const TabbarViewBase: React.FC<ITabbarViewProps> = observer(
-  ({
+export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
+  const {
     TabView,
     MoreTabView,
     forbidCollapse,
-    barSize = 49,
+    barSize = 48,
     panelBorderSize = 0,
     tabClassName,
     className,
     margin,
     tabSize,
     canHideTabbar,
-  }) => {
-    const { side, direction, fullSize } = React.useContext(TabbarConfig);
-    const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-    const styles_tab_bar = useDesignStyles(styles.tab_bar);
-    const styles_bar_content = useDesignStyles(styles.bar_content);
+    renderOtherVisibleContainers = () => null,
+  } = props;
+  const { side, direction, fullSize } = React.useContext(TabbarConfig);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const styles_tab_bar = useDesignStyles(styles.tab_bar);
+  const styles_bar_content = useDesignStyles(styles.bar_content);
 
-    React.useEffect(() => {
-      tabbarService.updateBarSize(barSize + panelBorderSize);
-    }, []);
+  React.useEffect(() => {
+    // 内部只关注总的宽度
+    tabbarService.updateBarSize(barSize + panelBorderSize);
+  }, []);
+  const { currentContainerId, handleTabClick } = tabbarService;
 
-    const { currentContainerId, handleTabClick } = tabbarService;
+  const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
 
-    const hideTabBarWhenHidePanel = usePreference<boolean>('workbench.hideSlotTabBarWhenHidePanel', false);
+  const willHideTabbar = canHideTabbar && hideTabBarWhenHidePanel;
 
-    const willHideTabbar = canHideTabbar && hideTabBarWhenHidePanel;
+  if (willHideTabbar && !currentContainerId) {
+    // 之所以要用这么偏门的方法，是因为：
+    // 我尝试了好几种方案，比如让 tabbar 或其他几个组件返回 null 的话
+    // 会导致 SplitPanel 计算 children 的尺寸不正确，或者计算 tabbar 上按钮区域长度不对等等
+    // 最后试了这个方法一劳永逸，感觉也挺合适
+    tabbarService.resizeHandle?.setSize(0);
+  }
 
-    if (willHideTabbar && !currentContainerId) {
-      // 之所以要用这么偏门的方法，是因为：
-      // 我尝试了好几种方案，比如让 tabbar 或其他几个组件返回 null 的话
-      // 会导致 SplitPanel 计算 children 的尺寸不正确，或者计算 tabbar 上按钮区域长度不对等等
-      // 最后试了这个方法一劳永逸，感觉也挺合适
-      tabbarService.resizeHandle?.setSize(0);
-    }
+  const [visibleContainers, hideContainers] = splitVisibleTabs(
+    tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
+    tabSize,
+    fullSize - (margin || 0),
+  );
+  hideContainers.forEach((componentInfo) => {
+    tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
+  });
 
-    const [visibleContainers, hideContainers] = splitVisibleTabs(
-      tabbarService.visibleContainers.filter((container) => !container.options?.hideTab),
-      tabSize,
-      fullSize - (margin || 0),
-    );
-
-    hideContainers.forEach((componentInfo) => {
-      tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
-    });
-
-    return (
-      <div className={cls([styles_tab_bar, className])}>
-        <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
-          {visibleContainers.map((component) => {
-            const containerId = component.options?.containerId;
-            if (!containerId) {
-              return null;
-            }
-            tabbarService.updateTabInMoreKey(containerId, false);
-            let ref: HTMLLIElement | null;
-            return (
-              <li
-                draggable={true}
-                onDragStart={(e) => {
-                  if (ref) {
-                    const dragImage = ref.cloneNode(true) as HTMLLIElement;
-                    dragImage.classList.add(styles.dragging);
-                    if (tabClassName) {
-                      dragImage.classList.add(tabClassName);
-                    }
-                    document.body.appendChild(dragImage);
-                    e.persist();
-                    requestAnimationFrame(() => {
-                      e.dataTransfer.setDragImage(dragImage, 0, 0);
-                      document.body.removeChild(dragImage);
-                    });
-                  }
-                  tabbarService.handleDragStart(e, containerId);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  if (ref) {
-                    ref.classList.add('on-drag-over');
-                  }
-                }}
-                onDragLeave={() => {
-                  if (ref) {
-                    ref.classList.remove('on-drag-over');
-                  }
-                }}
-                onDrop={(e) => {
-                  if (ref) {
-                    ref.classList.remove('on-drag-over');
-                  }
-                  tabbarService.handleDrop(e, containerId);
-                }}
-                key={containerId}
-                id={containerId}
-                onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
-                // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
-                onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
-                ref={(el) => (ref = el)}
-                className={cls({ active: currentContainerId === containerId }, tabClassName)}
-              >
-                <TabView component={component} />
-              </li>
-            );
-          })}
-          {hideContainers.length ? (
-            <li
-              key='tab-more'
-              onClick={(e) =>
-                tabbarService.showMoreMenu(
-                  e,
-                  visibleContainers[visibleContainers.length - 1] &&
-                    visibleContainers[visibleContainers.length - 1].options?.containerId,
-                )
+  const renderContainers = React.useCallback(
+    (
+      component: ComponentRegistryInfo,
+      handleTabClick: (e: React.MouseEvent<Element, MouseEvent>, forbidCollapse?: boolean | undefined) => void,
+      currentContainerId?: string,
+    ) => {
+      const containerId = component.options?.containerId;
+      if (!containerId) {
+        return null;
+      }
+      tabbarService.updateTabInMoreKey(containerId, false);
+      let ref: HTMLLIElement | null;
+      return (
+        <li
+          draggable={true}
+          onDragStart={(e) => {
+            if (ref) {
+              const dragImage = ref.cloneNode(true) as HTMLLIElement;
+              dragImage.classList.add(styles.dragging);
+              if (tabClassName) {
+                dragImage.classList.add(tabClassName);
               }
-              className={tabClassName}
-            >
-              <MoreTabView />
-            </li>
-          ) : null}
-        </div>
+              document.body.appendChild(dragImage);
+              e.persist();
+              requestAnimationFrame(() => {
+                e.dataTransfer.setDragImage(dragImage, 0, 0);
+                document.body.removeChild(dragImage);
+              });
+            }
+            tabbarService.handleDragStart(e, containerId);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (ref) {
+              ref.classList.add('on-drag-over');
+            }
+          }}
+          onDragLeave={() => {
+            if (ref) {
+              ref.classList.remove('on-drag-over');
+            }
+          }}
+          onDrop={(e) => {
+            if (ref) {
+              ref.classList.remove('on-drag-over');
+            }
+            tabbarService.handleDrop(e, containerId);
+          }}
+          key={containerId}
+          id={containerId}
+          onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
+          // 如果设置了可隐藏 Tabbar，那么就不允许点击 tab 时隐藏整个 panel 了 通过设置 forbidCollapse 来阻止这个动作
+          onClick={(e) => handleTabClick(e, willHideTabbar || forbidCollapse)}
+          ref={(el) => (ref = el)}
+          className={cls({ active: currentContainerId === containerId }, tabClassName)}
+        >
+          <TabView component={component} />
+        </li>
+      );
+    },
+    [],
+  );
+
+  return (
+    <div className={cls([styles_tab_bar, className])}>
+      <div className={styles_bar_content} style={{ flexDirection: Layout.getTabbarDirection(direction) }}>
+        {visibleContainers.map((component) => renderContainers(component, handleTabClick, currentContainerId))}
+        {renderOtherVisibleContainers({ props, renderContainers })}
+        {hideContainers.length ? (
+          <li
+            key='tab-more'
+            onClick={(e) =>
+              tabbarService.showMoreMenu(
+                e,
+                visibleContainers[visibleContainers.length - 1] &&
+                  visibleContainers[visibleContainers.length - 1].options?.containerId,
+              )
+            }
+            className={tabClassName}
+          >
+            <MoreTabView />
+          </li>
+        ) : null}
       </div>
-    );
-  },
-);
+    </div>
+  );
+});
 
 export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = observer(
   ({ component: defaultComponent }) => {
@@ -265,16 +282,20 @@ export const TextElipses: React.FC = () => (
 export const RightTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+
+  const styles_right_tab_bar = useDesignStyles(styles.right_tab_bar);
+  const styles_right_tab = useDesignStyles(styles.right_tab);
+
   return (
     <div
       id={VIEW_CONTAINERS.RIGHT_TABBAR}
-      className={styles.right_tab_bar}
+      className={styles_right_tab_bar}
       onContextMenu={tabbarService.handleContextMenu}
     >
       <TabbarViewBase
         tabSize={48}
         MoreTabView={IconElipses}
-        tabClassName={styles.right_tab}
+        tabClassName={styles_right_tab}
         TabView={IconTabView}
         barSize={48}
         panelBorderSize={1}
@@ -283,7 +304,18 @@ export const RightTabbarRenderer: React.FC = () => {
   );
 };
 
-export const LeftTabbarRenderer: React.FC = () => {
+export const LeftTabbarRenderer: React.FC<{
+  renderOtherVisibleContainers?: React.FC<{
+    props: ITabbarViewProps;
+    renderContainers: (
+      component: ComponentRegistryInfo,
+      handleTabClick,
+      currentContainerId: string,
+    ) => JSX.Element | null;
+  }>;
+  isRenderExtraTopMenus?: boolean;
+  renderExtraMenus?: React.ReactNode;
+}> = ({ renderOtherVisibleContainers, isRenderExtraTopMenus = true, renderExtraMenus }) => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -300,7 +332,9 @@ export const LeftTabbarRenderer: React.FC = () => {
       className={styles_left_tab_bar}
       onContextMenu={tabbarService.handleContextMenu}
     >
-      <InlineMenuBar className={cls(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
+      {isRenderExtraTopMenus && (
+        <InlineMenuBar className={cls(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
+      )}
       <TabbarViewBase
         tabSize={48}
         MoreTabView={IconElipses}
@@ -310,8 +344,9 @@ export const LeftTabbarRenderer: React.FC = () => {
         barSize={48}
         margin={90}
         panelBorderSize={1}
+        renderOtherVisibleContainers={renderOtherVisibleContainers}
       />
-      <InlineMenuBar className={styles.vertical_icons} menus={extraMenus} />
+      {renderExtraMenus || <InlineMenuBar className={styles.vertical_icons} menus={extraMenus} />}
     </div>
   );
 };

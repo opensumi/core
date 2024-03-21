@@ -1,6 +1,6 @@
 import { Emitter, Event, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '../../../src/common';
 import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
@@ -93,7 +93,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   getConfiguredWordAtPosition(position: monaco.Position): monaco.editor.IWordAtPosition | null {
     throw new Error('Method not implemented.');
   }
-  _getViewModel() {
+  _getViewModel(): monaco.IViewModel {
     throw new Error('Method not implemented.');
   }
   getVisibleRangesPlusViewportAboveBelow(): monaco.Range[] {
@@ -230,6 +230,8 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   _onDidChangeModel = new Emitter<monaco.editor.IModelChangedEvent>();
   onDidChangeModel = this._onDidChangeModel.event;
+  _onWillChangeModel = new Emitter<monaco.editor.IModelChangedEvent>();
+  onWillChangeModel = this._onWillChangeModel.event;
 
   _onDidChangeModelDecorations = new Emitter<monaco.editor.IModelDecorationsChangedEvent>();
   onDidChangeModelDecorations = this._onDidChangeModelDecorations.event;

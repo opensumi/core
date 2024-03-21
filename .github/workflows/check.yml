@@ -57,6 +57,7 @@ jobs:
       - name: Lint
         run: |
           yarn run lint --quiet
+          yarn run check:dep
 
   build-windows:
     runs-on: windows-2019
@@ -87,3 +88,4 @@ jobs:
       - name: Lint
         run: |
           yarn run lint --quiet
+          yarn run check:dep

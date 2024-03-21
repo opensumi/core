@@ -10,12 +10,11 @@ import {
   MonacoService,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
-import { MergeConflictReportService } from '@opensumi/ide-core-browser/src/ai-native/conflict-report.service';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
   AIBackSerivcePath,
   ChatResponse,
   IAIBackService,
-  IAIBackServiceResponse,
   IConflictContentMetadata,
   IInternalResolveConflictRegistry,
   MergeConflictEditorMode,
@@ -31,12 +30,13 @@ import {
   FormattingMode,
   formatDocumentRangesWithSelectedProvider,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 import { Progress } from '@opensumi/monaco-editor-core/esm/vs/platform/progress/common/progress';
 
+import { editor } from '../../../../../browser/monaco-exports';
+import * as monaco from '../../../../../common';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { IIntelligentState, LineRange } from '../../model/line-range';
@@ -302,7 +302,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
           debounce((event: monaco.editor.IEditorMouseEvent) => {
             const { target } = event;
 
-            if (target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
+            if (target.type === editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
               this.hideResolveResultWidget();
               return;
             }

@@ -5,12 +5,12 @@ import {
 } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 describe('Debug Expression Provider', () => {
   const mockInjector = createBrowserInjector([]);
   let debugExpressionProvider: DebugExpressionProvider;
-  const textModel = monaco.editor.createModel('test.a = "test"', 'test');
+  const textModel = monacoApi.editor.createModel('test.a = "test"', 'test');
 
   const mockedGetLineContent = jest.spyOn(textModel, 'getLineContent');
   mockInjector.addProviders({

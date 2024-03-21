@@ -17,7 +17,7 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { DEBUG_COMMANDS, IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
