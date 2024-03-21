@@ -8,8 +8,8 @@ import {
   MaybePromise,
   URI,
 } from '@opensumi/ide-core-browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';

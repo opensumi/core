@@ -16,7 +16,7 @@ import {
   IModelDecorationsChangeAccessor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-import { ICodeEditor, IPosition, Position } from '../../../index';
+import { ICodeEditor, IPosition, Position } from '../../../src';
 import { IEditorOptions } from '../../../lib/browser/monaco-api/editor';
 import { monaco } from '../../../lib/browser/monaco-api';
 

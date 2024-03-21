@@ -1,6 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { URI, positionToRange } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
+import { positionToRange } from '@opensumi/ide-monaco';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 

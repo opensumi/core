@@ -17,12 +17,12 @@ import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/edi
 
 import { IndentAction, SymbolKind } from './ext-types';
 
+import type { editor, languages } from '@opensumi/ide-monaco';
 // eslint-disable-next-line import/no-restricted-paths
 import type { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 // eslint-disable-next-line import/no-restricted-paths
 import type { TypeHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import type { CompletionItemLabel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import type { editor, languages } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 // 内置的api类型声明
 import type vscode from 'vscode';
 export { CallHierarchyItem, IMarkdownString, SymbolTag, TypeHierarchyItem };

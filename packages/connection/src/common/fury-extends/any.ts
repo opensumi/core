@@ -140,7 +140,7 @@ class ObjectTransfer {
     if (value) {
       switch (value.$mid) {
         case 1: {
-          // `$mid === 1` is defined in `vscode-uri` package
+          // `$mid === 1` is defined in `monaco-editor-core/esm/vs/base/common/uri.ts`
           const uri = Uri.revive(value);
           return {
             $type: EObjectTransferType.CODE_URI,

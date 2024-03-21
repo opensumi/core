@@ -1,5 +1,5 @@
 import { IAICompletionResultModel } from '@opensumi/ide-core-common/src/types/ai-native';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 /**
  * 缓存的结果

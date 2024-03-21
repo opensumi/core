@@ -21,9 +21,8 @@ import {
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { ICodeEditor, IRange, ITextModel } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AIInlineChatContentWidget } from '../common';
 
@@ -263,9 +262,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async handleDiffPreviewStrategy(
-    monacoEditor: ICodeEditor,
+    monacoEditor: monaco.ICodeEditor,
     strategy: (
-      editor: ICodeEditor,
+      editor: monaco.ICodeEditor,
       cancelToken: CancellationToken,
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
     crossSelection: monaco.Selection,
@@ -311,7 +310,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiDiffWidget.onMaxLincCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model.getLineCount()) {
-            const lineHeight = monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+            const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
             this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
           }
         });
@@ -341,7 +340,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       .join('\n');
   }
 
-  private visibleDiffWidget(monacoEditor: ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
+  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.Selection, answer: string): void {
     monacoEditor.setHiddenAreas([crossSelection], AIDiffWidget._hideId);
     this.aiDiffWidget = this.injector.get(AIDiffWidget, [monacoEditor, crossSelection, answer]);
     this.aiDiffWidget.create();
@@ -404,7 +403,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineCompletionsProvider.registerEditor(editor);
 
-        dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
+        dispose = monacoApi.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
             if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
               this.aiCompletionsService.setMiddlewareComplete(
@@ -463,7 +462,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           return;
         }
 
-        const provider = async (model: ITextModel, range: IRange, token: CancellationToken) => {
+        const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
           const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
           return result;
         };

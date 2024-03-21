@@ -9,8 +9,8 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-serv
 import { URI, Uri, path } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IRefactorPreviewService } from './refactor-preview.service';
 import styles from './refactor_preview.module.less';

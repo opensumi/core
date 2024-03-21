@@ -13,7 +13,6 @@ import {
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { TestEditorDocumentProvider } from '../test-providers';

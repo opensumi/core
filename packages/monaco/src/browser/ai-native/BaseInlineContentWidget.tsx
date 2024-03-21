@@ -4,7 +4,9 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import * as monaco from '../../common';
+import { editor } from '../monaco-exports';
 
 import type { ICodeEditor as IMonacoCodeEditor } from '../monaco-api/types';
 
@@ -96,7 +98,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     if (position) {
       return {
         position,
-        preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
+        preference: [editor.ContentWidgetPositionPreference.BELOW],
       };
     }
 

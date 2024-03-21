@@ -21,8 +21,8 @@ import {
   URI,
   WithEventBus,
   isUndefined,
-  positionToRange,
 } from '@opensumi/ide-core-common';
+import { positionToRange } from '@opensumi/ide-monaco';
 import {
   CommentInput,
   CommentThread,

@@ -1,7 +1,7 @@
 import { URI } from '@opensumi/ide-core-common';
 
 import type { IAutoClosingPair, IAutoClosingPairConditional } from './types';
-export type { Position, IPosition } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+export { Position, IPosition } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 export { ITextModel, EndOfLineSequence } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 export type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 export type { Event } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
