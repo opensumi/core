@@ -182,28 +182,22 @@ module.exports = {
           {
             target: './packages/**/*/!(__tests__)/browser/**/*',
             from: './packages/**/*/node/**/*',
-            message: '`browser` should not import modules under `node`',
+            message: '`browser` should not import the `node` modules',
           },
           {
             target: './packages/**/*/!(__tests__)/node/**/*',
             from: './packages/**/*/browser/**/*',
-            message: '`node` should not import modules under `browser`',
+            message: '`node` should not import the `browser` modules',
           },
           {
             target: './packages/**/*/!(__tests__)/common/**/*',
             from: './packages/**/*/node/**/*',
-            message: '`common` should not import modules under `node`',
+            message: '`common` should not import the `node` modules',
           },
           {
             target: './packages/**/*/!(__tests__)/common/**/*',
             from: './packages/**/*/browser/**/*',
-            message: '`common` should not import modules under `browser`',
-          },
-          {
-            target: '@opensumi/monaco-editor-core/esm/vs/editor/editor.api',
-            from: '*',
-            message:
-              '`monaco-editor-core/esm/vs/editor/editor.api` should not be referenced directly, please re-export the reference to `monaco-editor` in the `ide-monaco` package.',
+            message: '`common` should not import the `browser` modules',
           },
         ],
       },
