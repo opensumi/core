@@ -96,7 +96,7 @@ export class AITerminalService extends Disposable {
       const handler = this.inlineChatFeatureRegistry.getTerminalHandler(action.id);
 
       if (Array.isArray(handler?.triggerRules)) {
-        handler.triggerRules.forEach((rule) => {
+        handler!.triggerRules.forEach((rule) => {
           if (rule instanceof BaseTerminalDetectionLineMatcher) {
             matcher.push({
               matcher: rule,
