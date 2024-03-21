@@ -10,10 +10,11 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
+import { Position } from '@opensumi/ide-monaco';
 
 describe('Debug Model', () => {
   const mockInjector = createBrowserInjector([]);
@@ -195,16 +196,16 @@ describe('Debug Model', () => {
 
   it('toggleBreakpoint should be work', () => {
     mockBreakpointManager.getBreakpoints.mockClear();
-    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as monaco.Position);
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as Position);
     expect(mockBreakpointManager.getBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.delBreakpoint).toBeCalledTimes(1);
     mockBreakpointManager.getBreakpoints.mockReturnValueOnce([] as any);
-    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as monaco.Position);
+    debugModel.toggleBreakpoint({ lineNumber: 1, column: 2 } as Position);
     expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
   });
 
   it('openBreakpointView should be work', () => {
-    debugModel.openBreakpointView({ lineNumber: 1, column: 1 } as monaco.Position);
+    debugModel.openBreakpointView({ lineNumber: 1, column: 1 } as Position);
     expect(mockBreakpointWidget.show).toBeCalledTimes(1);
   });
 
@@ -226,7 +227,7 @@ describe('Debug Model', () => {
   it('onContextMenu should be work', () => {
     const mockEvent = {
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },
@@ -242,7 +243,7 @@ describe('Debug Model', () => {
   it('onMouseDown should be work', () => {
     const mockEvent = {
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },
@@ -258,7 +259,7 @@ describe('Debug Model', () => {
   it('onMouseMove should be work', () => {
     debugModel.onMouseMove({
       target: {
-        type: monaco.editor.MouseTargetType.CONTENT_TEXT,
+        type: monacoBrowser.editor.MouseTargetType.CONTENT_TEXT,
         position: {
           lineNumber: 1,
         },
@@ -270,7 +271,7 @@ describe('Debug Model', () => {
     expect(mockDebugHoverWidget.show).toBeCalledTimes(1);
     debugModel.onMouseMove({
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },
@@ -285,7 +286,7 @@ describe('Debug Model', () => {
   it('onMouseLeave should be work', () => {
     const mockEvent = {
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN,
         position: {
           lineNumber: 1,
         },

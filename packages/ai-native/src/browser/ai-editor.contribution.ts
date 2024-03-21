@@ -3,24 +3,27 @@ import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AINativeSettingSectionsId,
+  CancelResponse,
   CancellationToken,
   ContributionProvider,
   Disposable,
+  ErrorResponse,
   Event,
   IDisposable,
   ILogServiceClient,
   ILoggerManagerClient,
   InlineChatFeatureRegistryToken,
   MaybePromise,
+  ReplyResponse,
   Schemes,
   SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { CancelResponse, ErrorResponse, ReplyResponse } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { ICodeEditor } from '@opensumi/ide-monaco';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { AIInlineChatContentWidget } from '../common';
 
@@ -300,7 +303,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiDiffWidget.onMaxLincCount((count) => {
         requestAnimationFrame(() => {
           if (crossSelection.endLineNumber === model.getLineCount()) {
-            const lineHeight = monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
+            const lineHeight = monacoEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
             this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
           }
         });
@@ -393,7 +396,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineCompletionsProvider.registerEditor(editor);
 
-        dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
+        dispose = monacoApi.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
             if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
               this.aiCompletionsService.setMiddlewareComplete(

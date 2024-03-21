@@ -1,5 +1,5 @@
 import { Uri, objects } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { IConvertedMonacoOptions } from '../types';

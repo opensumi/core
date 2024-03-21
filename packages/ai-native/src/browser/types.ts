@@ -14,12 +14,11 @@ import {
   ReplyResponse,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
-
-import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export interface InlineChatHandler {
   /**

@@ -36,7 +36,7 @@ import { IFileServiceClient, IShadowFileProvider } from '@opensumi/ide-file-serv
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import {
   DEBUG_BREAKPOINTS_ID,

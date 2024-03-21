@@ -14,11 +14,12 @@ import {
 
 import { Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ICodeEditor, ITextModel, Range } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
 import { ICollaborationService, DEFAULT_COLLABORATION_PORT } from '../../src/common';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 const injector = new Injector();
 
@@ -30,7 +31,7 @@ injector.addProviders({
 });
 
 const createBindingWithTextModel = (doc: YDoc, awareness: Awareness) => {
-  const textModel = monaco.editor.createModel('');
+  const textModel = monacoApi.editor.createModel('');
   const yText = doc.getText('test');
   // const binding = new TextModelBinding(yText, textModel, awareness);
   const binding = injector.get(TextModelBinding, [yText, textModel, awareness]);
@@ -84,7 +85,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     user1.yText.insert(0, '810');
     user2.yText.insert(0, '1919');
     const pos = user1.textModel.getPositionAt(0);
-    const range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+    const range = new Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
     user1.textModel.applyEdits([{ range, text: '514' }]);
     user2.textModel.applyEdits([{ range, text: '114' }]);
 
@@ -105,7 +106,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
   it('should set value of TextModel when current content of TextModel is not the same with YText', () => {
     user1.yText.insert(0, '1145141919810');
 
-    const model = monaco.editor.createModel('114514');
+    const model = monacoApi.editor.createModel('114514');
     const modelSpy = jest.spyOn(model, 'setValue');
     const binding = new TextModelBinding(doc.getText('test'), model, wsProvider.awareness);
 
@@ -155,7 +156,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     user2.textModel.onDidChangeContent(() => mutex(() => TextModelEventFn()));
 
     const pos = user2.textModel.getPositionAt(0);
-    const range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+    const range = new Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
     user2.textModel.applyEdits([{ range, text: 'bar' }]);
 
     expect(yTextEventFn).toBeCalledTimes(0);
@@ -165,10 +166,10 @@ describe('TextModelBinding test for yText and TextModel', () => {
   it('should undo and redo correctly', () => {
     // now here is simple undo and redo test
     let pos = user1.textModel.getPositionAt(0);
-    let range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+    let range = new Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
     user1.textModel.applyEdits([{ range, text: '114514' }]);
     pos = user2.textModel.getPositionAt(3);
-    range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+    range = new Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
     user2.textModel.applyEdits([{ range, text: '1919810' }]);
     expect(user1.textModel.getValue()).toBe('1141919810514');
     user1.binding.undo();
@@ -189,13 +190,13 @@ describe('TextModelBinding test for yText and TextModel', () => {
       const len = userCurrentTurn.textModel.getValueLength();
       if (insert) {
         const pos = userCurrentTurn.textModel.getPositionAt(Math.ceil(Math.random() * len));
-        const range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+        const range = new Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
         userCurrentTurn.textModel.applyEdits([{ range, text: uuid() }]);
       } else {
         const startPos = userCurrentTurn.textModel.getPositionAt(Math.ceil(Math.random() * len));
         const deletionLen = Math.ceil(Math.random() * 10);
         const endPos = startPos.delta(0, deletionLen);
-        const range = new monaco.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column);
+        const range = new Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column);
         userCurrentTurn.textModel.applyEdits([{ range, text: '' }]);
       }
       expect(user1.textModel.getValue() === user2.textModel.getValue()).toBeTruthy();
@@ -211,7 +212,7 @@ describe('TextModelBinding test for editor', () => {
   let doc: YDoc;
   let binding: TextModelBinding;
   let yText: YText;
-  let textModel: monaco.editor.ITextModel;
+  let textModel: ITextModel;
 
   beforeAll(() => {
     doc = new YDoc();
@@ -229,7 +230,7 @@ describe('TextModelBinding test for editor', () => {
     textModel = _textModel;
 
     // FIXME correct this type
-    editor = monaco.editor.create(document.createElement('div'), { value: '' }) as any as ICodeEditor;
+    editor = monacoApi.editor.create(document.createElement('div'), { value: '' }) as any as ICodeEditor;
 
     editor.setModel(textModel);
 
@@ -246,7 +247,7 @@ describe('TextModelBinding test for editor', () => {
 
   it('should fire relevant events after changing selection', () => {
     // insert some text
-    textModel.applyEdits([{ range: new monaco.Range(1, 1, 1, 1), text: '114514' }]);
+    textModel.applyEdits([{ range: new Range(1, 1, 1, 1), text: '114514' }]);
 
     const probeFnForAwareness = jest.fn();
     binding['awareness'].on('change', probeFnForAwareness);
@@ -254,7 +255,7 @@ describe('TextModelBinding test for editor', () => {
     const disposable = editor.onDidChangeCursorSelection(probeFnForEditor);
 
     // events are onDidChangeCursorSelection, awareness-related
-    const range = new monaco.Range(1, 1, 1, 4); // text => 114
+    const range = new Range(1, 1, 1, 4); // text => 114
     // will fire events
     editor.setSelection(range);
 
@@ -283,7 +284,7 @@ describe('TextModelBinding test for editor', () => {
       // create range from relative position
       const start = textModel.getPositionAt(absStart.index);
       const end = textModel.getPositionAt(absEnd.index);
-      const rangeFromYRelativePosition = new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column);
+      const rangeFromYRelativePosition = new Range(start.lineNumber, start.column, end.lineNumber, end.column);
       expect(rangeFromYRelativePosition.equalsRange(range)).toBeTruthy();
     }
 
@@ -295,13 +296,13 @@ describe('TextModelBinding test for editor', () => {
   it('should save current selections before Y transaction and restore current selections after YText was changed', () => {
     // init value
     textModel.setValue('');
-    textModel.applyEdits([{ range: new monaco.Range(1, 1, 1, 1), text: '114514' }]);
+    textModel.applyEdits([{ range: new Range(1, 1, 1, 1), text: '114514' }]);
 
     const probeFnForYDocBeforeAllTransaction = jest.fn();
     doc.on('beforeAllTransactions', probeFnForYDocBeforeAllTransaction);
 
     // first set selection
-    editor.setSelection(new monaco.Range(1, 1, 1, 4)); // => 114
+    editor.setSelection(new Range(1, 1, 1, 4)); // => 114
     // then apply edits to editor
     yText.insert(1, '1919810'); // simulate edit from other person
 
@@ -318,11 +319,11 @@ describe('TextModelBinding test for editor', () => {
       // construct range
       const start = textModel.getPositionAt(absStart.index);
       const end = textModel.getPositionAt(absEnd.index);
-      const range = new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column);
+      const range = new Range(start.lineNumber, start.column, end.lineNumber, end.column);
       const currentSelection = editor.getSelection()!;
       expect(currentSelection !== null).toBeTruthy();
       expect(currentSelection.equalsRange(range)).toBeTruthy();
-      expect(currentSelection.equalsRange(new monaco.Range(1, 1, 1, 11))).toBeTruthy();
+      expect(currentSelection.equalsRange(new Range(1, 1, 1, 11))).toBeTruthy();
     }
     // @ts-ignore
     doc.off('beforeAllTransactions', probeFnForYDocBeforeAllTransaction);

@@ -1,6 +1,5 @@
 import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
 import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/rangeMapping';
 import { ICodeEditorViewState } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { DetailedLineRangeMapping } from '../../../common/diff';

@@ -1,8 +1,8 @@
 'use strict';
 import { isWindows } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '../../../src/common';
 
-// 这里copy了vscode-uri源码作为mock的monaco uri使用
+// 这里copy了 vscode-uri 源码作为 mock 的 monaco uri 使用
 
 // #region util
 // Copying/Replacing

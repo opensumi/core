@@ -5,8 +5,7 @@ import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calcul
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
@@ -80,7 +79,7 @@ describe('EditorDocumentModel', () => {
     it('create EditorDocumentModel with Options', () => {
       const languageId = uniqueId('languageId');
       // Monaco 20 开始，不能创建没有注册过语言的 textModel
-      monaco.languages.register({
+      monacoApi.languages.register({
         id: languageId,
         aliases: ['Test languageId'],
         extensions: ['.test'],

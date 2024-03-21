@@ -1,6 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
-import { CommandService, Event, ILineChange, URI, positionToRange, toDisposable } from '@opensumi/ide-core-common';
+import { CommandService, Event, ILineChange, URI, toDisposable } from '@opensumi/ide-core-common';
 import { EditorCollectionService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
@@ -9,10 +9,10 @@ import {
   IDiffComputationResult,
   IEditorWorkerService,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
-import { DetailedLineRangeMapping } from '@opensumi/ide-monaco';
+import { DetailedLineRangeMapping, positionToRange } from '@opensumi/ide-monaco';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';

@@ -10,7 +10,8 @@ import {
   DisposableCollection,
   IReporterService,
 } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 
 import {
   DEBUG_REPORT_NAME,
@@ -96,8 +97,8 @@ export class DebugHoverWidget implements IDebugHoverWidget {
       ? {
           position: new monaco.Position(position.lineNumber, word.startColumn),
           preference: [
-            monaco.editor.ContentWidgetPositionPreference.BELOW,
-            monaco.editor.ContentWidgetPositionPreference.ABOVE,
+            monacoBrowser.editor.ContentWidgetPositionPreference.BELOW,
+            monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE,
           ],
         }
       : null;

@@ -25,7 +25,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IOutlineDecorationService, OUTLINE_VIEW_ID } from '../../common';
 import { OutlineCompositeTreeNode, OutlineRoot, OutlineTreeNode } from '../outline-node.define';
