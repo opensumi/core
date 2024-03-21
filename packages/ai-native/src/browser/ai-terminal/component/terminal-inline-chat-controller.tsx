@@ -1,10 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
 import { AIAction, AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { InlineChatFeatureRegistryToken } from '@opensumi/ide-core-common';
-
-import { InlineChatFeatureRegistry } from '../../widget/inline-chat/inline-chat.feature.registry';
 
 import styles from './terminal-inline-chat-controller.module.less';
 
