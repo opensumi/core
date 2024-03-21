@@ -8,11 +8,11 @@ import { ITerminalController } from '@opensumi/ide-terminal-next';
 import { InlineChatFeatureRegistry } from '../widget/inline-chat/inline-chat.feature.registry';
 
 import { AITerminalDecorationService } from './decoration/terminal-decoration';
-import { LineMatcher, LineRecord, MatcherType } from './matcher';
+import { BaseTerminalDetectionLineMatcher, LineRecord, MatcherType } from './matcher';
 import { TextStyle, TextWithStyle, ansiParser } from './utils/ansi-parser';
 
 interface IMatcherActions {
-  matcher: LineMatcher;
+  matcher: BaseTerminalDetectionLineMatcher;
   action: AIActionItem;
 }
 
@@ -97,14 +97,14 @@ export class AITerminalService extends Disposable {
 
       if (Array.isArray(handler?.triggerRules)) {
         handler.triggerRules.forEach((rule) => {
-          if (rule instanceof LineMatcher) {
+          if (rule instanceof BaseTerminalDetectionLineMatcher) {
             matcher.push({
               matcher: rule,
               action,
             });
-          } else if (Object.getPrototypeOf(rule) === LineMatcher) {
+          } else if (typeof rule === 'function' && Object.getPrototypeOf(rule) === BaseTerminalDetectionLineMatcher) {
             matcher.push({
-              matcher: new rule(),
+              matcher: new (rule as any)(),
               action,
             });
           }
@@ -181,7 +181,7 @@ export class AITerminalService extends Disposable {
         onClickItem: () => {
           const handler = this.inlineChatFeatureRegistry.getTerminalHandler(action.action.id);
           if (handler) {
-            handler.execute(output);
+            handler.execute(output, input || '', action.matcher);
           }
         },
       });

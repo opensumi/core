@@ -1,12 +1,13 @@
 import { Autowired } from '@opensumi/di';
 import {
+  BaseTerminalDetectionLineMatcher,
   JavaMatcher,
-  LineMatcher,
   NPMMatcher,
   NodeMatcher,
   ShellMatcher,
   TSCMatcher,
 } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
+import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -15,6 +16,7 @@ import {
   TChatSlashCommandSend,
 } from '@opensumi/ide-ai-native/lib/browser/types';
 import { mergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
+import { terminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
@@ -117,7 +119,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       },
       {
         triggerRules: 'selection',
-        execute: async (text: string) => {},
+        execute: async (stdout: string) => {},
       },
     );
 
@@ -127,8 +129,23 @@ export class AiNativeContribution implements AINativeCoreContribution {
         name: 'debug',
       },
       {
-        triggerRules: [NodeMatcher, TSCMatcher, NPMMatcher, ShellMatcher, JavaMatcher],
-        execute: async (text: string) => {},
+        triggerRules: [
+          NodeMatcher,
+          TSCMatcher,
+          NPMMatcher,
+          ShellMatcher,
+          JavaMatcher,
+          // 也可以自定义 matcher 规则
+          class extends BaseTerminalDetectionLineMatcher {
+            doMatch(output: TextWithStyle[]): boolean {
+              return output.some((t) => t.content.includes('debug'));
+            }
+          },
+        ],
+        execute: async (stdout: string, stdin: string, rule) => {
+          const prompt = terminalDetectionPromptManager.generateBasePrompt(stdout);
+          // 通过 ai 后端服务请求
+        },
       },
     );
   }

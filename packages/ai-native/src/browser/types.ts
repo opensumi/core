@@ -17,7 +17,7 @@ import { ICodeEditor } from '@opensumi/ide-monaco';
 
 import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 
-import { LineMatcher } from './ai-terminal/matcher';
+import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
 
 import type * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -37,8 +37,8 @@ export interface IEditorInlineChatHandler {
 }
 
 export interface ITerminalInlineChatHandler {
-  triggerRules?: 'selection' | LineMatcher[] | (typeof LineMatcher)[];
-  execute: (text: string) => MaybePromise<void>;
+  triggerRules?: 'selection' | (BaseTerminalDetectionLineMatcher | typeof BaseTerminalDetectionLineMatcher)[];
+  execute: (stdout: string, stdin: string, rule?: BaseTerminalDetectionLineMatcher) => MaybePromise<void>;
 }
 
 export interface IInlineChatFeatureRegistry {

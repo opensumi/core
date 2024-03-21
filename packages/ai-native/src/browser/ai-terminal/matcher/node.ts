@@ -1,8 +1,8 @@
 import { TextWithStyle, isRedColor } from '../utils/ansi-parser';
 
-import { LineMatcher, MatcherType } from './base';
+import { BaseTerminalDetectionLineMatcher, MatcherType } from './base';
 
-export class NodeMatcher extends LineMatcher {
+export class NodeMatcher extends BaseTerminalDetectionLineMatcher {
   type = MatcherType.node;
   isMultiLine = true;
   maxSpaceLine = 1;

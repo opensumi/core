@@ -1,8 +1,8 @@
 import { TextWithStyle, isRedColor } from '../utils/ansi-parser';
 
-import { LineMatcher, MatcherType } from './base';
+import { BaseTerminalDetectionLineMatcher, MatcherType } from './base';
 
-export class TSCMatcher extends LineMatcher {
+export class TSCMatcher extends BaseTerminalDetectionLineMatcher {
   type = MatcherType.typescript;
   isMultiLine = true;
 

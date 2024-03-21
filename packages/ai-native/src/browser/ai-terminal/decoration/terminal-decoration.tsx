@@ -9,7 +9,7 @@ import { ITerminalController } from '@opensumi/ide-terminal-next';
 
 import { InlineChatFeatureRegistry } from '../../widget/inline-chat/inline-chat.feature.registry';
 import {
-  TerminalInlineWidgetForDelect,
+  TerminalInlineWidgetForDetection,
   TerminalInlineWidgetForSelection,
 } from '../component/terminal-inline-chat-controller';
 
@@ -57,7 +57,7 @@ export class AITerminalDecorationService extends Disposable {
       }
       // 理论上 React 会确保 DOM 不被重复渲染
       root.render(
-        <TerminalInlineWidgetForDelect
+        <TerminalInlineWidgetForDetection
           actions={inlineWidget.operationList}
           onClickItem={() => {
             inlineWidget.onClickItem();
@@ -130,7 +130,7 @@ export class AITerminalDecorationService extends Disposable {
                     onClickItem={(id) => {
                       const handler = this.inlineChatFeatureRegistry.getTerminalHandler(id);
                       if (handler) {
-                        handler.execute(selectionTextTrimed);
+                        handler.execute(selectionTextTrimed, '');
                       }
                     }}
                   />,

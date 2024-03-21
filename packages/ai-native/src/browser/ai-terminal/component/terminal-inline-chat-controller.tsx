@@ -15,7 +15,7 @@ export const TerminalInlineWidgetForSelection = ({ actions, onClickItem }: ITerm
   </div>
 );
 
-export const TerminalInlineWidgetForDelect = ({ actions, onClickItem }: ITerminalInlineWidgetProps) => {
+export const TerminalInlineWidgetForDetection = ({ actions, onClickItem }: ITerminalInlineWidgetProps) => {
   const [displayAIButton, setDisplayAIButton] = useState(false);
 
   return (
