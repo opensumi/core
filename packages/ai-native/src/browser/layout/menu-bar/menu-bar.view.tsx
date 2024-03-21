@@ -30,7 +30,7 @@ const AIMenuBarRender = () => {
         y: y + height + 4,
       });
     }
-  }, [iconRef.current]);
+  }, []);
 
   const extraTopMenus = React.useMemo(
     () =>

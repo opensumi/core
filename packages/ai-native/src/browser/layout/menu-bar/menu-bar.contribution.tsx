@@ -7,7 +7,6 @@ import { AI_MENUBAR_CONTAINER_VIEW_ID } from '../../../common';
 
 import { AIMenuBarView } from './menu-bar.view';
 
-@Injectable()
 @Domain(ComponentContribution)
 export class AIMenuBarContribution extends Disposable implements ComponentContribution {
   @Autowired(MenubarStore)
