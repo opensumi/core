@@ -20,7 +20,7 @@ import { ChatAgentViewServiceToken, FileType, IAIReporter, URI } from '@opensumi
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { IChatAgentService, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
+import { IAIChatService, IChatAgentService, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
 import { ChatRequestModel } from '../chat/chat-model';
 import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
@@ -152,7 +152,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const iconService = useInjectable<IIconService>(IIconService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
-  const aiChatService = useInjectable<ChatService>(ChatService);
+  const aiChatService = useInjectable<ChatService>(IAIChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;

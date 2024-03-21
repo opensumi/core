@@ -10,7 +10,7 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
-import { IChatAgentService, IChatMessageStructure, ISampleQuestions } from '../../common';
+import { IAIChatService, IChatAgentService, IChatMessageStructure, ISampleQuestions } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -56,7 +56,7 @@ const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
 
 const InitMsgComponent = () => {
-  const aiChatService = useInjectable<ChatService>(ChatService);
+  const aiChatService = useInjectable<ChatService>(IAIChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
@@ -139,7 +139,7 @@ const InitMsgComponent = () => {
 };
 
 export const AIChatView = observer(() => {
-  const aiChatService = useInjectable<ChatService>(ChatService);
+  const aiChatService = useInjectable<ChatService>(IAIChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);

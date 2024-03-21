@@ -6,6 +6,7 @@ import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/a
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { IAIReporter, localize } from '@opensumi/ide-core-common';
 
+import { IAIChatService } from '../../common';
 import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
@@ -24,7 +25,7 @@ interface ITinkingProps {
 }
 
 export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessage }: ITinkingProps) => {
-  const aiChatService = useInjectable<ChatService>(ChatService);
+  const aiChatService = useInjectable<ChatService>(IAIChatService);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
   const handlePause = useCallback(async () => {
@@ -77,7 +78,7 @@ export const ThinkingResult = ({
   hasMessage,
   regenerateDisabled,
 }: ITinkingProps) => {
-  const aiChatService = useInjectable<ChatService>(ChatService);
+  const aiChatService = useInjectable<ChatService>(IAIChatService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
