@@ -2,8 +2,15 @@ import debounce from 'lodash/debounce';
 import { action, makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
-import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable, Emitter, Event, getExternalIcon } from '@opensumi/ide-core-browser';
+import {
+  AbstractMenubarService,
+  IMenuRegistry,
+  IMenubarItem,
+  ISubmenuItem,
+  MenuId,
+  MenuNode,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 
 export abstract class AbstractMenubarStore extends Disposable {
   menubarItems: IMenubarItem[];
@@ -14,6 +21,9 @@ export abstract class AbstractMenubarStore extends Disposable {
 export class MenubarStore extends Disposable implements AbstractMenubarStore {
   @Autowired(AbstractMenubarService)
   private readonly menubarService: AbstractMenubarService;
+
+  @Autowired(IMenuRegistry)
+  private readonly menuRegistry: IMenuRegistry;
 
   @observable
   public menubarItems = observable.array<IMenubarItem>([]);
@@ -74,4 +84,30 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     500,
     { leading: true, trailing: true },
   );
+
+  public unregisterMenusBarByCompact(menuId: MenuId = MenuId.ActivityBarTopExtra) {
+    this.menuRegistry.unregisterMenuItem(menuId, MenuId.MenubarCompactMenu);
+  }
+
+  public registerMenuItemByCompactMenu(menuId: MenuId = MenuId.ActivityBarTopExtra) {
+    this.menuRegistry.registerMenuItem(menuId, {
+      submenu: MenuId.MenubarCompactMenu,
+      iconClass: getExternalIcon('menu'),
+      order: 1,
+      group: 'navigation',
+    });
+  }
+
+  public registerMenusBarByCompact(menubarItems: IMenubarItem[] = this.menubarItems) {
+    this.menuRegistry.registerMenuItems(
+      MenuId.MenubarCompactMenu,
+      menubarItems.map(
+        (item: IMenubarItem) =>
+          ({
+            label: item.label,
+            submenu: item.id,
+          } as ISubmenuItem),
+      ),
+    );
+  }
 }

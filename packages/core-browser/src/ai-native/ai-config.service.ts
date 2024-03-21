@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IAINativeCapabilities } from '@opensumi/ide-core-common';
+import { IAINativeCapabilities, IAINativeLayout } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers/config-provider';
 
@@ -8,7 +8,7 @@ export class AINativeConfigService {
   @Autowired(AppConfig)
   public readonly appConfig: AppConfig;
 
-  private config: Required<IAINativeCapabilities> = {
+  private internalCapabilities: Required<IAINativeCapabilities> = {
     supportsOpenSumiDesign: false,
     supportsMarkers: false,
     supportsChatAssistant: false,
@@ -18,29 +18,60 @@ export class AINativeConfigService {
     supportsRenameSuggestions: false,
   };
 
+  private internalLayout: Required<IAINativeLayout> = {
+    useMergeRightWithLeftPanel: false,
+    useMenubarView: false,
+  };
+
   private setDefaultCapabilities(value: boolean): void {
-    for (const key in this.config) {
-      if (this.config.hasOwnProperty(key)) {
-        this.config[key] = value;
+    for (const key in this.internalCapabilities) {
+      if (this.internalCapabilities.hasOwnProperty(key)) {
+        this.internalCapabilities[key] = value;
       }
     }
   }
 
-  public enable(): void {
+  private setDefaultLayout(value: boolean): void {
+    for (const key in this.internalLayout) {
+      if (this.internalLayout.hasOwnProperty(key)) {
+        this.internalLayout[key] = value;
+      }
+    }
+  }
+
+  public enableCapabilities(): void {
     this.setDefaultCapabilities(true);
   }
 
-  public disable(): void {
+  public disableCapabilities(): void {
     this.setDefaultCapabilities(false);
+  }
+
+  public enableLayout(): void {
+    this.setDefaultLayout(true);
+  }
+
+  public disableLayout(): void {
+    this.setDefaultLayout(false);
   }
 
   public get capabilities(): Required<IAINativeCapabilities> {
     const { AINativeConfig } = this.appConfig;
 
     if (AINativeConfig?.capabilities) {
-      return { ...this.config, ...AINativeConfig.capabilities };
+      return { ...this.internalCapabilities, ...AINativeConfig.capabilities };
     }
 
-    return this.config;
+    return this.internalCapabilities;
+  }
+
+  public get layout(): Required<IAINativeLayout> {
+    const { AINativeConfig } = this.appConfig;
+
+    if (AINativeConfig?.layout) {
+      return { ...this.internalLayout, ...AINativeConfig.layout };
+    }
+
+    return this.internalLayout;
   }
 }

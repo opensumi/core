@@ -23,6 +23,7 @@
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-debug": "workspace:*",
+    "@opensumi/ide-design": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-file-tree-next": "workspace:*",

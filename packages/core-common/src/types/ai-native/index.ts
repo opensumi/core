@@ -34,8 +34,16 @@ export interface IAINativeCapabilities {
   supportsRenameSuggestions?: boolean;
 }
 
+export interface IAINativeLayout {
+  // Use Merge right panel with left panel
+  useMergeRightWithLeftPanel?: boolean;
+  // Use ai manubar view
+  useMenubarView?: boolean;
+}
+
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
+  layout?: IAINativeLayout;
 }
 
 export interface IAICompletionResultModel {

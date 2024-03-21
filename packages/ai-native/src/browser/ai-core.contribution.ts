@@ -14,6 +14,7 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
   getIcon,
@@ -31,6 +32,7 @@ import {
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
@@ -43,8 +45,8 @@ import { AINativeService } from './ai-native.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { AIChatLayoutConfig } from './layout/layout-config';
-import { AIChatTabRenderer } from './layout/tabbar.view';
+import { AIChatLayoutConfig, AIMenubarLayoutConfig } from './layout/layout-config';
+import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -113,11 +115,13 @@ export class AINativeBrowserContribution
   }
 
   initialize() {
-    this.aiNativeConfigService.enable();
+    this.aiNativeConfigService.enableCapabilities();
 
-    const supportsChatAssistant = this.aiNativeConfigService.capabilities.supportsChatAssistant;
+    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
+    const { useMenubarView } = this.aiNativeConfigService.layout;
 
     let layoutConfig = this.appConfig.layoutConfig;
+    let layoutViewSize = this.appConfig.layoutViewSize;
 
     if (supportsChatAssistant) {
       layoutConfig = {
@@ -126,7 +130,20 @@ export class AINativeBrowserContribution
       };
     }
 
+    if (useMenubarView) {
+      layoutViewSize = {
+        ...layoutViewSize,
+        menubarHeight: 48,
+      };
+
+      layoutConfig = {
+        ...layoutConfig,
+        ...AIMenubarLayoutConfig,
+      };
+    }
+
     this.appConfig.layoutConfig = layoutConfig;
+    this.appConfig.layoutViewSize = layoutViewSize;
   }
 
   private registerFeature() {
@@ -202,8 +219,10 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
-      registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
+    registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
+    if (this.aiNativeConfigService.layout.useMergeRightWithLeftPanel) {
+      registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
+      registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
     }
   }
 
