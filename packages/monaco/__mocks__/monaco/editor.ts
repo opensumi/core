@@ -1,4 +1,4 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '../../src/common';
 
 import { quickEvent, quickFireEvent, partialMock } from './common/util';
 import { MockedStandaloneCodeEditor } from './editor/code-editor';

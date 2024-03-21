@@ -39,6 +39,7 @@ import {
   INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
+import * as monaco from '@opensumi/ide-monaco';
 import {
   QuickOpenModel,
   QuickOpenOptions,
@@ -51,7 +52,6 @@ import {
 } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
 

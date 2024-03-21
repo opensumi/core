@@ -26,10 +26,10 @@ import {
   IEditorDocumentModelContentChangedEventPayload,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   ContentSearchResult,

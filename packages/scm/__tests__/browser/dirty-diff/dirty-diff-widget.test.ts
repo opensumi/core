@@ -1,16 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
-import {
-  positionToRange,
-  URI,
-  CommandService,
-  ILineChange,
-  registerLocalizationBundle,
-} from '@opensumi/ide-core-common';
+import { URI, CommandService, ILineChange, registerLocalizationBundle } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { positionToRange } from '@opensumi/ide-monaco';
 import { toChange } from '@opensumi/ide-scm/lib/browser/dirty-diff/dirty-diff-util';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';

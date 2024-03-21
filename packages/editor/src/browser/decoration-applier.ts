@@ -1,10 +1,9 @@
 import clsx from 'classnames';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { Disposable, URI, IEventBus, IMarkdownString } from '@opensumi/ide-core-common';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { Disposable, IEventBus, IMarkdownString, URI } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { IThemeService } from '@opensumi/ide-theme';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IDecorationRenderOptions, IDecorationApplyOptions } from '../common';
 
@@ -30,7 +29,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
 
   private decorations: Map<string, { decorations: string[]; dispose: () => void }> = new Map();
 
-  constructor(private editor: IMonacoCodeEditor) {
+  constructor(private editor: monaco.ICodeEditor) {
     super();
     this.applyDecorationFromProvider();
     this.editor.onDidChangeModel(() => {
@@ -179,7 +178,6 @@ function assignModelDecorationOptions(
     if (!target.overviewRuler) {
       target.overviewRuler = {
         color: null as any,
-        range: null as any,
         position: property.overviewRulerLane,
       };
     } else {

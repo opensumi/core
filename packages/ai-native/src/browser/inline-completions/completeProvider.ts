@@ -7,7 +7,7 @@ import { CompletionResultModel } from '@opensumi/ide-core-common/lib/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
 import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { AiNativeContextKey } from '../contextkey/ai-native.contextkey.service';
 

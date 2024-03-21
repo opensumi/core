@@ -4,9 +4,9 @@ import { EditorCollectionService, EditorType } from '@opensumi/ide-editor';
 import { IEditorDecorationCollectionService, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { BrowserCodeEditor, BaseMonacoEditorWrapper } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
+import * as monaco from '@opensumi/ide-monaco';
 import { MockedMonacoService } from '@opensumi/ide-monaco/__mocks__/monaco.service.mock';
 import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import {
   IConfigurationService,
   IConfigurationChangeEvent,

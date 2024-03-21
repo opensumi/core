@@ -15,7 +15,8 @@ import {
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import * as monaco from '../common';
 
 import { languageFeaturesService } from './monaco-api/languages';
 

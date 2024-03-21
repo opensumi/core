@@ -1,4 +1,4 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 export interface IDebugHoverWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowDebugHoverOptions | undefined) => void;

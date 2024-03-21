@@ -10,13 +10,13 @@ import {
 import { Disposable, IDisposable, IRange, URI, uuid, strings } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
+import * as monaco from '@opensumi/ide-monaco';
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { TestServiceToken } from '../common';
 import {

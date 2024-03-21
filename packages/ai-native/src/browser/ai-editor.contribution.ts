@@ -16,9 +16,10 @@ import {
 } from '@opensumi/ide-core-common';
 import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import * as monaco from '@opensumi/ide-monaco';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { AiInlineChatContentWidget, AiNativeSettingSectionsId } from '../common';
 
@@ -455,7 +456,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.aiInlineCompletionsProvider.registerEditor(editor);
 
-        dispose = monaco.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
+        dispose = monacoApi.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
           provideInlineCompletions: async (model, position, context, token) => {
             if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
               this.aiCompletionsService.setMiddlewareComplete(

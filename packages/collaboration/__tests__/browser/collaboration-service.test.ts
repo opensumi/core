@@ -19,8 +19,8 @@ import { IFileService, FileChangeType } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/ide-monaco';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICSSStyleService } from '@opensumi/ide-theme';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { CollaborationService } from '../../src/browser/collaboration.service';
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
@@ -51,7 +51,7 @@ class MockDocModelService {
       dispose() {},
       instance: {
         getMonacoModel() {
-          return monaco.editor.createModel('');
+          return monacoApi.editor.createModel('');
         },
       },
     };

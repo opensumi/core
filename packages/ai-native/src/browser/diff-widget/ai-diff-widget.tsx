@@ -5,12 +5,12 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, Emitter, Event, MonacoService, useInjectable } from '@opensumi/ide-core-browser';
 import { ConfigProvider } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IDiffEditorOptions } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { ILanguageSelection } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import * as styles from './diff-widget.module.less';

@@ -2,12 +2,12 @@ import { URI } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient, FileSystemError } from '@opensumi/ide-file-service/lib/common';
+import { Uri } from '@opensumi/ide-monaco';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
 import type {
   ResourceEdit,
   IBulkEditOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { WorkspaceEditModule } from '../../src/browser';

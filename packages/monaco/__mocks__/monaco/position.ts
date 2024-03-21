@@ -1,4 +1,4 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '../../src/common';
 
 import { partialMock } from './common/util';
 

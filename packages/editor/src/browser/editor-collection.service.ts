@@ -14,12 +14,12 @@ import {
   isEmptyObject,
 } from '@opensumi/ide-core-common';
 import { Emitter } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import type {
   ICodeEditor as IMonacoCodeEditor,
   IDiffEditor as IMonacoDiffEditor,
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import {
