@@ -3,6 +3,10 @@
   "extensions": {
     "vscode-extensions": [
       {
+        "name": "gitlens",
+        "version": "10.2.3"
+      },
+      {
         "name": "opensumi-default-themes",
         "version": "2.5.8"
       },

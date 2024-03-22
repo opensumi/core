@@ -38,6 +38,7 @@ import {
   TokenStyle,
   parseClassifierString,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { overflowWidgetsSettings } from '@opensumi/monaco-editor-core/esm/vs/base/browser/settings';
 import {
   EditorContributionInstantiation,
   registerEditorContribution,
@@ -216,6 +217,9 @@ export class MonacoClientContribution
 
     // 在快捷键被用户修改时，同步更新编辑器内的快捷键展示
     this.keybindings.onKeybindingsChanged(() => this.updateMonacoKeybindings());
+
+    // hover widget 的最大高度，monaco 默认为 250，这里设置为 300
+    overflowWidgetsSettings.hoverWidgetMaxHeight = 300;
   }
 
   private registerOverrideServices() {
