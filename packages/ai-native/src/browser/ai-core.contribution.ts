@@ -29,7 +29,9 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
   AI_RUN_DEBUG_COMMANDS,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 import { InlineChatIsVisible, InlineCompletionIsTrigger } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { IEditor, IResource, ResourceService } from '@opensumi/ide-editor';
@@ -135,6 +137,9 @@ export class AiNativeBrowserContribution
 
   @Autowired(AiMenubarService)
   private readonly aiMenubarService: AiMenubarService;
+
+  @Autowired(LayoutState)
+  private layoutState: LayoutState;
 
   constructor() {
     this.registerFeature();
@@ -275,6 +280,19 @@ export class AiNativeBrowserContribution
 
     commands.registerCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE, {
       execute: (visible: boolean) => {
+        const { layout } = getStorageValue();
+        // 更新layout的值
+        if (layout[Ai_CHAT_CONTAINER_VIEW_ID]?.currentId) {
+          this.updateLayoutState({
+            currentId: '',
+            size: 300,
+          });
+        } else {
+          this.updateLayoutState({
+            currentId: Ai_CHAT_CONTAINER_VIEW_ID,
+            size: 300,
+          });
+        }
         if (visible === true) {
           if (this.aiMenubarService.getLatestWidth() !== 0) {
             this.aiMenubarService.toggleRightPanel();
@@ -361,5 +379,12 @@ export class AiNativeBrowserContribution
         when: `editorFocus && ${InlineCompletionIsTrigger.raw}`,
       });
     }
+  }
+
+  private updateLayoutState(stateVal: { currentId: string; size: number }) {
+    this.layoutState.setState(LAYOUT_STATE.MAIN, {
+      ...this.layoutState.getState(LAYOUT_STATE.MAIN, {}),
+      [Ai_CHAT_CONTAINER_VIEW_ID]: stateVal,
+    });
   }
 }

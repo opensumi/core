@@ -9,10 +9,12 @@ import {
   getIcon,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { AI_CHAT_PANEL_TOGGLE_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
+import { CommandService } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
@@ -31,7 +33,7 @@ import { Markdown } from './components/Markdown';
 import { StreamMsgWrapper } from './components/StreamMsg';
 import { Thinking } from './components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from './model/msg-stream-manager';
-import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
+// import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
 
 import 'react-chat-elements/dist/main.css';
@@ -161,7 +163,7 @@ export const AiChatView = observer(() => {
   const aiProjectGenerateService = useInjectable<AiProjectGenerateService>(AiProjectGenerateService);
   const aiSumiService = useInjectable<AiSumiService>(AiSumiService);
   const aiRunService = useInjectable<AiRunService>(AiRunService);
-  const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
+  // const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const opener = useInjectable<CommandOpener>(CommandOpener);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
@@ -171,6 +173,7 @@ export const AiChatView = observer(() => {
   const [messageListData, setMessageListData] = React.useState<MessageData[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   // TODO: theme 基于 command 改造成 command 形式
   const [agentId, setAgentId] = React.useState('');
@@ -456,8 +459,8 @@ export const AiChatView = observer(() => {
   }, [messageListData]);
 
   const handleClose = React.useCallback(() => {
-    aiMenubarService.toggleRightPanel();
-  }, [aiMenubarService]);
+    commandService.executeCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE.id);
+  }, []);
 
   const handleThemeClick = (value) => {
     if (loading || loading2) {
