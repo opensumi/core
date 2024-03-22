@@ -2186,9 +2186,9 @@ __metadata:
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/mock-socket": ^9.3.1
     "@opensumi/vscode-jsonrpc": ^8.0.0-next.2
-    path-match: ^1.2.4
+    path-to-regexp: ^6.2.1
     reconnecting-websocket: ^4.4.0
-    ws: ^8.15.1
+    ws: ^8.16.0
   languageName: unknown
   linkType: soft
 
@@ -10401,16 +10401,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-errors@npm:~1.4.0":
-  version: 1.4.0
-  resolution: "http-errors@npm:1.4.0"
-  dependencies:
-    inherits: 2.0.1
-    statuses: ">= 1.2.1 < 2"
-  checksum: e25e56567f696f38009bdeeebf6ad0b5706113f21ae2241d4f1438ce303182b649187c5a3b68c4c3a07cd4df7192d58d22186a0b491c638bf3a7ea2626448681
-  languageName: node
-  linkType: hard
-
 "http-errors@npm:~1.6.2":
   version: 1.6.3
   resolution: "http-errors@npm:1.6.3"
@@ -10718,13 +10708,6 @@ __metadata:
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 4a48a733847879d6cf6691860a6b1e3f0f4754176e4d71494c41f3475553768b10f84b5ce1d40fbd0e34e6bfbb864ee35858ad4dd2cf31e02fc4a154b724d7f1
-  languageName: node
-  linkType: hard
-
-"inherits@npm:2.0.1":
-  version: 2.0.1
-  resolution: "inherits@npm:2.0.1"
-  checksum: 6536b9377296d4ce8ee89c5c543cb75030934e61af42dba98a428e7d026938c5985ea4d1e3b87743a5b834f40ed1187f89c2d7479e9d59e41d2d1051aefba07b
   languageName: node
   linkType: hard
 
@@ -11325,13 +11308,6 @@ __metadata:
   dependencies:
     is-docker: ^2.0.0
   checksum: 20849846ae414997d290b75e16868e5261e86ff5047f104027026fd61d8b5a9b0b3ade16239f35e1a067b3c7cc02f70183cb661010ed16f4b6c7c93dad1b19d8
-  languageName: node
-  linkType: hard
-
-"isarray@npm:0.0.1":
-  version: 0.0.1
-  resolution: "isarray@npm:0.0.1"
-  checksum: 49191f1425681df4a18c2f0f93db3adb85573bcdd6a4482539d98eac9e705d8961317b01175627e860516a2fc45f8f9302db26e5a380a97a520e272e2a40a8d4
   languageName: node
   linkType: hard
 
@@ -15542,16 +15518,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-match@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "path-match@npm:1.2.4"
-  dependencies:
-    http-errors: ~1.4.0
-    path-to-regexp: ^1.0.0
-  checksum: 60946ed9fdd922da2d9688abc0dc05cd537a2ff06d192518dcbe654302ad70499050a9297ea23a26c3e1af32d5a867d5f6e0eb892f38fa032afd70df85be05f0
-  languageName: node
-  linkType: hard
-
 "path-parse@npm:^1.0.7":
   version: 1.0.7
   resolution: "path-parse@npm:1.0.7"
@@ -15576,16 +15542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-to-regexp@npm:^1.0.0":
-  version: 1.8.0
-  resolution: "path-to-regexp@npm:1.8.0"
-  dependencies:
-    isarray: 0.0.1
-  checksum: 709f6f083c0552514ef4780cb2e7e4cf49b0cc89a97439f2b7cc69a608982b7690fb5d1720a7473a59806508fc2dae0be751ba49f495ecf89fd8fbc62abccbcd
-  languageName: node
-  linkType: hard
-
-"path-to-regexp@npm:^6.1.0":
+"path-to-regexp@npm:^6.1.0, path-to-regexp@npm:^6.2.1":
   version: 6.2.1
   resolution: "path-to-regexp@npm:6.2.1"
   checksum: f0227af8284ea13300f4293ba111e3635142f976d4197f14d5ad1f124aebd9118783dd2e5f1fe16f7273743cc3dbeddfb7493f237bb27c10fdae07020cc9b698
@@ -18307,7 +18264,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"statuses@npm:>= 1.2.1 < 2, statuses@npm:>= 1.4.0 < 2, statuses@npm:>= 1.5.0 < 2, statuses@npm:^1.5.0":
+"statuses@npm:>= 1.4.0 < 2, statuses@npm:>= 1.5.0 < 2, statuses@npm:^1.5.0":
   version: 1.5.0
   resolution: "statuses@npm:1.5.0"
   checksum: c469b9519de16a4bb19600205cffb39ee471a5f17b82589757ca7bd40a8d92ebb6ed9f98b5a540c5d302ccbc78f15dc03cc0280dd6e00df1335568a5d5758a5c
@@ -20458,7 +20415,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.11.0, ws@npm:^8.13.0, ws@npm:^8.15.1":
+"ws@npm:^8.11.0, ws@npm:^8.13.0, ws@npm:^8.15.1, ws@npm:^8.16.0":
   version: 8.16.0
   resolution: "ws@npm:8.16.0"
   peerDependencies:
