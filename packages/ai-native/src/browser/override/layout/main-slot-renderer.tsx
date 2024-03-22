@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { SlotRenderer } from '@opensumi/ide-core-browser';
 import { IChildComponentProps, SplitPanel, getStorageValue } from '@opensumi/ide-core-browser/lib/components';
 
-import { Ai_CHAT_CONTAINER_VIEW_ID } from '../../../common';
+import { Ai_CHAT_CONTAINER_VIEW_ID, AI_CHAT_DEFAULT_SIZE } from '../../../common';
 
 import * as styles from './layout.module.less';
 
@@ -43,7 +43,7 @@ export const AiMainSlotRenderer = (props?: IChildComponentProps) => {
       <SlotRenderer
         slot={Ai_CHAT_CONTAINER_VIEW_ID}
         isTabbar={true}
-        defaultSize={layout['ai_chat']?.currentId ? 360 : 0}
+        defaultSize={layout['ai_chat']?.currentId ? AI_CHAT_DEFAULT_SIZE : 0}
         maxResize={420}
         minResize={280}
         minSize={0}

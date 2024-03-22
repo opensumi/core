@@ -5,6 +5,7 @@ export const AiInlineChatContentWidget = 'Ai-inline-chat-content-widget';
 
 export const Ai_CHAT_CONTAINER_VIEW_ID = 'ai_chat';
 export const Ai_MENUBAR_CONTAINER_VIEW_ID = 'ai_menubar';
+export const AI_CHAT_DEFAULT_SIZE = 360;
 
 export interface IChatMessageStructure {
   /**

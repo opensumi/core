@@ -47,6 +47,7 @@ import {
   AI_NATIVE_SETTING_GROUP_ID,
   AiNativeSettingSectionsId,
   Ai_CHAT_CONTAINER_VIEW_ID,
+  AI_CHAT_DEFAULT_SIZE,
   InstructionEnum,
 } from '../common';
 
@@ -281,16 +282,17 @@ export class AiNativeBrowserContribution
     commands.registerCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE, {
       execute: (visible: boolean) => {
         const { layout } = getStorageValue();
-        // 更新layout的值
         if (layout[Ai_CHAT_CONTAINER_VIEW_ID]?.currentId) {
           this.updateLayoutState({
             currentId: '',
-            size: 300,
+            // 默认初始化尺寸有问题，在这里修正
+            size: AI_CHAT_DEFAULT_SIZE,
           });
         } else {
           this.updateLayoutState({
             currentId: Ai_CHAT_CONTAINER_VIEW_ID,
-            size: 300,
+            // 默认初始化尺寸有问题，在这里修正
+            size: AI_CHAT_DEFAULT_SIZE,
           });
         }
         if (visible === true) {

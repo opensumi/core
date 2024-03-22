@@ -1,6 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { BasicEvent, Dispatcher, Disposable } from '@opensumi/ide-core-common';
 
+import { AI_CHAT_DEFAULT_SIZE } from '../../../../common';
+
 @Injectable()
 export class AiMenubarService extends Disposable {
   private latestWidth = 0;
@@ -24,7 +26,7 @@ export class AiMenubarService extends Disposable {
       if (preWidth !== 0) {
         chatPanel.style.width = '0px';
       } else {
-        chatPanel.style.width = this.latestWidth + 'px';
+        chatPanel.style.width = `${this.latestWidth || AI_CHAT_DEFAULT_SIZE}px`;
       }
 
       this.latestWidth = preWidth;
