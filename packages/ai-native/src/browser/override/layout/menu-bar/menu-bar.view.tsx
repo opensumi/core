@@ -1,14 +1,9 @@
 import clsx from 'classnames';
 import * as React from 'react';
 
-import {
-  getIcon,
-  useInjectable,
-  SlotRenderer,
-  SlotLocation,
-  AiNativeConfigService,
-} from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, SlotRenderer, SlotLocation, AiNativeConfigService } from '@opensumi/ide-core-browser';
 // import { AI_RUN_DEBUG_COMMANDS } from '@opensumi/ide-core-browser/lib/ai-native/command';
+import { AI_CHAT_PANEL_TOGGLE_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { AILogoAvatar, EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -20,7 +15,6 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
 import * as styles from './menu-bar.module.less';
-import { AiMenubarService } from './menu-bar.service';
 
 const AiMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
@@ -79,31 +73,17 @@ const AiMenuBarRender = () => {
 
 export const AiMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
-  const aiMenubarService = useInjectable<AiMenubarService>(AiMenubarService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const aiNativeConfigService = useInjectable<AiNativeConfigService>(AiNativeConfigService);
   const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
-
-  const [isOpen, setIsOpen] = React.useState<boolean>(true);
 
   // const handleRun = () => {
   //   commandService.executeCommand(AI_RUN_DEBUG_COMMANDS.id);
   // };
 
   const handleRightPanel = () => {
-    aiMenubarService.toggleRightPanel();
+    commandService.executeCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE.id);
   };
-
-  React.useEffect(() => {
-    const dispose = aiMenubarService.onDidChangeDispatcher.on('latestWidth')((data: number) => {
-      if (!data) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
-    });
-    return () => dispose.dispose();
-  }, [aiMenubarService]);
 
   const isVisiable = React.useCallback(() => {
     const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
@@ -161,7 +141,7 @@ export const AiMenuBarView = () => {
             ></Input>
           </div> */}
           {aiNativeConfigService.capabilities.supportsAiChatAssistant && (
-            <div className={clsx(styles.ai_switch, isOpen ? '' : styles.closed)} onClick={handleRightPanel}>
+            <div className={styles.ai_switch} onClick={handleRightPanel}>
               <AILogoAvatar iconClassName={styles.avatar_icon_large} />
             </div>
           )}
