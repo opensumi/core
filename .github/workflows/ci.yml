@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
-        node-version: [16.x]
+        node-version: [20.x]
         ci-project: [node, jsdom]
 
     steps:
@@ -56,7 +56,7 @@ jobs:
         run: |
           yarn run ci --selectProjects ${{ matrix.ci-project }}
 
-      - if: ${{ matrix.node-version == '16.x' && matrix.os == 'ubuntu-latest' }}
+      - if: ${{ matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
