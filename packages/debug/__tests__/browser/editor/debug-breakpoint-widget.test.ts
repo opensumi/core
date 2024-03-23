@@ -9,7 +9,7 @@ import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { Position } from '@opensumi/ide-monaco';
 
 describe('Debug Breakpoint Widget', () => {
   const mockInjector = createBrowserInjector([]);

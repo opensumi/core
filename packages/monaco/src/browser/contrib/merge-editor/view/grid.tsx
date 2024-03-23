@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { URI, localize, useInjectable } from '@opensumi/ide-core-browser';
-import { Button, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
+import {
+  AINativeConfigService,
+  CommandService,
+  EDITOR_COMMANDS,
+  URI,
+  localize,
+  runWhenIdle,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
+import { Button, Icon, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
@@ -93,7 +101,23 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
 };
 
 const MergeActions: React.FC = () => {
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
+  const commandService = useInjectable<CommandService>(CommandService);
+  const [isAiResolving, setIsAiResolving] = useState(false);
+
+  const isSupportAiResolve = useCallback(
+    () => aiNativeConfigService.capabilities.supportsConflictResolve,
+    [aiNativeConfigService],
+  );
+
+  useEffect(() => {
+    const dispose = mergeEditorService.onHasIntelligentLoadingChange((isLoading) => {
+      setIsAiResolving(isLoading);
+    });
+
+    return () => dispose.dispose();
+  }, [mergeEditorService]);
 
   const handleApply = useCallback(() => {
     mergeEditorService.accept();
@@ -107,22 +131,87 @@ const MergeActions: React.FC = () => {
     mergeEditorService.acceptRight();
   }, [mergeEditorService]);
 
+  const handleOpenTradition = useCallback(() => {
+    const uri = mergeEditorService.getResultEditor()?.getModel()?.uri;
+    if (uri) {
+      const fileUri = uri.with({ scheme: 'file', path: uri.path, query: '' });
+      commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, fileUri);
+    }
+  }, [mergeEditorService]);
+
+  const handleReset = useCallback(async () => {
+    await mergeEditorService.stopAllAiResolveConflict();
+    runWhenIdle(() => {
+      commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
+    });
+  }, [mergeEditorService]);
+
+  const handleAIResolve = useCallback(() => {
+    if (isAiResolving) {
+      mergeEditorService.stopAllAiResolveConflict();
+    } else {
+      mergeEditorService.handleAiResolveConflict();
+    }
+  }, [mergeEditorService, isAiResolving]);
+
   return (
-    <div className={styles.merge_actions_container}>
-      <div className={styles.actions}>
-        <div className={styles.left_side}>
-          <Button size='large' type='default' onClick={handleAcceptLeft}>
-            {localize('mergeEditor.action.button.accept.left')}
+    <div className={styles.merge_editor_float_container}>
+      <div className={styles.container_box}>
+        <div id='merge.editor.action.button.accept'>
+          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptLeft}>
+            <Icon icon={'left'} />
+            <span>{localize('mergeEditor.action.button.accept.left')}</span>
           </Button>
-          <Button size='large' type='default' onClick={handleAcceptRight}>
-            {localize('mergeEditor.action.button.accept.right')}
-          </Button>
-        </div>
-        <div className={styles.right_side}>
-          <Button size='large' onClick={handleApply}>
-            {localize('mergeEditor.action.button.apply')}
+          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptRight}>
+            <span>{localize('mergeEditor.action.button.accept.right')}</span>
+            <Icon icon={'right'} />
           </Button>
         </div>
+
+        <span className={styles.line_vertical}></span>
+
+        <Button
+          id='merge.editor.open.tradition'
+          className={styles.merge_conflict_bottom_btn}
+          size='large'
+          onClick={handleOpenTradition}
+        >
+          <Icon icon={'swap'} />
+          <span>{localize('mergeEditor.open.tradition')}</span>
+        </Button>
+        <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
+          <Icon icon={'discard'} />
+          <span>{localize('mergeEditor.reset')}</span>
+        </Button>
+        {isSupportAiResolve() && (
+          <Button
+            id='merge.editor.conflict.resolve.all'
+            size='large'
+            className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
+            onClick={handleAIResolve}
+          >
+            {isAiResolving ? (
+              <>
+                <Icon icon={'circle-pause'} />
+                <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
+              </>
+            ) : (
+              <>
+                <Icon icon={'magic-wand'} />
+                <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+              </>
+            )}
+          </Button>
+        )}
+        <span className={styles.line_vertical}></span>
+        <Button
+          id='merge.editor.action.button.apply'
+          size='large'
+          className={styles.merge_editor_apply_btn}
+          onClick={handleApply}
+        >
+          {localize('mergeEditor.action.button.apply')}
+        </Button>
       </div>
     </div>
   );

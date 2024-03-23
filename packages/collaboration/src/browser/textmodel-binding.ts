@@ -14,15 +14,17 @@ import {
 } from 'yjs';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { ICodeEditor, ITextModel, Position } from '@opensumi/ide-monaco';
-import { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import {
+  ICodeEditor,
   IDisposable,
+  ITextModel,
+  Position,
   Range,
   Selection,
   SelectionDirection,
   editor,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+} from '@opensumi/ide-monaco';
+import { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 
 import { ICollaborationService, ITextModelBinding, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';
 

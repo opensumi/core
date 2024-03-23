@@ -104,8 +104,8 @@ describe('product icon theme test', () => {
     await service.applyTheme(DEFAULT_PRODUCT_ICON_THEME_ID);
     const productIconThemeNode = document.getElementById('product-icon-style')!;
     const codiconsNode = document.getElementById('codiconStyles')!;
-    expect(productIconThemeNode).toBeNull();
-    expect(codiconsNode).toBeNull();
+    expect(productIconThemeNode).toBeTruthy();
+    expect(codiconsNode).toBeTruthy();
   });
 
   it('should be able to apply & register product icon theme', async () => {
@@ -123,9 +123,9 @@ describe('product icon theme test', () => {
     await service.applyTheme('test-product-icon-theme');
     expect(service.currentThemeId).toEqual('test-product-icon-theme');
 
-    const codiconsNode = document.getElementById('codiconStyles')!;
+    const codiconNode = document.getElementById('codiconStyles')!;
     const productIconNode = document.getElementById('product-icon-style')!;
-    const codiconArray = codiconsNode.innerHTML.split('\n');
+    const codiconArray = codiconNode.innerHTML.split('\n');
     expect(codiconArray[codiconArray.length - 1]).toContain("font-family: 'pi-test-product-icon-id'");
 
     const productIconArray = productIconNode.innerHTML.split('\n');

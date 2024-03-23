@@ -190,7 +190,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
     if (wrapperRef.current) {
       searchTreeService.initContextKey(wrapperRef.current);
     }
-  }, [wrapperRef.current]);
+  }, []);
 
   const renderSearchTreeView = useCallback(() => {
     if (searchContent.results.size > 0) {

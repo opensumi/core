@@ -23,12 +23,12 @@ import { IOpenResourceResult, WorkbenchEditorService } from '@opensumi/ide-edito
 import { EditorCollectionService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
 import { FileSystemError, IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { QuickPickService } from '@opensumi/ide-quick-open';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   DebugConfiguration,

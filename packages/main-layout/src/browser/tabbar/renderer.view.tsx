@@ -38,7 +38,6 @@ export const TabRendererBase: FC<{
 
   useLayoutEffect(() => {
     if (components.length <= 0) {
-      tabbarService.viewReady.resolve();
       return;
     }
 
@@ -47,6 +46,7 @@ export const TabRendererBase: FC<{
       tabbarService.registerContainer(component.options!.containerId, component);
     });
     tabbarService.updatePanelVisibility();
+    tabbarService.ensureViewReady();
   }, [components]);
 
   useEffect(() => {
@@ -85,10 +85,12 @@ export const RightTabRenderer = ({
   className,
   components,
   tabbarView,
+  tabpanelView,
 }: {
   className: string;
   components: ComponentRegistryInfo[];
   tabbarView?: FC<{}>;
+  tabpanelView?: FC<{}>;
 }) => (
   <TabRendererBase
     side='right'
@@ -97,7 +99,7 @@ export const RightTabRenderer = ({
     className={cls(className, 'right-slot')}
     components={components}
     TabbarView={tabbarView ?? RightTabbarRenderer}
-    TabpanelView={RightTabPanelRenderer}
+    TabpanelView={tabpanelView ?? RightTabPanelRenderer}
   />
 );
 

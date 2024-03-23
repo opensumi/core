@@ -1,8 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, IDisposable, IEventBus, URI } from '@opensumi/ide-core-browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IContentDecorationRenderOptions, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '../common';
 

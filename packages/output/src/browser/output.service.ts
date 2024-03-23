@@ -2,14 +2,14 @@ import { action, makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
-import { WithEventBus } from '@opensumi/ide-core-common';
+import { Emitter, WithEventBus } from '@opensumi/ide-core-common';
 import {
   EditorCollectionService,
   ICodeEditor,
   IEditorDocumentModelService,
   getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { OutputChannel } from './output.channel';
 
@@ -32,8 +32,8 @@ export class OutputService extends WithEventBus {
   @observable.shallow
   readonly channels = observable.map<string, OutputChannel>();
 
-  @observable.ref
   public selectedChannel: OutputChannel;
+  private onDidSelectedChannelChangeEmitter = new Emitter<OutputChannel>();
 
   @observable
   public keys: string = '' + Math.random();
@@ -43,6 +43,10 @@ export class OutputService extends WithEventBus {
   private autoReveal = true;
 
   private enableSmartScroll = true;
+
+  get onDidSelectedChannelChange() {
+    return this.onDidSelectedChannelChangeEmitter.event;
+  }
 
   constructor() {
     super();
@@ -57,12 +61,12 @@ export class OutputService extends WithEventBus {
     );
   }
 
-  @action
   public updateSelectedChannel(channel: OutputChannel) {
     if (this.monacoDispose) {
       this.monacoDispose.dispose();
     }
     this.selectedChannel = channel;
+    this.onDidSelectedChannelChangeEmitter.fire(channel);
     this.selectedChannel.modelReady.promise.then(() => {
       const model = this.selectedChannel.outputModel.instance.getMonacoModel();
       this.outputEditor?.open(this.selectedChannel.outputModel);

@@ -1,17 +1,32 @@
-import { Injectable, Injector, Provider } from '@opensumi/di';
+import { Injectable, Provider } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   AIBackSerivceToken,
-  AINativeConfigService,
   BrowserModule,
+  ChatAgentViewServiceToken,
+  ChatFeatureRegistryToken,
   IAIInlineChatService,
+  InlineChatFeatureRegistryToken,
+  RenameCandidatesProviderRegistryToken,
+  ResolveConflictRegistryToken,
+  TerminalRegistryToken,
 } from '@opensumi/ide-core-browser';
 
-import { IAINativeService } from '../common/index';
+import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerService } from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
-import { AINativeCoreContribution, IInlineChatFeatureRegistry } from './types';
+import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
+import { TerminalRegistry } from './ai-terminal/terminal.feature.registry';
+import { ChatAgentService } from './chat/chat-agent.service';
+import { ChatAgentViewService } from './chat/chat-agent.view.service';
+import { ChatManagerService } from './chat/chat-manager.service';
+import { ChatFeatureRegistry } from './chat/chat.feature.registry';
+import { ChatService } from './chat/chat.service';
+import { AIMenuBarContribution } from './layout/menu-bar/menu-bar.contribution';
+import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
+import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
+import { AINativeCoreContribution } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
 import { AIInlineChatService } from './widget/inline-chat/inline-chat.service';
 
@@ -20,9 +35,23 @@ export class AINativeModule extends BrowserModule {
   contributionProvider = AINativeCoreContribution;
   providers: Provider[] = [
     AINativeBrowserContribution,
+    AIMenuBarContribution,
+    TerminalAIContribution,
     {
-      token: IInlineChatFeatureRegistry,
+      token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
+    },
+    {
+      token: ChatFeatureRegistryToken,
+      useClass: ChatFeatureRegistry,
+    },
+    {
+      token: ResolveConflictRegistryToken,
+      useClass: ResolveConflictRegistry,
+    },
+    {
+      token: TerminalRegistryToken,
+      useClass: TerminalRegistry,
     },
     {
       token: IAINativeService,
@@ -32,12 +61,37 @@ export class AINativeModule extends BrowserModule {
       token: IAIInlineChatService,
       useClass: AIInlineChatService,
     },
+    {
+      token: IChatManagerService,
+      useClass: ChatManagerService,
+    },
+    {
+      token: IChatAgentService,
+      useClass: ChatAgentService,
+    },
+    {
+      token: ChatAgentViewServiceToken,
+      useClass: ChatAgentViewService,
+    },
+    {
+      token: IAIChatService,
+      useClass: ChatService,
+    },
+    {
+      token: ResolveConflictRegistryToken,
+      useClass: ResolveConflictRegistry,
+    },
+    {
+      token: RenameCandidatesProviderRegistryToken,
+      useClass: RenameCandidatesProviderRegistry,
+    },
   ];
 
   backServices = [
     {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
+      clientToken: IAIChatService,
     },
   ];
 }

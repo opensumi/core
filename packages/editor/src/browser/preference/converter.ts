@@ -1,5 +1,5 @@
 import { Uri, objects } from '@opensumi/ide-core-browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { IConvertedMonacoOptions } from '../types';
@@ -42,7 +42,14 @@ export function getConvertedMonacoOptions(
       editorOptions[key] = value;
     } else {
       const converter: IMonacoOptionsConverter = editorOptionsConverters.get(key)! as IMonacoOptionsConverter;
-      editorOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
+      if (!editorOptions[converter.monaco]) {
+        editorOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
+      } else {
+        editorOptions[converter.monaco] = {
+          ...editorOptions[converter.monaco],
+          ...(converter.convert ? converter.convert(value) : value),
+        };
+      }
     }
   });
 
@@ -74,7 +81,14 @@ export function getConvertedMonacoOptions(
       editorOptions[key] = value;
     } else {
       const converter: IMonacoOptionsConverter = diffEditorOptionsConverters.get(key)! as IMonacoOptionsConverter;
-      diffOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
+      if (diffOptions[converter.monaco]) {
+        diffOptions[converter.monaco] = {
+          ...diffOptions[converter.monaco],
+          ...(converter.convert ? converter.convert(value) : value),
+        };
+      } else {
+        diffOptions[converter.monaco] = converter.convert ? converter.convert(value) : value;
+      }
     }
   });
 
@@ -786,7 +800,6 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey, NoConverter 
    * Defaults to false.
    */
   ['diffEditor.originalEditable', { monaco: 'originalEditable' }],
-
   [
     'diffEditor.minimap',
     {
@@ -795,6 +808,46 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey, NoConverter 
         enabled: value,
       }),
     },
+  ],
+
+  /**
+   * Controls whether the diff editor shows unchanged regions.
+   */
+  [
+    'diffEditor.hideUnchangedRegions.enabled',
+    { monaco: 'hideUnchangedRegions', convert: (value) => ({ enabled: value }) },
+  ],
+  /**
+   * Controls how many lines are used for unchanged regions.
+   */
+  [
+    'diffEditor.hideUnchangedRegions.revealLineCount',
+    { monaco: 'hideUnchangedRegions', convert: (value) => ({ revealLineCount: value }) },
+  ],
+  /**
+   * Controls how many lines are used as a minimum for unchanged regions.
+   */
+  [
+    'diffEditor.hideUnchangedRegions.minimumLineCount',
+    { monaco: 'hideUnchangedRegions', convert: (value) => ({ minimumLineCount: value }) },
+  ],
+  /**
+   * Controls how many lines are used as context when comparing unchanged regions.
+   */
+  [
+    'diffEditor.hideUnchangedRegions.contextLineCount',
+    { monaco: 'hideUnchangedRegions', convert: (value) => ({ contextLineCount: value }) },
+  ],
+  /**
+   * Controls whether the diff editor should show detected code moves.
+   */
+  ['diffEditor.experimental.showMoves', { monaco: 'experimental', convert: (value) => ({ showMoves: value }) }],
+  /**
+   * Controls whether the diff editor shows empty decorations to see where characters got inserted or deleted.
+   */
+  [
+    'diffEditor.experimental.showEmptyDecorations',
+    { monaco: 'experimental', convert: (value) => ({ showEmptyDecorations: value }) },
   ],
 ]);
 

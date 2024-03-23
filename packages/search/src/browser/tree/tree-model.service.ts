@@ -13,7 +13,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next/index';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IContentSearchClientService, ISearchTreeService } from '../../common/content-search';
 import { SearchPreferences } from '../search-preferences';
@@ -87,6 +87,8 @@ export class SearchModelService extends Disposable {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
+  public treeIsDirty = false;
+
   constructor() {
     super();
     this._whenReady = this.initTreeModel();
@@ -145,6 +147,7 @@ export class SearchModelService extends Disposable {
         } else {
           this.searchTreeService.contextKey.hasSearchResults.set(false);
         }
+
         this.refresh();
       }),
     );
@@ -314,8 +317,14 @@ export class SearchModelService extends Disposable {
 
   async refresh() {
     await this.whenReady;
+    await this.searchTreeService.viewReady;
+
     runWhenIdle(() => {
-      this.treeModel.root.refresh();
+      if (this.searchTreeService.contextKey && this.searchTreeService.contextKey.searchViewVisibleKey.get()) {
+        this.treeModel.root.refresh();
+      } else {
+        this.treeIsDirty = true;
+      }
     });
   }
 
@@ -333,6 +342,23 @@ export class SearchModelService extends Disposable {
       .withScheme(Schemes.internal)
       .withFragment(REPLACE_PREVIEW)
       .withQuery(JSON.stringify({ scheme: fileResource.scheme }));
+  }
+
+  activate() {
+    if (this.searchTreeService.contextKey) {
+      this.searchTreeService.contextKey.searchViewVisibleKey.set(true);
+    }
+
+    if (this.treeIsDirty) {
+      this.refresh();
+      this.treeIsDirty = false;
+    }
+  }
+
+  deactivate() {
+    if (this.searchTreeService.contextKey) {
+      this.searchTreeService.contextKey.searchViewVisibleKey.set(false);
+    }
   }
 
   dispose() {

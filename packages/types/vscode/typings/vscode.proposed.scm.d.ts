@@ -31,7 +31,10 @@ declare module 'vscode' {
    * Represents the input box in the Source Control viewlet.
    */
   export interface SourceControlInputBox {
-
+    /**
+		 * Controls whether the input box is enabled (default is `true`).
+		 */
+		enabled: boolean;
     /**
       * Controls whether the input box is visible (default is `true`).
       */

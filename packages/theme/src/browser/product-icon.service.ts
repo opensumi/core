@@ -87,7 +87,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   private getIconsStyleSheet: IIconsStyleSheet;
   readonly onDidProductIconThemeChange: Event<IProductIconTheme> = this.themeChangeEmitter.event;
 
-  private defaultProductIconTheme = new ProductIconThemeData(
+  private defaultProductIconThemeData = new ProductIconThemeData(
     DEFAULT_PRODUCT_ICON_THEME_ID,
     DEFAULT_PRODUCT_ICON_THEME_LABEL,
     DEFAULT_PRODUCT_ICON_THEME_ID,
@@ -100,10 +100,10 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
     this.disposables.push(this.getIconsStyleSheet);
     this.productIconContributionRegistry.set(DEFAULT_PRODUCT_ICON_THEME_ID, {
       contribution: {
-        id: this.defaultProductIconTheme.id,
-        label: this.defaultProductIconTheme.label,
+        id: this.defaultProductIconThemeData.id,
+        label: this.defaultProductIconThemeData.label,
         path: '',
-        extensionId: this.defaultProductIconTheme.id,
+        extensionId: this.defaultProductIconThemeData.id,
       },
     });
   }
@@ -141,7 +141,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
       return pre;
     }, new Map());
 
-    this.preferenceSettings.setEnumLabels(GeneralSettingsId.Icon, Object.fromEntries(themeMap.entries()));
+    this.preferenceSettings.setEnumLabels(GeneralSettingsId.ProductIconTheme, Object.fromEntries(themeMap.entries()));
     // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
     if (!this.currentTheme) {
       if (!this.preferenceThemeId || !themeMap.has(this.preferenceThemeId)) {
@@ -149,6 +149,8 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
         if (themeId) {
           await this.applyTheme(themeId);
         }
+      } else {
+        await this.applyTheme(this.preferenceThemeId);
       }
     }
   }
@@ -164,20 +166,14 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
       return;
     }
 
-    let styleNode = document.getElementById(PRODUCT_ICON_STYLE_ID);
-    let monacoNode = document.getElementById(PRODUCT_ICON_CODICON_STYLE_ID);
-
-    if (!productIconThemeData) {
-      this.logger.warn('Target ProductIconTheme extension not detected, use built-in icons.');
-      styleNode?.remove();
-      monacoNode?.remove();
-      this.currentThemeId = this.defaultProductIconTheme.id;
-      this.currentTheme = this.defaultProductIconTheme;
-      this.productIconThemeLoaded.resolve();
-      return;
-    }
+    let sumiIconStyleNode = document.getElementById(PRODUCT_ICON_STYLE_ID);
+    let codIconStyleNode = document.getElementById(PRODUCT_ICON_CODICON_STYLE_ID);
     this.currentThemeId = themeId;
-    this.currentTheme = productIconThemeData;
+    if (!productIconThemeData) {
+      this.currentTheme = this.defaultProductIconThemeData;
+    } else {
+      this.currentTheme = productIconThemeData;
+    }
 
     /**
      * product-icon-style 内存储 opensumi icon
@@ -188,22 +184,22 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
      */
     const codiconStyles = this.getIconsStyleSheet.getCSS();
     const sumiiconStyles = this.getIconsStyleSheet.getSumiCSS();
-    if (monacoNode) {
-      monacoNode.innerHTML = codiconStyles || '';
+    if (codIconStyleNode) {
+      codIconStyleNode.innerHTML = codiconStyles || '';
     } else {
-      monacoNode = document.createElement('style');
-      monacoNode.id = PRODUCT_ICON_CODICON_STYLE_ID;
-      monacoNode.innerHTML = codiconStyles || '';
-      document.getElementsByTagName('head')[0].appendChild(monacoNode);
+      codIconStyleNode = document.createElement('style');
+      codIconStyleNode.id = PRODUCT_ICON_CODICON_STYLE_ID;
+      codIconStyleNode.innerHTML = codiconStyles || '';
+      document.getElementsByTagName('head')[0].appendChild(codIconStyleNode);
     }
 
-    if (styleNode) {
-      styleNode.innerHTML = sumiiconStyles || '';
+    if (sumiIconStyleNode) {
+      sumiIconStyleNode.innerHTML = sumiiconStyles || '';
     } else {
-      styleNode = document.createElement('style');
-      styleNode.id = PRODUCT_ICON_STYLE_ID;
-      styleNode.innerHTML = sumiiconStyles || '';
-      document.getElementsByTagName('head')[0].appendChild(styleNode);
+      sumiIconStyleNode = document.createElement('style');
+      sumiIconStyleNode.id = PRODUCT_ICON_STYLE_ID;
+      sumiIconStyleNode.innerHTML = sumiiconStyles || '';
+      document.getElementsByTagName('head')[0].appendChild(sumiIconStyleNode);
     }
 
     this.themeChangeEmitter.fire(this.currentTheme);

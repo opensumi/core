@@ -720,6 +720,31 @@ export const localizationBundle = {
     'terminal.focusNext.inTerminalGroup': '聚焦当前终端组中的下一个终端',
     'terminal.focusPrevious.inTerminalGroup': '聚焦当前终端组中的上一个终端',
 
+    'terminal.ai.requesting': 'AI 请求中...',
+    'terminal.ai.selectHint': '键盘 ↑↓ 键选择命令，⏎ 确认命令',
+    'terminal.ai.thinking': 'AI 思考中...',
+    'terminal.ai.escClose': '按 ESC 关闭弹框',
+    'terminal.ai.headerHint': '使用 AI 获得终端输入提示',
+    'terminal.ai.inputHint': '输入自然语言生成命令，示例：展示当前进程 pid',
+    'terminal.ai.inputSharpToGetHint': '输入 # 来获取 AI 建议命令',
+    'terminal.ai.cannotGetTerminalConnection': '无法获取终端连接，请到用户群反馈',
+    'terminal.ai.modelPrompt': `
+    你是一个 Shell 脚本专家，现在我需要使用 Shell 来完成一些操作，但是我不熟悉 Shell 命令，因此我需要通过自然语言描述生成终端命令，只需生成 1 到 5 个命令。
+    提示：使用 . 来表示当前文件夹
+  
+    下面是自然语言描述和其对应的终端命令：
+    提问: 查看机器内存
+    回答:
+    #Command#: free -m
+    #Description#: 查看机器内存
+  
+    提问: 查看当前进程的 pid
+    回答:
+    #Command#: echo$$
+    #Description#: 查看当前进程的 pid
+  
+    提问: `,
+
     'debugger.menu.setValue': '设置变量',
     'debugger.menu.setValue.param': '请输入你要改变变量的值',
 
@@ -1121,6 +1146,7 @@ export const localizationBundle = {
 
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
+    'diffEditor.action.toggleCollapseUnchangedRegions': '折叠未更改的代码区域',
 
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
 
@@ -1171,16 +1197,40 @@ export const localizationBundle = {
     'mergeEditor.action.button.apply': '应用更改',
     'mergeEditor.action.button.accept.left': '接受左边',
     'mergeEditor.action.button.accept.right': '接受右边',
-    'mergeEditor.open.in.editor': '在合并编辑器中解决',
+    'mergeEditor.open.3way': '3-way 编辑器',
+    'mergeEditor.conflict.prev': '上一处冲突',
+    'mergeEditor.conflict.next': '下一处冲突',
+    'mergeEditor.conflict.resolve.all': 'AI一键解决',
+    'mergeEditor.conflict.resolve.all.stop': '全部停止',
+    'mergeEditor.open.tradition': '传统编辑器',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 
     // #region AI Native
+    'aiNative.chat.ai.assistant.name': 'AI 研发助手',
+    'aiNative.chat.input.placeholder.default': '可以问我任何问题，或键入主题 "/" ',
+    'aiNative.chat.stop.immediately': '我先不想了，有需要可以随时问我',
+    'aiNative.chat.error.response': '当前与我互动的人太多，请稍后再试，感谢您的理解与支持',
+    'aiNative.chat.code.insert': '插入代码',
+    'aiNative.chat.code.copy': '复制代码',
+    'aiNative.chat.code.copy.success': '复制成功',
+    'aiNative.chat.expand.unfullscreen': '收起',
+    'aiNative.chat.expand.fullescreen': '展开全屏',
+    'aiNative.chat.enter.send': 'Enter 发送',
+
     'aiNative.inline.chat.operate.check.title': '采纳',
-    'aiNative.inline.chat.operate.discard.title': '丢弃',
-    'aiNative.inline.chat.operate.afresh.title': '重新生成',
     'aiNative.inline.chat.operate.thumbsup.title': '赞',
     'aiNative.inline.chat.operate.thumbsdown.title': '踩',
     'aiNative.inline.chat.operate.loading.cancel': '按 ESC 取消',
+
+    'aiNative.resolve.conflict.dialog.afresh': '你确定要重新生成吗？',
+    'aiNative.resolve.conflict.dialog.detection':
+      '检测到您已做了修改，重新生成会覆盖掉\n您修改的部分，是否确认进行重新生成。',
+    'aiNative.resolve.conflict.message.not.processed.yet':
+      'AI 已处理 {0} 处冲突，{1} 处冲突暂未处理（仍标记为黄色部分），需人工处理',
+
+    'aiNative.operate.discard.title': '丢弃',
+    'aiNative.operate.afresh.title': '重新生成',
+    'aiNative.operate.stop.title': '停止',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',

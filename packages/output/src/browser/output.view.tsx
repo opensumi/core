@@ -31,7 +31,7 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
         });
       }
     }
-  }, [outputRef.current]);
+  }, []);
 
   return (
     <React.Fragment>
@@ -46,6 +46,7 @@ export const ChannelSelector = observer(() => {
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
+  const [name, setName] = React.useState<string>('');
   outputService.getChannels().forEach((channel, idx) => {
     channelOptionElements.push(
       appConfig.isElectronRenderer ? (
@@ -59,6 +60,14 @@ export const ChannelSelector = observer(() => {
       ),
     );
   });
+  useEffect(() => {
+    const dispose = outputService.onDidSelectedChannelChange((channel) => {
+      setName(channel.name);
+    });
+    return () => {
+      dispose.dispose();
+    };
+  }, []);
   if (channelOptionElements.length === 0) {
     channelOptionElements.push(
       appConfig.isElectronRenderer ? (
@@ -87,15 +96,12 @@ export const ChannelSelector = observer(() => {
   }
 
   return appConfig.isElectronRenderer ? (
-    <NativeSelect
-      value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
-      onChange={handleChange}
-    >
+    <NativeSelect value={name ? name : NONE} onChange={handleChange}>
       {channelOptionElements}
     </NativeSelect>
   ) : (
     <Select
-      value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
+      value={name ? name : NONE}
       className={styles.select}
       size='small'
       maxHeight={outputService.viewHeight}

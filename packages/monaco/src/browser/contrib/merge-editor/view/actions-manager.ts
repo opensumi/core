@@ -1,4 +1,6 @@
-import { Disposable, Event } from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
+import { CancelResponse, Disposable, ErrorResponse, Event, ReplyResponse } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
@@ -10,6 +12,8 @@ import {
   ACCEPT_COMBINATION_ACTIONS,
   ACCEPT_CURRENT_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
+  AI_RESOLVE_ACTIONS,
+  AI_RESOLVE_REGENERATE_ACTIONS,
   APPEND_ACTIONS,
   ETurnDirection,
   IActionsProvider,
@@ -21,15 +25,20 @@ import {
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
+import styles from './merge-editor.module.less';
 
 type TLineRangeEdit = Array<{ range: LineRange; text: string | null }>;
 
+@Injectable({ multiple: false })
 export class ActionsManager extends Disposable {
   private currentView: BaseCodeEditor | undefined;
   private resultView: ResultCodeEditor | undefined;
   private incomingView: BaseCodeEditor | undefined;
 
-  constructor(private readonly mappingManagerService: MappingManagerService) {
+  constructor(
+    private readonly mappingManagerService: MappingManagerService,
+    private readonly mergeConflictReportService: MergeConflictReportService,
+  ) {
     super();
   }
 
@@ -191,6 +200,7 @@ export class ActionsManager extends Disposable {
     // 为 null 则说明是删除文本
     this.applyLineRangeEdits([{ range, text }]);
 
+    this.resultView?.changeRangeIntelligentState(range, {}, true);
     this.resultView?.updateActions();
 
     if (turnDirection === ETurnDirection.BOTH) {
@@ -258,6 +268,104 @@ export class ActionsManager extends Disposable {
     this.resultView?.updateActions();
   }
 
+  /**
+   * 处理 AI 智能解决冲突时的逻辑
+   */
+  public async handleAiConflictResolve(
+    flushRange: LineRange,
+    options: {
+      isRegenerate: boolean;
+    },
+  ): Promise<{ isSuccess: boolean; isCancel: boolean; errorCode: number; errorMsg: string } | undefined> {
+    if (!this.resultView) {
+      return;
+    }
+
+    const model = this.resultView.getModel();
+
+    if (!model) {
+      return;
+    }
+
+    const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(flushRange);
+    const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(flushRange);
+
+    if (!reverseLeftRange || !reverseRightRange) {
+      return;
+    }
+
+    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: true }, false);
+    this.resultView.updateDecorations().updateActions();
+
+    const skeletonDecorationDispose = this.resultView.renderSkeletonDecoration(flushRange, [
+      styles.skeleton_decoration,
+      styles.skeleton_decoration_background,
+    ]);
+
+    const metaData = this.resultView!.getContentInTimeMachineDocument(flushRange.id);
+    if (!metaData) {
+      return;
+    }
+
+    const baseValue = metaData.text;
+    const currentValue = this.currentView?.getModel()?.getValueInRange(reverseLeftRange.toInclusiveRange());
+    const incomingValue = this.incomingView?.getModel()?.getValueInRange(reverseRightRange.toInclusiveRange());
+
+    this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickNum');
+
+    const resolveConflictResult = await this.resultView.requestAiResolveConflict(
+      { base: baseValue || '', current: currentValue || '', incoming: incomingValue || '' },
+      flushRange,
+      !!options?.isRegenerate,
+    );
+
+    this.resultView.changeRangeIntelligentState(flushRange, { isLoading: false }, false);
+    skeletonDecorationDispose();
+
+    if (ReplyResponse.is(resolveConflictResult)) {
+      const answerCode = (resolveConflictResult as ReplyResponse).message;
+
+      this.resultView.changeRangeIntelligentState(flushRange, { isComplete: true, answerCode }, true);
+      this.applyLineRangeEdits([{ range: flushRange, text: answerCode }]);
+      this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'aiOutputNum');
+      this.resultView!.updateDecorations().updateActions();
+      return {
+        isSuccess: true,
+        isCancel: false,
+        errorCode: 0,
+        errorMsg: '',
+      };
+    }
+
+    this.resultView!.updateDecorations().updateActions();
+
+    if (CancelResponse.is(resolveConflictResult)) {
+      this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'cancelNum');
+      return {
+        isSuccess: false,
+        isCancel: true,
+        errorCode: 0,
+        errorMsg: '',
+      };
+    }
+
+    if (ErrorResponse.is(resolveConflictResult)) {
+      return {
+        isSuccess: false,
+        isCancel: false,
+        errorCode: (resolveConflictResult as ErrorResponse).error || 0,
+        errorMsg: (resolveConflictResult as ErrorResponse).message || '',
+      };
+    }
+
+    return {
+      isSuccess: false,
+      isCancel: false,
+      errorCode: 0,
+      errorMsg: '',
+    };
+  }
+
   private markComplete(range: LineRange): void {
     const { turnDirection } = range;
 
@@ -296,7 +404,7 @@ export class ActionsManager extends Disposable {
         this.currentView.onDidConflictActions,
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
-      )(({ range, action }) => {
+      )(async ({ range, action }) => {
         if (action === ACCEPT_CURRENT_ACTIONS) {
           this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [
             { range: oppositeRange, text: applyText },
@@ -332,6 +440,17 @@ export class ActionsManager extends Disposable {
               text: applyText,
             },
           ]);
+        }
+
+        /**
+         * 处理 AI 智能解决冲突
+         */
+        if ((action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) && this.resultView) {
+          const flushRange = this.resultView.getFlushRange(range) || range;
+
+          await this.handleAiConflictResolve(flushRange, {
+            isRegenerate: action === AI_RESOLVE_REGENERATE_ACTIONS,
+          });
         }
 
         this.resultView!.updateDecorations();
@@ -387,16 +506,20 @@ export class ActionsManager extends Disposable {
 
           let type: TActionsType | undefined;
 
-          if (classList.contains(ACCEPT_CURRENT_ACTIONS)) {
-            type = ACCEPT_CURRENT_ACTIONS;
-          } else if (classList.contains(ACCEPT_COMBINATION_ACTIONS)) {
-            type = ACCEPT_COMBINATION_ACTIONS;
-          } else if (classList.contains(IGNORE_ACTIONS)) {
-            type = IGNORE_ACTIONS;
-          } else if (classList.contains(REVOKE_ACTIONS)) {
-            type = REVOKE_ACTIONS;
-          } else if (classList.contains(APPEND_ACTIONS)) {
-            type = APPEND_ACTIONS;
+          const actions: TActionsType[] = [
+            ACCEPT_CURRENT_ACTIONS,
+            ACCEPT_COMBINATION_ACTIONS,
+            IGNORE_ACTIONS,
+            REVOKE_ACTIONS,
+            APPEND_ACTIONS,
+            AI_RESOLVE_ACTIONS,
+          ];
+
+          for (const action of actions) {
+            if (classList.contains(action)) {
+              type = action;
+              break;
+            }
           }
 
           if (type && action) {

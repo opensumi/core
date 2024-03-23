@@ -21,9 +21,9 @@
     "@opensumi/events": "^1.0.0",
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
-    "path-match": "^1.2.4",
+    "path-to-regexp": "^6.2.1",
     "reconnecting-websocket": "^4.4.0",
-    "ws": "^8.15.1"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@opensumi/ide-components": "workspace:*",

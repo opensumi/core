@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { LabelService } from '@opensumi/ide-core-browser';
 import {
+  Deferred,
   Disposable,
   DisposableStore,
   Emitter,
@@ -17,9 +18,9 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import * as monaco from '@opensumi/ide-monaco';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IContentSearchClientService, ISearchTreeService } from '../../common/content-search';
 import { replace } from '../replace';
@@ -209,10 +210,16 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(SearchContextKey)
-  private readonly searchContextKey: SearchContextKey;
+  public readonly searchContextKey: SearchContextKey;
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
+
+  private viewReadyDeferered = new Deferred<void>();
+
+  get viewReady() {
+    return this.viewReadyDeferered.promise;
+  }
 
   constructor() {
     super();
@@ -236,6 +243,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
 
   initContextKey(dom: HTMLDivElement) {
     this.contextKey.initScopedContext(dom);
+    this.viewReadyDeferered.resolve();
   }
 
   removeHighlightRange() {

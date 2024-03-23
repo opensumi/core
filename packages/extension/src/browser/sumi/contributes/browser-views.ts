@@ -34,7 +34,7 @@ export interface KtViewItem {
 
 export type KtViewsSchema = Array<KtViewsContribution>;
 
-const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar', 'editorSide'];
+const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar', 'editorSide', 'chat'];
 
 @Injectable()
 @Contributes('browserViews')
@@ -54,7 +54,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   // 不支持提前加载的视图
-  static unsupportLocation = ['bottom', 'editor', 'toolBar'];
+  static unsupportLocation = ['bottom', 'editor', 'toolBar', 'chat'];
 
   contribute() {
     return new Promise<void>((resolve) => {

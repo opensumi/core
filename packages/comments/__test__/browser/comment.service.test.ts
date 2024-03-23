@@ -7,10 +7,11 @@ import {
   CommentRoot,
 } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, URI, positionToRange } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, URI } from '@opensumi/ide-core-common';
 import { EditorCollectionService, IEditor, ResourceService } from '@opensumi/ide-editor';
 import { IEditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
+import { positionToRange } from '@opensumi/ide-monaco';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 

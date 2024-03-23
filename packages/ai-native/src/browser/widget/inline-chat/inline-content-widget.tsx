@@ -3,11 +3,12 @@ import React from 'react';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
   BaseInlineContentWidget,
   ShowAIContentOptions,
-} from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+} from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 
 import { AIInlineChatContentWidget } from '../../../common/index';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
@@ -126,8 +127,8 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     return {
       position: new monaco.Position(lineNumber, column),
       preference: [
-        monaco.editor.ContentWidgetPositionPreference.ABOVE,
-        monaco.editor.ContentWidgetPositionPreference.BELOW,
+        monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE,
+        monacoBrowser.editor.ContentWidgetPositionPreference.BELOW,
       ],
     };
   }
@@ -136,8 +137,8 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     return {
       position: new monaco.Position(lineNumber, column),
       preference: [
-        monaco.editor.ContentWidgetPositionPreference.BELOW,
-        monaco.editor.ContentWidgetPositionPreference.ABOVE,
+        monacoBrowser.editor.ContentWidgetPositionPreference.BELOW,
+        monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE,
       ],
     };
   }
@@ -147,28 +148,28 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     const curNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber);
     const nextNonWhitespaceColumn = this.safeGetLineLastNonWhitespaceColumn(lineNumber + 1);
 
-    let newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
+    let newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE];
     let newLineNumber = lineNumber;
     let newColumn = column;
 
     if (curNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-      newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
+      newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.BELOW];
     } else if (curNonWhitespaceColumn >= preNonWhitespaceColumn) {
-      newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
+      newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE];
     } else {
       newColumn = Math.min(preNonWhitespaceColumn, nextNonWhitespaceColumn);
 
       if (preNonWhitespaceColumn >= nextNonWhitespaceColumn) {
-        newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
+        newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.BELOW];
         newLineNumber = lineNumber - 1;
       } else {
-        newPreference = [monaco.editor.ContentWidgetPositionPreference.ABOVE];
+        newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE];
         newLineNumber = lineNumber + 1;
       }
     }
 
     if (lineNumber === 1 || lineNumber === 2) {
-      newPreference = [monaco.editor.ContentWidgetPositionPreference.BELOW];
+      newPreference = [monacoBrowser.editor.ContentWidgetPositionPreference.BELOW];
     }
 
     return {

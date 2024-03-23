@@ -1,6 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { CommentContentNode, CommentRoot } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
-import { IContextKeyService, URI, positionToRange } from '@opensumi/ide-core-browser';
+import { IContextKeyService, URI } from '@opensumi/ide-core-browser';
+import { positionToRange } from '@opensumi/ide-monaco';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 

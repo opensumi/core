@@ -6,7 +6,7 @@ import {
   Event,
   KeybindingRegistry,
 } from '@opensumi/ide-core-browser';
-import { CommandService, IEventBus, positionToRange } from '@opensumi/ide-core-common';
+import { CommandService, IEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorGroupChangeEvent,
@@ -15,7 +15,8 @@ import {
   IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 
 import { CLOSE_DIRTY_DIFF_WIDGET, IDirtyDiffWorkbenchController } from '../../common';
 import { SCMPreferences } from '../scm-preference';
@@ -215,7 +216,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       if (dirtyModel) {
         if (widget) {
           const { currentIndex } = widget;
-          const { count: targetIndex } = dirtyModel.getChangeFromRange(positionToRange(position));
+          const { count: targetIndex } = dirtyModel.getChangeFromRange(monaco.positionToRange(position));
 
           widget.dispose();
           if (currentIndex === targetIndex) {
@@ -228,7 +229,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
         widget.onDispose(() => {
           this.widgets.delete(codeEditor.getId());
         });
-        dirtyModel.onClickDecoration(widget, positionToRange(position));
+        dirtyModel.onClickDecoration(widget, monaco.positionToRange(position));
         this.widgets.set(codeEditor.getId(), widget);
       }
     }
@@ -241,7 +242,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
 
     const { position, type, element } = target;
     if (
-      type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+      type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
       element &&
       element.className.indexOf('dirty-diff-glyph') > -1 &&
       position

@@ -26,7 +26,7 @@ export const AIInlineResult = (props: IAIInlineResultProps) => {
     <div className={styles.ai_inline_result_panel}>
       <div className={styles.side}>
         {iconItems.map(({ icon, text, onClick }, idx) => (
-          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={icon} onClick={onClick}>
+          <EnhanceIcon wrapperClassName={styles.operate_btn} icon={icon} onClick={onClick} key={idx}>
             <span>{text}</span>
           </EnhanceIcon>
         ))}

@@ -22,6 +22,7 @@ const MarkerList: FC<{ viewState: ViewState }> = ({ viewState }) => {
         setModel(model);
       }),
     );
+    markerModelService.initTreeModel();
     return () => {
       disposer.dispose();
     };
@@ -101,6 +102,7 @@ const Empty: FC = () => {
  */
 export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => {
   const markerModelService = useInjectable<MarkerModelService>(MarkerModelService);
+  const markerService = useInjectable<MarkerService>(IMarkerService);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const handleOuterClick = useCallback(() => {
@@ -113,12 +115,19 @@ export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => {
     const handleBlur = () => {
       markerModelService.handleTreeBlur();
     };
+
+    // ! Notice: this component will be unmounted and mounted again
+    // So this context key will be re-initialized, which may cause unexpected behavior
+    if (wrapperRef.current) {
+      markerService.initContextKey(wrapperRef.current);
+    }
+
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
     return () => {
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);
       markerModelService.handleTreeBlur();
     };
-  }, [wrapperRef.current]);
+  }, []);
 
   return (
     <div className={styles.markersContent} tabIndex={-1} ref={wrapperRef} onClick={handleOuterClick}>

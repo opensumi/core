@@ -6,6 +6,8 @@ export const monaco = Object.freeze({
   languages: createMonacoLanguageApi(),
 });
 
+export const monacoApi = monaco;
+
 export { URI } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 export {
   ResourceEdit,

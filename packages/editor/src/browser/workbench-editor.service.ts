@@ -49,8 +49,8 @@ import {
   makeRandomHexString,
   match,
 } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   CursorStatus,
@@ -1510,6 +1510,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const query = uri.getParsedQuery();
       this.doDisposeDocRef(new URI(query.original));
       this.doDisposeDocRef(new URI(query.modified));
+    } else if (uri.scheme === 'mergeEditor') {
+      this.mergeEditor.dispose();
     } else {
       this.doDisposeDocRef(uri);
     }

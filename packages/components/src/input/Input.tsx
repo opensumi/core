@@ -15,7 +15,8 @@ export interface InputSelection {
   end: number;
 }
 
-export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
+export interface IInputBaseProps<T extends HTMLElement = HTMLInputElement>
+  extends Omit<React.InputHTMLAttributes<T>, 'size' | 'prefix'> {
   className?: string;
   autoFocus?: boolean;
   defaultValue?: string;
@@ -30,7 +31,7 @@ export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   /**
    * 处理按下 Enter
    */
-  onPressEnter?: React.KeyboardEventHandler<HTMLInputElement>;
+  onPressEnter?: React.KeyboardEventHandler<T>;
   /**
    * @default true
    * 保持 focus，即使点击到 addon 部分
@@ -53,10 +54,10 @@ export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInpu
 
 // copied from https://github.com/ant-design/ant-design/blob/master/components/input/Input.tsx#L33
 // simulate a Form.ChangeEvent in react.js
-function resolveOnChange(
-  target: HTMLInputElement,
-  e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLElement, MouseEvent>,
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void,
+function resolveOnChange<T extends HTMLInputElement = HTMLInputElement>(
+  target: T,
+  e: React.ChangeEvent<T> | React.MouseEvent<HTMLElement, MouseEvent>,
+  onChange?: (event: React.ChangeEvent<T>) => void,
 ) {
   if (typeof onChange === 'function') {
     let event = e;
@@ -68,16 +69,19 @@ function resolveOnChange(
       const originalInputValue = target.value;
       // change target ref value cause e.target.value should be '' when clear input
       target.value = '';
-      onChange(event as React.ChangeEvent<HTMLInputElement>);
+      onChange(event as React.ChangeEvent<T>);
       // reset target ref value
       target.value = originalInputValue;
       return;
     }
-    onChange(event as React.ChangeEvent<HTMLInputElement>);
+    onChange(event as React.ChangeEvent<T>);
   }
 }
 
-export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props, ref) => {
+export const Input = React.forwardRef<
+  HTMLTextAreaElement | HTMLInputElement,
+  IInputBaseProps<HTMLInputElement> & { as?: any }
+>((props, ref) => {
   const {
     defaultValue,
     className,
@@ -95,6 +99,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     onValueChange,
     onPressEnter,
     onKeyDown,
+    as: Component = 'input',
     ...restProps
   } = props;
 
@@ -204,7 +209,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
     <div className={inputClx} style={wrapperStyle}>
       {addonRender(addonBefore, 'kt-input-addon-before')}
       <div className='kt-input-box'>
-        <input
+        <Component
           ref={inputRef}
           type='text'
           autoCapitalize='off'

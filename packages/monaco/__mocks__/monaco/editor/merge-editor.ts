@@ -16,8 +16,9 @@ import {
   IModelDecorationsChangeAccessor,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-import { ICodeEditor, IPosition, Position } from '../../../index';
+import { ICodeEditor, IPosition, Position } from '../../../src';
 import { IEditorOptions } from '../../../lib/browser/monaco-api/editor';
+import { monaco } from '../../../lib/browser/monaco-api';
 
 let MERGE_EDITOR_ID = 0;
 
@@ -33,16 +34,16 @@ export class MockedMergeEditor extends Disposable implements IMergeEditorEditor 
   }
 
   getOursEditor(): ICodeEditor {
-    throw new Error('Method not implemented.');
+    return monaco.editor.create(document.createElement('div'), { value: '' }) as any as ICodeEditor;
   }
   getResultEditor(): ICodeEditor {
-    throw new Error('Method not implemented.');
+    return monaco.editor.create(document.createElement('div'), { value: '' }) as any as ICodeEditor;
   }
   getTheirsEditor(): ICodeEditor {
-    throw new Error('Method not implemented.');
+    return monaco.editor.create(document.createElement('div'), { value: '' }) as any as ICodeEditor;
   }
   open(openMergeEditorArgs: IOpenMergeEditorArgs): Promise<void> {
-    throw new Error('Method not implemented.');
+    return Promise.resolve();
   }
   onDidDispose(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
@@ -62,9 +63,7 @@ export class MockedMergeEditor extends Disposable implements IMergeEditorEditor 
   onHide(): void {
     throw new Error('Method not implemented.');
   }
-  layout(dimension?: IDimension | undefined): void {
-    throw new Error('Method not implemented.');
-  }
+  layout(dimension?: IDimension | undefined): void {}
   focus(): void {
     throw new Error('Method not implemented.');
   }

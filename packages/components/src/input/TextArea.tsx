@@ -1,9 +1,10 @@
 import React from 'react';
 
-export interface ITextAreaProps {
-  value: string;
-}
+import { IInputBaseProps, Input } from './Input';
 
-export const TextArea: React.FC<ITextAreaProps> = () => <textarea name='' id='' cols={30} rows={10}></textarea>;
+export const TextArea = React.forwardRef<HTMLTextAreaElement, IInputBaseProps<HTMLTextAreaElement>>((props, ref) => (
+  // @ts-ignore
+  <Input {...props} as='textarea' ref={ref} />
+));
 
 TextArea.displayName = 'OpenSumiTextArea';

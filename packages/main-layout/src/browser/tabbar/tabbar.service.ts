@@ -139,6 +139,7 @@ export class TabbarService extends WithEventBus {
   private sortedContainers: Array<ComponentRegistryInfo> = [];
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
+  private shouldWaitForViewRender = false;
 
   private scopedCtxKeyService: IScopedContextKeyService;
 
@@ -228,24 +229,31 @@ export class TabbarService extends WithEventBus {
     this.updatePanel(show);
   }
 
-  // 原有的 viewReady 依赖 updatePanelVisibility 方法的同步渲染逻辑
+  public ensureViewReady() {
+    if (isDefined(this.barSize) && isDefined(this.panelSize)) {
+      this.viewReady.resolve();
+    } else {
+      this.shouldWaitForViewRender = true;
+    }
+  }
+
   // 这里通过 panelSize 及 barSize 两个值去判断视图是否渲染完成
   public updatePanelSize(value: number) {
     this.panelSize = value;
-    if (isDefined(this.barSize)) {
+    if (isDefined(this.barSize) && this.shouldWaitForViewRender) {
+      this.viewReady.resolve();
+    }
+  }
+
+  public updateBarSize(value: number) {
+    this.barSize = value;
+    if (isDefined(this.panelSize) && this.shouldWaitForViewRender) {
       this.viewReady.resolve();
     }
   }
 
   public getBarSize() {
     return this.barSize;
-  }
-
-  public updateBarSize(value: number) {
-    this.barSize = value;
-    if (isDefined(this.panelSize)) {
-      this.viewReady.resolve();
-    }
   }
 
   public updateTabInMoreKey(containerId: string, value: boolean) {
@@ -599,6 +607,7 @@ export class TabbarService extends WithEventBus {
   handleDragStart(e: React.DragEvent, containerId: string) {
     e.dataTransfer.setData('containerId', containerId);
   }
+
   handleDrop(e: React.DragEvent, target: string) {
     if (e.dataTransfer.getData('containerId')) {
       const source = e.dataTransfer.getData('containerId');
@@ -610,13 +619,12 @@ export class TabbarService extends WithEventBus {
     }
   }
 
+  @action
   restoreState() {
     this.storedState = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
     for (const containerId of this.state.keys()) {
       if (this.storedState[containerId]) {
-        runInAction(() => {
-          this.state.set(containerId, this.storedState[containerId]);
-        });
+        this.state.set(containerId, this.storedState[containerId]);
       }
     }
     this.visibleContainers.forEach((container) => {

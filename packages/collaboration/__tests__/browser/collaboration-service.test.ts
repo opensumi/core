@@ -6,7 +6,7 @@ import { Text as YText } from 'yjs';
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { EventBusImpl, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -20,13 +20,13 @@ import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-s
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { CollaborationService } from '../../src/browser/collaboration.service';
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
 import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src/common';
 import { CollaborationServiceForClient } from '../../src/node/collaboration.service';
 import { YWebsocketServerImpl } from '../../src/node/y-websocket-server';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 @Injectable()
 class MockWorkbenchEditorService {
@@ -51,7 +51,7 @@ class MockDocModelService {
       dispose() {},
       instance: {
         getMonacoModel() {
-          return monaco.editor.createModel('');
+          return monacoApi.editor.createModel('');
         },
       },
     };
@@ -90,11 +90,22 @@ describe('CollaborationService basic routines', () => {
       token: IEventBus,
       useClass: EventBusImpl,
     });
-    injector.addProviders({
+    injector.overrideProviders({
       token: AppConfig,
       useValue: {
         wsPath: { toString: () => 'ws://127.0.0.1:8080' },
+        collaborationOptions: {
+          port: 10010,
+        },
       },
+    });
+    injector.overrideProviders({
+      token: NodeAppConfig,
+      useValue: {
+        collaborationOptions: {
+          port: 10010,
+        },
+      } as NodeAppConfig,
     });
 
     injector.addProviders({

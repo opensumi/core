@@ -256,8 +256,8 @@ export interface AppConfig {
    */
   useVSCodeWorkspaceConfiguration?: boolean;
   /*
-   * 定义协同模块的通信路径
-   * 需要带端口号, 默认是 12345，可使用 COLLABORATION_PORT 字段来指定
+   * 定义协同模块的通信路径，需要带端口号
+   * 该选项会比 `collaborationOpts.port` 优先级更高
    */
   collaborationWsPath?: string;
   /**
@@ -269,6 +269,14 @@ export interface AppConfig {
    * AI Native 相关的配置项
    */
   AINativeConfig?: IAINativeConfig;
+  /**
+   * Collaboration Client Options
+   */
+  collaborationOptions?: ICollaborationClientOpts;
+}
+
+export interface ICollaborationClientOpts {
+  port?: number;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

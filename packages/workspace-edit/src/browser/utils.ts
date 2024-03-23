@@ -1,5 +1,5 @@
 import { isObject } from '@opensumi/ide-core-common';
-import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Uri } from '@opensumi/ide-monaco';
 
 import type {
   ResourceFileEdit,

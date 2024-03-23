@@ -4,7 +4,7 @@ import { Injectable } from '@opensumi/di';
 import { IInputBaseProps } from '@opensumi/ide-components';
 import { Emitter, Event, IDisposable, arrays, getDebugLogger, toDisposable } from '@opensumi/ide-core-common';
 
-import { IInputValidator, ISCMInput, ISCMProvider, ISCMRepository } from './scm';
+import { IInputValidator, ISCMInput, ISCMInputActionButtonDescriptor, ISCMProvider, ISCMRepository } from './scm';
 
 const { equals } = arrays;
 class SCMInput implements ISCMInput {
@@ -96,6 +96,20 @@ class SCMInput implements ISCMInput {
 
   private _onDidChangeValidateInput = new Emitter<void>();
   readonly onDidChangeValidateInput: Event<void> = this._onDidChangeValidateInput.event;
+
+  private _actionButton;
+
+  get actionButton(): ISCMInputActionButtonDescriptor | undefined {
+    return this._actionButton;
+  }
+
+  set actionButton(actionButton: ISCMInputActionButtonDescriptor | undefined) {
+    this._actionButton = actionButton;
+    this._onDidChangeActionButton.fire();
+  }
+
+  private _onDidChangeActionButton = new Emitter<void>();
+  readonly onDidChangeActionButton: Event<void> = this._onDidChangeActionButton.event;
 }
 
 class SCMRepository implements ISCMRepository {

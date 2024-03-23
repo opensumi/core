@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Disposable, Domain, IContextKeyService, Schemes, Uri } from '@opensumi/ide-core-browser';
+import { Disposable, Domain, Schemes } from '@opensumi/ide-core-browser';
 
 import { ResourceService } from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
@@ -14,9 +14,6 @@ export class MergeEditorContribution extends Disposable implements BrowserEditor
   @Autowired()
   private readonly mergeEditorResourceProvider: MergeEditorResourceProvider;
 
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
-
   registerResource(resourceService: ResourceService): void {
     resourceService.registerResourceProvider(this.mergeEditorResourceProvider);
   }
@@ -30,15 +27,14 @@ export class MergeEditorContribution extends Disposable implements BrowserEditor
 
     registry.registerEditorSideWidget({
       id: MERGE_EDITOR_FLOATING_WIDGET,
-      component: MergeEditorFloatComponents as any,
+      component: MergeEditorFloatComponents,
       displaysOnResource: (resource) => {
         const { uri } = resource;
         if (uri.scheme !== Schemes.file) {
           return false;
         }
-
-        const mergeChanges = this.contextKeyService.getValue<Uri[]>('git.mergeChanges') || [];
-        return mergeChanges.some((value) => value.toString() === uri.toString());
+        // 由于存在时序问题，具体是否显示的逻辑由组件内部处理
+        return true;
       },
     });
   }

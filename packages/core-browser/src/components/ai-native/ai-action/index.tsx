@@ -51,13 +51,19 @@ export const AIAction = (props: AIActionProps) => {
       <AILogoAvatar />
       <LineVertical {...{ height: '60%', margin: '0px 4px 0 8px' }} />
       <div className={styles.operate_container}>
-        {operationList.map(({ name, title, id }, i) => (
-          <EnhancePopover id={id} title={title} key={`popover_${i}`}>
-            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem(id)}>
-              <span key={i}>{name}</span>
+        {operationList.map(({ name, title, id }, i) =>
+          title ? (
+            <EnhancePopover id={id} title={title} key={`popover_${i}`}>
+              <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem(id)}>
+                <span key={i}>{name}</span>
+              </EnhanceIcon>
+            </EnhancePopover>
+          ) : (
+            <EnhanceIcon wrapperClassName={styles.operate_item} onClick={() => onClickItem(id)} key={i}>
+              <span>{name}</span>
             </EnhanceIcon>
-          </EnhancePopover>
-        ))}
+          ),
+        )}
         {moreOperation?.length ? (
           <EnhanceIconWithCtxMenu
             icon={'more'}

@@ -42,6 +42,7 @@
     "v8-inspect-profiler": "^0.0.20"
   },
   "devDependencies": {
+    "@opensumi/ide-ai-native": "workspace:*",
     "@opensumi/ide-comments": "workspace:*",
     "@opensumi/ide-components": "workspace:*",
     "@opensumi/ide-core-browser": "workspace:*",

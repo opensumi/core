@@ -18,7 +18,6 @@ import {
   getIcon,
   localize,
   memoize,
-  positionToRange,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
 import {
@@ -28,10 +27,12 @@ import {
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { positionToRange } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   CommentPanelId,
@@ -196,7 +197,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     disposer.addDispose(
       editor.monacoEditor.onMouseDown((event) => {
         if (
-          event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
           event.target.element &&
           event.target.element.className.indexOf('comments-add') > -1
         ) {
@@ -218,7 +219,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             event.event.stopPropagation();
           }
         } else if (
-          event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
+          event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN &&
           event.target.element &&
           event.target.element.className.indexOf('comments-thread') > -1
         ) {

@@ -961,6 +961,7 @@ export const localizationBundle = {
       'Controls whether the diff editor shows the diff side by side or inline.',
     'diffEditor.configuration.ignoreTrimWhitespace':
       'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
+    'diffEditor.action.toggleCollapseUnchangedRegions': 'Toggle Collapse Unchanged Regions',
 
     'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
     'editor.autoSave.enum.off': 'OFF',
@@ -1052,6 +1053,32 @@ export const localizationBundle = {
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
+
+    'terminal.ai.requesting': 'AI Requesting...',
+    'terminal.ai.selectHint': 'Use keyboard ↑↓ to select a command, ⏎ to confirm command',
+    'terminal.ai.thinking': 'AI Thinking...',
+    'terminal.ai.escClose': 'Press ESC to close the dialog',
+    'terminal.ai.headerHint': 'Use AI to get terminal input suggestions',
+    'terminal.ai.inputHint': 'Eg. show current process pid',
+    'terminal.ai.inputSharpToGetHint': 'Type # for AI command suggestions',
+    'terminal.ai.cannotGetTerminalConnection':
+      'Cannot establish terminal connection, please provide feedback in the user group',
+    'terminal.ai.modelPrompt': `
+    You are a Shell script expert, and I need to use Shell to perform some operations, but I am not familiar with Shell commands. Therefore, I need to generate terminal commands through natural language descriptions, just need to generate 1 to 5 commands.
+    Hint: Use . to represent the current folder
+  
+    Below are the natural language descriptions and their corresponding terminal commands:
+    Question: View machine memory
+    Answer:
+    #Command#: free -m
+    #Description#: View machine memory
+  
+    Question: View the pid of the current process
+    Answer:
+    #Command#: echo $$
+    #Description#: View the pid of the current process
+  
+    Question: `,
 
     'view.command.show': 'Show {0}',
 
@@ -1401,17 +1428,42 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
     'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
     'mergeEditor.action.button.apply': 'Apply',
-    'mergeEditor.action.button.accept.left': 'Accept Left',
-    'mergeEditor.action.button.accept.right': 'Accept Right',
-    'mergeEditor.open.in.editor': 'Resolve in Merge Editor',
+    'mergeEditor.action.button.accept.left': 'Accept left',
+    'mergeEditor.action.button.accept.right': 'Accept right',
+    'mergeEditor.open.3way': '3-way Editor',
+    'mergeEditor.conflict.prev': 'Previous conflict',
+    'mergeEditor.conflict.next': 'Next conflict',
+    'mergeEditor.conflict.resolve.all': 'AI one click solution',
+    'mergeEditor.conflict.resolve.all.stop': 'Stop All',
+    'mergeEditor.open.tradition': 'Tradition editor',
 
     // #region AI Native
+    'aiNative.chat.ai.assistant.name': 'AI Assistant',
+    'aiNative.chat.input.placeholder.default': 'Ask Copilot or type / for commands',
+    'aiNative.chat.stop.immediately': 'I don’t think about it anymore. If you need anything, you can ask me anytime.',
+    'aiNative.chat.error.response':
+      'There are too many people interacting with me at the moment. Please try again later. Thank you for your understanding and support.',
+    'aiNative.chat.code.insert': 'Insert code',
+    'aiNative.chat.code.copy': 'Copy code',
+    'aiNative.chat.code.copy.success': 'Copied successfully',
+    'aiNative.chat.expand.unfullscreen': 'unfullscreen',
+    'aiNative.chat.expand.fullescreen': 'fullescreen',
+    'aiNative.chat.enter.send': 'Enter send',
+
     'aiNative.inline.chat.operate.check.title': 'Check',
-    'aiNative.inline.chat.operate.discard.title': 'Discard',
-    'aiNative.inline.chat.operate.afresh.title': 'Afresh',
     'aiNative.inline.chat.operate.thumbsup.title': 'Thumbs up',
     'aiNative.inline.chat.operate.thumbsdown.title': 'Thumbs down',
     'aiNative.inline.chat.operate.loading.cancel': 'Esc to cancel',
+
+    'aiNative.resolve.conflict.dialog.afresh': 'Are you sure you want to regenerate?',
+    'aiNative.resolve.conflict.dialog.detection':
+      'It is detected that you have made modifications. Regeneration will overwrite\nyour modifications. Are you sure to regenerate?',
+    'aiNative.resolve.conflict.message.not.processed.yet':
+      'AI has processed conflicts at {0}, but conflicts at {1} have not yet been processed (still marked as yellow) and require manual processing.',
+
+    'aiNative.operate.discard.title': 'Discard',
+    'aiNative.operate.afresh.title': 'Afresh',
+    'aiNative.operate.stop.title': 'Stop',
     // #endregion AI Native
 
     // #endregion merge editor

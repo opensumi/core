@@ -363,6 +363,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const OPEN_MERGEEDITOR_DEV: Command = {
+    id: 'editor.open.mergeEditor.dev',
+    category: 'Merge Editor (Dev)',
+    label: 'Open Merge Editor State from Json',
+  };
+
   export const MERGEEDITOR_RESET: Command = {
     id: 'editor.mergeEditor.reset',
     category: CATEGORY,
@@ -645,6 +651,16 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const FORMAT_DOCUMENT: Command = {
+    id: 'editor.action.formatDocument',
+    category: CATEGORY,
+  };
+
+  export const FORMAT_SELECTION: Command = {
+    id: 'editor.action.formatSelection',
+    category: CATEGORY,
+  };
+
   export const FORMAT_DOCUMENT_WITH: Command = {
     id: 'editor.action.formatDocument.multiple',
     category: CATEGORY,
@@ -670,6 +686,24 @@ export namespace EDITOR_COMMANDS {
   };
 }
 
+export namespace DIFF_EDITOR_COMMANDS {
+  const CATEGORY = 'diff-editor';
+
+  export const REVERT: Command = {
+    id: 'editor.diff.revert',
+    category: CATEGORY,
+  };
+
+  export const ACCEPT: Command = {
+    id: 'editor.diff.accept',
+    category: CATEGORY,
+  };
+
+  export const TOGGLE_COLLAPSE_UNCHANGED_REGIONS: Command = {
+    id: 'editor.diff.toggleCollapseUnchangedRegions',
+    category: CATEGORY,
+  };
+}
 export namespace SEARCH_COMMANDS {
   const CATEGORY = 'search';
 
@@ -820,7 +854,7 @@ export namespace DIALOG_COMMANDS {
 }
 
 export namespace TERMINAL_COMMANDS {
-  const CATEGORY = '%terminal.name%';
+  export const CATEGORY = '%terminal.name%';
 
   export const FOCUS_NEXT_TERMINAL = {
     id: 'workbench.action.terminal.focusNextPane',

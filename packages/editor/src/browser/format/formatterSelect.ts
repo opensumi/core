@@ -1,8 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceScope, PreferenceService, QuickPickService, URI, localize } from '@opensumi/ide-core-browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { FormattingMode } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelService } from '../doc-model/types';
 
@@ -45,7 +45,7 @@ export class FormattingSelector {
     const elements: { [key: string]: IProvider } = {};
     formatters.forEach((provider: IProvider) => {
       if (provider.extensionId) {
-        elements[provider.extensionId] = provider;
+        elements[provider.extensionId as any] = provider;
       }
     });
 
@@ -73,7 +73,7 @@ export class FormattingSelector {
           { ...config, [languageId]: selected },
           PreferenceScope.User,
         );
-        return elements[selected];
+        return elements[selected as any];
       }
     } else {
       return undefined;

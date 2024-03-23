@@ -29,8 +29,9 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   #actionsProvider: IActionsProvider | undefined;
   #conflictActions: ConflictActions;
 
+  public editor: ICodeEditor;
+
   protected decorations: MergeEditorDecorations;
-  protected editor: ICodeEditor;
   protected mappingManagerService: MappingManagerService;
 
   protected readonly _onDidConflictActions = new Emitter<IConflictActionsEvent>();
@@ -41,9 +42,9 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     this._onDidActionsProvider.event;
 
   constructor(
-    private readonly container: HTMLDivElement,
-    private readonly monacoService: MonacoService,
-    private readonly injector: Injector,
+    protected readonly container: HTMLDivElement,
+    protected readonly monacoService: MonacoService,
+    protected readonly injector: Injector,
   ) {
     super();
     this.mount();
@@ -174,7 +175,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
         enabled: false,
       },
       codeLens: false,
-      scrollBeyondLastLine: false,
+      scrollBeyondLastLine: true,
       ...this.getMonacoEditorOptions(),
     });
   }
@@ -220,6 +221,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   public clearDecorations(): void {
     this.decorations.clearDecorations();
+  }
+
+  public getUri(): string {
+    return this.getModel()?.uri.path.toString()!;
   }
 
   /**

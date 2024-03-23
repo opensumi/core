@@ -376,8 +376,8 @@ export class RefCountedDisposable {
   }
 }
 
-export class DisposableMap extends Map<string, IDisposable> implements IDisposable {
-  disposeKey(key: string): void {
+export class DisposableMap<K, V extends IDisposable = IDisposable> extends Map<K, V> implements IDisposable {
+  disposeKey(key: K): void {
     const disposable = this.get(key);
     if (disposable) {
       disposable.dispose();

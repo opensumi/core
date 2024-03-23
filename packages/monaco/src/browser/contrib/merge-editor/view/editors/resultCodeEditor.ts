@@ -1,16 +1,51 @@
-import { Injectable, Injector } from '@opensumi/di';
-import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
-import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
-import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import debounce from 'lodash/debounce';
 
+import { Autowired, Injectable, Injector } from '@opensumi/di';
+import {
+  AINativeConfigService,
+  CancellationToken,
+  CancellationTokenSource,
+  Emitter,
+  Event,
+  MonacoService,
+  runWhenIdle,
+} from '@opensumi/ide-core-browser';
+import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
+import {
+  AIBackSerivcePath,
+  ChatResponse,
+  IAIBackService,
+  IConflictContentMetadata,
+  IInternalResolveConflictRegistry,
+  MergeConflictEditorMode,
+  ResolveConflictRegistryToken,
+} from '@opensumi/ide-core-common';
+import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
+import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+import {
+  IModelDecorationOptions,
+  IModelDeltaDecoration,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import {
+  FormattingMode,
+  formatDocumentRangesWithSelectedProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
+import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
+import { Progress } from '@opensumi/monaco-editor-core/esm/vs/platform/progress/common/progress';
+
+import { editor } from '../../../../../browser/monaco-exports';
+import * as monaco from '../../../../../common';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
-import { LineRange } from '../../model/line-range';
+import { IIntelligentState, LineRange } from '../../model/line-range';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
   ACCEPT_COMBINATION_ACTIONS,
   ADDRESSING_TAG_CLASSNAME,
+  AI_RESOLVE_ACTIONS,
+  AI_RESOLVE_REGENERATE_ACTIONS,
   CONFLICT_ACTIONS_ICON,
   DECORATIONS_CLASSNAME,
   ETurnDirection,
@@ -21,19 +56,89 @@ import {
   REVOKE_ACTIONS,
   TActionsType,
 } from '../../types';
+import { ResolveResultWidget } from '../../widget/resolve-result-widget';
+import { StopWidget } from '../../widget/stop-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
+interface IWidgetFactory {
+  hideWidget(id?: string): void;
+  addWidget(range: LineRange): void;
+  hasWidget(range: LineRange): boolean;
+}
+
+class WidgetFactory implements IWidgetFactory {
+  private widgetMap: Map<string, ResolveResultWidget>;
+
+  constructor(
+    private contentWidget: typeof ResolveResultWidget,
+    private editor: BaseCodeEditor,
+    private injector: Injector,
+  ) {
+    this.widgetMap = new Map();
+  }
+
+  hasWidget(range: LineRange): boolean {
+    return this.widgetMap.get(range.id) !== undefined;
+  }
+
+  public hideWidget(id?: string): void {
+    if (id) {
+      const widget = this.widgetMap.get(id);
+      if (widget) {
+        widget.hide();
+        this.widgetMap.delete(id);
+      }
+      return;
+    }
+
+    this.widgetMap.forEach((widget) => {
+      widget.hide();
+    });
+    this.widgetMap.clear();
+  }
+
+  public addWidget(range: LineRange): void {
+    const id = range.id;
+    if (this.widgetMap.has(id)) {
+      return;
+    }
+
+    const position = new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
+
+    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
+    widget.show({ position });
+
+    this.widgetMap.set(id, widget);
+  }
+}
+
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
+  @Autowired(MergeConflictReportService)
+  private readonly mergeConflictReportService: MergeConflictReportService;
+
   private readonly _onDidChangeContent = new Emitter<void>();
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
+
+  private readonly _onChangeRangeIntelligentState = new Emitter<LineRange>();
+  public readonly onChangeRangeIntelligentState: Event<LineRange> = this._onChangeRangeIntelligentState.event;
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { lineNumbersMinChars: 2, lineDecorationsWidth: 24 };
   }
 
   private timeMachineDocument: TimeMachineDocument;
+  private resolveResultWidgetManager: IWidgetFactory;
+  private stopWidgetManager: IWidgetFactory;
+  private isFirstInputComputeDiff = true;
+  private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
+
+  protected aiBackService: IAIBackService;
+  protected resolveConflictRegistry: IInternalResolveConflictRegistry;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -45,12 +150,137 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
-  private isFirstInputComputeDiff = true;
-
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
     this.initListenEvent();
+
+    this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
+    this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
+
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      this.aiBackService = injector.get(AIBackSerivcePath);
+      this.resolveConflictRegistry = injector.get(ResolveConflictRegistryToken);
+    }
+  }
+
+  public hideResolveResultWidget(id?: string) {
+    this.resolveResultWidgetManager.hideWidget(id);
+  }
+
+  public hideStopWidget(id?: string) {
+    this.stopWidgetManager.hideWidget(id);
+  }
+
+  public renderSkeletonDecoration(range: LineRange, classNames: string[]): () => void {
+    const renderSkeletonDecoration = (className: string): IModelDeltaDecoration => ({
+      range: InnerRange.fromPositions(
+        new Position(range.startLineNumber, 1),
+        new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1),
+      ),
+      options: {
+        isWholeLine: true,
+        description: 'skeleton',
+        className,
+      },
+    });
+
+    const preDecorationsIds = this.getModel()!.deltaDecorations(
+      [],
+      classNames.map((cls) => renderSkeletonDecoration(cls)),
+    );
+
+    return () => {
+      this.getModel()!.deltaDecorations(preDecorationsIds, []);
+    };
+  }
+
+  public async requestAiResolveConflict(
+    metadata: IConflictContentMetadata,
+    range: LineRange,
+    isRegenerate = false,
+  ): Promise<ChatResponse | undefined> {
+    if (!this.resolveConflictRegistry) {
+      return;
+    }
+
+    const handler = this.resolveConflictRegistry.getThreeWayHandler();
+
+    if (!handler) {
+      return;
+    }
+
+    if (isRegenerate) {
+      const newContent = this.getModel()!.getValueInRange(range.toRange());
+      metadata.base = newContent;
+    }
+
+    const response = await handler.providerRequest(metadata, { isRegenerate }, this.createRequestToken(range.id).token);
+    return response;
+  }
+
+  // 生成 cancel token
+  public createRequestToken(id: string): CancellationTokenSource {
+    const token = new CancellationTokenSource();
+    this.cancelIndicatorMap.set(id, token);
+    return token;
+  }
+
+  public cancelRequestToken(id?: string) {
+    if (id) {
+      if (!this.cancelIndicatorMap.has(id)) {
+        return;
+      }
+
+      const token = this.cancelIndicatorMap.get(id);
+      token?.cancel();
+      return;
+    }
+
+    this.cancelIndicatorMap.forEach((token) => {
+      token.cancel();
+    });
+    this.cancelIndicatorMap.clear();
+  }
+
+  /**
+   * @param isFull 是否全量更新
+   */
+  public changeRangeIntelligentState(range: LineRange, state: Partial<IIntelligentState>, isFull = true): void {
+    const intelligentModel = range.getIntelligentStateModel();
+    intelligentModel.setAll(state, isFull);
+    this._onChangeRangeIntelligentState.fire(range);
+  }
+
+  /**
+   * 根据 id 获取最新的 range 数据
+   */
+  public getFlushRange(range: LineRange): LineRange | undefined {
+    const id = range.id;
+    const allRanges = this.getAllDiffRanges();
+    return allRanges.find((range) => range.id === id);
+  }
+
+  public async formatDocument(range: LineRange): Promise<void> {
+    const scrollPosition = {
+      scrollTop: this.editor.getScrollTop(),
+      scrollLeft: this.editor.getScrollLeft(),
+    };
+
+    const instaService = StandaloneServices.get(IInstantiationService);
+    // monaco 内部的 format 无法通过 command 或 api 来指定 range，所以这里需要像这样调用，手动传入 range
+    await instaService.invokeFunction(
+      formatDocumentRangesWithSelectedProvider,
+      this.editor as any,
+      range.toInclusiveRange() as monaco.Range,
+      FormattingMode.Explicit,
+      Progress.None,
+      CancellationToken.None,
+      true,
+    );
+    runWhenIdle(() => {
+      this.editor.setScrollPosition(scrollPosition);
+    });
   }
 
   private initListenEvent(): void {
@@ -62,8 +292,52 @@ export class ResultCodeEditor extends BaseCodeEditor {
         if (model) {
           preLineCount = model.getLineCount();
         }
+        this.hideResolveResultWidget();
       }),
     );
+
+    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+      this.addDispose(
+        this.editor.onMouseMove(
+          debounce((event: monaco.editor.IEditorMouseEvent) => {
+            const { target } = event;
+
+            if (target.type === editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
+              this.hideResolveResultWidget();
+              return;
+            }
+
+            const mousePosition = target.position;
+            if (!mousePosition) {
+              return;
+            }
+
+            const allRanges = this.getAllDiffRanges();
+            const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
+
+            const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
+
+            if (isTouches) {
+              const targetInRange = allRanges.find((range) => range.isTouches(toLineRange));
+
+              if (!targetInRange) {
+                return;
+              }
+
+              const intelligentStateModel = targetInRange.getIntelligentStateModel();
+
+              if (intelligentStateModel.isComplete) {
+                this.resolveResultWidgetManager.addWidget(targetInRange);
+              } else {
+                this.hideResolveResultWidget(targetInRange.id);
+              }
+            } else {
+              this.hideResolveResultWidget();
+            }
+          }, 10),
+        ),
+      );
+    }
 
     this.addDispose(
       this.editor.onDidChangeModelContent(async (e) => {
@@ -141,7 +415,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
   }
 
-  private getAllDiffRanges(): LineRange[] {
+  public getAllDiffRanges(): LineRange[] {
     // 去重相同 id 或位置一样的 line range
     return distinct(
       this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
@@ -154,21 +428,45 @@ export class ResultCodeEditor extends BaseCodeEditor {
       return [];
     }
 
-    return ranges
-      .filter((r) => r.isComplete || r.isMerge)
-      .map((range) => ({
-        range,
-        decorationOptions: {
-          firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
-            range.isComplete
-              ? CONFLICT_ACTIONS_ICON.REVOKE
-              : range.isAllowCombination
-              ? CONFLICT_ACTIONS_ICON.WAND
-              : '',
-            `${ADDRESSING_TAG_CLASSNAME}${range.id}`,
-          ),
-        },
-      }));
+    const renderIconClassName = (range: LineRange) => {
+      const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+
+      if (range.isComplete) {
+        return CONFLICT_ACTIONS_ICON.REVOKE;
+      }
+
+      if (isAiConflictResolve && range.type === 'modify') {
+        const aiModel = range.getIntelligentStateModel();
+
+        if (aiModel.isLoading) {
+          return CONFLICT_ACTIONS_ICON.AI_RESOLVE_LOADING;
+        }
+
+        if (aiModel.isComplete) {
+          return CONFLICT_ACTIONS_ICON.REVOKE;
+        }
+
+        if (range.isMerge) {
+          return CONFLICT_ACTIONS_ICON.AI_RESOLVE;
+        }
+      }
+
+      if (range.isAllowCombination && range.isMerge) {
+        return CONFLICT_ACTIONS_ICON.WAND;
+      }
+
+      return '';
+    };
+
+    return ranges.map((range) => ({
+      range,
+      decorationOptions: {
+        firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
+          renderIconClassName(range),
+          `${ADDRESSING_TAG_CLASSNAME}${range.id}`,
+        ),
+      },
+    }));
   }
 
   /**
@@ -225,12 +523,20 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const pickMapping = (range: LineRange) =>
       range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
-    for (const { rawRanges, mergeRange } of needMergeRanges) {
+    for (let { rawRanges, mergeRange } of needMergeRanges) {
       // 需要合并的 range 一定多于两个
       const length = rawRanges.length;
       if (length <= 1) {
         continue;
       }
+
+      // 将 rawRanges 按照 startLineNumber 从小到大排序，如果 startLineNumber 相同，则按照 endLineNumberExclusive 从小到大排序。保证 merge 的 range 是合理的
+      rawRanges = rawRanges.sort((a, b) => {
+        if (a.startLineNumber === b.startLineNumber) {
+          return a.endLineNumberExclusive - b.endLineNumberExclusive;
+        }
+        return a.startLineNumber - b.startLineNumber;
+      });
 
       /**
        * 取第二个 range 和倒数第二个 range，来对齐最终要合并的 range 的高度
@@ -255,14 +561,19 @@ export class ResultCodeEditor extends BaseCodeEditor {
       for (const range of rawRanges) {
         const mapping = pickMapping(range);
         const rawReverse = mapping.reverse(range);
-        let reverse = mapping.reverse(range);
-        if (!reverse || !rawReverse) {
+
+        let reverse = rawReverse;
+        if (!reverse) {
           continue;
         }
 
         if (range.id === secondRange.id) {
           // start 要补齐的差值不会是正数
-          reverse = reverse.deltaStart(Math.min(0, rawRanges[0].startLineNumber - secondRange.startLineNumber));
+          reverse = reverse
+            .deltaStart(Math.min(0, rawRanges[0].startLineNumber - secondRange.startLineNumber))
+            .deltaEnd(
+              Math.max(0, secondLastRange.endLineNumberExclusive - rawRanges[length - 1].endLineNumberExclusive),
+            );
         }
 
         if (range.id === secondLastRange.id) {
@@ -279,13 +590,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
         if (range.turnDirection === ETurnDirection.CURRENT) {
           mergeRangeTurnLeft = (
             !mergeRangeTurnLeft ? reverse : mergeRangeTurnLeft.merge(reverse, false)
-          ).recordMergeRange(rawReverse);
+          ).recordMergeRange(rawReverse!);
         }
 
         if (range.turnDirection === ETurnDirection.INCOMING) {
           mergeRangeTurnRight = (
             !mergeRangeTurnRight ? reverse : mergeRangeTurnRight.merge(reverse, false)
-          ).recordMergeRange(rawReverse);
+          ).recordMergeRange(rawReverse!);
         }
 
         mapping.deleteRange(reverse);
@@ -323,6 +634,21 @@ export class ResultCodeEditor extends BaseCodeEditor {
      * 则需要重新获取一次
      */
     const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
+
+    const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+    if (isAiConflictResolve) {
+      changesResult
+        .filter((range) => range.isAiConflictPoint)
+        .forEach((range) => {
+          const model = range.getIntelligentStateModel();
+
+          this.hideStopWidget(range.id);
+
+          if (model.isLoading) {
+            this.stopWidgetManager.addWidget(range);
+          }
+        });
+    }
     return [changesResult, innerChangesResult];
   }
 
@@ -330,16 +656,29 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
+    const isAiComplete = () => {
+      const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+      const intelligentModel = range.getIntelligentStateModel();
+
+      if (isAiConflictResolve && intelligentModel.isComplete && !intelligentModel.isLoading) {
+        return true;
+      }
+
+      return false;
+    };
+
     return {
       linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         DECORATIONS_CLASSNAME.stretch_right,
+        isAiComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete_lines_decorations : '',
         range.turnDirection === ETurnDirection.CURRENT || range.turnDirection === ETurnDirection.BOTH
           ? DECORATIONS_CLASSNAME.stretch_left
           : '',
       ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
+        isAiComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete : '',
         range.turnDirection === ETurnDirection.CURRENT
           ? DECORATIONS_CLASSNAME.stretch_left
           : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, DECORATIONS_CLASSNAME.stretch_right),
@@ -366,7 +705,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public completeSituation(): { completeCount: number; shouldCount: number } {
     const allRanges = this.getAllDiffRanges();
-    const completeCount = allRanges.reduce((pre: number, cur: LineRange) => pre + (cur.isComplete ? 1 : 0), 0);
+    let completeCount = 0;
+
+    for (const range of allRanges) {
+      if (range.isComplete) {
+        completeCount += 1;
+      } else if (range.getIntelligentStateModel().isComplete) {
+        completeCount += 1;
+      }
+    }
 
     return {
       completeCount,
@@ -393,17 +740,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: () => this.provideActionsItems(diffRanges),
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
-        if (actionType === REVOKE_ACTIONS) {
+        if (
+          actionType === REVOKE_ACTIONS ||
+          actionType === ACCEPT_COMBINATION_ACTIONS ||
+          actionType === AI_RESOLVE_ACTIONS ||
+          actionType === AI_RESOLVE_REGENERATE_ACTIONS
+        ) {
           this.launchConflictActionsEvent({
             range,
-            action: REVOKE_ACTIONS,
-          });
-        }
-
-        if (actionType === ACCEPT_COMBINATION_ACTIONS) {
-          this.launchConflictActionsEvent({
-            range,
-            action: ACCEPT_COMBINATION_ACTIONS,
+            action: actionType,
           });
         }
       },
@@ -413,6 +758,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
       this.timeMachineDocument.record(range.id, {
         range,
         text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toInclusiveRange()),
+      });
+    });
+
+    runWhenIdle(() => {
+      const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
+      this.mergeConflictReportService.record(this.getUri(), {
+        conflictPointNum: aiConflictNum,
+        editorMode: MergeConflictEditorMode['3way'],
       });
     });
   }

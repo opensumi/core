@@ -4,9 +4,11 @@ import ReactDOMClient from 'react-dom/client';
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import type { ICodeEditor as IMonacoCodeEditor } from '../../monaco-api/types';
+import * as monaco from '../../common';
+import { editor } from '../monaco-exports';
+
+import type { ICodeEditor as IMonacoCodeEditor } from '../monaco-api/types';
 
 export interface IInlineContentWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowAIContentOptions | undefined) => void;
@@ -28,7 +30,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
-  private root: ReactDOMClient.Root | null;
+  private root?: ReactDOMClient.Root | null = null;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super();
@@ -96,7 +98,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     if (position) {
       return {
         position,
-        preference: [monaco.editor.ContentWidgetPositionPreference.BELOW],
+        preference: [editor.ContentWidgetPositionPreference.BELOW],
       };
     }
 

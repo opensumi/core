@@ -14,11 +14,11 @@ import {
 
 import { Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
-import { ICodeEditor } from '@opensumi/ide-monaco';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
-import { ICollaborationService, COLLABORATION_PORT } from '../../src/common';
+import { ICollaborationService, DEFAULT_COLLABORATION_PORT } from '../../src/common';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 const injector = new Injector();
 
@@ -30,7 +30,7 @@ injector.addProviders({
 });
 
 const createBindingWithTextModel = (doc: YDoc, awareness: Awareness) => {
-  const textModel = monaco.editor.createModel('');
+  const textModel = monacoApi.editor.createModel('');
   const yText = doc.getText('test');
   // const binding = new TextModelBinding(yText, textModel, awareness);
   const binding = injector.get(TextModelBinding, [yText, textModel, awareness]);
@@ -49,7 +49,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
 
   beforeEach(() => {
     doc = new YDoc();
-    wsProvider = new WebsocketProvider(`ws://127.0.0.1:${COLLABORATION_PORT}`, 'test', doc, { connect: false }); // we don't use wsProvider here
+    wsProvider = new WebsocketProvider(`ws://127.0.0.1:${DEFAULT_COLLABORATION_PORT}`, 'test', doc, { connect: false }); // we don't use wsProvider here
     user1 = createBindingWithTextModel(doc, wsProvider.awareness);
     user2 = createBindingWithTextModel(doc, wsProvider.awareness);
     jest.mock('@opensumi/di');
@@ -105,7 +105,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
   it('should set value of TextModel when current content of TextModel is not the same with YText', () => {
     user1.yText.insert(0, '1145141919810');
 
-    const model = monaco.editor.createModel('114514');
+    const model = monacoApi.editor.createModel('114514');
     const modelSpy = jest.spyOn(model, 'setValue');
     const binding = new TextModelBinding(doc.getText('test'), model, wsProvider.awareness);
 
@@ -207,15 +207,17 @@ describe('TextModelBinding test for yText and TextModel', () => {
 });
 
 describe('TextModelBinding test for editor', () => {
-  let editor: ICodeEditor;
+  let editor: monaco.ICodeEditor;
   let doc: YDoc;
   let binding: TextModelBinding;
   let yText: YText;
-  let textModel: monaco.editor.ITextModel;
+  let textModel: monaco.ITextModel;
 
   beforeAll(() => {
     doc = new YDoc();
-    const wsProvider = new WebsocketProvider(`ws://127.0.0.1:${COLLABORATION_PORT}`, 'test', doc, { connect: false });
+    const wsProvider = new WebsocketProvider(`ws://127.0.0.1:${DEFAULT_COLLABORATION_PORT}`, 'test', doc, {
+      connect: false,
+    });
 
     const {
       binding: _binding,
@@ -227,7 +229,7 @@ describe('TextModelBinding test for editor', () => {
     textModel = _textModel;
 
     // FIXME correct this type
-    editor = monaco.editor.create(document.createElement('div'), { value: '' }) as any as ICodeEditor;
+    editor = monacoApi.editor.create(document.createElement('div'), { value: '' }) as any as monaco.ICodeEditor;
 
     editor.setModel(textModel);
 
