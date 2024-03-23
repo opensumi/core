@@ -11,10 +11,16 @@ export interface ContributionProvider<T extends object> {
   addContribution(...contributionsCls: ConstructorOf<any>[]): void;
   reload(): T[];
 
+  forEach(callback: (contribution: T) => void): void;
   run<K extends keyof T>(
     method: K,
     ...args: T[K] extends (...args: any[]) => any ? Parameters<T[K]> : any[]
   ): MaybePromise<void>;
+  runPhase<K extends keyof T>(
+    contribution: T,
+    phaseName: K,
+    ...args: T[K] extends (...args: any[]) => any ? Parameters<T[K]> : any[]
+  ): Promise<any>;
 }
 
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
@@ -44,14 +50,14 @@ export class BaseContributionProvider<T extends object> implements ContributionP
   run(method: keyof T, ...args: any[]): MaybePromise<any> {
     const promises = [] as Promise<any>[];
     for (const contribution of this.getContributions()) {
-      promises.push(this.contributionPhaseRunner(contribution, method, args));
+      promises.push(this.runPhase(contribution, method, args));
     }
     if (promises.length > 0) {
       return Promise.all(promises);
     }
   }
 
-  private async contributionPhaseRunner(contribution: T, phaseName: keyof T, args: any[]) {
+  async runPhase(contribution: T, phaseName: keyof T, ...args: any[]) {
     const phase = contribution[phaseName];
     if (typeof phase === 'function') {
       try {
@@ -60,6 +66,12 @@ export class BaseContributionProvider<T extends object> implements ContributionP
       } catch (error) {
         this.logger.error(`Could not run contribution#${String(phaseName)}`, error);
       }
+    }
+  }
+
+  forEach(callback: (contribution: T) => void) {
+    for (const contribution of this.getContributions()) {
+      callback(contribution);
     }
   }
 
