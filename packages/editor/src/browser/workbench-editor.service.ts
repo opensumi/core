@@ -181,6 +181,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   constructor() {
     super();
+    this.topGrid = new EditorGrid();
+    this.topGrid.onDidGridAndDesendantStateChange(() => {
+      this._sortedEditorGroups = undefined;
+      this._onDidEditorGroupsChanged.fire();
+    });
+
     this.initialize();
   }
 
@@ -306,10 +312,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       name = makeRandomHexString(5);
     }
     return name;
-  }
-
-  public prepare() {
-    this.prepareEditorGrid();
   }
 
   public initialize() {
@@ -464,16 +466,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private notifyGroupChanged() {
     this._sortedEditorGroups = undefined;
     this._onDidEditorGroupsChanged.fire();
-  }
-
-  prepareEditorGrid() {
-    this.topGrid = new EditorGrid();
-    this.topGrid.onDidGridAndDesendantStateChange(() => {
-      this._sortedEditorGroups = undefined;
-      this._onDidEditorGroupsChanged.fire();
-    });
-
-    this.topGrid.setEditorGroup(this.createEditorGroup());
   }
 
   protected async restoreState() {

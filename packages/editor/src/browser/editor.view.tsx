@@ -74,7 +74,6 @@ export const EditorView = () => {
   }, []);
 
   if (!ready) {
-    // todo: 渲染编辑器骨架屏
     return (
       <div className={styles_kt_workbench_editor} id='workbench-editor'>
         <div className={styles.kt_editor_main_wrapper}>

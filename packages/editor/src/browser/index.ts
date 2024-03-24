@@ -232,8 +232,6 @@ export class EditorClientAppContribution implements ClientAppContribution {
         contribution.registerEditorFeature(this.editorFeatureRegistry);
       }
     }
-
-    return this.workbenchEditorService.prepare();
   }
 
   async initialize() {
