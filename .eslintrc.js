@@ -212,7 +212,21 @@ module.exports = {
             message: 'please re-export the reference you want from `monaco-editor` in the `ide-monaco` package.',
           },
         ],
+        patterns: [
+          {
+            group: ['@opensumi/*/src/**/*', '!@opensumi/ide-dev-tool/src/**/*'],
+            message: "please import from 'esm' or 'lib' instead of 'src'.",
+          },
+        ],
       },
     ],
   },
+  overrides: [
+    {
+      files: ['**/*.test.ts', '**/*.test.tsx'],
+      rules: {
+        'no-restricted-imports': 0,
+      },
+    },
+  ],
 };
