@@ -1942,7 +1942,7 @@ __metadata:
     "@opensumi/ide-startup": "workspace:*"
     "@types/ejs": ^3.0.2
     "@types/koa-mount": ^4.0.0
-    "@types/node": ^18.19.8
+    "@types/node": ^20.11.30
     "@types/react": ^18.2.0
     "@types/react-dom": ^18.2.0
     assets-webpack-plugin: ^7.1.1
@@ -1994,7 +1994,7 @@ __metadata:
     "@types/jest": ^29.5.6
     "@types/jsdom": ^16.2.14
     "@types/lodash": ^4.14.202
-    "@types/node": ^18.19.8
+    "@types/node": ^20.11.30
     "@types/node-fetch": ^2.6.1
     "@types/react": ^18.2.0
     "@types/react-dom": ^18.2.0
@@ -4102,12 +4102,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.19.8":
-  version: 18.19.24
-  resolution: "@types/node@npm:18.19.24"
+"@types/node@npm:^20.11.30":
+  version: 20.11.30
+  resolution: "@types/node@npm:20.11.30"
   dependencies:
     undici-types: ~5.26.4
-  checksum: 9b5d3ee4269c0934908dd8a0aa2adbc59467d90dcbad2967db4e63c4012b7142f1c7ea07a72e32e58f3b80f4d43ba10e9d355d2246fc1a028b25935e298dd501
+  checksum: 7597767aa3e44b0f1bf62efa522dd17741135f283c11de6a20ead8bb7016fb4999cc30adcd8f2bb29ebb216906c92894346ccd187de170927dc1e212d2c07c81
   languageName: node
   linkType: hard
 
