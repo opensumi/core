@@ -9,7 +9,6 @@ import type { MarkerService } from '../markers-service';
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree-node.defined';
 import styles from './tree-node.module.less';
 
-
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
@@ -209,7 +208,7 @@ export class MarkerModelService {
   }
 
   activate() {
-    if (this.markerService.contextKey) {
+    if (this.markerService.contextKey.markersTreeVisibility) {
       this.markerService.contextKey.markersTreeVisibility.set(true);
 
       if (this.isDirtyTree) {
@@ -220,7 +219,7 @@ export class MarkerModelService {
   }
 
   deactivate() {
-    if (this.markerService.contextKey) {
+    if (this.markerService.contextKey.markersTreeVisibility) {
       this.markerService.contextKey.markersTreeVisibility.set(false);
     }
   }
