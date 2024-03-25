@@ -1,0 +1,118 @@
+.menu_bar_view {
+  display: flex;
+  background-color: var(--kt-menubar-background);
+  align-items: center;
+  width: 100%;
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    width: inherit;
+    align-items: center;
+    padding: 0 12px 0 8px;
+
+    .left {
+      display: flex;
+      align-items: center;
+      z-index: 2;
+
+      .enhance_menu {
+        padding: 8px;
+      }
+
+      .dividing {
+        margin-left: 5px;
+        width: 2px;
+        height: 12px;
+        background-color: var(--editorGroup-border);
+      }
+
+      .top_menus_bar {
+        margin-left: 6px;
+        display: flex;
+        align-items: center;
+        border-radius: 6px;
+
+        .ai_enhance_menu {
+          padding: 8px 6px;
+          height: 32px;
+        }
+
+        .caret_icon {
+          font-size: 14px;
+          margin-left: 4px;
+        }
+
+        .extra_top_icon {
+          width: 16px;
+          height: 16px;
+          background-image: url(./logo.svg);
+          background-repeat: no-repeat;
+          background-size: 100%;
+
+          &::before {
+            content: initial;
+          }
+
+          &:hover {
+            background-color: transparent;
+          }
+        }
+      }
+    }
+
+    .center {
+      text-align: center;
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 1;
+
+      .run {
+        .btn {
+          border-radius: 6px;
+          padding: 0 13px 0 11px;
+          border: 0;
+        }
+        span {
+          color: #58ce5f;
+          font-size: 12px;
+        }
+      }
+    }
+
+    .right {
+      display: flex;
+      align-items: center;
+      z-index: 2;
+
+      .input {
+        margin-right: 16px;
+        width: 240px;
+        flex-shrink: 0;
+
+        .input_wrapper {
+          height: 32px;
+          background-color: var(--ai-native-border-color-common);
+          border-radius: 8px;
+          border: 1px solid var(--ai-native-input-color);
+        }
+      }
+
+      .ai_switch {
+        height: 16px;
+        width: 16px;
+        min-width: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .avatar_icon_large {
+          width: 16px;
+          height: 16px;
+          font-size: 16px !important;
+        }
+      }
+    }
+  }
+}

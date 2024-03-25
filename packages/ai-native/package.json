@@ -23,6 +23,7 @@
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-debug": "workspace:*",
+    "@opensumi/ide-design": "workspace:*",
     "@opensumi/ide-editor": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-file-tree-next": "workspace:*",
@@ -34,6 +35,7 @@
     "@opensumi/ide-terminal-next": "workspace:*",
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
+    "dom-align": "^1.7.0",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0"
   },

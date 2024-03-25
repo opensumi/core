@@ -11,11 +11,12 @@ import { EditorCollectionService, IDecorationApplyOptions } from '@opensumi/ide-
 import { ICodeEditor, IEditorDocumentModelService, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import * as monaco from '@opensumi/ide-monaco';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { IThemeService, editorForeground, transparent } from '@opensumi/ide-theme';
 import { IHistoryNavigationWidget } from '@opensumi/monaco-editor-core/esm/vs/base/browser/history';
 import { HistoryNavigator } from '@opensumi/monaco-editor-core/esm/vs/base/common/history';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   CONTEXT_IN_DEBUG_MODE_KEY,
@@ -348,7 +349,8 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
       return;
     }
 
-    this._updateDisposable = monaco.languages.registerCompletionItemProvider(model.getModel()?.getLanguageId()!, {
+    this._updateDisposable = monacoApi.languages.registerCompletionItemProvider(model.getModel()?.getLanguageId()!, {
+      _debugDisplayName: 'DebugConsoleCompletionProvider',
       triggerCharacters: ['.'],
       provideCompletionItems: async (model, position, ctx) => {
         //  仅在支持自动补全查询的调试器中启用补全逻辑

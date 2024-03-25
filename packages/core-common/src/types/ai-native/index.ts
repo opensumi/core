@@ -28,10 +28,30 @@ export interface IAINativeCapabilities {
    * Use ai to intelligently resolve conflicts
    */
   supportsConflictResolve?: boolean;
+  /**
+   * Use ai to provide rename suggestions
+   */
+  supportsRenameSuggestions?: boolean;
+  /**
+   * Use ai terminal detection capabilities
+   */
+  supportsTerminalDetection?: boolean;
+  /**
+   * Use ai terminal command suggets capabilities
+   */
+  supportsTerminalCommandSuggest?: boolean;
+}
+
+export interface IAINativeLayout {
+  // Use Merge right panel with left panel
+  useMergeRightWithLeftPanel?: boolean;
+  // Use ai manubar view
+  useMenubarView?: boolean;
 }
 
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
+  layout?: IAINativeLayout;
 }
 
 export interface IAICompletionResultModel {
@@ -63,6 +83,11 @@ export interface IAICompletionOption {
   language?: string;
   fileUrl?: string;
   sessionId?: string;
+}
+
+export interface IAIRenameSuggestionOption {
+  prompt: string;
+  language?: string;
 }
 
 export interface IAIBackService<
@@ -122,6 +147,8 @@ export type ChatResponse = ReplyResponse | ErrorResponse | CancelResponse;
 export const InlineChatFeatureRegistryToken = Symbol('InlineChatFeatureRegistryToken');
 export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
 export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken');
+export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
+export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 

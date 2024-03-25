@@ -1,6 +1,10 @@
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
+
+import { ITerminalGroupViewService } from '../../common/controller';
 import { IWidget, IWidgetGroup } from '../../common/resize';
 
 import ResizeDelegate from './resize.delegate';
@@ -23,6 +27,7 @@ export default observer((props: IResizeViewProps) => {
   const { group, shadow } = props;
   const [event, setEvent] = React.useState(false);
   const [wholeWidth, setWholeWidth] = React.useState(Infinity);
+  const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const whole = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -30,6 +35,10 @@ export default observer((props: IResizeViewProps) => {
       setWholeWidth(whole.current.clientWidth);
     }
   });
+
+  const handleRemoveWidget = React.useCallback((widgetId: string) => {
+    view.removeWidget(widgetId);
+  }, []);
 
   return (
     <div className={styles.resizeWrapper} ref={whole}>
@@ -77,6 +86,14 @@ export default observer((props: IResizeViewProps) => {
               className={styles.resizeItem}
             >
               {props.draw(widget)}
+              {group.widgets.length > 1 && (
+                <div
+                  className={cls(styles.closeBtn, getIcon('close'))}
+                  onClick={() => {
+                    handleRemoveWidget(widget.id);
+                  }}
+                />
+              )}
             </div>
           ))}
       </div>

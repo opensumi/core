@@ -17,7 +17,6 @@ export * from './json-schema';
 export * from './reporter';
 export * from './connection';
 export * from './comparers';
-export * from './range';
 export * from './problem-pattern';
 export * from './problem-matcher';
 export * from './task-definition';

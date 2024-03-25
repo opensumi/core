@@ -96,7 +96,6 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
         affectsConfiguration(configuration: string) {
           return true;
         },
-        sourceConfig: {},
       });
     }
 
@@ -111,7 +110,6 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
         affectsConfiguration(configuration: string) {
           return true;
         },
-        sourceConfig: {},
       });
     }
 
@@ -126,7 +124,6 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
         affectsConfiguration(configuration: string) {
           return true;
         },
-        sourceConfig: {},
       });
     }
 
@@ -143,7 +140,6 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
         affectsConfiguration(configuration: string) {
           return true;
         },
-        sourceConfig: {},
       });
     }
   }

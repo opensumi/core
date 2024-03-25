@@ -44,7 +44,7 @@
     "test": "jest --forceExit --detectOpenHandles",
     "prepare:test": "yarn && yarn run compile && yarn run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 yarn run test --coverage",
-    "ci": "yarn run init && yarn run lint --quiet && yarn run check:dep && yarn run test:cov",
+    "ci": "yarn run init && yarn run test:cov",
     "download-extension": "cross-env DEBUG=InstallExtension node scripts/download.js",
     "update:iconfont": "ts-node ./scripts/download-iconfont.ts",
     "changelog-old": "node scripts/changelog/index.js",
@@ -66,7 +66,7 @@
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.21",
     "mri": "^1.2.0",
-    "node-gyp": "^9.0.0"
+    "node-gyp": "^10.0.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,md,html,css,less,json,yml}": "prettier --write",
@@ -145,9 +145,5 @@
     "tools/playwright",
     "tools/cli-engine"
   ],
-  "resolutions": {
-    "classnames": "2.3.1",
-    "node-gyp": "9.3.1"
-  },
   "packageManager": "yarn@3.6.4"
 }

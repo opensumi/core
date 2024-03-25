@@ -17,7 +17,7 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { OutputLinkProvider } from './output-link.provider';
 import { outputPreferenceSchema } from './output-preference';
@@ -54,7 +54,7 @@ export class OutputContribution
   schema: PreferenceSchema = outputPreferenceSchema;
 
   onStart() {
-    this.addDispose(monaco.languages.registerLinkProvider(CommonLanguageId.Log, this.outputLinkProvider));
+    this.addDispose(monacoApi.languages.registerLinkProvider(CommonLanguageId.Log, this.outputLinkProvider));
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {

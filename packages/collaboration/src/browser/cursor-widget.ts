@@ -4,7 +4,7 @@ import { Awareness } from 'y-protocols/awareness';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IDisposable } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
-import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
   IContentWidget,
   IContentWidgetPosition,
@@ -15,8 +15,8 @@ import { ICursorWidgetRegistry, UserInfo, Y_REMOTE_SELECTION } from '../common';
 const createPositionFrom = (lineNumber: number, column: number): IContentWidgetPosition => ({
   position: { lineNumber, column },
   preference: [
-    monaco.editor.ContentWidgetPositionPreference.ABOVE,
-    monaco.editor.ContentWidgetPositionPreference.BELOW,
+    monacoBrowser.editor.ContentWidgetPositionPreference.ABOVE,
+    monacoBrowser.editor.ContentWidgetPositionPreference.BELOW,
   ],
 });
 

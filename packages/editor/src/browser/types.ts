@@ -12,7 +12,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IThemeColor } from '@opensumi/ide-core-common';
-import { editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { editor } from '@opensumi/ide-monaco';
 
 import {
   DragOverPosition,

@@ -1,13 +1,15 @@
 {
   "name": "@opensumi/ide-design",
-  "version": "2.18.0",
+  "version": "2.27.2",
   "files": [
     "lib",
     "src"
   ],
-  "private": true,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.Design.json"

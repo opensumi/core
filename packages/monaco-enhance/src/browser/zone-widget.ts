@@ -1,5 +1,6 @@
 import { Disposable, DomListener, Emitter, Event, IDisposable, IRange, uuid } from '@opensumi/ide-core-browser';
 import { IdGenerator } from '@opensumi/ide-core-common/lib/id-generator';
+import * as monaco from '@opensumi/ide-monaco';
 import { createCSSRule, removeCSSRulesContainingSelector } from '@opensumi/monaco-editor-core/esm/vs/base/browser/dom';
 import {
   IHorizontalSashLayoutProvider,
@@ -10,7 +11,6 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/base/browser/ui/sash/sash';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { TrackedRangeStickiness } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import type { ICodeEditor, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
