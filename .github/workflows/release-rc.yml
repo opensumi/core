@@ -21,7 +21,7 @@ jobs:
     steps:
       # 判断用户是否有写权限
       - name: 'Check if user has write access'
-        uses: 'lannonbr/repo-permission-check-action@2.0.2'
+        uses: 'opensumi/actions/permission-check@main'
         with:
           permission: 'write'
         env:
