@@ -16,7 +16,7 @@ export interface ICommentTextAreaProps extends React.TextareaHTMLAttributes<HTML
   maxRows?: number;
   initialHeight?: string;
   value: string;
-  dragFiles?: (files: FileList) => void;
+  dragFiles?: (files: FileList) => void | Promise<void>;
 }
 
 const defaultTrigger = '@';
@@ -46,7 +46,7 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
   React.useImperativeHandle(ref, () => inputRef.current!);
 
   const handleFileSelect = React.useCallback(
-    async (event: DragEvent) => {
+    async (event: React.DragEvent<HTMLTextAreaElement>) => {
       event.stopPropagation();
       event.preventDefault();
 
@@ -165,7 +165,9 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
               onDragOver={handleDragOver}
               onDrop={handleFileSelect}
               inputRef={inputRef}
-              ref={itemRef}
+              // in react 18, the type of ref is changed to LegacyRef<ClassComponent>
+              // but actually it is working pass a dom element ref
+              ref={itemRef as any}
               value={value}
               placeholder={placeholder}
               onChange={onChange}

@@ -1,8 +1,8 @@
-import clx from 'classnames';
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 
 import { ITerminalGroupViewService } from '../../common/controller';
 import { IWidget, IWidgetGroup } from '../../common/resize';
@@ -88,7 +88,7 @@ export default observer((props: IResizeViewProps) => {
               {props.draw(widget)}
               {group.widgets.length > 1 && (
                 <div
-                  className={clx(styles.closeBtn, getIcon('close'))}
+                  className={cls(styles.closeBtn, getIcon('close'))}
                   onClick={() => {
                     handleRemoveWidget(widget.id);
                   }}
