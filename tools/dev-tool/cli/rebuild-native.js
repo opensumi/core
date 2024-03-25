@@ -22,6 +22,7 @@ module.exports.rebuild = (argv) => {
 
   if (target === 'electron') {
     version = argv.electronVersion || require('electron/package.json').version;
+    const distUrl = argv.distUrl || 'https://electronjs.org/headers';
     console.log('rebuilding native for electron version ' + version);
     commands = [
       os.platform() === 'win32' ? 'set HOME=~/.electron-gyp' : 'HOME=~/.electron-gyp',
@@ -30,7 +31,7 @@ module.exports.rebuild = (argv) => {
       '--openssl_fips=X',
       `--target=${version}`,
       `--arch=${arch}`,
-      '--dist-url=https://electronjs.org/headers',
+      `--dist-url=${distUrl}`,
     ];
   } else if (target === 'node') {
     console.log('rebuilding native for node version ' + process.version);
@@ -69,18 +70,18 @@ module.exports.rebuild = (argv) => {
     copySync(join(modulePath, 'build'), cache, { dereference: true, recursive: true });
   }
 
-  function getBuildCacheDir(modulePath, type, version, arch) {
-    const info = require(join(modulePath, './package.json'));
-    return join(
-      require('os').homedir(),
-      '.sumi-dev',
-      'opensumi_build_cache',
-      `${type}-${version}-${arch}`,
-      info.name + '-' + info.version,
-    );
-  }
-
   nativeModules.forEach((path) => {
     rebuildModule(path, target, version, arch);
   });
 };
+
+function getBuildCacheDir(modulePath, type, version, arch) {
+  const info = require(join(modulePath, './package.json'));
+  return join(
+    require('os').homedir(),
+    '.sumi-dev',
+    'opensumi_build_cache',
+    `${type}-${version}-${arch}`,
+    info.name + '-' + info.version,
+  );
+}
