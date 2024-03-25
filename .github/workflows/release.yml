@@ -24,7 +24,7 @@ jobs:
     steps:
       # 判断用户是否有管理员权限
       - name: 'Check if user has admin access'
-        uses: 'lannonbr/repo-permission-check-action@2.0.2'
+        uses: 'opensumi/actions/permission-check@main'
         with:
           permission: 'admin'
         env:
@@ -47,10 +47,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - uses: mukunku/tag-exists-action@v1.6.0
         id: checkTag
+        with:
+          tag: 'v${{github.event.inputs.version}}'
         env:
-          TAG: v${{github.event.inputs.version}}
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-
       - uses: opensumi/actions/bot-token@main
         id: bot-token
         with:
