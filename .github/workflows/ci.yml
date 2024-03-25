@@ -37,7 +37,7 @@ jobs:
         id: yarn_cache_dir_path
         run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: yarn_cache
         with:
           path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
@@ -55,7 +55,7 @@ jobs:
 
       - if: ${{ matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CORE_CODECOV_TOKEN }}
           flags: ${{ matrix.ci-project }}
