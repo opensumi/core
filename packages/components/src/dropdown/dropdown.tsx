@@ -103,7 +103,7 @@ export default class Dropdown extends React.Component<PropsWithChildren<DropDown
             expandIcon,
           });
 
-    return fixedModeOverlay;
+    return fixedModeOverlay as React.ReactElement<any>;
   };
 
   renderDropDown = () => {

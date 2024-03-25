@@ -58,7 +58,6 @@ export const DialogContent: React.FC<IDialogProps> = ({
   onCancel,
   okText,
   cancelText,
-  ...restProps
 }) => {
   const { getIcon: getContextIcon } = React.useContext(IconContext);
 

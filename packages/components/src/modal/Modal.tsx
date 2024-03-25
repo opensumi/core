@@ -44,6 +44,7 @@ export interface ModalProps {
   onOk?: (e: React.MouseEvent<HTMLElement>) => void;
   /** 点击模态框右上角叉、取消按钮、Props.maskClosable 值为 true 时的遮罩层或键盘按下 Esc 时的回调 */
   onCancel?: (e: React.MouseEvent<HTMLElement>) => void;
+  /** 关闭后的回调 */
   afterClose?: () => void;
   /** 垂直居中 */
   centered?: boolean;
@@ -61,23 +62,42 @@ export interface ModalProps {
   maskClosable?: boolean;
   /** 强制渲染 Modal */
   forceRender?: boolean;
+  /** 确认按钮的属性 */
   okButtonProps?: ButtonProps<string>;
+  /** 取消按钮的属性 */
   cancelButtonProps?: ButtonProps<string>;
+  /** 关闭时是否销毁 Modal 内的子元素 */
   destroyOnClose?: boolean;
+  /** 样式 */
   style?: React.CSSProperties;
+  /** 包裹元素的类名 */
   wrapClassName?: string;
+  /** 遮罩层的过渡动画名称 */
   maskTransitionName?: string;
+  /** Modal 的过渡动画名称 */
   transitionName?: string;
+  /** 样式名 */
   className?: string;
+  /** 渲染 Modal 的容器 */
   getContainer?: string | HTMLElement | getContainerFunc | false | null;
+  /** 层级 */
   zIndex?: number;
+  /** 内容区域的样式 */
   bodyStyle?: React.CSSProperties;
+  /** 遮罩层的样式 */
   maskStyle?: React.CSSProperties;
+  /** 是否显示遮罩层 */
   mask?: boolean;
+  /** 是否支持键盘操作 */
   keyboard?: boolean;
+  /** 包裹元素的属性 */
   wrapProps?: any;
+  /** 类名前缀 */
   prefixCls?: string;
+  /** 关闭按钮的自定义图标 */
   closeIcon?: React.ReactNode;
+  /** 是否开启动画过渡效果 */
+  animation?: boolean;
 }
 
 type getContainerFunc = () => HTMLElement;
@@ -136,8 +156,6 @@ export default class Modal extends React.Component<PropsWithChildren<ModalProps>
 
   static defaultProps = {
     width: 520,
-    transitionName: 'zoom',
-    maskTransitionName: 'fade',
     confirmLoading: false,
     visible: false,
     okType: 'primary' as ButtonType,
@@ -211,6 +229,7 @@ export default class Modal extends React.Component<PropsWithChildren<ModalProps>
     return (
       <Dialog
         {...restProps}
+        animation={this.props.animation}
         getContainer={getContainer}
         prefixCls={prefixCls}
         wrapClassName={cls({ [`${prefixCls}-centered`]: !!centered }, wrapClassName)}

@@ -1,7 +1,5 @@
-import { action, makeObservable, observable } from 'mobx';
-
 import { Autowired, Injectable } from '@opensumi/di';
-import { Deferred, MessageType } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, MessageType } from '@opensumi/ide-core-common';
 
 import { AbstractMessageService, IDialogService, Icon } from '../common';
 
@@ -16,8 +14,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   @Autowired(DialogContextKey)
   private readonly contextkeyService: DialogContextKey;
 
-  @observable
-  protected visible = false;
+  protected _visible = false;
 
   protected message: string | React.ReactNode = '';
 
@@ -29,12 +26,16 @@ export class DialogService extends AbstractMessageService implements IDialogServ
 
   protected props: Record<string, any> = {};
 
-  constructor() {
-    super();
-    makeObservable(this);
+  private onDidDialogVisibleChangeEmitter = new Emitter<boolean>();
+
+  get onDidDialogVisibleChange() {
+    return this.onDidDialogVisibleChangeEmitter.event;
   }
 
-  @action
+  get visible() {
+    return this._visible;
+  }
+
   open<T = string>(
     message: string | React.ReactNode,
     type: MessageType,
@@ -46,7 +47,8 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
-    this.visible = true;
+    this._visible = true;
+    this.onDidDialogVisibleChangeEmitter.fire(this._visible);
     this.contextkeyService.dialogViewVisibleContext.set(true);
     this.closable = closable;
     this.props = props ?? {};
@@ -56,23 +58,18 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     return this.deferred.promise;
   }
 
-  @action
   hide<T = string>(value?: T): void {
-    this.visible = false;
+    this._visible = false;
+    this.onDidDialogVisibleChangeEmitter.fire(this._visible);
     this.contextkeyService.dialogViewVisibleContext.set(false);
     this.deferred.resolve(value);
   }
 
-  @action
   reset(): void {
     this.type = undefined;
     this.message = '';
     this.buttons = [];
     this.props = {};
-  }
-
-  isVisible(): boolean {
-    return this.visible;
   }
 
   getMessage(): string | React.ReactNode {

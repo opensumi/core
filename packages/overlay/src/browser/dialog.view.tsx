@@ -1,39 +1,51 @@
-import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 
 import { Button, Dialog as DialogView } from '@opensumi/ide-components';
-import { localize, strings, useInjectable } from '@opensumi/ide-core-browser';
+import { strings, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IDialogService } from '../common';
 
-export const Dialog = observer(() => {
+export const Dialog: FC = () => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const icon = dialogService.getIcon();
   const message = dialogService.getMessage();
   const buttons = dialogService.getButtons();
   const type = dialogService.getType();
+
+  const [visible, setVisible] = useState(dialogService.visible);
+
   // props will transfer to Overlay component
   const customProps = dialogService.getProps();
 
-  function afterClose() {
+  const afterClose = useCallback(() => {
     dialogService.reset();
-  }
+  }, [dialogService]);
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     dialogService.hide();
-  }
+  }, [dialogService]);
 
-  function handlerClickButton(value: string) {
-    return () => {
+  const handlerClickButton = useCallback(
+    (value: string) => {
       dialogService.hide(value);
+    },
+    [dialogService],
+  );
+
+  useEffect(() => {
+    const dispose = dialogService.onDidDialogVisibleChange((visible) => {
+      setVisible(visible);
+    });
+    return () => {
+      dispose.dispose();
     };
-  }
+  }, []);
 
   return (
     <DialogView
-      visible={dialogService.isVisible()}
+      visible={visible}
       onClose={handleClose}
-      closable={dialogService.closable}
+      closable={dialogService.closable ?? true}
       afterClose={afterClose}
       message={message}
       type='confirm'
@@ -41,24 +53,20 @@ export const Dialog = observer(() => {
       icon={icon}
       keyboard={true}
       buttons={
-        buttons.length ? (
-          buttons.map((button, index) => (
-            <Button
-              size='large'
-              onClick={handlerClickButton(button)}
-              key={button}
-              type={index === buttons.length - 1 ? 'primary' : 'secondary'}
-            >
-              {strings.mnemonicButtonLabel(button, true)}
-            </Button>
-          ))
-        ) : (
-          <Button size='large' onClick={handleClose} type='primary'>
-            {localize('dialog.confirm')}
-          </Button>
-        )
+        buttons.length
+          ? buttons.map((button, index) => (
+              <Button
+                size='large'
+                onClick={() => handlerClickButton(button)}
+                key={button}
+                type={index === buttons.length - 1 ? 'primary' : 'secondary'}
+              >
+                {strings.mnemonicButtonLabel(button, true)}
+              </Button>
+            ))
+          : []
       }
       {...customProps}
     />
   );
-});
+};
