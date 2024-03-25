@@ -1,4 +1,4 @@
-import { IAICompletionResultModel } from '@opensumi/ide-core-common/src/types/ai-native';
+import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import * as monaco from '@opensumi/ide-monaco';
 
 /**

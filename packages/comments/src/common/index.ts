@@ -13,7 +13,7 @@ import {
 import { IEditor } from '@opensumi/ide-editor';
 
 import type { ITree, ITreeNode } from '@opensumi/ide-components';
-import type { IEditorDocumentModel } from '@opensumi/ide-editor/src/common/editor';
+import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/common/editor';
 
 export type Writable<T> = { -readonly [P in keyof T]: T[P] };
 
