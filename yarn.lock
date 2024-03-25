@@ -2300,7 +2300,7 @@ __metadata:
     "@rjsf/utils": 5.5.2
     "@rjsf/validator-ajv6": 5.4.0
     "@types/btoa": ^1.2.3
-    anser: ^1.4.9
+    anser: ^2.1.1
     btoa: ^1.2.1
   languageName: unknown
   linkType: soft
@@ -5066,10 +5066,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"anser@npm:^1.4.9":
-  version: 1.4.10
-  resolution: "anser@npm:1.4.10"
-  checksum: 3823c64f8930d3d97f36e56cdf646fa6351f1227e25eee70c3a17697447cae4238fc3a309bb3bc2003cf930687fa72aed71426dbcf3c0a15565e120a7fee5507
+"anser@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "anser@npm:2.1.1"
+  checksum: 29b99ae7c54e7107643a130a07228f853b4c28d7742db40dadca2f405263a1d30202e1c1a576644f2162e795e556591dc05fa4a6d77c49a028dfa05f73d76dae
   languageName: node
   linkType: hard
 
