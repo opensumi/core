@@ -808,10 +808,7 @@ export class FileTreeModelService {
         this.fileTreeService.openFile(item.uri);
         // 如果存在最大化面板，则将最大化的面板缩小
         if (this.mainlayoutService.bottomExpanded) {
-          this.commandService.executeCommand(RETRACT_BOTTOM_PANEL.id).then(
-            () => {},
-            () => {},
-          );
+          this.commandService.executeCommand(RETRACT_BOTTOM_PANEL.id);
         }
       }
     }
