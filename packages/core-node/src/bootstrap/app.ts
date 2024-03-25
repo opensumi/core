@@ -55,10 +55,8 @@ export class ServerApp implements IServerApp {
     // 使用外部传入的中间件
     this.use = opts.use || ((middleware) => null);
     this.config = {
+      ...opts,
       injector: this.injector,
-      logDir: opts.logDir,
-      logLevel: opts.logLevel,
-      LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign(
         {
           endpoint: DEFAULT_ALIPAY_CLOUD_REGISTRY.ENDPOINT,
@@ -75,17 +73,7 @@ export class ServerApp implements IServerApp {
         },
         opts.marketplace,
       ),
-      processCloseExitThreshold: opts.processCloseExitThreshold,
-      terminalPtyCloseThreshold: opts.terminalPtyCloseThreshold,
-      staticAllowOrigin: opts.staticAllowOrigin,
-      staticAllowPath: opts.staticAllowPath,
-      extLogServiceClassPath: opts.extLogServiceClassPath,
-      maxExtProcessCount: opts.maxExtProcessCount,
-      onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
       extHost: process.env.EXTENSION_HOST_ENTRY || opts.extHost,
-      blockPatterns: opts.blockPatterns,
-      extHostIPCSockPath: opts.extHostIPCSockPath,
-      extHostForkOptions: opts.extHostForkOptions,
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
     };
     this.bindProcessHandler();
