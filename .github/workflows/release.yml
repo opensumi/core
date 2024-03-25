@@ -24,7 +24,7 @@ jobs:
     steps:
       # 判断用户是否有管理员权限
       - name: 'Check if user has admin access'
-        uses: 'lannonbr/repo-permission-check-action@2.0.0'
+        uses: 'lannonbr/repo-permission-check-action@2.0.2'
         with:
           permission: 'admin'
         env:
