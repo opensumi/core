@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
-import { IContextKeyService, IRange } from '@opensumi/ide-core-browser';
+import { IContextKeyService, IRange, PreferenceService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
 import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
@@ -585,6 +585,9 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   @Autowired(IConfigurationService)
   protected readonly configurationService: IConfigurationService;
 
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
+
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
 
@@ -678,8 +681,9 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     } else {
       this.restoreState();
     }
-
-    if (options.revealFirstDiff) {
+    const enableHideUnchanged = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
+    if (options.revealFirstDiff && !enableHideUnchanged) {
+      // 仅在非折叠模式下自动滚动到第一个 Diff
       const diffs = this.monacoDiffEditor.getLineChanges();
       if (diffs && diffs.length > 0) {
         this.showFirstDiff();
