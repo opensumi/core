@@ -3,15 +3,7 @@ import debounce from 'lodash/debounce';
 import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import { Schemes, CommandService, COMMON_COMMANDS, RecentStorage, PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  strings,
-  parseGlob,
-  ParsedPattern,
-  Emitter,
-  IDisposable,
-  URI,
-  arrays,
-} from '@opensumi/ide-core-browser';
+import { strings, parseGlob, ParsedPattern, Emitter, IDisposable, URI, arrays } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
 import {
@@ -409,24 +401,20 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
       const oldResults = this.searchResults.get(uriString);
 
-      let didChanged = false;
       if (!oldResults) {
         // 不在结果树中，新增结果
         if (resultData.result.length > 0) {
           this.resultTotal.fileNum++;
           this.resultTotal.resultNum = this.resultTotal.resultNum + resultData.result.length;
-          didChanged = true;
         }
       } else if (resultData.result.length < 1) {
         // 搜索结果被删除完了，清理结果树
         this.searchResults.delete(uriString);
         this.resultTotal.fileNum = this.resultTotal.fileNum - 1;
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults.length;
-        didChanged = true;
       } else if (resultData.result.length !== oldResults?.length) {
         // 搜索结果变多了，更新数据
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults!.length + resultData.result.length;
-        didChanged = true;
       }
 
       if (resultData.result.length > 0) {
@@ -434,7 +422,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
         this.searchResults.set(uriString, resultData.result);
       }
 
-      didChanged && this.onDidChangeEmitter.fire();
+      this.onDidChangeEmitter.fire();
       docModel.dispose();
     });
   }
