@@ -101,6 +101,7 @@ const Empty: FC = () => {
  */
 export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => {
   const markerModelService = useInjectable<MarkerModelService>(MarkerModelService);
+  const markerService = useInjectable<MarkerService>(IMarkerService);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const handleOuterClick = useCallback(() => {
@@ -113,6 +114,10 @@ export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => {
     const handleBlur = () => {
       markerModelService.handleTreeBlur();
     };
+    if (wrapperRef.current) {
+      markerService.initContextKey(wrapperRef.current);
+    }
+
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
     return () => {
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);

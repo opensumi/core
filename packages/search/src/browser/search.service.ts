@@ -3,15 +3,7 @@ import debounce from 'lodash/debounce';
 import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import { Schemes, CommandService, COMMON_COMMANDS, RecentStorage, PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  strings,
-  parseGlob,
-  ParsedPattern,
-  Emitter,
-  IDisposable,
-  URI,
-  arrays,
-} from '@opensumi/ide-core-browser';
+import { strings, parseGlob, ParsedPattern, Emitter, IDisposable, URI, arrays } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
 import {
@@ -425,10 +417,12 @@ export class ContentSearchClientService extends Disposable implements IContentSe
         // 搜索结果变多了，更新数据
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults!.length + resultData.result.length;
       }
+
       if (resultData.result.length > 0) {
         // 更新结果树
         this.searchResults.set(uriString, resultData.result);
       }
+
       this.onDidChangeEmitter.fire();
       docModel.dispose();
     });

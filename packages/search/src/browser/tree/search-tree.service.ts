@@ -3,12 +3,13 @@ import { LabelService } from '@opensumi/ide-core-browser';
 import {
   URI,
   Schemes,
+  Deferred,
+  Disposable,
+  DisposableStore,
   Emitter,
   IDisposable,
-  DisposableStore,
   IRange,
   memoize,
-  Disposable,
 } from '@opensumi/ide-core-common';
 import {
   IEditorDocumentModelService,
@@ -208,10 +209,12 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
   private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(SearchContextKey)
-  private readonly searchContextKey: SearchContextKey;
+  public readonly searchContextKey: SearchContextKey;
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
+
+  viewReady = new Deferred<void>();
 
   constructor() {
     super();
@@ -235,6 +238,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
 
   initContextKey(dom: HTMLDivElement) {
     this.contextKey.initScopedContext(dom);
+    this.viewReady.resolve();
   }
 
   removeHighlightRange() {

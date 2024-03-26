@@ -4,6 +4,7 @@ import { DisposableCollection, Deferred, Emitter, Event, URI, runWhenIdle } from
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { IMarkerService } from '../../common/types';
+import type { MarkerService } from '../markers-service';
 
 import { MarkerGroupNode, MarkerNode, MarkerRoot } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -23,7 +24,7 @@ export class MarkerTreeModel extends TreeModel {
 @Injectable()
 export class MarkerModelService {
   @Autowired(IMarkerService)
-  private readonly markerService: IMarkerService;
+  private readonly markerService: MarkerService;
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
@@ -192,11 +193,35 @@ export class MarkerModelService {
     }
   };
 
+  isDirtyTree = false;
+
   async refresh() {
     await this.whenReady;
-    runWhenIdle(() => {
-      this.treeModel.root.refresh();
-    });
+
+    if (this.markerService.contextKey && this.markerService.contextKey.markersTreeVisibility.get()) {
+      runWhenIdle(() => {
+        this.treeModel.root.refresh();
+      });
+    } else {
+      this.isDirtyTree = true;
+    }
+  }
+
+  activate() {
+    if (this.markerService.contextKey.markersTreeVisibility) {
+      this.markerService.contextKey.markersTreeVisibility.set(true);
+
+      if (this.isDirtyTree) {
+        this.refresh();
+        this.isDirtyTree = false;
+      }
+    }
+  }
+
+  deactivate() {
+    if (this.markerService.contextKey.markersTreeVisibility) {
+      this.markerService.contextKey.markersTreeVisibility.set(false);
+    }
   }
 
   dispose() {
