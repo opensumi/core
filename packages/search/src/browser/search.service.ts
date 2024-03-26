@@ -412,6 +412,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
         this.searchResults.delete(uriString);
         this.resultTotal.fileNum = this.resultTotal.fileNum - 1;
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults.length;
+        return;
       } else if (resultData.result.length !== oldResults?.length) {
         // 搜索结果变多了，更新数据
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults!.length + resultData.result.length;
