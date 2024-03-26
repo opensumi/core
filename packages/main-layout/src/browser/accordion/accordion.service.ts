@@ -575,7 +575,7 @@ export class AccordionService extends WithEventBus {
 
   @action
   public updateViewState(viewId: string, state: SectionState) {
-    this.state[viewId] = observable.object(state);
+    this.state[viewId] = state;
   }
 
   @action
