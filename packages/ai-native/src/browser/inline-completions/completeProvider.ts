@@ -1,6 +1,7 @@
 import { debounce } from 'lodash';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
+import { IAiInlineCompletionService } from '@opensumi/ide-core-browser';
 import { AI_INLINE_COMPLETION_REPORTET } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { CompletionResultModel } from '@opensumi/ide-core-common/lib/ai-native';
@@ -190,7 +191,7 @@ class RequestImp {
         str = str.slice(0, -1);
       }
 
-      let insertText = str;
+      const insertText = str;
       const model = this.model;
 
       const textAfterCursor = model.getValueInRange({
@@ -203,7 +204,7 @@ class RequestImp {
       // 临时修复方案，用于解决补全后面多了几个括号的问题
       const removeChars = (a: string, b: string) => {
         let result = '';
-        for (let char of b) {
+        for (const char of b) {
           if (char === ' ' || !a.includes(char)) {
             result += char;
           }
@@ -275,7 +276,7 @@ interface ProviderType extends monaco.languages.InlineCompletionsProvider {
 
 @Injectable({ multiple: false })
 export class AiInlineCompletionsProvider extends WithEventBus implements ProviderType {
-  @Autowired(AiCompletionsService)
+  @Autowired(IAiInlineCompletionService)
   private aiCompletionsService: AiCompletionsService;
 
   @Autowired(INJECTOR_TOKEN)

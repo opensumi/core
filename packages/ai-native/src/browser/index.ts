@@ -1,5 +1,5 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
-import { AiNativeConfigService, BrowserModule, IAiInlineChatService, URI } from '@opensumi/ide-core-browser';
+import { AiNativeConfigService, BrowserModule, IAiInlineChatService, URI, IAiInlineCompletionService } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { AiBackSerivcePath, AiBackSerivceToken } from '@opensumi/ide-core-common/lib/ai-native';
@@ -17,6 +17,7 @@ import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
+import { AiCompletionsService } from './inline-completions/service/ai-completions.service';
 import { MergeConflictContribution } from './merge-conflict';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
@@ -65,6 +66,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IChatAgentViewService,
       useClass: ChatAgentViewService,
+    },
+    {
+      token: IAiInlineCompletionService,
+      useClass: AiCompletionsService,
     },
   ];
 

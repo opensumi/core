@@ -117,7 +117,7 @@ export class MonacoCommandService implements IMonacoCommandService {
       }
     }
     if (this.delegate) {
-      const res = this.delegate.executeCommand(
+      const res = await this.delegate.executeCommand(
         MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId,
         ...args,
       );
@@ -409,7 +409,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    */
   protected newActionHandler(id: string): MonacoEditorCommandHandler {
     return {
-      execute: (editor) => {
+      execute: async (editor) => {
         const action = editor.getAction(id);
         if (action && action.isSupported()) {
           return this.runAction(id, editor);
@@ -423,7 +423,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
    * @param id 要执行的 action
    * @param editor 执行 action 的 editor，默认为当前 editor
    */
-  protected runAction(id: string, editor: ICodeEditor): Promise<void> {
+  protected async runAction(id: string, editor: ICodeEditor): Promise<void> {
     if (editor) {
       const action = editor.getAction(id);
       if (action) {

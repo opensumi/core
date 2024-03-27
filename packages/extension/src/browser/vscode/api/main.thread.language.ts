@@ -2,7 +2,7 @@ import { CancellationToken } from 'vscode';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
+import { IReporterService, PreferenceService, IAiInlineCompletionService } from '@opensumi/ide-core-browser';
 import {
   DisposableCollection,
   Emitter,
@@ -116,6 +116,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(ITextmateTokenizer)
   private textmateService: ITextmateTokenizerService;
+
+  @Autowired(IAiInlineCompletionService)
+  private aiCompletionService: IAiInlineCompletionService;
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
@@ -1596,6 +1599,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
   $removeLanguageStatus(handle: number): void {
     this._status.get(handle)?.dispose();
+  }
+  $getNativeInlineCompletions() {
+    return this.aiCompletionService.getCompletionResult();
   }
   // #endregion LanguageStatus
 }
