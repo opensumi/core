@@ -56,7 +56,7 @@
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^7.1.2",
     "commitizen": "^4.2.4",
-    "commitlint": "^15.0.0",
+    "commitlint": "^19.2.1",
     "cz-conventional-changelog": "^2.1.0",
     "execa": "^5.0.0",
     "fs-extra": "^11.2.0",
