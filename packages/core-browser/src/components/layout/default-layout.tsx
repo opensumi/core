@@ -25,7 +25,7 @@ export function ToolbarActionBasedLayout() {
   const { layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer defaultSize={0} slot='top' />
+      <SlotRenderer id='top' defaultSize={0} slot='top' />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           slot='left'
@@ -48,7 +48,7 @@ export function ToolbarActionBasedLayout() {
           minSize={0}
         />
       </SplitPanel>
-      <SlotRenderer defaultSize={24} slot='statusBar' />
+      <SlotRenderer id='statusBar' defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
 }

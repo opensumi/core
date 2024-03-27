@@ -99,9 +99,10 @@ export const allSlot: { slot: string; dom: HTMLElement }[] = [];
 export const SlotDecorator: React.FC<{
   slot: string;
   color?: string;
+  id?: string;
   children: React.ReactChild;
   backgroundColor?: string;
-}> = ({ slot, ...props }) => {
+}> = ({ slot, id, ...props }) => {
   const ref = React.useRef<HTMLElement | null>();
   React.useEffect(() => {
     if (ref.current) {
@@ -109,7 +110,7 @@ export const SlotDecorator: React.FC<{
     }
   }, [ref]);
   return (
-    <div ref={(ele) => (ref.current = ele)} className='resize-wrapper'>
+    <div id={id} ref={(ele) => (ref.current = ele)} className='resize-wrapper'>
       {props.children}
     </div>
   );
@@ -177,11 +178,13 @@ export interface SlotProps {
   backgroundColor?: string;
   // Is tabbar slot renderer or not
   isTabbar?: boolean;
+  // Slot ID
+  id?: string;
   // Optional props
   [key: string]: any;
 }
 
-export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
+export function SlotRenderer({ slot, isTabbar, id, ...props }: SlotProps) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const appConfig = React.useContext(ConfigContext);
   const clientApp = useInjectable<IClientApp>(IClientApp);
@@ -214,7 +217,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
   return (
     <ErrorBoundary>
-      <SlotDecorator slot={slot}>
+      <SlotDecorator slot={slot} id={id}>
         <Renderer components={componentInfos} {...props} />
       </SlotDecorator>
     </ErrorBoundary>

@@ -30,11 +30,12 @@ const MenuAction: React.FC<{
   data: MenuNode;
   disabled?: boolean;
   hasSubmenu?: boolean;
+  hasChecked?: boolean;
   iconService?: IMenubarIconService;
-}> = ({ data, hasSubmenu, disabled, iconService }) => (
+}> = ({ data, hasSubmenu, disabled, iconService, hasChecked }) => (
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   <div className={cls(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
-    <div className={styles.icon}>{data.checked ? <Icon icon='check' /> : null}</div>
+    <div className={cls({ [styles.icon]: hasChecked })}>{data.checked ? <Icon icon='check' /> : null}</div>
     <div className={styles.label}>
       {data.label
         ? transformLabelWithCodicon(
@@ -98,7 +99,7 @@ export const MenuActionList: React.FC<{
   );
 
   const subMenuTitle = React.useCallback(
-    (menuNode: MenuNode) => {
+    (menuNode: MenuNode, hasChecked?: boolean) => {
       if (renderSubMenuTitle) {
         const subMenu = renderSubMenuTitle(menuNode, { hasSubmenu: true, disabled: false });
         if (subMenu) {
@@ -106,13 +107,13 @@ export const MenuActionList: React.FC<{
         }
       }
 
-      return <MenuAction hasSubmenu data={menuNode} iconService={iconService} />;
+      return <MenuAction hasChecked={hasChecked} hasSubmenu data={menuNode} iconService={iconService} />;
     },
     [renderSubMenuTitle],
   );
 
   const menuItem = React.useCallback(
-    (menuNode: MenuNode) => {
+    (menuNode: MenuNode, hasChecked?: boolean) => {
       if (renderMenuItem) {
         const menuItem = renderMenuItem(menuNode, { hasSubmenu: false, disabled: menuNode.disabled });
         if (menuItem) {
@@ -120,55 +121,56 @@ export const MenuActionList: React.FC<{
         }
       }
 
-      return <MenuAction data={menuNode} disabled={menuNode.disabled} iconService={iconService} />;
+      return (
+        <MenuAction hasChecked={hasChecked} data={menuNode} disabled={menuNode.disabled} iconService={iconService} />
+      );
     },
     [renderMenuItem],
   );
+  const recursiveRender = React.useCallback((dataSource: MenuNode[]) => {
+    const hasChecked = dataSource.some((item) => item.checked);
 
-  const recursiveRender = React.useCallback(
-    (dataSource: MenuNode[], key?: string) =>
-      dataSource.map((menuNode, index) => {
-        if (menuNode.id === SeparatorMenuItemNode.ID) {
+    return dataSource.map((menuNode, index) => {
+      if (menuNode.id === SeparatorMenuItemNode.ID) {
+        return null;
+      }
+      const hasSeparator = dataSource[index + 1] && dataSource[index + 1].id === SeparatorMenuItemNode.ID;
+      if (menuNode.id === SubmenuItemNode.ID) {
+        // 子菜单项为空时不渲染
+        if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
           return null;
-        }
-        const hasSeparator = dataSource[index + 1] && dataSource[index + 1].id === SeparatorMenuItemNode.ID;
-        if (menuNode.id === SubmenuItemNode.ID) {
-          // 子菜单项为空时不渲染
-          if (!Array.isArray(menuNode.children) || !menuNode.children.length) {
-            return null;
-          }
-
-          return (
-            <React.Fragment key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}>
-              <Menu.SubMenu
-                key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}
-                className={styles.submenuItem}
-                popupClassName='kt-menu'
-                title={subMenuTitle(menuNode)}
-              >
-                {recursiveRender(menuNode.children, menuNode.label)}
-              </Menu.SubMenu>
-              {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
-            </React.Fragment>
-          );
         }
 
         return (
-          <React.Fragment key={`${menuNode.id}-${index}`}>
-            <Menu.Item
-              id={`${menuNode.id}-${index}`}
-              key={`${menuNode.id}-${index}`}
-              className={styles.menuItem}
-              disabled={menuNode.disabled}
+          <React.Fragment key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}>
+            <Menu.SubMenu
+              key={`${menuNode.id}-${(menuNode as SubmenuItemNode).submenuId}-${index}`}
+              className={styles.submenuItem}
+              popupClassName='kt-menu'
+              title={subMenuTitle(menuNode, hasChecked)}
             >
-              {menuItem(menuNode)}
-            </Menu.Item>
+              {recursiveRender(menuNode.children)}
+            </Menu.SubMenu>
             {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
           </React.Fragment>
         );
-      }),
-    [],
-  );
+      }
+
+      return (
+        <React.Fragment key={`${menuNode.id}-${index}`}>
+          <Menu.Item
+            id={`${menuNode.id}-${index}`}
+            key={`${menuNode.id}-${index}`}
+            className={styles.menuItem}
+            disabled={menuNode.disabled}
+          >
+            {menuItem(menuNode, hasChecked)}
+          </Menu.Item>
+          {hasSeparator ? <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} /> : null}
+        </React.Fragment>
+      );
+    });
+  }, []);
 
   return (
     <Menu
