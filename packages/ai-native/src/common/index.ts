@@ -88,13 +88,14 @@ export interface IChatAgentService {
   getAgents(): Array<IChatAgent>;
   getAgent(id: string): IChatAgent | undefined;
   hasAgent(id: string): boolean;
-  updateAgent(id: string, updateMetadata: IChatAgentMetadata): void;
+  updateAgent(id: string, updateMetadata: IChatAgentMetadata): Promise<void>;
   populateChatInput(id: string, message: IChatMessageStructure): void;
   getCommands(): Array<IChatAgentCommand & { agentId: string }>;
   parseMessage(value: string, currentAgentId?: string): { agentId: string; command: string; message: string };
   getFollowups(id: string, sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getSampleQuestions(id: string, token: CancellationToken): Promise<IChatFollowup[]>;
   getAllSampleQuestions(): Promise<IChatReplyFollowup[]>;
+  getDefaultAgentId(): undefined | string;
   sendMessage(chunk: IChatContent): void;
 }
 
@@ -108,6 +109,7 @@ export interface IChatAgent extends IChatAgentData {
   provideFollowups?(sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
   provideSlashCommands(token: CancellationToken): Promise<IChatAgentCommand[]>;
   provideSampleQuestions?(token: CancellationToken): Promise<IChatReplyFollowup[]>;
+  provideChatWelcomeMessage(token: CancellationToken): Promise<undefined | IChatAgentWelcomeMessage>;
 }
 
 export interface IChatAgentData {
@@ -250,4 +252,9 @@ export interface ISampleQuestions {
   message: string;
   icon?: string;
   tooltip?: string;
+}
+
+export interface IChatAgentWelcomeMessage {
+  content: IChatWelcomeMessageContent;
+  sampleQuestions?: IChatReplyFollowup[];
 }

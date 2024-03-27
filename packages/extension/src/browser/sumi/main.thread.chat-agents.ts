@@ -1,6 +1,7 @@
 import { Injectable, Injector } from '@opensumi/di';
 import {
   IChatAgentService,
+  IChatAgentWelcomeMessage,
   IChatContent,
   IChatFollowup,
   IChatProgress,
@@ -21,9 +22,11 @@ import {
 interface AgentData {
   dispose: () => void;
   name: string;
+  isDefault?: boolean;
   hasSlashCommands?: boolean;
   hasFollowups?: boolean;
   hasSampleQuestions?: boolean;
+  hasChatWelcomMessage?: boolean;
 }
 
 @Injectable({ multiple: true })
@@ -83,6 +86,12 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
         }
         return this.#proxy.$provideSampleQuestions(handle, token);
       },
+      provideChatWelcomeMessage: async (token): Promise<undefined | IChatAgentWelcomeMessage> => {
+        if (!this.agents.get(handle)?.hasChatWelcomMessage) {
+          return undefined;
+        }
+        return this.#proxy.$provideChatWelcomeMessage(handle, token);
+      },
     });
     this.agents.set(handle, {
       name,
@@ -103,6 +112,8 @@ export class MainThreadChatAgents implements IMainThreadChatAgents {
     data.hasSlashCommands = metadataUpdate.hasSlashCommands;
     data.hasFollowups = metadataUpdate.hasFollowups;
     data.hasSampleQuestions = metadataUpdate.hasSampleQuestions;
+    data.hasChatWelcomMessage = metadataUpdate.hasChatWelcomMessage;
+    data.isDefault = metadataUpdate.isDefault;
     this.chatAgentService.updateAgent(data.name, metadataUpdate);
   }
 

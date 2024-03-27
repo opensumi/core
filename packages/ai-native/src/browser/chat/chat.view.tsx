@@ -10,7 +10,13 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
-import { IAIChatService, IChatAgentService, IChatMessageStructure, ISampleQuestions } from '../../common';
+import {
+  IAIChatService,
+  IChatAgentService,
+  IChatMessageStructure,
+  IChatReplyFollowup,
+  ISampleQuestions,
+} from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -51,6 +57,34 @@ const createMessage = (message: MessageData) => ({
 
 const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
+const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
+  let { title, message, tooltip, icon } = question;
+  if (!title) {
+    return {
+      icon: '',
+      title: message,
+      message,
+      tooltip,
+    };
+  }
+
+  const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
+  if (iconMatched) {
+    const [matchedStr, owner, name, modifier] = iconMatched;
+    const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
+    icon = getExternalIcon(name, iconOwner);
+    if (modifier) {
+      icon += ` ${modifier.slice(1)}`;
+    }
+    title = title.slice(matchedStr.length);
+  }
+  return {
+    icon,
+    title,
+    message,
+    tooltip,
+  };
+};
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 const ME_NAME = '';
@@ -63,50 +97,45 @@ const InitMsgComponent = () => {
   const [sampleQuestions, setSampleQuestions] = React.useState<ISampleQuestions[]>([]);
 
   const welcomeSampleQuestions = React.useMemo(() => {
+    if (!chatFeatureRegistry.chatWelcomeMessageModel) {
+      return [];
+    }
+
     const { sampleQuestions } = chatFeatureRegistry.chatWelcomeMessageModel;
-    return sampleQuestions || [];
-  }, [chatFeatureRegistry.chatWelcomeMessageModel.sampleQuestions]);
+    return (sampleQuestions || []).map(extractIcon);
+  }, [chatFeatureRegistry.chatWelcomeMessageModel?.sampleQuestions]);
 
   const welcomeMessage = React.useMemo(() => {
+    if (!chatFeatureRegistry.chatWelcomeMessageModel) {
+      return '';
+    }
+
     const { content } = chatFeatureRegistry.chatWelcomeMessageModel;
     return isMarkdownString(content) ? <ChatMarkdown markdown={content} /> : content;
-  }, [chatFeatureRegistry.chatWelcomeMessageModel.content]);
+  }, [chatFeatureRegistry.chatWelcomeMessageModel?.content]);
 
   React.useEffect(() => {
     const disposer = chatAgentService.onDidChangeAgents(async () => {
       const sampleQuestions = await chatAgentService.getAllSampleQuestions();
-      const lists = sampleQuestions.map((item) => {
-        let { title, message, tooltip } = item;
-        if (!title) {
-          return {
-            icon: '',
-            title: message,
-            message,
-            tooltip,
-          };
-        }
-        let icon = '';
-        const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
-        if (iconMatched) {
-          const [matchedStr, owner, name, modifier] = iconMatched;
-          const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
-          icon = getExternalIcon(name, iconOwner);
-          if (modifier) {
-            icon += ` ${modifier.slice(1)}`;
-          }
-          title = title.slice(matchedStr.length);
-        }
-        return {
-          icon,
-          title,
-          message,
-          tooltip,
-        };
-      });
+      const lists = sampleQuestions.map(extractIcon);
       setSampleQuestions(lists);
     });
     return () => disposer.dispose();
   }, []);
+
+  if (!welcomeMessage) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className={styles.chat_head}>
@@ -168,6 +197,7 @@ export const AIChatView = observer(() => {
   const [loading2, setLoading2] = React.useState(false);
 
   const [agentId, setAgentId] = React.useState('');
+  const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
 
@@ -264,6 +294,15 @@ export const AIChatView = observer(() => {
       requestAnimationFrame(() => {
         scrollToBottom();
       });
+    });
+    return () => disposer.dispose();
+  }, []);
+
+  React.useEffect(() => {
+    const disposer = chatAgentService.onDidChangeAgents(async () => {
+      const newDefaultAgentId = chatAgentService.getDefaultAgentId();
+
+      setDefaultAgentId(newDefaultAgentId ?? '');
     });
     return () => disposer.dispose();
   }, []);
@@ -466,6 +505,7 @@ export const AIChatView = observer(() => {
               setTheme={setTheme}
               agentId={agentId}
               setAgentId={setAgentId}
+              defaultAgentId={defaultAgentId}
               command={command}
               setCommand={setCommand}
               ref={chatInputRef}

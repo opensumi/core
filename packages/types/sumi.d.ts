@@ -21,6 +21,7 @@ declare module 'sumi' {
     ChatAgentTask,
     Disposable,
     ExtensionKind,
+    MarkdownString,
     Progress,
     ProviderResult,
     TextEditor,
@@ -859,6 +860,15 @@ declare module 'sumi' {
     provideSampleQuestions(token: CancellationToken): ProviderResult<ChatAgentReplyFollowup[]>;
   }
 
+  export interface ChatAgentWelcomeMessage {
+    content: string | MarkdownString;
+    sampleQuestions?: ChatAgentReplyFollowup[];
+  }
+
+  export interface ChatAgentWelcomeMessageProvider {
+    provideChatWelcomeMessage(token: CancellationToken): ProviderResult<ChatAgentWelcomeMessage>;
+  }
+
   export interface ChatAgentPopulateInputParam {
     command?: string;
     prompt: string;
@@ -885,7 +895,9 @@ declare module 'sumi' {
 
   export interface ChatAgent extends ChatAgent2 {
     sampleQuestionProvider?: ChatAgentSampleQuestionProvider;
+    chatWelcomMessageProvider?: ChatAgentWelcomeMessageProvider;
     populateChatInput?: (param: ChatAgentPopulateInputParam) => void;
+    isDefault?: boolean;
   }
 
   export namespace chat {
