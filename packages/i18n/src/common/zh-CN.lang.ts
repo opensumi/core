@@ -731,18 +731,18 @@ export const localizationBundle = {
     'terminal.ai.modelPrompt': `
     你是一个 Shell 脚本专家，现在我需要使用 Shell 来完成一些操作，但是我不熟悉 Shell 命令，因此我需要通过自然语言描述生成终端命令，只需生成 1 到 5 个命令。
     提示：使用 . 来表示当前文件夹
-  
+
     下面是自然语言描述和其对应的终端命令：
     提问: 查看机器内存
     回答:
     #Command#: free -m
     #Description#: 查看机器内存
-  
+
     提问: 查看当前进程的 pid
     回答:
     #Command#: echo$$
     #Description#: 查看当前进程的 pid
-  
+
     提问: `,
 
     'debugger.menu.setValue': '设置变量',
@@ -1231,6 +1231,8 @@ export const localizationBundle = {
     'aiNative.operate.discard.title': '丢弃',
     'aiNative.operate.afresh.title': '重新生成',
     'aiNative.operate.stop.title': '停止',
+
+    'aiNative.chat.welcome.loading.text': '初始化中...',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',

@@ -21,10 +21,20 @@ interface ITinkingProps {
   onRegenerate?: () => void;
   sessionId?: string;
   onStop?: () => void;
+  thinkingText?: string;
+  showStop?: boolean;
   hasAgent?: boolean;
 }
 
-export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessage }: ITinkingProps) => {
+export const Thinking = ({
+  children,
+  status,
+  message,
+  onStop,
+  showStop = true,
+  hasAgent,
+  thinkingText,
+}: ITinkingProps) => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
@@ -42,7 +52,7 @@ export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessa
 
   const renderContent = useCallback(() => {
     if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
-      return <span className={styles.thinking_text}>Thinking...</span>;
+      return <span className={styles.thinking_text}>{thinkingText || 'Thinking...'}</span>;
     }
 
     return children;
@@ -59,10 +69,12 @@ export const Thinking = ({ children, status, message, onStop, hasAgent, hasMessa
               <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />
             )}
           </span>
-          <div className={styles.block} onClick={handlePause}>
-            <Icon className={getIcon('circle-pause')}></Icon>
-            <span>{localize('aiNative.operate.stop.title')}</span>
-          </div>
+          {showStop && (
+            <div className={styles.block} onClick={handlePause}>
+              <Icon className={getIcon('circle-pause')}></Icon>
+              <span>{localize('aiNative.operate.stop.title')}</span>
+            </div>
+          )}
         </div>
       </div>
     </>

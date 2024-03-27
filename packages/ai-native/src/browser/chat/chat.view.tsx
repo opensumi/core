@@ -101,8 +101,8 @@ const InitMsgComponent = () => {
       return [];
     }
 
-    const { sampleQuestions } = chatFeatureRegistry.chatWelcomeMessageModel;
-    return (sampleQuestions || []).map(extractIcon);
+    const { sampleQuestions = [] } = chatFeatureRegistry.chatWelcomeMessageModel;
+    return (sampleQuestions as IChatReplyFollowup[]).map(extractIcon);
   }, [chatFeatureRegistry.chatWelcomeMessageModel?.sampleQuestions]);
 
   const welcomeMessage = React.useMemo(() => {
@@ -125,15 +125,11 @@ const InitMsgComponent = () => {
 
   if (!welcomeMessage) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        Loading...
-      </div>
+      <Thinking
+        status={EMsgStreamStatus.THINKING}
+        showStop={false}
+        thinkingText={localize('aiNative.chat.welcome.loading.text')}
+      />
     );
   }
 
