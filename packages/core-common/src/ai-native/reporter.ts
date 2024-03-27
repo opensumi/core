@@ -62,6 +62,14 @@ export interface CompletionRT extends Partial<CommonLogInfo> {
   completionNum?: number;
   // 渲染时长
   renderingTime?: number;
+
+  /**
+   * 用于记录 DOM 渲染时长的时间点
+   */
+  domRenderTimePoint?: number;
+  startRequestCompletionTimePoint?: number;
+  endRequestCompletionTimePoint?: number;
+  userAcceptTimePoint?: number;
 }
 
 export interface MergeConflictRT extends Partial<CommonLogInfo> {

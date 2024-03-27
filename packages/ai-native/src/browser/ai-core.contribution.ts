@@ -214,6 +214,10 @@ export class AiNativeBrowserContribution
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
         const aiEditorContribution = this.injector.get(AiEditorContribution, [editor]);
+
+        editor.onDispose(() => {
+          aiEditorContribution.dispose();
+        });
         return aiEditorContribution.contribute(editor);
       },
     });

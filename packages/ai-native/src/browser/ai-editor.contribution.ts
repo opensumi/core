@@ -39,7 +39,7 @@ import {
   ReplyResponse,
 } from './types';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class AiEditorContribution extends Disposable implements IEditorFeatureContribution {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -140,6 +140,51 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
          */
         this.ctxMenuRenderer.onHide = undefined;
         this.ctxMenuRenderer.hide(true);
+      }),
+    );
+
+    let observer: MutationObserver | undefined;
+    this.disposables.push(
+      editor.onFocus(() => {
+        const box = document.querySelector('div.view-lines');
+        const config = { attributes: false, childList: true };
+        if (!observer) {
+          observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+              const { removedNodes, addedNodes } = mutation;
+              if (!removedNodes || !addedNodes) {
+                return;
+              }
+              if (removedNodes.length !== 1 || addedNodes.length !== 1) {
+                return;
+              }
+              const html = (addedNodes[0] as HTMLDivElement).innerHTML;
+              if (
+                html &&
+                // 这个是 Inline completion 会出现的
+                html.includes('ghost-text-decoration') &&
+                // 下面这个是 codelens 会出现的
+                !html.includes('-after temp-decoration-')
+              ) {
+                this.aiCompletionsService.recordDomRenderedTimePoint();
+              }
+            }
+
+            // => 返回一个监听到的MutationRecord对象
+            // MutationRecord对象是每修改一个就会在数组里面追加一个
+          });
+        }
+
+        if (box) {
+          observer.observe(box, config); // 监听的box元素和config配置项
+        }
+      }),
+    );
+    this.disposables.push(
+      editor.onBlur(() => {
+        if (observer) {
+          observer.disconnect();
+        }
       }),
     );
 
