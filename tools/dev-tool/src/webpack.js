@@ -236,10 +236,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           '/kaitian': {
             target: `http://${HOST}:8000`,
           },
-          '/socket.io': {
-            ws: true,
-            target: `ws://${HOST}:8000`,
-          },
         },
         open: process.env.SUMI_DEV_OPEN_BROWSER ? true : false,
         hot: true,
