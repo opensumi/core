@@ -147,6 +147,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposables.push(
       editor.onFocus(() => {
         const box = document.querySelector('div.view-lines');
+        if (!box) {
+          // no view lines, return
+          return;
+        }
+
         const config = { attributes: false, childList: true };
         if (!observer) {
           observer = new MutationObserver((mutations) => {
@@ -169,15 +174,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
                 this.aiCompletionsService.recordDomRenderedTimePoint();
               }
             }
-
-            // => 返回一个监听到的MutationRecord对象
-            // MutationRecord对象是每修改一个就会在数组里面追加一个
           });
         }
 
-        if (box) {
-          observer.observe(box, config); // 监听的box元素和config配置项
-        }
+        observer.observe(box, config); // 监听的box元素和config配置项
       }),
     );
     this.disposables.push(
