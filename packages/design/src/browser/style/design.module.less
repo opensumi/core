@@ -18,8 +18,8 @@
   .design-quickopen_list {
     border-radius: 0 0 8px 8px !important;
     border: 0 none !important;
-    box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
-      0px 6px 16px 0px var(--design-boxShadow-color3) !important;
+    box-shadow: 0px 9px 28px 8px var(--design-boxShadow-primary), 0px 3px 6px -4px var(--design-boxShadow-secondary),
+      0px 6px 16px 0px var(--design-boxShadow-tertiary) !important;
   }
 }
 
@@ -27,15 +27,15 @@
   border-radius: 8px;
   background-color: var(--kt-modal-background);
   border: 0 none !important;
-  box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
-    0px 6px 16px 0px var(--design-boxShadow-color3) !important;
+  box-shadow: 0px 9px 28px 8px var(--design-boxShadow-primary), 0px 3px 6px -4px var(--design-boxShadow-secondary),
+    0px 6px 16px 0px var(--design-boxShadow-tertiary) !important;
 }
 
 .design-navigation_menu {
   border-radius: 8px;
   border: 0 none !important;
-  box-shadow: 0px 9px 28px 8px var(--design-boxShadow-color1), 0px 3px 6px -4px var(--design-boxShadow-color2),
-    0px 6px 16px 0px var(--design-boxShadow-color3) !important;
+  box-shadow: 0px 9px 28px 8px var(--design-boxShadow-primary), 0px 3px 6px -4px var(--design-boxShadow-secondary),
+    0px 6px 16px 0px var(--design-boxShadow-tertiary) !important;
 
   .design-navigation_menu_item {
     :global(.kaitian-icon) {
@@ -91,11 +91,11 @@
         width: 22px;
         height: 22px;
         border-radius: 4px;
-        color: var(--design-text-color-normal);
+        color: var(--design-text-foreground);
 
         &:hover {
-          background-color: var(--design-block-background-common);
-          color: var(--design-text-color-hover);
+          background-color: var(--design-block-hoverBackground);
+          color: var(--design-text-hoverForeground);
         }
       }
 
@@ -200,11 +200,11 @@
         height: 22px;
         line-height: 22px;
         font-size: 14px;
-        color: var(--design-text-color-normal);
+        color: var(--design-text-foreground);
         margin-left: 2px;
 
         &:not(.disabled):hover {
-          color: var(--design-text-color-hover);
+          color: var(--design-text-hoverForeground);
           opacity: 1;
         }
       }
@@ -222,16 +222,16 @@
         &:hover {
           border-radius: 4px;
           background-color: var(--kt-icon-hoverBackground);
-          color: var(--design-text-color-hover);
+          color: var(--design-text-hoverForeground);
         }
       }
 
       button.design-btnAction {
         border-radius: 4px;
-        color: var(--design-text-color-normal);
+        color: var(--design-text-foreground);
 
         &:hover {
-          color: var(--design-text-color-hover);
+          color: var(--design-text-hoverForeground);
           background-color: var(--kt-icon-hoverBackground);
         }
 
@@ -261,7 +261,7 @@
   border-bottom: 0 none;
 
   span.design-navigation-part {
-    color: var(--design-text-color-other);
+    color: var(--design-text-placeholderForeground);
 
     > span:first-child {
       padding-right: 0;
@@ -276,7 +276,7 @@
   }
 
   span.design-navigation_icon {
-    color: var(--design-text-color-normal);
+    color: var(--design-text-foreground);
   }
 }
 
@@ -296,10 +296,10 @@ div[class*='design-editor_tab_block_container__'] {
     }
 
     .design-close_tab {
-      color: var(--design-icon-color);
+      color: var(--design-icon-foreground);
 
       &:hover {
-        color: var(--design-text-color-normal);
+        color: var(--design-text-foreground);
       }
     }
   }
@@ -353,10 +353,10 @@ div[class*='design-editor_tab_block_container__'] {
       font-size: 14px;
       width: 22px;
       height: 22px;
-      color: var(--design-text-color-normal);
+      color: var(--design-text-foreground);
 
       &:not(.disabled):hover {
-        color: var(--design-text-color-hover);
+        color: var(--design-text-hoverForeground);
       }
     }
 
@@ -367,7 +367,7 @@ div[class*='design-editor_tab_block_container__'] {
       &:hover {
         border-radius: 4px;
         background-color: var(--kt-icon-hoverBackground);
-        color: var(--design-text-color-hover);
+        color: var(--design-text-hoverForeground);
       }
     }
   }
@@ -404,7 +404,7 @@ div[class*='design-editor_tab_block_container__'] {
       max-width: 240px;
 
       :global(.kt-icon) {
-        color: var(--design-input-color);
+        color: var(--design-input-foreground);
       }
     }
   }
@@ -442,7 +442,7 @@ div[class*='design-editor_tab_block_container__'] {
 
     .design-tab_close_icon {
       opacity: 1;
-      color: var(--design-text-color-normal);
+      color: var(--design-text-foreground);
       display: flex;
       width: 22px;
       height: 22px;
@@ -454,7 +454,7 @@ div[class*='design-editor_tab_block_container__'] {
       }
 
       &:hover {
-        color: var(--design-text-color-hover);
+        color: var(--design-text-hoverForeground);
       }
     }
   }
@@ -472,7 +472,7 @@ div[class*='design-editor_tab_block_container__'] {
       font-size: 16px;
 
       &:hover {
-        color: var(--design-text-color-hover);
+        color: var(--design-text-hoverForeground);
         background-color: var(--kt-icon-hoverBackground);
       }
     }
@@ -569,14 +569,14 @@ div[class*='design-editor_tab_block_container__'] {
       justify-content: center;
       margin-left: 0;
       box-sizing: border-box;
-      color: var(--design-text-color-normal);
+      color: var(--design-text-foreground);
 
       &::before {
         font-size: 14px;
       }
 
       &:hover {
-        color: var(--design-text-color-hover);
+        color: var(--design-text-hoverForeground);
         background-color: var(--activityBar-activeBorder);
         border-radius: 4px;
         opacity: 1;
@@ -593,24 +593,24 @@ div[class*='design-editor_tab_block_container__'] {
   }
 
   .design-titlebar {
-    color: var(--design-text-color-common);
+    color: var(--design-title-foreground);
 
     h1 {
-      color: var(--design-text-color-common);
+      color: var(--design-title-foreground);
     }
   }
 
   .design-expansion_toggle {
-    color: var(--design-text-color-other);
+    color: var(--design-text-placeholderForeground);
   }
 
   div[class*='mod_selected___'] {
     .design-opened_editor_node_overflow_wrap {
-      color: var(--design-text-color-highlight) !important;
+      color: var(--design-text-highlightForeground) !important;
     }
 
     .design-expansion_toggle {
-      color: var(--design-text-color-highlight) !important;
+      color: var(--design-text-highlightForeground) !important;
     }
   }
 

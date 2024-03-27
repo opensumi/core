@@ -14,14 +14,14 @@ export const inlineChatBackground = registerColor(
 );
 
 export const inlineChatBorderColor = registerColor(
-  'design.inlineChat.border.color',
+  'design.inlineChat.borderColor',
   { dark: new Color(new RGBA(42, 51, 68, 0.9)), light: new Color(new RGBA(0, 0, 0, 0)), hcDark: null, hcLight: null },
   '',
   true,
 );
 
 export const inlineChatBoxShadow = registerColor(
-  'design.inlineChat.box.shadow',
+  'design.inlineChat.boxShadow',
   {
     dark: new Color(new RGBA(0, 0, 0, 0.24)),
     light: new Color(new RGBA(0, 10, 26, 0.08)),
@@ -33,8 +33,8 @@ export const inlineChatBoxShadow = registerColor(
 );
 
 // 常规文字、标题、文件夹标题
-export const inlineChatTextCommon = registerColor(
-  'design.text.color.common',
+export const designTitleForeground = registerColor(
+  'design.title.foreground',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.85)),
     light: new Color(new RGBA(21, 27, 33, 0.85)),
@@ -45,25 +45,32 @@ export const inlineChatTextCommon = registerColor(
   true,
 );
 
-// 正在输入、hover高亮
-export const inlineChatTextHover = registerColor(
-  'design.text.color.hover',
-  { dark: '#fff', light: '#151b21', hcDark: null, hcLight: null },
+export const designTitleBackground = registerColor(
+  'design.title.background',
+  { dark: '#222830', light: '#f1f2f3', hcDark: null, hcLight: null },
   '',
   true,
 );
 
 // 正在输入、hover高亮
-export const inlineChatTextHighlight = registerColor(
-  'design.text.color.highlight',
+export const designTitleHoverForeground = registerColor(
+  'design.text.hoverForeground',
   { dark: '#fff', light: '#151b21', hcDark: null, hcLight: null },
   '',
   true,
 );
 
-// 辅助
-export const inlineChatTextOther = registerColor(
-  'design.text.color.other',
+// 输入文本高亮样式
+export const designTitleHighlightForeground = registerColor(
+  'design.text.highlightForeground',
+  { dark: '#fff', light: '#151b21', hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
+// 辅助文本颜色
+export const designTitlePlaceholderForeground = registerColor(
+  'design.text.placeholderForeground',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.45)),
     light: new Color(new RGBA(21, 27, 33, 0.65)),
@@ -75,8 +82,8 @@ export const inlineChatTextOther = registerColor(
 );
 
 // 常规文字、代码字段、标签、hover字段、
-export const inlineChatTextNormal = registerColor(
-  'design.text.color.normal',
+export const designTextForeground = registerColor(
+  'design.text.foreground',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.65)),
     light: new Color(new RGBA(21, 27, 33, 0.65)),
@@ -88,29 +95,16 @@ export const inlineChatTextNormal = registerColor(
 );
 
 // 输入框失去焦点
-export const inlineChatInputBlur = registerColor(
-  'design.input.color',
+export const desigInputForeground = registerColor(
+  'design.input.foreground',
   { dark: new Color(new RGBA(255, 255, 255, 0.35)), light: null, hcDark: null, hcLight: null },
   '',
   true,
 );
 
-// Icon背景色
-export const designNativeBlockBackgroundlight = registerColor(
-  'design.block.background.light',
-  {
-    dark: new Color(new RGBA(255, 255, 255, 0.45)),
-    light: new Color(new RGBA(21, 27, 33, 0.65)),
-    hcDark: null,
-    hcLight: null,
-  },
-  '',
-  true,
-);
-
-// tag背景色，或者整块区域hover上去背景色
-export const inlineChatBlockBackgroundCommon = registerColor(
-  'design.block.background.common',
+// Tag 背景色，或者整块区域 hover 上去背景色
+export const designBlockHoverBackground = registerColor(
+  'design.block.hoverBackground',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.08)),
     light: new Color(new RGBA(21, 27, 33, 0.06)),
@@ -121,16 +115,16 @@ export const inlineChatBlockBackgroundCommon = registerColor(
   true,
 );
 
-// tag背景色，或者整块区域hover上去背景色
-export const inlineChatBlockBackgroundNormal = registerColor(
-  'design.block.background.normal',
+// Tag 或者整块区域默认背景色
+export const designBlockBackground = registerColor(
+  'design.block.background',
   { dark: new Color(new RGBA(255, 255, 255, 0.05)), light: '#F4F6F8', hcDark: null, hcLight: null },
   '',
   true,
 );
 
-export const designIconColor = registerColor(
-  'design.icon.color',
+export const designIconForeground = registerColor(
+  'design.icon.foreground',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.65)),
     light: '#90959A',
@@ -143,34 +137,10 @@ export const designIconColor = registerColor(
 
 // 线条颜色
 export const designBorderColor = registerColor(
-  'design.border.color',
+  'design.borderColor',
   {
     dark: new Color(new RGBA(255, 255, 255, 0.08)),
     light: new Color(new RGBA(21, 27, 33, 0.08)),
-    hcDark: null,
-    hcLight: null,
-  },
-  '',
-  true,
-);
-
-export const designBorderColorCommon = registerColor(
-  'design.border.color.common',
-  {
-    dark: new Color(new RGBA(255, 255, 255, 0.35)),
-    light: new Color(new RGBA(21, 27, 33, 0.85)),
-    hcDark: null,
-    hcLight: null,
-  },
-  '',
-  true,
-);
-
-export const designBorderColorNormal = registerColor(
-  'design.border.color.normal',
-  {
-    dark: new Color(new RGBA(255, 255, 255, 0.12)),
-    light: new Color(new RGBA(21, 27, 33, 0.12)),
     hcDark: null,
     hcLight: null,
   },
@@ -192,13 +162,6 @@ export const designMonacoBackground = registerColor(
   true,
 );
 
-export const designTitleBackground = registerColor(
-  'design.title.background',
-  { dark: '#222830', light: '#f1f2f3', hcDark: null, hcLight: null },
-  '',
-  true,
-);
-
 export const designRceBackground = registerColor(
   'design.rce.background',
   {
@@ -211,29 +174,29 @@ export const designRceBackground = registerColor(
   true,
 );
 
-export const designCharInputBackground = registerColor(
-  'design.charinput.background',
+export const designChatInputBackground = registerColor(
+  'design.chatInput.background',
   { dark: new Color(new RGBA(0, 0, 0, 0.25)), light: '#fff', hcDark: null, hcLight: null },
   '',
   true,
 );
 
-export const designBoxShadow1 = registerColor(
-  'design.boxShadow.color1',
+export const designBoxShadowPrimary = registerColor(
+  'design.boxShadow.primary',
   { dark: new Color(new RGBA(0, 0, 0, 0.2)), light: new Color(new RGBA(0, 0, 0, 0.05)), hcDark: null, hcLight: null },
   '',
   true,
 );
 
-export const designBoxShadow2 = registerColor(
-  'design.boxShadow.color2',
+export const designBoxShadowSecondary = registerColor(
+  'design.boxShadow.secondary',
   { dark: new Color(new RGBA(0, 0, 0, 0.4)), light: new Color(new RGBA(0, 0, 0, 0.08)), hcDark: null, hcLight: null },
   '',
   true,
 );
 
-export const designBoxShadow3 = registerColor(
-  'design.boxShadow.color3',
+export const designBoxShadowtTertiary = registerColor(
+  'design.boxShadow.tertiary',
   { dark: new Color(new RGBA(0, 0, 0, 0.24)), light: new Color(new RGBA(0, 0, 0, 0.12)), hcDark: null, hcLight: null },
   '',
   true,

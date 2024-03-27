@@ -83,7 +83,7 @@
       display: flex;
       align-items: center;
       height: 16px;
-      color: var(--design-text-color-common);
+      color: var(--design-title-foreground);
       font-size: 12px;
 
       .ai_avatar_icon {
@@ -135,7 +135,7 @@
       .chat_loading_msg_box {
         display: flex;
         align-items: flex-start;
-        color: var(--design-text-color-highlight);
+        color: var(--design-text-highlightForeground);
         font-size: 12px;
         padding: 0 32px 0 16px;
 
@@ -227,7 +227,7 @@
       }
 
       :global(.chat_scroll) {
-        border-color: var(--design-border-color);
+        border-color: var(--design-borderColor);
       }
 
       .chat_input_wrap {
@@ -265,17 +265,17 @@
           }
 
           .tag {
-            background: var(--design-block-background-common);
+            background: var(--design-block-hoverBackground);
             border-radius: 4px;
             height: 22px;
             font-size: 12px;
             padding: 2px 6px;
             line-height: 18px;
             margin-right: 8px;
-            color: var(--design-text-color-normal);
+            color: var(--design-text-foreground);
             cursor: pointer;
             &:hover {
-              color: var(--design-text-color-hover);
+              color: var(--design-text-hoverForeground);
             }
           }
         }
@@ -301,7 +301,7 @@
           height: 40px;
           border-radius: 8px;
           box-sizing: border-box;
-          background-color: var(--design-block-background-common);
+          background-color: var(--design-block-hoverBackground);
 
           textarea {
             resize: none;
@@ -338,7 +338,7 @@
           }
 
           &.active_chat_bar {
-            background-color: var(--design-block-background-common);
+            background-color: var(--design-block-hoverBackground);
             border-radius: 6px;
           }
         }
