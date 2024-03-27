@@ -15,7 +15,7 @@
   "dependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
     "@opensumi/ide-core-common": "workspace:*",
-    "@opensumi/monaco-editor-core": "0.47.0-patch.5"
+    "@opensumi/monaco-editor-core": "0.47.0-patch.9"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",
