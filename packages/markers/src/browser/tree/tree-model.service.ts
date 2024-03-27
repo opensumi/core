@@ -198,7 +198,7 @@ export class MarkerModelService {
     await this.markerService.viewReady;
 
     runWhenIdle(() => {
-      if (this.markerService.contextKey && this.markerService.contextKey.markersTreeVisibility.get()) {
+      if (this.markerService.contextKey.isReady && this.markerService.contextKey.markersTreeVisibility.get()) {
         this.treeModel.root.refresh();
       } else {
         this.isDirtyTree = true;
@@ -207,7 +207,7 @@ export class MarkerModelService {
   }
 
   activate() {
-    if (this.markerService.contextKey) {
+    if (this.markerService.contextKey.isReady) {
       this.markerService.contextKey.markersTreeVisibility.set(true);
 
       if (this.isDirtyTree) {
@@ -218,7 +218,7 @@ export class MarkerModelService {
   }
 
   deactivate() {
-    if (this.markerService.contextKey) {
+    if (this.markerService.contextKey.isReady) {
       this.markerService.contextKey.markersTreeVisibility.set(false);
     }
   }
