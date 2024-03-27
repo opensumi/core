@@ -35,28 +35,28 @@ export class AiCompletionsService extends Disposable {
   // 统计 id
   private lastRelationId: string;
   private lastRenderTime: number;
-  private lastCompletionUseTime: number;
+
+  private startRequestCompletionTimePoint: number;
+  private endRequestCompletionTimePoint: number;
+  private domRenderTimePoint: number;
+
   // 中间间拓展 inlinecompletion
   private lastMiddlewareInlineCompletion?: IProvideInlineCompletionsSignature;
 
-  private recordRenderTime(): void {
-    this.lastRenderTime = Date.now();
-  }
-
-  private recordCompletionUseTime(preTime: number): void {
-    this.lastCompletionUseTime = Date.now() - preTime;
+  recordDomRenderedTimePoint(): void {
+    this.domRenderTimePoint = Date.now();
   }
 
   public async complete(data: CompletionRequestBean, model, position, token): Promise<CompletionResultModel | null> {
     const doCompletion = async (data: CompletionRequestBean) => {
       try {
         this.isDefaultCompletionModel = true;
-        const now = Date.now();
+        this.startRequestCompletionTimePoint = Date.now();
         const result = (await this.aiBackService.requestCompletion(
           data as any,
           this.cancelIndicator.token,
         )) as unknown as CompletionResultModel;
-        this.recordCompletionUseTime(now);
+        this.endRequestCompletionTimePoint = Date.now();
         return result;
       } catch (error) {
         return null;
@@ -78,10 +78,19 @@ export class AiCompletionsService extends Disposable {
   public async report(data: IAiReportCompletionOption) {
     const { relationId, accept } = data;
 
-    data.renderingTime = Date.now() - this.lastRenderTime;
-    data.completionUseTime = this.lastCompletionUseTime;
+    const now = Date.now();
+    data.renderingTime = now - this.lastRenderTime;
+    data.completionUseTime = this.endRequestCompletionTimePoint - this.startRequestCompletionTimePoint;
     this.aiBackService.reportCompletion(data);
-    this.reporterEnd(relationId, { success: true, isReceive: accept, renderingTime: data.renderingTime });
+    this.reporterEnd(relationId, {
+      success: true,
+      isReceive: accept,
+      renderingTime: data.renderingTime,
+      domRenderTimePoint: this.domRenderTimePoint,
+      startRequestCompletionTimePoint: this.startRequestCompletionTimePoint,
+      endRequestCompletionTimePoint: this.endRequestCompletionTimePoint,
+      userAcceptTimePoint: now,
+    });
 
     this.isVisibleCompletion = false;
   }
@@ -101,7 +110,7 @@ export class AiCompletionsService extends Disposable {
 
     if (visible === true) {
       this.isVisibleCompletion = visible;
-      this.recordRenderTime();
+      this.lastRenderTime = Date.now();
     } else {
       this.isVisibleCompletion = false;
     }
