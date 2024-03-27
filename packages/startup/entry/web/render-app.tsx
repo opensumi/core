@@ -12,7 +12,7 @@ import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
 
-import { DesignModeLayout } from './layout';
+import { DefaultLayout } from './layout';
 
 const CLIENT_ID = 'W_' + uuid();
 
@@ -35,7 +35,7 @@ export async function renderApp(opts: IClientAppOpts) {
 
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
-  opts.layoutComponent = DesignModeLayout;
+  opts.layoutComponent = DefaultLayout;
   opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
     // eslint-disable-next-line no-console
