@@ -268,7 +268,7 @@ export class ChatWelcomeMessageModel extends Disposable {
   }
 
   constructor(
-    public readonly content: IChatWelcomeMessageContent | React.ReactNode,
+    public readonly content: IChatWelcomeMessageContent,
     public readonly sampleQuestions: ISampleQuestions[],
   ) {
     super();

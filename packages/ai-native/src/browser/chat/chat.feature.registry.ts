@@ -12,7 +12,7 @@ export class ChatFeatureRegistry extends Disposable implements IChatFeatureRegis
   private slashCommandsMap: Map<string, ChatSlashCommandItemModel> = new Map();
   private slashCommandsHandlerMap: Map<string, IChatSlashCommandHandler> = new Map();
 
-  public chatWelcomeMessageModel: ChatWelcomeMessageModel;
+  public chatWelcomeMessageModel?: ChatWelcomeMessageModel;
 
   override dispose() {
     super.dispose();

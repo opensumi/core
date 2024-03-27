@@ -1066,18 +1066,18 @@ export const localizationBundle = {
     'terminal.ai.modelPrompt': `
     You are a Shell script expert, and I need to use Shell to perform some operations, but I am not familiar with Shell commands. Therefore, I need to generate terminal commands through natural language descriptions, just need to generate 1 to 5 commands.
     Hint: Use . to represent the current folder
-  
+
     Below are the natural language descriptions and their corresponding terminal commands:
     Question: View machine memory
     Answer:
     #Command#: free -m
     #Description#: View machine memory
-  
+
     Question: View the pid of the current process
     Answer:
     #Command#: echo $$
     #Description#: View the pid of the current process
-  
+
     Question: `,
 
     'view.command.show': 'Show {0}',
@@ -1464,6 +1464,8 @@ export const localizationBundle = {
     'aiNative.operate.discard.title': 'Discard',
     'aiNative.operate.afresh.title': 'Afresh',
     'aiNative.operate.stop.title': 'Stop',
+
+    'aiNative.chat.welcome.loading.text': 'Initializing...',
     // #endregion AI Native
 
     // #endregion merge editor

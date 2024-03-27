@@ -2,6 +2,7 @@ import {
   IChatAgentCommand,
   IChatAgentRequest,
   IChatAgentResult,
+  IChatAgentWelcomeMessage,
   IChatFollowup,
   IChatMessage,
   IChatReplyFollowup,
@@ -168,12 +169,24 @@ export class ExtHostChatAgents implements IExtHostChatAgents {
     }
     return agent.provideSampleQuestions(token);
   }
+
+  async $provideChatWelcomeMessage(
+    handle: number,
+    token: CancellationToken,
+  ): Promise<undefined | IChatAgentWelcomeMessage> {
+    const agent = this.agents.get(handle);
+    if (!agent) {
+      return;
+    }
+    return agent.provideChatWelcomeMessage(token);
+  }
 }
 
 class ExtHostChatAgent {
   private _slashCommandProvider: vscode.ChatAgentSlashCommandProvider | undefined;
   private _lastSlashCommands: vscode.ChatAgentSlashCommand[] | undefined;
   private _followupProvider: vscode.FollowupProvider | undefined;
+  private _chatWelcomeMessageProvider: sumi.ChatAgentWelcomeMessageProvider | undefined;
   private _description: string | undefined;
   private _fullName: string | undefined;
   private _iconPath: vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | vscode.ThemeIcon | undefined;
@@ -261,6 +274,23 @@ class ExtHostChatAgent {
     return result.map((f) => typeConverters.ChatReplyFollowup.from(f));
   }
 
+  async provideChatWelcomeMessage(token: CancellationToken): Promise<undefined | IChatAgentWelcomeMessage> {
+    if (!this._chatWelcomeMessageProvider) {
+      return;
+    }
+
+    const result = await this._chatWelcomeMessageProvider.provideChatWelcomeMessage(token);
+
+    if (!result) {
+      return;
+    }
+
+    return {
+      ...result,
+      sampleQuestions: (result.sampleQuestions ?? []).map((f) => typeConverters.ChatReplyFollowup.from(f)),
+    };
+  }
+
   get apiAgent(): sumi.ChatAgent {
     let disposed = false;
     let updateScheduled = false;
@@ -279,6 +309,7 @@ class ExtHostChatAgent {
           hasSlashCommands: this._slashCommandProvider !== undefined,
           hasFollowups: this._followupProvider !== undefined,
           hasSampleQuestions: this._sampleQuestionProvider !== undefined,
+          hasChatWelcomMessage: this._chatWelcomeMessageProvider !== undefined,
           isDefault: this._isDefault,
         });
         updateScheduled = false;
@@ -323,6 +354,20 @@ class ExtHostChatAgent {
       },
       set followupProvider(v) {
         that._followupProvider = v;
+        updateMetadataSoon();
+      },
+      get isDefault() {
+        return that._isDefault;
+      },
+      set isDefault(v) {
+        that._isDefault = v;
+        updateMetadataSoon();
+      },
+      get chatWelcomMessageProvider() {
+        return that._chatWelcomeMessageProvider;
+      },
+      set chatWelcomMessageProvider(v) {
+        that._chatWelcomeMessageProvider = v;
         updateMetadataSoon();
       },
       get sampleQuestionProvider() {
