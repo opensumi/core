@@ -116,11 +116,11 @@ a += 2;`),
     const turnLeftMapping = mergeEditorService.getTurnLeftRangeMapping();
     const turnRightMapping = mergeEditorService.getTurnRightRangeMapping();
 
-    expect(turnLeftMapping.length).toBe(2);
-    expect(turnRightMapping.length).toBe(1);
+    expect(turnLeftMapping[0].original.length).toBe(3);
+    expect(turnRightMapping[0].original.length).toBe(5);
 
-    expect(turnLeftMapping[0].toString()).toBe('{[2,5)->[2,2)}');
-    expect(turnRightMapping[0].toString()).toBe('{[4,7)->[4,8)}');
+    expect(turnLeftMapping[0].toString()).toBe('{[2,5)->[2,7)}');
+    expect(turnRightMapping[0].toString()).toBe('{[2,7)->[2,8)}');
   });
 
   afterAll(async () => {

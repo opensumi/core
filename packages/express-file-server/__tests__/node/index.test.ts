@@ -5,7 +5,7 @@ import Koa from 'koa';
 import superagent from 'superagent';
 
 import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ExpressFileServerModule } from '../../src/node';
 import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';

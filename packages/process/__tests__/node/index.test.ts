@@ -1,7 +1,7 @@
 import path from 'path';
 import stream from 'stream';
 
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { IProcessManage, IProcessFactory } from '../../src/';
 import { ProcessErrorEvent, IProcessStartEvent } from '../../src/common';

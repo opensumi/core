@@ -1,9 +1,10 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
+
+import { DetailedLineRangeMapping } from '../../../common/diff';
 
 import { DocumentMapping } from './model/document-mapping';
 import { LineRange } from './model/line-range';
-import { LineRangeMapping } from './model/line-range-mapping';
 import { EDiffRangeTurn, EditorViewType, ETurnDirection } from './types';
 
 @Injectable()
@@ -76,11 +77,11 @@ export class MappingManagerService extends Disposable {
     };
   }
 
-  public inputComputeResultRangeMappingTurnLeft(changes: LineRangeMapping[]): void {
+  public inputComputeResultRangeMappingTurnLeft(changes: readonly DetailedLineRangeMapping[]): void {
     this.documentMappingTurnLeft.inputComputeResultRangeMapping(changes);
   }
 
-  public inputComputeResultRangeMappingTurnRight(changes: LineRangeMapping[]): void {
+  public inputComputeResultRangeMappingTurnRight(changes: readonly DetailedLineRangeMapping[]): void {
     this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
   }
 

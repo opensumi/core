@@ -183,7 +183,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     const languageIdentifier = this.editor.getModel()?.getLanguageId();
     const model = this.input?.monacoEditor.getModel();
     if (model && languageIdentifier) {
-      model.setMode(this.context === 'logMessage' ? 'plaintext' : languageIdentifier);
+      model.setLanguage(this.context === 'logMessage' ? 'plaintext' : languageIdentifier);
     }
   }
 

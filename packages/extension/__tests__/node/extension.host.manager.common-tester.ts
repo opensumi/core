@@ -2,8 +2,8 @@ import path from 'path';
 
 import { Provider } from '@opensumi/di';
 import { INodeLogger, MaybePromise, getDebugLogger, Deferred } from '@opensumi/ide-core-node';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionHostManager } from '../../src';
 

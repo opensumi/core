@@ -2,7 +2,7 @@ import os from 'os';
 
 import { Injector } from '@opensumi/di';
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { TerminalNodePtyModule } from '../../src/node';
 import { PtyService } from '../../src/node/pty';

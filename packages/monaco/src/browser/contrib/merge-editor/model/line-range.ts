@@ -1,7 +1,8 @@
 import { Constants, uuid } from '@opensumi/ide-core-common';
 import { IRange } from '@opensumi/monaco-editor-core';
+import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
-import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
@@ -271,7 +272,7 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return false;
   }
 
-  public equals(range: LineRange): boolean {
+  public equals(range: MonacoLineRange): boolean {
     return this.startLineNumber === range.startLineNumber && this.length === range.length;
   }
 
@@ -318,7 +319,7 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     ).setType(this._type);
   }
 
-  public toInclusiveRange(startColumn?: number, endColumn?: number): IRange {
+  public toInclusiveRange(startColumn?: number, endColumn?: number): MonacoRange {
     if (this.isEmpty) {
       return InnerRange.fromPositions(
         new Position(this.startLineNumber, startColumn ?? 1),

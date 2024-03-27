@@ -45,6 +45,7 @@ export class OpenSumiTerminalView extends OpenSumiPanel {
     await menu.waitForVisible();
     await menu.clickMenuItem(type);
 
-    await this.app.page.waitForTimeout(1000);
+    // 新建终端后，需要等待一段时间，否则会出现终端未创建完成的情况
+    await this.app.page.waitForTimeout(5000);
   }
 }

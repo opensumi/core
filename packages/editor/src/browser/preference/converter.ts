@@ -728,6 +728,25 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IM
    * Controls whether characters are highlighted that can be confused with basic ASCII characters
    */
   ['editor.unicodeHighlight', { monaco: 'unicodeHighlight' }],
+
+  /**
+   * Suggest options.
+   */
+  [
+    'editor.inlineSuggest.showToolbar',
+    {
+      monaco: 'inlineSuggest',
+      convert: (value) => {
+        if (value) {
+          return {
+            showToolbar: value,
+          };
+        } else {
+          return undefined;
+        }
+      },
+    },
+  ],
 ]);
 
 export const textModelUpdateOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IMonacoOptionsConverter> =

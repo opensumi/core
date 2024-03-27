@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { URI, IRange } from '@opensumi/ide-core-common';
+import { IRange, URI } from '@opensumi/ide-core-common';
+import { isEqual } from '@opensumi/monaco-editor-core/esm/vs/base/common/resources';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
@@ -9,6 +10,7 @@ import { EditorScopedLayoutService } from '@opensumi/monaco-editor-core/esm/vs/e
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import { ContextViewService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
+import { IResourceEditorInput } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 /* istanbul ignore file */
 import { EditorOpenType, WorkbenchEditorService } from '../common';
@@ -43,22 +45,17 @@ export class MonacoCodeService extends AbstractCodeEditorService {
    * @param sideBySide ？
    */
   async openCodeEditor(
-    // @ts-ignore
-    input: monaco.editor.IResourceInput,
+    input: IResourceEditorInput,
     source: IMonacoCodeEditor | null,
     sideBySide?: boolean,
   ): Promise<IMonacoCodeEditor | null> {
-    const resourceUri = new URI(input.resource.toString());
+    const resourceUri = input.resource;
     // 判断打开下一个不同于当前编辑器的文件时，是否需要先固定当前编辑器Tab，从而避免被替换，例如：跳转到定义
     const enablePreviewFromCodeNavigation = this.preferenceService.get<boolean>(
       'editor.enablePreviewFromCodeNavigation',
     );
-    if (
-      !enablePreviewFromCodeNavigation &&
-      source &&
-      !sideBySide &&
-      !new URI(source.getModel()?.uri).isEqual(input.resource)
-    ) {
+
+    if (!enablePreviewFromCodeNavigation && source && !sideBySide && isEqual(source.getModel()?.uri, input.resource)) {
       for (const visibleGroup of this.workbenchEditorService.editorGroups) {
         if (visibleGroup.currentOpenType?.type === EditorOpenType.code) {
           if (visibleGroup.currentEditor?.monacoEditor === source) {
@@ -90,6 +87,7 @@ export class MonacoCodeService extends AbstractCodeEditorService {
         index++;
       }
     }
+    // @ts-ignore
     const selection = input.options ? input.options.selection : null;
     let range;
     if (selection) {
@@ -104,12 +102,11 @@ export class MonacoCodeService extends AbstractCodeEditorService {
         );
       }
     }
-    await editorGroup.open(resourceUri, { index, range: range as IRange, focus: true });
+    const openUri = URI.parse(resourceUri.toString());
+    await editorGroup.open(openUri, { index, range: range as IRange, focus: true });
     return (editorGroup.codeEditor as BrowserCodeEditor).monacoEditor;
   }
 }
-
-// @ts-ignore
 
 export class MonacoContextViewService extends ContextViewService {
   private menuContainer: HTMLDivElement;

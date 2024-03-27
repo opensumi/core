@@ -9,33 +9,33 @@ import { Injector } from '@opensumi/di';
 import { RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
+  AppLifeCycleServiceToken,
   CommandRegistry,
-  isOSX,
   ContributionProvider,
-  MaybePromise,
-  createContributionProvider,
-  StorageProvider,
   DefaultStorageProvider,
-  StorageResolverContribution,
-  ILoggerManagerClient,
-  SupportLogNamespace,
-  ILogServiceClient,
-  getDebugLogger,
-  isElectronRenderer,
-  setLanguageId,
-  IReporterService,
-  REPORT_NAME,
-  IEventBus,
-  asExtensionCandidate,
+  Deferred,
+  GeneralSettingsId,
+  IAppLifeCycleService,
   IApplicationService,
   IDisposable,
-  Deferred,
-  isUndefined,
-  GeneralSettingsId,
-  UrlProvider,
+  IEventBus,
+  ILogServiceClient,
+  ILoggerManagerClient,
+  IReporterService,
   LifeCyclePhase,
-  AppLifeCycleServiceToken,
-  IAppLifeCycleService,
+  MaybePromise,
+  REPORT_NAME,
+  StorageProvider,
+  StorageResolverContribution,
+  SupportLogNamespace,
+  UrlProvider,
+  asExtensionCandidate,
+  createContributionProvider,
+  getDebugLogger,
+  isElectronRenderer,
+  isOSX,
+  isUndefined,
+  setLanguageId,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -49,29 +49,28 @@ import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
-import { CorePreferences } from '../core-preferences';
-import { injectCorePreferences } from '../core-preferences';
+import { CorePreferences, injectCorePreferences } from '../core-preferences';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
 import { RenderedEvent } from '../layout/layout.interface';
-import { MenuRegistryImpl, IMenuRegistry } from '../menu/next/base';
+import { IMenuRegistry, MenuRegistryImpl } from '../menu/next/base';
 import {
-  PreferenceProviderProvider,
-  injectPreferenceSchemaProvider,
-  injectPreferenceConfigurations,
-  PreferenceScope,
   PreferenceProvider,
+  PreferenceProviderProvider,
+  PreferenceScope,
   PreferenceService,
   PreferenceServiceImpl,
   getPreferenceLanguageId,
+  injectPreferenceConfigurations,
+  injectPreferenceSchemaProvider,
   registerLocalStorageProvider,
 } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
-import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
+import { DEFAULT_CDN_ICON, IDE_CODICONS_CN_CSS, IDE_OCTICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { electronEnv } from '../utils';
 
-import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
-import { renderClientApp, IAppRenderer } from './app.view';
-import { createClientConnection2, bindConnectionService } from './connection';
+import { IClientAppOpts, IPreferences, IconInfo, IconMap, LayoutConfig, ModuleConstructor } from './app.interface';
+import { IAppRenderer, renderClientApp } from './app.view';
+import { bindConnectionService, createClientConnection2 } from './connection';
 import { injectInnerProviders } from './inner-providers';
 import { injectElectronInnerProviders } from './inner-providers-electron';
 

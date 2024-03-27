@@ -28,7 +28,7 @@ export interface MonacoEditorCommandHandler {
 export const IMonacoCommandsRegistry = Symbol('IMonacoCommandsRegistry');
 
 export interface IMonacoCommandsRegistry {
-  validate(command: string): string | undefined;
+  validate(command: string | null): string | undefined;
   registerCommand(command: Command, handler: MonacoEditorCommandHandler): void;
 }
 

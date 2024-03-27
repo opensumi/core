@@ -1,81 +1,88 @@
 import globToRegExp from 'glob-to-regexp';
 import {
-  DocumentSelector,
-  CompletionItemProvider,
-  CancellationToken,
-  DefinitionProvider,
-  TypeDefinitionProvider,
-  FoldingRangeProvider,
-  FoldingContext,
-  DocumentColorProvider,
-  DocumentRangeFormattingEditProvider,
-  DocumentFormattingEditProvider,
   CallHierarchyProvider,
-  TypeHierarchyProvider,
+  CancellationToken,
+  CompletionItemProvider,
+  DefinitionProvider,
+  DocumentColorProvider,
+  DocumentFormattingEditProvider,
+  DocumentRangeFormattingEditProvider,
+  DocumentSelector,
+  FoldingContext,
+  FoldingRangeProvider,
   InlayHintsProvider,
   InlineCompletionItemProvider,
+  TypeDefinitionProvider,
+  TypeHierarchyProvider,
+  // eslint-disable-next-line import/no-unresolved
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
-import { IMarkerData, IRange, Uri, UriComponents, IMarkdownString } from '@opensumi/ide-core-common';
+import { IMarkdownString, IMarkerData, IRange, UriComponents } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
-import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
+import { InlineValue, InlineValueContext } from '@opensumi/ide-debug/lib/common/inline-values';
+// eslint-disable-next-line import/order
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { URI as Uri } from '@opensumi/monaco-editor-core/esm/vs/base/common/uri';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import type {
   CodeActionContext,
-  SignatureHelpContext,
   Command,
   CompletionItemLabel,
+  SignatureHelpContext,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { Disposable } from './ext-types';
 import { IExtensionDescription } from './extension';
 import {
-  SerializedDocumentFilter,
-  Hover,
-  Position,
-  Range,
-  Definition,
-  DefinitionLink,
-  FoldingRange,
-  RawColorInfo,
-  ColorPresentation,
-  DocumentHighlight,
-  FormattingOptions,
-  SingleEditOperation,
-  SerializedLanguageConfiguration,
-  ReferenceContext,
-  Location,
-  ILink,
-  DocumentSymbol,
-  WorkspaceEditDto,
-  RenameLocation,
-  Selection,
-  ISerializedSignatureHelpProviderMetadata,
-  SelectionRange,
-  ICallHierarchyItemDto,
-  ITypeHierarchyItemDto,
-  IOutgoingCallDto,
-  IIncomingCallDto,
+  CacheId,
+  ChainedCacheId,
   CodeLens,
-  SemanticTokensLegend,
-  WithDuration,
+  ColorPresentation,
+  CompletionContext,
   CompletionItemInsertTextRule,
   CompletionItemKind,
   CompletionItemTag,
-  ChainedCacheId,
-  IWorkspaceEditDto,
-  CacheId,
+  Definition,
+  DefinitionLink,
+  DocumentHighlight,
+  DocumentSymbol,
+  FoldingRange,
+  FormattingOptions,
+  Hover,
+  ICallHierarchyItemDto,
   ICodeLensListDto,
-  ISignatureHelpDto,
+  IIncomingCallDto,
+  ILink,
   ILinksListDto,
+  IOutgoingCallDto,
+  ISerializedSignatureHelpProviderMetadata,
+  ISignatureHelpDto,
+  ITypeHierarchyItemDto,
+  IWorkspaceEditDto,
+  Location,
+  Position,
+  Range,
+  RawColorInfo,
+  ReferenceContext,
+  RenameLocation,
+  Selection,
+  SelectionRange,
+  SemanticTokensLegend,
+  SerializedDocumentFilter,
+  SerializedLanguageConfiguration,
   SerializedRegExp,
+  SingleEditOperation,
+  WithDuration,
+  WorkspaceEditDto,
 } from './model.api';
-import { CompletionContext } from './model.api';
+
+// eslint-disable-next-line import/no-restricted-paths
+// eslint-disable-next-line import/no-restricted-paths
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -720,6 +727,7 @@ export interface SelectedSuggestionInfo {
   text: string;
   isSnippetText: boolean;
   completionKind: CompletionItemKind;
+  equals(other: SelectedSuggestionInfo): boolean;
 }
 
 // inline completion end

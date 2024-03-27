@@ -6,8 +6,8 @@ import Koa from 'koa';
 
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { Deferred, ILogServiceManager, INodeLogger, ServerApp, ServerCommonModule } from '@opensumi/ide-core-node';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('ServerApp', () => {

@@ -1,19 +1,18 @@
-// eslint-disable-next-line import/order
+import { AiTopLayoutConfig } from '@opensumi/ide-ai-native/lib/browser/override/layout/layout-config';
+import { SlotLocation } from '@opensumi/ide-core-browser';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
+import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
+import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
+import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
 const defaultLanguage = LOCALE_TYPES.EN_US;
-// eslint-disable-next-line import/order
-import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
 // 请注意，集成方在这里需要自己传一个正确的 locale 进去
 // 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
 setLocale(defaultLanguage);
 
-import { SlotLocation } from '@opensumi/ide-core-browser';
 import '@opensumi/ide-core-browser/lib/style/index.less';
-import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import '@opensumi/ide-i18n';
-import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
-import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
@@ -36,6 +35,7 @@ renderApp({
         modules: ['@opensumi/ide-toolbar-action'],
       },
     },
+    ...AiTopLayoutConfig,
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,

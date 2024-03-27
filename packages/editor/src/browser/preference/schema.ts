@@ -80,6 +80,7 @@ export const EDITOR_SUGGEST_DEFAULTS = {
 
 export const EDITOR_INLINE_SUGGEST_DEFAULTS = {
   enabled: true,
+  showToolbar: 'onHover',
 };
 
 export const enum WrappingIndent {
@@ -522,6 +523,23 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: EDITOR_INLINE_SUGGEST_DEFAULTS.enabled,
     description: '%editor.configuration.inlineSuggest.enabled%',
+  },
+  'editor.inlineSuggest.showToolbar': {
+    type: 'string',
+    default: EDITOR_INLINE_SUGGEST_DEFAULTS.showToolbar,
+    enum: ['always', 'onHover', 'never'],
+    enumDescriptions: [
+      localize(
+        'editor.configuration.inlineSuggest.showToolbar.always',
+        'Show the inline suggestion toolbar whenever an inline suggestion is shown.',
+      ),
+      localize(
+        'editor.configuration.inlineSuggest.showToolbar.onHover',
+        'Show the inline suggestion toolbar when hovering over an inline suggestion.',
+      ),
+      localize('editor.configuration.inlineSuggest.showToolbar.never', 'Never show the inline suggestion toolbar.'),
+    ],
+    description: '%editor.configuration.inlineSuggest.showToolbar%',
   },
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',

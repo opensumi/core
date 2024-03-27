@@ -1,17 +1,17 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
-  WithEventBus,
+  CommandService,
   Domain,
+  ILogger,
+  IProgress,
+  IProgressStep,
+  MonacoOverrideServiceRegistry,
   OnEvent,
   PreferenceService,
-  CommandService,
-  ServiceNames,
-  ILogger,
-  MonacoOverrideServiceRegistry,
-  IProgress,
   ProgressLocation,
-  IProgressStep,
+  ServiceNames,
+  WithEventBus,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -25,14 +25,12 @@ import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { CodeActionProvider } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { getCodeActions } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
 import {
-  getCodeActions,
   CodeActionItem,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
-import {
   CodeActionKind,
   CodeActionTriggerSource,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/types';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/common/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { MonacoCodeService } from '../editor.override';

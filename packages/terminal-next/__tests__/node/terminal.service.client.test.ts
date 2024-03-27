@@ -1,7 +1,7 @@
 import os from 'os';
 
 import { Injector } from '@opensumi/di';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';

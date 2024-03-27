@@ -1,5 +1,5 @@
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
-import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { IAttachedView, IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
@@ -67,6 +67,8 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
       enabled: true,
       independentColorPoolPerBracketType: true,
     },
+    _indentSizeIsTabSize: false,
+    originalIndentSize: 0,
   };
 
   constructor(value, language, uri?: monaco.Uri) {
@@ -76,6 +78,17 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this.uri = uri || MockedMonacoUri.parse('inmemory://' + id.toString());
     this.language = language;
     this.value = value;
+  }
+  isTooLargeForHeapOperation(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  setLanguage(languageId: string, source?: string | undefined): void;
+  setLanguage(languageSelection: monaco.languages.ILanguageSelection, source?: string | undefined): void;
+  setLanguage(languageSelection: unknown, source?: unknown): void {
+    throw new Error('Method not implemented.');
+  }
+  getAllMarginDecorations(ownerId?: number | undefined): monaco.editor.IModelDecoration[] {
+    throw new Error('Method not implemented.');
   }
   tokenization: any;
   getLanguageIdAtPosition(lineNumber: number, column: number): string {
@@ -247,7 +260,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   onDidChangeAttached(listener: () => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
   }
-  onBeforeAttached(): void {
+  onBeforeAttached(): IAttachedView {
     throw new Error('Method not implemented.');
   }
   onBeforeDetached(): void {
@@ -296,6 +309,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
       isUndoing: false,
       isRedoing: false,
       isFlush: true,
+      isEolChange: false,
     });
   }
 
@@ -483,6 +497,9 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
           trimAutoWhitespace: true,
         };
       },
+      originalIndentSize: 0,
+      _indentSizeIsTabSize: false,
+      indentSize: 0,
     };
     // @ts-ignore
     this._onDidChangeOptions.fire(this.options);
@@ -519,6 +536,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
         isUndoing: false,
         isRedoing: false,
         isFlush: true,
+        isEolChange: false,
       });
     }
 

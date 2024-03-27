@@ -262,6 +262,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
       FormattingMode.Explicit,
       Progress.None,
       CancellationToken.None,
+      true,
     );
     runWhenIdle(() => {
       this.editor.setScrollPosition(scrollPosition);

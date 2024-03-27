@@ -8,7 +8,7 @@ import temp from 'temp';
 
 import { isWindows } from '@opensumi/ide-core-common';
 import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { ProcessModule } from '@opensumi/ide-process/lib/node';
 

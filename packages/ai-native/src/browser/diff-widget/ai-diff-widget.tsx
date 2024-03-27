@@ -162,8 +162,8 @@ export class AiDiffWidget extends ZoneWidget {
     this.modifiedValue = modifiedValue;
   }
 
-  // 覆写 revealLine 函数，使其在 show 的时候编辑器不会定位到对应位置
-  protected override revealLine(lineNumber: number, isLastLine: boolean): void {
+  // // 覆写 revealRange 函数，使其在 show 的时候编辑器不会定位到对应位置
+  protected override revealRange(range: monaco.Range, isLastLine: boolean): void {
     // not implement
   }
 

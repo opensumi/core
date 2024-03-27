@@ -1,7 +1,6 @@
 import { INativeCryptoService } from '@opensumi/ide-core-common';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { CryptoService } from '../../src/common-module/crypto.server';
 
 describe('test for core-browser/src/services/crypto-service.ts', () => {
@@ -10,7 +9,7 @@ describe('test for core-browser/src/services/crypto-service.ts', () => {
   const password = 'password';
   let hash;
   beforeAll(() => {
-    injector = createBrowserInjector([]);
+    injector = createNodeInjector([]);
     injector.addProviders({
       token: INativeCryptoService,
       useClass: CryptoService,

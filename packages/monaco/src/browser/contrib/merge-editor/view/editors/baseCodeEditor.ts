@@ -6,6 +6,7 @@ import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
+import { DetailedLineRangeMapping } from '../../../../../common/diff';
 import { MappingManagerService } from '../../mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from '../../merge-editor-widget';
 import { ConflictActions } from '../../model/conflict-actions';
@@ -13,7 +14,6 @@ import { MergeEditorDecorations } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
-import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   EDiffRangeTurn,
   EditorViewType,
@@ -230,5 +230,5 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   /**
    * @param turnType: 表示 computer diff 的结果是以 origin 作为比较还是 modify 作为比较
    */
-  public abstract inputDiffComputingResult(changes: LineRangeMapping[], turnType?: EDiffRangeTurn): void;
+  public abstract inputDiffComputingResult(changes: DetailedLineRangeMapping[], turnType?: EDiffRangeTurn): void;
 }

@@ -5,10 +5,10 @@ import * as fs from 'fs-extra';
 
 import { Injector } from '@opensumi/di';
 import { AppConfig, INodeLogger, IReporterService, getDebugLogger } from '@opensumi/ide-core-node';
+import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IExtensionNodeService, IExtensionNodeClientService, IExtensionHostManager } from '../../src/common';
 import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';

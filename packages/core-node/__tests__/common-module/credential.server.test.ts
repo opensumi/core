@@ -1,7 +1,6 @@
 import { AppConfig, ILogServiceManager, INativeCredentialService, isLinux } from '@opensumi/ide-core-node';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { CredentialService } from '../../src/common-module/credential.server';
 
 describe('test for core-browser/src/services/credentials-service.ts', () => {
@@ -20,7 +19,7 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
     findCredentials: jest.fn(() => []),
   };
   beforeAll(() => {
-    injector = createBrowserInjector([]);
+    injector = createNodeInjector([]);
     injector.addProviders(
       {
         token: AppConfig,
