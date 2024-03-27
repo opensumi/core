@@ -65,7 +65,7 @@ const ChatEditor = ({ input, language }) => {
     codeEditor.monacoEditor.setModel(model);
 
     if (language && languageService.getLanguage(language)) {
-      codeEditor.monacoEditor.getModel()?.setMode(language);
+      codeEditor.monacoEditor.getModel()?.setLanguage(language);
     }
 
     return codeEditor;

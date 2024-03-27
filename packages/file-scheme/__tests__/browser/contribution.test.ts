@@ -63,7 +63,11 @@ describe('contribution test', () => {
       aliases: ['js'],
       mimetypes: ['text/javascript'],
     });
-
+    langService.registerLanguage({
+      id: 'plaintext',
+      extensions: ['.txt'],
+      aliases: ['txt'],
+    });
     contribution = injector.get(FileSystemEditorComponentContribution);
     registry = injector.get(EditorComponentRegistry);
     contribution.registerEditorComponent?.(registry);

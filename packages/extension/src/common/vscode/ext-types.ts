@@ -811,10 +811,13 @@ export enum CompletionItemTag {
   Deprecated = 1,
 }
 
+export interface MarkdownStringTrustedOptions {
+  readonly enabledCommands: readonly string[];
+}
 @es5ClassCompat
 export class MarkdownString {
   value: string;
-  isTrusted?: boolean;
+  isTrusted?: boolean | MarkdownStringTrustedOptions;
   supportHtml?: boolean;
   baseUri?: vscode.Uri;
   readonly supportThemeIcons?: boolean;

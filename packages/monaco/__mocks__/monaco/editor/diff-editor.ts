@@ -17,6 +17,28 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     this.modifiedEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.onDidDispose = this.onDispose;
   }
+  onDidChangeModel: monaco.IEvent<void>;
+  createViewModel(model: monaco.editor.IDiffEditorModel): monaco.editor.IDiffEditorViewModel {
+    throw new Error('Method not implemented.');
+  }
+  setBoundarySashes(sashes: any): void {
+    throw new Error('Method not implemented.');
+  }
+  goToDiff(target: 'next' | 'previous'): void {
+    throw new Error('Method not implemented.');
+  }
+  revealFirstDiff(): unknown {
+    throw new Error('Method not implemented.');
+  }
+  accessibleDiffViewerNext(): void {
+    throw new Error('Method not implemented.');
+  }
+  accessibleDiffViewerPrev(): void {
+    throw new Error('Method not implemented.');
+  }
+  handleInitialized(): void {
+    throw new Error('Method not implemented.');
+  }
   createDecorationsCollection(
     decorations?: monaco.editor.IModelDeltaDecoration[] | undefined,
   ): monaco.editor.IEditorDecorationsCollection {
@@ -92,12 +114,6 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     this.model = model;
   }
   getLineChanges(): monaco.editor.ILineChange[] | null {
-    return null;
-  }
-  getDiffLineInformationForOriginal(lineNumber: number): monaco.editor.IDiffLineInformation | null {
-    return null;
-  }
-  getDiffLineInformationForModified(lineNumber: number): monaco.editor.IDiffLineInformation | null {
     return null;
   }
   getId(): string {
@@ -206,38 +222,5 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   }
   getContainerDomNode() {
     return this.originalEditor.getContainerDomNode();
-  }
-}
-
-interface IDiffRange {
-  rhs: boolean;
-  range: Range;
-}
-
-export class MockedDiffNavigator implements monaco.editor.IDiffNavigator {
-  constructor(public diffEditor, public opts) {}
-
-  canNavigate(): boolean {
-    throw new Error('Method not implemented.');
-  }
-
-  next(): void {
-    throw new Error('Method not implemented.');
-  }
-
-  previous(): void {
-    throw new Error('Method not implemented.');
-  }
-
-  dispose(): void {
-    throw new Error('Method not implemented.');
-  }
-
-  ranges: IDiffRange[];
-  nextIdx: number;
-  revealFirst: boolean;
-
-  _initIdx(fwd: boolean): void {
-    throw new Error('Method not implemented.');
   }
 }

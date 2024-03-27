@@ -1082,7 +1082,13 @@ export const localizationBundle = {
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.formatOnSaveTimeout':
       '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
+    // inlineSuggest start
     'editor.configuration.inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
+    'editor.configuration.inlineSuggest.showToolbar': '控制何时显示内联建议工具栏。',
+    'editor.configuration.inlineSuggest.showToolbar.always': '每当显示内联建议时，就显示内联建议工具栏。',
+    'editor.configuration.inlineSuggest.showToolbar.onHover': '将鼠标悬停在内联建议上时显示内联建议工具栏。',
+    'editor.configuration.inlineSuggest.showToolbar.never': '永不显示内联建议工具栏。',
+    // inlineSuggest end
     'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.formatOnSave': '在保存时格式化文件',
     'editor.configuration.formatOnType': '控制编辑器是在键入后自动格式化该行。',

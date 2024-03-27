@@ -109,6 +109,7 @@ describe('ExtHostLanguageFeatures', () => {
       undefined,
       monaco.Uri.parse('far://testing/file.a'),
     );
+    model.setLanguage('a');
     extHostDocuments.$fireModelOpenedEvent({
       uri: model.uri.toString(),
       dirty: false,
@@ -230,7 +231,7 @@ describe('ExtHostLanguageFeatures', () => {
         defaultSelector,
         new (class implements vscode.DefinitionProvider {
           provideDefinition(): any {
-            return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+            return [new types.Location(model.uri as Uri, new types.Range(1, 2, 3, 4))];
           }
         })(),
         createToken(),
@@ -258,7 +259,7 @@ describe('ExtHostLanguageFeatures', () => {
         defaultSelector,
         new (class implements vscode.ImplementationProvider {
           provideImplementation(): any {
-            return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+            return [new types.Location(model.uri as Uri, new types.Range(1, 2, 3, 4))];
           }
         })(),
         createToken(),
@@ -285,7 +286,7 @@ describe('ExtHostLanguageFeatures', () => {
         defaultSelector,
         new (class implements vscode.TypeDefinitionProvider {
           provideTypeDefinition(): any {
-            return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+            return [new types.Location(model.uri as Uri, new types.Range(1, 2, 3, 4))];
           }
         })(),
         createToken(),
@@ -384,7 +385,7 @@ describe('ExtHostLanguageFeatures', () => {
         defaultSelector,
         new (class implements vscode.ReferenceProvider {
           provideReferences(): any {
-            return [new types.Location(model.uri, new types.Position(0, 0))];
+            return [new types.Location(model.uri as Uri, new types.Position(0, 0))];
           }
         })(),
         createToken(),
@@ -514,7 +515,7 @@ describe('ExtHostLanguageFeatures', () => {
         new (class implements vscode.RenameProvider {
           provideRenameEdits(): any {
             const edit = new types.WorkspaceEdit();
-            edit.replace(model.uri, new types.Range(0, 0, 0, 0), 'testing');
+            edit.replace(model.uri as Uri, new types.Range(0, 0, 0, 0), 'testing');
             return edit;
           }
         })(),
@@ -1035,8 +1036,8 @@ An error case:
 
       expect(mockMainThreadFunc).toBeCalled();
       const prepareCallHierarchyItems = await callHierarchyService.prepareCallHierarchyProvider(
-        model.uri,
-        new Position(1, 1),
+        model.uri as Uri,
+        new monaco.Position(1, 1),
       );
       expect(prepareCallHierarchyItems.length).toBe(1);
       expect(prepareCallHierarchyItems[0].kind).toBe(types.SymbolKind.Object);
@@ -1143,8 +1144,8 @@ An error case:
       expect(mockMainThreadFunc).toBeCalled();
 
       const prepareTypeHierarchyItems = await typeHierarchyService.prepareTypeHierarchyProvider(
-        model.uri,
-        new Position(1, 1),
+        model.uri as Uri,
+        new monaco.Position(1, 1),
       );
       expect(Array.isArray(prepareTypeHierarchyItems)).toBe(true);
       expect(prepareTypeHierarchyItems.length).toBe(1);
@@ -1161,7 +1162,8 @@ An error case:
   });
   // #endregion TypeHierarchy
 
-  const textModel = createModel('test.a = "test"', 'test');
+  const textModel = createModel('test.a = "test"', undefined, monaco.Uri.parse('far://testing/file.test'));
+  textModel.setLanguage('test');
   const evaluatableExpressionService = injector.get<IEvaluatableExpressionService>(IEvaluatableExpressionService);
   const expressionProvider = {
     provideEvaluatableExpression(document, position) {

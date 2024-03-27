@@ -1043,7 +1043,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
     if (supportResolve) {
       provider.resolveLink = (link: monaco.languages.ILink, token) => {
-        const dto: ILinkDto = link;
+        const dto: ILinkDto = link as ILinkDto;
         if (!dto.cacheId) {
           return link;
         }

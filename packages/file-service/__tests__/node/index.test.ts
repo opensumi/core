@@ -4,14 +4,14 @@ import path from 'path';
 import * as fse from 'fs-extra';
 
 import { isWindows } from '@opensumi/ide-core-common';
-import { URI, FileUri } from '@opensumi/ide-core-node';
+import { FileUri, URI } from '@opensumi/ide-core-node';
 import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileSystemWatcherServer } from '../../lib/node/file-service-watcher';
-import { IFileService, FileChangeType } from '../../src/common';
-import { FileServiceModule, FileService } from '../../src/node';
+import { FileChangeType, IFileService } from '../../src/common';
+import { FileService, FileServiceModule } from '../../src/node';
 
 // tslint:disable:variable-name
 describe('FileService', () => {

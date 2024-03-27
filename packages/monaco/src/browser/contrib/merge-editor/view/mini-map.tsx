@@ -79,8 +79,12 @@ export const MiniMap: React.FC<{ contrastType: EditorViewType }> = ({ contrastTy
 
   return (
     <div className={styles.minimap_content}>
-      {blocks.map((block) => (
-        <span className={cls(styles.block, block.className)} style={{ top: block.top, height: block.height }}></span>
+      {blocks.map((block, i) => (
+        <span
+          key={i}
+          className={cls(styles.block, block.className)}
+          style={{ top: block.top, height: block.height }}
+        ></span>
       ))}
     </div>
   );

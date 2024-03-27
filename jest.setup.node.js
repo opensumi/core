@@ -20,6 +20,7 @@ const jsdom = new JSDOM('<div id="main"></div>', {
   resources: resourceLoader,
 });
 global.document = jsdom.window.document;
+global.UIEvent = jsdom.window.UIEvent;
 
 let text = '';
 global.navigator = Object.assign(jsdom.window.navigator, {
