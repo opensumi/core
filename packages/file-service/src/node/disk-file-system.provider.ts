@@ -320,15 +320,11 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     return result;
   }
 
-  async copy(
-    sourceUri: UriComponents,
-    targetUri: UriComponents,
-    options: { overwrite: boolean; recursive?: boolean },
-  ): Promise<FileStat> {
+  async copy(sourceUri: UriComponents, targetUri: UriComponents, options: { overwrite: boolean }): Promise<FileStat> {
     const _sourceUri = Uri.revive(sourceUri);
     const _targetUri = Uri.revive(targetUri);
     const [sourceStat, targetStat] = await Promise.all([this.doGetStat(_sourceUri, 0), this.doGetStat(_targetUri, 0)]);
-    const { overwrite, recursive } = options;
+    const { overwrite } = options;
 
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri.path);
@@ -341,7 +337,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
     await fse.copy(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), {
       overwrite,
-      recursive,
     });
     const newStat = await this.doGetStat(_targetUri, 1);
     if (newStat) {
