@@ -58,7 +58,9 @@ const createMessage = (message: MessageData) => ({
 const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
 const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
-  let { title, message, tooltip, icon } = question;
+  let { title } = question;
+  const { message, tooltip } = question;
+
   if (!title) {
     return {
       icon: '',
@@ -67,6 +69,8 @@ const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
       tooltip,
     };
   }
+
+  let icon;
 
   const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
   if (iconMatched) {
