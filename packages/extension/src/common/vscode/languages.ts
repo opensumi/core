@@ -75,7 +75,7 @@ import {
 } from './model.api';
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { ITextModel, NewSymbolName } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 // eslint-disable-next-line import/no-restricted-paths
 import type {
   CodeActionContext,
@@ -152,6 +152,7 @@ export interface IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     supportsResoveInitialValues: boolean,
   ): void;
+  $registerNewSymbolNamesProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerCallHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -425,6 +426,13 @@ export interface IExtHostLanguages {
     position: Position,
     token: CancellationToken,
   ): PromiseLike<RenameLocation | undefined>;
+
+  $provideNewSymbolNames(
+    handle: number,
+    resource: Uri,
+    range: Range,
+    token: CancellationToken,
+  ): Promise<NewSymbolName[] | undefined>;
 
   $provideSelectionRanges(
     handle: number,

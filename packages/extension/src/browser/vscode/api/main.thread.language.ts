@@ -1259,6 +1259,41 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
+  createNewSymbolNamesProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.NewSymbolNamesProvider {
+    return {
+      provideNewSymbolNames: (model, range, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined;
+        }
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined;
+        }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_NEW_SYMBOL_NAMES);
+        return this.proxy.$provideNewSymbolNames(handle, model.uri, range, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v;
+        });
+      },
+    };
+  }
+
+  $registerNewSymbolNamesProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    if (!languageSelector) {
+      return;
+    }
+    const newSymbolsProvider = this.createNewSymbolNamesProvider(handle, languageSelector);
+    this.disposables.set(
+      handle,
+      monacoApi.languages.registerNewSymbolNameProvider(languageSelector, newSymbolsProvider),
+    );
+  }
+
   /**
    * 将 IWorkspaceEditDto 转为 monaco-editor 中的 WorkspaceEdit
    */

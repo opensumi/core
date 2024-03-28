@@ -34,6 +34,8 @@ import vscode, {
   InlineValuesProvider,
   LanguageConfiguration,
   LinkedEditingRangeProvider,
+  NewSymbolName,
+  NewSymbolNamesProvider,
   OnTypeFormattingEditProvider,
   ReferenceProvider,
   RenameProvider,
@@ -135,6 +137,7 @@ import { InlineCompletionAdapter, InlineCompletionAdapterBase } from './language
 import { CodeLensAdapter } from './language/lens';
 import { LinkProviderAdapter } from './language/link-provider';
 import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
+import { NewSymbolNamesAdapter } from './language/new-symbol-names';
 import { OnTypeFormattingAdapter } from './language/on-type-formatting';
 import { OutlineAdapter } from './language/outline';
 import { FormattingAdapter, RangeFormattingAdapter } from './language/range-formatting';
@@ -234,6 +237,9 @@ export function createLanguagesApiFactory(
     },
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
       return extHostLanguages.registerRenameProvider(selector, provider, extension);
+    },
+    registerNewSymbolNamesProvider(selector: DocumentSelector, provider: NewSymbolNamesProvider): Disposable {
+      return extHostLanguages.registerNewSymbolNamesProvider(selector, provider, extension);
     },
     registerSignatureHelpProvider(
       selector: DocumentSelector,
@@ -360,7 +366,8 @@ export type Adapter =
   | InlineValuesAdapter
   | LinkedEditingRangeAdapter
   | InlayHintsAdapter
-  | InlineCompletionAdapter;
+  | InlineCompletionAdapter
+  | NewSymbolNamesAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -1293,6 +1300,33 @@ export class ExtHostLanguages implements IExtHostLanguages {
     );
   }
   // ### Rename Provider end
+
+  // ### New Symbol Names Provider start
+  registerNewSymbolNamesProvider(
+    selector: DocumentSelector,
+    provider: NewSymbolNamesProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new NewSymbolNamesAdapter(provider, this.documents), extension);
+    this.proxy.$registerNewSymbolNamesProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideNewSymbolNames(
+    handle: number,
+    resource: Uri,
+    range: Range,
+    token: CancellationToken,
+  ): Promise<NewSymbolName[] | undefined> {
+    return this.withAdapter(
+      handle,
+      NewSymbolNamesAdapter,
+      (adapter) => adapter.provideNewSymbolNames(resource, range, token),
+      false,
+      undefined,
+    );
+  }
+  // ### New Symbol Names Provider end
 
   // ### smart select
   registerSelectionRangeProvider(
