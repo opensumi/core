@@ -5,6 +5,7 @@ export interface ILayoutViewSize {
   titleBarHeight: number;
   panelTitleBarHeight: number;
   statusBarHeight: number;
+  accordionHeaderSizeHeight: number;
 }
 
 export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
@@ -14,6 +15,7 @@ export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
   titleBarHeight: 22,
   panelTitleBarHeight: 35,
   statusBarHeight: 24,
+  accordionHeaderSizeHeight: 24,
 };
 
 export class LayoutViewSizeConfig implements ILayoutViewSize {
@@ -36,5 +38,8 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
   }
   get statusBarHeight(): number {
     return this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
+  }
+  get accordionHeaderSizeHeight(): number {
+    return this.layoutViewSize?.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
   }
 }

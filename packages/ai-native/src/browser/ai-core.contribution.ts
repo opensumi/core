@@ -117,7 +117,7 @@ export class AINativeBrowserContribution
   initialize() {
     this.aiNativeConfigService.enableCapabilities();
 
-    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
+    const { supportsChatAssistant, supportsOpenSumiDesign } = this.aiNativeConfigService.capabilities;
     const { useMenubarView } = this.aiNativeConfigService.layout;
 
     let layoutConfig = this.appConfig.layoutConfig;
@@ -139,6 +139,15 @@ export class AINativeBrowserContribution
       layoutConfig = {
         ...layoutConfig,
         ...AIMenubarLayoutConfig,
+      };
+    }
+
+    if (supportsOpenSumiDesign) {
+      layoutViewSize = {
+        ...layoutViewSize,
+        editorTabsHeight: 36,
+        statusBarHeight: 36,
+        accordionHeaderSizeHeight: 36,
       };
     }
 

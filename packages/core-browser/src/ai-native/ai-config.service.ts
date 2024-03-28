@@ -23,6 +23,7 @@ export class AINativeConfigService {
   private internalLayout: Required<IAINativeLayout> = {
     useMergeRightWithLeftPanel: false,
     useMenubarView: false,
+    menubarLogo: '',
   };
 
   private setDefaultCapabilities(value: boolean): void {
