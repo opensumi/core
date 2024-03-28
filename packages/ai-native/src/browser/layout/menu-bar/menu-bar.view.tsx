@@ -11,6 +11,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
+import opensumiLogo from './logo.svg';
 import styles from './menu-bar.module.less';
 
 const AIMenuBarRender = () => {
@@ -55,10 +56,7 @@ const AIMenuBarRender = () => {
     });
   }, [anchor, extraTopMenus]);
 
-  const logo = React.useMemo(() => {
-    const opensumiLogo = require('./logo.svg');
-    return aiNativeConfigService.layout.menubarLogo || opensumiLogo;
-  }, [aiNativeConfigService.layout.menubarLogo]);
+  const logo = React.useMemo(() => aiNativeConfigService.layout.menubarLogo || opensumiLogo, [aiNativeConfigService.layout.menubarLogo]);
 
   return (
     <>
