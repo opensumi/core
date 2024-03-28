@@ -982,7 +982,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(
       handle,
       CodeActionAdapter,
-      (adapter) => adapter.provideCodeAction(resource, rangeOrSelection, context, this.commands.converter, token),
+      (adapter) => adapter.provideCodeActions(resource, rangeOrSelection, context, this.commands.converter, token),
       false,
       undefined,
     );

@@ -963,9 +963,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       supportResolve,
     );
 
-    // 这里直接使用 languageFeaturesService.codeActionProvider 来注册 QuickFixProvider,
-    // 因为 monacoApi.languages.registerCodeActionProvider 过滤掉了 CodeActionKinds 参数
-    // 会导致 supportedCodeAction ContextKey 失效，右键菜单缺失了 Refactor 和 Source Action
     this.disposables.set(
       handle,
       languageFeaturesService.codeActionProvider.register(languageSelector, quickFixProvider),

@@ -674,7 +674,9 @@ export interface ICodeActionDto {
   command?: Command;
   kind?: string;
   isPreferred?: boolean;
+  isAI?: boolean;
   disabled?: string;
+  ranges?: IRange[];
 }
 
 export interface ICodeActionListDto {
