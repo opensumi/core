@@ -18,6 +18,7 @@ import {
   ThrottledDelayer,
   Deferred,
   CommonLanguageId,
+  CancellationToken,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService, IOpenResourceResult } from '@opensumi/ide-editor';
 import { EditorCollectionService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
@@ -31,13 +32,15 @@ import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/brows
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
+import { DebugConfigurationProviderTriggerKind } from '../../../extension/lib/common/vscode/ext-types';
+import { DebugServer, IDebugServer, IDebugSessionManager, IDebuggerContribution, launchSchemaUri } from '../common';
 import { DebugSessionOptions } from '../common';
 import { DebugConfiguration } from '../common';
 
 import { CONTEXT_DEBUGGERS_AVAILABLE, LAUNCH_VIEW_SCHEME } from './../common/constants';
 import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugPreferences } from './debug-preferences';
+import { DebugSessionManager } from './debug-session-manager';
 
 export type WillProvideDebugConfiguration = WaitUntilEvent;
 export type WillInitialConfiguration = WaitUntilEvent;
@@ -48,6 +51,12 @@ export interface IDebugConfigurationData {
     workspaceFolderUri?: string;
     index: number;
   };
+}
+
+export interface InternalDebugConfigurationProvider {
+  type: string;
+  label: string;
+  provideDebugConfigurations(folderUri: string | undefined, token?: CancellationToken): Promise<DebugConfiguration[]>;
 }
 
 @Injectable()
@@ -95,6 +104,12 @@ export class DebugConfigurationManager {
 
   @Autowired(EditorCollectionService)
   protected readonly editorCollectionService: EditorCollectionService;
+
+  @Autowired(IDebugSessionManager)
+  protected debugSessionManager: DebugSessionManager;
+
+  // DebugConfigManager 直接维护的一批内部 DebugConfigurationProvider，用于模块级的快速自定义 Dynamic DebugConfiguration
+  protected readonly internalDebugConfigurationProviders = new Map<string, InternalDebugConfigurationProvider>();
 
   private contextDebuggersAvailable: IContextKey<boolean>;
 
@@ -176,12 +191,22 @@ export class DebugConfigurationManager {
 
   protected getAll(): DebugSessionOptions[] {
     const debugSessionOptions: DebugSessionOptions[] = [];
+    const recentDynamicOptions = this.getRecentDynamicConfigurations();
+
+    recentDynamicOptions.forEach((config, index) => {
+      debugSessionOptions.push({
+        configuration: config,
+        workspaceFolderUri: this.model?.workspaceFolderUri,
+        index,
+      });
+    });
+
     for (const model of this.models.values()) {
       for (let index = 0, len = model.configurations.length; index < len; index++) {
         debugSessionOptions.push({
           configuration: model.configurations[index],
           workspaceFolderUri: model.workspaceFolderUri,
-          index,
+          index, // 这里的 index 要遵循 model.configurations 的顺序，后面的 find 函数需要用 index 去匹配
         });
       }
     }
@@ -235,6 +260,16 @@ export class DebugConfigurationManager {
   }
 
   find(name: string, workspaceFolderUri: string | undefined, index?: number): DebugSessionOptions | undefined {
+    const recentDynamicOptions = this.getRecentDynamicConfigurations();
+    const matchedRecentDynamicOptions = recentDynamicOptions.find((config) => config.name === name);
+    if (matchedRecentDynamicOptions) {
+      return {
+        configuration: matchedRecentDynamicOptions,
+        workspaceFolderUri: this.model?.workspaceFolderUri,
+        index: recentDynamicOptions.indexOf(matchedRecentDynamicOptions),
+      };
+    }
+
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {
         if (typeof index === 'number') {
@@ -433,7 +468,7 @@ export class DebugConfigurationManager {
   /**
    * 初始化 launch 文件
    */
-  public async cretaInitialConfig(uri: URI ,configurations: DebugConfiguration[] = []): Promise<void> {
+  public async createInitialConfig(uri: URI, configurations: DebugConfiguration[] = []): Promise<void> {
     const content = this.getInitialConfigurationContent(configurations);
     const fileStat = await this.filesystem.getFileStat(uri.toString());
 
@@ -452,6 +487,43 @@ export class DebugConfigurationManager {
     }
   }
 
+  public async showDynamicConfigurationsTypesQuickPick() {
+    const debugTypes = await this.getDynamicConfigurationsSupportTypes();
+    const debugType = await this.quickPick.show(
+      debugTypes.map((debugType) => ({ label: debugType.label || debugType.type, value: debugType.type })),
+      {
+        placeholder: localize('debug.configuration.selectAutomaticDebugTypes'),
+      },
+    );
+    return debugType;
+  }
+
+  public async getDynamicConfigurationsSupportTypes() {
+    await this.fireWillProvideDebugConfiguration();
+    const debugTypes = new Set<string>();
+
+    const typesFromInternal = Array.from(this.internalDebugConfigurationProviders.keys());
+    typesFromInternal.forEach((type) => debugTypes.add(type));
+    const typesFromExt = await this.debug.getDynamicConfigurationsSupportTypes();
+    typesFromExt.forEach((type) => debugTypes.add(type));
+
+    return Array.from(debugTypes).map((type) => ({ type, label: this.getDebuggerLabel(type) }));
+  }
+
+  public async showDynamicConfigurationsQuickPick(type: string): Promise<DebugConfiguration | undefined> {
+    const configurations = await this.provideDynamicDebugConfigurations(type, this.model?.workspaceFolderUri);
+    const result = await this.quickPick.show(
+      configurations.map((config) => ({ label: config.name, value: config })),
+      {
+        placeholder: localize('debug.configuration.selectAutomaticDebugConfiguration'),
+      },
+    );
+    if (result) {
+      await this.addRecentDynamicConfiguration(result);
+    }
+    return result;
+  }
+
   protected async doCreate(model: DebugConfigurationModel): Promise<URI> {
     // 设置launch初始值
     await this.preferences.set('launch', {});
@@ -465,7 +537,7 @@ export class DebugConfigurationManager {
     }
     const debugType = await this.selectDebugType();
     const configurations = debugType ? await this.provideDebugConfigurations(debugType, model.workspaceFolderUri) : [];
-    await this.cretaInitialConfig(uri, configurations);
+    await this.createInitialConfig(uri, configurations);
     return uri;
   }
 
@@ -475,6 +547,59 @@ export class DebugConfigurationManager {
   ): Promise<DebugConfiguration[]> {
     await this.fireWillProvideDebugConfiguration();
     return this.debug.provideDebugConfigurations(debugType, workspaceFolderUri);
+  }
+
+  public async provideDynamicDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration[]> {
+    await this.fireWillProvideDebugConfiguration();
+    const configurationList: DebugConfiguration[] = [];
+    const internalProvider = this.internalDebugConfigurationProviders.get(debugType);
+    // 额外从 internalProvider 中获取配置
+    if (internalProvider) {
+      const internalList = internalProvider && (await internalProvider.provideDebugConfigurations(workspaceFolderUri));
+      internalList && configurationList.push(...internalList);
+    }
+    const extList = await this.debug.provideDebugConfigurations(
+      debugType,
+      workspaceFolderUri,
+      DebugConfigurationProviderTriggerKind.Dynamic,
+    );
+    configurationList.push(...extList);
+    return configurationList;
+  }
+
+  /**
+   * 通过模块的方式注册 DynamicDebugConfigurationProvider
+   * 此途径不经过插件，可以基于模块能力做更加便捷的集成
+   */
+  registerInternalDebugConfigurationProvider(type: string, provider: InternalDebugConfigurationProvider): void {
+    this.internalDebugConfigurationProviders.set(type, provider);
+  }
+
+  // 获取临时存储的 Dynamic DebugConfigurations，方便用户快速选择之前用过的动态配置
+  getRecentDynamicConfigurations(): DebugConfiguration[] {
+    return this.debugConfigurationStorage.get('recentDynamicConfigurations', []);
+  }
+
+  async setRecentDynamicConfigurations(configurations: DebugConfiguration[]) {
+    return await this.debugConfigurationStorage.set('recentDynamicConfigurations', configurations);
+  }
+
+  async addRecentDynamicConfiguration(configuration: DebugConfiguration) {
+    const configurations = this.getRecentDynamicConfigurations();
+    // 检查有没有重复的配置，如果有则删除
+    const index = configurations.findIndex((config) => config.name === configuration.name);
+    if (index !== -1) {
+      configurations.splice(index, 1);
+    }
+    configurations.unshift(configuration);
+    // 如果数组长度大于 3，那么删除后面的所有元素，避免记忆的智能 Debug 配置过多
+    if (configurations.length > 3) {
+      configurations.splice(3);
+    }
+    await this.setRecentDynamicConfigurations(configurations);
   }
 
   protected async fireWillProvideDebugConfiguration(): Promise<void> {
@@ -580,5 +705,19 @@ export class DebugConfigurationManager {
 
   getDebuggers(): IDebuggerContribution[] {
     return this.debuggers.filter((dbg) => !!dbg);
+  }
+
+  getDebuggerLabel(type: string): string | undefined {
+    // 如果有 internalProvider 则优先使用 internalProvider 的 label
+    const internalProvider = this.internalDebugConfigurationProviders.get(type);
+    if (internalProvider) {
+      return internalProvider.label || type;
+    }
+    const dbgr = this.getDebugger(type);
+    if (dbgr) {
+      return dbgr.label || type;
+    }
+
+    return undefined;
   }
 }

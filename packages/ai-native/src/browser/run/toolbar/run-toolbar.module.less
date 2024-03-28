@@ -1,0 +1,30 @@
+.run_toolbar_container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.debug_action_bar_internal {
+  margin-left: 8px;
+}
+
+.debug_controller_view {
+  min-width: 200px;
+  max-width: 350px;
+}
+
+.dividing {
+  margin-left: 5px;
+  width: 2px;
+  height: 12px;
+  background-color: var(--editorGroup-border);
+}
+
+.debug_actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  & > *:not(:first-child) {
+    margin-left: 6px;
+  }
+}

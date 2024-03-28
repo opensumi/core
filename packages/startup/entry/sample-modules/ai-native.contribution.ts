@@ -10,8 +10,10 @@ import {
   IInlineChatFeatureRegistry,
   ReplyResponse,
 } from '@opensumi/ide-ai-native/lib/browser/types';
-import { Domain } from '@opensumi/ide-core-browser';
+import { ClientAppContribution, Domain, IClientApp, MaybePromise, ProgressLocation } from '@opensumi/ide-core-browser';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { IEditor } from '@opensumi/ide-editor';
 
 enum EInlineOperation {
@@ -21,13 +23,19 @@ enum EInlineOperation {
   Optimize = 'Optimize',
 }
 
-@Domain(AiNativeCoreContribution)
-export class AiNativeContribution implements AiNativeCoreContribution {
+@Domain(AiNativeCoreContribution, ClientAppContribution)
+export class AiNativeContribution implements AiNativeCoreContribution, ClientAppContribution {
   @Autowired(AiChatService)
   private readonly aiChatService: AiChatService;
 
   @Autowired(AiBackSerivcePath)
   private readonly aiBackService: IAiBackService;
+
+  @Autowired(DebugConfigurationManager)
+  private readonly debugConfigurationManager: DebugConfigurationManager;
+
+  @Autowired(IProgressService)
+  private readonly progressService: IProgressService;
 
   registerRunFeature(registry: IAiRunFeatureRegistry) {
     // Not implements
@@ -157,5 +165,39 @@ export class AiNativeContribution implements AiNativeCoreContribution {
         },
       },
     );
+  }
+
+  onDidStart(app: IClientApp): MaybePromise<void> {
+    const innerProgressService = this.progressService;
+    // 使用模块的时候，需要在这里注册
+    this.debugConfigurationManager.registerInternalDebugConfigurationProvider('ai-native', {
+      type: 'ai-native',
+      label: 'AI Native调试配置',
+      async provideDebugConfigurations(folder, token) {
+        await innerProgressService.withProgress(
+          {
+            location: ProgressLocation.Notification,
+            title: '模拟 AI 生成配置中',
+          },
+          async () => {
+            await new Promise((resolve) => {
+              setTimeout(() => {
+                resolve(undefined);
+              }, 5000); // 5 seconds timeout
+            });
+          },
+        );
+
+        return [
+          {
+            name: 'Launch Program',
+            skipFiles: ['<node_internals>/**'],
+            type: 'node',
+            request: 'launch',
+            program: '${workspaceFolder}/index.js',
+          },
+        ];
+      },
+    });
   }
 }

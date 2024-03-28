@@ -27,7 +27,7 @@ renderApp({
     ...defaultConfig,
     ...{
       [SlotLocation.top]: {
-        modules: ['menubar', 'toolbar'],
+        modules: ['ai_menubar'],
       },
     },
     ...{

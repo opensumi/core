@@ -1,5 +1,7 @@
 import { IDisposable, IJSONSchema, IJSONSchemaSnippet, Event, BinaryBuffer } from '@opensumi/ide-core-common';
 
+import { DebugConfigurationProviderTriggerKind } from '../../../extension/lib/common/vscode/ext-types';
+
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';
 
@@ -107,10 +109,19 @@ export interface DebugServer extends IDisposable {
   getConfigurationSnippets(): Promise<IJSONSchemaSnippet[]>;
 
   /**
+   * 获取 DebugConfigurationProviderTriggerKind.Dynamic 类型的调试配置支持类型和 Label
+   */
+  getDynamicConfigurationsSupportTypes(): Promise<string[]>;
+
+  /**
    * 提供对应调试类型下的配置
    * @param debugType 调试类型
    */
-  provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]>;
+  provideDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+    triggerKind?: DebugConfigurationProviderTriggerKind,
+  ): Promise<DebugConfiguration[]>;
 
   /**
    * 处理调试配置，补全缺省值
