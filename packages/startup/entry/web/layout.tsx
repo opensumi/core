@@ -7,7 +7,7 @@ export function DefaultLayout() {
   const { layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer defaultSize={35} slot='top' z-index={2} />
+      <SlotRenderer id='top' defaultSize={35} slot='top' z-index={2} />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           slot='left'
@@ -30,7 +30,7 @@ export function DefaultLayout() {
           minSize={0}
         />
       </SplitPanel>
-      <SlotRenderer defaultSize={24} slot='statusBar' />
+      <SlotRenderer id='statusbar' defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
 }

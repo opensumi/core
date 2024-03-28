@@ -122,7 +122,6 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   @OnEvent(ExtensionDidContributes)
   async onDidExtensionContributes() {
     await this.updateProductIconThemes();
-    this.productIconThemeLoaded.resolve();
   }
 
   get preferenceThemeId(): string | undefined {
@@ -133,7 +132,10 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
     return this.currentTheme;
   }
 
-  private async updateProductIconThemes() {
+  /**
+   * 初始化注册默认主题
+   */
+  public async updateProductIconThemes() {
     const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: IconThemeInfo) => {
       if (!pre.has(cur.themeId)) {
         pre.set(cur.themeId, cur.name);
@@ -153,6 +155,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
         await this.applyTheme(this.preferenceThemeId);
       }
     }
+    this.productIconThemeLoaded.resolve();
   }
 
   async applyTheme(themeId: string): Promise<void> {

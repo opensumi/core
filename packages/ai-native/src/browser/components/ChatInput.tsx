@@ -144,6 +144,7 @@ export interface IChatInputProps {
   setTheme: (theme: string | null) => void;
   agentId: string;
   setAgentId: (theme: string) => void;
+  defaultAgentId?: string;
   command: string;
   setCommand: (theme: string) => void;
 }
@@ -160,10 +161,12 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     setTheme,
     theme,
     setAgentId,
-    agentId,
+    agentId: propsAgentId,
+    defaultAgentId,
     setCommand,
     command,
   } = props;
+  const agentId = propsAgentId || defaultAgentId;
   const [value, setValue] = useState(props.value || '');
   const [isShowOptions, setIsShowOptions] = useState<boolean>(false);
   const [wrapperHeight, setWrapperHeight] = useState<number>(defaultHeight);

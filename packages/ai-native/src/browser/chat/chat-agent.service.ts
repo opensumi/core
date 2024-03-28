@@ -1,7 +1,15 @@
 import flatMap from 'lodash/flatMap';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { CancellationToken, Disposable, Emitter, IDisposable, ILogger, toDisposable } from '@opensumi/ide-core-common';
+import {
+  CancellationToken,
+  ChatFeatureRegistryToken,
+  Disposable,
+  Emitter,
+  IDisposable,
+  ILogger,
+  toDisposable,
+} from '@opensumi/ide-core-common';
 
 import {
   IAIChatService,
@@ -17,12 +25,15 @@ import {
   IChatMessageStructure,
   IChatProgress,
 } from '../../common';
+import { IChatFeatureRegistry } from '../types';
 
 import { ChatService } from './chat.service';
 
 @Injectable()
 export class ChatAgentService extends Disposable implements IChatAgentService {
   private readonly agents = new Map<string, { agent: IChatAgent; commands: IChatAgentCommand[] }>();
+
+  private defaultAgentId: string | undefined;
 
   private readonly _onDidChangeAgents = new Emitter<void>();
   readonly onDidChangeAgents = this._onDidChangeAgents.event;
@@ -35,6 +46,9 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   @Autowired(IAIChatService)
   aiChatService: ChatService;
+
+  @Autowired(ChatFeatureRegistryToken)
+  private readonly chatFeatureRegistry: IChatFeatureRegistry;
 
   constructor() {
     super();
@@ -55,7 +69,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     });
   }
 
-  updateAgent(id: string, updateMetadata: IChatAgentMetadata): void {
+  async updateAgent(id: string, updateMetadata: IChatAgentMetadata) {
     const data = this.agents.get(id);
     if (!data) {
       throw new Error(`No agent with id ${id} registered`);
@@ -64,6 +78,18 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     data.agent.provideSlashCommands(CancellationToken.None).then((commands) => {
       data.commands = commands;
     });
+
+    if (updateMetadata.isDefault) {
+      this.defaultAgentId = id;
+    }
+
+    const chatWelcomeMessage = await data.agent.provideChatWelcomeMessage(CancellationToken.None);
+
+    if (chatWelcomeMessage) {
+      const { content, sampleQuestions } = chatWelcomeMessage;
+      this.chatFeatureRegistry.registerWelcome(content, sampleQuestions as any);
+    }
+
     this._onDidChangeAgents.fire();
   }
 
@@ -73,6 +99,10 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   hasAgent(id: string): boolean {
     return this.agents.has(id);
+  }
+
+  getDefaultAgentId() {
+    return this.defaultAgentId;
   }
 
   getAgent(id: string): IChatAgent | undefined {

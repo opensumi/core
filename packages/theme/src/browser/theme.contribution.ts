@@ -68,7 +68,6 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   async initialize() {
     this.registerDefaultColorTheme();
-    this.registerDefaultProductIconTheme();
 
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
@@ -85,14 +84,6 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
     if (shouldApplyDefaultThemeId) {
       this.themeService.applyTheme(DEFAULT_THEME_ID);
-    }
-  }
-
-  private registerDefaultProductIconTheme() {
-    const themeId = this.preferenceService.get<string>(GeneralSettingsId.ProductIconTheme);
-    const shouldApplyDefaultThemeId = !themeId;
-    if (shouldApplyDefaultThemeId) {
-      this.productIconService.applyTheme(DEFAULT_PRODUCT_ICON_THEME_ID);
     }
   }
 
