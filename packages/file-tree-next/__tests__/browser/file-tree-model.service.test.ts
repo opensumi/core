@@ -210,12 +210,7 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService = injector.get(FileTreeModelService);
     fileTreeModelService.initTreeModel();
 
-    // register a command that will be used while click file
-    const commandRegistry = injector.get(CommandRegistry) as CommandRegistry;
-
-    commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
-      execute: () => {},
-    });
+    injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {});
 
     await fileTreeModelService.whenReady;
   });

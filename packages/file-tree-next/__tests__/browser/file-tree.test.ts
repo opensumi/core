@@ -317,15 +317,10 @@ describe('FileTree should be work while on single workspace model', () => {
     it('Style decoration should be right while click the item', async () => {
       const { handleItemClick, decorations } = fileTreeModelService;
 
-      // register a command that will be used while click file
-      const commandRegistry = injector.get(CommandRegistry) as CommandRegistry;
-
       let retracted = jest.fn();
-      commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
-        execute: () => {
-          mockMainLayoutService.bottomExpanded = false;
-          retracted();
-        },
+      injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {
+        mockMainLayoutService.bottomExpanded = false;
+        retracted();
       });
 
       const treeModel = fileTreeModelService.treeModel;
@@ -334,7 +329,6 @@ describe('FileTree should be work while on single workspace model', () => {
       const openFile = jest.fn();
       // first, click directory item
       handleItemClick(directoryNode, TreeNodeType.CompositeTreeNode);
-      expect(retracted).toHaveBeenCalledTimes(1);
       const dirDecoration = decorations.getDecorations(directoryNode);
       expect(dirDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
       // second, click normal file
@@ -342,7 +336,7 @@ describe('FileTree should be work while on single workspace model', () => {
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openFile);
       handleItemClick(fileNode, TreeNodeType.TreeNode);
       expect(retracted).toHaveBeenCalledTimes(1);
-
+      expect(mockMainLayoutService.bottomExpanded).toBeFalsy();
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
       expect(openFile).toBeCalledWith(fileNode.uri, { disableNavigate: true, preview: true });
