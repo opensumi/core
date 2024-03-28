@@ -1,12 +1,9 @@
-import { debounce } from 'lodash';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AI_INLINE_COMPLETION_REPORTER } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { WithEventBus, uuid } from '@opensumi/ide-core-common';
 import { IAICompletionResultModel } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/types/ai-native/reporter';
 import { IEditor } from '@opensumi/ide-editor';
-import { EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 
 import { AINativeContextKey } from '../contextkey/ai-native.contextkey.service';
@@ -261,19 +258,9 @@ class ReqStack {
     this.queue = [];
   }
 }
-/**
- * 代码补全provider
- * @param extensionContext
- * @param this.tyStatusBarItem
- * @returns
- */
-
-interface ProviderType extends monaco.languages.InlineCompletionsProvider {
-  isManual: boolean;
-}
 
 @Injectable({ multiple: false })
-export class AIInlineCompletionsProvider extends WithEventBus implements ProviderType {
+export class AIInlineCompletionsProvider extends WithEventBus {
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
 
@@ -283,12 +270,10 @@ export class AIInlineCompletionsProvider extends WithEventBus implements Provide
   @Autowired(IAIReporter)
   private aiReporter: IAIReporter;
 
-  private aiNativeContextKey: AINativeContextKey;
-
-  private editor: IEditor;
-
   @Autowired()
   private promptCache: PromptCache;
+
+  private aiNativeContextKey: AINativeContextKey;
 
   isManual: boolean;
   isDelEvent: boolean;
@@ -297,92 +282,9 @@ export class AIInlineCompletionsProvider extends WithEventBus implements Provide
   public registerEditor(editor: IEditor): void {
     this.aiNativeContextKey = this.injector.get(AINativeContextKey, [(editor.monacoEditor as any)._contextKeyService]);
 
-    this.editor = editor;
-
     this.isManual = false;
     this.isDelEvent = false;
     this.reqStack = new ReqStack(this.aiReporter);
-
-    // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
-    const selectionChange = () => {
-      // clearPromptMessage()
-      const editor = this.editor;
-      if (!editor) {
-        return;
-      }
-      // clearPromptMessage();
-      this.aiCompletionsService.hideStatusBarItem();
-      const selection = editor.monacoEditor.getSelection()!;
-      // 判断是否选中区域
-      if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
-        this.cancelRequest();
-      }
-      requestAnimationFrame(() => {
-        this.aiCompletionsService.setVisibleCompletion(false);
-      });
-    };
-
-    const debouncedSelectionChange = debounce(() => selectionChange(), 50, {
-      maxWait: 200,
-      leading: true,
-      trailing: true,
-    });
-
-    this.addDispose(
-      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
-        if (e.payload.source === 'mouse') {
-          debouncedSelectionChange();
-        } else {
-          debouncedSelectionChange.cancel();
-          selectionChange();
-        }
-      }),
-    );
-
-    this.addDispose(
-      this.editor.monacoEditor.onDidChangeModelContent((e) => {
-        const changes = e.changes;
-        for (const change of changes) {
-          if (change.text === '') {
-            this.isDelEvent = true;
-            this.cancelRequest();
-          } else {
-            this.isDelEvent = false;
-          }
-        }
-      }),
-    );
-
-    this.addDispose(
-      this.editor.monacoEditor.onWillChangeModel(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-      }),
-    );
-
-    this.addDispose(
-      this.editor.monacoEditor.onDidBlurEditorText(() => {
-        this.aiCompletionsService.hideStatusBarItem();
-        this.aiCompletionsService.setVisibleCompletion(false);
-      }),
-    );
-  }
-
-  provideInlineCompletions(
-    model: monaco.editor.ITextModel,
-    position: monaco.Position,
-    context: monaco.languages.InlineCompletionContext,
-    token: monaco.CancellationToken,
-  ): monaco.languages.ProviderResult<monaco.languages.InlineCompletions<monaco.languages.InlineCompletion>> {
-    throw new Error('Method not implemented.');
-  }
-  handleItemDidShow?(
-    completions: monaco.languages.InlineCompletions<monaco.languages.InlineCompletion>,
-    item: monaco.languages.InlineCompletion,
-  ): void {
-    throw new Error('Method not implemented.');
-  }
-  freeInlineCompletions(completions: monaco.languages.InlineCompletions<monaco.languages.InlineCompletion>): void {
-    throw new Error('Method not implemented.');
   }
 
   // 取消请求
