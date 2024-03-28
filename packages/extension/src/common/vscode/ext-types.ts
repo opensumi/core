@@ -3400,3 +3400,41 @@ export class ChatMessage implements vscode.ChatMessage {
     this.content = content;
   }
 }
+
+// #region Tab Inputs
+
+export class TextTabInput {
+  constructor(readonly uri: Uri) {}
+}
+
+export class TextDiffTabInput {
+  constructor(readonly original: Uri, readonly modified: Uri) {}
+}
+
+export class TextMergeTabInput {
+  constructor(readonly base: Uri, readonly input1: Uri, readonly input2: Uri, readonly result: Uri) {}
+}
+
+export class CustomEditorTabInput {
+  constructor(readonly uri: Uri, readonly viewType: string) {}
+}
+
+export class WebviewEditorTabInput {
+  constructor(readonly viewType: string) {}
+}
+
+export class NotebookEditorTabInput {
+  constructor(readonly uri: Uri, readonly notebookType: string) {}
+}
+
+export class NotebookDiffEditorTabInput {
+  constructor(readonly original: Uri, readonly modified: Uri, readonly notebookType: string) {}
+}
+
+export class TerminalEditorTabInput {
+  constructor() {}
+}
+export class InteractiveWindowInput {
+  constructor(readonly uri: Uri, readonly inputBoxUri: Uri) {}
+}
+// #endregion

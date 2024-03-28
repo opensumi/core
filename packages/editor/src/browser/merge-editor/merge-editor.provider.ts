@@ -3,7 +3,6 @@ import { LabelService, MaybePromise, URI, WithEventBus } from '@opensumi/ide-cor
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 
 import { IResource, IResourceProvider } from '../../common';
-
 @Injectable()
 export class MergeEditorResourceProvider extends WithEventBus implements IResourceProvider {
   scheme = 'mergeEditor';

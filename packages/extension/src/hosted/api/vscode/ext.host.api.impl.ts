@@ -7,13 +7,13 @@ import { IExtensionHostService } from '../../../common';
 import {
   ExtHostAPIIdentifier,
   IExtHostDebugService,
+  IExtHostEditorTabs,
   IExtHostTests,
   IExtensionDescription,
   IInterProcessConnectionService,
   TextEditorCursorStyle,
   TextEditorSelectionChangeKind,
 } from '../../../common/vscode'; // '../../common';
-import { IExtHostEditorTabs } from '../../../common/vscode/editor-tabs';
 import { ViewColumn } from '../../../common/vscode/enums';
 import * as extTypes from '../../../common/vscode/ext-types';
 import * as fileSystemTypes from '../../../common/vscode/file-system';

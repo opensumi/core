@@ -250,8 +250,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(countedUris), 0);
   }
 
+  private editorGroupIdGen = 0;
+
   createEditorGroup(): EditorGroup {
-    const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
+    const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName(), this.editorGroupIdGen++]);
     this.editorGroups.push(editorGroup);
     const currentWatchDisposer = new Disposable(
       editorGroup.onDidEditorGroupBodyChanged(() => {
@@ -662,6 +664,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   onDidEditorGroupTabChanged: Event<void> = this._onDidEditorGroupTabChanged.event;
 
   /**
+   * 当编辑器的tab部分发生变更
+   */
+  _onDidEditorGroupTabOperation = new EventEmitter<IResourceTabOperation>();
+  onDidEditorGroupTabOperation: Event<IResourceTabOperation> = this._onDidEditorGroupTabOperation.event;
+
+  /**
    * 当编辑器的主体部分发生变更
    */
   _onDidEditorGroupBodyChanged = new EventEmitter<void>();
@@ -758,7 +766,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _currentOrPreviousFocusedEditor: IEditor | null;
 
-  constructor(public readonly name: string) {
+  constructor(public readonly name: string, public readonly groupId: number) {
     super();
     this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
       if (e.payload.slotLocation === getSlotLocation('@opensumi/ide-editor', this.config.layoutConfig)) {
@@ -1351,6 +1359,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else {
         const oldOpenType = this._currentOpenType;
         const oldResource = this._currentResource;
+        let tabOperationToFire: IResourceTabOperation | null = null;
         let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
         if (!resource) {
           // open new resource
@@ -1372,13 +1381,28 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (options && options.index !== undefined && options.index < this.resources.length) {
             replaceResource = this.resources[options.index];
             this.resources.splice(options.index, 0, resource);
+            tabOperationToFire = {
+              type: 'open',
+              resource,
+              index: options.index,
+            };
           } else {
             if (this.currentResource) {
               const currentIndex = this.resources.indexOf(this.currentResource);
               this.resources.splice(currentIndex + 1, 0, resource);
+              tabOperationToFire = {
+                type: 'open',
+                resource,
+                index: currentIndex + 1,
+              };
               replaceResource = this.currentResource;
             } else {
               this.resources.push(resource);
+              tabOperationToFire = {
+                type: 'open',
+                resource,
+                index: this.resources.length - 1,
+              };
             }
           }
           if (previewMode) {
@@ -1418,7 +1442,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }, 60);
         this.notifyTabChanged();
         this.notifyBodyChanged();
-        await this.displayResourceComponent(resource, options);
+        try {
+          await this.displayResourceComponent(resource, options);
+        } finally {
+          if (tabOperationToFire) {
+            this._onDidEditorGroupTabOperation.fire(tabOperationToFire);
+          }
+        }
         this._currentOrPreviousFocusedEditor = this.currentEditor;
 
         clearTimeout(delayTimer);
@@ -1765,6 +1795,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  public getLastOpenType(resource: IResource) {
+    return this.cachedResourcesActiveOpenTypes.get(resource.uri.toString());
+  }
+
   private async resolveOpenType(
     resource: IResource,
     options: IResourceOpenOptions,
@@ -1793,16 +1827,21 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       treatAsNotCurrent?: boolean;
       force?: boolean;
     } = {},
-  ) {
+  ): Promise<boolean> {
     const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
     if (index !== -1) {
       const resource = this.resources[index];
       if (!force) {
         if (!(await this.shouldClose(resource))) {
-          return;
+          return false;
         }
       }
       this.resources.splice(index, 1);
+      this._onDidEditorGroupTabOperation.fire({
+        type: 'close',
+        resource,
+        index,
+      });
       this.eventBus.fire(
         new EditorGroupCloseEvent({
           group: this,
@@ -1853,6 +1892,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this.availableOpenTypes = [];
     }
+    return true;
   }
 
   private removeResouceFromActiveComponents(resource: IResource) {
@@ -1914,15 +1954,21 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 关闭全部
    */
-  async closeAll() {
+  async closeAll(): Promise<boolean> {
     for (const resource of this.resources) {
       if (!(await this.shouldClose(resource))) {
-        return;
+        return false;
       }
     }
     const closed = this.resources.splice(0, this.resources.length);
-    closed.forEach((resource) => {
+    // reverse， 发送事件需要从后往前
+    closed.reverse().forEach((resource, index) => {
       this.clearResourceOnClose(resource);
+      this._onDidEditorGroupTabOperation.fire({
+        type: 'close',
+        resource,
+        index,
+      });
     });
     this.activeComponents.clear();
     if (this.workbenchEditorService.editorGroups.length > 1) {
@@ -1930,6 +1976,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     this.previewURI = null;
     this.backToEmpty();
+    return true;
   }
 
   /**
@@ -1966,6 +2013,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }
       this.resources.splice(index + 1);
+      resourcesToClose.reverse().forEach((resource, i) => {
+        this._onDidEditorGroupTabOperation.fire({
+          type: 'close',
+          resource,
+          index: index + 1 + (resourcesToClose.length - 1 - i),
+        });
+      });
       for (const resource of resourcesToClose) {
         this.clearResourceOnClose(resource);
       }
@@ -1992,7 +2046,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           return;
         }
       }
+      const oldResources = this.resources;
       this.resources = [this.resources[index]];
+      resourcesToClose.reverse().forEach((resource) => {
+        this._onDidEditorGroupTabOperation.fire({
+          type: 'close',
+          resource,
+          index: oldResources.indexOf(resource),
+        });
+      });
       for (const resource of resourcesToClose) {
         this.clearResourceOnClose(resource);
       }
@@ -2063,10 +2125,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             if (sourceIndex > targetIndex) {
               this.resources.splice(sourceIndex, 1);
               this.resources.splice(targetIndex, 0, sourceResource);
+              this._onDidEditorGroupTabOperation.fire({
+                type: 'move',
+                resource: sourceResource,
+                oldIndex: sourceIndex,
+                index: targetIndex,
+              });
               await this.open(uri, { preview: false });
             } else if (sourceIndex < targetIndex) {
               this.resources.splice(targetIndex + 1, 0, sourceResource);
               this.resources.splice(sourceIndex, 1);
+              this._onDidEditorGroupTabOperation.fire({
+                type: 'move',
+                resource: sourceResource,
+                oldIndex: sourceIndex,
+                index: targetIndex,
+              });
               await this.open(uri, { preview: false });
             }
           }
@@ -2317,4 +2391,11 @@ function findSuitableOpenType(
 
 function openTypeSimilar(a: IEditorOpenType, b: IEditorOpenType) {
   return a.type === b.type && (a.type !== EditorOpenType.component || a.componentId === b.componentId);
+}
+
+export interface IResourceTabOperation {
+  type: 'open' | 'close' | 'move';
+  resource: IResource;
+  oldIndex?: number;
+  index: number;
 }

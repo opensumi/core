@@ -142,6 +142,9 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
         this.editorComponentRegistry.registerEditorComponent({
           uid: componentId,
           component,
+          metadata: {
+            customEditor: viewType,
+          },
         }),
       );
     } catch (e) {

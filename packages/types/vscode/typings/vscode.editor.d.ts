@@ -1,699 +1,699 @@
 declare module 'vscode' {
   /**
-	 * Represents sources that can cause [selection change events](#window.onDidChangeTextEditorSelection).
-	*/
-	export enum TextEditorSelectionChangeKind {
-		/**
-		 * Selection changed due to typing in the editor.
-		 */
-		Keyboard = 1,
-		/**
-		 * Selection change due to clicking in the editor.
-		 */
-		Mouse = 2,
-		/**
-		 * Selection changed because a command ran.
-		 */
-		Command = 3
+   * Represents sources that can cause [selection change events](#window.onDidChangeTextEditorSelection).
+  */
+  export enum TextEditorSelectionChangeKind {
+    /**
+     * Selection changed due to typing in the editor.
+     */
+    Keyboard = 1,
+    /**
+     * Selection change due to clicking in the editor.
+     */
+    Mouse = 2,
+    /**
+     * Selection changed because a command ran.
+     */
+    Command = 3
   }
 
   /**
-	 * Represents an event describing the change in a [text editor's selections](#TextEditor.selections).
-	 */
-	export interface TextEditorSelectionChangeEvent {
-		/**
-		 * The [text editor](#TextEditor) for which the selections have changed.
-		 */
-		readonly textEditor: TextEditor;
-		/**
-		 * The new value for the [text editor's selections](#TextEditor.selections).
-		 */
-		readonly selections: ReadonlyArray<Selection>;
-		/**
-		 * The [change kind](#TextEditorSelectionChangeKind) which has triggered this
-		 * event. Can be `undefined`.
-		 */
-		readonly kind?: TextEditorSelectionChangeKind;
-	}
-
-	/**
-	 * Represents an event describing the change in a [text editor's visible ranges](#TextEditor.visibleRanges).
-	 */
-	export interface TextEditorVisibleRangesChangeEvent {
-		/**
-		 * The [text editor](#TextEditor) for which the visible ranges have changed.
-		 */
-		readonly textEditor: TextEditor;
-		/**
-		 * The new value for the [text editor's visible ranges](#TextEditor.visibleRanges).
-		 */
-		readonly visibleRanges: ReadonlyArray<Range>;
-	}
-
-	/**
-	 * Represents an event describing the change in a [text editor's options](#TextEditor.options).
-	 */
-	export interface TextEditorOptionsChangeEvent {
-		/**
-		 * The [text editor](#TextEditor) for which the options have changed.
-		 */
-		readonly textEditor: TextEditor;
-		/**
-		 * The new value for the [text editor's options](#TextEditor.options).
-		 */
-		readonly options: TextEditorOptions;
-	}
-
-	/**
-	 * Represents an event describing the change of a [text editor's view column](#TextEditor.viewColumn).
-	 */
-	export interface TextEditorViewColumnChangeEvent {
-		/**
-		 * The [text editor](#TextEditor) for which the view column has changed.
-		 */
-		readonly textEditor: TextEditor;
-		/**
-		 * The new value for the [text editor's view column](#TextEditor.viewColumn).
-		 */
-		readonly viewColumn: ViewColumn;
-	}
-
-	/**
-	 * Rendering style of the cursor.
-	 */
-	export enum TextEditorCursorStyle {
-		/**
-		 * Render the cursor as a vertical thick line.
-		 */
-		Line = 1,
-		/**
-		 * Render the cursor as a block filled.
-		 */
-		Block = 2,
-		/**
-		 * Render the cursor as a thick horizontal line.
-		 */
-		Underline = 3,
-		/**
-		 * Render the cursor as a vertical thin line.
-		 */
-		LineThin = 4,
-		/**
-		 * Render the cursor as a block outlined.
-		 */
-		BlockOutline = 5,
-		/**
-		 * Render the cursor as a thin horizontal line.
-		 */
-		UnderlineThin = 6
-	}
-
-	/**
-	 * Rendering style of the line numbers.
-	 */
-	export enum TextEditorLineNumbersStyle {
-		/**
-		 * Do not render the line numbers.
-		 */
-		Off = 0,
-		/**
-		 * Render the line numbers.
-		 */
-		On = 1,
-		/**
-		 * Render the line numbers with values relative to the primary cursor location.
-		 */
-		Relative = 2
-	}
-
-	/**
-	 * Represents a [text editor](#TextEditor)'s [options](#TextEditor.options).
-	 */
-	export interface TextEditorOptions {
-
-		/**
-		 * The size in spaces a tab takes. This is used for two purposes:
-		 *  - the rendering width of a tab character;
-		 *  - the number of spaces to insert when [insertSpaces](#TextEditorOptions.insertSpaces) is true.
-		 *
-		 * When getting a text editor's options, this property will always be a number (resolved).
-		 * When setting a text editor's options, this property is optional and it can be a number or `"auto"`.
-		 */
-		tabSize?: number | string;
-
-		/**
-		 * When pressing Tab insert [n](#TextEditorOptions.tabSize) spaces.
-		 * When getting a text editor's options, this property will always be a boolean (resolved).
-		 * When setting a text editor's options, this property is optional and it can be a boolean or `"auto"`.
-		 */
-		insertSpaces?: boolean | string;
-
-		/**
-		 * The rendering style of the cursor in this editor.
-		 * When getting a text editor's options, this property will always be present.
-		 * When setting a text editor's options, this property is optional.
-		 */
-		cursorStyle?: TextEditorCursorStyle;
-
-		/**
-		 * Render relative line numbers w.r.t. the current line number.
-		 * When getting a text editor's options, this property will always be present.
-		 * When setting a text editor's options, this property is optional.
-		 */
-		lineNumbers?: TextEditorLineNumbersStyle;
-	}
-
-	/**
-	 * Represents a handle to a set of decorations
-	 * sharing the same [styling options](#DecorationRenderOptions) in a [text editor](#TextEditor).
-	 *
-	 * To get an instance of a `TextEditorDecorationType` use
-	 * [createTextEditorDecorationType](#window.createTextEditorDecorationType).
-	 */
-	export interface TextEditorDecorationType {
-
-		/**
-		 * Internal representation of the handle.
-		 */
-		readonly key: string;
-
-		/**
-		 * Remove this decoration type and all decorations on all text editors using it.
-		 */
-		dispose(): void;
-	}
-
-	/**
-	 * Represents different [reveal](#TextEditor.revealRange) strategies in a text editor.
-	 */
-	export enum TextEditorRevealType {
-		/**
-		 * The range will be revealed with as little scrolling as possible.
-		 */
-		Default = 0,
-		/**
-		 * The range will always be revealed in the center of the viewport.
-		 */
-		InCenter = 1,
-		/**
-		 * If the range is outside the viewport, it will be revealed in the center of the viewport.
-		 * Otherwise, it will be revealed with as little scrolling as possible.
-		 */
-		InCenterIfOutsideViewport = 2,
-		/**
-		 * The range will always be revealed at the top of the viewport.
-		 */
-		AtTop = 3
-	}
-
-  /**
-	 * Represents different positions for rendering a decoration in an [overview ruler](#DecorationRenderOptions.overviewRulerLane).
-	 * The overview ruler supports three lanes.
-	 */
-	export enum OverviewRulerLane {
-		Left = 1,
-		Center = 2,
-		Right = 4,
-		Full = 7
-	}
-
-	/**
-	 * Describes the behavior of decorations when typing/editing at their edges.
-	 */
-	export enum DecorationRangeBehavior {
-		/**
-		 * The decoration's range will widen when edits occur at the start or end.
-		 */
-		OpenOpen = 0,
-		/**
-		 * The decoration's range will not widen when edits occur at the start of end.
-		 */
-		ClosedClosed = 1,
-		/**
-		 * The decoration's range will widen when edits occur at the start, but not at the end.
-		 */
-		OpenClosed = 2,
-		/**
-		 * The decoration's range will widen when edits occur at the end, but not at the start.
-		 */
-		ClosedOpen = 3
-	}
-
-	/**
-	 * Represents options to configure the behavior of showing a [document](#TextDocument) in an [editor](#TextEditor).
-	 */
-	export interface TextDocumentShowOptions {
-		/**
-		 * An optional view column in which the [editor](#TextEditor) should be shown.
-		 * The default is the [active](#ViewColumn.Active), other values are adjusted to
-		 * be `Min(column, columnCount + 1)`, the [active](#ViewColumn.Active)-column is
-		 * not adjusted. Use [`ViewColumn.Beside`](#ViewColumn.Beside) to open the
-		 * editor to the side of the currently active one.
-		 */
-		viewColumn?: ViewColumn;
-
-		/**
-		 * An optional flag that when `true` will stop the [editor](#TextEditor) from taking focus.
-		 */
-		preserveFocus?: boolean;
-
-		/**
-		 * An optional flag that controls if an [editor](#TextEditor)-tab will be replaced
-		 * with the next editor or if it will be kept.
-		 */
-		preview?: boolean;
-
-		/**
-		 * An optional selection to apply for the document in the [editor](#TextEditor).
-		 */
-		selection?: Range;
+   * Represents an event describing the change in a [text editor's selections](#TextEditor.selections).
+   */
+  export interface TextEditorSelectionChangeEvent {
+    /**
+     * The [text editor](#TextEditor) for which the selections have changed.
+     */
+    readonly textEditor: TextEditor;
+    /**
+     * The new value for the [text editor's selections](#TextEditor.selections).
+     */
+    readonly selections: ReadonlyArray<Selection>;
+    /**
+     * The [change kind](#TextEditorSelectionChangeKind) which has triggered this
+     * event. Can be `undefined`.
+     */
+    readonly kind?: TextEditorSelectionChangeKind;
   }
 
   /**
-	 * Represents rendering styles for a [text editor decoration](#TextEditorDecorationType).
-	 */
-	export interface DecorationRenderOptions extends ThemableDecorationRenderOptions {
-		/**
-		 * Should the decoration be rendered also on the whitespace after the line text.
-		 * Defaults to `false`.
-		 */
-		isWholeLine?: boolean;
+   * Represents an event describing the change in a [text editor's visible ranges](#TextEditor.visibleRanges).
+   */
+  export interface TextEditorVisibleRangesChangeEvent {
+    /**
+     * The [text editor](#TextEditor) for which the visible ranges have changed.
+     */
+    readonly textEditor: TextEditor;
+    /**
+     * The new value for the [text editor's visible ranges](#TextEditor.visibleRanges).
+     */
+    readonly visibleRanges: ReadonlyArray<Range>;
+  }
 
-		/**
-		 * Customize the growing behavior of the decoration when edits occur at the edges of the decoration's range.
-		 * Defaults to `DecorationRangeBehavior.OpenOpen`.
-		 */
-		rangeBehavior?: DecorationRangeBehavior;
+  /**
+   * Represents an event describing the change in a [text editor's options](#TextEditor.options).
+   */
+  export interface TextEditorOptionsChangeEvent {
+    /**
+     * The [text editor](#TextEditor) for which the options have changed.
+     */
+    readonly textEditor: TextEditor;
+    /**
+     * The new value for the [text editor's options](#TextEditor.options).
+     */
+    readonly options: TextEditorOptions;
+  }
 
-		/**
-		 * The position in the overview ruler where the decoration should be rendered.
-		 */
-		overviewRulerLane?: OverviewRulerLane;
+  /**
+   * Represents an event describing the change of a [text editor's view column](#TextEditor.viewColumn).
+   */
+  export interface TextEditorViewColumnChangeEvent {
+    /**
+     * The [text editor](#TextEditor) for which the view column has changed.
+     */
+    readonly textEditor: TextEditor;
+    /**
+     * The new value for the [text editor's view column](#TextEditor.viewColumn).
+     */
+    readonly viewColumn: ViewColumn;
+  }
 
-		/**
-		 * Overwrite options for light themes.
-		 */
-		light?: ThemableDecorationRenderOptions;
+  /**
+   * Rendering style of the cursor.
+   */
+  export enum TextEditorCursorStyle {
+    /**
+     * Render the cursor as a vertical thick line.
+     */
+    Line = 1,
+    /**
+     * Render the cursor as a block filled.
+     */
+    Block = 2,
+    /**
+     * Render the cursor as a thick horizontal line.
+     */
+    Underline = 3,
+    /**
+     * Render the cursor as a vertical thin line.
+     */
+    LineThin = 4,
+    /**
+     * Render the cursor as a block outlined.
+     */
+    BlockOutline = 5,
+    /**
+     * Render the cursor as a thin horizontal line.
+     */
+    UnderlineThin = 6
+  }
 
-		/**
-		 * Overwrite options for dark themes.
-		 */
-		dark?: ThemableDecorationRenderOptions;
-	}
+  /**
+   * Rendering style of the line numbers.
+   */
+  export enum TextEditorLineNumbersStyle {
+    /**
+     * Do not render the line numbers.
+     */
+    Off = 0,
+    /**
+     * Render the line numbers.
+     */
+    On = 1,
+    /**
+     * Render the line numbers with values relative to the primary cursor location.
+     */
+    Relative = 2
+  }
 
-	/**
-	 * Represents options for a specific decoration in a [decoration set](#TextEditorDecorationType).
-	 */
-	export interface DecorationOptions {
+  /**
+   * Represents a [text editor](#TextEditor)'s [options](#TextEditor.options).
+   */
+  export interface TextEditorOptions {
 
-		/**
-		 * Range to which this decoration is applied. The range must not be empty.
-		 */
-		range: Range;
+    /**
+     * The size in spaces a tab takes. This is used for two purposes:
+     *  - the rendering width of a tab character;
+     *  - the number of spaces to insert when [insertSpaces](#TextEditorOptions.insertSpaces) is true.
+     *
+     * When getting a text editor's options, this property will always be a number (resolved).
+     * When setting a text editor's options, this property is optional and it can be a number or `"auto"`.
+     */
+    tabSize?: number | string;
 
-		/**
-		 * A message that should be rendered when hovering over the decoration.
-		 */
-		hoverMessage?: MarkedString | MarkedString[];
+    /**
+     * When pressing Tab insert [n](#TextEditorOptions.tabSize) spaces.
+     * When getting a text editor's options, this property will always be a boolean (resolved).
+     * When setting a text editor's options, this property is optional and it can be a boolean or `"auto"`.
+     */
+    insertSpaces?: boolean | string;
 
-		/**
-		 * Render options applied to the current decoration. For performance reasons, keep the
-		 * number of decoration specific options small, and use decoration types wherever possible.
-		 */
-		renderOptions?: DecorationInstanceRenderOptions;
-	}
+    /**
+     * The rendering style of the cursor in this editor.
+     * When getting a text editor's options, this property will always be present.
+     * When setting a text editor's options, this property is optional.
+     */
+    cursorStyle?: TextEditorCursorStyle;
 
-	export interface ThemableDecorationInstanceRenderOptions {
-		/**
-		 * Defines the rendering options of the attachment that is inserted before the decorated text.
-		 */
-		before?: ThemableDecorationAttachmentRenderOptions;
+    /**
+     * Render relative line numbers w.r.t. the current line number.
+     * When getting a text editor's options, this property will always be present.
+     * When setting a text editor's options, this property is optional.
+     */
+    lineNumbers?: TextEditorLineNumbersStyle;
+  }
 
-		/**
-		 * Defines the rendering options of the attachment that is inserted after the decorated text.
-		 */
-		after?: ThemableDecorationAttachmentRenderOptions;
-	}
+  /**
+   * Represents a handle to a set of decorations
+   * sharing the same [styling options](#DecorationRenderOptions) in a [text editor](#TextEditor).
+   *
+   * To get an instance of a `TextEditorDecorationType` use
+   * [createTextEditorDecorationType](#window.createTextEditorDecorationType).
+   */
+  export interface TextEditorDecorationType {
 
-	export interface DecorationInstanceRenderOptions extends ThemableDecorationInstanceRenderOptions {
-		/**
-		 * Overwrite options for light themes.
-		 */
-		light?: ThemableDecorationInstanceRenderOptions;
+    /**
+     * Internal representation of the handle.
+     */
+    readonly key: string;
 
-		/**
-		 * Overwrite options for dark themes.
-		 */
-		dark?: ThemableDecorationInstanceRenderOptions;
-	}
+    /**
+     * Remove this decoration type and all decorations on all text editors using it.
+     */
+    dispose(): void;
+  }
 
-	/**
-	 * Represents an editor that is attached to a [document](#TextDocument).
-	 */
-	export interface TextEditor {
+  /**
+   * Represents different [reveal](#TextEditor.revealRange) strategies in a text editor.
+   */
+  export enum TextEditorRevealType {
+    /**
+     * The range will be revealed with as little scrolling as possible.
+     */
+    Default = 0,
+    /**
+     * The range will always be revealed in the center of the viewport.
+     */
+    InCenter = 1,
+    /**
+     * If the range is outside the viewport, it will be revealed in the center of the viewport.
+     * Otherwise, it will be revealed with as little scrolling as possible.
+     */
+    InCenterIfOutsideViewport = 2,
+    /**
+     * The range will always be revealed at the top of the viewport.
+     */
+    AtTop = 3
+  }
 
-		/**
-		 * The document associated with this text editor. The document will be the same for the entire lifetime of this text editor.
-		 */
-		readonly document: TextDocument;
+  /**
+   * Represents different positions for rendering a decoration in an [overview ruler](#DecorationRenderOptions.overviewRulerLane).
+   * The overview ruler supports three lanes.
+   */
+  export enum OverviewRulerLane {
+    Left = 1,
+    Center = 2,
+    Right = 4,
+    Full = 7
+  }
 
-		/**
-		 * The primary selection on this text editor. Shorthand for `TextEditor.selections[0]`.
-		 */
-		selection: Selection;
+  /**
+   * Describes the behavior of decorations when typing/editing at their edges.
+   */
+  export enum DecorationRangeBehavior {
+    /**
+     * The decoration's range will widen when edits occur at the start or end.
+     */
+    OpenOpen = 0,
+    /**
+     * The decoration's range will not widen when edits occur at the start of end.
+     */
+    ClosedClosed = 1,
+    /**
+     * The decoration's range will widen when edits occur at the start, but not at the end.
+     */
+    OpenClosed = 2,
+    /**
+     * The decoration's range will widen when edits occur at the end, but not at the start.
+     */
+    ClosedOpen = 3
+  }
 
-		/**
-		 * The selections in this text editor. The primary selection is always at index 0.
-		 */
-		selections: Selection[];
+  /**
+   * Represents options to configure the behavior of showing a [document](#TextDocument) in an [editor](#TextEditor).
+   */
+  export interface TextDocumentShowOptions {
+    /**
+     * An optional view column in which the [editor](#TextEditor) should be shown.
+     * The default is the [active](#ViewColumn.Active), other values are adjusted to
+     * be `Min(column, columnCount + 1)`, the [active](#ViewColumn.Active)-column is
+     * not adjusted. Use [`ViewColumn.Beside`](#ViewColumn.Beside) to open the
+     * editor to the side of the currently active one.
+     */
+    viewColumn?: ViewColumn;
 
-		/**
-		 * The current visible ranges in the editor (vertically).
-		 * This accounts only for vertical scrolling, and not for horizontal scrolling.
-		 */
-		readonly visibleRanges: Range[];
+    /**
+     * An optional flag that when `true` will stop the [editor](#TextEditor) from taking focus.
+     */
+    preserveFocus?: boolean;
 
-		/**
-		 * Text editor options.
-		 */
-		options: TextEditorOptions;
+    /**
+     * An optional flag that controls if an [editor](#TextEditor)-tab will be replaced
+     * with the next editor or if it will be kept.
+     */
+    preview?: boolean;
 
-		/**
-		 * The column in which this editor shows. Will be `undefined` in case this
-		 * isn't one of the main editors, e.g. an embedded editor, or when the editor
-		 * column is larger than three.
-		 */
-		viewColumn?: ViewColumn;
+    /**
+     * An optional selection to apply for the document in the [editor](#TextEditor).
+     */
+    selection?: Range;
+  }
 
-		/**
-		 * Perform an edit on the document associated with this text editor.
-		 *
-		 * The given callback-function is invoked with an [edit-builder](#TextEditorEdit) which must
-		 * be used to make edits. Note that the edit-builder is only valid while the
-		 * callback executes.
-		 *
-		 * @param callback A function which can create edits using an [edit-builder](#TextEditorEdit).
-		 * @param options The undo/redo behavior around this edit. By default, undo stops will be created before and after this edit.
-		 * @return A promise that resolves with a value indicating if the edits could be applied.
-		 */
-		edit(callback: (editBuilder: TextEditorEdit) => void, options?: { undoStopBefore: boolean; undoStopAfter: boolean; }): Thenable<boolean>;
+  /**
+   * Represents rendering styles for a [text editor decoration](#TextEditorDecorationType).
+   */
+  export interface DecorationRenderOptions extends ThemableDecorationRenderOptions {
+    /**
+     * Should the decoration be rendered also on the whitespace after the line text.
+     * Defaults to `false`.
+     */
+    isWholeLine?: boolean;
 
-		/**
-		 * Insert a [snippet](#SnippetString) and put the editor into snippet mode. "Snippet mode"
-		 * means the editor adds placeholders and additional cursors so that the user can complete
-		 * or accept the snippet.
-		 *
-		 * @param snippet The snippet to insert in this edit.
-		 * @param location Position or range at which to insert the snippet, defaults to the current editor selection or selections.
-		 * @param options The undo/redo behavior around this edit. By default, undo stops will be created before and after this edit.
-		 * @return A promise that resolves with a value indicating if the snippet could be inserted. Note that the promise does not signal
-		 * that the snippet is completely filled-in or accepted.
-		 */
-		insertSnippet(snippet: SnippetString, location?: Position | Range | ReadonlyArray<Position> | ReadonlyArray<Range>, options?: { undoStopBefore: boolean; undoStopAfter: boolean; }): Thenable<boolean>;
+    /**
+     * Customize the growing behavior of the decoration when edits occur at the edges of the decoration's range.
+     * Defaults to `DecorationRangeBehavior.OpenOpen`.
+     */
+    rangeBehavior?: DecorationRangeBehavior;
 
-		/**
-		 * Adds a set of decorations to the text editor. If a set of decorations already exists with
-		 * the given [decoration type](#TextEditorDecorationType), they will be replaced.
-		 *
-		 * @see [createTextEditorDecorationType](#window.createTextEditorDecorationType).
-		 *
-		 * @param decorationType A decoration type.
-		 * @param rangesOrOptions Either [ranges](#Range) or more detailed [options](#DecorationOptions).
-		 */
-		setDecorations(decorationType: TextEditorDecorationType, rangesOrOptions: Range[] | DecorationOptions[]): void;
+    /**
+     * The position in the overview ruler where the decoration should be rendered.
+     */
+    overviewRulerLane?: OverviewRulerLane;
 
-		/**
-		 * Scroll as indicated by `revealType` in order to reveal the given range.
-		 *
-		 * @param range A range.
-		 * @param revealType The scrolling strategy for revealing `range`.
-		 */
-		revealRange(range: Range, revealType?: TextEditorRevealType): void;
+    /**
+     * Overwrite options for light themes.
+     */
+    light?: ThemableDecorationRenderOptions;
 
-		/**
-		 * ~~Show the text editor.~~
-		 *
-		 * @deprecated Use [window.showTextDocument](#window.showTextDocument) instead.
-		 *
-		 * @param column The [column](#ViewColumn) in which to show this editor.
-		 * This method shows unexpected behavior and will be removed in the next major update.
-		 */
-		show(column?: ViewColumn): void;
+    /**
+     * Overwrite options for dark themes.
+     */
+    dark?: ThemableDecorationRenderOptions;
+  }
 
-		/**
-		 * ~~Hide the text editor.~~
-		 *
-		 * @deprecated Use the command `workbench.action.closeActiveEditor` instead.
-		 * This method shows unexpected behavior and will be removed in the next major update.
-		 */
-		hide(): void;
+  /**
+   * Represents options for a specific decoration in a [decoration set](#TextEditorDecorationType).
+   */
+  export interface DecorationOptions {
+
+    /**
+     * Range to which this decoration is applied. The range must not be empty.
+     */
+    range: Range;
+
+    /**
+     * A message that should be rendered when hovering over the decoration.
+     */
+    hoverMessage?: MarkedString | MarkedString[];
+
+    /**
+     * Render options applied to the current decoration. For performance reasons, keep the
+     * number of decoration specific options small, and use decoration types wherever possible.
+     */
+    renderOptions?: DecorationInstanceRenderOptions;
+  }
+
+  export interface ThemableDecorationInstanceRenderOptions {
+    /**
+     * Defines the rendering options of the attachment that is inserted before the decorated text.
+     */
+    before?: ThemableDecorationAttachmentRenderOptions;
+
+    /**
+     * Defines the rendering options of the attachment that is inserted after the decorated text.
+     */
+    after?: ThemableDecorationAttachmentRenderOptions;
+  }
+
+  export interface DecorationInstanceRenderOptions extends ThemableDecorationInstanceRenderOptions {
+    /**
+     * Overwrite options for light themes.
+     */
+    light?: ThemableDecorationInstanceRenderOptions;
+
+    /**
+     * Overwrite options for dark themes.
+     */
+    dark?: ThemableDecorationInstanceRenderOptions;
+  }
+
+  /**
+   * Represents an editor that is attached to a [document](#TextDocument).
+   */
+  export interface TextEditor {
+
+    /**
+     * The document associated with this text editor. The document will be the same for the entire lifetime of this text editor.
+     */
+    readonly document: TextDocument;
+
+    /**
+     * The primary selection on this text editor. Shorthand for `TextEditor.selections[0]`.
+     */
+    selection: Selection;
+
+    /**
+     * The selections in this text editor. The primary selection is always at index 0.
+     */
+    selections: Selection[];
+
+    /**
+     * The current visible ranges in the editor (vertically).
+     * This accounts only for vertical scrolling, and not for horizontal scrolling.
+     */
+    readonly visibleRanges: Range[];
+
+    /**
+     * Text editor options.
+     */
+    options: TextEditorOptions;
+
+    /**
+     * The column in which this editor shows. Will be `undefined` in case this
+     * isn't one of the main editors, e.g. an embedded editor, or when the editor
+     * column is larger than three.
+     */
+    viewColumn?: ViewColumn;
+
+    /**
+     * Perform an edit on the document associated with this text editor.
+     *
+     * The given callback-function is invoked with an [edit-builder](#TextEditorEdit) which must
+     * be used to make edits. Note that the edit-builder is only valid while the
+     * callback executes.
+     *
+     * @param callback A function which can create edits using an [edit-builder](#TextEditorEdit).
+     * @param options The undo/redo behavior around this edit. By default, undo stops will be created before and after this edit.
+     * @return A promise that resolves with a value indicating if the edits could be applied.
+     */
+    edit(callback: (editBuilder: TextEditorEdit) => void, options?: { undoStopBefore: boolean; undoStopAfter: boolean; }): Thenable<boolean>;
+
+    /**
+     * Insert a [snippet](#SnippetString) and put the editor into snippet mode. "Snippet mode"
+     * means the editor adds placeholders and additional cursors so that the user can complete
+     * or accept the snippet.
+     *
+     * @param snippet The snippet to insert in this edit.
+     * @param location Position or range at which to insert the snippet, defaults to the current editor selection or selections.
+     * @param options The undo/redo behavior around this edit. By default, undo stops will be created before and after this edit.
+     * @return A promise that resolves with a value indicating if the snippet could be inserted. Note that the promise does not signal
+     * that the snippet is completely filled-in or accepted.
+     */
+    insertSnippet(snippet: SnippetString, location?: Position | Range | ReadonlyArray<Position> | ReadonlyArray<Range>, options?: { undoStopBefore: boolean; undoStopAfter: boolean; }): Thenable<boolean>;
+
+    /**
+     * Adds a set of decorations to the text editor. If a set of decorations already exists with
+     * the given [decoration type](#TextEditorDecorationType), they will be replaced.
+     *
+     * @see [createTextEditorDecorationType](#window.createTextEditorDecorationType).
+     *
+     * @param decorationType A decoration type.
+     * @param rangesOrOptions Either [ranges](#Range) or more detailed [options](#DecorationOptions).
+     */
+    setDecorations(decorationType: TextEditorDecorationType, rangesOrOptions: Range[] | DecorationOptions[]): void;
+
+    /**
+     * Scroll as indicated by `revealType` in order to reveal the given range.
+     *
+     * @param range A range.
+     * @param revealType The scrolling strategy for revealing `range`.
+     */
+    revealRange(range: Range, revealType?: TextEditorRevealType): void;
+
+    /**
+     * ~~Show the text editor.~~
+     *
+     * @deprecated Use [window.showTextDocument](#window.showTextDocument) instead.
+     *
+     * @param column The [column](#ViewColumn) in which to show this editor.
+     * This method shows unexpected behavior and will be removed in the next major update.
+     */
+    show(column?: ViewColumn): void;
+
+    /**
+     * ~~Hide the text editor.~~
+     *
+     * @deprecated Use the command `workbench.action.closeActiveEditor` instead.
+     * This method shows unexpected behavior and will be removed in the next major update.
+     */
+    hide(): void;
   }
 
   export interface TextEditorEdit {
-		/**
-		 * Replace a certain text region with a new value.
-		 * You can use \r\n or \n in `value` and they will be normalized to the current [document](#TextDocument).
-		 *
-		 * @param location The range this operation should remove.
-		 * @param value The new text this operation should insert after removing `location`.
-		 */
-		replace(location: Position | Range | Selection, value: string): void;
+    /**
+     * Replace a certain text region with a new value.
+     * You can use \r\n or \n in `value` and they will be normalized to the current [document](#TextDocument).
+     *
+     * @param location The range this operation should remove.
+     * @param value The new text this operation should insert after removing `location`.
+     */
+    replace(location: Position | Range | Selection, value: string): void;
 
-		/**
-		 * Insert text at a location.
-		 * You can use \r\n or \n in `value` and they will be normalized to the current [document](#TextDocument).
-		 * Although the equivalent text edit can be made with [replace](#TextEditorEdit.replace), `insert` will produce a different resulting selection (it will get moved).
-		 *
-		 * @param location The position where the new text should be inserted.
-		 * @param value The new text this operation should insert.
-		 */
-		insert(location: Position, value: string): void;
+    /**
+     * Insert text at a location.
+     * You can use \r\n or \n in `value` and they will be normalized to the current [document](#TextDocument).
+     * Although the equivalent text edit can be made with [replace](#TextEditorEdit.replace), `insert` will produce a different resulting selection (it will get moved).
+     *
+     * @param location The position where the new text should be inserted.
+     * @param value The new text this operation should insert.
+     */
+    insert(location: Position, value: string): void;
 
-		/**
-		 * Delete a certain text region.
-		 *
-		 * @param location The range this operation should remove.
-		 */
-		delete(location: Range | Selection): void;
+    /**
+     * Delete a certain text region.
+     *
+     * @param location The range this operation should remove.
+     */
+    delete(location: Range | Selection): void;
 
-		/**
-		 * Set the end of line sequence.
-		 *
-		 * @param endOfLine The new end of line for the [document](#TextDocument).
-		 */
-		setEndOfLine(endOfLine: EndOfLine): void;
+    /**
+     * Set the end of line sequence.
+     *
+     * @param endOfLine The new end of line for the [document](#TextDocument).
+     */
+    setEndOfLine(endOfLine: EndOfLine): void;
   }
 
-  	/**
-	 * Denotes a location of an editor in the window. Editors can be arranged in a grid
-	 * and each column represents one editor location in that grid by counting the editors
-	 * in order of their appearance.
-	 */
-	export enum ViewColumn {
-		/**
-		 * A *symbolic* editor column representing the currently active column. This value
-		 * can be used when opening editors, but the *resolved* [viewColumn](#TextEditor.viewColumn)-value
-		 * of editors will always be `One`, `Two`, `Three`,... or `undefined` but never `Active`.
-		 */
-		Active = -1,
-		/**
-		 * A *symbolic* editor column representing the column to the side of the active one. This value
-		 * can be used when opening editors, but the *resolved* [viewColumn](#TextEditor.viewColumn)-value
-		 * of editors will always be `One`, `Two`, `Three`,... or `undefined` but never `Beside`.
-		 */
-		Beside = -2,
-		/**
-		 * The first editor column.
-		 */
-		One = 1,
-		/**
-		 * The second editor column.
-		 */
-		Two = 2,
-		/**
-		 * The third editor column.
-		 */
-		Three = 3,
-		/**
-		 * The fourth editor column.
-		 */
-		Four = 4,
-		/**
-		 * The fifth editor column.
-		 */
-		Five = 5,
-		/**
-		 * The sixth editor column.
-		 */
-		Six = 6,
-		/**
-		 * The seventh editor column.
-		 */
-		Seven = 7,
-		/**
-		 * The eighth editor column.
-		 */
-		Eight = 8,
-		/**
-		 * The ninth editor column.
-		 */
-		Nine = 9
-	}
+    /**
+   * Denotes a location of an editor in the window. Editors can be arranged in a grid
+   * and each column represents one editor location in that grid by counting the editors
+   * in order of their appearance.
+   */
+  export enum ViewColumn {
+    /**
+     * A *symbolic* editor column representing the currently active column. This value
+     * can be used when opening editors, but the *resolved* [viewColumn](#TextEditor.viewColumn)-value
+     * of editors will always be `One`, `Two`, `Three`,... or `undefined` but never `Active`.
+     */
+    Active = -1,
+    /**
+     * A *symbolic* editor column representing the column to the side of the active one. This value
+     * can be used when opening editors, but the *resolved* [viewColumn](#TextEditor.viewColumn)-value
+     * of editors will always be `One`, `Two`, `Three`,... or `undefined` but never `Beside`.
+     */
+    Beside = -2,
+    /**
+     * The first editor column.
+     */
+    One = 1,
+    /**
+     * The second editor column.
+     */
+    Two = 2,
+    /**
+     * The third editor column.
+     */
+    Three = 3,
+    /**
+     * The fourth editor column.
+     */
+    Four = 4,
+    /**
+     * The fifth editor column.
+     */
+    Five = 5,
+    /**
+     * The sixth editor column.
+     */
+    Six = 6,
+    /**
+     * The seventh editor column.
+     */
+    Seven = 7,
+    /**
+     * The eighth editor column.
+     */
+    Eight = 8,
+    /**
+     * The ninth editor column.
+     */
+    Nine = 9
+  }
 
 
   export namespace window {
 
     /**
-		 * The currently active editor or `undefined`. The active editor is the one
-		 * that currently has focus or, when none has focus, the one that has changed
-		 * input most recently.
-		 */
-		export let activeTextEditor: TextEditor | undefined;
+     * The currently active editor or `undefined`. The active editor is the one
+     * that currently has focus or, when none has focus, the one that has changed
+     * input most recently.
+     */
+    export let activeTextEditor: TextEditor | undefined;
 
-		/**
-		 * The currently visible editors or an empty array.
-		 */
+    /**
+     * The currently visible editors or an empty array.
+     */
     export let visibleTextEditors: TextEditor[];
 
     /**
-		 * An [event](#Event) which fires when the [active editor](#window.activeTextEditor)
-		 * has changed. *Note* that the event also fires when the active editor changes
-		 * to `undefined`.
-		 */
-		export const onDidChangeActiveTextEditor: Event<TextEditor | undefined>;
+     * An [event](#Event) which fires when the [active editor](#window.activeTextEditor)
+     * has changed. *Note* that the event also fires when the active editor changes
+     * to `undefined`.
+     */
+    export const onDidChangeActiveTextEditor: Event<TextEditor | undefined>;
 
-		/**
-		 * An [event](#Event) which fires when the array of [visible editors](#window.visibleTextEditors)
-		 * has changed.
-		 */
-		export const onDidChangeVisibleTextEditors: Event<TextEditor[]>;
+    /**
+     * An [event](#Event) which fires when the array of [visible editors](#window.visibleTextEditors)
+     * has changed.
+     */
+    export const onDidChangeVisibleTextEditors: Event<TextEditor[]>;
 
-		/**
-		 * An [event](#Event) which fires when the selection in an editor has changed.
-		 */
-		export const onDidChangeTextEditorSelection: Event<TextEditorSelectionChangeEvent>;
+    /**
+     * An [event](#Event) which fires when the selection in an editor has changed.
+     */
+    export const onDidChangeTextEditorSelection: Event<TextEditorSelectionChangeEvent>;
 
-		/**
-		 * An [event](#Event) which fires when the visible ranges of an editor has changed.
-		 */
-		export const onDidChangeTextEditorVisibleRanges: Event<TextEditorVisibleRangesChangeEvent>;
+    /**
+     * An [event](#Event) which fires when the visible ranges of an editor has changed.
+     */
+    export const onDidChangeTextEditorVisibleRanges: Event<TextEditorVisibleRangesChangeEvent>;
 
-		/**
-		 * An [event](#Event) which fires when the options of an editor have changed.
-		 */
-		export const onDidChangeTextEditorOptions: Event<TextEditorOptionsChangeEvent>;
+    /**
+     * An [event](#Event) which fires when the options of an editor have changed.
+     */
+    export const onDidChangeTextEditorOptions: Event<TextEditorOptionsChangeEvent>;
 
-		/**
-		 * An [event](#Event) which fires when the view column of an editor has changed.
-		 */
-		export const onDidChangeTextEditorViewColumn: Event<TextEditorViewColumnChangeEvent>;
+    /**
+     * An [event](#Event) which fires when the view column of an editor has changed.
+     */
+    export const onDidChangeTextEditorViewColumn: Event<TextEditorViewColumnChangeEvent>;
 
 
     /**
-		 * Show the given document in a text editor. A [column](#ViewColumn) can be provided
-		 * to control where the editor is being shown. Might change the [active editor](#window.activeTextEditor).
-		 *
-		 * @param document A text document to be shown.
-		 * @param column A view column in which the [editor](#TextEditor) should be shown. The default is the [active](#ViewColumn.Active), other values
-		 * are adjusted to be `Min(column, columnCount + 1)`, the [active](#ViewColumn.Active)-column is not adjusted. Use [`ViewColumn.Beside`](#ViewColumn.Beside)
-		 * to open the editor to the side of the currently active one.
-		 * @param preserveFocus When `true` the editor will not take focus.
-		 * @return A promise that resolves to an [editor](#TextEditor).
-		 */
-		export function showTextDocument(document: TextDocument, column?: ViewColumn, preserveFocus?: boolean): Thenable<TextEditor>;
+     * Show the given document in a text editor. A [column](#ViewColumn) can be provided
+     * to control where the editor is being shown. Might change the [active editor](#window.activeTextEditor).
+     *
+     * @param document A text document to be shown.
+     * @param column A view column in which the [editor](#TextEditor) should be shown. The default is the [active](#ViewColumn.Active), other values
+     * are adjusted to be `Min(column, columnCount + 1)`, the [active](#ViewColumn.Active)-column is not adjusted. Use [`ViewColumn.Beside`](#ViewColumn.Beside)
+     * to open the editor to the side of the currently active one.
+     * @param preserveFocus When `true` the editor will not take focus.
+     * @return A promise that resolves to an [editor](#TextEditor).
+     */
+    export function showTextDocument(document: TextDocument, column?: ViewColumn, preserveFocus?: boolean): Thenable<TextEditor>;
 
-		/**
-		 * Show the given document in a text editor. [Options](#TextDocumentShowOptions) can be provided
-		 * to control options of the editor is being shown. Might change the [active editor](#window.activeTextEditor).
-		 *
-		 * @param document A text document to be shown.
-		 * @param options [Editor options](#TextDocumentShowOptions) to configure the behavior of showing the [editor](#TextEditor).
-		 * @return A promise that resolves to an [editor](#TextEditor).
-		 */
-		export function showTextDocument(document: TextDocument, options?: TextDocumentShowOptions): Thenable<TextEditor>;
+    /**
+     * Show the given document in a text editor. [Options](#TextDocumentShowOptions) can be provided
+     * to control options of the editor is being shown. Might change the [active editor](#window.activeTextEditor).
+     *
+     * @param document A text document to be shown.
+     * @param options [Editor options](#TextDocumentShowOptions) to configure the behavior of showing the [editor](#TextEditor).
+     * @return A promise that resolves to an [editor](#TextEditor).
+     */
+    export function showTextDocument(document: TextDocument, options?: TextDocumentShowOptions): Thenable<TextEditor>;
 
-		/**
-		 * A short-hand for `openTextDocument(uri).then(document => showTextDocument(document, options))`.
-		 *
-		 * @see [openTextDocument](#openTextDocument)
-		 *
-		 * @param uri A resource identifier.
-		 * @param options [Editor options](#TextDocumentShowOptions) to configure the behavior of showing the [editor](#TextEditor).
-		 * @return A promise that resolves to an [editor](#TextEditor).
-		 */
-		export function showTextDocument(uri: Uri, options?: TextDocumentShowOptions): Thenable<TextEditor>;
+    /**
+     * A short-hand for `openTextDocument(uri).then(document => showTextDocument(document, options))`.
+     *
+     * @see [openTextDocument](#openTextDocument)
+     *
+     * @param uri A resource identifier.
+     * @param options [Editor options](#TextDocumentShowOptions) to configure the behavior of showing the [editor](#TextEditor).
+     * @return A promise that resolves to an [editor](#TextEditor).
+     */
+    export function showTextDocument(uri: Uri, options?: TextDocumentShowOptions): Thenable<TextEditor>;
 
-		/**
-		 * Create a TextEditorDecorationType that can be used to add decorations to text editors.
-		 *
-		 * @param options Rendering options for the decoration type.
-		 * @return A new decoration type instance.
-		 */
-		export function createTextEditorDecorationType(options: DecorationRenderOptions): TextEditorDecorationType;
+    /**
+     * Create a TextEditorDecorationType that can be used to add decorations to text editors.
+     *
+     * @param options Rendering options for the decoration type.
+     * @return A new decoration type instance.
+     */
+    export function createTextEditorDecorationType(options: DecorationRenderOptions): TextEditorDecorationType;
 
-	}
+  }
 
-	export class TextEdit {
+  export class TextEdit {
 
-		/**
-		 * Utility to create a replace edit.
-		 *
-		 * @param range A range.
-		 * @param newText A string.
-		 * @return A new text edit object.
-		 */
-		static replace(range: Range, newText: string): TextEdit;
+    /**
+     * Utility to create a replace edit.
+     *
+     * @param range A range.
+     * @param newText A string.
+     * @return A new text edit object.
+     */
+    static replace(range: Range, newText: string): TextEdit;
 
-		/**
-		 * Utility to create an insert edit.
-		 *
-		 * @param position A position, will become an empty range.
-		 * @param newText A string.
-		 * @return A new text edit object.
-		 */
-		static insert(position: Position, newText: string): TextEdit;
+    /**
+     * Utility to create an insert edit.
+     *
+     * @param position A position, will become an empty range.
+     * @param newText A string.
+     * @return A new text edit object.
+     */
+    static insert(position: Position, newText: string): TextEdit;
 
-		/**
-		 * Utility to create a delete edit.
-		 *
-		 * @param range A range.
-		 * @return A new text edit object.
-		 */
-		static delete(range: Range): TextEdit;
+    /**
+     * Utility to create a delete edit.
+     *
+     * @param range A range.
+     * @return A new text edit object.
+     */
+    static delete(range: Range): TextEdit;
 
-		/**
-		 * Utility to create an eol-edit.
-		 *
-		 * @param eol An eol-sequence
-		 * @return A new text edit object.
-		 */
-		static setEndOfLine(eol: EndOfLine): TextEdit;
+    /**
+     * Utility to create an eol-edit.
+     *
+     * @param eol An eol-sequence
+     * @return A new text edit object.
+     */
+    static setEndOfLine(eol: EndOfLine): TextEdit;
 
-		/**
-		 * The range this edit applies to.
-		 */
-		range: Range;
+    /**
+     * The range this edit applies to.
+     */
+    range: Range;
 
-		/**
-		 * The string this edit will insert.
-		 */
-		newText: string;
+    /**
+     * The string this edit will insert.
+     */
+    newText: string;
 
-		/**
-		 * The eol-sequence used in the document.
-		 *
-		 * *Note* that the eol-sequence will be applied to the
-		 * whole document.
-		 */
-		newEol: EndOfLine;
+    /**
+     * The eol-sequence used in the document.
+     *
+     * *Note* that the eol-sequence will be applied to the
+     * whole document.
+     */
+    newEol: EndOfLine;
 
-		/**
-		 * Create a new TextEdit.
-		 *
-		 * @param range A range.
-		 * @param newText A string.
-		 */
-		constructor(range: Range, newText: string);
+    /**
+     * Create a new TextEdit.
+     *
+     * @param range A range.
+     * @param newText A string.
+     */
+    constructor(range: Range, newText: string);
   }
 
     /**
@@ -1008,4 +1008,292 @@ declare module 'vscode' {
     backupCustomDocument(document: T, context: CustomDocumentBackupContext, cancellation: CancellationToken): Thenable<CustomDocumentBackup>;
   }
 
+
+  /**
+   * The tab represents a single text based resource.
+   */
+  export class TabInputText {
+    /**
+     * The uri represented by the tab.
+     */
+    readonly uri: Uri;
+    /**
+     * Constructs a text tab input with the given URI.
+     * @param uri The URI of the tab.
+     */
+    constructor(uri: Uri);
+  }
+
+  /**
+   * The tab represents two text based resources
+   * being rendered as a diff.
+   */
+  export class TabInputTextDiff {
+    /**
+     * The uri of the original text resource.
+     */
+    readonly original: Uri;
+    /**
+     * The uri of the modified text resource.
+     */
+    readonly modified: Uri;
+    /**
+     * Constructs a new text diff tab input with the given URIs.
+     * @param original The uri of the original text resource.
+     * @param modified The uri of the modified text resource.
+     */
+    constructor(original: Uri, modified: Uri);
+  }
+
+  /**
+   * The tab represents a custom editor.
+   */
+  export class TabInputCustom {
+    /**
+     * The uri that the tab is representing.
+     */
+    readonly uri: Uri;
+    /**
+     * The type of custom editor.
+     */
+    readonly viewType: string;
+    /**
+     * Constructs a custom editor tab input.
+     * @param uri The uri of the tab.
+     * @param viewType The viewtype of the custom editor.
+     */
+    constructor(uri: Uri, viewType: string);
+  }
+
+  /**
+   * The tab represents a webview.
+   */
+  export class TabInputWebview {
+    /**
+     * The type of webview. Maps to {@linkcode WebviewPanel.viewType WebviewPanel's viewType}
+     */
+    readonly viewType: string;
+    /**
+     * Constructs a webview tab input with the given view type.
+     * @param viewType The type of webview. Maps to {@linkcode WebviewPanel.viewType WebviewPanel's viewType}
+     */
+    constructor(viewType: string);
+  }
+
+  /**
+   * The tab represents a notebook.
+   */
+  export class TabInputNotebook {
+    /**
+     * The uri that the tab is representing.
+     */
+    readonly uri: Uri;
+    /**
+     * The type of notebook. Maps to {@linkcode NotebookDocument.notebookType NotebookDocuments's notebookType}
+     */
+    readonly notebookType: string;
+    /**
+     * Constructs a new tab input for a notebook.
+     * @param uri The uri of the notebook.
+     * @param notebookType The type of notebook. Maps to {@linkcode NotebookDocument.notebookType NotebookDocuments's notebookType}
+     */
+    constructor(uri: Uri, notebookType: string);
+  }
+
+  /**
+   * The tabs represents two notebooks in a diff configuration.
+   */
+  export class TabInputNotebookDiff {
+    /**
+     * The uri of the original notebook.
+     */
+    readonly original: Uri;
+    /**
+     * The uri of the modified notebook.
+     */
+    readonly modified: Uri;
+    /**
+     * The type of notebook. Maps to {@linkcode NotebookDocument.notebookType NotebookDocuments's notebookType}
+     */
+    readonly notebookType: string;
+    /**
+     * Constructs a notebook diff tab input.
+     * @param original The uri of the original unmodified notebook.
+     * @param modified The uri of the modified notebook.
+     * @param notebookType The type of notebook. Maps to {@linkcode NotebookDocument.notebookType NotebookDocuments's notebookType}
+     */
+    constructor(original: Uri, modified: Uri, notebookType: string);
+  }
+
+  /**
+   * The tab represents a terminal in the editor area.
+   */
+  export class TabInputTerminal {
+    /**
+     * Constructs a terminal tab input.
+     */
+    constructor();
+  }
+
+  /**
+   * Represents a tab within a {@link TabGroup group of tabs}.
+   * Tabs are merely the graphical representation within the editor area.
+   * A backing editor is not a guarantee.
+   */
+  export interface Tab {
+
+    /**
+     * The text displayed on the tab.
+     */
+    readonly label: string;
+
+    /**
+     * The group which the tab belongs to.
+     */
+    readonly group: TabGroup;
+
+    /**
+     * Defines the structure of the tab i.e. text, notebook, custom, etc.
+     * Resource and other useful properties are defined on the tab kind.
+     */
+    readonly input: TabInputText | TabInputTextDiff | TabInputCustom | TabInputWebview | TabInputNotebook | TabInputNotebookDiff | TabInputTerminal | unknown;
+
+    /**
+     * Whether or not the tab is currently active.
+     * This is dictated by being the selected tab in the group.
+     */
+    readonly isActive: boolean;
+
+    /**
+     * Whether or not the dirty indicator is present on the tab.
+     */
+    readonly isDirty: boolean;
+
+    /**
+     * Whether or not the tab is pinned (pin icon is present).
+     */
+    readonly isPinned: boolean;
+
+    /**
+     * Whether or not the tab is in preview mode.
+     */
+    readonly isPreview: boolean;
+  }
+
+  /**
+   * An event describing change to tabs.
+   */
+  export interface TabChangeEvent {
+    /**
+     * The tabs that have been opened.
+     */
+    readonly opened: readonly Tab[];
+    /**
+     * The tabs that have been closed.
+     */
+    readonly closed: readonly Tab[];
+    /**
+     * Tabs that have changed, e.g have changed
+     * their {@link Tab.isActive active} state.
+     */
+    readonly changed: readonly Tab[];
+  }
+
+  /**
+   * An event describing changes to tab groups.
+   */
+  export interface TabGroupChangeEvent {
+    /**
+     * Tab groups that have been opened.
+     */
+    readonly opened: readonly TabGroup[];
+    /**
+     * Tab groups that have been closed.
+     */
+    readonly closed: readonly TabGroup[];
+    /**
+     * Tab groups that have changed, e.g have changed
+     * their {@link TabGroup.isActive active} state.
+     */
+    readonly changed: readonly TabGroup[];
+  }
+
+  /**
+   * Represents a group of tabs. A tab group itself consists of multiple tabs.
+   */
+  export interface TabGroup {
+    /**
+     * Whether or not the group is currently active.
+     *
+     * *Note* that only one tab group is active at a time, but that multiple tab
+     * groups can have an {@link TabGroup.aciveTab active tab}.
+     *
+     * @see {@link Tab.isActive}
+     */
+    readonly isActive: boolean;
+
+    /**
+     * The view column of the group.
+     */
+    readonly viewColumn: ViewColumn;
+
+    /**
+     * The active {@link Tab tab} in the group. This is the tab whose contents are currently
+     * being rendered.
+     *
+     * *Note* that there can be one active tab per group but there can only be one {@link TabGroups.activeTabGroup active group}.
+     */
+    readonly activeTab: Tab | undefined;
+
+    /**
+     * The list of tabs contained within the group.
+     * This can be empty if the group has no tabs open.
+     */
+    readonly tabs: readonly Tab[];
+  }
+
+  /**
+   * Represents the main editor area which consists of multple groups which contain tabs.
+   */
+  export interface TabGroups {
+    /**
+     * All the groups within the group container.
+     */
+    readonly all: readonly TabGroup[];
+
+    /**
+     * The currently active group.
+     */
+    readonly activeTabGroup: TabGroup;
+
+    /**
+     * An {@link Event event} which fires when {@link TabGroup tab groups} have changed.
+     */
+    readonly onDidChangeTabGroups: Event<TabGroupChangeEvent>;
+
+    /**
+     * An {@link Event event} which fires when {@link Tab tabs} have changed.
+     */
+    readonly onDidChangeTabs: Event<TabChangeEvent>;
+
+    /**
+     * Closes the tab. This makes the tab object invalid and the tab
+     * should no longer be used for further actions.
+     * Note: In the case of a dirty tab, a confirmation dialog will be shown which may be cancelled. If cancelled the tab is still valid
+     *
+     * @param tab The tab to close.
+     * @param preserveFocus When `true` focus will remain in its current position. If `false` it will jump to the next tab.
+     * @returns A promise that resolves to `true` when all tabs have been closed.
+     */
+    close(tab: Tab | readonly Tab[], preserveFocus?: boolean): Thenable<boolean>;
+
+    /**
+     * Closes the tab group. This makes the tab group object invalid and the tab group
+     * should no longer be used for further actions.
+     * @param tabGroup The tab group to close.
+     * @param preserveFocus When `true` focus will remain in its current position.
+     * @returns A promise that resolves to `true` when all tab groups have been closed.
+     */
+    close(tabGroup: TabGroup | readonly TabGroup[], preserveFocus?: boolean): Thenable<boolean>;
+  }
 }
