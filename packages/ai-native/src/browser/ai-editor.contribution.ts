@@ -2,6 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
+import { AI_INLINE_CHAT_VISIBLE } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AINativeSettingSectionsId,
@@ -32,6 +33,7 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
+import { LanguageParser } from './languages/parser';
 import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -482,6 +484,79 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
               provideNewSymbolNames: provider,
+            }),
+          );
+        }
+
+        if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+          // 通过 code actions 来透出我们 inline chat 的功能
+          const languageId = model.getLanguageId();
+          this.modelSessionDisposable.addDispose(
+            monacoApi.languages.registerCodeActionProvider(languageId, {
+              async provideCodeActions(model, range, context, token) {
+                const parser = LanguageParser.fromLanguageId(languageId);
+                if (!parser) {
+                  return;
+                }
+
+                const cursorPosition = monacoEditor.getPosition()!;
+                const cursor = model.getOffsetAt(cursorPosition);
+
+                const functionInfo = await parser.provideFunctionInfo(model.getValue(), cursor);
+                if (!functionInfo) {
+                  return;
+                }
+
+                return {
+                  actions: [
+                    {
+                      title: 'Explain Function ' + functionInfo.name,
+                      isAI: true,
+                      kind: 'InlineChat',
+                      isPreferred: true,
+                      ranges: [range],
+                      command: {
+                        title: '显示面板',
+                        id: AI_INLINE_CHAT_VISIBLE.id,
+                      },
+                    },
+                    {
+                      title: 'Comments Function ' + functionInfo.name,
+                      isAI: true,
+                      kind: 'InlineChat',
+                      isPreferred: true,
+                      ranges: [range],
+                      command: {
+                        title: '显示面板',
+                        id: AI_INLINE_CHAT_VISIBLE.id,
+                      },
+                    },
+                    {
+                      title: 'Test Function ' + functionInfo.name,
+                      isAI: true,
+                      kind: 'InlineChat',
+                      isPreferred: true,
+                      ranges: [range],
+                      command: {
+                        title: '显示面板',
+                        id: AI_INLINE_CHAT_VISIBLE.id,
+                      },
+                    },
+                    {
+                      title: 'Optimize Function ' + functionInfo.name,
+                      isAI: true,
+                      kind: 'InlineChat',
+                      isPreferred: true,
+                      ranges: [range],
+                      command: {
+                        title: '显示面板',
+                        id: AI_INLINE_CHAT_VISIBLE.id,
+                      },
+                    },
+                  ],
+                  dispose() {},
+                };
+              },
             }),
           );
         }

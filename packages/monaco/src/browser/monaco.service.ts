@@ -52,7 +52,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       glyphMargin: true,
       lightbulb: {
         // todo: add a setting to control this
-        enabled: ShowLightbulbIconMode.OnCode,
+        enabled: ShowLightbulbIconMode.On,
       },
       automaticLayout: true,
       model: undefined,

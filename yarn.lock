@@ -2048,6 +2048,12 @@ __metadata:
     simple-git: ^3.3.0
     temp: ^0.9.4
     tinybench: ^2.6.0
+    tree-sitter-go: ^0.20.0
+    tree-sitter-java: ^0.20.2
+    tree-sitter-javascript: ^0.20.4
+    tree-sitter-python: ^0.21.0
+    tree-sitter-rust: ^0.20.4
+    tree-sitter-typescript: ^0.20.5
     ts-jest: ^29.1.0
     ts-loader: ^9.5.1
     ts-node: ^10.9.1
@@ -2116,6 +2122,7 @@ __metadata:
     dom-align: ^1.7.0
     react-chat-elements: ^12.0.10
     react-highlight: ^0.15.0
+    web-tree-sitter: ^0.22.2
   languageName: unknown
   linkType: soft
 
@@ -14185,7 +14192,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nan@npm:^2.14.0, nan@npm:^2.17.0":
+"nan@npm:^2.14.0, nan@npm:^2.14.1, nan@npm:^2.17.0, nan@npm:^2.18.0":
   version: 2.19.0
   resolution: "nan@npm:2.19.0"
   dependencies:
@@ -14328,6 +14335,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-addon-api@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "node-addon-api@npm:7.1.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 26640c8d2ed7e2059e2ed65ee79e2a195306b3f1fc27ad11448943ba91d37767bd717a9a0453cc97e83a1109194dced8336a55f8650000458ef625c0b8b5e3df
+  languageName: node
+  linkType: hard
+
 "node-fetch@npm:2.6.7":
   version: 2.6.7
   resolution: "node-fetch@npm:2.6.7"
@@ -14363,7 +14379,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp-build@npm:^4.3.0":
+"node-gyp-build@npm:^4.3.0, node-gyp-build@npm:^4.8.0":
   version: 4.8.0
   resolution: "node-gyp-build@npm:4.8.0"
   bin:
@@ -16273,7 +16289,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prebuild-install@npm:^7.0.1":
+"prebuild-install@npm:^7.0.1, prebuild-install@npm:^7.1.1":
   version: 7.1.2
   resolution: "prebuild-install@npm:7.1.2"
   dependencies:
@@ -19168,6 +19184,84 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tree-sitter-go@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "tree-sitter-go@npm:0.20.0"
+  dependencies:
+    nan: ^2.14.0
+    node-gyp: latest
+  checksum: 10f20a25a5a7619a75394a123e6a0f5e9f533c4df54912451c67b819ad98065d792ce54e08ae32a096a2e4adcee5a8b8779de0a16a01bf0e83dbb3eb5b5fc02c
+  languageName: node
+  linkType: hard
+
+"tree-sitter-java@npm:^0.20.2":
+  version: 0.20.2
+  resolution: "tree-sitter-java@npm:0.20.2"
+  dependencies:
+    nan: ^2.14.1
+    node-gyp: latest
+  checksum: 35f479683a9c0e138dedc557782dddc93e1be18e4d1e84f4f22a57253688e6d0f943ba50e21830a34a698532d732f63642276ba7f2f20f5924d8b7a475d49130
+  languageName: node
+  linkType: hard
+
+"tree-sitter-javascript@npm:^0.20.4":
+  version: 0.20.4
+  resolution: "tree-sitter-javascript@npm:0.20.4"
+  dependencies:
+    nan: ^2.18.0
+    node-gyp: latest
+  checksum: 99e087bf8b5f5b3ab93dc92d8e2a34431e0e530967650829f4330673e6944c8c95a6bce8204bea17aec3157e571191efa068c27177fa4df9584600376de81943
+  languageName: node
+  linkType: hard
+
+"tree-sitter-python@npm:^0.21.0":
+  version: 0.21.0
+  resolution: "tree-sitter-python@npm:0.21.0"
+  dependencies:
+    node-addon-api: ^7.1.0
+    node-gyp: latest
+    node-gyp-build: ^4.8.0
+  peerDependencies:
+    tree-sitter: ^0.21.0
+  peerDependenciesMeta:
+    tree_sitter:
+      optional: true
+  checksum: 2df829575251e0e4bdfd1cb8712bc13192820fb3cef6b470db33490f211740b73ff5b17d3a59c55cc7c86c0b9fb337b3e733c38a68340e43924a5f08b410875f
+  languageName: node
+  linkType: hard
+
+"tree-sitter-rust@npm:^0.20.4":
+  version: 0.20.4
+  resolution: "tree-sitter-rust@npm:0.20.4"
+  dependencies:
+    nan: ^2.17.0
+    node-gyp: latest
+  checksum: 01c7fe0b36995d6500c0e8348084e10753798c93148b5aee8ec44024f09338b29a9da85493b3e89199efb82b89cc7aae39475df1908cbe088f84c2d8a2f4f445
+  languageName: node
+  linkType: hard
+
+"tree-sitter-typescript@npm:^0.20.5":
+  version: 0.20.5
+  resolution: "tree-sitter-typescript@npm:0.20.5"
+  dependencies:
+    nan: ^2.18.0
+    node-gyp: latest
+    tree-sitter: ^0.20.6
+  checksum: e73939404e65ad38486316f3cf984f63e0eab4bc0fc43be482ed4639217622f50dad02483e4b274f3ce879bbaeb87a53b25cd1e0387985e3cd745daec37e9861
+  languageName: node
+  linkType: hard
+
+"tree-sitter@npm:^0.20.6":
+  version: 0.20.6
+  resolution: "tree-sitter@npm:0.20.6"
+  dependencies:
+    nan: ^2.18.0
+    node-gyp: latest
+    prebuild-install: ^7.1.1
+  checksum: bce884038bfe2cb806badf72560158daed7d0696ed2ce7038debca6db76a644c46dee908b0233864b74ba5dc3a8b01b2ba8678ca63d63eeecdb282f6087c4fba
+  languageName: node
+  linkType: hard
+
 "trim-newlines@npm:^3.0.0":
   version: 3.0.1
   resolution: "trim-newlines@npm:3.0.1"
@@ -20085,6 +20179,13 @@ __metadata:
   dependencies:
     defaults: ^1.0.3
   checksum: 814e9d1ddcc9798f7377ffa448a5a3892232b9275ebb30a41b529607691c0491de47cba426e917a4d08ded3ee7e9ba2f3fe32e62ee3cd9c7d3bafb7754bd553c
+  languageName: node
+  linkType: hard
+
+"web-tree-sitter@npm:^0.22.2":
+  version: 0.22.2
+  resolution: "web-tree-sitter@npm:0.22.2"
+  checksum: 1dab2a78634438e22c2bef1bbef2a8bc51d125c0e4e96f6ac54bf188fadce7fac7614088a2bcbf209911ef04d67aeccc9352947366eb2893cb9d071c23c21f3c
   languageName: node
   linkType: hard
 

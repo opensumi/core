@@ -1,5 +1,6 @@
 const path = require('path');
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -33,12 +34,13 @@ const styleLoader =
 exports.createWebpackConfig = function (dir, entry, extraConfig) {
   console.log('front port', IDE_FRONT_PORT);
 
+  const outputPath = dir + '/dist';
   const webpackConfig = merge(
     {
       entry,
       output: {
         filename: 'bundle.js',
-        path: dir + '/dist',
+        path: outputPath,
       },
       cache: {
         type: 'filesystem',
@@ -187,7 +189,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
             process.env.EXTENSION_WORKER_HOST ||
               `http://${HOST}:8080/assets` +
                 withSlash +
-                path.join(__dirname, '../../../packages/extension/lib/worker-host.js'),
+                path.resolve(__dirname, '../../../packages/extension/lib/worker-host.js'),
           ),
           'process.env.WS_PATH': JSON.stringify(process.env.WS_PATH || `ws://${HOST}:8000`),
           'process.env.WEBVIEW_HOST': JSON.stringify(process.env.WEBVIEW_HOST || HOST),
@@ -207,6 +209,16 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
               exclude: (issue) => issue.file.includes('__test__'),
             },
           }),
+        new CopyWebpackPlugin({
+          patterns: [
+            {
+              from: path.join(path.dirname(require.resolve('web-tree-sitter/package.json')), 'tree-sitter.wasm'),
+            },
+            {
+              from: path.join(__dirname, '../../../packages/ai-native/src/common/parsers'),
+            },
+          ],
+        }),
         new NodePolyfillPlugin({
           includeAliases: ['process', 'Buffer'],
         }),
