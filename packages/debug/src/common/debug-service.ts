@@ -8,6 +8,17 @@ export interface IMemoryInvalidationEvent {
   toOffset: number;
 }
 
+export enum DebugConfigurationProviderTriggerKind {
+  /**
+   *  `DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
+   */
+  Initial = 1,
+  /**
+   * `DebugConfigurationProvider.provideDebugConfigurations` is called to provide dynamically generated debug configurations when the user asks for them through the UI (e.g. via the "Select and Start Debugging" command).
+   */
+  Dynamic = 2,
+}
+
 export const enum MemoryRangeType {
   Valid,
   Unreadable,
@@ -107,10 +118,19 @@ export interface DebugServer extends IDisposable {
   getConfigurationSnippets(): Promise<IJSONSchemaSnippet[]>;
 
   /**
+   * 获取 DebugConfigurationProviderTriggerKind.Dynamic 类型的调试配置支持类型和 Label
+   */
+  getDynamicConfigurationsSupportTypes(): Promise<string[]>;
+
+  /**
    * 提供对应调试类型下的配置
    * @param debugType 调试类型
    */
-  provideDebugConfigurations(debugType: string, workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]>;
+  provideDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+    triggerKind?: DebugConfigurationProviderTriggerKind,
+  ): Promise<DebugConfiguration[]>;
 
   /**
    * 处理调试配置，补全缺省值
