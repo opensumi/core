@@ -24,6 +24,7 @@ import {
   OS,
   Deferred,
   IClipboardService,
+  CommandRegistry,
 } from '@opensumi/ide-core-common';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
@@ -48,6 +49,8 @@ import { FileTreeService } from '../../src/browser/file-tree.service';
 import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { Directory, File } from '../../src/common/file-tree-node.define';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 
 describe('FileTree should be work while on single workspace model', () => {
   let track;
@@ -72,6 +75,9 @@ describe('FileTree should be work while on single workspace model', () => {
   const mockCorePreference = {
     'workbench.list.openMode': 'singleClick',
     'editor.previewMode': true,
+  };
+  const mockMainLayoutService = {
+    bottomExpanded: true,
   };
   beforeAll(async () => {
     mockFileTreeApi = {
@@ -199,6 +205,10 @@ describe('FileTree should be work while on single workspace model', () => {
         token: IClipboardService,
         useValue: mockClipboardService,
       },
+      {
+        token: IMainLayoutService,
+        useValue: mockMainLayoutService,
+      },
     );
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
@@ -306,6 +316,13 @@ describe('FileTree should be work while on single workspace model', () => {
 
     it('Style decoration should be right while click the item', async () => {
       const { handleItemClick, decorations } = fileTreeModelService;
+
+      let retracted = jest.fn();
+      injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {
+        mockMainLayoutService.bottomExpanded = false;
+        retracted();
+      });
+
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
@@ -318,6 +335,8 @@ describe('FileTree should be work while on single workspace model', () => {
       const fileNode = rootNode.getTreeNodeAtIndex(1) as Directory;
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openFile);
       handleItemClick(fileNode, TreeNodeType.TreeNode);
+      expect(retracted).toHaveBeenCalledTimes(1);
+      expect(mockMainLayoutService.bottomExpanded).toBeFalsy();
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
       expect(openFile).toBeCalledWith(fileNode.uri, { disableNavigate: true, preview: true });
