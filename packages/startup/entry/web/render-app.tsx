@@ -2,7 +2,6 @@
 console.time('Render');
 
 import { Injector } from '@opensumi/di';
-import { AIMenubarLayoutConfig } from '@opensumi/ide-ai-native/lib/browser/layout/layout-config';
 import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { uuid } from '@opensumi/ide-core-common';
@@ -72,7 +71,6 @@ export const getDefaultClientAppOpts = ({
         modules: ['@opensumi/ide-toolbar-action'],
       },
     },
-    ...AIMenubarLayoutConfig,
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,
