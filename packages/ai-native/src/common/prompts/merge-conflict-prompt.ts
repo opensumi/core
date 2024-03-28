@@ -1,7 +1,9 @@
+import { Injectable } from '@opensumi/di';
 import { IConflictContentMetadata } from '@opensumi/ide-core-common';
 
 import { BasePromptManager } from './base-prompt-manager';
 
+@Injectable()
 export class MergeConflictPromptManager extends BasePromptManager {
   private toPrompt(text: string) {
     return `You are an intelligent expert in resolving code conflicts. I've encountered a code conflict, and I need you to carefully consider it and provide me with the most suitable solution after understanding the code semantics. Here is the conflicting part of the code: \n\`\`\`\n${text}\n\`\`\`\n`;
@@ -25,5 +27,3 @@ export class MergeConflictPromptManager extends BasePromptManager {
     return this.toRegeneratePrompt(codeAssemble);
   }
 }
-
-export const mergeConflictPromptManager = new MergeConflictPromptManager();
