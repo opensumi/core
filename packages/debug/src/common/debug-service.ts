@@ -1,13 +1,22 @@
 import { IDisposable, IJSONSchema, IJSONSchemaSnippet, Event, BinaryBuffer } from '@opensumi/ide-core-common';
 
-import { DebugConfigurationProviderTriggerKind } from '../../../extension/lib/common/vscode/ext-types';
-
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';
 
 export interface IMemoryInvalidationEvent {
   fromOffset: number;
   toOffset: number;
+}
+
+export enum DebugConfigurationProviderTriggerKind {
+  /**
+   *  `DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
+   */
+  Initial = 1,
+  /**
+   * `DebugConfigurationProvider.provideDebugConfigurations` is called to provide dynamically generated debug configurations when the user asks for them through the UI (e.g. via the "Select and Start Debugging" command).
+   */
+  Dynamic = 2,
 }
 
 export const enum MemoryRangeType {

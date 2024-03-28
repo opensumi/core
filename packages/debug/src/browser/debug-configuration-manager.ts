@@ -32,8 +32,14 @@ import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/brows
 import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { DebugConfigurationProviderTriggerKind } from '../../../extension/lib/common/vscode/ext-types';
-import { DebugServer, IDebugServer, IDebugSessionManager, IDebuggerContribution, launchSchemaUri } from '../common';
+import {
+  DebugConfigurationProviderTriggerKind,
+  DebugServer,
+  IDebugServer,
+  IDebugSessionManager,
+  IDebuggerContribution,
+  launchSchemaUri,
+} from '../common';
 import { DebugSessionOptions } from '../common';
 import { DebugConfiguration } from '../common';
 
