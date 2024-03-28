@@ -45,31 +45,17 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   private eol: monaco.editor.EndOfLineSequence = EndOfLineSequence.LF as any;
   private value: string;
 
-  options: monaco.editor.TextModelResolvedOptions = {
-    tabSize: 2,
-    _textModelResolvedOptionsBrand: void 0,
-    indentSize: 0,
-    insertSpaces: true,
-    defaultEOL: 1,
-    trimAutoWhitespace: false,
-    equals() {
-      return true;
-    },
-    createChangeEvent(newOpts: monaco.editor.TextModelResolvedOptions) {
-      return {
-        tabSize: true,
-        indentSize: true,
-        insertSpaces: true,
-        trimAutoWhitespace: true,
-      };
-    },
+  options = new monaco.editor.TextModelResolvedOptions({
     bracketPairColorizationOptions: {
       enabled: true,
       independentColorPoolPerBracketType: true,
     },
-    _indentSizeIsTabSize: false,
-    originalIndentSize: 0,
-  };
+    defaultEOL: 1,
+    indentSize: 2,
+    insertSpaces: true,
+    tabSize: 2,
+    trimAutoWhitespace: false,
+  });
 
   constructor(value, language, uri?: monaco.Uri) {
     super();
@@ -479,26 +465,16 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   updateOptions(newOpts: monaco.editor.ITextModelUpdateOptions): void {
-    this.options = {
-      ...this.options,
-      ...newOpts,
-      equals() {
-        return true;
-      },
-      createChangeEvent(newOpts: monaco.editor.TextModelResolvedOptions) {
-        return {
-          tabSize: true,
-          indentSize: true,
-          insertSpaces: true,
-          trimAutoWhitespace: true,
-        };
-      },
-      originalIndentSize: 0,
-      _indentSizeIsTabSize: false,
-      indentSize: 0,
-    };
-    // @ts-ignore
-    this._onDidChangeOptions.fire(this.options);
+    this.options.createChangeEvent(
+      new monaco.editor.TextModelResolvedOptions({
+        bracketPairColorizationOptions: newOpts.bracketColorizationOptions!,
+        indentSize: newOpts.indentSize!,
+        insertSpaces: newOpts.insertSpaces!,
+        tabSize: newOpts.tabSize!,
+        trimAutoWhitespace: newOpts.trimAutoWhitespace!,
+        defaultEOL: this.options.defaultEOL,
+      }),
+    );
   }
   detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void {
     return;
