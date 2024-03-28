@@ -19,27 +19,73 @@ export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
 };
 
 export class LayoutViewSizeConfig implements ILayoutViewSize {
-  constructor(private readonly layoutViewSize?: Partial<ILayoutViewSize>) {}
+  #menubarHeight: number;
+  #editorTabsHeight: number;
+  #bigSurTitleBarHeight: number;
+  #titleBarHeight: number;
+  #panelTitleBarHeight: number;
+  #statusBarHeight: number;
+  #accordionHeaderSizeHeight: number;
+
+  constructor(private readonly layoutViewSize?: Partial<ILayoutViewSize>) {
+    this.#menubarHeight = this.layoutViewSize?.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
+    this.#editorTabsHeight = this.layoutViewSize?.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
+    this.#bigSurTitleBarHeight =
+      this.layoutViewSize?.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
+    this.#titleBarHeight = this.layoutViewSize?.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
+    this.#panelTitleBarHeight =
+      this.layoutViewSize?.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
+    this.#statusBarHeight = this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
+    this.#accordionHeaderSizeHeight =
+      this.layoutViewSize?.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
+  }
 
   get menubarHeight(): number {
-    return this.layoutViewSize?.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
+    return this.#menubarHeight;
   }
+  setMenubarHeight(value: number) {
+    this.#menubarHeight = value;
+  }
+
   get editorTabsHeight(): number {
-    return this.layoutViewSize?.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
+    return this.#editorTabsHeight;
   }
+  setEditorTabsHeight(value: number) {
+    this.#editorTabsHeight = value;
+  }
+
   get bigSurTitleBarHeight(): number {
-    return this.layoutViewSize?.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
+    return this.#bigSurTitleBarHeight;
   }
+  setBigSurTitleBarHeight(value: number) {
+    this.#bigSurTitleBarHeight = value;
+  }
+
   get titleBarHeight(): number {
-    return this.layoutViewSize?.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
+    return this.#titleBarHeight;
   }
+  setTitleBarHeight(value: number) {
+    this.#titleBarHeight = value;
+  }
+
   get panelTitleBarHeight(): number {
-    return this.layoutViewSize?.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
+    return this.#panelTitleBarHeight;
   }
+  setPanelTitleBarHeight(value: number) {
+    this.#panelTitleBarHeight = value;
+  }
+
   get statusBarHeight(): number {
-    return this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
+    return this.#statusBarHeight;
   }
+  setStatusBarHeight(value: number) {
+    this.#statusBarHeight = value;
+  }
+
   get accordionHeaderSizeHeight(): number {
-    return this.layoutViewSize?.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
+    return this.#accordionHeaderSizeHeight;
+  }
+  setAccordionHeaderSizeHeight(value: number) {
+    this.#accordionHeaderSizeHeight = value;
   }
 }
