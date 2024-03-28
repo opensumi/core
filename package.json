@@ -112,7 +112,7 @@
     "jsdom": "^20.0.0",
     "jsdom-worker": "^0.2.1",
     "lerna": "^8.0.2",
-    "lint-staged": "^12.1.2",
+    "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",
     "mri": "^1.2.0",
     "node-fetch": "^2.6.7",
