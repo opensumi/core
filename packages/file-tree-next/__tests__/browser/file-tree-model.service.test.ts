@@ -7,6 +7,7 @@ import {
   IApplicationService,
   Emitter,
   OS,
+  CommandRegistry,
 } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -27,6 +28,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import styles from '../../src/browser/file-tree-node.modules.less';
 import { Directory, File } from '../../src/common/file-tree-node.define';
+import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 
 class TempDirectory {}
 class TempFile {}
@@ -207,6 +209,14 @@ describe('FileTreeModelService should be work', () => {
 
     fileTreeModelService = injector.get(FileTreeModelService);
     fileTreeModelService.initTreeModel();
+
+    // register a command that will be used while click file
+    const commandRegistry = injector.get(CommandRegistry) as CommandRegistry;
+
+    commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
+      execute: () => {},
+    });
+
     await fileTreeModelService.whenReady;
   });
 
