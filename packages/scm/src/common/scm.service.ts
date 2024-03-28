@@ -109,7 +109,7 @@ class SCMInput implements ISCMInput {
   }
 
   private _onDidChangeActionButton = new Emitter<void>();
-	readonly onDidChangeActionButton: Event<void> = this._onDidChangeActionButton.event;
+  readonly onDidChangeActionButton: Event<void> = this._onDidChangeActionButton.event;
 }
 
 class SCMRepository implements ISCMRepository {

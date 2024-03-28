@@ -30,9 +30,9 @@ import {
   ChatFeatureRegistryToken,
   CommandService,
   InlineChatFeatureRegistryToken,
+  MaybePromise,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
-  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
@@ -114,9 +114,11 @@ export class AINativeBrowserContribution
     this.registerFeature();
   }
 
-  initialize() {
+  prepare(): MaybePromise<void> {
     this.aiNativeConfigService.enableCapabilities();
+  }
 
+  initialize() {
     const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
     const { useMenubarView } = this.aiNativeConfigService.layout;
 

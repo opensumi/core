@@ -201,15 +201,17 @@ function historyItemGroupEquals(
   );
 }
 
-function getInputBoxActionButtonIcon(actionButton?: vscode.SourceControlInputBoxActionButton): UriComponents | { light: UriComponents; dark: UriComponents } | vscode.ThemeIcon | undefined {
-	if (!actionButton?.icon) {
-		return undefined;
-	} else if (URI.isUri(actionButton.icon)) {
-		return actionButton.icon;
-	} else {
-		const icon = actionButton.icon as { light: URI; dark: URI };
-		return { light: icon.light, dark: icon.dark };
-	}
+function getInputBoxActionButtonIcon(
+  actionButton?: vscode.SourceControlInputBoxActionButton,
+): UriComponents | { light: UriComponents; dark: UriComponents } | vscode.ThemeIcon | undefined {
+  if (!actionButton?.icon) {
+    return undefined;
+  } else if (URI.isUri(actionButton.icon)) {
+    return actionButton.icon;
+  } else {
+    const icon = actionButton.icon as { light: URI; dark: URI };
+    return { light: icon.light, dark: icon.dark };
+  }
 }
 
 export type IValidateInput = (
@@ -292,25 +294,27 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
   }
 
   private _actionButton: vscode.SourceControlInputBoxActionButton | undefined;
-	private _actionButtonDisposables = new MutableDisposable<DisposableStore>();
+  private _actionButtonDisposables = new MutableDisposable<DisposableStore>();
 
-	get actionButton(): vscode.SourceControlInputBoxActionButton | undefined {
-		return this._actionButton;
-	}
+  get actionButton(): vscode.SourceControlInputBoxActionButton | undefined {
+    return this._actionButton;
+  }
 
-	set actionButton(actionButton: vscode.SourceControlInputBoxActionButton | undefined) {
-		this._actionButtonDisposables.value = new DisposableStore();
+  set actionButton(actionButton: vscode.SourceControlInputBoxActionButton | undefined) {
+    this._actionButtonDisposables.value = new DisposableStore();
 
-		this._actionButton = actionButton;
+    this._actionButton = actionButton;
 
-		const internal = actionButton !== undefined ?
-			{
-				command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
-				icon: getInputBoxActionButtonIcon(actionButton),
-				enabled: actionButton.enabled,
-			} : undefined;
-		this._proxy.$setInputBoxActionButton(this._sourceControlHandle, internal ?? null);
-	}
+    const internal =
+      actionButton !== undefined
+        ? {
+            command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
+            icon: getInputBoxActionButtonIcon(actionButton),
+            enabled: actionButton.enabled,
+          }
+        : undefined;
+    this._proxy.$setInputBoxActionButton(this._sourceControlHandle, internal ?? null);
+  }
 
   constructor(
     private _extension: IExtensionDescription,

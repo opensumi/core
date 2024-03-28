@@ -73,12 +73,8 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   }
 
   init() {
-    const contributions = this.contributions.getContributions();
-    contributions.forEach((c) => {
-      if (c.registerToolbarActions) {
-        c.registerToolbarActions(this);
-      }
-    });
+    this.contributions.run('registerToolbarActions', this);
+
     this.actions.forEach((action) => {
       this.calculateActionPosition(action);
     });

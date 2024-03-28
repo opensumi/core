@@ -694,10 +694,7 @@ export class CommandRegistryImpl extends CoreCommandRegistryImpl implements Comm
    * 执行 CommandContribution 的注册方法
    */
   initialize(): void {
-    const contributions = this.contributionProvider.getContributions();
-    for (const contrib of contributions) {
-      contrib.registerCommands(this);
-    }
+    this.contributionProvider.run('registerCommands', this);
   }
 }
 

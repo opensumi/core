@@ -20,7 +20,7 @@ import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
 
-export default observer(() => {
+const TerminalView = observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
@@ -136,3 +136,5 @@ export default observer(() => {
     </div>
   );
 });
+
+export default TerminalView;

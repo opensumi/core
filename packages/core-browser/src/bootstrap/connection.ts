@@ -71,7 +71,6 @@ export async function createConnectionService(
     useValue: channelHandler,
   });
 
-  // reconnecting will not execute the following logic
   const channel = await channelHandler.openChannel(RPCServiceChannelPath);
   channel.onReopen(() => onReconnect());
 

@@ -2,8 +2,8 @@ import { CancellationToken } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { ChatAgentService } from '../../../lib/browser/chat/chat-agent.service';
-import { IChatAgent, IChatAgentMetadata, IChatAgentRequest, IChatManagerService } from '../../../lib/common';
+import { ChatAgentService } from '../../../src/browser/chat/chat-agent.service';
+import { IChatAgent, IChatAgentMetadata, IChatAgentRequest, IChatManagerService } from '../../../src/common';
 
 describe('ChatAgentService', () => {
   let injector: MockInjector;

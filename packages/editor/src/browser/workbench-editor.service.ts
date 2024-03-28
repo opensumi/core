@@ -110,6 +110,8 @@ const MAX_CONFIRM_RESOURCES = 10;
 
 const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
 
+const defaultEditorGridState: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
+
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
   editorGroups: EditorGroup[] = [];
@@ -179,6 +181,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   constructor() {
     super();
+    this.topGrid = new EditorGrid();
+    this.topGrid.onDidGridAndDesendantStateChange(() => {
+      this._sortedEditorGroups = undefined;
+      this._onDidEditorGroupsChanged.fire();
+    });
+
     this.initialize();
   }
 
@@ -460,14 +468,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this._onDidEditorGroupsChanged.fire();
   }
 
-  public async restoreState() {
-    let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    state = this.openedResourceState.get<IEditorGridState>('grid', state);
-    this.topGrid = new EditorGrid();
-    this.topGrid.onDidGridAndDesendantStateChange(() => {
-      this._sortedEditorGroups = undefined;
-      this._onDidEditorGroupsChanged.fire();
-    });
+  protected async restoreState() {
+    const state = this.openedResourceState.get<IEditorGridState>('grid', defaultEditorGridState);
+
     const editorRestorePromises = [];
     const promise = this.topGrid
       .deserialize(state, () => this.createEditorGroup(), editorRestorePromises)
@@ -481,11 +484,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       });
     Promise.all(editorRestorePromises).then(() => {
       this._restoring = false;
-      for (const contribution of this.contributions.getContributions()) {
-        if (contribution.onDidRestoreState) {
-          contribution.onDidRestoreState();
-        }
-      }
+      this.contributions.run('onDidRestoreState');
     });
     return promise;
   }

@@ -24,6 +24,9 @@ export class LayoutState {
   async initStorage() {
     this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
     this.globalLayoutStorage = await this.getStorage(STORAGE_NAMESPACE.GLOBAL_LAYOUT);
+  }
+
+  async initialize() {
     await this.preferenceService.ready;
     this.saveLayoutWithWorkspace = this.preferenceService.get<boolean>('view.saveLayoutWithWorkspace') || false;
     this.disposableCollection.push(

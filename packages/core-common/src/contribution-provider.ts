@@ -1,17 +1,42 @@
 import { ConstructorOf, Domain, Injector } from '@opensumi/di';
 
+import { getDebugLogger } from './log';
+import { IPerformance } from './types';
+import { MaybePromise } from './utils';
+
 export const ContributionProvider = Symbol('ContributionProvider');
 
 export interface ContributionProvider<T extends object> {
   getContributions(): T[];
   addContribution(...contributionsCls: ConstructorOf<any>[]): void;
   reload(): T[];
+
+  forEach(callback: (contribution: T) => void): void;
+  run<K extends keyof T>(
+    method: K,
+    ...args: T[K] extends (...args: any[]) => any ? Parameters<T[K]> : any[]
+  ): MaybePromise<void>;
+  runPhase<K extends keyof T>(
+    contribution: T,
+    phaseName: K,
+    ...args: T[K] extends (...args: any[]) => any ? Parameters<T[K]> : any[]
+  ): Promise<any>;
 }
 
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
+  _performance: IPerformance;
+
+  private logger = getDebugLogger();
   protected services: T[] | undefined;
 
   constructor(protected readonly domain: Domain, protected readonly injector: Injector) {}
+
+  get performance() {
+    if (!this._performance) {
+      this._performance = this.injector.get(IPerformance);
+    }
+    return this._performance;
+  }
 
   addContribution(...contributionsCls: ConstructorOf<T>[]): void {
     for (const contributionCls of contributionsCls) {
@@ -19,6 +44,34 @@ export class BaseContributionProvider<T extends object> implements ContributionP
       if (this.services) {
         this.services.push(this.injector.get(contributionCls));
       }
+    }
+  }
+
+  run(method: keyof T, ...args: any[]): MaybePromise<any> {
+    const promises = [] as Promise<any>[];
+    for (const contribution of this.getContributions()) {
+      promises.push(this.runPhase(contribution, method, args));
+    }
+    if (promises.length > 0) {
+      return Promise.all(promises);
+    }
+  }
+
+  async runPhase(contribution: T, phaseName: keyof T, ...args: any[]) {
+    const phase = contribution[phaseName];
+    if (typeof phase === 'function') {
+      try {
+        const uid = contribution.constructor.name + '.' + String(phaseName);
+        return await this.performance.measure(uid, () => phase.apply(contribution, args));
+      } catch (error) {
+        this.logger.error(`Could not run contribution#${String(phaseName)}`, error);
+      }
+    }
+  }
+
+  forEach(callback: (contribution: T) => void) {
+    for (const contribution of this.getContributions()) {
+      callback(contribution);
     }
   }
 

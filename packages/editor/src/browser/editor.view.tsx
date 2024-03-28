@@ -74,7 +74,13 @@ export const EditorView = () => {
   }, []);
 
   if (!ready) {
-    return null;
+    return (
+      <div className={styles_kt_workbench_editor} id='workbench-editor'>
+        <div className={styles.kt_editor_main_wrapper}>
+          <EditorGridView grid={workbenchEditorService.topGrid}></EditorGridView>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -114,7 +120,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
-    if (editorGroupContainer) {
+    if (editorGroupContainer && grid.editorGroup) {
       if (cachedGroupView[grid.editorGroup!.name]) {
         editorGroupContainer.appendChild(cachedGroupView[grid.editorGroup!.name]);
         (grid.editorGroup! as EditorGroup).layoutEditors();
@@ -130,7 +136,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
         );
       }
     }
-  });
+  }, [grid]);
 
   useDisposable(
     () => [

@@ -119,6 +119,7 @@ export const SlotDecorator: React.FC<{
 export interface RendererProps {
   components: ComponentRegistryInfo[];
 }
+
 export type Renderer = React.ComponentType<RendererProps>;
 
 export class SlotRendererRegistry {
@@ -210,7 +211,7 @@ export function SlotRenderer({ slot, isTabbar, id, ...props }: SlotProps) {
   }, []);
 
   React.useEffect(() => {
-    // 对于嵌套在模块视图的SlotRenderer，渲染时应用已启动
+    updateComponentInfos();
     clientApp.appInitialized.promise.then(updateComponentInfos);
   }, []);
 

@@ -22,9 +22,9 @@ import {
   IEventBus,
   ILogServiceClient,
   ILoggerManagerClient,
+  IPerformance,
   IReporterService,
   LifeCyclePhase,
-  MaybePromise,
   REPORT_NAME,
   StorageProvider,
   StorageResolverContribution,
@@ -32,9 +32,9 @@ import {
   UrlProvider,
   asExtensionCandidate,
   createContributionProvider,
-  getDebugLogger,
   isOSX,
   setLanguageId,
+  sleep,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -100,7 +100,13 @@ export class ClientApp implements IClientApp, IDisposable {
   private modules: ModuleConstructor[];
   private contributionsProvider: ContributionProvider<ClientAppContribution>;
   private nextMenuRegistry: MenuRegistryImpl;
+  private lifeCycleService: IAppLifeCycleService;
   private stateService: ClientAppStateService;
+  private loggerManager: ILoggerManagerClient;
+  private perf: IPerformance;
+
+  private defaultPreferences: IPreferences | undefined;
+
   runtime: ElectronRendererRuntime | BrowserRuntime;
 
   constructor(protected opts: IClientAppOpts) {
@@ -121,6 +127,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.injector = opts.injector || new Injector();
     this.modules = modules;
     this.modules.forEach((m) => this.resolveModuleDeps(m));
+
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
@@ -165,12 +172,14 @@ export class ClientApp implements IClientApp, IDisposable {
     }
 
     this.config = this.runtime.mergeAppConfig(this.config);
-
     this.connectionPath = connectionPath || `${this.config.wsPath}/service`;
+    this.defaultPreferences = defaultPreferences;
+
     this.initBaseProvider();
     this.initFields();
     this.appendIconStyleSheets(iconStyleSheets, useCdnIcon);
-    this.createBrowserModules(defaultPreferences);
+    this.createBrowserModules();
+    this.initFieldsAfterModules();
   }
 
   private _inComposition = false;
@@ -187,10 +196,6 @@ export class ClientApp implements IClientApp, IDisposable {
         }
       });
     }
-  }
-
-  get lifeCycleService(): IAppLifeCycleService {
-    return this.injector.get(AppLifeCycleServiceToken);
   }
 
   /**
@@ -210,6 +215,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
     this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
+    const promises = [] as Promise<void>[];
+
     if (connection) {
       // do not allow user use deprecated method start() with connection parameter
       // because we all use `WSChannelHandler` to create connection
@@ -221,19 +228,20 @@ export class ClientApp implements IClientApp, IDisposable {
       console.error('We introduced a new connection service to replace the old one');
       bindConnectionServiceDeprecated(this.injector, this.modules, connection);
     } else if (type) {
-      await this.createConnection(type);
+      promises.push(this.createConnection(type));
     }
+
+    promises.push(this.perf.measure('Contributions.prepare', () => this.prepareContributions(container)));
+
+    await Promise.all(promises);
 
     measureReporter.timeEnd('ClientApp.createConnection');
 
-    this.logger = this.getLogger();
-    this.stateService.state = 'client_connected';
     this.registerEventListeners();
-    // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
-    await this.injector.get(IApplicationService).initializeData();
+    this.stateService.state = 'client_connected';
 
     // 在 contributions 执行完 onStart 上报一次耗时
-    await this.measure('Contributions.start', () => this.startContributions(container));
+    await this.perf.measure('Contributions.start', () => this.startContributions(container));
     this.stateService.state = 'started_contributions';
     this.stateService.state = 'ready';
 
@@ -243,6 +251,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
   protected async createConnection(type: `${ESupportRuntime}`) {
     let connectionHelper: ElectronConnectionHelper | WebConnectionHelper;
+
+    await sleep(3000);
 
     switch (type) {
       case ESupportRuntime.Electron:
@@ -283,31 +293,22 @@ export class ClientApp implements IClientApp, IDisposable {
       clientId,
     );
 
-    // create logger after connection established
-    this.logger = this.getLogger();
+    // refresh to get a remote logger after connection established
+    this.loggerManager.enableRemoteLogger?.(true);
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
     this.injector.get(WSChannelHandler).replaceLogger(this.logger);
-  }
+    this.logger.log('Connection established');
 
-  private getLogger() {
-    if (this.logger) {
-      return this.logger;
-    }
-    this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
-    return this.logger;
+    // 在 connect 之后立即初始化数据，保证其它 module 能同步获取数据
+    await this.injector.get(IApplicationService).initializeData();
   }
 
   private onReconnectContributions() {
-    const contributions = this.contributions;
-
-    for (const contribution of contributions) {
-      if (contribution.onReconnect) {
-        contribution.onReconnect(this);
-      }
-    }
+    this.contributionsProvider.run('onReconnect', this);
   }
 
   /**
-   * 给 injector 初始化默认的 Providers
+   * Set up the default providers for the injector
    */
   private initBaseProvider() {
     this.injector.addProviders({ token: IClientApp, useValue: this });
@@ -324,9 +325,17 @@ export class ClientApp implements IClientApp, IDisposable {
     this.keybindingService = this.injector.get(KeybindingService);
     this.stateService = this.injector.get(ClientAppStateService);
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
+    this.lifeCycleService = this.injector.get(AppLifeCycleServiceToken);
+    this.perf = this.injector.get(IPerformance);
   }
 
-  private createBrowserModules(defaultPreferences?: IPreferences) {
+  private initFieldsAfterModules() {
+    this.loggerManager = this.injector.get(ILoggerManagerClient);
+    // currently lifecycle is prepare, so this logger is a local logger
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Browser);
+  }
+
+  private createBrowserModules() {
     const injector = this.injector;
 
     for (const Constructor of this.modules) {
@@ -347,20 +356,18 @@ export class ClientApp implements IClientApp, IDisposable {
     injectCorePreferences(this.injector);
 
     // Register PreferenceService
-    this.injectPreferenceService(this.injector, defaultPreferences);
+    this.injectPreferenceService(this.injector);
 
     // Register StorageService
-    this.injectStorageProvider(this.injector);
+    this.injectStorageProvider();
 
     for (const instance of this.browserModules) {
-      if (instance.contributionProvider) {
-        if (Array.isArray(instance.contributionProvider)) {
-          for (const contributionProvider of instance.contributionProvider) {
-            createContributionProvider(this.injector, contributionProvider);
-          }
-        } else {
-          createContributionProvider(this.injector, instance.contributionProvider);
+      if (instance.contributionProvider && Array.isArray(instance.contributionProvider)) {
+        for (const contributionProvider of instance.contributionProvider) {
+          createContributionProvider(this.injector, contributionProvider);
         }
+      } else {
+        createContributionProvider(this.injector, instance.contributionProvider);
       }
     }
   }
@@ -369,58 +376,52 @@ export class ClientApp implements IClientApp, IDisposable {
     return this.contributionsProvider.getContributions();
   }
 
-  protected async startContributions(container) {
-    // Rendering layout
-    await this.measure('RenderApp.render', () => this.renderApp(container));
-
-    this.lifeCycleService.phase = LifeCyclePhase.Initialize;
-    await this.measure('Contributions.initialize', () => this.initializeContributions());
-
-    // Initialize Command, Keybinding, Menus
-    await this.initializeCoreRegistry();
+  protected async prepareContributions(container: HTMLElement | IAppRenderer) {
+    // Initialize Command
+    this.commandRegistry.initialize();
+    // Initialize Menus
+    this.nextMenuRegistry.initialize();
+    // Initialize Keybinding
+    await this.keybindingRegistry.initialize();
 
     // Core modules initializeed ready
     this.stateService.state = 'core_module_initialized';
 
-    this.lifeCycleService.phase = LifeCyclePhase.Starting;
-    await this.measure('Contributions.onStart', () => this.onStartContributions());
+    await this.contributionsProvider.run('prepare', this);
 
-    await this.runContributionsPhase(this.contributions, 'onDidStart');
+    if (this.opts.experimentalPreRender) {
+      // Rendering layout before connected
+      await this.perf.measure('RenderApp.render', () => this.renderApp(container));
+    }
+
+    this.logger.verbose('contributions.prepare done');
   }
 
-  private async initializeCoreRegistry() {
-    this.commandRegistry.initialize();
-    await this.keybindingRegistry.initialize();
-    this.nextMenuRegistry.initialize();
+  protected async startContributions(container: HTMLElement | IAppRenderer) {
+    if (!this.opts.experimentalPreRender) {
+      // Rendering layout
+      await this.perf.measure('RenderApp.render', () => this.renderApp(container));
+    }
+
+    this.lifeCycleService.phase = LifeCyclePhase.Initialize;
+
+    await this.perf.measure('Contributions.initialize', () => this.initializeContributions());
+
+    this.lifeCycleService.phase = LifeCyclePhase.Starting;
+    await this.perf.measure('Contributions.onStart', () => this.onStartContributions());
+
+    await this.contributionsProvider.run('onDidStart', this);
   }
 
   private async initializeContributions() {
-    await this.runContributionsPhase(this.contributions, 'initialize');
+    await this.contributionsProvider.run('initialize', this);
     this.appInitialized.resolve();
 
     this.logger.verbose('contributions.initialize done');
   }
 
   private async onStartContributions() {
-    await this.runContributionsPhase(this.contributions, 'onStart');
-  }
-
-  private async runContributionsPhase(contributions: ClientAppContribution[], phaseName: keyof ClientAppContribution) {
-    return await Promise.all(
-      contributions.map((contribution) => this.contributionPhaseRunner(contribution, phaseName)),
-    );
-  }
-
-  private async contributionPhaseRunner(contribution: ClientAppContribution, phaseName: keyof ClientAppContribution) {
-    const phase = contribution[phaseName];
-    if (typeof phase === 'function') {
-      try {
-        const uid = contribution.constructor.name + '.' + phaseName;
-        return await this.measure(uid, () => phase.call(contribution, this));
-      } catch (error) {
-        this.logger.error(`Could not run contribution#${phaseName}`, error);
-      }
-    }
+    await this.contributionsProvider.run('onStart', this);
   }
 
   private async renderApp(container: HTMLElement | IAppRenderer) {
@@ -428,13 +429,6 @@ export class ClientApp implements IClientApp, IDisposable {
 
     const eventBus = this.injector.get(IEventBus);
     eventBus.fire(new RenderedEvent());
-  }
-  protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
-    const reporterService: IReporterService = this.injector.get(IReporterService);
-    const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
-    const result = await fn();
-    measureReporter.timeEnd(name);
-    return result;
   }
 
   /**
@@ -455,7 +449,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }
@@ -480,7 +474,7 @@ export class ClientApp implements IClientApp, IDisposable {
             return true;
           }
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }
@@ -540,7 +534,7 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
-  injectPreferenceService(injector: Injector, defaultPreferences?: IPreferences): void {
+  injectPreferenceService(injector: Injector): void {
     const preferencesProviderFactory = () => (scope: PreferenceScope) => {
       const provider: PreferenceProvider = injector.get(PreferenceProvider, { tag: scope });
       provider.asScope(scope);
@@ -562,25 +556,21 @@ export class ClientApp implements IClientApp, IDisposable {
       },
     );
     // 设置默认配置
-    if (defaultPreferences) {
+    if (this.defaultPreferences) {
       const providerFactory: PreferenceProviderProvider = injector.get(PreferenceProviderProvider);
       const defaultPreference: PreferenceProvider = providerFactory(PreferenceScope.Default);
-      for (const key of Object.keys(defaultPreferences)) {
-        defaultPreference.setPreference(key, defaultPreferences[key]);
+      for (const key of Object.keys(this.defaultPreferences)) {
+        defaultPreference.setPreference(key, this.defaultPreferences[key]);
       }
     }
   }
 
-  injectStorageProvider(injector: Injector) {
-    injector.addProviders({
-      token: DefaultStorageProvider,
-      useClass: DefaultStorageProvider,
-    });
-    injector.addProviders({
+  protected injectStorageProvider() {
+    this.injector.overrideProviders({
       token: StorageProvider,
-      useFactory: () => (storageId) => injector.get(DefaultStorageProvider).get(storageId),
+      useFactory: () => (storageId) => this.injector.get(DefaultStorageProvider).get(storageId),
     });
-    createContributionProvider(injector, StorageResolverContribution);
+    createContributionProvider(this.injector, StorageResolverContribution);
   }
 
   /**

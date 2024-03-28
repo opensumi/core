@@ -1,13 +1,13 @@
 import { Autowired } from '@opensumi/di';
-import { PreferenceContribution, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
+import { ClientAppContribution, PreferenceContribution, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
 import { Domain, OperatingSystem, PreferenceSchema, TerminalSettingsId } from '@opensumi/ide-core-common';
 
 import { ITerminalService } from '../../common';
 import { terminalPreferenceSchema } from '../../common/preference';
 import { NodePtyTerminalService } from '../terminal.service';
 
-@Domain(PreferenceContribution)
-export class TerminalPreferenceContribution implements PreferenceContribution {
+@Domain(PreferenceContribution, ClientAppContribution)
+export class TerminalPreferenceContribution implements PreferenceContribution, ClientAppContribution {
   public schema: PreferenceSchema = terminalPreferenceSchema;
 
   @Autowired(ITerminalService)
@@ -16,26 +16,25 @@ export class TerminalPreferenceContribution implements PreferenceContribution {
   @Autowired(PreferenceSchemaProvider)
   private preferenceSchemaProvider: PreferenceSchemaProvider;
 
-  constructor() {
+  async initialize(): Promise<void> {
     const TERMINAL_TYPE_ENUM = ['git-bash', 'powershell', 'cmd', 'default'];
     const {
       properties: { [TerminalSettingsId.Type]: terminalTypeProperty },
     } = { ...terminalPreferenceSchema };
 
-    this.ptyTerminal.getOS().then((osType) => {
-      if (osType === OperatingSystem.Windows) {
-        this.preferenceSchemaProvider.setSchema(
-          {
-            properties: {
-              [TerminalSettingsId.Type]: {
-                ...terminalTypeProperty,
-                enum: TERMINAL_TYPE_ENUM, // if OS is windows, update terminal type
-              },
+    const osType = await this.ptyTerminal.getOS();
+    if (osType === OperatingSystem.Windows) {
+      this.preferenceSchemaProvider.setSchema(
+        {
+          properties: {
+            [TerminalSettingsId.Type]: {
+              ...terminalTypeProperty,
+              enum: TERMINAL_TYPE_ENUM, // if OS is windows, update terminal type
             },
           },
-          true,
-        );
-      }
-    });
+        },
+        true,
+      );
+    }
   }
 }

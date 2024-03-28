@@ -8,6 +8,7 @@ import {
   ComponentRegistry,
   ContributionProvider,
   ExtensionActivateEvent,
+  IClientApp,
   IContextKeyService,
   IDisposable,
   ILogger,
@@ -73,6 +74,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(ILogger)
   private logger: ILogger;
 
+  @Autowired(IClientApp)
+  private readonly clientApp: IClientApp;
+
   private handleMap: Map<string, TabBarHandler> = new Map();
 
   private tabbarServices: Map<string, TabbarService> = new Map();
@@ -110,11 +114,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         this.collectViewComponent(view, containerId, props);
       });
     }
-    for (const contribution of this.contributions.getContributions()) {
-      if (contribution.onDidRender) {
-        contribution.onDidRender();
-      }
-    }
+
+    this.contributions.run('onDidRender');
+
     const list: Array<Promise<void>> = [];
     // 这里保证的 viewReady 并不是真实的 viewReady，只是保证在此刻之前注册进来的 Tabbar Ready 了
     // 仅确保 tabbar 视图加载完毕
@@ -123,6 +125,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         list.push(service.viewReady.promise);
       }
     });
+
     Promise.all(list).then(() => {
       this.viewReady.resolve();
     });
@@ -246,7 +249,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   getTabbarService(location: string) {
     const service = this.tabbarServices.get(location) || this.injector.get(TabbarService, [location]);
-    if (!this.tabbarServices.get(location)) {
+    if (!this.tabbarServices.has(location)) {
       service.onCurrentChange(({ currentId }) => {
         this.storeState(service, currentId);
         // onView 也支持监听 containerId
@@ -262,9 +265,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       service.viewReady.promise
         .then(() => service.restoreState())
         .then(() => this.restoreTabbarService(service))
+        .then(() => {
+          // when app initialized, restore accordion state from remote layout state
+          this.clientApp.appInitialized.promise
+            .then(() => service.restoreState())
+            .then(() => this.restoreTabbarService(service))
+            .catch((err) => {
+              this.logger.error(`[TabbarService:${location}] restore state error`, err);
+            });
+        })
         .catch((err) => {
           this.logger.error(`[TabbarService:${location}] restore state error`, err);
         });
+
       const debouncedStoreState = debounce(() => this.storeState(service, service.currentContainerId), 100);
       service.onSizeChange(debouncedStoreState);
       if (location === SlotLocation.bottom) {

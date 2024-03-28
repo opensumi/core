@@ -4,6 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
   BinaryBuffer,
+  ClientAppStateService,
   Deferred,
   DisposableCollection,
   Emitter,
@@ -108,6 +109,9 @@ export class FileServiceClient implements IFileServiceClient {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
+  @Autowired(ClientAppStateService)
+  private readonly stateService: ClientAppStateService;
+
   private userHomeDeferred: Deferred<FileStat | undefined> = new Deferred();
 
   public options = {
@@ -129,6 +133,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   private async doGetCurrentUserHome() {
+    await this.stateService.reachedState('client_connected');
     const provider = await this.getProvider(Schemes.file);
     const userHome = provider.getCurrentUserHome();
     this.userHomeDeferred.resolve(userHome);
