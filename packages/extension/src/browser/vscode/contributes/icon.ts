@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 import { ILogger, LifeCyclePhase, URI, localize, path } from '@opensumi/ide-core-common';
-import { IIconService, IThemeContribution } from '@opensumi/ide-theme';
+import { IIconService, IProductIconService, IThemeContribution } from '@opensumi/ide-theme';
 import { getIconRegistry } from '@opensumi/ide-theme/lib/common/icon-registry';
 
 import { Contributes, LifeCycle, VSCodeContributePoint } from '../../../common';
@@ -58,14 +58,14 @@ export class IconsContributionPoint extends VSCodeContributePoint<IconSchema> {
   @Autowired(AbstractExtInstanceManagementService)
   protected readonly extensionManageService: AbstractExtInstanceManagementService;
 
+  @Autowired(IProductIconService)
+  protected readonly productIconService: IProductIconService;
+
   @Autowired()
   private readonly staticResourceService: StaticResourceService;
 
-  @Autowired(IIconService)
-  protected readonly iconService: IIconService;
-
   @Autowired(ILogger)
-  logger: ILogger;
+  private logger: ILogger;
 
   private iconRegistry = getIconRegistry();
 
@@ -114,5 +114,6 @@ export class IconsContributionPoint extends VSCodeContributePoint<IconSchema> {
         }
       });
     }
+    this.productIconService.updateProductIconThemes();
   }
 }

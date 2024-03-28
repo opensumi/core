@@ -1,6 +1,6 @@
 import { IRawThemeSetting } from 'vscode-textmate';
 
-import { Deferred, Event, IDisposable, IThemeColor, URI } from '@opensumi/ide-core-common';
+import { Deferred, Event, IDisposable, IThemeColor, MaybePromise, URI } from '@opensumi/ide-core-common';
 
 import { Color } from './color';
 import { hc_black, hc_light, vs, vs_dark } from './default-themes';
@@ -146,6 +146,8 @@ export interface IThemeService {
 export interface IProductIconService {
   currentThemeId: string;
   currentTheme: IProductIconTheme;
+  productIconThemeLoaded: Deferred<void>;
+  updateProductIconThemes(): MaybePromise<void>;
   onDidProductIconThemeChange: Event<IProductIconTheme>;
   applyTheme(themeId: string): Promise<void>;
   registerProductIconThemes(productIconThemesContribution: IThemeContribution[], extPath: URI): void;
