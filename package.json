@@ -63,10 +63,13 @@
     "glob": "^8.0.1",
     "husky": "^7.0.4",
     "lerna": "^8.0.2",
-    "lint-staged": "^12.1.2",
+    "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",
     "mri": "^1.2.0",
     "node-gyp": "^10.0.1"
+  },
+  "engines": {
+    "node": ">=18.12.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,md,html,css,less,json,yml}": "prettier --write",
