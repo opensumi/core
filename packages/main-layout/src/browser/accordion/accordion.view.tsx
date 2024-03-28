@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import { View, useInjectable } from '@opensumi/ide-core-browser';
+import { AppConfig, View, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection, Layout, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
@@ -32,6 +32,10 @@ export const AccordionContainer = observer(
     style,
   }: AccordionContainerProps) => {
     const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
+    const appConfig: AppConfig = useInjectable(AppConfig);
+
+    const layoutHeaderSize = useMemo(() => headerSize || appConfig.layoutViewSize?.accordionHeaderSizeHeight!, [headerSize]);
+
     React.useEffect(() => {
       // 解决视图在渲染前注册的问题
       if (!views.length) {
@@ -42,7 +46,7 @@ export const AccordionContainer = observer(
       }
     }, [views]);
     React.useEffect(() => {
-      accordionService.initConfig({ headerSize, minSize });
+      accordionService.initConfig({ headerSize: layoutHeaderSize, minSize });
     }, []);
 
     const allCollapsed = !accordionService.visibleViews.find((view) => {

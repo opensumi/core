@@ -11,11 +11,13 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
+import opensumiLogo from './logo.svg';
 import styles from './menu-bar.module.less';
 
 const AIMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const iconRef = React.useRef<HTMLDivElement | null>(null);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
@@ -54,15 +56,15 @@ const AIMenuBarRender = () => {
     });
   }, [anchor, extraTopMenus]);
 
+  const logo = React.useMemo(() => aiNativeConfigService.layout.menubarLogo || opensumiLogo, [aiNativeConfigService.layout.menubarLogo]);
+
   return (
     <>
-      <EnhanceIcon
-        wrapperClassName={styles.ai_enhance_menu}
-        className={styles.extra_top_icon}
-        ref={iconRef}
-        onClick={handleClick}
-      >
-        <Icon className={cls(getIcon('down'), styles.caret_icon)} />
+      <EnhanceIcon wrapperClassName={styles.ai_enhance_menu} ref={iconRef} onClick={handleClick}>
+        <div className={styles.logo_container}>
+          <img className={styles.extra_top_icon} src={logo} alt='' />
+          <Icon className={cls(getIcon('down'), styles.caret_icon)} />
+        </div>
       </EnhanceIcon>
     </>
   );
