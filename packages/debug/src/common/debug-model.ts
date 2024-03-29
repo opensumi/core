@@ -13,7 +13,6 @@ import {
   decodeBase64,
   encodeBase64,
 } from '@opensumi/ide-core-common';
-// eslint-disable-next-line import/no-restricted-paths
 import * as monaco from '@opensumi/ide-monaco';
 
 import {
@@ -27,8 +26,6 @@ import { DebugEditor } from './debug-editor';
 import { IDebugHoverWidget } from './debug-hover';
 import { IMemoryInvalidationEvent, IMemoryRegion, MemoryRange, MemoryRangeType } from './debug-service';
 import { IDebugSession } from './debug-session';
-
-import type { editor } from '@opensumi/monaco-editor-core';
 
 export interface IDebugBreakpointWidget extends IDisposable {
   position: monaco.Position | undefined;
@@ -159,10 +156,10 @@ export interface IDebugModel extends IDisposable {
   acceptBreakpoint: () => void;
   focusStackFrame: () => void;
   breakpoint: ISourceBreakpoint | IRuntimeBreakpoint | undefined;
-  onContextMenu: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
-  onMouseDown: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
-  onMouseMove: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
-  onMouseLeave: (event: editor.IEditorMouseEvent | editor.IPartialEditorMouseEvent) => void;
+  onContextMenu: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onMouseDown: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onMouseMove: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
+  onMouseLeave: (event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) => void;
   getBreakpoints(
     uri?: URI | undefined,
     filter?: Partial<monaco.IPosition> | undefined,
