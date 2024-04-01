@@ -1,6 +1,6 @@
-import { Injectable } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
+import { CommandRegistry, Disposable, Emitter, IRange, getDebugLogger } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IInlineChatFeatureRegistry, InlineChatHandler } from '../types';
@@ -10,6 +10,9 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   private readonly logger = getDebugLogger();
   private actionsMap: Map<string, AIActionItem> = new Map();
   private handlerMap: Map<string, InlineChatHandler> = new Map();
+
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
 
   override dispose() {
     super.dispose();
@@ -27,6 +30,22 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
     this.actionsMap.set(id, operational);
     this.handlerMap.set(id, handler);
+
+    this.disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: InlineChatFeatureRegistry.getCommandId('editor', id),
+        },
+        {
+          execute: (range: IRange) => {
+            this._onActionRun.fire({
+              id,
+              range,
+            });
+          },
+        },
+      ),
+    );
   }
 
   public getActionButtons(): AIActionItem[] {
@@ -45,7 +64,29 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     return this.actionsMap.get(id);
   }
 
-  getCodeActions(): monaco.languages.CodeAction[] {
-    return [];
+  private readonly _onActionRun = new Emitter<{
+    id: string;
+    range: IRange;
+  }>();
+  public readonly onActionRun = this._onActionRun.event;
+
+  static getCommandId(type: 'editor' | 'terminal', id: string) {
+    return `ai-native.inline-chat.${type}.${id}`;
+  }
+
+  public getCodeActions(): monaco.languages.CodeAction[] {
+    return Array.from(this.actionsMap.keys()).map((key) => {
+      const aiAction = this.actionsMap.get(key) || ({} as AIActionItem);
+
+      return {
+        title: aiAction.name,
+        isAI: true,
+        isPreferred: true,
+        kind: 'InlineChat',
+        command: {
+          id: InlineChatFeatureRegistry.getCommandId('editor', aiAction.id),
+        },
+      } as monaco.languages.CodeAction;
+    });
   }
 }

@@ -110,6 +110,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     this.aiChatService.cancelToken();
+
+    this.inlineChatInUsing = false;
   }
 
   contribute(editor: IEditor): IDisposable {
@@ -138,6 +140,13 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposables.push(
       monacoEditor.onDidChangeModel(() => {
         this.disposeAllWidget();
+      }),
+    );
+
+    this.disposables.push(
+      this.inlineChatFeatureRegistry.onActionRun(({ id, range }) => {
+        monacoEditor.setSelection(range);
+        this.registerInlineChat(editor, id);
       }),
     );
 
@@ -178,12 +187,27 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       }),
     );
 
+    let prefInlineChatAutoVisible = this.preferenceService.getValid(
+      AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+      true,
+    );
+    this.disposables.push({
+      dispose: () => {
+        this.preferenceService.onSpecificPreferenceChange(
+          AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+          ({ newValue }) => {
+            prefInlineChatAutoVisible = newValue;
+          },
+        );
+      },
+    });
+
     Event.debounce(
       Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp),
       (_, e) => e,
       100,
     )((e) => {
-      if (!this.preferenceService.getValid(AiNativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE)) {
+      if (!prefInlineChatAutoVisible) {
         return;
       }
 
@@ -198,6 +222,16 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         return;
       }
 
+      const selection = monacoEditor.getSelection();
+
+      if (!selection) {
+        return;
+      }
+
+      if (selection.isEmpty()) {
+        return;
+      }
+
       this.registerInlineChat(editor);
     });
 
@@ -206,13 +240,18 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     return this;
   }
 
+  inlineChatInUsing = false;
   /**
    * 新版 inline chat（类似 cursor 那种）
    */
-  private async registerInlineChat(editor: IEditor): Promise<void> {
+  private async registerInlineChat(editor: IEditor, id?: string): Promise<void> {
     if (this.aiNativeConfigService.capabilities.supportsInlineChat === false) {
       return;
     }
+    if (this.inlineChatInUsing) {
+      return;
+    }
+    this.inlineChatInUsing = true;
 
     this.disposeAllWidget();
 
@@ -305,6 +344,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
       }),
     );
+    if (id) {
+      this.aiInlineContentWidget.clickActions(id);
+    }
   }
 
   private async handleDiffPreviewStrategy(

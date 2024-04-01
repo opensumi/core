@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IAiInlineChatService } from '@opensumi/ide-core-browser';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { Emitter, Event, runWhenIdle } from '@opensumi/ide-core-common';
 import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 
 export const enum EInlineChatStatus {
@@ -49,7 +49,7 @@ export class AiInlineChatService implements IAiInlineChatService {
   }
 
   public launchChatStatus(status: EInlineChatStatus) {
-    setTimeout(() => {
+    runWhenIdle(() => {
       this._status = status;
       this._onChatStatus.fire(status);
     });

@@ -45,6 +45,10 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
     );
   }
 
+  clickActions(id: string): void {
+    this._onClickActions.fire(id);
+  }
+
   override dispose(): void {
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
     super.dispose();
