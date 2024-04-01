@@ -79,6 +79,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         name: EInlineOperation.Comments,
         title: '添加注释',
         renderType: 'button',
+        codeAction: {},
       },
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
@@ -105,6 +106,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         id: 'ai-optimize',
         name: EInlineOperation.Optimize,
         renderType: 'dropdown',
+        codeAction: {},
       },
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {

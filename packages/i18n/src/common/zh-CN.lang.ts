@@ -1144,6 +1144,12 @@ export const localizationBundle = {
     'editor.configuration.unicodeHighlight.ambiguousCharacters':
       '控制是否突出显示可能与基本 ASCII 字符混淆的字符，但当前用户区域设置中常见的字符除外。',
 
+    'editor.configuration.lightbulb.enabled': 'Enables the code action lightbulb in the editor.',
+    'editor.configuration.lightbulb.enabled.off': 'Disable the code action menu.',
+    'editor.configuration.lightbulb.enabled.onCode': 'Show the code action menu when the cursor is on lines with code.',
+    'editor.configuration.lightbulb.enabled.on':
+      'Show the code action menu when the cursor is on lines with code or on empty lines.',
+
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
     'diffEditor.action.toggleCollapseUnchangedRegions': '折叠未更改的代码区域',

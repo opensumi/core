@@ -51,8 +51,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     return {
       glyphMargin: true,
       lightbulb: {
-        // todo: add a setting to control this
-        enabled: ShowLightbulbIconMode.On,
+        enabled: ShowLightbulbIconMode.OnCode,
       },
       automaticLayout: true,
       model: undefined,
@@ -72,7 +71,10 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         ...this.monacoBaseOptions,
         ...options,
       },
-      { ...this.overrideServiceRegistry.all(), ...overrides },
+      {
+        ...this.overrideServiceRegistry.all(),
+        ...overrides,
+      },
     );
     this.overrideMonacoKeybindingService(editor);
 

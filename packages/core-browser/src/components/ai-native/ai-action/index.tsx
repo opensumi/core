@@ -1,5 +1,7 @@
 import React, { useCallback } from 'react';
 
+import { CodeAction } from '@opensumi/ide-monaco';
+
 import { MenuNode } from '../../../menu/next/base';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
@@ -27,6 +29,13 @@ export interface AIActionItem {
    * 排序
    */
   order?: number;
+
+  /**
+   * Show in code action list, default is not show
+   * Only support editor inline chat now
+   * @example {}
+   */
+  codeAction?: Partial<CodeAction>;
 }
 
 export interface AIActionProps {
