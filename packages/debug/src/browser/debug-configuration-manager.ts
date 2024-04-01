@@ -548,6 +548,7 @@ export class DebugConfigurationManager {
 
     if (result) {
       await this.addRecentDynamicConfiguration(result);
+      this.onDidChangeEmitter.fire(undefined);
     }
     return result;
   }
@@ -604,6 +605,7 @@ export class DebugConfigurationManager {
    */
   registerInternalDebugConfigurationProvider(type: string, provider: InternalDebugConfigurationProvider): void {
     this.internalDebugConfigurationProviders.set(type, provider);
+    this.onDidChangeEmitter.fire(undefined);
   }
 
   /**
@@ -613,6 +615,7 @@ export class DebugConfigurationManager {
    */
   registerInternalDebugConfigurationOverride(type: string, debugConfigurationOverride: DebugConfigurationType) {
     this.internalDebugConfigurationOverride.set(type, debugConfigurationOverride);
+    this.onDidChangeEmitter.fire(undefined);
   }
 
   // 获取临时存储的 Dynamic DebugConfigurations，方便用户快速选择之前用过的动态配置
