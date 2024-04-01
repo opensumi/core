@@ -28,6 +28,7 @@ export interface CommonLogInfo {
   model: string;
   copy: boolean;
   insert: boolean;
+  isTimePoint: boolean;
 }
 
 export interface QuestionRT extends Partial<CommonLogInfo> {
@@ -63,13 +64,16 @@ export interface CompletionRT extends Partial<CommonLogInfo> {
   // 渲染时长
   renderingTime?: number;
 
+  userAcceptTimePoint?: number;
+}
+
+export interface CompletionTimePoint {
   /**
    * 用于记录 DOM 渲染时长的时间点
    */
   domRenderTimePoint?: number;
   startRequestCompletionTimePoint?: number;
   endRequestCompletionTimePoint?: number;
-  userAcceptTimePoint?: number;
 }
 
 export interface MergeConflictRT extends Partial<CommonLogInfo> {
@@ -114,4 +118,11 @@ export interface IAIReporter {
   // 返回关联 ID
   start(msg: string, data: ReportInfo): string;
   end(relationId: string, data: ReportInfo): void;
+  tp(relationId: string, data: ITimePoint): void;
 }
+
+export type ITimePoint =
+  | Partial<CommonLogInfo>
+  | ({
+      msgType: AISerivceType.Completion;
+    } & CompletionTimePoint);

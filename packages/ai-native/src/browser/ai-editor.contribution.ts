@@ -147,6 +147,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposables.push(
       editor.onFocus(() => {
         const box = document.querySelector('div.view-lines');
+        console.log('🚀 ~ AiEditorContribution ~ editor.onFocus ~ box:', box);
         if (!box) {
           // no view lines, return
           return;
@@ -171,6 +172,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
                 // 下面这个是 codelens 会出现的
                 !html.includes('-after temp-decoration-')
               ) {
+                console.log('dom rendered');
                 this.aiCompletionsService.recordDomRenderedTimePoint();
               }
             }

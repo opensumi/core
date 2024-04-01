@@ -4,6 +4,7 @@ import {
   AISerivceType,
   AI_REPORTER_NAME,
   IAIReporter,
+  ITimePoint,
   ReportInfo,
 } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
@@ -70,7 +71,13 @@ export class AIReporter implements IAIReporter {
     this.reportInfoCache.set(relationId, reportInfo);
     return reportInfo;
   }
-
+  tp(relationId: string, data: ITimePoint): void {
+    this.reporter.point(AI_REPORTER_NAME, data.msgType, {
+      isTimePoint: true,
+      relationId,
+      ...data,
+    });
+  }
   private report(relationId: string, data: ReportInfo) {
     const reportInfo = this.record(data, relationId);
     this.reporter.point(AI_REPORTER_NAME, data.msgType || reportInfo.msgType, reportInfo);

@@ -7,7 +7,7 @@ import {
   IAiBackService,
   IAiReportCompletionOption,
 } from '@opensumi/ide-core-common/lib/ai-native';
-import { CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
+import { AISerivceType, CompletionRT, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
 import { IProvideInlineCompletionsSignature } from '../../types';
 import { CompletionRequestBean } from '../model/competionModel';
@@ -45,6 +45,13 @@ export class AiCompletionsService extends Disposable {
 
   recordDomRenderedTimePoint(): void {
     this.domRenderTimePoint = Date.now();
+
+    this.aiReporter.tp(this.lastRelationId, {
+      msgType: AISerivceType.Completion,
+      domRenderTimePoint: this.domRenderTimePoint,
+      startRequestCompletionTimePoint: this.startRequestCompletionTimePoint,
+      endRequestCompletionTimePoint: this.endRequestCompletionTimePoint,
+    });
   }
 
   public async complete(data: CompletionRequestBean, model, position, token): Promise<CompletionResultModel | null> {
@@ -86,9 +93,6 @@ export class AiCompletionsService extends Disposable {
       success: true,
       isReceive: accept,
       renderingTime: data.renderingTime,
-      domRenderTimePoint: this.domRenderTimePoint,
-      startRequestCompletionTimePoint: this.startRequestCompletionTimePoint,
-      endRequestCompletionTimePoint: this.endRequestCompletionTimePoint,
       userAcceptTimePoint: now,
     });
 
