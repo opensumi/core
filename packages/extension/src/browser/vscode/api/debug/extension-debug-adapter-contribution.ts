@@ -1,9 +1,10 @@
-import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-browser';
+import { MaybePromise, IJSONSchema, IJSONSchemaSnippet, CancellationToken } from '@opensumi/ide-core-browser';
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
 import { DebuggerDescription } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionDTO } from '@opensumi/ide-debug/lib/common/debug-session-options';
 
 import { IExtHostDebug } from '../../../../common/vscode';
+import { DebugConfigurationProviderTriggerKind } from '../../../../common/vscode/ext-types';
 import { IActivationEventService } from '../../../types';
 
 export class ExtensionDebugAdapterContribution {
@@ -33,8 +34,16 @@ export class ExtensionDebugAdapterContribution {
     return await this.extDebug.$getConfigurationSnippets(this.type);
   }
 
-  async provideDebugConfigurations(workspaceFolderUri: string | undefined): Promise<DebugConfiguration[]> {
-    return await this.extDebug.$provideDebugConfigurations(this.type, workspaceFolderUri);
+  async provideDebugConfigurations(
+    workspaceFolderUri: string | undefined,
+    token?: CancellationToken,
+    triggerKind?: DebugConfigurationProviderTriggerKind,
+  ): Promise<DebugConfiguration[]> {
+    return await this.extDebug.$provideDebugConfigurations(this.type, workspaceFolderUri, token, triggerKind);
+  }
+
+  async getDebugConfigurationProvidersCount(triggerKind?: DebugConfigurationProviderTriggerKind) {
+    return await this.extDebug.$getDebugConfigurationProvidersCount(this.type, triggerKind);
   }
 
   async resolveDebugConfiguration(

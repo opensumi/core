@@ -274,7 +274,11 @@ export class DebugContribution
 
   onStart() {
     this.viewsRegistry.registerViewWelcomeContent(DEBUG_WELCOME_ID, {
-      content: formatLocalize('welcome-view.noLaunchJson', DEBUG_COMMANDS.START.id),
+      content: formatLocalize(
+        'welcome-view.noLaunchJson',
+        COMMON_COMMANDS.OPEN_LAUNCH_CONFIGURATION.id,
+        DEBUG_COMMANDS.SHOW_ALL_AUTOMATIC_DEBUG_CONFIGURATIONS.id,
+      ),
       when: 'default',
     });
     this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
@@ -619,6 +623,16 @@ export class DebugContribution
         this.debugRunToCursorService.run(uri, true);
       },
       isEnabled: () => this.debugContextKey.contextDebugState.get() === 'Stopped',
+    });
+    commands.registerCommand(DEBUG_COMMANDS.SHOW_ALL_AUTOMATIC_DEBUG_CONFIGURATIONS, {
+      execute: async () => {
+        const debugType = await this.configurations.showDynamicConfigurationsTypesQuickPick();
+        if (debugType) {
+          return await this.debugConfigurationService.showDynamicQuickPick(debugType);
+        }
+        return undefined;
+      },
+      isEnabled: () => true,
     });
   }
 

@@ -1,4 +1,4 @@
-import { AiTopLayoutConfig } from '@opensumi/ide-ai-native/lib/browser/override/layout/layout-config';
+import { AI_MENU_BAR_LEFT, AiTopLayoutConfig } from '@opensumi/ide-ai-native/lib/browser/override/layout/layout-config';
 import { SlotLocation } from '@opensumi/ide-core-browser';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
@@ -27,7 +27,7 @@ renderApp({
     ...defaultConfig,
     ...{
       [SlotLocation.top]: {
-        modules: ['menubar', 'toolbar'],
+        modules: ['ai_menubar'],
       },
     },
     ...{
@@ -36,6 +36,9 @@ renderApp({
       },
     },
     ...AiTopLayoutConfig,
+    [AI_MENU_BAR_LEFT]: {
+      modules: ['AI_MENU_BAR_DEBUG_TOOLBAR'],
+    },
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,

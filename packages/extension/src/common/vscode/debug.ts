@@ -39,10 +39,15 @@ export interface IExtHostDebug {
   $sessionDidStart(sessionId: string): void;
   $sessionDidDestroy(sessionId: string): void;
   $sessionDidChange(sessionId: string | undefined): void;
+  $getDebugConfigurationProvidersCount(
+    debugType: string,
+    triggerKind?: vscode.DebugConfigurationProviderTriggerKind,
+  ): Promise<number>;
   $provideDebugConfigurations(
     debugType: string,
     workspaceFolder: string | undefined,
     token?: vscode.CancellationToken,
+    triggerKind?: vscode.DebugConfigurationProviderTriggerKind,
   ): Promise<vscode.DebugConfiguration[]>;
   $resolveDebugConfigurations(
     debugConfiguration: vscode.DebugConfiguration,

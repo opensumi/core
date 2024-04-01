@@ -67,6 +67,7 @@ import {
   AiRightTabRenderer,
 } from './override/layout/tabbar.view';
 import { AiRunService } from './run/run.service';
+import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import { AiNativeCoreContribution, IAiRunFeatureRegistry, IInlineChatFeatureRegistry } from './types';
 
 @Injectable()
@@ -208,6 +209,10 @@ export class AiNativeBrowserContribution
         containerId: Ai_CHAT_CONTAINER_VIEW_ID,
       },
     );
+    registry.register('AI_MENU_BAR_DEBUG_TOOLBAR', {
+      id: 'AI_MENU_BAR_DEBUG_TOOLBAR',
+      component: AIRunToolbar,
+    });
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry): void {

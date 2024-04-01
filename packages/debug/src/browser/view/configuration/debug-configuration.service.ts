@@ -1,8 +1,9 @@
 import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, PreferenceService, isUndefined } from '@opensumi/ide-core-browser';
+import { URI, PreferenceService, isUndefined, PreferenceConfigurations } from '@opensumi/ide-core-browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
 import {
   DebugSessionOptions,
@@ -10,8 +11,9 @@ import {
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
 } from '../../../common';
+import { DebugConfiguration } from '../../../common';
 import { IDebugSessionManager } from '../../../common/debug-session';
-import { DebugConfigurationManager } from '../../debug-configuration-manager';
+import { DebugConfigurationManager, DebugConfigurationType } from '../../debug-configuration-manager';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleService } from '../console/debug-console.service';
 import { DebugViewModel } from '../debug-view-model';
@@ -36,6 +38,12 @@ export class DebugConfigurationService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(WorkspaceVariableContribution)
+  protected readonly workspaceVariables: WorkspaceVariableContribution;
+
+  @Autowired(PreferenceConfigurations)
+  protected readonly preferenceConfigurations: PreferenceConfigurations;
+
   private _whenReady: Promise<void>;
 
   constructor() {
@@ -56,6 +64,9 @@ export class DebugConfigurationService {
 
   @observable.shallow
   configurationOptions: DebugSessionOptions[];
+
+  @observable.shallow
+  dynamicConfigurations: DebugConfigurationType[];
 
   get whenReady() {
     return this._whenReady;
@@ -103,7 +114,7 @@ export class DebugConfigurationService {
   }
 
   @action
-  updateConfigurationOptions() {
+  async updateConfigurationOptions() {
     this.configurationOptions = this.debugConfigurationManager.all;
     const { current } = this.debugConfigurationManager;
     if (current) {
@@ -112,6 +123,11 @@ export class DebugConfigurationService {
     } else {
       this.updateCurrentValue(DEFAULT_ADD_CONFIGURATION_KEY);
     }
+    this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    setTimeout(async () => {
+      // 这里也许需要感知一下 Extension 的初始化事件做一下优化
+      this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    }, 1000);
   }
 
   start = async () => {
@@ -141,8 +157,43 @@ export class DebugConfigurationService {
     this.debugConfigurationManager.addConfiguration(typeof eventOrUri === 'string' ? eventOrUri : undefined);
   };
 
+  getLaunchUri = () => {
+    const workspaceFolderUri = this.workspaceVariables.getWorkspaceRootUri();
+    const uri = new URI(workspaceFolderUri!.toString()).resolve(
+      `${this.preferenceConfigurations.getPaths()[0]}/launch.json`,
+    );
+    return uri;
+  };
+
+  insertConfiguration = (config: DebugConfiguration) => {
+    this.debugConfigurationManager.insertConfiguration(this.getLaunchUri(), config);
+  };
+
+  // 在 launch.json 中插入动态配置
+  showDynamicQuickPickToInsert = async () => {
+    const debugType = await this.debugConfigurationManager.showDynamicConfigurationsTypesQuickPick();
+    if (debugType) {
+      const config = await this.debugConfigurationManager.showDynamicConfigurationsQuickPick(debugType);
+      if (config) {
+        this.insertConfiguration(config);
+      }
+    }
+  };
+
   updateConfiguration = (name: string, workspaceFolderUri: string, index: number) => {
     this.debugConfigurationManager.current = this.debugConfigurationManager.find(name, workspaceFolderUri, index);
+  };
+
+  // 展示动态配置的选项 QuickPick 并且直接运行
+  showDynamicQuickPick = async (type: string) => {
+    const config = await this.debugConfigurationManager.showDynamicConfigurationsQuickPick(type);
+    if (config) {
+      this.debugSessionManager.start({
+        configuration: config,
+        workspaceFolderUri: this.workspaceRoots[0],
+        index: -1,
+      });
+    }
   };
 
   toValue({ configuration, workspaceFolderUri, index }: DebugSessionOptions) {
