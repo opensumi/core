@@ -7,6 +7,7 @@ import {
   IApplicationService,
   Emitter,
   OS,
+  CommandRegistry,
 } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -19,6 +20,7 @@ import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-co
 import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -26,6 +28,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import styles from '../../src/browser/file-tree-node.modules.less';
 import { Directory, File } from '../../src/common/file-tree-node.define';
+import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 
 class TempDirectory {}
 class TempFile {}
@@ -179,6 +182,13 @@ describe('FileTreeModelService should be work', () => {
         useClass: MockContextKeyService,
       },
       {
+        token: IMainLayoutService,
+        useValue: {
+          bottomExpanded: true,
+        },
+      },
+
+      {
         token: IApplicationService,
         useValue: {
           getBackendOS: () => Promise.resolve(OS.type()),
@@ -199,6 +209,9 @@ describe('FileTreeModelService should be work', () => {
 
     fileTreeModelService = injector.get(FileTreeModelService);
     fileTreeModelService.initTreeModel();
+
+    injector.mockCommand(RETRACT_BOTTOM_PANEL.id, () => {});
+
     await fileTreeModelService.whenReady;
   });
 

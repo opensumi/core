@@ -47,6 +47,8 @@ export interface IAINativeLayout {
   useMergeRightWithLeftPanel?: boolean;
   // Use ai manubar view
   useMenubarView?: boolean;
+  // set menubar logo
+  menubarLogo?: string;
 }
 
 export interface IAINativeConfig {

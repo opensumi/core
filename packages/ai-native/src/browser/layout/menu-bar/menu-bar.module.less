@@ -43,19 +43,23 @@
           margin-left: 4px;
         }
 
-        .extra_top_icon {
-          width: 16px;
-          height: 16px;
-          background-image: url(./logo.svg);
-          background-repeat: no-repeat;
-          background-size: 100%;
+        .logo_container {
+          display: flex;
+          align-items: center;
 
-          &::before {
-            content: initial;
-          }
+          .extra_top_icon {
+            width: 16px;
+            height: 16px;
+            background-repeat: no-repeat;
+            background-size: 100%;
 
-          &:hover {
-            background-color: transparent;
+            &::before {
+              content: initial;
+            }
+
+            &:hover {
+              background-color: transparent;
+            }
           }
         }
       }

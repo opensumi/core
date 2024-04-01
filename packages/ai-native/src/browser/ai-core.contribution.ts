@@ -26,6 +26,7 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   ChatFeatureRegistryToken,
   CommandService,
@@ -116,11 +117,11 @@ export class AINativeBrowserContribution
   initialize() {
     this.aiNativeConfigService.enableCapabilities();
 
-    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
+    const { supportsChatAssistant, supportsOpenSumiDesign } = this.aiNativeConfigService.capabilities;
     const { useMenubarView } = this.aiNativeConfigService.layout;
 
     let layoutConfig = this.appConfig.layoutConfig;
-    let layoutViewSize = this.appConfig.layoutViewSize;
+    let layoutViewSize = this.appConfig.layoutViewSize as LayoutViewSizeConfig;
 
     if (supportsChatAssistant) {
       layoutConfig = {
@@ -130,15 +131,17 @@ export class AINativeBrowserContribution
     }
 
     if (useMenubarView) {
-      layoutViewSize = {
-        ...layoutViewSize,
-        menubarHeight: 48,
-      };
-
+      layoutViewSize.setMenubarHeight(48);
       layoutConfig = {
         ...layoutConfig,
         ...AIMenubarLayoutConfig,
       };
+    }
+
+    if (supportsOpenSumiDesign) {
+      layoutViewSize.setEditorTabsHeight(36);
+      layoutViewSize.setStatusBarHeight(36);
+      layoutViewSize.setAccordionHeaderSizeHeight(36);
     }
 
     this.appConfig.layoutConfig = layoutConfig;
