@@ -3,14 +3,18 @@ import { Injectable, Injector } from '@opensumi/di';
 import { BrowserModule } from '../../../browser-module';
 import { AppConfig } from '../../../react-providers';
 import { electronEnv } from '../../../utils/electron';
-import { ESupportRuntime } from '../constants';
-import { IRendererRuntime } from '../types';
+import { ESupportRuntime, onigWasmCDNUri, treeSitterWasmCDNUri } from '../constants';
+import { EKnownResources, IRendererRuntime } from '../types';
 
 import { injectElectronInnerProviders } from './inner-providers-electron';
+
+import type { ClientApp } from '../../../bootstrap/app';
 
 @Injectable()
 export class ElectronRendererRuntime implements IRendererRuntime {
   runtimeName = ESupportRuntime.Electron;
+
+  constructor(private app: ClientApp) {}
 
   registerRuntimeModuleProviders(injector: Injector, instance: BrowserModule<any>): void {
     instance.electronProviders && injector.addProviders(...instance.electronProviders);
@@ -20,6 +24,17 @@ export class ElectronRendererRuntime implements IRendererRuntime {
   }
   mergeAppConfig(meta: AppConfig): AppConfig {
     return mergeElectronMetadata(meta);
+  }
+
+  async provideResourceUri(resource: EKnownResources): Promise<string> {
+    switch (resource) {
+      case EKnownResources.OnigWasm:
+        return electronEnv.onigWasmUri || this.app.config.onigWasmUri || onigWasmCDNUri;
+      case EKnownResources.TreeSitterWasmDirectory:
+        return this.app.config.treeSitterWasmDirectoryUri || treeSitterWasmCDNUri;
+      default:
+        throw new Error(`Unknown resource: ${resource}`);
+    }
   }
 }
 

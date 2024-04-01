@@ -3,7 +3,6 @@
  * 并且 editor.main 也包含对 editor.all 的导入
  */
 import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
-import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
@@ -49,6 +48,7 @@ import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '
 import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
+import { IRendererRuntime } from '../application/runtime/types';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
@@ -76,12 +76,9 @@ import { IAppRenderer, renderClientApp } from './app.view';
 import { bindConnectionServiceDeprecated, createConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
+import './polyfills';
 
-// 添加resize observer polyfill
-if (typeof (window as any).ResizeObserver === 'undefined') {
-  (window as any).ResizeObserver = ResizeObserver;
-}
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 export class ClientApp implements IClientApp, IDisposable {
   /**
@@ -125,7 +122,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
 
-    this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime();
+    this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime(this);
 
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
@@ -311,6 +308,7 @@ export class ClientApp implements IClientApp, IDisposable {
    */
   private initBaseProvider() {
     this.injector.addProviders({ token: IClientApp, useValue: this });
+    this.injector.addProviders({ token: IRendererRuntime, useValue: this.runtime });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
 

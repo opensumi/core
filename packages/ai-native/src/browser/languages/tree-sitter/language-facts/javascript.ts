@@ -59,7 +59,7 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
       case 'function_declaration':
       case 'function_expression':
         return {
-          name: node.firstChild?.text || '',
+          name: node.firstNamedChild?.text || '',
           signatures: node.children
             .filter((child) => child.type === 'parameter')
             .map((param) => param.firstChild?.text || ''),
@@ -88,7 +88,7 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
       }
       case 'method_definition':
         return {
-          name: node.firstChild?.text || '',
+          name: node.firstNamedChild?.text || '',
           signatures: node.children
             .filter((child) => child.type === 'parameter')
             .map((param) => param.firstChild?.text || ''),

@@ -5,6 +5,7 @@ import { Deferred } from '@opensumi/ide-utils';
 
 import { toMonacoRange } from './tree-sitter/common';
 import {
+  SupportedLanguages,
   SupportedTreeSitterLanguages,
   TreeSitterLanguageFacts,
   knownLanguageFacts,
@@ -19,19 +20,29 @@ interface CodeBlock {
   type: string;
 }
 
+export interface ILanguageParserOptions {
+  wasmLoadBaseUrl?: string;
+}
+
 export class LanguageParser {
   private parser: Parser;
 
   private parserLoaded = new Deferred<void>();
 
-  private wasmModuleManager = new WasmModuleManager({
-    baseUrl: '',
-  });
+  private wasmModuleManager: WasmModuleManager;
 
   private languageFacts = new TreeSitterLanguageFacts(knownLanguageFacts);
 
-  private constructor(private language: SupportedTreeSitterLanguages) {
+  private constructor(private language: SupportedTreeSitterLanguages, opts?: ILanguageParserOptions) {
+    this.wasmModuleManager = new WasmModuleManager({
+      baseUrl: opts?.wasmLoadBaseUrl || '',
+    });
+
     this.initializeParser();
+  }
+
+  ready() {
+    return this.parserLoaded.promise;
   }
 
   private async initializeParser() {
@@ -188,7 +199,7 @@ export class LanguageParser {
     return LanguageParser.pool.get(language);
   }
 
-  static fromLanguageId(languageId: string): LanguageParser | undefined {
+  static fromLanguageId(languageId: SupportedLanguages): LanguageParser | undefined {
     const treeSitterLang = parserNameMap[languageId];
     if (treeSitterLang) {
       return LanguageParser.get(treeSitterLang);

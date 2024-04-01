@@ -11,15 +11,14 @@ import {
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  AppConfig,
   ExtensionActivateEvent,
   ILogger,
   PreferenceService,
   WithEventBus,
-  electronEnv,
   getDebugLogger,
   parseWithComments,
 } from '@opensumi/ide-core-browser';
+import { EKnownResources, IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
 import { Disposable, URI, isObject } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
@@ -112,8 +111,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelService: IEditorDocumentModelService;
 
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
+  @Autowired(IRendererRuntime)
+  private rendererRuntime: IRendererRuntime;
 
   public grammarRegistry: Registry;
 
@@ -864,17 +863,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       return new OnigasmLib();
     }
 
-    let wasmUri: string;
-    if (this.appConfig.isElectronRenderer && electronEnv.onigWasmPath) {
-      wasmUri = URI.file(electronEnv.onigWasmPath).codeUri.toString();
-    } else if (this.appConfig.isElectronRenderer && electronEnv.onigWasmUri) {
-      wasmUri = electronEnv.onigWasmUri;
-    } else {
-      wasmUri =
-        this.appConfig.onigWasmUri ||
-        this.appConfig.onigWasmPath ||
-        'https://g.alicdn.com/kaitian/vscode-oniguruma-wasm/1.5.1/onig.wasm';
-    }
+    const wasmUri: string = await this.rendererRuntime.provideResourceUri(EKnownResources.OnigWasm);
 
     const response = await fetch(wasmUri);
     const bytes = await response.arrayBuffer();
