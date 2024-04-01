@@ -244,7 +244,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   /**
    * 新版 inline chat（类似 cursor 那种）
    */
-  private async registerInlineChat(editor: IEditor, id?: string): Promise<void> {
+  private async registerInlineChat(editor: IEditor, runId?: string): Promise<void> {
     if (this.aiNativeConfigService.capabilities.supportsInlineChat === false) {
       return;
     }
@@ -256,6 +256,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposeAllWidget();
 
     const { monacoEditor, currentUri } = editor;
+
+    const runByCodeAction = Boolean(runId);
 
     if (!currentUri) {
       return;
@@ -305,7 +307,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             .setStartPosition(selection.startLineNumber, 1)
             .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-          const relationId = this.aiReporter.start(action.name, { message: action.name });
+          const relationId = this.aiReporter.start(action.name, { message: action.name, runByCodeAction });
           const startTime = +new Date();
 
           const result = await this.handleDiffPreviewStrategy(
@@ -344,8 +346,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
       }),
     );
-    if (id) {
-      this.aiInlineContentWidget.clickActions(id);
+    if (runId) {
+      this.aiInlineContentWidget.clickActions(runId);
     }
   }
 
