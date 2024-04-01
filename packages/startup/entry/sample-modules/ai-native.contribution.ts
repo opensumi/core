@@ -190,14 +190,24 @@ export class AiNativeContribution implements AiNativeCoreContribution, ClientApp
           },
         );
 
+        // 测试：生成两个配置，然后供用户选择
         return [
           {
-            name: '[AI]Launch Program',
+            name: '[AI] Launch Program',
             skipFiles: ['<node_internals>/**'],
             type: 'node',
             request: 'launch',
-            autoPick: true,
+            // autoPick: true, // 使用 autoPick 可以跳过 QuickPick 直接运行（底层逻辑只会检查数组的第一个）
             program: '${workspaceFolder}/index.js',
+          },
+          {
+            name: '[AI2] Run npm start',
+            type: 'node',
+            request: 'launch',
+            runtimeExecutable: 'npm',
+            runtimeArgs: ['run', 'start'],
+            cwd: '${workspaceFolder}',
+            console: 'integratedTerminal',
           },
         ];
       },
