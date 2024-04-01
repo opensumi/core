@@ -172,7 +172,9 @@ export class AiNativeContribution implements AiNativeCoreContribution, ClientApp
     // 使用模块的时候，需要在这里注册
     this.debugConfigurationManager.registerInternalDebugConfigurationProvider('ai-native', {
       type: 'ai-native',
-      label: 'AI Native调试配置',
+      label: 'AI 生成配置',
+      popupHint:
+        '使用大模型能力，根据项目内容生成配置（大模型生成内容可能有误）（大模型生成内容可能有误）（大模型生成内容可能有误）',
       async provideDebugConfigurations(folder, token) {
         await innerProgressService.withProgress(
           {
@@ -190,14 +192,20 @@ export class AiNativeContribution implements AiNativeCoreContribution, ClientApp
 
         return [
           {
-            name: 'Launch Program',
+            name: '[AI]Launch Program',
             skipFiles: ['<node_internals>/**'],
             type: 'node',
             request: 'launch',
+            autoPick: true,
             program: '${workspaceFolder}/index.js',
           },
         ];
       },
+    });
+    this.debugConfigurationManager.registerInternalDebugConfigurationOverride('pwa-node', {
+      type: 'pwa-node',
+      label: 'Node.js 项目自动生成',
+      popupHint: '通过 Node.js Debug 提供的服务自动分析项目，生成运行配置',
     });
   }
 }

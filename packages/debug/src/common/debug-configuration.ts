@@ -63,6 +63,7 @@ export namespace DebugConfiguration {
 }
 
 export const DEFAULT_ADD_CONFIGURATION_KEY = '__ADD_CONF__';
+export const DEFAULT_EDIT_CONFIGURATION_KEY = '__EDIT_CONF__';
 export const DEFAULT_DYNAMIC_CONFIGURATION_KEY = '__DYNAMIC_CONF__';
 export const DEFAULT_NO_CONFIGURATION_KEY = '__NO_CONF__';
 export const DEFAULT_CONFIGURATION_NAME_SEPARATOR = '__CONF__';

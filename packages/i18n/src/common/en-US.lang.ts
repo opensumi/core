@@ -278,7 +278,8 @@ export const localizationBundle = {
     'scm.dirtyDiff.changes': '{0} of {1} changes',
 
     'debug.action.add.smartAddConfiguration': 'Smart Add Configuration',
-    'debug.action.add.configuration': 'Add Configuration...',
+    'debug.action.add.configuration': 'Add Configuration',
+    'debug.action.edit.configuration': 'Edit Configuration',
     'debug.action.open.launch.editor': 'Open in launch editor',
     'debug.action.no.configuration': 'No Configurations',
     'debug.action.start': 'Start Debugging',

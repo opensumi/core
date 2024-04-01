@@ -59,9 +59,16 @@ export interface IDebugConfigurationData {
   };
 }
 
+export interface DebugConfigurationType {
+  type: string;
+  label?: string;
+  popupHint?: string;
+}
+
 export interface InternalDebugConfigurationProvider {
   type: string;
-  label: string;
+  label?: string;
+  popupHint?: string;
   provideDebugConfigurations(folderUri: string | undefined, token?: CancellationToken): Promise<DebugConfiguration[]>;
 }
 
@@ -116,6 +123,9 @@ export class DebugConfigurationManager {
 
   // DebugConfigManager 直接维护的一批内部 DebugConfigurationProvider，用于模块级的快速自定义 Dynamic DebugConfiguration
   protected readonly internalDebugConfigurationProviders = new Map<string, InternalDebugConfigurationProvider>();
+
+  // DebugConfigManager 维护 DebugConfigurationOverride，用于模块级的修改 Debugger 的 Label 和提示
+  protected readonly internalDebugConfigurationOverride = new Map<string, DebugConfigurationType>();
 
   private contextDebuggersAvailable: IContextKey<boolean>;
 
@@ -504,7 +514,7 @@ export class DebugConfigurationManager {
     return debugType;
   }
 
-  public async getDynamicConfigurationsSupportTypes() {
+  public async getDynamicConfigurationsSupportTypes(): Promise<DebugConfigurationType[]> {
     await this.fireWillProvideDebugConfiguration();
     const debugTypes = new Set<string>();
 
@@ -513,17 +523,29 @@ export class DebugConfigurationManager {
     const typesFromExt = await this.debug.getDynamicConfigurationsSupportTypes();
     typesFromExt.forEach((type) => debugTypes.add(type));
 
-    return Array.from(debugTypes).map((type) => ({ type, label: this.getDebuggerLabel(type) }));
+    return Array.from(debugTypes).map((type) => ({
+      type,
+      label: this.getDebuggerLabel(type),
+      popupHint: this.getDebuggerExtraPopupHint(type),
+    }));
   }
 
   public async showDynamicConfigurationsQuickPick(type: string): Promise<DebugConfiguration | undefined> {
     const configurations = await this.provideDynamicDebugConfigurations(type, this.model?.workspaceFolderUri);
-    const result = await this.quickPick.show(
-      configurations.map((config) => ({ label: config.name, value: config })),
-      {
-        placeholder: localize('debug.configuration.selectAutomaticDebugConfiguration'),
-      },
-    );
+    let result: DebugConfiguration | undefined;
+    if (configurations.length > 0 && configurations[0]['autoPick']) {
+      // 无需拉起 QuickPick，直接选中第一个（某些情况下，ProvideConfiguration 后不希望用户多余的操作）
+      result = configurations[0];
+      delete result['autoPick'];
+    } else {
+      result = await this.quickPick.show(
+        configurations.map((config) => ({ label: config.name, value: config })),
+        {
+          placeholder: localize('debug.configuration.selectAutomaticDebugConfiguration'),
+        },
+      );
+    }
+
     if (result) {
       await this.addRecentDynamicConfiguration(result);
     }
@@ -582,6 +604,15 @@ export class DebugConfigurationManager {
    */
   registerInternalDebugConfigurationProvider(type: string, provider: InternalDebugConfigurationProvider): void {
     this.internalDebugConfigurationProviders.set(type, provider);
+  }
+
+  /**
+   * 可以通过注册 DebugConfigurationType 空实现的方式来 OverRide 现有 ConfigurationProvider 的一些 Label 或者 Hint
+   * @param type debugger Type
+   * @param debugConfigurationOverride 覆写的 Debugger Label 和提示
+   */
+  registerInternalDebugConfigurationOverride(type: string, debugConfigurationOverride: DebugConfigurationType) {
+    this.internalDebugConfigurationOverride.set(type, debugConfigurationOverride);
   }
 
   // 获取临时存储的 Dynamic DebugConfigurations，方便用户快速选择之前用过的动态配置
@@ -714,6 +745,10 @@ export class DebugConfigurationManager {
   }
 
   getDebuggerLabel(type: string): string | undefined {
+    const internalDebugConfigurationOverride = this.internalDebugConfigurationOverride.get(type);
+    if (internalDebugConfigurationOverride) {
+      return internalDebugConfigurationOverride.label || type;
+    }
     // 如果有 internalProvider 则优先使用 internalProvider 的 label
     const internalProvider = this.internalDebugConfigurationProviders.get(type);
     if (internalProvider) {
@@ -725,5 +760,18 @@ export class DebugConfigurationManager {
     }
 
     return undefined;
+  }
+
+  // 获取 DebugConfiguration 选择面板里额外的 Hover 提示，这里可以通过模块注入（便于用户更好理解一些 Automatic DebugConfiguration 的能力）
+  getDebuggerExtraPopupHint(type: string): string | undefined {
+    const internalDebugConfigurationOverride = this.internalDebugConfigurationOverride.get(type);
+    if (internalDebugConfigurationOverride) {
+      return internalDebugConfigurationOverride.popupHint || undefined;
+    }
+    // 如果有 internalProvider 则优先使用 internalProvider 的 label
+    const internalProvider = this.internalDebugConfigurationProviders.get(type);
+    if (internalProvider) {
+      return internalProvider.popupHint || undefined;
+    }
   }
 }

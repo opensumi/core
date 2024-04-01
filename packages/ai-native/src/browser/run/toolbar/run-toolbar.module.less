@@ -4,12 +4,24 @@
   align-items: center;
 }
 
+// 取消 Select 白色的背景
+.run_toolbar_container {
+  .debug_controller_view {
+    :global {
+      .kt-select-container {
+        .kt-select-value-default {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+}
+
 .debug_action_bar_internal {
   margin-left: 8px;
 }
 
 .debug_controller_view {
-  min-width: 200px;
   max-width: 350px;
 }
 

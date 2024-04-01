@@ -13,7 +13,7 @@ import {
 } from '../../../common';
 import { DebugConfiguration } from '../../../common';
 import { IDebugSessionManager } from '../../../common/debug-session';
-import { DebugConfigurationManager } from '../../debug-configuration-manager';
+import { DebugConfigurationManager, DebugConfigurationType } from '../../debug-configuration-manager';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugConsoleService } from '../console/debug-console.service';
 import { DebugViewModel } from '../debug-view-model';
@@ -66,7 +66,7 @@ export class DebugConfigurationService {
   configurationOptions: DebugSessionOptions[];
 
   @observable.shallow
-  dynamicConfigurations: { type: string; label: string | undefined }[];
+  dynamicConfigurations: DebugConfigurationType[];
 
   get whenReady() {
     return this._whenReady;
