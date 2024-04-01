@@ -11,7 +11,7 @@ import {
   parserNameMap,
 } from './tree-sitter/language-facts';
 import { IFunctionInfo } from './tree-sitter/language-facts/base';
-import { wasmModuleManager } from './tree-sitter/wasm-manager';
+import { WasmModuleManager } from './tree-sitter/wasm-manager';
 
 interface CodeBlock {
   range: monaco.IRange;
@@ -24,26 +24,25 @@ export class LanguageParser {
 
   private parserLoaded = new Deferred<void>();
 
+  private wasmModuleManager = new WasmModuleManager({
+    baseUrl: '',
+  });
+
   private languageFacts = new TreeSitterLanguageFacts(knownLanguageFacts);
 
   private constructor(private language: SupportedTreeSitterLanguages) {
     this.initializeParser();
   }
 
-  private initializeParser() {
-    const wasmPath = '/tree-sitter.wasm';
-    Parser.init({
-      locateFile: () => wasmPath,
-    }).then(async () => {
-      this.parser = new Parser();
-      // Load grammar
-      const grammar = await wasmModuleManager.loadWasm(this.language);
-      const languageParser = await Parser.Language.load(new Uint8Array(grammar));
-      // Set language
-      this.parser.setLanguage(languageParser);
+  private async initializeParser() {
+    this.parser = await this.wasmModuleManager.initParser();
+    // Load grammar
+    const grammar = await this.wasmModuleManager.loadLanguage(this.language);
+    const languageParser = await Parser.Language.load(new Uint8Array(grammar));
+    // Set language
+    this.parser.setLanguage(languageParser);
 
-      this.parserLoaded.resolve();
-    });
+    this.parserLoaded.resolve();
   }
 
   /**
