@@ -2166,7 +2166,7 @@ __metadata:
     "@types/react-window": ^1.8.5
     fuzzy: ^0.1.3
     lodash: ^4.17.21
-    marked: 4.0.10
+    marked: 12.0.1
     prop-types: ^15.8.1
     raf: ^3.4.1
     rc-dialog: ~7.6.0
@@ -13545,12 +13545,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:4.0.10":
-  version: 4.0.10
-  resolution: "marked@npm:4.0.10"
+"marked@npm:12.0.1":
+  version: 12.0.1
+  resolution: "marked@npm:12.0.1"
   bin:
     marked: bin/marked.js
-  checksum: 46cd8ef1a7cfcf5e461727c7f3e16dd4244369ef58f60485e75d3f5df9d53a8249b9609e96a336521eaa5c88d9531cbd296509a148718056e9375e69609f4442
+  checksum: 35ebc6c4612fcc028a1cd6419321e336be5b29d3feb68dfd5aaa7fcddb399c7873cd3291d60daf342db3eede747757e4e18515f349f0ee7b84ec24254f3a4190
   languageName: node
   linkType: hard
 
