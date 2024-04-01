@@ -2549,7 +2549,7 @@ __metadata:
     nsfw: 2.2.0
     trash: ^5.2.0
     vscode-languageserver-types: ^3.16.0
-    write-file-atomic: ^4.0.1
+    write-file-atomic: ^5.0.1
   languageName: unknown
   linkType: soft
 
@@ -20470,7 +20470,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"write-file-atomic@npm:5.0.1":
+"write-file-atomic@npm:5.0.1, write-file-atomic@npm:^5.0.1":
   version: 5.0.1
   resolution: "write-file-atomic@npm:5.0.1"
   dependencies:
