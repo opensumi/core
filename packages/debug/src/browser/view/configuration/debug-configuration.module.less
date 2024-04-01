@@ -39,13 +39,12 @@
   }
 }
 
-.select_divider {
-  font-size: 10px;
-  margin-left: -10px;
-}
-
+// 在 Select 上实现一个 Divider
 :global(.kt-select-options-default) > div > span.select_divider_container {
+  display: block;
   height: 1px;
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .config_popover_insert > span {
