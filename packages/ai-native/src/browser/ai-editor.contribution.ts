@@ -82,7 +82,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   protected eventBus: IEventBus;
 
   @Autowired(LanguageParserFactory)
-  languageParserFactory: LanguageParserFactory;
+  protected languageParserFactory: LanguageParserFactory;
 
   private latestMiddlewareCollector: IAIMiddleware;
 
@@ -251,15 +251,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     );
 
     return this;
-  }
-
-  getOrCreateInlineChatContentWidget(monacoEditor: monaco.editor.ICodeEditor): AIInlineContentWidget {
-    if (!this.aiInlineContentWidget) {
-      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
-      this.aiInlineContentWidget = this.injector.get(AIInlineContentWidget, [monacoEditor]);
-    }
-
-    return this.aiInlineContentWidget;
   }
 
   protected inlineChatInUsing = false;

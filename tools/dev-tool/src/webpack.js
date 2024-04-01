@@ -1,6 +1,5 @@
 const path = require('path');
 
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const fse = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
