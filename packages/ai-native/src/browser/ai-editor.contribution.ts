@@ -29,6 +29,7 @@ import { AiInlineChatService, EInlineChatStatus } from './inline-chat-widget/inl
 import { AiInlineContentWidget } from './inline-chat-widget/inline-content-widget';
 import { AiInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AiCompletionsService } from './inline-completions/service/ai-completions.service';
+import { LanguageParserFactory } from './languages/parser';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
 import {
   AiNativeCoreContribution,
@@ -76,6 +77,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(AiCompletionsService)
   private aiCompletionsService: AiCompletionsService;
+
+  @Autowired(LanguageParserFactory)
+  languageParserFactory: LanguageParserFactory;
 
   private latestMiddlewareCollector: IAiMiddleware;
   private logger: ILogServiceClient;
@@ -125,6 +129,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
       });
       this.registerCompletion(editor);
+    }
+
+    if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
+      this.registerCodeActionForInlineChat(editor);
     }
 
     this.disposables.push(
@@ -481,6 +489,104 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           handleItemDidShow: (completions, item) => {
             if (completions.items.length > 0) {
               this.aiCompletionsService.setVisibleCompletion(true);
+            }
+          },
+        });
+        this.disposables.push(dispose);
+      }),
+    );
+    return;
+  }
+
+  /**
+   * 代码补全
+   */
+  private registerCodeActionForInlineChat(editor: IEditor): void {
+    const { monacoEditor, currentUri } = editor;
+
+    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+      return;
+    }
+
+    let dispose: IDisposable | undefined;
+
+    this.disposables.push(
+      Event.debounce(
+        monacoEditor.onDidChangeModel,
+        (_, e) => e,
+        300,
+      )(async (event) => {
+        if (dispose) {
+          dispose.dispose();
+        }
+
+        const { monacoEditor, currentUri } = editor;
+        if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
+          return this;
+        }
+
+        const model = monacoEditor.getModel();
+        if (!model) {
+          return;
+        }
+
+        // 取光标的当前位置
+        const position = monacoEditor.getPosition();
+        if (!position) {
+          return;
+        }
+
+        const languageId = model.getLanguageId();
+        dispose = monaco.languages.registerCodeActionProvider(languageId, {
+          provideCodeActions: async (model, position, context, token) => {
+            const parser = this.languageParserFactory(languageId);
+            if (!parser) {
+              return null;
+            }
+
+            const cursorPosition = monacoEditor.getPosition()!;
+            const actions = this.inlineChatFeatureRegistry.getCodeActions();
+            const functionInfo = await parser.provideFunctionInfo(model, cursorPosition);
+
+            if (functionInfo) {
+              return {
+                actions: actions.map((v) => {
+                  const command = {} as any;
+                  if (v.command) {
+                    command.id = v.command.id;
+                    command.arguments = [functionInfo.range];
+                  }
+
+                  return {
+                    ...v,
+                    title: v.title + ` for Function: ${functionInfo.name}`,
+                    ranges: [functionInfo.range],
+                    command,
+                  };
+                }) as monaco.languages.CodeAction[],
+                dispose() {},
+              };
+            }
+
+            const codeblock = await parser.findCodeBlock(model, cursorPosition);
+            if (codeblock) {
+              return {
+                actions: actions.map((v) => {
+                  const command = {} as any;
+                  if (v.command) {
+                    command.id = v.command.id;
+                    command.arguments = [codeblock.range];
+                  }
+
+                  return {
+                    ...v,
+                    title: v.title,
+                    ranges: [codeblock.range],
+                    command,
+                  };
+                }) as monaco.languages.CodeAction[],
+                dispose() {},
+              };
             }
           },
         });

@@ -1,6 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Disposable, getDebugLogger } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IInlineChatFeatureRegistry, InlineChatHandler } from '../types';
 
@@ -42,5 +43,9 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
   public getAction(id: string): AIActionItem | undefined {
     return this.actionsMap.get(id);
+  }
+
+  getCodeActions(): monaco.languages.CodeAction[] {
+    return [];
   }
 }
