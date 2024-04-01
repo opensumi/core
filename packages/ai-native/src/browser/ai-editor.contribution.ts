@@ -542,38 +542,56 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           );
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerCodeActionProvider(languageId, {
-              provideCodeActions: async (model, range, context, token) => {
+              provideCodeActions: async (model) => {
                 const parser = this.languageParserFactory(languageId);
                 if (!parser) {
                   return;
                 }
 
                 const cursorPosition = monacoEditor.getPosition()!;
-                const cursor = model.getOffsetAt(cursorPosition);
+                const actions = this.inlineChatFeatureRegistry.getCodeActions();
+                const functionInfo = await parser.provideFunctionInfo(model, cursorPosition);
 
-                const functionInfo = await parser.provideFunctionInfo(model.getValue(), cursor);
-                if (!functionInfo) {
-                  return;
+                if (functionInfo) {
+                  return {
+                    actions: actions.map((v) => {
+                      const command = {} as monaco.Command;
+                      if (v.command) {
+                        command.id = v.command.id;
+                        command.arguments = [functionInfo.range];
+                      }
+
+                      return {
+                        ...v,
+                        title: v.title + ` for Function: ${functionInfo.name}`,
+                        ranges: [functionInfo.range],
+                        command,
+                      };
+                    }) as monaco.CodeAction[],
+                    dispose() {},
+                  };
                 }
 
-                const actions = this.inlineChatFeatureRegistry.getCodeActions();
-                return {
-                  actions: actions.map((v) => {
-                    const command = {} as monaco.Command;
-                    if (v.command) {
-                      command.id = v.command.id;
-                      command.arguments = [functionInfo];
-                    }
+                const codeblock = await parser.findCodeBlock(model, cursorPosition);
+                if (codeblock) {
+                  return {
+                    actions: actions.map((v) => {
+                      const command = {} as monaco.Command;
+                      if (v.command) {
+                        command.id = v.command.id;
+                        command.arguments = [codeblock.range];
+                      }
 
-                    return {
-                      ...v,
-                      title: v.title + ` for Function: ${functionInfo.name}`,
-                      ranges: [functionInfo.range],
-                      command,
-                    };
-                  }) as monaco.CodeAction[],
-                  dispose() {},
-                };
+                      return {
+                        ...v,
+                        title: v.title,
+                        ranges: [codeblock.range],
+                        command,
+                      };
+                    }) as monaco.CodeAction[],
+                    dispose() {},
+                  };
+                }
               },
             }),
           );

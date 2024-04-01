@@ -12,7 +12,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { CodeAction } from '@opensumi/ide-monaco';
 
-import { IFunctionInfo } from '../../languages/tree-sitter/language-facts/base';
 import { IEditorInlineChatHandler, IInlineChatFeatureRegistry, ITerminalInlineChatHandler } from '../../types';
 
 @Injectable()
@@ -61,10 +60,10 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
           id: InlineChatFeatureRegistry.getCommandId(type, id),
         },
         {
-          execute: async (functionInfo: IFunctionInfo) => {
+          execute: async (range: IRange) => {
             this._onActionRun.fire({
               id,
-              range: functionInfo.range,
+              range,
             });
           },
         },

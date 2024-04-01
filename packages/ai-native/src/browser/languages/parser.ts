@@ -2,7 +2,7 @@ import Parser from 'web-tree-sitter';
 
 import { Autowired, Injectable, Injector } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
-import { Deferred } from '@opensumi/ide-utils';
+import { Deferred, LRUCache } from '@opensumi/ide-utils';
 
 import { toMonacoRange } from './tree-sitter/common';
 import {
@@ -25,6 +25,8 @@ export class LanguageParser {
   private parser: Parser;
 
   private parserLoaded = new Deferred<void>();
+
+  private lruCache = new LRUCache<string, Parser.SyntaxNode>(500);
 
   @Autowired(WasmModuleManager)
   private wasmModuleManager: WasmModuleManager;
@@ -85,19 +87,36 @@ export class LanguageParser {
     return null;
   }
 
-  async getSyntaxNodeAsPosition(sourceCode: string, cursor: number): Promise<Parser.SyntaxNode | null> {
+  async parseAST(model: monaco.ITextModel) {
+    const key = `${model.id}@${model.getVersionId()}`;
+    const cachedNode = this.lruCache.get(key);
+    if (cachedNode) {
+      return cachedNode;
+    }
+
     await this.parserLoaded.promise;
+    const sourceCode = model.getValue();
     const tree = this.parser.parse(sourceCode);
     if (tree) {
       const rootNode = tree.rootNode;
+      this.lruCache.set(key, rootNode);
+      return rootNode;
+    }
+  }
+
+  async getSyntaxNodeAsPosition(model: monaco.ITextModel, cursor: number): Promise<Parser.SyntaxNode | null> {
+    await this.parserLoaded.promise;
+    const rootNode = await this.parseAST(model);
+    if (rootNode) {
       const cursorNode = rootNode.namedDescendantForIndex(cursor);
       return cursorNode;
     }
     return null;
   }
 
-  async findCodeBlock(sourceCode: string, cursor: number): Promise<CodeBlock | null> {
-    const cursorNode = await this.getSyntaxNodeAsPosition(sourceCode, cursor);
+  async findCodeBlock(model: monaco.ITextModel, position: monaco.Position): Promise<CodeBlock | null> {
+    const cursor = model.getOffsetAt(position);
+    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
     if (cursorNode) {
       const selectedNode = this.findContainingCodeBlockWithPosition(cursorNode, cursor);
       if (!selectedNode) {
@@ -119,8 +138,10 @@ export class LanguageParser {
     return null;
   }
 
-  async provideFunctionInfo(sourceCode: string, cursor: number): Promise<IFunctionInfo | null> {
-    const cursorNode = await this.getSyntaxNodeAsPosition(sourceCode, cursor);
+  async provideFunctionInfo(model: monaco.ITextModel, position: monaco.Position): Promise<IFunctionInfo | null> {
+    const cursor = model.getOffsetAt(position);
+
+    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
     if (!cursorNode) {
       return null;
     }
