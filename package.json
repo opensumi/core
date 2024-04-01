@@ -58,7 +58,7 @@
     "commitizen": "^4.2.4",
     "commitlint": "^15.0.0",
     "cz-conventional-changelog": "^2.1.0",
-    "execa": "^5.0.0",
+    "execa": "^8.0.1",
     "fs-extra": "^11.2.0",
     "glob": "^8.0.1",
     "husky": "^7.0.4",
