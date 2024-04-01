@@ -3,6 +3,8 @@
 export * from './types';
 import Parser from 'web-tree-sitter';
 
+import { Injectable } from '@opensumi/di';
+
 import { AbstractLanguageFacts, AbstractLanguageFactsDerived, IFunctionInfo } from './base';
 import { GolangLanguageFacts } from './golang';
 import { JavaLanguageFacts } from './java';
@@ -27,10 +29,11 @@ export const knownLanguageFacts = [
   TypeScriptReactLanguageFacts,
 ] as AbstractLanguageFactsDerived[];
 
+@Injectable()
 export class TreeSitterLanguageFacts {
   protected langs = new Map<SupportedTreeSitterLanguages, AbstractLanguageFacts>();
-  constructor(facts: AbstractLanguageFactsDerived[]) {
-    facts.forEach((Fact) => {
+  constructor() {
+    knownLanguageFacts.forEach((Fact) => {
       const fact = new Fact();
       this.langs.set(fact.name, fact);
     });

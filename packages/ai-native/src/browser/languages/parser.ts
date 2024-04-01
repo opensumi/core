@@ -1,5 +1,6 @@
 import Parser from 'web-tree-sitter';
 
+import { Autowired, Injectable, Injector } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
 import { Deferred } from '@opensumi/ide-utils';
 
@@ -8,7 +9,6 @@ import {
   SupportedLanguages,
   SupportedTreeSitterLanguages,
   TreeSitterLanguageFacts,
-  knownLanguageFacts,
   parserNameMap,
 } from './tree-sitter/language-facts';
 import { IFunctionInfo } from './tree-sitter/language-facts/base';
@@ -20,24 +20,19 @@ interface CodeBlock {
   type: string;
 }
 
-export interface ILanguageParserOptions {
-  wasmLoadBaseUrl?: string;
-}
-
+@Injectable({ multiple: true })
 export class LanguageParser {
   private parser: Parser;
 
   private parserLoaded = new Deferred<void>();
 
+  @Autowired(WasmModuleManager)
   private wasmModuleManager: WasmModuleManager;
 
-  private languageFacts = new TreeSitterLanguageFacts(knownLanguageFacts);
+  @Autowired(TreeSitterLanguageFacts)
+  private languageFacts: TreeSitterLanguageFacts;
 
-  private constructor(private language: SupportedTreeSitterLanguages, opts?: ILanguageParserOptions) {
-    this.wasmModuleManager = new WasmModuleManager({
-      baseUrl: opts?.wasmLoadBaseUrl || '',
-    });
-
+  private constructor(private language: SupportedTreeSitterLanguages) {
     this.initializeParser();
   }
 
@@ -191,18 +186,19 @@ export class LanguageParser {
     return null;
   }
   private static pool = new Map<SupportedTreeSitterLanguages, LanguageParser>();
-  static get(language: SupportedTreeSitterLanguages) {
+  static get(injector: Injector, language: SupportedTreeSitterLanguages) {
     if (!LanguageParser.pool.has(language)) {
-      LanguageParser.pool.set(language, new LanguageParser(language));
+      LanguageParser.pool.set(language, injector.get(LanguageParser, [language]));
     }
 
     return LanguageParser.pool.get(language);
   }
-
-  static fromLanguageId(languageId: SupportedLanguages): LanguageParser | undefined {
-    const treeSitterLang = parserNameMap[languageId];
-    if (treeSitterLang) {
-      return LanguageParser.get(treeSitterLang);
-    }
-  }
 }
+
+export const LanguageParserFactory = (injector: Injector) => (language: SupportedLanguages | string) => {
+  const treeSitterLang = parserNameMap[language];
+  if (treeSitterLang) {
+    return LanguageParser.get(injector, treeSitterLang);
+  }
+};
+export type LanguageParserFactory = ReturnType<typeof LanguageParserFactory>;

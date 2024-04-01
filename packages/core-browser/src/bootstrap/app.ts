@@ -122,8 +122,6 @@ export class ClientApp implements IClientApp, IDisposable {
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
 
-    this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime(this);
-
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
       appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
@@ -144,6 +142,12 @@ export class ClientApp implements IClientApp, IDisposable {
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
       layoutViewSize: new LayoutViewSizeConfig(opts.layoutViewSize),
     };
+
+    this.injector.addProviders({ token: IClientApp, useValue: this });
+    this.injector.addProviders({ token: AppConfig, useValue: this.config });
+
+    this.runtime = isDesktop ? this.injector.get(ElectronRendererRuntime) : this.injector.get(BrowserRuntime);
+    this.injector.addProviders({ token: IRendererRuntime, useValue: this.runtime });
 
     if (this.config.devtools) {
       // set a global so the opensumi devtools can identify that
@@ -307,9 +311,6 @@ export class ClientApp implements IClientApp, IDisposable {
    * 给 injector 初始化默认的 Providers
    */
   private initBaseProvider() {
-    this.injector.addProviders({ token: IClientApp, useValue: this });
-    this.injector.addProviders({ token: IRendererRuntime, useValue: this.runtime });
-    this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
 
     this.runtime.registerRuntimeInnerProviders(this.injector);

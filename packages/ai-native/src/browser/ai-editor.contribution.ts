@@ -32,7 +32,7 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { LanguageParser } from './languages/parser';
+import { LanguageParserFactory } from './languages/parser';
 import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -80,6 +80,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(IEventBus)
   protected eventBus: IEventBus;
+
+  @Autowired(LanguageParserFactory)
+  languageParserFactory: LanguageParserFactory;
 
   private latestMiddlewareCollector: IAIMiddleware;
 
@@ -540,7 +543,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerCodeActionProvider(languageId, {
               provideCodeActions: async (model, range, context, token) => {
-                const parser = LanguageParser.fromLanguageId(languageId);
+                const parser = this.languageParserFactory(languageId);
                 if (!parser) {
                   return;
                 }

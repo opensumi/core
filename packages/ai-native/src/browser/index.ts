@@ -23,6 +23,7 @@ import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatService } from './chat/chat.service';
+import { LanguageParserFactory } from './languages/parser';
 import { AIMenuBarContribution } from './layout/menu-bar/menu-bar.contribution';
 import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
 import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
@@ -84,6 +85,10 @@ export class AINativeModule extends BrowserModule {
     {
       token: RenameCandidatesProviderRegistryToken,
       useClass: RenameCandidatesProviderRegistry,
+    },
+    {
+      token: LanguageParserFactory,
+      useFactory: LanguageParserFactory,
     },
   ];
 

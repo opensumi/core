@@ -209,16 +209,6 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
               exclude: (issue) => issue.file.includes('__test__'),
             },
           }),
-        new CopyWebpackPlugin({
-          patterns: [
-            {
-              from: path.join(path.dirname(require.resolve('web-tree-sitter/package.json')), 'tree-sitter.wasm'),
-            },
-            {
-              from: path.join(__dirname, '../../../packages/ai-native/src/common/parsers'),
-            },
-          ],
-        }),
         new NodePolyfillPlugin({
           includeAliases: ['process', 'Buffer'],
         }),
