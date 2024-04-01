@@ -1,7 +1,5 @@
 import React, { useCallback } from 'react';
 
-import { CodeAction } from '@opensumi/ide-monaco';
-
 import { MenuNode } from '../../../menu/next/base';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
@@ -10,6 +8,13 @@ import { EnhancePopover } from '../popover';
 import styles from './index.module.less';
 
 export type InlineChatOperationalRenderType = 'button' | 'dropdown';
+
+export interface AICodeActionItem {
+  title?: string;
+  kind?: string;
+  isPreferred?: boolean;
+  disabled?: string;
+}
 
 export interface AIActionItem {
   /**
@@ -35,7 +40,7 @@ export interface AIActionItem {
    * Only support editor inline chat now
    * @example {}
    */
-  codeAction?: Partial<CodeAction>;
+  codeAction?: AICodeActionItem;
 }
 
 export interface AIActionProps {

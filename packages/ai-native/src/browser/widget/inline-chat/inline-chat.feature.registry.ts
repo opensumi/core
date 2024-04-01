@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Logger } from '@opensumi/ide-core-browser';
-import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { AIActionItem, AICodeActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   CommandRegistry,
   CommandService,
@@ -26,7 +26,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   commandService: CommandService;
 
   private actionsMap: Map<string, AIActionItem> = new Map();
-  private codeActionsMap = new Map<string, Partial<CodeAction>>();
+  private codeActionsMap = new Map<string, Partial<AICodeActionItem>>();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
 
@@ -137,6 +137,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
         isAI: true,
         isPreferred: codeAction.isPreferred ?? true,
         kind: codeAction.kind || 'InlineChat',
+        disabled: codeAction.disabled,
         command: {
           id: InlineChatFeatureRegistry.getCommandId('editor', aiAction.id),
         },
