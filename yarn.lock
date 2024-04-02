@@ -14030,8 +14030,8 @@ __metadata:
   linkType: hard
 
 "mobx-react-lite@npm:^4.0.5":
-  version: 4.0.6
-  resolution: "mobx-react-lite@npm:4.0.6"
+  version: 4.0.7
+  resolution: "mobx-react-lite@npm:4.0.7"
   dependencies:
     use-sync-external-store: ^1.2.0
   peerDependencies:
@@ -14042,7 +14042,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: 95a751b373121d93f2ad7f4adeecfba6679b54e538600fc0bf78a7694f0ae52c6d278c4d18e4294bf060a48c5f7f7439d9d3614f971a6692bd0969d5f9c90ac7
+  checksum: 8f49844d31116dc9b412b763d068f374014d87aee8e0c7aff93c85cd9df05e62027c5097fb7212527cda6f62114e288a048906b1d35e93138ebba43d885c349c
   languageName: node
   linkType: hard
 
