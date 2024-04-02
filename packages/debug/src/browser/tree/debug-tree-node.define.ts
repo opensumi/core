@@ -36,9 +36,10 @@ export class ExpressionTreeService {
     if (!this.session || this.session.terminated) {
       return result;
     }
-    const { variablesReference, startOfVariables, indexedVariables } = parent;
-    if (parent.namedVariables) {
+    const { variablesReference, startOfVariables, indexedVariables, namedVariables } = parent;
+    if (namedVariables) {
       await this.fetch(result, variablesReference, 'named', parent);
+      return result;
     }
     if (indexedVariables) {
       let chunkSize = ExpressionContainer.BASE_CHUNK_SIZE;
@@ -424,7 +425,7 @@ export class DebugVariableContainer extends ExpressionContainer {
         }
       }
     }
-    return String(this.id);
+    return this.variable.type || String(this.id);
   }
 
   get evaluateName(): string {
@@ -462,16 +463,12 @@ export class DebugVariableContainer extends ExpressionContainer {
       return;
     }
     const variablesReference = (parent as DebugScope).variablesReference;
-    try {
-      const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
-      this._value = response.body.value;
-      this._variableType = response.body.type;
-      this.variablesReference = response.body.variablesReference || 0;
-      this.namedVariables = response.body.namedVariables;
-      this.indexedVariables = response.body.indexedVariables;
-    } catch (error) {
-      throw error;
-    }
+    const response = await this.session.sendRequest('setVariable', { variablesReference, name, value });
+    this._value = response.body.value;
+    this._variableType = response.body.type;
+    this.variablesReference = response.body.variablesReference || 0;
+    this.namedVariables = response.body.namedVariables;
+    this.indexedVariables = response.body.indexedVariables;
   }
 
   public getRawScope(): DebugProtocol.Scope | undefined {
@@ -626,36 +623,29 @@ export class DebugConsoleNode extends ExpressionContainer {
   }
 
   private _available: boolean;
-  private _description: string;
+  private _description: string = UNDEFINED_VALUE;
 
   get available() {
     return this._available;
   }
 
   constructor(
-    public readonly session: DebugSession | undefined,
+    public readonly options: ExpressionContainer.Options,
     public readonly expression: string,
     parent: ExpressionContainer | undefined,
   ) {
-    super(
-      {
-        session,
-      },
-      parent,
-      undefined,
-      expression,
-    );
+    super(options, parent, undefined, expression);
   }
 
   get description() {
-    return this._description || UNDEFINED_VALUE;
+    return this._description;
   }
 
   async evaluate(context = 'repl'): Promise<void> {
     const { expression } = this;
     if (this.session) {
       try {
-        if (typeof expression === 'string') {
+        if (typeof expression === 'string' && !!expression) {
           const body = await this.session.evaluate(expression, context);
           if (body) {
             this.name = expression;
@@ -664,6 +654,13 @@ export class DebugConsoleNode extends ExpressionContainer {
             this.namedVariables = body.namedVariables;
             this.indexedVariables = body.indexedVariables;
             this.memoryReference = body.memoryReference;
+            this._available = true;
+          }
+        } else if (this.options.variablesReference) {
+          const body = await this.session.variables(this.options.variablesReference);
+          if (body.variables.length) {
+            this.name = body.variables.map((v) => v.value).join('\n');
+            this._description = '';
             this._available = true;
           }
         }

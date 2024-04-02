@@ -263,6 +263,7 @@ export class DebugConsoleModelService implements IDebugConsoleModelService {
 
     if (this.debugSessionModelMap.has(sessionId) && !force) {
       const model = this.debugSessionModelMap.get(sessionId);
+      model?.debugConsoleSession.addChildSession(session);
       this._activeDebugSessionModel = model;
     } else {
       // 根据是否为多工作区创建不同根节点
@@ -537,7 +538,11 @@ export class DebugConsoleModelService implements IDebugConsoleModelService {
     const parent: DebugConsoleRoot = this.treeModel.root as DebugConsoleRoot;
     const textNode = new AnsiConsoleNode(value, parent, this.linkDetector);
     this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: textNode, id: parent.id });
-    const expressionNode = new DebugConsoleNode(this.manager.currentSession, value, parent as ExpressionContainer);
+    const expressionNode = new DebugConsoleNode(
+      { session: this.manager.currentSession },
+      value,
+      parent as ExpressionContainer,
+    );
     await expressionNode.evaluate();
     this.dispatchWatchEvent(parent, parent.path, { type: WatchEvent.Added, node: expressionNode, id: parent.id });
     this.treeHandle.ensureVisible(expressionNode, 'end', true);

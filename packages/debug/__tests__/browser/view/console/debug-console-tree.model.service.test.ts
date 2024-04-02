@@ -255,7 +255,7 @@ describe('Debug Console Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugConsoleModelService.activeNodeDecoration(node);
     const decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -266,7 +266,7 @@ describe('Debug Console Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugConsoleModelService.activeNodeDecoration(node);
     let decoration = debugConsoleModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -281,7 +281,7 @@ describe('Debug Console Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugConsoleModelService.activeNodeDecoration(node);
     let decoration = debugConsoleModelService.decorations.getDecorations(node);
     debugConsoleModelService.removeNodeDecoration();
@@ -301,7 +301,7 @@ describe('Debug Console Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugConsoleModelService.initDecorations(mockRoot);
     debugConsoleModelService.activeNodeDecoration(node);
     let decoration = debugConsoleModelService.decorations.getDecorations(node);
