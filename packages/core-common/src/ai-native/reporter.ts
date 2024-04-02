@@ -28,6 +28,11 @@ export interface CommonLogInfo {
   model: string;
   copy: boolean;
   insert: boolean;
+
+  /**
+   * 是否是通过 code action 触发的
+   */
+  runByCodeAction?: boolean;
 }
 
 export interface QuestionRT extends Partial<CommonLogInfo> {

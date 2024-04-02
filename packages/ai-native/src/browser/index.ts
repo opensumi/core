@@ -17,11 +17,12 @@ import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
 import { InlineChatFeatureRegistry } from './inline-chat-widget/inline-chat.feature.registry';
 import { AiInlineChatService } from './inline-chat-widget/inline-chat.service';
+import { LanguageParserFactory } from './languages/parser';
 import { MergeConflictContribution } from './merge-conflict';
 import { AiEditorTabService } from './override/ai-editor-tab.service';
 import { AiMarkerService } from './override/ai-marker.service';
 import { AiBrowserCtxMenuService } from './override/ai-menu.service';
-import { AiChatLayoutConfig, AiTopLayoutConfig } from './override/layout/layout-config';
+import { AiChatLayoutConfig } from './override/layout/layout-config';
 import { AiMenuBarContribution } from './override/layout/menu-bar/menu-bar.contribution';
 import defaultTheme from './override/theme/default-theme';
 import lightTheme from './override/theme/light-theme';
@@ -65,6 +66,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IChatAgentViewService,
       useClass: ChatAgentViewService,
+    },
+    {
+      token: LanguageParserFactory,
+      useFactory: LanguageParserFactory,
     },
   ];
 
