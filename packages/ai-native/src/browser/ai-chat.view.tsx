@@ -138,23 +138,23 @@ const InitMsgComponent = () => {
   }, [chatFeatureRegistry.chatWelcomeMessageModel?.sampleQuestions]);
 
   const welcomeMessage = React.useMemo(() => {
+    const defaultWelcomeMessage = (
+      <>
+        <div className={styles.chat_container_des}>
+          <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
+          嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
+        </div>
+        <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题</div>
+      </>
+    );
+
     if (!chatFeatureRegistry.chatWelcomeMessageModel) {
-      return '';
+      return defaultWelcomeMessage;
     }
 
     const { content } = chatFeatureRegistry.chatWelcomeMessageModel;
 
-    return (
-      content ?? (
-        <>
-          <div className={styles.chat_container_des}>
-            <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
-            嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
-          </div>
-          <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题</div>
-        </>
-      )
-    );
+    return content ?? defaultWelcomeMessage;
   }, [chatFeatureRegistry.chatWelcomeMessageModel?.content]);
 
   React.useEffect(() => {
