@@ -20,9 +20,9 @@ import {
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/src/browser/workbench-editor.service';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { monaco as monacoAPI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -173,7 +173,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     monacoEditor['_onMouseDown'].fire({
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS,
         element: $div,
         position: {
           lineNumber: 10,
@@ -190,7 +190,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     monacoEditor['_onMouseDown'].fire({
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS,
         element: $div,
         position: {
           lineNumber: 10,
@@ -213,7 +213,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
 
     monacoEditor['_onMouseDown'].fire({
       target: {
-        type: monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS,
+        type: monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS,
         element: $div,
         position: {
           lineNumber: 10,

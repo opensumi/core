@@ -4,8 +4,8 @@ import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/conta
 import { Disposable, uuid, URI, localize, Deferred, IEventBus, strings, Schemes } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '../common';
 

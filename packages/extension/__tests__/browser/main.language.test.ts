@@ -3,7 +3,7 @@ import type vscode from 'vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { URI, Uri, Position } from '@opensumi/ide-core-common';
+import { URI, Uri } from '@opensumi/ide-core-common';
 import {
   EvaluatableExpressionServiceImpl,
   IEvaluatableExpressionService,
@@ -20,10 +20,11 @@ import {
   IEditorDocumentModelContentRegistry,
   EmptyDocCacheImpl,
 } from '@opensumi/ide-editor/src/browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { ICallHierarchyService, ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -134,7 +135,7 @@ describe('ExtHostLanguageFeatures', () => {
       injector.get(MainThreadLanguages, [rpcProtocolMain]),
     );
 
-    monaco.languages.register({
+    monacoApi.languages.register({
       id: 'a',
       extensions: ['.a'],
     });
@@ -906,7 +907,7 @@ An error case:
 
   it('registerDocumentSemanticTokensProvider should be work', (done) => {
     const semanticLegend = new types.SemanticTokensLegend(tokenTypesLegend, tokenModifiersLegend);
-    monaco.languages.register({
+    monacoApi.languages.register({
       id: 'semanticLanguage',
       aliases: ['Semantic Language'],
       extensions: ['.semanticLanguage'],
@@ -1174,7 +1175,7 @@ An error case:
 
   // #region EvaluatableExpressionProvider
   it('registerEvaluatableExpressionProvider should be work', (done) => {
-    monaco.languages.register({
+    monacoApi.languages.register({
       id: 'test',
       extensions: ['.test'],
     });

@@ -10,8 +10,8 @@ import {
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
 } from '@opensumi/ide-core-browser';
-import { EndOfLineSequence, EOL, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
+import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 
@@ -83,7 +83,7 @@ export interface IEditorDocumentModel extends IDisposable {
   /**
    * 获得monaco的TextModel
    */
-  getMonacoModel(): ITextModel;
+  getMonacoModel(): monaco.ITextModel;
 
   /**
    *  保存文档, 如果文档不可保存，则不会有任何反应

@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { URI, ILogger, revive } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { IDisposable, ILogger, URI, revive } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 import {
   ResourceEdit,
@@ -13,9 +13,8 @@ import type {
   IBulkEditOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, IResourceFileEdit } from '../common';
+import { IResourceFileEdit, IResourceTextEdit, IWorkspaceEdit, IWorkspaceEditService } from '../common';
 
 import { isResourceFileEdit, isResourceTextEdit } from './utils';
 
@@ -93,7 +92,7 @@ export class MonacoBulkEditService implements IBulkEditService {
     return Boolean(this._previewHandler);
   }
 
-  setPreviewHandler(handler: IBulkEditPreviewHandler): monaco.IDisposable {
+  setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable {
     this._previewHandler = handler;
 
     const disposePreviewHandler = () => {

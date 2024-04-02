@@ -13,16 +13,15 @@ import {
   IMarkdownString,
 } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
+import type { editor, languages } from '@opensumi/ide-monaco';
 // eslint-disable-next-line import/no-restricted-paths
 import type { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 // eslint-disable-next-line import/no-restricted-paths
 import type { TypeHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languageFeatureRegistry';
 import type { CompletionItemLabel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 // 内置的api类型声明
-
 import { IndentAction, SymbolKind } from './ext-types';
 export { IMarkdownString, SymbolTag, CallHierarchyItem, TypeHierarchyItem };
 
@@ -369,6 +368,7 @@ export class IdObject {
 }
 
 export enum CompletionItemInsertTextRule {
+  None = 0,
   /**
    * Adjust whitespace/indentation of multiline insert texts to
    * match the current line indentation.

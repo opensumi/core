@@ -1,8 +1,8 @@
 import orderBy from 'lodash/orderBy';
 
 import { Disposable } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IFoldedCodeWidgetContentProvider } from '../common';
 

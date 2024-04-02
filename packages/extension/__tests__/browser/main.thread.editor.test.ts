@@ -62,12 +62,12 @@ import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/ho
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { MonacoService } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import MonacoServiceImpl from '@opensumi/ide-monaco/lib/browser/monaco.service';
 import { MonacoOverrideServiceRegistryImpl } from '@opensumi/ide-monaco/lib/browser/override.service.registry';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import {
   IConfigurationService,
   IConfigurationChangeEvent,
@@ -110,7 +110,6 @@ const mockConfigurationService: any = {
         overrides: [],
       },
       affectsConfiguration: (() => {}) as any,
-      sourceConfig: {},
     });
     preferences.set(k, v);
   },

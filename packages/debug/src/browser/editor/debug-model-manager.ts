@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable, URI, Emitter, Event, DisposableCollection } from '@opensumi/ide-core-common';
 import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@opensumi/ide-editor';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import {
   DebugModelFactory,
@@ -183,7 +182,7 @@ export class DebugModelManager extends Disposable implements IDebugModelManager 
     uri: URI,
     type: DebugModelSupportedEventType,
     event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent,
-    monacoEditor: IMonacoCodeEditor,
+    monacoEditor: monaco.ICodeEditor,
   ) {
     const debugModel = this.models.get(uri.toString());
     if (!debugModel) {

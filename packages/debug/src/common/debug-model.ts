@@ -14,9 +14,8 @@ import {
   Event,
 } from '@opensumi/ide-core-common';
 // eslint-disable-next-line import/no-restricted-paths
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/ide-monaco';
 import type { editor } from '@opensumi/monaco-editor-core';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   IRuntimeBreakpoint,
@@ -266,7 +265,7 @@ export interface IDebugModelManager {
     uri: URI,
     type: DebugModelSupportedEventType,
     event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent,
-    monacoEditor: IMonacoCodeEditor,
+    monacoEditor: monaco.editor.ICodeEditor,
   ): void;
   onModelChanged: Event<monaco.editor.IModelChangedEvent>;
 }

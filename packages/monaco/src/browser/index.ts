@@ -22,6 +22,8 @@ import { SchemaStore, SchemaRegistry } from './schema-registry';
 
 import './contrib/merge-editor/view/merge-editor.module.less';
 
+export * as monacoBrowser from './monaco-exports';
+
 @Injectable()
 export class MonacoModule extends BrowserModule {
   contributionProvider = [MonacoContribution, JsonSchemaContribution];

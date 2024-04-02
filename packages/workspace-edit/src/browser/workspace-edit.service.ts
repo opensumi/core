@@ -6,9 +6,9 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IResource, isDiffResource } from '@opensumi/ide-editor/lib/browser';
 import { EditorGroup } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { FileSystemError } from '@opensumi/ide-file-service/lib/common';
-import { EndOfLineSequence, EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IIdentifiedSingleEditOperation } from '@opensumi/ide-monaco/lib/common';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   IResourceTextEdit,
@@ -133,7 +133,7 @@ export class ResourceTextEditTask {
         throw new Error('Unable to perform changes due to inconsistent document versions');
       }
     }
-    const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    const edits: IIdentifiedSingleEditOperation[] = [];
     let newEOL: EndOfLineSequence | undefined;
     for (const edit of this.edits) {
       if (edit.textEdit.eol && !isUndefined(edit.textEdit.eol)) {

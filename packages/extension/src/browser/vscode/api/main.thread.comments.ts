@@ -17,12 +17,12 @@ import {
   URI,
   CancellationToken,
   IDisposable,
-  positionToRange,
   isUndefined,
   Disposable,
-  WithEventBus,
   OnEvent,
+  WithEventBus,
 } from '@opensumi/ide-core-common';
+import { positionToRange } from '@opensumi/ide-monaco';
 import {
   CommentThread,
   CommentInput,

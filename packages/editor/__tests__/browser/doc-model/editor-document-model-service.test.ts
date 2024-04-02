@@ -1,5 +1,7 @@
 import { IEventBus, URI } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import {
   EditorDocumentModelCreationEvent,
@@ -13,10 +15,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { TestEditorDocumentProvider } from '../test-providers';
 
 describe('EditorDocumentModelService', () => {

@@ -18,11 +18,11 @@ import {
   IEditorDocumentModelRef,
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import * as monaco from '@opensumi/ide-monaco';
 import type { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IContentSearchClientService, ISearchTreeService } from '../../common/content-search';
 import { replace } from '../replace';

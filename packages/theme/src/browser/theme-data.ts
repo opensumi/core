@@ -13,7 +13,6 @@ import {
   isBoolean,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { Color } from '../common/color';
 import { editorBackground, editorForeground } from '../common/color-tokens/editor';
@@ -383,7 +382,7 @@ export class ThemeData implements IThemeData {
   }
 
   // 将 ITokenColorizationRule 转化为 ITokenThemeRule
-  protected transform(tokenColor: ITokenColorizationRule, acceptor: (rule: monaco.editor.ITokenThemeRule) => void) {
+  protected transform(tokenColor: ITokenColorizationRule, acceptor: (rule: ITokenThemeRule) => void) {
     if (tokenColor.scope && tokenColor.settings && tokenColor.scope === 'token.info-token') {
       this.hasDefaultTokens = true;
     }

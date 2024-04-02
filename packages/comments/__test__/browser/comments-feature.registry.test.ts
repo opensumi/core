@@ -1,13 +1,14 @@
 import { Injector } from '@opensumi/di';
 import { CommentContentNode, CommentRoot } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
-import { IContextKeyService, positionToRange, URI } from '@opensumi/ide-core-browser';
+import { IContextKeyService, URI } from '@opensumi/ide-core-browser';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { positionToRange } from '@opensumi/ide-monaco';
+import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
 import { ICommentsService, ICommentsFeatureRegistry, CommentMode } from '../../src/common';
 

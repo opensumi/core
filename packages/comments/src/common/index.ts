@@ -8,7 +8,6 @@ import {
   MaybePromise,
   Event,
   BasicEvent,
-  positionToRange,
   IContextKeyService,
   IMarkdownString,
 } from '@opensumi/ide-core-browser';
@@ -17,11 +16,6 @@ import { IEditor } from '@opensumi/ide-editor';
 import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 
 export type Writable<T> = { -readonly [P in keyof T]: T[P] };
-
-/**
- * @deprecated please use `positionToRange` from '@opensumi/ide-core-common`
- */
-export const toRange = positionToRange;
 
 /**
  * 点击评论菜单贡献点默认加入当前 menuId 作为标识

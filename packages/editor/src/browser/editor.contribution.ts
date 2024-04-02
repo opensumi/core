@@ -47,8 +47,8 @@ import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/mer
 import { IMergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/ide-monaco/lib/common/common';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
