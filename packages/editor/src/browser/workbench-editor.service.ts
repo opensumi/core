@@ -51,8 +51,8 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   WorkbenchEditorService,

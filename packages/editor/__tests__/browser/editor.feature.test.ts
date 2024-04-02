@@ -22,7 +22,7 @@ import { EditorContextMenuController } from '@opensumi/ide-editor/lib/browser/me
 import { TabTitleMenuService } from '@opensumi/ide-editor/lib/browser/menu/title-context.menu';
 import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
 import { EditorExtensionsRegistry } from '@opensumi/ide-monaco/lib/browser/contrib/command';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -113,7 +113,7 @@ describe('editor status bar item test', () => {
       [
         {
           displayName: 'Test Formatter',
-          extensionId: 'testFormatter',
+          extensionId: 'testFormatter' as any,
           provideDocumentFormattingEdits: jest.fn(),
         },
         {
@@ -141,7 +141,7 @@ describe('editor status bar item test', () => {
       [
         {
           displayName: 'Test Single Formatter',
-          extensionId: 'testSingleFormatter',
+          extensionId: 'testSingleFormatter' as any,
           provideDocumentFormattingEdits: jest.fn(),
         },
       ],
@@ -487,8 +487,8 @@ describe('editor menu test', () => {
       injector.get(ICtxMenuRenderer),
     ]);
 
-    const monacoEditor = monaco.editor.create(document.createElement('div'));
-    const model = monaco.editor.createModel('test');
+    const monacoEditor = monacoApi.editor.create(document.createElement('div'));
+    const model = monacoApi.editor.createModel('test');
     monacoEditor.setModel(model);
 
     const editor = {

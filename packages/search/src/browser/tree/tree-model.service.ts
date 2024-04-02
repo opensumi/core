@@ -13,7 +13,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next/index';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IContentSearchClientService, ISearchTreeService } from '../../common/content-search';
 import { SearchPreferences } from '../search-preferences';

@@ -9,7 +9,7 @@ import {
   ICodeEditor,
   getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { OutputChannel } from './output.channel';
 

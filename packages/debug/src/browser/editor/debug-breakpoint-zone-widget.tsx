@@ -6,10 +6,10 @@ import { Select, Option } from '@opensumi/ide-components';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-editor';
+import * as monaco from '@opensumi/ide-monaco';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   BreakpointChangeData,

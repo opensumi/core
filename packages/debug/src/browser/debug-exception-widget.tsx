@@ -5,9 +5,9 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider, useInjectable } from '@opensumi/ide-core-browser';
 import { formatLocalize, localize } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IDebugExceptionInfo } from '../common';
 

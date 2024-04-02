@@ -3,9 +3,9 @@ import uniqueId from 'lodash/uniqueId';
 import { URI, IEventBus } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -80,7 +80,7 @@ describe('EditorDocumentModel', () => {
     it('create EditorDocumentModel with Options', () => {
       const languageId = uniqueId('languageId');
       // Monaco 20 开始，不能创建没有注册过语言的 textModel
-      monaco.languages.register({
+      monacoApi.languages.register({
         id: languageId,
         aliases: ['Test languageId'],
         extensions: ['.test'],

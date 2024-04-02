@@ -1,8 +1,9 @@
 import { Disposable, Event } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { MockedStandaloneCodeEditor } from './code-editor';
+import { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/legacyLinesDiffComputer';
 
 export class MockedDiffEditor extends Disposable implements monaco.editor.IStandaloneDiffEditor {
   private originalEditor: MockedStandaloneCodeEditor;
@@ -16,6 +17,9 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     this.originalEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.modifiedEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.onDidDispose = this.onDispose;
+  }
+  getDiffComputationResult(): IDiffComputationResult | null {
+    throw new Error('Method not implemented.');
   }
   onDidChangeModel: monaco.IEvent<void>;
   createViewModel(model: monaco.editor.IDiffEditorModel): monaco.editor.IDiffEditorViewModel {
@@ -63,9 +67,6 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   renderSideBySide: boolean;
   renderIndicators: boolean;
   maxComputationTime: number;
-  getDiffComputationResult() {
-    throw new Error('Method not implemented.');
-  }
   onVisible(): void {
     throw new Error('Method not implemented.');
   }

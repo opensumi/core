@@ -6,13 +6,13 @@ import {
   DisposableCollection,
   KeybindingRegistry,
 } from '@opensumi/ide-core-browser';
-import { IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
+import { CommandService, IEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupChangeEvent, EditorOpenType, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
-import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 
 import { CLOSE_DIRTY_DIFF_WIDGET, IDirtyDiffWorkbenchController } from '../../common';
 import { SCMPreferences } from '../scm-preference';
@@ -195,14 +195,14 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     delete this.items[editorModel.id];
   }
 
-  public closeDirtyDiffWidget(codeEditor: IMonacoCodeEditor) {
+  public closeDirtyDiffWidget(codeEditor: monaco.ICodeEditor) {
     const widget = this.widgets.get(codeEditor.getId());
     if (widget) {
       widget.dispose();
     }
   }
 
-  public toggleDirtyDiffWidget(codeEditor: IMonacoCodeEditor, position: monaco.IPosition) {
+  public toggleDirtyDiffWidget(codeEditor: monaco.ICodeEditor, position: monaco.IPosition) {
     const model = codeEditor.getModel();
     if (model && position) {
       let widget = this.widgets.get(codeEditor.getId());
@@ -210,7 +210,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       if (dirtyModel) {
         if (widget) {
           const { currentIndex } = widget;
-          const { count: targetIndex } = dirtyModel.getChangeFromRange(positionToRange(position));
+          const { count: targetIndex } = dirtyModel.getChangeFromRange(monaco.positionToRange(position));
 
           widget.dispose();
           if (currentIndex === targetIndex) {
@@ -223,20 +223,20 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
         widget.onDispose(() => {
           this.widgets.delete(codeEditor.getId());
         });
-        dirtyModel.onClickDecoration(widget, positionToRange(position));
+        dirtyModel.onClickDecoration(widget, monaco.positionToRange(position));
         this.widgets.set(codeEditor.getId(), widget);
       }
     }
   }
 
-  private _doMouseDown(codeEditor: IMonacoCodeEditor, { target }: monaco.editor.IEditorMouseEvent) {
+  private _doMouseDown(codeEditor: monaco.ICodeEditor, { target }: monaco.editor.IEditorMouseEvent) {
     if (!target) {
       return;
     }
 
     const { position, type, element } = target;
     if (
-      type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
+      type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
       element &&
       element.className.indexOf('dirty-diff-glyph') > -1 &&
       position
@@ -261,7 +261,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
   }
 
-  private attachEvents(codeEditor: IMonacoCodeEditor) {
+  private attachEvents(codeEditor: monaco.ICodeEditor) {
     const disposeCollection = new DisposableCollection();
 
     disposeCollection.push(
@@ -291,7 +291,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     return disposeCollection;
   }
 
-  private getModel(editorModel: ITextModel): DirtyDiffModel | null {
+  private getModel(editorModel: monaco.ITextModel): DirtyDiffModel | null {
     const item = this.items[editorModel.id];
 
     if (!item) {

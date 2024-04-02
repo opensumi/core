@@ -13,10 +13,10 @@ import {
 import { CommandRegistry, Disposable, IDisposable, localize, PreferenceScope, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorDocumentModelService, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+import * as monaco from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { SettingJSONGlyphMarginEdit } from '../common/commands';
 

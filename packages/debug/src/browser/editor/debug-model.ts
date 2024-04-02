@@ -9,9 +9,10 @@ import {
   MenuId,
   AbstractMenuService,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, URI, isOSX, memoize, uuid } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
+import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import { IThemeService, debugIconBreakpointForeground } from '@opensumi/ide-theme';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   IDebugModel,
@@ -603,13 +604,13 @@ export class DebugModel implements IDebugModel {
     }
 
     if (
-      targetType === monaco.editor.MouseTargetType.CONTENT_WIDGET &&
+      targetType === monacoBrowser.editor.MouseTargetType.CONTENT_WIDGET &&
       mouseEvent.target.detail === this.debugHoverWidget.getId() &&
       !(mouseEvent.event as any)[stopKey]
     ) {
       return;
     }
-    if (targetType === monaco.editor.MouseTargetType.CONTENT_TEXT) {
+    if (targetType === monacoBrowser.editor.MouseTargetType.CONTENT_TEXT) {
       this.debugHoverWidget.show({
         selection: mouseEvent.target.range,
         immediate: false,
@@ -699,7 +700,7 @@ export class DebugModel implements IDebugModel {
       return;
     }
 
-    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+    if (event.target && event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       // 设置当前右键选中的断点
       const breakpoint = this.breakpointManager.getBreakpoint(this._uri, event.target.position!.lineNumber);
       this.breakpointManager.selectedBreakpoint = {
@@ -737,7 +738,7 @@ export class DebugModel implements IDebugModel {
       return;
     }
 
-    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+    if (event.target && event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (!event.event.rightButton) {
         // 保证在DebugModelManager中准确获取当前焦点的编辑器
         this.editor.focus();
@@ -773,8 +774,8 @@ export class DebugModel implements IDebugModel {
 
   protected createHintDecorations(event: monaco.editor.IEditorMouseEvent): monaco.editor.IModelDeltaDecoration[] {
     if (
-      (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) ||
-      event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS
+      (event.target && event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) ||
+      event.target.type === monacoBrowser.editor.MouseTargetType.GUTTER_LINE_NUMBERS
     ) {
       const lineNumber = event.target.position!.lineNumber;
       if (this.breakpointManager.getBreakpoint(this._uri, lineNumber)) {
@@ -903,7 +904,7 @@ class InlineBreakpointWidget extends Disposable implements monaco.editor.IConten
 
     return {
       position: { lineNumber: this.range.startLineNumber, column: this.range.startColumn - 1 },
-      preference: [monaco.editor.ContentWidgetPositionPreference.EXACT],
+      preference: [monacoBrowser.editor.ContentWidgetPositionPreference.EXACT],
     };
   }
 }

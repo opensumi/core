@@ -161,6 +161,7 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    'import/no-relative-packages': 'warn',
     'import/no-restricted-paths': [
       'error',
       {
@@ -168,22 +169,33 @@ module.exports = {
           {
             target: './packages/**/*/!(__tests__)/browser/**/*',
             from: './packages/**/*/node/**/*',
-            message: 'browser 不应该引用 node 下模块',
+            message: '`browser` should not import the `node` modules',
           },
           {
             target: './packages/**/*/!(__tests__)/node/**/*',
             from: './packages/**/*/browser/**/*',
-            message: 'node 不应该引用 browser 下模块',
+            message: '`node` should not import the `browser` modules',
           },
           {
             target: './packages/**/*/!(__tests__)/common/**/*',
             from: './packages/**/*/node/**/*',
-            message: 'common 不应该引用 node 下模块',
+            message: '`common` should not import the `node` modules',
           },
           {
             target: './packages/**/*/!(__tests__)/common/**/*',
             from: './packages/**/*/browser/**/*',
-            message: 'common 不应该引用 browser 下模块',
+            message: '`common` should not import the `browser` modules',
+          },
+        ],
+      },
+    ],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: '@opensumi/monaco-editor-core/esm/vs/editor/editor.api',
+            message: 'please re-export the reference you want from `monaco-editor` in the `ide-monaco` package.',
           },
         ],
       },

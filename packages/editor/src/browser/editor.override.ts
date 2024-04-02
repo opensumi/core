@@ -1,11 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IRange, URI } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { isEqual } from '@opensumi/monaco-editor-core/esm/vs/base/common/resources';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { EditorScopedLayoutService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLayoutService';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';

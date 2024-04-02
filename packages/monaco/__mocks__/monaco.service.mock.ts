@@ -1,6 +1,5 @@
 import { Injectable } from '@opensumi/di';
 import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { Deferred, Emitter } from '@opensumi/ide-core-common';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 
 import { MonacoService, ServiceNames } from '../src/common';

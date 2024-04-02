@@ -38,7 +38,6 @@ import {
   parseClassifierString,
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
-import * as monaco from '@opensumi/monaco-editor-core';
 import {
   EditorContributionInstantiation,
   registerEditorContribution,
@@ -66,6 +65,7 @@ import {
 import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
+import { editor } from '../common';
 import { DELEGATE_COMMANDS } from '../common/command';
 
 import {
@@ -325,23 +325,23 @@ export class MonacoClientContribution
     }
     const encodedFirstPart = this.toSingleMonacoKeybindingNumber(firstPart);
     const encodedSecondPart = secondPart ? this.toSingleMonacoKeybindingNumber(secondPart) << 16 : 0;
-    return monaco.KeyMod.chord(encodedFirstPart, encodedSecondPart);
+    return editor.KeyMod.chord(encodedFirstPart, encodedSecondPart);
   }
 
   protected toSingleMonacoKeybindingNumber(code: KeyCode): number {
     const keyCode = code.key?.keyCode !== undefined ? KEY_CODE_MAP[code.key.keyCode] : 0;
     let encoded = (keyCode >>> 0) & 0x000000ff;
     if (code.alt) {
-      encoded |= monaco.KeyMod.Alt;
+      encoded |= editor.KeyMod.Alt;
     }
     if (code.shift) {
-      encoded |= monaco.KeyMod.Shift;
+      encoded |= editor.KeyMod.Shift;
     }
     if (code.ctrl) {
-      encoded |= monaco.KeyMod.WinCtrl;
+      encoded |= editor.KeyMod.WinCtrl;
     }
     if (code.meta && isOSX) {
-      encoded |= monaco.KeyMod.CtrlCmd;
+      encoded |= editor.KeyMod.CtrlCmd;
     }
     return encoded;
   }
