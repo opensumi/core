@@ -147,7 +147,7 @@ describe('Debug Variables Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugVariablesModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugVariablesModelService.activeNodeDecoration(node);
     const decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -159,7 +159,7 @@ describe('Debug Variables Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugVariablesModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugVariablesModelService.activeNodeDecoration(node);
     let decoration = debugVariablesModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -175,7 +175,7 @@ describe('Debug Variables Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugVariablesModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugVariablesModelService.activeNodeDecoration(node);
     let decoration = debugVariablesModelService.decorations.getDecorations(node);
     debugVariablesModelService.removeNodeDecoration();
@@ -195,7 +195,7 @@ describe('Debug Variables Tree Model', () => {
       on: jest.fn(),
     } as any;
     debugVariablesModelService.initDecorations(mockRoot);
-    const node = new DebugConsoleNode(mockSession, 'test', mockRoot);
+    const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
     debugVariablesModelService.initDecorations(mockRoot);
     debugVariablesModelService.activeNodeDecoration(node);
     let decoration = debugVariablesModelService.decorations.getDecorations(node);
