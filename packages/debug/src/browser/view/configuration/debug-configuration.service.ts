@@ -180,6 +180,8 @@ export class DebugConfigurationService {
     }
   };
 
+  getDynamicSupportTypes = async () => await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+
   updateConfiguration = (name: string, workspaceFolderUri: string, index: number) => {
     this.debugConfigurationManager.current = this.debugConfigurationManager.find(name, workspaceFolderUri, index);
   };
