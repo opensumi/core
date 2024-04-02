@@ -27,6 +27,7 @@ import { AiBackSerivcePath, IAiBackService, IAiBackServiceResponse } from '@open
 import { MergeConflictRT } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ITextModel } from '@opensumi/ide-monaco';
+import * as monaco from '@opensumi/ide-monaco';
 import { BaseInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/content-widget';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
@@ -38,11 +39,11 @@ import {
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
 import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { CacheConflict, DocumentMergeConflict } from './cache-conflicts';
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
@@ -852,7 +853,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }
 
   private registerCodeLensProvider() {
-    return monaco.languages.registerCodeLensProvider([{ scheme: 'file' }], {
+    return monacoApi.languages.registerCodeLensProvider([{ scheme: 'file' }], {
       provideCodeLenses: async (model, token) => {
         let lens = await this.provideCodeLens(model, token);
         return {

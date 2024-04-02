@@ -1,6 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { Disposable, IRange, uuid } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { Disposable, uuid } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { ICacheDocumentMergeConflict, IDocumentMergeConflictDescriptor, IMergeRegion } from './types';
 

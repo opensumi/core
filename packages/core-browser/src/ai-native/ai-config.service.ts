@@ -16,6 +16,7 @@ export class AiNativeConfigService {
     supportsInlineCompletion: false,
     supportsConflictResolve: false,
     supportsDebugConsoleExplain: false,
+    supportsRenameSuggestions: false,
   };
 
   private setDefaultCapabilities(value: boolean): void {

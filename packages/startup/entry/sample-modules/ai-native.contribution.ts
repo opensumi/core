@@ -1,6 +1,7 @@
 import { Autowired } from '@opensumi/di';
 import { InstructionEnum } from '@opensumi/ide-ai-native';
 import { AiChatService } from '@opensumi/ide-ai-native/lib/browser/ai-chat.service';
+import { renamePromptManager } from '@opensumi/ide-ai-native/lib/browser/prompts/rename-prompt';
 import {
   AiNativeCoreContribution,
   CancelResponse,
@@ -8,13 +9,22 @@ import {
   IAiMiddleware,
   IAiRunFeatureRegistry,
   IInlineChatFeatureRegistry,
+  IRenameCandidatesProviderRegistry,
   ReplyResponse,
 } from '@opensumi/ide-ai-native/lib/browser/types';
-import { ClientAppContribution, Domain, IClientApp, MaybePromise, ProgressLocation } from '@opensumi/ide-core-browser';
+import {
+  ClientAppContribution,
+  Domain,
+  IClientApp,
+  MaybePromise,
+  ProgressLocation,
+  getDebugLogger,
+} from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { AiBackSerivcePath, IAiBackService } from '@opensumi/ide-core-common/lib/ai-native';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { IEditor } from '@opensumi/ide-editor';
+import { NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 
 enum EInlineOperation {
   Explain = 'Explain',
@@ -36,6 +46,8 @@ export class AiNativeContribution implements AiNativeCoreContribution, ClientApp
 
   @Autowired(IProgressService)
   private readonly progressService: IProgressService;
+
+  logger = getDebugLogger();
 
   registerRunFeature(registry: IAiRunFeatureRegistry) {
     // Not implements
@@ -165,6 +177,33 @@ export class AiNativeContribution implements AiNativeCoreContribution, ClientApp
         },
       },
     );
+  }
+
+  registerRenameProvider(registry: IRenameCandidatesProviderRegistry): void {
+    registry.registerRenameSuggestionsProvider(async (model, range, token): Promise<NewSymbolName[] | undefined> => {
+      const prompt = renamePromptManager.requestPrompt(model.getValueInRange(range));
+
+      this.logger.info('rename prompt', prompt);
+
+      const result = await this.aiBackService.request(
+        prompt,
+        {
+          type: 'rename',
+        },
+        token,
+      );
+
+      this.logger.info('rename result', result);
+
+      if (result.data) {
+        const names = renamePromptManager.extractResponse(result.data);
+
+        return names.map((name) => ({
+          newSymbolName: name,
+          tags: [NewSymbolNameTag.AIGenerated],
+        }));
+      }
+    });
   }
 
   onDidStart(app: IClientApp): MaybePromise<void> {

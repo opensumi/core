@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandRegistry, Disposable, Emitter, IRange, getDebugLogger } from '@opensumi/ide-core-common';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import * as monaco from '@opensumi/ide-monaco';
 
 import { IInlineChatFeatureRegistry, InlineChatHandler } from '../types';
 
