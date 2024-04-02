@@ -6,6 +6,7 @@ import type {
   IChatMessage,
   IChatProgress,
   IChatAgentResult,
+  IChatAgentWelcomeMessage,
   IChatAgentCommand,
   IChatAsyncContent,
   IChatFollowup,
@@ -18,6 +19,8 @@ export interface IExtensionChatAgentMetadata extends IChatAgentMetadata {
   hasSlashCommands?: boolean;
   hasFollowups?: boolean;
   hasSampleQuestions?: boolean;
+  hasChatWelcomMessage?: boolean;
+  isDefault?: boolean;
 }
 
 export type IChatProgressChunk = Exclude<IChatProgress, IChatAsyncContent> | Omit<IChatAsyncContent, 'resolvedContent'>;
@@ -50,4 +53,5 @@ export interface IExtHostChatAgents {
   $provideSlashCommands(handle: number, token: CancellationToken): Promise<IChatAgentCommand[]>;
   $provideFollowups(handle: number, sessionId: string, token: CancellationToken): Promise<IChatFollowup[]>;
   $provideSampleQuestions(handle: number, token: CancellationToken): Promise<IChatReplyFollowup[]>;
+  $provideChatWelcomeMessage(handle: number, token: CancellationToken): Promise<undefined | IChatAgentWelcomeMessage>;
 }
