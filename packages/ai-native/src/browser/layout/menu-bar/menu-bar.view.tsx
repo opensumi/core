@@ -1,9 +1,10 @@
 import cls from 'classnames';
 import * as React from 'react';
 
+import { AI_CHAT_VIEW_ID } from '@opensumi/ide-ai-native/lib/common';
 import { AINativeConfigService, SlotLocation, SlotRenderer, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
-import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { AILogoAvatar, EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
@@ -56,7 +57,10 @@ const AIMenuBarRender = () => {
     });
   }, [anchor, extraTopMenus]);
 
-  const logo = React.useMemo(() => aiNativeConfigService.layout.menubarLogo || opensumiLogo, [aiNativeConfigService.layout.menubarLogo]);
+  const logo = React.useMemo(
+    () => aiNativeConfigService.layout.menubarLogo || opensumiLogo,
+    [aiNativeConfigService.layout.menubarLogo],
+  );
 
   return (
     <>
@@ -74,6 +78,7 @@ export const AIMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
 
   React.useEffect(() => {
@@ -93,6 +98,10 @@ export const AIMenuBarView = () => {
     const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
     return !!tabbarService.currentContainerId;
   }, [mainLayoutService]);
+
+  const handleChatVisible = React.useCallback(() => {
+    layoutService.toggleSlot(AI_CHAT_VIEW_ID);
+  }, [layoutService]);
 
   return (
     <div
@@ -115,6 +124,9 @@ export const AIMenuBarView = () => {
         </div>
         <div className={styles.right}>
           <SlotRenderer slot={AI_MENU_BAR_RIGHT} flex={1} overflow={'initial'} />
+          <div className={styles.ai_switch} onClick={handleChatVisible}>
+            <AILogoAvatar iconClassName={styles.avatar_icon_large} />
+          </div>
         </div>
       </div>
     </div>
