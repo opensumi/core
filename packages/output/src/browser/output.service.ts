@@ -127,6 +127,7 @@ export class OutputService extends WithEventBus {
       lineDecorationsWidth: 20,
       automaticLayout: true,
       readOnly: true,
+      domReadOnly: true,
       extraEditorClassName: 'kt-output-monaco',
       scrollbar: {
         useShadows: false,
