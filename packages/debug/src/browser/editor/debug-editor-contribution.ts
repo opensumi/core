@@ -14,11 +14,8 @@ import {
   onUnexpectedExternalError,
   createMemoizer,
   Event,
-  arrays,
   Constants,
   arrays,
-  createMemoizer,
-  onUnexpectedExternalError,
   strings,
 } from '@opensumi/ide-core-browser';
 import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';

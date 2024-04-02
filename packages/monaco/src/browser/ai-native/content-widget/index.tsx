@@ -5,9 +5,9 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
 
-import * as monaco from '../../common';
+import * as monaco from '../../../common';
 import type { ICodeEditor as IMonacoCodeEditor } from '../../monaco-api/types';
-import { editor } from '../monaco-exports';
+import { editor } from '../../monaco-exports';
 
 export interface IInlineContentWidget extends monaco.editor.IContentWidget {
   show: (options?: ShowAiContentOptions | undefined) => void;

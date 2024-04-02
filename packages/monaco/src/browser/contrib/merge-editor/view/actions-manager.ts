@@ -1,4 +1,7 @@
+import debounce from 'lodash/debounce';
+
 import { Injectable } from '@opensumi/di';
+import { message } from '@opensumi/ide-components';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
