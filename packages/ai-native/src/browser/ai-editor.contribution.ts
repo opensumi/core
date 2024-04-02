@@ -582,7 +582,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         const languageId = model.getLanguageId();
-        dispose = monaco.languages.registerCodeActionProvider(languageId, {
+        dispose = monacoApi.languages.registerCodeActionProvider(languageId, {
           provideCodeActions: async (model, position, context, token) => {
             const parser = this.languageParserFactory(languageId);
             if (!parser) {
