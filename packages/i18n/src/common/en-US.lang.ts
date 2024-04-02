@@ -1410,6 +1410,8 @@ export const localizationBundle = {
     'mergeEditor.conflict.resolve.all.stop': 'Stop All',
     'mergeEditor.open.tradition': 'Tradition editor',
 
+    'aiNative.chat.welcome.loading.text': 'Initializing...',
+
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',

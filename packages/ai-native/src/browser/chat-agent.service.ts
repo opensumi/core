@@ -18,16 +18,23 @@ import {
 } from '../common';
 
 import { AiChatService } from './ai-chat.service';
+import { IChatFeatureRegistry } from './chat/chat.feature.registry';
+import { ChatFeatureRegistryToken } from './types';
 
 @Injectable()
 export class ChatAgentService extends Disposable implements IChatAgentService {
   private readonly agents = new Map<string, { agent: IChatAgent; commands: IChatAgentCommand[] }>();
+
+  private defaultAgentId: string | undefined;
 
   private readonly _onDidChangeAgents = new Emitter<void>();
   readonly onDidChangeAgents = this._onDidChangeAgents.event;
 
   private readonly _onDidSendMessage = new Emitter<IChatContent>();
   public readonly onDidSendMessage = this._onDidSendMessage.event;
+
+  @Autowired(ChatFeatureRegistryToken)
+  private readonly chatFeatureRegistry: IChatFeatureRegistry;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -54,7 +61,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     });
   }
 
-  updateAgent(id: string, updateMetadata: IChatAgentMetadata): void {
+  async updateAgent(id: string, updateMetadata: IChatAgentMetadata) {
     const data = this.agents.get(id);
     if (!data) {
       throw new Error(`No agent with id ${id} registered`);
@@ -63,11 +70,27 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
     data.agent.provideSlashCommands(CancellationToken.None).then((commands) => {
       data.commands = commands;
     });
+
+    if (updateMetadata.isDefault) {
+      this.defaultAgentId = id;
+    }
+
+    const chatWelcomeMessage = await data.agent.provideChatWelcomeMessage(CancellationToken.None);
+
+    if (chatWelcomeMessage) {
+      const { content, sampleQuestions } = chatWelcomeMessage;
+      this.chatFeatureRegistry.registerWelcome(content, sampleQuestions as any);
+    }
+
     this._onDidChangeAgents.fire();
   }
 
   getAgents(): Array<IChatAgent> {
     return Array.from(this.agents.values(), (v) => v.agent);
+  }
+
+  getDefaultAgentId() {
+    return this.defaultAgentId;
   }
 
   hasAgent(id: string): boolean {

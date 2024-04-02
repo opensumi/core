@@ -12,6 +12,7 @@ import { IAiChatService, IChatAgentService, IChatManagerService } from '../commo
 
 import { AiChatService } from './ai-chat.service';
 import { AiNativeBrowserContribution } from './ai-core.contribution';
+import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { ChatAgentService } from './chat-agent.service';
 import { ChatAgentViewService } from './chat-agent.view.service';
 import { ChatManagerService } from './chat-manager.service';
@@ -32,6 +33,7 @@ import {
   IAiRunFeatureRegistry,
   IChatAgentViewService,
   IInlineChatFeatureRegistry,
+  ChatFeatureRegistryToken,
 } from './types';
 
 @Injectable()
@@ -46,6 +48,10 @@ export class AiNativeModule extends BrowserModule {
     {
       token: IInlineChatFeatureRegistry,
       useClass: InlineChatFeatureRegistry,
+    },
+    {
+      token: ChatFeatureRegistryToken,
+      useClass: ChatFeatureRegistry,
     },
     {
       token: IAiChatService,

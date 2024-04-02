@@ -14,16 +14,23 @@ import { Button, Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/c
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
 import { Command, URI, isMacintosh, uuid } from '@opensumi/ide-core-common';
-import { CommandService } from '@opensumi/ide-core-common';
+import { CommandService, localize } from '@opensumi/ide-core-common';
 import { IAiBackServiceResponse } from '@opensumi/ide-core-common/lib/ai-native';
 import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 
-import { AiResponseTips, IChatAgentService, IChatMessageStructure, InstructionEnum } from '../common';
+import {
+  AiResponseTips,
+  IChatAgentService,
+  IChatMessageStructure,
+  InstructionEnum,
+  IChatReplyFollowup,
+} from '../common';
 
 import * as styles from './ai-chat.module.less';
 import { AiChatService } from './ai-chat.service';
 import { AiProjectGenerateService } from './ai-project/generate.service';
 import { AiSumiService } from './ai-sumi/sumi.service';
+import { ChatFeatureRegistry } from './chat/chat.feature.registry';
 import { CodeBlockWrapper, CodeBlockWrapperInput } from './components/ChatEditor';
 import { ChatInput } from './components/ChatInput';
 import { ChatMarkdown } from './components/ChatMarkdown';
@@ -35,6 +42,7 @@ import { Thinking } from './components/Thinking';
 import { EMsgStreamStatus, MsgStreamManager } from './model/msg-stream-manager';
 // import { AiMenubarService } from './override/layout/menu-bar/menu-bar.service';
 import { AiRunService } from './run/run.service';
+import { ChatFeatureRegistryToken } from './types';
 
 import 'react-chat-elements/dist/main.css';
 
@@ -67,6 +75,38 @@ const createMessage = (message: MessageData) => ({
 
 const createMessageByAI = (message: AIMessageData, className?: string) =>
   createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
+const extractIcon = (question: IChatReplyFollowup) => {
+  let { title } = question;
+  const { message, tooltip } = question;
+
+  if (!title) {
+    return {
+      icon: '',
+      title: message,
+      message,
+      tooltip,
+    };
+  }
+
+  let icon;
+
+  const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
+  if (iconMatched) {
+    const [matchedStr, owner, name, modifier] = iconMatched;
+    const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
+    icon = getExternalIcon(name, iconOwner);
+    if (modifier) {
+      icon += ` ${modifier.slice(1)}`;
+    }
+    title = title.slice(matchedStr.length);
+  }
+  return {
+    icon,
+    title,
+    message,
+    tooltip,
+  };
+};
 
 const AI_NAME = 'AI 研发助手';
 const SCROLL_CLASSNAME = 'chat_scroll';
@@ -83,56 +123,66 @@ const defaultSampleQuestions = [
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<AiChatService>(AiChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
 
   const [sampleQuestions, setSampleQuestions] =
     React.useState<{ icon: string; title: string; message: string; tooltip?: string }[]>(defaultSampleQuestions);
 
+  const welcomeSampleQuestions = React.useMemo(() => {
+    if (!chatFeatureRegistry.chatWelcomeMessageModel) {
+      return [];
+    }
+
+    const { sampleQuestions = [] } = chatFeatureRegistry.chatWelcomeMessageModel;
+    return (sampleQuestions as IChatReplyFollowup[]).map(extractIcon);
+  }, [chatFeatureRegistry.chatWelcomeMessageModel?.sampleQuestions]);
+
+  const welcomeMessage = React.useMemo(() => {
+    if (!chatFeatureRegistry.chatWelcomeMessageModel) {
+      return '';
+    }
+
+    const { content } = chatFeatureRegistry.chatWelcomeMessageModel;
+
+    return (
+      content ?? (
+        <>
+          <div className={styles.chat_container_des}>
+            <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
+            嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
+          </div>
+          <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题</div>
+        </>
+      )
+    );
+  }, [chatFeatureRegistry.chatWelcomeMessageModel?.content]);
+
   React.useEffect(() => {
     const disposer = chatAgentService.onDidChangeAgents(async () => {
       const sampleQuestions = await chatAgentService.getAllSampleQuestions();
-      const lists = sampleQuestions.map((item) => {
-        let { title, message, tooltip } = item;
-        if (!title) {
-          return {
-            icon: '',
-            title: message,
-            message,
-            tooltip,
-          };
-        }
-        let icon = '';
-        const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
-        if (iconMatched) {
-          const [matchedStr, owner, name, modifier] = iconMatched;
-          const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
-          icon = getExternalIcon(name, iconOwner);
-          if (modifier) {
-            icon += ` ${modifier.slice(1)}`;
-          }
-          title = title.slice(matchedStr.length);
-        }
-        return {
-          icon,
-          title,
-          message,
-          tooltip,
-        };
-      });
+      const lists = sampleQuestions.map(extractIcon);
+
       // 每次全量更新数据，避免扩展卸载的问题
       setSampleQuestions([...defaultSampleQuestions, ...lists]);
     });
     return () => disposer.dispose();
   }, []);
 
+  if (!welcomeMessage) {
+    return (
+      <Thinking
+        status={EMsgStreamStatus.THINKING}
+        showStop={false}
+        thinkingText={localize('aiNative.chat.welcome.loading.text')}
+      />
+    );
+  }
+
   return (
     <div className={styles.chat_head}>
-      <div className={styles.chat_container_des}>
-        <img src='https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*66fhSKqpB8EAAAAAAAAAAAAADhl8AQ/original' />
-        嗨，我是您的专属 AI 小助手，我在这里回答有关代码的问题，并帮助您思考！
-      </div>
-      <div className={styles.chat_container_title}>您可以提问我一些关于代码的问题</div>
+      {welcomeMessage}
       <div className={styles.chat_container_content}>
-        {sampleQuestions.map((data: any, index) => {
+        {welcomeSampleQuestions.concat(sampleQuestions as any).map((data: any, index) => {
           const node = (
             <a
               href='javascript:void(0)'
@@ -177,6 +227,7 @@ export const AiChatView = observer(() => {
 
   // TODO: theme 基于 command 改造成 command 形式
   const [agentId, setAgentId] = React.useState('');
+  const [defaultAgentId, setDefaultAgentId] = React.useState<string>('');
   const [command, setCommand] = React.useState('');
   const [theme, setTheme] = React.useState<string | null>(null);
 
@@ -396,6 +447,15 @@ export const AiChatView = observer(() => {
     [messageListData, containerRef, loading],
   );
 
+  React.useEffect(() => {
+    const disposer = chatAgentService.onDidChangeAgents(async () => {
+      const newDefaultAgentId = chatAgentService.getDefaultAgentId();
+
+      setDefaultAgentId(newDefaultAgentId ?? '');
+    });
+    return () => disposer.dispose();
+  }, []);
+
   const handleReply = React.useCallback(
     async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
       let aiMessage;
@@ -550,6 +610,7 @@ export const AiChatView = observer(() => {
               setTheme={setTheme}
               agentId={agentId}
               setAgentId={setAgentId}
+              defaultAgentId={defaultAgentId}
               command={command}
               setCommand={setCommand}
               ref={chatInputRef}

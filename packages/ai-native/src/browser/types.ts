@@ -58,6 +58,8 @@ export interface IAiRunAnswerComponentProps {
 
 export const IAiRunFeatureRegistry = Symbol('IAiRunFeatureRegistry');
 
+export const ChatFeatureRegistryToken = Symbol('ChatFeatureRegistryToken');
+
 export interface IAiRunFeatureRegistry {
   /**
    * 注册 run 运行的能力

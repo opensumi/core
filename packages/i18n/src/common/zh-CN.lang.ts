@@ -1182,6 +1182,8 @@ export const localizationBundle = {
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
 
+    'aiNative.chat.welcome.loading.text': '初始化中...',
+
     ...browserViews,
   },
 };
