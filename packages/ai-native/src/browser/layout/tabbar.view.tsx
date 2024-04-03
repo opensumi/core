@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
 import { EDirection } from '@opensumi/ide-core-browser/lib/components';
@@ -13,14 +13,33 @@ import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize } from '@opensumi/ide-core-common';
 import { DesignLeftTabRenderer, DesignRightTabRenderer } from '@opensumi/ide-design/lib/browser/layout/tabbar.view';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { LeftTabbarRenderer } from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
+import {
+  IconElipses,
+  IconTabView,
+  LeftTabbarRenderer,
+  RightTabbarRenderer,
+  TabbarViewBase,
+} from '@opensumi/ide-main-layout/lib/browser/tabbar/bar.view';
 import { BaseTabPanelView, ContainerView } from '@opensumi/ide-main-layout/lib/browser/tabbar/panel.view';
-import { TabRendererBase } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
+import { TabRendererBase, TabbarConfig } from '@opensumi/ide-main-layout/lib/browser/tabbar/renderer.view';
 import { TabbarService, TabbarServiceFactory } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
 
-import { AI_CHAT_CONTAINER_VIEW_ID } from '../../common';
+import { AI_CHAT_VIEW_ID } from '../../common';
 
 import styles from './layout.module.less';
+
+const ChatTabbarRenderer: React.FC = () => {
+  const { side } = React.useContext(TabbarConfig);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  useEffect(() => {
+    tabbarService.setIsLatter(true);
+  }, [tabbarService]);
+  return (
+    <div style={{ width: 0 }}>
+      <TabbarViewBase tabSize={0} MoreTabView={IconElipses} TabView={IconTabView} barSize={0} panelBorderSize={1} />
+    </div>
+  );
+};
 
 export const AIChatTabRenderer = ({
   className,
@@ -30,13 +49,13 @@ export const AIChatTabRenderer = ({
   components: ComponentRegistryInfo[];
 }) => (
   <TabRendererBase
-    side={AI_CHAT_CONTAINER_VIEW_ID}
-    direction={EDirection.RightToLeft}
+    side={AI_CHAT_VIEW_ID}
+    direction={EDirection.LeftToRight}
     id={styles.ai_chat_panel}
-    className={cls(className, `${AI_CHAT_CONTAINER_VIEW_ID}-slot`)}
+    className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
     components={components}
-    TabbarView={() => null}
-    TabpanelView={() => <BaseTabPanelView PanelView={ContainerView} currentContainerId={AI_CHAT_CONTAINER_VIEW_ID} />}
+    TabbarView={() => <ChatTabbarRenderer />}
+    TabpanelView={() => <BaseTabPanelView PanelView={ContainerView} />}
   />
 );
 
@@ -98,7 +117,7 @@ export const AIRightTabRenderer = ({
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
 
   const handleClose = useCallback(() => {
-    tabbarService.currentContainerId = '';
+    tabbarService.updateCurrentContainerId('');
   }, []);
 
   const ContainerViewFn = useCallback((props: { component: ComponentRegistryInfo; side: string; titleMenu: IMenu }) => {
@@ -127,7 +146,7 @@ export const AIRightTabRenderer = ({
   return (
     <DesignRightTabRenderer
       components={components}
-      tabbarView={() => null}
+      tabbarView={() => <RightTabbarRenderer barSize={0} style={{ width: 0 }} />}
       tabpanelView={() => <BaseTabPanelView PanelView={ContainerViewFn} />}
     />
   );

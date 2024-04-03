@@ -11,7 +11,8 @@ import {
 export const IAINativeService = Symbol('IAINativeService');
 
 export const AIInlineChatContentWidget = 'AI_Inline_Chat_Content_Widget';
-export const AI_CHAT_CONTAINER_VIEW_ID = 'AI_Chat';
+export const AI_CHAT_VIEW_ID = 'AI_Chat';
+export const AI_CHAT_CONTAINER_ID = 'AI_Chat_Container';
 export const AI_MENUBAR_CONTAINER_VIEW_ID = 'AI_menubar';
 
 export const AI_SLASH = '/';

@@ -38,7 +38,7 @@ import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
-import { AI_CHAT_CONTAINER_VIEW_ID } from '../common';
+import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
@@ -221,7 +221,7 @@ export class AINativeBrowserContribution
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
-    registry.registerSlotRenderer(AI_CHAT_CONTAINER_VIEW_ID, AIChatTabRenderer);
+    registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
     if (this.aiNativeConfigService.layout.useMergeRightWithLeftPanel) {
       registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
       registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
@@ -229,16 +229,10 @@ export class AINativeBrowserContribution
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(
-      AI_CHAT_CONTAINER_VIEW_ID,
-      {
-        component: AIChatView,
-        id: AI_CHAT_CONTAINER_VIEW_ID,
-      },
-      {
-        containerId: AI_CHAT_CONTAINER_VIEW_ID,
-      },
-    );
+    registry.register(AI_CHAT_CONTAINER_ID, [], {
+      component: AIChatView,
+      containerId: AI_CHAT_CONTAINER_ID,
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
