@@ -13,6 +13,7 @@ export enum AISerivceType {
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
+  Rename = 'rename',
 }
 
 export interface CommonLogInfo {
@@ -88,6 +89,12 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
   cancelNum: number;
 }
 
+export interface RenameRT extends Partial<CommonLogInfo> {
+  isCancel?: boolean;
+  startTime: number;
+  endTime: number;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
   | ({ type: AISerivceType.GPT } & QuestionRT)
@@ -100,7 +107,8 @@ export type ReportInfo =
   | ({ type: AISerivceType.Sumi } & CommandRT)
   | ({ type: AISerivceType.Run } & RunRT)
   | ({ type: AISerivceType.Completion } & CompletionRT)
-  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT);
+  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
+  | ({ type: AISerivceType.Rename } & RenameRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 
