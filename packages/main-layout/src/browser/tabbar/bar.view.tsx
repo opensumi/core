@@ -279,7 +279,8 @@ export const TextElipses: React.FC = () => (
   </div>
 );
 
-export const RightTabbarRenderer: React.FC = () => {
+export const RightTabbarRenderer: React.FC<{ barSize?: number; style?: React.CSSProperties }> = (props) => {
+  const { barSize = 48, style } = props;
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
 
@@ -290,6 +291,7 @@ export const RightTabbarRenderer: React.FC = () => {
     <div
       id={VIEW_CONTAINERS.RIGHT_TABBAR}
       className={styles_right_tab_bar}
+      style={style}
       onContextMenu={tabbarService.handleContextMenu}
     >
       <TabbarViewBase
@@ -297,7 +299,7 @@ export const RightTabbarRenderer: React.FC = () => {
         MoreTabView={IconElipses}
         tabClassName={styles_right_tab}
         TabView={IconTabView}
-        barSize={48}
+        barSize={barSize}
         panelBorderSize={1}
       />
     </div>

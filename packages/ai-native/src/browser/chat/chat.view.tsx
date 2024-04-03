@@ -7,10 +7,12 @@ import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/component
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { AISerivceType, ChatFeatureRegistryToken, IAIReporter, localize, uuid } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import 'react-chat-elements/dist/main.css';
 import {
+  AI_CHAT_VIEW_ID,
   IAIChatService,
   IChatAgentService,
   IChatMessageStructure,
@@ -174,6 +176,7 @@ export const AIChatView = observer(() => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const chatInputRef = React.useRef<{ setInputValue: (v: string) => void } | null>(null);
@@ -448,6 +451,10 @@ export const AIChatView = observer(() => {
     setTheme(value);
   };
 
+  const handleCloseChatView = React.useCallback(() => {
+    layoutService.toggleSlot(AI_CHAT_VIEW_ID);
+  }, [layoutService]);
+
   return (
     <div className={styles.ai_chat_view}>
       <div className={styles.header_container}>
@@ -455,11 +462,23 @@ export const AIChatView = observer(() => {
           <span className={styles.title}>{aiAssistantName}</span>
         </div>
         <div className={styles.right}>
-          <Popover insertClass={styles.popover_icon} id={'ai-chat-header-clear'} title='清空'>
+          <Popover
+            insertClass={styles.popover_icon}
+            id={'ai-chat-header-clear'}
+            title={localize('aiNative.operate.clear.title')}
+          >
             <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('clear')} onClick={handleClear} />
           </Popover>
-          <Popover insertClass={styles.popover_icon} id={'ai-chat-header-close'} title='关闭'>
-            <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('window-close')} />
+          <Popover
+            insertClass={styles.popover_icon}
+            id={'ai-chat-header-close'}
+            title={localize('aiNative.operate.close.title')}
+          >
+            <EnhanceIcon
+              wrapperClassName={styles.action_btn}
+              className={getIcon('window-close')}
+              onClick={handleCloseChatView}
+            />
           </Popover>
         </div>
       </div>

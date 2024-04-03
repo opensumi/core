@@ -1237,6 +1237,8 @@ export const localizationBundle = {
     'aiNative.operate.discard.title': '丢弃',
     'aiNative.operate.afresh.title': '重新生成',
     'aiNative.operate.stop.title': '停止',
+    'aiNative.operate.close.title': '关闭',
+    'aiNative.operate.clear.title': '清空',
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
     // #endregion AI Native

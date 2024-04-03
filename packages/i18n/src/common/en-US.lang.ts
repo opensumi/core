@@ -1468,6 +1468,8 @@ export const localizationBundle = {
     'aiNative.operate.discard.title': 'Discard',
     'aiNative.operate.afresh.title': 'Afresh',
     'aiNative.operate.stop.title': 'Stop',
+    'aiNative.operate.close.title': 'Close',
+    'aiNative.operate.clear.title': 'Clear',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
     // #endregion AI Native

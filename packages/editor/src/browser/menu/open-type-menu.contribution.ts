@@ -43,6 +43,7 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
 
   constructor() {
     super();
+    this.registerEditorOpenTypes();
     this.disposables.push(
       this.workbenchEditorService.onActiveResourceChange((e) => {
         this.registerEditorOpenTypes();

@@ -1,8 +1,8 @@
 import cls from 'classnames';
 import React, { FC, createContext, memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { ComponentRegistryInfo, IEventBus, ResizeEvent, useInjectable } from '@opensumi/ide-core-browser';
-import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
+import { ComponentRegistryInfo, IEventBus, ResizeEvent, SlotLocation, useInjectable } from '@opensumi/ide-core-browser';
+import { EDirection, PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
@@ -16,8 +16,8 @@ export const TabbarConfig = createContext<{
   direction: Layout.direction;
   fullSize: number;
 }>({
-  side: 'left',
-  direction: 'left-to-right',
+  side: SlotLocation.left,
+  direction: EDirection.LeftToRight,
   fullSize: 0,
 });
 
@@ -29,7 +29,7 @@ export const TabRendererBase: FC<{
   direction?: Layout.direction;
   TabbarView: FC;
   TabpanelView: FC;
-}> = memo(({ id, className, components, direction = 'left-to-right', TabbarView, side, TabpanelView }) => {
+}> = memo(({ id, className, components, direction = EDirection.LeftToRight, TabbarView, side, TabpanelView }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const resizeHandle = useContext(PanelContext);
@@ -37,9 +37,6 @@ export const TabRendererBase: FC<{
   const [fullSize, setFullSize] = useState(0);
 
   useLayoutEffect(() => {
-    if (components.length <= 0) {
-      return;
-    }
     tabbarService.registerResizeHandle(resizeHandle);
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);
@@ -92,8 +89,8 @@ export const RightTabRenderer = ({
   tabpanelView?: FC<{}>;
 }) => (
   <TabRendererBase
-    side='right'
-    direction='right-to-left'
+    side={SlotLocation.right}
+    direction={EDirection.RightToLeft}
     id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL}
     className={cls(className, 'right-slot')}
     components={components}
@@ -112,8 +109,8 @@ export const LeftTabRenderer = ({
   tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
-    side='left'
-    direction='left-to-right'
+    side={SlotLocation.left}
+    direction={EDirection.LeftToRight}
     id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
     className={cls(className, 'left-slot')}
     components={components}
@@ -132,9 +129,9 @@ export const BottomTabRenderer = ({
   tabbarView?: FC<{}>;
 }) => (
   <TabRendererBase
-    side='bottom'
+    side={SlotLocation.bottom}
     id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL}
-    direction='bottom-to-top'
+    direction={EDirection.BottomToTop}
     className={cls(className, 'bottom-slot')}
     components={components}
     TabbarView={tabbarView ?? BottomTabbarRenderer}
