@@ -134,17 +134,18 @@ export class TabbarService extends WithEventBus {
   protected panelSize: number;
   private menuId = `tabbar/${this.location}`;
   private moreMenuId = `tabbar/${this.location}/more`;
-  private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
   private activatedKey: IContextKey<string>;
   private sortedContainers: Array<ComponentRegistryInfo> = [];
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
   private shouldWaitForViewRender = false;
+  private isLatter: boolean;
 
   private scopedCtxKeyService: IScopedContextKeyService;
 
   constructor(public location: string) {
     super();
+    this.setIsLatter(location === SlotLocation.right || location === SlotLocation.bottom);
     makeObservable(this);
     this.scopedCtxKeyService = this.contextKeyService.createScoped();
     this.scopedCtxKeyService.createKey('triggerWithTab', true);
@@ -161,6 +162,10 @@ export class TabbarService extends WithEventBus {
       this.registerPanelCommands();
       this.registerPanelMenus();
     }
+  }
+
+  public setIsLatter(v: boolean) {
+    this.isLatter = v;
   }
 
   @action
@@ -398,7 +403,7 @@ export class TabbarService extends WithEventBus {
         {
           execute: () => {
             runInAction(() => {
-              this.currentContainerId = containerId;
+              this.updateCurrentContainerId(containerId);
             });
           },
         },
@@ -412,7 +417,7 @@ export class TabbarService extends WithEventBus {
         {
           execute: () => {
             runInAction(() => {
-              this.currentContainerId = '';
+              this.updateCurrentContainerId('');
             });
           },
         },
@@ -427,9 +432,9 @@ export class TabbarService extends WithEventBus {
           execute: () => {
             runInAction(() => {
               if (this.currentContainerId === containerId) {
-                this.currentContainerId = '';
+                this.updateCurrentContainerId('');
               } else {
-                this.currentContainerId = containerId;
+                this.updateCurrentContainerId(containerId);
               }
             });
           },
@@ -486,7 +491,7 @@ export class TabbarService extends WithEventBus {
       disposables.dispose();
     }
     if (this.currentContainerId === containerId) {
-      this.currentContainerId = this.visibleContainers[0].options?.containerId || '';
+      this.updateCurrentContainerId(this.visibleContainers[0].options?.containerId || '');
     }
   }
 
@@ -567,9 +572,9 @@ export class TabbarService extends WithEventBus {
     const containerId = e.currentTarget.id;
     if (containerId === this.currentContainerId && !forbidCollapse) {
       // 双击同一个 tab 时隐藏 panel
-      this.currentContainerId = '';
+      this.updateCurrentContainerId('');
     } else {
-      this.currentContainerId = containerId;
+      this.updateCurrentContainerId(containerId);
     }
   }
 
@@ -683,9 +688,9 @@ export class TabbarService extends WithEventBus {
             runInAction(() => {
               // 支持toggle
               if (this.location === 'bottom' && !forceShow) {
-                this.currentContainerId = this.currentContainerId === containerId ? '' : containerId;
+                this.updateCurrentContainerId(this.currentContainerId === containerId ? '' : containerId);
               } else {
-                this.currentContainerId = containerId;
+                this.updateCurrentContainerId(containerId);
               }
             });
           },
@@ -758,7 +763,7 @@ export class TabbarService extends WithEventBus {
           execute: ({ lastContainerId }: { lastContainerId?: string }) => {
             // 切换激活tab
             runInAction(() => {
-              this.currentContainerId = containerId;
+              this.updateCurrentContainerId(containerId);
               if (lastContainerId) {
                 // 替换最后一个可见tab
                 const sourceState = this.getContainerState(containerId);
@@ -816,7 +821,7 @@ export class TabbarService extends WithEventBus {
 
     if (state.hidden && this.currentContainerId === containerId) {
       // 如果隐藏的是当前激活的 tab，则激活第一个可见 tab
-      this.currentContainerId = this.visibleContainers[0].options!.containerId;
+      this.updateCurrentContainerId(this.visibleContainers[0].options!.containerId);
     }
     this.storeState();
   }
