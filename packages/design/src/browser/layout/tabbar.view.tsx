@@ -40,7 +40,7 @@ export const DesignRightTabRenderer = ({
   tabpanelView?: FC<{}>;
 }) => (
   <RightTabRenderer
-    className={cls(className, 'design_right_slot')}
+    className={cls('design_right_slot', className)}
     components={components}
     tabbarView={tabbarView}
     tabpanelView={tabpanelView}
