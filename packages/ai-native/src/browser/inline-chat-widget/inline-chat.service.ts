@@ -49,7 +49,7 @@ export class AiInlineChatService implements IAiInlineChatService {
   }
 
   public launchChatStatus(status: EInlineChatStatus) {
-    runWhenIdle(() => {
+    return runWhenIdle(() => {
       this._status = status;
       this._onChatStatus.fire(status);
     });

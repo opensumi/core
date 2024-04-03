@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import { BasicEvent, Dispatcher, Disposable } from '@opensumi/ide-core-common';
+import { Injectable } from '@opensumi/di';
+import { Dispatcher, Disposable } from '@opensumi/ide-core-common';
 
 import { AI_CHAT_DEFAULT_SIZE } from '../../../../common';
 
@@ -10,6 +10,17 @@ export class AiMenubarService extends Disposable {
 
   public getLatestWidth(): number {
     return this.latestWidth;
+  }
+
+  public showRightPanel() {
+    const domID = 'div[id*=ai_chat_panel___]';
+    const chatPanel = document.querySelector(domID)?.parentElement?.parentElement;
+
+    if (chatPanel) {
+      const width = this.latestWidth || AI_CHAT_DEFAULT_SIZE;
+      chatPanel.style.width = `${width}px`;
+      this.latestWidth = width;
+    }
   }
 
   /**

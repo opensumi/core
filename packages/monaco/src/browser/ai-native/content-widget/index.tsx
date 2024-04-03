@@ -33,13 +33,15 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super();
 
-    runWhenIdle(() => {
-      ReactDOM.render(
-        <ConfigProvider value={this.configContext}>{this.renderView()}</ConfigProvider>,
-        this.getDomNode(),
-      );
-      this.layoutContentWidget();
-    });
+    this.addDispose(
+      runWhenIdle(() => {
+        ReactDOM.render(
+          <ConfigProvider value={this.configContext}>{this.renderView()}</ConfigProvider>,
+          this.getDomNode(),
+        );
+        this.layoutContentWidget();
+      }),
+    );
   }
 
   public abstract renderView(): React.ReactNode;
@@ -50,8 +52,11 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     super.dispose();
   }
 
-  async show(options?: ShowAiContentOptions | undefined): Promise<void> {
+  show(options?: ShowAiContentOptions | undefined): void {
     if (!options) {
+      return;
+    }
+    if (this.disposed) {
       return;
     }
 
@@ -63,7 +68,7 @@ export abstract class BaseInlineContentWidget extends Disposable implements IInl
     this.editor.addContentWidget(this);
   }
 
-  async hide() {
+  hide() {
     this.options = undefined;
     this.editor.removeContentWidget(this);
     ReactDOM.unmountComponentAtNode(this.getDomNode());
