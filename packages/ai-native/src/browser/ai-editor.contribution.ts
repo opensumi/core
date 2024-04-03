@@ -13,8 +13,9 @@ import {
   Schemes,
   SupportLogNamespace,
   URI,
+  getErrorMessage,
 } from '@opensumi/ide-core-common';
-import { IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
+import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-native/reporter';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
@@ -673,8 +674,34 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
-          const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
-          return result;
+          const relationId = this.aiReporter.start('rename', { message: 'start', type: AISerivceType.Rename });
+
+          const startTime = +new Date();
+          let success = true;
+          token.onCancellationRequested(() => {
+            success = false;
+            const endTime = +new Date();
+
+            this.aiReporter.end(relationId, { message: 'cancel', success: false, isCancel: true, startTime, endTime });
+          });
+
+          try {
+            const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
+            if (success) {
+              const endTime = +new Date();
+              this.aiReporter.end(relationId, { message: 'end', success: true, startTime, endTime });
+            }
+            return result;
+          } catch (error) {
+            const endTime = +new Date();
+            this.aiReporter.end(relationId, {
+              message: 'error:' + getErrorMessage(error),
+              success: false,
+              startTime,
+              endTime,
+            });
+            throw error;
+          }
         };
 
         dispose = monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
