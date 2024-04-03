@@ -1,3 +1,6 @@
+import type { DebouncedFunc } from 'lodash';
+import debounce from 'lodash/debounce';
+
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AiNativeConfigService, IAiInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
@@ -90,6 +93,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
   private latestMiddlewareCollector: IAiMiddleware;
   private logger: ILogServiceClient;
+  debounceInlineChatHandler: DebouncedFunc<() => void>;
 
   constructor() {
     super();
@@ -212,11 +216,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       },
     });
 
-    Event.debounce(
-      Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp),
-      (_, e) => e,
-      100,
-    )((e) => {
+    this.debounceInlineChatHandler = debounce(() => {
       if (!prefInlineChatAutoVisible) {
         return;
       }
@@ -244,6 +244,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
       this.registerInlineChat(editor);
     });
+    Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp)(this.debounceInlineChatHandler);
 
     this.logger.log('AiEditorContribution:>>>', editor, monacoEditor);
 
@@ -264,6 +265,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.inlineChatInUsing = true;
 
     this.disposeAllWidget();
+
+    // 取消所有的在途的 debounce 函数
+    this.debounceInlineChatHandler && this.debounceInlineChatHandler.cancel();
 
     const { monacoEditor, currentUri } = editor;
 
@@ -296,19 +300,19 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.aiInlineContentWidget.show({
       selection,
     });
-
     this.aiInlineChatDisposed.addDispose(
       this.aiInlineContentWidget.onClickActions(async (id: string) => {
         const handler = this.inlineChatFeatureRegistry.getHandler(id);
         const action = this.inlineChatFeatureRegistry.getAction(id);
         if (!handler || !action) {
+          this.disposeAllWidget();
           return;
         }
 
         const { execute, providerDiffPreviewStrategy } = handler;
 
         if (execute) {
-          execute(editor);
+          await execute(editor);
           this.disposeAllWidget();
         }
 

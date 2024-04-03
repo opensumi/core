@@ -59,7 +59,7 @@ export class AiInlineContentWidget extends BaseInlineContentWidget {
     return <AiInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />;
   }
 
-  override async show(options?: ShowAiContentOptions | undefined): Promise<void> {
+  override show(options?: ShowAiContentOptions | undefined): void {
     super.show(options);
     this.aiNativeContextKey.inlineChatIsVisible.set(true);
   }

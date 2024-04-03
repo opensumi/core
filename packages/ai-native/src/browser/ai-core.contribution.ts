@@ -313,9 +313,7 @@ export class AiNativeBrowserContribution
           });
         }
         if (visible === true) {
-          if (this.aiMenubarService.getLatestWidth() !== 0) {
-            this.aiMenubarService.toggleRightPanel();
-          }
+          this.aiMenubarService.showRightPanel();
           return;
         }
 
