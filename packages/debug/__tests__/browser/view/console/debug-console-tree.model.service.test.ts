@@ -231,7 +231,7 @@ describe('Debug Console Tree Model', () => {
 
   it('initTreeModel method should be work', () => {
     const mockSession = {
-      on: jest.fn(),
+      on: jest.fn(() => Disposable.create(() => {})),
       hasSeparateRepl: () => true,
       parentSession: undefined,
     } as Partial<IDebugSession>;
@@ -241,7 +241,7 @@ describe('Debug Console Tree Model', () => {
 
   it('clear method should be work', () => {
     const mockSession = {
-      on: jest.fn(),
+      on: jest.fn(() => Disposable.create(() => {})),
       hasSeparateRepl: () => true,
       parentSession: undefined,
     } as Partial<IDebugSession>;
@@ -252,7 +252,7 @@ describe('Debug Console Tree Model', () => {
 
   it('activeNodeDecoration method should be work', () => {
     const mockSession = {
-      on: jest.fn(),
+      on: jest.fn(() => Disposable.create(() => {})),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
     const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
@@ -263,7 +263,7 @@ describe('Debug Console Tree Model', () => {
 
   it('enactiveNodeDecoration method should be work', () => {
     const mockSession = {
-      on: jest.fn(),
+      on: jest.fn(() => Disposable.create(() => {})),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
     const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
@@ -278,7 +278,7 @@ describe('Debug Console Tree Model', () => {
 
   it('removeNodeDecoration method should be work', () => {
     const mockSession = {
-      on: jest.fn(),
+      on: jest.fn(() => Disposable.create(() => {})),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
     const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
@@ -298,7 +298,7 @@ describe('Debug Console Tree Model', () => {
 
   it('handleTreeBlur method should be work', () => {
     const mockSession = {
-      on: jest.fn(),
+      on: jest.fn(() => Disposable.create(() => {})),
     } as any;
     debugConsoleModelService.initDecorations(mockRoot);
     const node = new DebugConsoleNode({ session: mockSession }, 'test', mockRoot);
