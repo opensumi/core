@@ -19,6 +19,7 @@ import { AISerivceType, IAIReporter } from '@opensumi/ide-core-common/lib/ai-nat
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 import { editor as MonacoEditor } from '@opensumi/monaco-editor-core';
 import { InlineCompletion, InlineCompletions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
@@ -649,6 +650,19 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     return;
   }
 
+  @Autowired()
+  monacoTelemetryService: MonacoTelemetryService;
+
+  lastmodelRequestRenameEndTime: number | undefined;
+  lastmodelRequestRenameSessionId: string | undefined;
+
+  modelRequestSession = new Map<
+    string,
+    {
+      done: boolean;
+    }
+  >();
+
   private async registerRenameSuggestions(editor: IEditor): Promise<void> {
     const { monacoEditor, currentUri } = editor;
 
@@ -656,7 +670,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return;
     }
 
-    let dispose: IDisposable | undefined;
+    let dispose = new Disposable();
 
     this.disposables.push(
       Event.debounce(
@@ -668,45 +682,71 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           dispose.dispose();
         }
 
+        dispose = new Disposable();
+
         const model = monacoEditor.getModel();
         if (!model) {
           return;
         }
 
-        const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
-          const relationId = this.aiReporter.start('rename', { message: 'start', type: AISerivceType.Rename });
+        dispose.addDispose(
+          this.monacoTelemetryService.onEventLog(({ type, event }) => {
+            if (type === 'renameInvokedEvent' && this.lastmodelRequestRenameSessionId) {
+              this.aiReporter.end(this.lastmodelRequestRenameSessionId, {
+                message: 'rename done',
+                success: true,
+                modelRequestEndTime: this.lastmodelRequestRenameEndTime,
+                ...event,
+              });
+            }
+          }),
+        );
 
+        const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+          this.lastmodelRequestRenameSessionId = undefined;
           const startTime = +new Date();
-          let success = true;
-          token.onCancellationRequested(() => {
-            success = false;
+          const relationId = this.aiReporter.start('rename', {
+            message: 'start',
+            type: AISerivceType.Rename,
+            modelRequestStartTime: startTime,
+          });
+          this.lastmodelRequestRenameSessionId = relationId;
+
+          const dispose1 = token.onCancellationRequested(() => {
             const endTime = +new Date();
 
-            this.aiReporter.end(relationId, { message: 'cancel', success: false, isCancel: true, startTime, endTime });
-          });
+            this.aiReporter.end(relationId, {
+              message: 'cancel',
+              success: false,
+              isCancel: true,
+              modelRequestStartTime: startTime,
+              modelRequestEndTime: endTime,
+            });
 
+            this.lastmodelRequestRenameSessionId = undefined;
+          });
           try {
             const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
-            if (success) {
-              const endTime = +new Date();
-              this.aiReporter.end(relationId, { message: 'end', success: true, startTime, endTime });
-            }
+            dispose1.dispose();
+            this.lastmodelRequestRenameEndTime = +new Date();
             return result;
           } catch (error) {
             const endTime = +new Date();
             this.aiReporter.end(relationId, {
               message: 'error:' + getErrorMessage(error),
               success: false,
-              startTime,
-              endTime,
+              modelRequestStartTime: startTime,
+              modelRequestEndTime: endTime,
             });
             throw error;
           }
         };
 
-        dispose = monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
-          provideNewSymbolNames: provider,
-        });
+        dispose.addDispose(
+          monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
+            provideNewSymbolNames: provider,
+          }),
+        );
       }),
     );
   }

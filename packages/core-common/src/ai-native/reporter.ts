@@ -91,8 +91,8 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
 
 export interface RenameRT extends Partial<CommonLogInfo> {
   isCancel?: boolean;
-  startTime: number;
-  endTime: number;
+  modelRequestStartTime: number;
+  modelRequestEndTime: number;
 }
 
 export type ReportInfo =
