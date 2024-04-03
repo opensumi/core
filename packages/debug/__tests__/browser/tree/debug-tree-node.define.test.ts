@@ -286,7 +286,7 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
       mockContainerNodeOptions.variable,
       root,
     );
-    node = new DebugConsoleNode(mockSession, expression, root);
+    node = new DebugConsoleNode({ session: mockSession }, expression, root);
   });
 
   it('should have correct property', () => {
