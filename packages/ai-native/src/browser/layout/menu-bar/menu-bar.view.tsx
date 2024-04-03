@@ -1,7 +1,6 @@
 import cls from 'classnames';
 import * as React from 'react';
 
-import { AI_CHAT_VIEW_ID } from '@opensumi/ide-ai-native/lib/common';
 import { AINativeConfigService, SlotLocation, SlotRenderer, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { AILogoAvatar, EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
@@ -10,6 +9,7 @@ import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/
 import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
+import { AI_CHAT_VIEW_ID } from '../../../common/';
 import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
 
 import opensumiLogo from './logo.svg';
