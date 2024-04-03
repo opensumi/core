@@ -217,6 +217,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     });
 
     this.debounceInlineChatHandler = debounce(() => {
+      this.disposeAllWidget();
+
       if (!prefInlineChatAutoVisible) {
         return;
       }
@@ -284,7 +286,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     const selection = monacoEditor.getSelection();
 
     if (!selection) {
-      this.disposeAllWidget();
       return;
     }
 
@@ -312,6 +313,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         const { execute, providerDiffPreviewStrategy } = handler;
 
         if (execute) {
+          this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
           await execute(editor);
           this.disposeAllWidget();
         }
