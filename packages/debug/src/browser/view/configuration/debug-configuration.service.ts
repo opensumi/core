@@ -66,7 +66,7 @@ export class DebugConfigurationService {
   configurationOptions: DebugSessionOptions[];
 
   @observable.shallow
-  dynamicConfigurations: DebugConfigurationType[];
+  dynamicConfigurations: DebugConfigurationType[] = [];
 
   get whenReady() {
     return this._whenReady;
