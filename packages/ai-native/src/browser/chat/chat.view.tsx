@@ -462,10 +462,18 @@ export const AIChatView = observer(() => {
           <span className={styles.title}>{aiAssistantName}</span>
         </div>
         <div className={styles.right}>
-          <Popover insertClass={styles.popover_icon} id={'ai-chat-header-clear'} title='清空'>
+          <Popover
+            insertClass={styles.popover_icon}
+            id={'ai-chat-header-clear'}
+            title={localize('aiNative.operate.clear.title')}
+          >
             <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('clear')} onClick={handleClear} />
           </Popover>
-          <Popover insertClass={styles.popover_icon} id={'ai-chat-header-close'} title='关闭'>
+          <Popover
+            insertClass={styles.popover_icon}
+            id={'ai-chat-header-close'}
+            title={localize('aiNative.operate.close.title')}
+          >
             <EnhanceIcon
               wrapperClassName={styles.action_btn}
               className={getIcon('window-close')}
