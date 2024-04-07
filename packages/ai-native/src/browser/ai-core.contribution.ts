@@ -29,6 +29,7 @@ import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/a
 import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   ChatFeatureRegistryToken,
+  ChatRenderRegistryToken,
   CommandService,
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
@@ -50,6 +51,7 @@ import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layo
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
+  IChatRenderRegistry,
   IInlineChatFeatureRegistry,
   IRenameCandidatesProviderRegistry,
   IResolveConflictRegistry,
@@ -88,6 +90,9 @@ export class AINativeBrowserContribution
 
   @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: IChatFeatureRegistry;
+
+  @Autowired(ChatRenderRegistryToken)
+  private readonly chatRenderRegistry: IChatRenderRegistry;
 
   @Autowired(ResolveConflictRegistryToken)
   private readonly resolveConflictRegistry: IResolveConflictRegistry;
@@ -161,6 +166,9 @@ export class AINativeBrowserContribution
       }
       if (contribution.registerRenameProvider) {
         contribution.registerRenameProvider(this.renameCandidatesProviderRegistry);
+      }
+      if (contribution.registerChatRender) {
+        contribution.registerChatRender(this.chatRenderRegistry);
       }
     });
   }
