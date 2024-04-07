@@ -67,7 +67,7 @@
       padding-bottom: 38px;
     }
 
-    .rce-ai-msg {
+    .rce-container-mbox.rce-ai-msg {
       margin: 8px 32px 8px 16px;
 
       > .rce-mbox {
@@ -98,8 +98,12 @@
 
     .rce-container-mbox {
       overflow: initial;
-      // margin: 8px 16px;
       min-width: initial;
+      margin: 8px 16px;
+    }
+
+    .rce-container-mbox:nth-child(2) {
+      margin-top: 8px !important;
     }
 
     .rce-user-msg {
@@ -109,6 +113,7 @@
         margin-right: 0;
         margin-left: 0;
         max-width: 100%;
+        box-sizing: border-box;
       }
     }
 
