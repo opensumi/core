@@ -191,7 +191,7 @@ const InitMsgComponent = () => {
     );
   }, [chatRenderRegistry.chatWelcomeRender, welcomeMessage, welcomeSampleQuestions]);
 
-  return welcomeRender as React.ReactNode;
+  return welcomeRender as React.JSX.Element;
 };
 
 export const AIChatView = observer(() => {
