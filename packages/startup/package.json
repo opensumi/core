@@ -18,14 +18,14 @@
     "start:no-inspect:client": "yarn start:client",
     "start:no-inspect:server": "cross-env EXT_MODE=js KTLOG_SHOW_DEBUG=1 nodemon ./entry/web/server.ts",
     "start:client:open": "cross-env SUMI_DEV_OPEN_BROWSER=1 yarn start:client",
-    "start:server:extjs": "cross-env EXT_MODE=js NODE_ENV=development KTLOG_SHOW_DEBUG=1 node --inspect=9999 -r ts-node/register ./entry/web/server.ts",
+    "start:server:extjs": "cross-env EXT_MODE=js NODE_ENV=development KTLOG_SHOW_DEBUG=1 NODE_OPTIONS='--import tsx' node --inspect=9999 ./entry/web/server.ts",
     "build": "tsc --build ../../configs/ts/references/tsconfig.startup.json",
     "bundle:standard": "cross-env NODE_ENV=production webpack --config webpack.standard.config.js",
     "bundle:standard:analysis": "cross-env analysis=1 yarn run bundle:standard",
     "bundle:lite": "cross-env NODE_ENV=production webpack --config webpack.lite.config.js",
     "bundle:lite:stats": "cross-env NODE_ENV=production webpack --profile --config webpack.lite.config.js --json > stats.json",
     "bundle:lite:analysis": "cross-env analysis=1 yarn run bundle:lite",
-    "bundle:prod": "cross-env SKIP_TS_CHECKER=1 NODE_ENV=production webpack --config webpack.prod.config.js"
+    "bundle:preview": "webpack --config webpack.preview.config.js"
   },
   "repository": {
     "type": "git",
@@ -47,7 +47,7 @@
     ],
     "verbose": true,
     "execMap": {
-      "ts": "node --require ts-node/register"
+      "ts": "node --import tsx"
     },
     "watch": [
       "../../packages"
@@ -124,11 +124,11 @@
     "react-dom": "^18.2.0",
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
-    "ts-node": "^10.0.0",
     "tsconfig-paths": "^4.2.0",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
+    "tsx": "^4.7.1",
     "webpack": "^5.90.0",
     "webpack-bundle-analyzer": "^4.10.1",
-    "webpack-dev-server": "4.15.1"
+    "webpack-dev-server": "^5.0.4"
   }
 }
