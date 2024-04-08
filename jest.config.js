@@ -73,6 +73,7 @@ if (process.env.JEST_COVERAGE_PROVIDER) {
  */
 module.exports = {
   ...baseConfig,
+  coverageReporters: ['clover', 'json'],
   projects: [
     {
       ...baseConfig,

@@ -1,3 +1,5 @@
+require('jest-canvas-mock');
+
 const { TextEncoder, TextDecoder } = require('util');
 
 // Do not log message on GitHub Actions.

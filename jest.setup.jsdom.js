@@ -1,5 +1,4 @@
 require('./jest.setup.base');
-require('jest-canvas-mock');
 require('jest-fetch-mock').enableMocks();
 const { Buffer } = require('buffer');
 const timer = require('timers');
