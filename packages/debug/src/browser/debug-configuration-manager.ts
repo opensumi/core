@@ -120,6 +120,11 @@ export class DebugConfigurationManager {
   @Autowired(IDebugSessionManager)
   protected debugSessionManager: DebugSessionManager;
 
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManagerClient: ILoggerManagerClient;
+
+  protected logger: ILogServiceClient;
+
   // DebugConfigManager 直接维护的一批内部 DebugConfigurationProvider，用于模块级的快速自定义 Dynamic DebugConfiguration
   protected readonly internalDebugConfigurationProviders = new Map<string, InternalDebugConfigurationProvider>();
 
@@ -149,6 +154,7 @@ export class DebugConfigurationManager {
   constructor() {
     this.init();
     this.contextDebuggersAvailable = CONTEXT_DEBUGGERS_AVAILABLE.bind(this.contextKeyService);
+    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
   protected async init(): Promise<void> {
@@ -514,7 +520,6 @@ export class DebugConfigurationManager {
   }
 
   public async getDynamicConfigurationsSupportTypes(): Promise<DebugConfigurationType[]> {
-    await this.fireWillProvideDebugConfiguration();
     const debugTypes = new Set<string>();
 
     const typesFromInternal = Array.from(this.internalDebugConfigurationProviders.keys());
@@ -642,7 +647,12 @@ export class DebugConfigurationManager {
   }
 
   protected async fireWillProvideDebugConfiguration(): Promise<void> {
-    await WaitUntilEvent.fire(this.onWillProvideDebugConfigurationEmitter, {});
+    try {
+      // 这个命令背后会触发 ActivateEvent，然后插件 Activate 的时候可能会抛出异常导致逻辑错误
+      await WaitUntilEvent.fire(this.onWillProvideDebugConfigurationEmitter, {}, 2000);
+    } catch (e) {
+      this.logger.error('fireWillProvideDebugConfiguration failed', e);
+    }
   }
 
   protected getInitialConfigurationContent(initialConfigurations: DebugConfiguration[]): string {
