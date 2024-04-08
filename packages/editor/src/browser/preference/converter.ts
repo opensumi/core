@@ -101,6 +101,7 @@ interface IMonacoOptionsConverter {
    */
   convert?: (value: any) => any;
 }
+
 /**
  * Configuration options for the editor.
  */

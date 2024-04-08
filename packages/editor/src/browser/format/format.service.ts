@@ -6,16 +6,13 @@ import {
   DocumentFormattingEditProvider,
   DocumentRangeFormattingEditProvider,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import {
-  getRealAndSyntheticDocumentFormattersOrdered,
-  FormattingMode,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
+import { getRealAndSyntheticDocumentFormattersOrdered } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/formattingEdit';
 
 import { WorkbenchEditorService } from '../types';
 import { WorkbenchEditorServiceImpl } from '../workbench-editor.service';
 
-import { FormattingSelector } from './formatterSelect';
+import { FormattingSelector } from './formatter-selector';
 
 @Injectable()
 export class DocumentFormatService {
@@ -29,7 +26,11 @@ export class DocumentFormatService {
   injector: Injector;
 
   async formatDocumentWith() {
-    const model = this.workbenchEditorService.currentEditor?.monacoEditor.getModel();
+    const monacoEditor = this.workbenchEditorService.currentEditor?.monacoEditor;
+    if (!monacoEditor) {
+      return;
+    }
+    const model = monacoEditor.getModel();
     if (model) {
       const formatterProviders = getRealAndSyntheticDocumentFormattersOrdered(
         languageFeaturesService.documentFormattingEditProvider,
@@ -37,17 +38,16 @@ export class DocumentFormatService {
         model,
       );
       const selector = this.injector.get(FormattingSelector);
-      const formatter = await selector.select(formatterProviders, model, FormattingMode.Explicit, true);
+      const formatter = await selector.pickFormatter<DocumentFormattingEditProvider>(formatterProviders, model);
       if (formatter) {
         try {
-          const edits = await (formatter as DocumentFormattingEditProvider).provideDocumentFormattingEdits(
+          const edits = await formatter.provideDocumentFormattingEdits(
             model,
             model.getFormattingOptions(),
             CancellationToken.None,
           );
           if (edits) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            FormattingEdit.execute(this.workbenchEditorService.currentEditor?.monacoEditor!, edits, true);
+            FormattingEdit.execute(monacoEditor, edits, true);
           }
         } catch (err) {
           this.logger.error('execute format document with error', err);
@@ -60,9 +60,12 @@ export class DocumentFormatService {
     if (!this.workbenchEditorService.currentEditor?.monacoEditor.hasModel()) {
       return;
     }
-    const model = this.workbenchEditorService.currentEditor?.monacoEditor.getModel();
+
+    const monacoEditor = this.workbenchEditorService.currentEditor.monacoEditor;
+
+    const model = monacoEditor.getModel();
     if (model) {
-      let range: Range | null | undefined = this.workbenchEditorService.currentEditor?.monacoEditor.getSelection();
+      let range: Range | null | undefined = monacoEditor.getSelection();
       if (range?.isEmpty()) {
         range = new Range(
           range.startLineNumber,
@@ -73,18 +76,17 @@ export class DocumentFormatService {
       }
       const formatterProviders = languageFeaturesService.documentRangeFormattingEditProvider.ordered(model);
       const selector = this.injector.get(FormattingSelector);
-      const formatter = await selector.select(formatterProviders, model, FormattingMode.Explicit, true);
+      const formatter = await selector.pickFormatter<DocumentRangeFormattingEditProvider>(formatterProviders, model);
       if (formatter) {
         try {
-          const edits = await (formatter as DocumentRangeFormattingEditProvider).provideDocumentRangeFormattingEdits(
+          const edits = await formatter.provideDocumentRangeFormattingEdits(
             model,
             range!,
             model.getFormattingOptions(),
             CancellationToken.None,
           );
           if (edits) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            FormattingEdit.execute(this.workbenchEditorService.currentEditor?.monacoEditor!, edits, true);
+            FormattingEdit.execute(monacoEditor, edits, true);
           }
         } catch (err) {
           this.logger.error('execute format document with error', err);

@@ -1,6 +1,8 @@
 import { QuickPickService, PreferenceService, IContextKeyService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@opensumi/ide-core-common';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IEditor } from '@opensumi/ide-editor';
 import {
   IEditorFeatureRegistry,
@@ -16,17 +18,15 @@ import {
   EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
-import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatterSelect';
+import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatter-selector';
 import { EditorHistoryService } from '@opensumi/ide-editor/lib/browser/history';
 import { EditorContextMenuController } from '@opensumi/ide-editor/lib/browser/menu/editor.context';
 import { TabTitleMenuService } from '@opensumi/ide-editor/lib/browser/menu/title-context.menu';
 import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
 import { EditorExtensionsRegistry } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { IMessageService } from '@opensumi/ide-overlay';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
-
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 Error.stackTraceLimit = 100;
 describe('editor status bar item test', () => {
@@ -34,6 +34,7 @@ describe('editor status bar item test', () => {
 
   beforeAll(() => {
     injector.mockService(ILogger);
+    injector.mockService(IMessageService);
     injector.addProviders({
       token: IEditorFeatureRegistry,
       useClass: EditorFeatureRegistryImpl,
@@ -109,7 +110,7 @@ describe('editor status bar item test', () => {
 
     const selector: FormattingSelector = injector.get(FormattingSelector);
 
-    await selector.select(
+    await selector.selectFormatter(
       [
         {
           displayName: 'Test Formatter',
@@ -126,6 +127,7 @@ describe('editor status bar item test', () => {
         uri: new URI('file:///test/test.js').codeUri,
       } as any,
       1,
+      1,
     );
 
     expect(config['editor.preferredFormatter']['javascript']).toBe('testFormatter');
@@ -137,7 +139,7 @@ describe('editor status bar item test', () => {
     });
 
     const selector: FormattingSelector = injector.get(FormattingSelector);
-    await selector.select(
+    await selector.pickFormatter(
       [
         {
           displayName: 'Test Single Formatter',
@@ -148,8 +150,6 @@ describe('editor status bar item test', () => {
       {
         uri: new URI('file:///test/test2.js').codeUri,
       } as any,
-      1,
-      true, // force show selector
     );
 
     expect(config['editor.preferredFormatter']['javascript']).toBe('testSingleFormatter');
