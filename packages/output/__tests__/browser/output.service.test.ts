@@ -101,7 +101,7 @@ describe('Output.service.ts', () => {
     ],
   );
 
-  beforeAll(async () => {
+  beforeAll(() => {
     const documentRegistry = injector.get<IEditorDocumentModelContentRegistry>(IEditorDocumentModelContentRegistry);
     documentRegistry.registerEditorDocumentModelContentProvider(
       injector.get(MockWalkThroughSnippetSchemeDocumentProvider),

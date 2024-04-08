@@ -26,7 +26,7 @@ describe(' monaco command service test', () => {
   let monacoActionRegistry: MonacoActionRegistry;
   const monacoEditor = {};
 
-  beforeAll(async () => {
+  beforeAll(() => {
     injector = createBrowserInjector([]);
 
     injector.addProviders(

@@ -84,6 +84,8 @@ describe('mock-injector test', () => {
       expect(fn1).toBeCalledTimes(0);
       expect(fn2).toBeCalledTimes(1);
       expect(fn2).toBeCalledWith(...args);
+
+      return injector.disposeAll();
     });
   });
 });

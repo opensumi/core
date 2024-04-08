@@ -23,9 +23,9 @@ describe('LogServiceManager', () => {
   let injector: MockInjector;
   let loggerManager: ILogServiceManager;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     track = temp.track();
-    logDir = await temp.mkdir('log-test');
+    logDir = temp.mkdirSync('log-test');
     injector = createNodeInjector(
       [LogServiceModule],
       new MockInjector([
@@ -44,6 +44,7 @@ describe('LogServiceManager', () => {
   afterAll(() => {
     loggerManager.cleanAllLogs();
     track.cleanupSync();
+    return injector.disposeAll();
   });
 
   test('Set 、get LogLevel', () => {

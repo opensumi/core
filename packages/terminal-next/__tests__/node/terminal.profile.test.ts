@@ -13,6 +13,10 @@ describe('TerminalServiceClientImpl', () => {
     terminalProfileService = injector.get(TerminalProfileServiceNode);
   });
 
+  afterEach(() => {
+    return injector.disposeAll();
+  });
+
   it('will get 0 profiles without any input data', async () => {
     const ps = await terminalProfileService.detectAvailableProfiles({
       autoDetect: false,

@@ -1,6 +1,6 @@
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
-import { SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
+import { IRPCProtocol, SumiConnectionMultiplexer } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
 import { SumiConnection } from '@opensumi/ide-connection/lib/common/rpc/connection';
 import { Emitter } from '@opensumi/ide-core-common';
 
@@ -35,3 +35,21 @@ export function createMockPairRPCProtocol() {
     rpcProtocolMain,
   };
 }
+
+export const mockMultiplexerFactory = () => {
+  const map = new Map();
+
+  const rpcProtocol: IRPCProtocol = {
+    getProxy: (key) => map.get(key),
+    set: (key, value) => {
+      map.set(key, value);
+      return value;
+    },
+    get: (r) => map.get(r),
+
+    dispose: () => {
+      map.clear();
+    },
+  };
+  return rpcProtocol;
+};

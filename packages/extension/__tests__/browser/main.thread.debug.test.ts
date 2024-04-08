@@ -1,6 +1,6 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
-import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-common';
+import { Disposable, URI, Uri } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
   IDebugSessionManager,
   IDebugService,
@@ -23,17 +23,9 @@ import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { mockMultiplexerFactory } from '../../__mocks__/initRPCProtocol';
 
-const map = new Map();
-
-const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => map.get(key),
-  set: (key, value) => {
-    map.set(key, value);
-    return value;
-  },
-  get: (r) => map.get(r),
-};
+const rpcProtocol = mockMultiplexerFactory();
 
 const mockExtThreadDebug = {
   $breakpointsDidChange: jest.fn(() => Disposable.create(() => {})),

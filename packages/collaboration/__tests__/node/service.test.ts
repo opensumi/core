@@ -42,6 +42,10 @@ describe('Collaboration node ws server test', () => {
     service = injector.get(ICollaborationServiceForClient);
   });
 
+  afterAll(() => {
+    return injector.disposeAll();
+  });
+
   it('should correctly initialize', () => {
     const spy = jest.spyOn(server, 'initialize');
     server.initialize();

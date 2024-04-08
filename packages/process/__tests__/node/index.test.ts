@@ -13,6 +13,10 @@ describe('Process test', () => {
   const injector = createNodeInjector([ProcessModule]);
   const processFactory = injector.get(IProcessFactory);
 
+  afterAll(() => {
+    return injector.disposeAll();
+  });
+
   it('test error on non-existent path', async () => {
     const error = await new Promise<ProcessErrorEvent>((resolve, reject) => {
       const proc = processFactory.create({ command: '/non-existent' });
@@ -143,6 +147,9 @@ describe('ProcessManage test', () => {
   const injector = createNodeInjector([ProcessModule]);
   const processManage = injector.get(IProcessManage);
   const processFactory = injector.get(IProcessFactory);
+  afterAll(() => {
+    return injector.disposeAll();
+  });
 
   it('Method', () => {
     const cmd = processFactory.create({ command: 'node' });

@@ -43,7 +43,7 @@ describe('merge editor service test', () => {
   let mergeEditorService: MergeEditorService;
   let openMergeEditorArgs: IOpenMergeEditorArgs;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     mergeEditorService = injector.get(MergeEditorService);
     mergeEditorService.instantiationCodeEditor(
       document.createElement('div'),

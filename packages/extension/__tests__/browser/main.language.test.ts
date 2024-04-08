@@ -89,7 +89,7 @@ describe('ExtHostLanguageFeatures', () => {
   useMockStorage(injector);
   addEditorProviders(injector);
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // injector.get(MonacoService);
 
     model = createModel(

@@ -13,22 +13,14 @@ import {
 import { ExtHostDebug, createDebugApiFactory } from '../../../../src/hosted/api/vscode/debug/ext.host.debug';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostConnection } from '../../../../src/hosted/api/vscode/ext.host.connection';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
   $registerCommand: jest.fn(),
 };
 
-const map = new Map();
-
-const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => map.get(key),
-  set: (key, value) => {
-    map.set(key, value);
-    return value;
-  },
-  get: (r) => map.get(r),
-};
+const rpcProtocol = mockMultiplexerFactory();
 
 const mockMainThreadDebug = {
   $appendToDebugConsole: jest.fn(),

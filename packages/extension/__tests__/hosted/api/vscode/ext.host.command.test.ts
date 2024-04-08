@@ -17,7 +17,7 @@ import {
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {
   let vscodeCommand: typeof vscode.commands;
@@ -26,7 +26,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
   const commandShouldAuth = 'ext.commandShouldAuthId';
   // mock 判断是否有权限是根据是否为内置函数
   const isPermitted = (extensionInfo: IExtensionInfo) => extensionInfo.isBuiltin;
-  const map = new Map();
+
   const builtinCommands = [
     {
       id: 'test:builtinCommand',
@@ -50,14 +50,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     },
   ];
 
-  const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value);
-      return value;
-    },
-    get: (r) => map.get(r),
-  };
+  const rpcProtocol = mockMultiplexerFactory();
 
   beforeEach(() => {
     mainService = mockService({
@@ -79,6 +72,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     rpcProtocol.set(MainThreadAPIIdentifier.MainThreadCommands, mainService);
     extCommand = new ExtHostCommands(rpcProtocol, builtinCommands);
     vscodeCommand = createCommandsApiFactory(extCommand, editorService, extension);
+  });
+
+  afterEach(() => {
+    extCommand.dispose();
   });
 
   describe('vscode command', () => {

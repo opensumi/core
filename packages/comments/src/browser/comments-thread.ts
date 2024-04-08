@@ -72,12 +72,14 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   ) {
     super();
     makeObservable(this);
-    this.comments = options.comments
-      ? options.comments.map((comment) => ({
-          ...comment,
-          id: uuid(),
-        }))
-      : [];
+    this.updateComments(
+      options.comments
+        ? options.comments.map((comment) => ({
+            ...comment,
+            id: uuid(),
+          }))
+        : [],
+    );
     this.data = this.options.data;
     this._contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
     // 设置 resource context key
@@ -121,7 +123,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     );
     this.addDispose({
       dispose: () => {
-        this.comments = [];
+        this.updateComments([]);
       },
     });
     this.onDidChangeEmitter.fire();

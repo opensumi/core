@@ -389,4 +389,13 @@ export class RPCProtocol implements IRPCProtocol {
 
     pendingReply.reject(new Error('RPC Timeout: ' + callId));
   }
+
+  dispose(): void {
+    this._pendingRPCReplies.forEach((value) => value.reject(new Error('disposed')));
+    this._pendingRPCReplies.clear();
+    this._cancellationTokenSources.clear();
+    this._proxies.clear();
+    this._locals.clear();
+    this._timeoutHandles.clear();
+  }
 }

@@ -9,7 +9,6 @@ const tsModuleNameMapper = pathsToModuleNameMapper(tsconfig.compilerOptions.path
  */
 const baseConfig = {
   preset: 'ts-jest',
-  testRunner: 'jest-jasmine2',
   resolver: '<rootDir>/tools/dev-tool/src/jest-resolver.js',
   // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
   maxWorkers: 2,

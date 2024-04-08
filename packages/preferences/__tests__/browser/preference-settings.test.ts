@@ -29,7 +29,7 @@ describe('PreferenceSettingService should be work', () => {
   let mockUserPreferenceProvider;
   let mockResource;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     injector = createBrowserInjector([]);
 
     mockPreferenceSchemaProvider = {

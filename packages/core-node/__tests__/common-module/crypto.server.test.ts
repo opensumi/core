@@ -17,10 +17,9 @@ describe('test for core-browser/src/services/crypto-service.ts', () => {
     cryptoService = injector.get<INativeCryptoService>(INativeCryptoService);
   });
 
-  afterAll(async () => {
-    await injector.disposeAll();
+  afterAll(() => {
+    return injector.disposeAll();
   });
-
   it('encrypt', async () => {
     hash = await cryptoService.encrypt(password);
     expect(hash).toBeDefined();

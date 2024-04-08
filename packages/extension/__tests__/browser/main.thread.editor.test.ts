@@ -6,15 +6,8 @@ import { URI, IContextKeyService } from '@opensumi/ide-core-browser';
 import { CorePreferences, MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
 import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import {
-  Emitter,
-  IFileServiceClient,
-  IEventBus,
-  CommonServerPath,
-  OS,
-  IApplicationService,
-  Deferred,
-} from '@opensumi/ide-core-common';
+import { Emitter, IEventBus, CommonServerPath, OS, IApplicationService, Deferred } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IResource, IEditorOpenType } from '@opensumi/ide-editor';
 import {
   IEditorDecorationCollectionService,

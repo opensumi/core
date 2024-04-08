@@ -5,16 +5,17 @@ import Koa from 'koa';
 import fetch from 'node-fetch';
 
 import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ExpressFileServerModule } from '../../src/node';
 import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
 
 describe('template test', () => {
   let server: http.Server;
+  let injector: MockInjector;
   const resPath = path.join(__dirname, '../res');
   beforeAll(() => {
-    const injector = createNodeInjector([ExpressFileServerModule]);
+    injector = createNodeInjector([ExpressFileServerModule]);
 
     injector.overrideProviders({
       token: AppConfig,
@@ -35,6 +36,10 @@ describe('template test', () => {
 
     expressFileServerContribution.initialize(mockServerApp);
     server = app.listen(50118);
+  });
+
+  afterAll(() => {
+    return injector.disposeAll();
   });
 
   it('can get png if path in whitelist', async () => {

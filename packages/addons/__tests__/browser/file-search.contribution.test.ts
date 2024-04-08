@@ -76,6 +76,8 @@ describe('test for browser/file-search.contribution.ts', () => {
   afterEach(() => {
     fakeOpenFn.mockReset();
     disposables.dispose();
+
+    return injector.disposeAll();
   });
 
   it('registerCommands', async () => {

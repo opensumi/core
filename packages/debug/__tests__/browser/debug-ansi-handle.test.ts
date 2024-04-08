@@ -79,6 +79,10 @@ describe('Debug - ANSI escape sequence', () => {
     themeService = injector.get(IThemeService);
   });
 
+  afterAll(() => {
+    return injector.disposeAll();
+  });
+
   test('appendStylizedStringToContainer', () => {
     const root: HTMLSpanElement = document.createElement('span');
     let child: Node;

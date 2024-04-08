@@ -5,19 +5,12 @@ import { IMainThreadChatAgents } from '../../../../lib/common/sumi/chat-agents';
 import { IExtensionDescription } from '../../../../lib/common/vscode';
 import { ExtHostChatAgents } from '../../../../lib/hosted/api/sumi/ext.host.chat.impl';
 import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 describe('ExtHostChatAgents', () => {
   let chatAgents: IMainThreadChatAgents;
   let extHostChatAgents: ExtHostChatAgents;
-  const map = new Map();
-  const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value);
-      return value;
-    },
-    get: (r) => map.get(r),
-  };
+  const rpcProtocol = mockMultiplexerFactory();
 
   beforeEach(() => {
     chatAgents = mockService({});

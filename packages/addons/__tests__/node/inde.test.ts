@@ -9,6 +9,10 @@ describe('test for ', () => {
     injector = createNodeInjector([AddonsModule]);
   });
 
+  afterEach(() => {
+    return injector.disposeAll();
+  });
+
   it('empty module', () => {
     const ins = injector.get(AddonsModule);
     expect(ins.providers.length).toBe(2);

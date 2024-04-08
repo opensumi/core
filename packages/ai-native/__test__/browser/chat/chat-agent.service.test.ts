@@ -24,6 +24,11 @@ describe('ChatAgentService', () => {
     chatAgentService = new ChatAgentService();
   });
 
+  afterEach(async () => {
+    chatAgentService.dispose();
+    await injector.disposeAll();
+  });
+
   it('should register an agent', () => {
     const agent = { id: 'agent1', metadata: {} } as IChatAgent;
     const disposable = chatAgentService.registerAgent(agent);

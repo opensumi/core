@@ -31,6 +31,7 @@ function mockService(target) {
 
 describe('workspace edit tests', () => {
   const monaco = createMockedMonaco();
+  const injector = createBrowserInjector([WorkspaceEditModule]);
 
   beforeAll(() => {
     (global as any).monaco = monaco;
@@ -40,7 +41,6 @@ describe('workspace edit tests', () => {
     (global as any).monaco = undefined;
   });
 
-  const injector = createBrowserInjector([WorkspaceEditModule]);
   const editorGroups: IEditorGroup[] = [];
   const files = new Set<string>();
   injector.addProviders(

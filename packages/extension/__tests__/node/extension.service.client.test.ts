@@ -18,7 +18,7 @@ describe('Extension Client Serivce', () => {
   const testExtPath = 'opensumi.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
 
-  beforeAll(async () => {
+  beforeAll(() => {
     injector = getBaseInjector();
     extensionNodeClient = injector.get(IExtensionNodeClientService);
   });

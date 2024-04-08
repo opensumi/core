@@ -4,21 +4,14 @@ import { IMainThreadUrls, MainThreadAPIIdentifier } from '@opensumi/ide-extensio
 
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { ExtHostUrls } from '../../../../src/hosted/api/vscode/ext.host.urls';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {
   let mainService: IMainThreadUrls;
   let extHostUrls: ExtHostUrls;
 
   beforeEach(() => {
-    const map = new Map();
-    const rpcProtocol: IRPCProtocol = {
-      getProxy: (key) => map.get(key),
-      set: (key, value) => {
-        map.set(key, value);
-        return value;
-      },
-      get: (r) => map.get(r),
-    };
+    const rpcProtocol = mockMultiplexerFactory();
 
     mainService = mockService({
       $registerUriHandler: jest.fn(),

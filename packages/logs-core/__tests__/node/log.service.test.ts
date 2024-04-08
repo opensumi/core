@@ -48,6 +48,7 @@ describe('LogService', () => {
   afterAll(() => {
     loggerManager.cleanAllLogs();
     track.cleanupSync();
+    return injector.disposeAll();
   });
 
   test('Test level with default Info', async () => {

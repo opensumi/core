@@ -22,7 +22,7 @@ describe('Extension Service', () => {
   const testExtPath = 'opensumi.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
 
-  beforeAll(async () => {
+  beforeAll(() => {
     injector = createNodeInjector([]);
     injector.addProviders(
       {

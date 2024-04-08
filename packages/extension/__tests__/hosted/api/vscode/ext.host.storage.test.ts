@@ -8,6 +8,7 @@ import {
   ExtensionMemento,
   ExtHostStorage,
 } from '../../../../src/hosted/api/vscode/ext.host.storage';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 const cache = {
   shared: {},
@@ -24,16 +25,7 @@ const mockMainThreadStorage = {
   }),
 };
 
-const map = new Map();
-
-const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => map.get(key),
-  set: (key, value) => {
-    map.set(key, value);
-    return value;
-  },
-  get: (r) => map.get(r),
-};
+const rpcProtocol = mockMultiplexerFactory();
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.storage.test.ts', () => {
   let extHostStorage: ExtHostStorage;

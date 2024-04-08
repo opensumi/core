@@ -389,6 +389,10 @@ export class ExtHostCommands implements IExtHostCommands {
     const { isPermitted } = commandHandler;
     return !isPermitted || isPermitted(extensionInfo, ...args);
   }
+
+  dispose() {
+    this.rpcProtocol.dispose();
+  }
 }
 
 export class CommandsConverter {

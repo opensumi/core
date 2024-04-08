@@ -26,6 +26,10 @@ describe('TerminalServiceClientImpl', () => {
     terminalService = injector.get(ITerminalNodeService);
   });
 
+  afterEach(() => {
+    return injector.disposeAll();
+  });
+
   it('setConnectionClientId, should be set the id correctly.', () => {
     terminalServiceClient.setConnectionClientId(mockClientId);
     expect((terminalService as any).serviceClientMap.get(mockClientId)).not.toBeUndefined();

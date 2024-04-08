@@ -7,6 +7,7 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 const mockMainThreadIDEWindowProxy = {
   $createWebviewWindow: jest.fn(async () => {
@@ -29,16 +30,7 @@ const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
 };
 
-const map = new Map();
-
-const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => map.get(key),
-  set: (key, value) => {
-    map.set(key, value);
-    return value;
-  },
-  get: (r) => map.get(r),
-};
+const rpcProtocol = mockMultiplexerFactory();
 
 describe('packages/extension/__tests__/hosted/api/sumi/ext.host.window.test.ts', () => {
   let extHostIDEWindow: ExtHostIDEWindow;

@@ -24,7 +24,6 @@ import {
   OS,
   Deferred,
   IClipboardService,
-  CommandRegistry,
 } from '@opensumi/ide-core-common';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';

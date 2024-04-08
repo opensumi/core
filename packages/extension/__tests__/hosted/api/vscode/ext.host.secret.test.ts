@@ -3,6 +3,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexe
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostSecret } from '../../../../src/hosted/api/vscode/ext.host.secrets';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 const moackMainThreadSecret = {
   $getPassword: jest.fn(),
@@ -10,16 +11,7 @@ const moackMainThreadSecret = {
   $deletePassword: jest.fn(),
 };
 
-const map = new Map();
-
-const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => map.get(key),
-  set: (key, value) => {
-    map.set(key, value);
-    return value;
-  },
-  get: (r) => map.get(r),
-};
+const rpcProtocol = mockMultiplexerFactory();
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.secret.test.ts', () => {
   let extHostSecret: ExtHostSecret;

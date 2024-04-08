@@ -44,12 +44,12 @@ describe('NodeLogger', () => {
     logger = injector.get(INodeLogger);
   });
 
-  afterAll(async () => {
+  afterAll(() => {
     const keys = Object.keys(mockLogServiceManager);
     for (const key of keys) {
       mockLogServiceManager[key]?.mockReset();
     }
-    await injector.disposeAll();
+    return injector.disposeAll();
   });
 
   test('error', () => {

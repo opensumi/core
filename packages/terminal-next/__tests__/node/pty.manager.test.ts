@@ -25,6 +25,10 @@ describe('Pty Manager Test Local', () => {
     injector = createNodeInjector([TerminalNodePtyModule]);
   });
 
+  afterEach(() => {
+    return injector.disposeAll();
+  });
+
   it('pty manager create and kill', async () => {
     ptyServiceManager = injector.get(PtyServiceManager);
     const ptyService = await ptyServiceManager.spawn(shellPath, [], {}, 'fake-session-1');
@@ -48,6 +52,10 @@ describe('Pty Manager Test Local', () => {
 
   beforeEach(() => {
     injector = createNodeInjector([TerminalNodePtyModule]);
+  });
+
+  afterEach(() => {
+    return injector.disposeAll();
   });
 
   // 远程模式使用PtyService

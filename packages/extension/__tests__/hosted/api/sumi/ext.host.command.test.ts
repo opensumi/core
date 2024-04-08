@@ -4,20 +4,13 @@ import { createCommandsApiFactory } from '@opensumi/ide-extension/lib/hosted/api
 import { ExtHostCommands } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
 
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
   let sumiCommand;
   let extCommand: ExtHostCommands;
   let mainService: IMainThreadCommands;
-  const map = new Map();
-  const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value);
-      return value;
-    },
-    get: (r) => map.get(r),
-  };
+  const rpcProtocol = mockMultiplexerFactory();
 
   beforeEach(() => {
     mainService = mockService({});

@@ -1,21 +1,26 @@
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IRemoteOpenerClient, IRemoteOpenerService, RemoteOpenerClientToken } from '../../src/common';
 import { RemoteOpenerClientImpl } from '../../src/node/opener.client';
 
 describe('packages/remote-opener/src/node/opener.client.ts', () => {
   let remoteOpenerClient: IRemoteOpenerClient;
   let logger: INodeLogger;
+  let injector: MockInjector;
 
   beforeEach(() => {
-    const injector = createNodeInjector([]);
+    injector = createNodeInjector([]);
     injector.addProviders({
       token: RemoteOpenerClientToken,
       useClass: RemoteOpenerClientImpl,
     });
     logger = injector.get(INodeLogger);
     remoteOpenerClient = injector.get(RemoteOpenerClientToken);
+  });
+
+  afterEach(() => {
+    return injector.disposeAll();
   });
 
   it('setRemoteOpenerServiceInstance should be work', () => {

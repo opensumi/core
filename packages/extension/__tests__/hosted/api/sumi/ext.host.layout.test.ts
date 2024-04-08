@@ -7,6 +7,7 @@ import { MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { createLayoutAPIFactory, ExtHostLayout } from '../../../../src/hosted/api/sumi/ext.host.layout';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 const extension = mockExtensions[0];
 
@@ -16,15 +17,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
   let layoutApi;
   const viewId = 'TestViewId';
 
-  const map = new Map();
-  const rpcProtocol: IRPCProtocol = {
-    getProxy: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value);
-      return value;
-    },
-    get: (r) => map.get(r),
-  };
+  const rpcProtocol = mockMultiplexerFactory();
 
   beforeAll(() => {
     mainLayout = mockService({});

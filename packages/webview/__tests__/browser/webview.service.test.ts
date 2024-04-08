@@ -106,7 +106,9 @@ describe('electron platform webview service test suite', () => {
     injector = createBrowserInjector([]);
     injector.addProviders(...providers);
   });
-
+  afterAll(() => {
+    global.isElectronRenderer = false;
+  });
   it('should be able to create electron webview', async () => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createWebview();
@@ -148,12 +150,6 @@ describe('electron platform webview service test suite', () => {
     expect(webview).toBeDefined();
     expect(registerFn).toBeCalled();
     expect(registerFn2).toBeCalled();
-  });
-
-  afterAll(() => {
-    beforeAll(() => {
-      global.isElectronRenderer = false;
-    });
   });
 });
 

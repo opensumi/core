@@ -22,6 +22,8 @@ export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
   get<T>(identifier: ProxyIdentifier<T>): T;
+
+  dispose(): void;
 }
 
 const SEP = '/';
@@ -104,5 +106,11 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     }
 
     return method.apply(actor, args);
+  }
+
+  dispose(): void {
+    this._locals.clear();
+    this._proxies.clear();
+    this.dispose();
   }
 }

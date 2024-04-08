@@ -5,6 +5,7 @@ import { ExtHostTreeViews } from '@opensumi/ide-extension/lib/hosted/api/vscode/
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier, TreeView } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
+import { mockMultiplexerFactory } from '../../../../__mocks__/initRPCProtocol';
 
 const moackManThreadTreeView = {
   $registerTreeDataProvider: jest.fn(),
@@ -16,16 +17,7 @@ const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
 };
 
-const map = new Map();
-
-const rpcProtocol: IRPCProtocol = {
-  getProxy: (key) => map.get(key),
-  set: (key, value) => {
-    map.set(key, value);
-    return value;
-  },
-  get: (r) => map.get(r),
-};
+const rpcProtocol = mockMultiplexerFactory();
 
 const onDidChangeTreeDataEmitter = new Emitter<void>();
 

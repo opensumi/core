@@ -346,6 +346,12 @@ export class SumiConnection implements IDisposable {
   }
 
   dispose(): void {
+    this._callbacks.forEach((cb) => cb(nullHeaders, new Error('Connection disposed')));
+
+    this._callbacks.clear();
+    this._cancellationTokenSources.clear();
+    this.activeRequestPool.clear();
+
     this.disposable.dispose();
   }
 

@@ -37,7 +37,7 @@ describe('Debug Configuration Service', () => {
     reportAction: jest.fn(),
   };
 
-  beforeAll(async () => {
+  beforeAll(() => {
     mockInjector.overrideProviders({
       token: DebugToolbarService,
       useClass: DebugToolbarService,
