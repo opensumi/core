@@ -1,6 +1,7 @@
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { browserViews } from './contributes/en-US.lang';
+import { editorLocalizations } from './editor/en-US';
 
 export const localizationBundle = {
   languageId: LOCALE_TYPES.EN_US,
@@ -1474,8 +1475,9 @@ export const localizationBundle = {
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
 
-    'webview.webviewTagUnavailable': 'Webview is unsupported on non-electron env, please use iframe instead',
+    'webview.webviewTagUnavailable': 'webview is unsupported on non-electron env, please use iframe instead',
 
     ...browserViews,
+    ...editorLocalizations,
   },
 };

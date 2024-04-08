@@ -7,7 +7,8 @@ import { QuickPickService } from '@opensumi/ide-quick-open/lib/common';
 import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/formattingEdit';
 
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { FormattingSelector } from '../../src/browser/format/formatterSelect';
+import { FormattingSelector } from '../../src/browser/format/formatter-selector';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 describe('FormatService', () => {
   const injector = new MockInjector();
@@ -63,6 +64,7 @@ describe('FormatService', () => {
   const originalOrdered = languageFeaturesService.documentRangeFormattingEditProvider.ordered;
 
   beforeAll(() => {
+    injector.mockService(IMessageService);
     injector.addProviders(
       {
         token: FormattingSelector,

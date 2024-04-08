@@ -1,6 +1,7 @@
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { browserViews } from './contributes/zh-CN.lang';
+import { editorLocalizations } from './editor/zh-CN';
 
 export const localizationBundle = {
   languageId: LOCALE_TYPES.ZH_CN,
@@ -1237,8 +1238,9 @@ export const localizationBundle = {
     'aiNative.chat.welcome.loading.text': '初始化中...',
     // #endregion AI Native
 
-    'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
+    'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',
 
     ...browserViews,
+    ...editorLocalizations,
   },
 };
