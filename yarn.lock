@@ -2147,7 +2147,6 @@ __metadata:
     offline-iconfont: ^1.2.0
     prettier: ^2.5.1
     rimraf: ^3.0.2
-    semver: ^7.5.2
     simple-git: ^3.3.0
     temp: ^0.9.4
     tinybench: ^2.6.0
