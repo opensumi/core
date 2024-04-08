@@ -47,7 +47,7 @@
     ],
     "verbose": true,
     "execMap": {
-      "ts": "node --import tsx"
+      "ts": "node --require ts-node/register"
     },
     "watch": [
       "../../packages"
