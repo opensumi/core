@@ -40,6 +40,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
       output: {
         filename: 'bundle.js',
         path: outputPath,
+        clean: true,
       },
       cache: {
         type: 'filesystem',
@@ -66,7 +67,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         },
       },
       bail: true,
-      mode: 'development',
+      mode: process.env.NODE_ENV || 'development',
       devtool: 'source-map',
       module: {
         // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
@@ -224,20 +225,13 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         devMiddleware: {
           stats: 'errors-only',
         },
-        proxy: {
-          '/api': {
+        proxy: [
+          {
+            context: ['/api', '/extension', '/assets', '/kaitian'],
             target: `http://${HOST}:8000`,
+            changeOrigin: true,
           },
-          '/extension': {
-            target: `http://${HOST}:8000`,
-          },
-          '/assets': {
-            target: `http://${HOST}:8000`,
-          },
-          '/kaitian': {
-            target: `http://${HOST}:8000`,
-          },
-        },
+        ],
         open: process.env.SUMI_DEV_OPEN_BROWSER ? true : false,
         hot: true,
         client: {
@@ -265,6 +259,7 @@ exports.createWebviewWebpackConfig = (entry, dir, outputPath = '/dist') => {
     output: {
       filename: 'webview.js',
       path: dir + outputPath,
+      clean: true,
     },
     cache: {
       type: 'filesystem',
@@ -278,7 +273,7 @@ exports.createWebviewWebpackConfig = (entry, dir, outputPath = '/dist') => {
       ],
     },
     bail: true,
-    mode: 'development',
+    mode: process.env.NODE_ENV || 'development',
     devtool: 'source-map',
     module: {
       // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
@@ -341,9 +336,11 @@ exports.createNodeWebpackConfig = (entry, distDir) => ({
   output: {
     filename: 'server.js',
     path: distDir,
+    clean: true,
   },
   node: false,
-  mode: 'production',
+  mode: process.env.NODE_ENV || 'development',
+  devtool: 'source-map',
   optimization: {
     minimize: false,
   },

@@ -55,8 +55,12 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     return lastBranch ? (this.treeModel.root.getTreeNodeById(lastBranch) as ConsoleNodes) : undefined;
   }
 
-  async init() {
-    this.session.on('output', (event) => this.logOutput(this.session, event));
+  init() {
+    this.toDispose.push(this.session.on('output', (event) => this.logOutput(this.session, event)));
+  }
+
+  addChildSession(child: DebugSession): void {
+    this.toDispose.push(child.on('output', (event) => this.logOutput(child, event)));
   }
 
   get onDidChange(): Event<void> {
@@ -88,16 +92,18 @@ export class DebugConsoleSession implements IDebugConsoleSession {
       return;
     }
     if (variablesReference) {
-      const node = new ExpressionContainer(
-        { session, variablesReference, source, line },
+      const expression = new DebugConsoleNode(
+        {
+          session,
+          variablesReference,
+          source,
+          line,
+        },
+        '',
         this.treeModel?.root as ExpressionContainer,
       );
-      await node.hardReloadChildren();
-      if (node.children) {
-        for (const child of node.children) {
-          this.treeModel.root.insertItem(child as DebugConsoleNode);
-        }
-      }
+      await expression.evaluate();
+      this.treeModel.root.insertItem(expression);
     } else if (typeof body.output === 'string') {
       let output = body.output;
       if (output.indexOf(clearAnsiSequence) >= 0) {
@@ -152,7 +158,12 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     this.treeModel.root.insertItem(
       new AnsiConsoleNode(value, this.treeModel.root, this.linkDetector, undefined, MessageType.Info),
     );
-    const expression = new DebugConsoleNode(this.session, value, this.treeModel?.root as ExpressionContainer);
+    const expression = new DebugConsoleNode(
+      { session: this.session },
+      value,
+      this.treeModel?.root as ExpressionContainer,
+    );
+    await expression.evaluate();
     this.treeModel.root.insertItem(expression);
     this.fireDidChange();
   }

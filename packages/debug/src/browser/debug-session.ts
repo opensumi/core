@@ -982,6 +982,14 @@ export class DebugSession implements IDebugSession {
     return response.body;
   }
 
+  async variables(
+    variablesReference: number,
+    filter: 'indexed' | 'named' = 'named',
+  ): Promise<DebugProtocol.VariablesResponse['body']> {
+    const response = await this.sendRequest('variables', { variablesReference, filter });
+    return response.body;
+  }
+
   async goto(args: DebugProtocol.GotoArguments): Promise<DebugProtocol.GotoResponse | void> {
     if (this.capabilities.supportsGotoTargetsRequest) {
       const res = await this.sendRequest('goto', args);

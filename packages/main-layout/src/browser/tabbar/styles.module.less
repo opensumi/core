@@ -400,10 +400,13 @@
 .left_tab_bar .vertical_icons {
   height: auto;
   flex-direction: column;
+  margin-top: 10px;
 
   &.extra_top_menus {
-    > span {
-      margin-bottom: initial !important;
+    :global(.kt-icon) {
+      margin-bottom: initial;
+      width: 32px;
+      height: 28px;
     }
   }
 

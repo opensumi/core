@@ -47,7 +47,11 @@ export async function startServer(
 
   if (options && options.mountStaticPath) {
     console.log('mount static path:', options.mountStaticPath);
-    app.use(Static(options.mountStaticPath));
+    app.use(
+      Static(options.mountStaticPath, {
+        maxage: 30 * 24 * 60 * 60 * 1000,
+      }),
+    );
   }
 
   const injector = new Injector([

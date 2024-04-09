@@ -221,7 +221,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         if (model && model.instance) {
           const langId = model.instance.getMonacoModel().getLanguageId();
           if (this.languageConfiguration.has(langId)) {
-            await this.loadLanguageConfiguration(this.languageConfiguration.get(langId)!, baseUri);
+            const location = this.languageConfigLocation.get(langId)!;
+            await this.loadLanguageConfiguration(this.languageConfiguration.get(langId)!, location);
             this.activateLanguage(langId);
           }
         }

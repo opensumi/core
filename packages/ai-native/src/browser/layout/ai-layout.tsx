@@ -11,8 +11,21 @@ export const AILayout = () => {
   return (
     <BoxPanel direction='top-to-bottom'>
       <SlotRenderer id='top' defaultSize={35} slot='top' z-index={2} />
-      <SplitPanel id='main-horizontal-ai' flex={1} direction={'left-to-right'} useDomSize={true}>
-        <SplitPanel id='main-horizontal' flex={1} flexGrow={1} direction={'left-to-right'} useDomSize={true}>
+      <SplitPanel
+        id='main-horizontal-ai'
+        flex={1}
+        direction={'left-to-right'}
+        useDomSize={true}
+        resizeHandleClassName={'design-slot_resize_horizontal'}
+      >
+        <SplitPanel
+          id='main-horizontal'
+          flex={1}
+          flexGrow={1}
+          direction={'left-to-right'}
+          useDomSize={true}
+          resizeHandleClassName={'design-slot_resize_horizontal'}
+        >
           <SlotRenderer
             slot='left'
             isTabbar={true}

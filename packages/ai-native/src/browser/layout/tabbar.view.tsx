@@ -1,7 +1,13 @@
 import cls from 'classnames';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
-import { ComponentRegistryInfo, SlotLocation, useContextMenus, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AINativeConfigService,
+  ComponentRegistryInfo,
+  SlotLocation,
+  useContextMenus,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { EDirection } from '@opensumi/ide-core-browser/lib/components';
 import {
   EnhanceIcon,
@@ -115,6 +121,7 @@ export const AIRightTabRenderer = ({
   components: ComponentRegistryInfo[];
 }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(SlotLocation.right);
+  const aiNativeConfigService: AINativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const handleClose = useCallback(() => {
     tabbarService.updateCurrentContainerId('');
@@ -143,9 +150,15 @@ export const AIRightTabRenderer = ({
     );
   }, []);
 
+  const rightTabRenderClassName = useMemo(
+    () => (aiNativeConfigService.layout!.useMergeRightWithLeftPanel ? styles.right_tab_renderer : ''),
+    [aiNativeConfigService],
+  );
+
   return (
     <DesignRightTabRenderer
       components={components}
+      className={rightTabRenderClassName}
       tabbarView={() => <RightTabbarRenderer barSize={0} style={{ width: 0 }} />}
       tabpanelView={() => <BaseTabPanelView PanelView={ContainerViewFn} />}
     />
