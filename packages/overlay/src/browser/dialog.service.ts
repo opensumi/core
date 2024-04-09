@@ -100,7 +100,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     }
   }
 
-  getButtons(): string[] {
+  getButtons() {
     return this.buttons;
   }
 
