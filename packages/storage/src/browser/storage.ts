@@ -23,7 +23,9 @@ enum StorageState {
 export class Storage implements IStorage {
   private static readonly DEFAULT_FLUSH_DELAY = 200;
 
-  private _onDidChangeStorage = new Emitter<string>();
+  private toDisposableCollection: DisposableCollection = new DisposableCollection();
+
+  private _onDidChangeStorage = this.toDisposableCollection.register(new Emitter<string>());
   readonly onDidChangeStorage: Event<string> = this._onDidChangeStorage.event;
 
   private flushDelayer: ThrottledDelayer<void>;
@@ -35,7 +37,6 @@ export class Storage implements IStorage {
   private pendingDeletes: Set<string> = new Set();
   private pendingInserts: Map<string, string> = new Map();
 
-  private toDisposableCollection: DisposableCollection = new DisposableCollection();
   private readonly logger = getDebugLogger();
 
   private readyDeferred = new Deferred<void>();

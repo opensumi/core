@@ -25,7 +25,7 @@ export class MockedStorage extends Disposable implements IStorage {
     return this.items.size;
   }
 
-  _onDidChangeStorage: Emitter<string> = new Emitter<string>();
+  _onDidChangeStorage: Emitter<string> = this.registerDispose(new Emitter<string>());
   onDidChangeStorage: Event<string> = this._onDidChangeStorage.event;
   whenReady: Promise<any>;
 

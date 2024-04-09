@@ -67,10 +67,10 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
     });
   }
 
-  _onMessage: Emitter<any> = new Emitter<any>();
+  _onMessage: Emitter<any> = this.registerDispose(new Emitter<any>());
   onMessage: Event<any> = this._onMessage.event;
 
-  _onClosed: Emitter<void> = new Emitter<void>();
+  _onClosed: Emitter<void> = this.registerDispose(new Emitter<void>());
   onClosed: Event<void> = this._onClosed.event;
 
   private _url: string;

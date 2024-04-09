@@ -34,6 +34,7 @@ function handleClientChannel(
 
   channel.onceClose(() => {
     remove.dispose();
+    serviceCenter.dispose();
     serviceChildInjector.disposeAll();
 
     logger.log(`Remove RPC connection ${clientId}`);

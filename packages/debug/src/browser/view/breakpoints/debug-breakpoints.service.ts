@@ -63,11 +63,13 @@ export class DebugBreakpointsService extends WithEventBus {
   @Autowired(IEditorDocumentModelService)
   protected readonly documentService: IEditorDocumentModelService;
 
-  private readonly _onDidChangeBreakpointsTreeNode = new Emitter<Map<string, BreakpointsTreeNode[]>>();
+  private readonly _onDidChangeBreakpointsTreeNode = this.registerDispose(
+    new Emitter<Map<string, BreakpointsTreeNode[]>>(),
+  );
   readonly onDidChangeBreakpointsTreeNode: Event<Map<string, BreakpointsTreeNode[]>> =
     this._onDidChangeBreakpointsTreeNode.event;
 
-  private readonly _onDidFocusedBreakpoints = new Emitter<{ uri: URI; range: IRange }>();
+  private readonly _onDidFocusedBreakpoints = this.registerDispose(new Emitter<{ uri: URI; range: IRange }>());
   readonly onDidFocusedBreakpoints: Event<{ uri: URI; range: IRange }> = this._onDidFocusedBreakpoints.event;
 
   private _inputEditor: ICodeEditor;

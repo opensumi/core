@@ -224,12 +224,12 @@ export class ExtensionTreeViewModel {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private onDidFocusedNodeChangeEmitter: Emitter<string | void> = new Emitter();
-  private onDidSelectedNodeChangeEmitter: Emitter<string[]> = new Emitter();
+  private onDidFocusedNodeChangeEmitter: Emitter<string | void> = this.disposableCollection.register(new Emitter());
+  private onDidSelectedNodeChangeEmitter: Emitter<string[]> = this.disposableCollection.register(new Emitter());
   private onDidChangeExpansionStateEmitter: Emitter<{
     treeItemId: string;
     expanded: boolean;
-  }> = new Emitter();
+  }> = this.disposableCollection.register(new Emitter());
 
   private _isMultiSelected = false;
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);

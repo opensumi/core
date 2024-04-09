@@ -31,7 +31,7 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
   @Autowired(ExtensionNodeServiceServerPath)
   private readonly extensionNodeClient: IExtensionNodeClientService;
 
-  private onDidChangeEmitter: Emitter<void> = new Emitter();
+  private onDidChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
   private workspaceStorage: IStorage;
   private globalStorage: IStorage;
 

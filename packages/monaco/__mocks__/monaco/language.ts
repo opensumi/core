@@ -2,6 +2,7 @@ import * as monaco from '../../src/common';
 
 import { partialMock } from './common/util';
 import { monacoApi } from '../../src/browser/monaco-api';
+import { IDisposable } from '@opensumi/ide-core-common';
 
 export type TokensProvider = monaco.languages.TokensProvider;
 export type EncodedTokensProvider = monaco.languages.EncodedTokensProvider;
@@ -35,7 +36,6 @@ export interface SelectionRangeProvider {
     }[][]
   >;
 }
-export type IDisposable = monaco.IDisposable;
 
 export const mockFeatureProviderRegistry: Map<string, any> = new Map();
 

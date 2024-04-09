@@ -97,8 +97,10 @@ export class OpenedEditorModelService {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private onDidRefreshedEmitter: Emitter<void> = new Emitter();
-  private onTreeModelChangeEmitter: Emitter<OpenedEditorModel | null> = new Emitter();
+  private onDidRefreshedEmitter: Emitter<void> = this.disposableCollection.register(new Emitter());
+  private onTreeModelChangeEmitter: Emitter<OpenedEditorModel | null> = this.disposableCollection.register(
+    new Emitter(),
+  );
   private locationDelayer = new ThrottledDelayer<void>(OpenedEditorModelService.DEFAULT_LOCATION_FLUSH_DELAY);
 
   // 右键菜单局部ContextKeyService

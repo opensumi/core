@@ -83,7 +83,7 @@ export class SearchModelService extends Disposable {
   private _selectedNodes: (SearchFileNode | SearchContentNode)[] = [];
   private _contextMenuNode: SearchFileNode | SearchContentNode | null;
 
-  private onDidUpdateTreeModelEmitter: Emitter<SearchTreeModel | undefined> = new Emitter();
+  private onDidUpdateTreeModelEmitter: Emitter<SearchTreeModel | undefined> = this.registerDispose(new Emitter());
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 

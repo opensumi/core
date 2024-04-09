@@ -66,10 +66,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _focus: boolean;
   protected _tabBarHandler: TabBarHandler | undefined;
   protected _clients: Map<string, ITerminalClient>;
-  protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
-  protected _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
-  protected _onDidTerminalTitleChange = new Emitter<ITerminalTitleChangeEvent>();
-  protected _onDidChangeActiveTerminal = new Emitter<string>();
+  protected _onDidOpenTerminal = this.registerDispose(new Emitter<ITerminalInfo>());
+  protected _onDidCloseTerminal = this.registerDispose(new Emitter<ITerminalExitEvent>());
+  protected _onDidTerminalTitleChange = this.registerDispose(new Emitter<ITerminalTitleChangeEvent>());
+  protected _onDidChangeActiveTerminal = this.registerDispose(new Emitter<string>());
   protected _ready = new Deferred<void>();
   protected _activeClientId?: string;
 
@@ -81,7 +81,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   readonly onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent> = this._onDidTerminalTitleChange.event;
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
-  private readonly _onInstanceRequestStartExtensionTerminal = new Emitter<IStartExtensionTerminalRequest>();
+  private readonly _onInstanceRequestStartExtensionTerminal = this.registerDispose(
+    new Emitter<IStartExtensionTerminalRequest>(),
+  );
   readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest> =
     this._onInstanceRequestStartExtensionTerminal.event;
 

@@ -1,4 +1,4 @@
-import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 import { IAttachedView, IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/ide-monaco';
 
@@ -136,7 +136,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   ): void {
     throw new Error('Method not implemented.');
   }
-  onDidChangeContentOrInjectedText(listener: (e: any) => void): monaco.IDisposable {
+  onDidChangeContentOrInjectedText(listener: (e: any) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   normalizePosition(position: monaco.Position, affinity: any): monaco.Position {
@@ -230,16 +230,16 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   canRedo(): boolean {
     throw new Error('Method not implemented.');
   }
-  onDidChangeRawContentFast(listener: (e: any) => void): monaco.IDisposable {
+  onDidChangeRawContentFast(listener: (e: any) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidChangeRawContent(listener: (e: any) => void): monaco.IDisposable {
+  onDidChangeRawContent(listener: (e: any) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidChangeTokens(listener: (e: monaco.editor.IModelTokensChangedEvent) => void): monaco.IDisposable {
+  onDidChangeTokens(listener: (e: monaco.editor.IModelTokensChangedEvent) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidChangeAttached(listener: () => void): monaco.IDisposable {
+  onDidChangeAttached(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   onBeforeAttached(): IAttachedView {

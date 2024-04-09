@@ -90,7 +90,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private themes: Map<string, ThemeData> = new Map();
   private themeContributionRegistry: Map<string, { contribution: IThemeContribution; basePath: URI }> = new Map();
 
-  private themeChangeEmitter: Emitter<ITheme> = new Emitter();
+  private themeChangeEmitter: Emitter<ITheme> = this.registerDispose(new Emitter());
   protected extensionReady: boolean;
 
   public onThemeChange: Event<ITheme> = this.themeChangeEmitter.event;

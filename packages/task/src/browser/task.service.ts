@@ -99,10 +99,10 @@ export class TaskService extends Disposable implements ITaskService {
   @Autowired(IProblemPatternRegistry)
   problemPattern: IProblemPatternRegistry;
 
-  private _onDidStateChange: Emitter<TaskEvent> = new Emitter();
+  private _onDidStateChange: Emitter<TaskEvent> = this.registerDispose(new Emitter());
   public onDidStateChange: Event<TaskEvent> = this._onDidStateChange.event;
 
-  private _onDidRegisterTaskProvider: Emitter<string> = new Emitter();
+  private _onDidRegisterTaskProvider: Emitter<string> = this.registerDispose(new Emitter());
   public onDidRegisterTaskProvider: Event<string> = this._onDidRegisterTaskProvider.event;
 
   private providerHandler = 0;

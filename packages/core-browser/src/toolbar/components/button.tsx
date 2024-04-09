@@ -5,7 +5,7 @@ import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { Button } from '@opensumi/ide-components';
-import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core-common';
+import { BasicEvent, Disposable, DisposableStore, Emitter, IDisposable } from '@opensumi/ide-core-common';
 
 import { DomListener } from '../../dom';
 import { PreferenceService } from '../../preferences';
@@ -243,22 +243,24 @@ const PopOverComponentWrapper: React.FC<PropsWithChildren<{ delegate: IToolbarAc
 
 @Injectable({ multiple: true })
 class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
-  _onClick = new Emitter<React.MouseEvent<HTMLDivElement>>();
+  private _disposables = new DisposableStore();
+
+  _onClick = this._disposables.add(new Emitter<React.MouseEvent<HTMLDivElement>>());
   onClick = this._onClick.event;
 
-  _onMouseLeave = new Emitter<React.MouseEvent<HTMLDivElement>>();
+  _onMouseLeave = this._disposables.add(new Emitter<React.MouseEvent<HTMLDivElement>>());
   onMouseLeave = this._onClick.event;
 
-  _onMouseEnter = new Emitter<React.MouseEvent<HTMLDivElement>>();
+  _onMouseEnter = this._disposables.add(new Emitter<React.MouseEvent<HTMLDivElement>>());
   onMouseEnter = this._onClick.event;
 
-  _onChangeState = new Emitter<{ from: string; to: string }>();
+  _onChangeState = this._disposables.add(new Emitter<{ from: string; to: string }>());
   onChangeState = this._onChangeState.event;
 
-  private onChangeContextEvent = new Emitter<any>();
+  private onChangeContextEvent = this._disposables.add(new Emitter<any>());
   public onChangeContext = this.onChangeContextEvent.event;
 
-  private _onDidChangePopoverVisibility = new Emitter<boolean>();
+  private _onDidChangePopoverVisibility = this._disposables.add(new Emitter<boolean>());
   public onDidChangePopoverVisibility = this._onDidChangePopoverVisibility.event;
 
   private popOverContainer: HTMLDivElement | undefined;
@@ -271,9 +273,7 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
   protected readonly toolbarPopover: IToolbarPopoverRegistry;
 
   dispose() {
-    this._onClick.dispose();
-    this._onMouseEnter.dispose();
-    this._onMouseLeave.dispose();
+    this._disposables.dispose();
     if (this.popOverContainer) {
       this.popOverContainer.remove();
       this.popOverContainer = undefined;
@@ -298,15 +298,17 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._popOverElement = popOverMap.get(actionId);
       this.popOverContainer = element.querySelector('.kt-toolbar-popover')! as HTMLDivElement;
     }
-    this.toolbarPopover.onDidRegisterPopoverEvent((e) => {
-      if (e === this.popoverId) {
-        this.popoverComponent = this.toolbarPopover.getComponent(this.popoverId);
-        // 已经激活的状态下重新激活一次，如果没有激活过则不动
-        if (this._popOverElement) {
-          this.hidePopOver().then(() => this.showPopOver());
+    this._disposables.add(
+      this.toolbarPopover.onDidRegisterPopoverEvent((e) => {
+        if (e === this.popoverId) {
+          this.popoverComponent = this.toolbarPopover.getComponent(this.popoverId);
+          // 已经激活的状态下重新激活一次，如果没有激活过则不动
+          if (this._popOverElement) {
+            this.hidePopOver().then(() => this.showPopOver());
+          }
         }
-      }
-    });
+      }),
+    );
   }
 
   getState() {

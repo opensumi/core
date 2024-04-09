@@ -1,6 +1,8 @@
 import { URI } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-utils';
 
 import type { IAutoClosingPair, IAutoClosingPairConditional } from './types';
+
 export { Position, IPosition } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 export { ITextModel, EndOfLineSequence } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 export type { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
@@ -23,10 +25,6 @@ export {
   NewSymbolNamesProvider,
   NewSymbolName,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-
-export interface IDisposable {
-  dispose(): void;
-}
 
 export type IEvent<T> = (listener: (e: T) => any, thisArg?: any) => IDisposable;
 

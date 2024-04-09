@@ -58,7 +58,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private _id = `thread_${uuid()}`;
 
-  private onDidChangeEmitter: Emitter<void> = new Emitter();
+  private onDidChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
 
   get onDidChange() {
     return this.onDidChangeEmitter.event;

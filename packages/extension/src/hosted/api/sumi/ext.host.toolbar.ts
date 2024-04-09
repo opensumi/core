@@ -159,9 +159,9 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
 export class ToolbarBtnActionHandleController extends Disposable {
   private _handle: IToolbarButtonActionHandle;
 
-  private _onClick = new Emitter<void>();
+  private _onClick = this.registerDispose(new Emitter<void>());
 
-  private _onStateChange = new Emitter<{ from: string; to: string }>();
+  private _onStateChange = this.registerDispose(new Emitter<{ from: string; to: string }>());
 
   constructor(
     public readonly id: string,
@@ -217,9 +217,9 @@ export class ToolbarBtnActionHandleController extends Disposable {
 export class ToolbarSelectActionHandleController<T> extends Disposable {
   private _handle: IToolbarSelectActionHandle<T>;
 
-  private _onSelect = new Emitter<T>();
+  private _onSelect = this.registerDispose(new Emitter<T>());
 
-  private _onStateChange = new Emitter<{ from: string; to: string }>();
+  private _onStateChange = this.registerDispose(new Emitter<{ from: string; to: string }>());
 
   private _value: T;
 
@@ -269,7 +269,7 @@ export class ToolbarSelectActionHandleController<T> extends Disposable {
 export class ToolbarDropdownButtonActionHandleController<T> extends Disposable {
   private _handle: IToolbarDropdownButtonActionHandle<T>;
 
-  private _onSelect = new Emitter<T>();
+  private _onSelect = this.registerDispose(new Emitter<T>());
 
   constructor(
     public readonly id: string,

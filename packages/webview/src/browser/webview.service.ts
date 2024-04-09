@@ -328,10 +328,10 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview>
 
   private _webview: MaybeNull<T>;
 
-  private _onDidUpdateResource = new Emitter<IResource<IEditorWebviewMetaData>>();
+  private _onDidUpdateResource = this.registerDispose(new Emitter<IResource<IEditorWebviewMetaData>>());
   public readonly onDidUpdateResource = this._onDidUpdateResource.event;
 
-  private _onDidChangeGroupIndex = new Emitter<number>();
+  private _onDidChangeGroupIndex = this.registerDispose(new Emitter<number>());
   public onDidChangeGroupIndex = this._onDidChangeGroupIndex.event;
 
   private _supportsRevive = false;

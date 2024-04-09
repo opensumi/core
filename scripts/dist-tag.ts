@@ -72,7 +72,7 @@ async function main() {
     return;
   }
 
-  const version = await ask('对应的版本号是?');
+  const version = (await ask('对应的版本号是?')) as any;
   const semverVersion = semver.valid(version);
   if (!semverVersion) {
     console.error(`${version} 不是一个正确的版本号`);

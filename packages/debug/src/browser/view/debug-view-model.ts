@@ -16,7 +16,7 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/view/debug-view-model.ts
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { DisposableCollection, Emitter, Event, IDisposable, URI } from '@opensumi/ide-core-browser';
+import { DisposableStore, Emitter, Event, IDisposable, URI } from '@opensumi/ide-core-browser';
 
 import { DebugState, IDebugSessionManager } from '../../common/debug-session';
 import { DebugSession } from '../debug-session';
@@ -26,22 +26,23 @@ import { DebugThread } from '../model/debug-thread';
 
 @Injectable()
 export class DebugViewModel implements IDisposable {
+  protected readonly _disposables = new DisposableStore();
+
   @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
 
-  protected readonly onDidChangeEmitter = new Emitter<void>();
+  protected readonly onDidChangeEmitter = this._disposables.add(new Emitter<void>());
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
   protected fireDidChange(): void {
     this.onDidChangeEmitter.fire(undefined);
   }
 
-  protected readonly onDidChangeBreakpointsEmitter = new Emitter<URI>();
+  protected readonly onDidChangeBreakpointsEmitter = this._disposables.add(new Emitter<URI>());
   readonly onDidChangeBreakpoints: Event<URI> = this.onDidChangeBreakpointsEmitter.event;
   protected fireDidChangeBreakpoints(uri: URI): void {
     this.onDidChangeBreakpointsEmitter.fire(uri);
   }
 
-  protected readonly toDispose = new DisposableCollection(this.onDidChangeEmitter, this.onDidChangeBreakpointsEmitter);
   protected readonly _sessions = new Set<DebugSession>();
 
   get sessions(): IterableIterator<DebugSession> {
@@ -88,21 +89,21 @@ export class DebugViewModel implements IDisposable {
     if (seesion) {
       this.push(seesion);
     }
-    this.toDispose.push(
+    this._disposables.add(
       this.manager.onDidChangeActiveDebugSession(({ previous, current }) => {
         if (this.has(previous) && !this.has(current)) {
           this.fireDidChange();
         }
       }),
     );
-    this.toDispose.push(
+    this._disposables.add(
       this.manager.onDidChange((current) => {
         if (this.has(current)) {
           this.fireDidChange();
         }
       }),
     );
-    this.toDispose.push(
+    this._disposables.add(
       this.manager.onDidDestroyDebugSession((current) => {
         if (this.has(current)) {
           this.fireDidChange();
@@ -112,7 +113,7 @@ export class DebugViewModel implements IDisposable {
   }
 
   dispose(): void {
-    this.toDispose.dispose();
+    this._disposables.dispose();
   }
 
   get threads(): IterableIterator<DebugThread> | undefined {

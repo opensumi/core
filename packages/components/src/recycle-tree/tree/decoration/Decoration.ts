@@ -1,4 +1,4 @@
-import { Disposable, Emitter, IDisposable } from '@opensumi/ide-utils';
+import { Disposable, DisposableStore, Emitter, IDisposable } from '@opensumi/ide-utils';
 
 import { ICompositeTreeNode, ITreeNode } from '../../types';
 import { TreeNode } from '../TreeNode';
@@ -23,7 +23,9 @@ export interface IDecorationTargetChangeEventData {
   target: ITreeNode | ICompositeTreeNode;
 }
 
-export class Decoration {
+export class Decoration implements IDisposable {
+  private _disposables = new DisposableStore();
+
   private _cssClassList: Set<string>;
   private _appliedTargets: Map<ITreeNode | ICompositeTreeNode, TargetMatchMode> = new Map();
   private _negatedTargets: Map<ITreeNode | ICompositeTreeNode, TargetMatchMode> = new Map();
@@ -33,14 +35,14 @@ export class Decoration {
   private appliedTargetsDisposables: WeakMap<ITreeNode | ICompositeTreeNode, IDisposable> = new WeakMap();
   private negatedTargetsDisposables: WeakMap<ITreeNode | ICompositeTreeNode, IDisposable> = new WeakMap();
 
-  private onDidAddCSSClassnameEmitter: Emitter<IDecorationEventData> = new Emitter();
-  private onDidRemoveCSSClassnameEmitter: Emitter<IDecorationEventData> = new Emitter();
-  private onDidDisableDecorationEmitter: Emitter<IDecorationEventData> = new Emitter();
-  private onDidEnableDecorationEmitter: Emitter<IDecorationEventData> = new Emitter();
-  private onDidAddTargetEmitter: Emitter<IDecorationTargetChangeEventData> = new Emitter();
-  private onDidRemoveTargetEmitter: Emitter<IDecorationTargetChangeEventData> = new Emitter();
-  private onDidNegateTargetEmitter: Emitter<IDecorationTargetChangeEventData> = new Emitter();
-  private onDidUnNegateTargetEmitter: Emitter<IDecorationTargetChangeEventData> = new Emitter();
+  private onDidAddCSSClassnameEmitter: Emitter<IDecorationEventData> = this._disposables.add(new Emitter());
+  private onDidRemoveCSSClassnameEmitter: Emitter<IDecorationEventData> = this._disposables.add(new Emitter());
+  private onDidDisableDecorationEmitter: Emitter<IDecorationEventData> = this._disposables.add(new Emitter());
+  private onDidEnableDecorationEmitter: Emitter<IDecorationEventData> = this._disposables.add(new Emitter());
+  private onDidAddTargetEmitter: Emitter<IDecorationTargetChangeEventData> = this._disposables.add(new Emitter());
+  private onDidRemoveTargetEmitter: Emitter<IDecorationTargetChangeEventData> = this._disposables.add(new Emitter());
+  private onDidNegateTargetEmitter: Emitter<IDecorationTargetChangeEventData> = this._disposables.add(new Emitter());
+  private onDidUnNegateTargetEmitter: Emitter<IDecorationTargetChangeEventData> = this._disposables.add(new Emitter());
 
   constructor(...cssClassList: string[]) {
     if (Array.isArray(cssClassList)) {
@@ -52,6 +54,10 @@ export class Decoration {
     } else {
       this._cssClassList = new Set();
     }
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 
   get disabled() {

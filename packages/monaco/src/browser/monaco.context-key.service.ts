@@ -296,7 +296,7 @@ export function isContextKeyService(thing: any): thing is ContextKeyService {
 
 @Injectable()
 abstract class BaseContextKeyService extends Disposable implements IContextKeyService {
-  protected _onDidChangeContext = new Emitter<ContextKeyChangeEvent>();
+  protected _onDidChangeContext = this.registerDispose(new Emitter<ContextKeyChangeEvent>());
   readonly onDidChangeContext: Event<ContextKeyChangeEvent> = this._onDidChangeContext.event;
 
   @Autowired(INJECTOR_TOKEN)

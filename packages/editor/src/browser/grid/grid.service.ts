@@ -1,5 +1,5 @@
 import { Emitter, IDisposable, IEventBus, MaybeNull } from '@opensumi/ide-core-browser';
-import { makeRandomHexString } from '@opensumi/ide-core-common';
+import { DisposableStore, makeRandomHexString } from '@opensumi/ide-core-common';
 
 import { Direction, IEditorGroup, IEditorGroupState } from '../../common';
 import { GridResizeEvent } from '../types';
@@ -13,11 +13,13 @@ export class EditorGrid implements IDisposable {
 
   public splitDirection: SplitDirection | undefined;
 
-  protected readonly _onDidGridStateChange = new Emitter<void>();
+  private _disposables = new DisposableStore();
+
+  protected readonly _onDidGridStateChange = this._disposables.add(new Emitter<void>());
 
   public readonly onDidGridStateChange = this._onDidGridStateChange.event;
 
-  protected readonly _onDidGridAndDesendantStateChange = new Emitter<void>();
+  protected readonly _onDidGridAndDesendantStateChange = this._disposables.add(new Emitter<void>());
 
   public readonly onDidGridAndDesendantStateChange = this._onDidGridAndDesendantStateChange.event;
 
@@ -103,9 +105,9 @@ export class EditorGrid implements IDisposable {
         this.parent.replaceBy(this.parent.children[0]);
       }
       this.parent._onDidGridStateChange.fire();
-    } else {
-      // 应该不会落入这里
     }
+
+    this._disposables.dispose();
   }
 
   public replaceBy(target: EditorGrid) {

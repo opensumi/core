@@ -9,13 +9,13 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
 
   private wrapper: HTMLIFrameElement | null;
 
-  _onMessage = new Emitter<any>();
+  _onMessage = this.registerDispose(new Emitter<any>());
   onMessage = this._onMessage.event;
 
-  _onRemove: Emitter<void> = new Emitter<void>();
+  _onRemove: Emitter<void> = this.registerDispose(new Emitter<void>());
   onRemove: Event<void> = this._onRemove.event;
 
-  _onLoadURL: Emitter<string> = new Emitter<string>();
+  _onLoadURL: Emitter<string> = this.registerDispose(new Emitter<string>());
   onLoadURL: Event<string> = this._onLoadURL.event;
 
   private _ready = new Deferred<void>();
@@ -163,13 +163,13 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   private webviewDomReady: Deferred<void> = new Deferred();
 
-  _onMessage = new Emitter<any>();
+  _onMessage = this.registerDispose(new Emitter<any>());
   onMessage = this._onMessage.event;
 
-  _onRemove: Emitter<void> = new Emitter<void>();
+  _onRemove: Emitter<void> = this.registerDispose(new Emitter<void>());
   onRemove: Event<void> = this._onRemove.event;
 
-  _onLoadURL: Emitter<string> = new Emitter<string>();
+  _onLoadURL: Emitter<string> = this.registerDispose(new Emitter<string>());
   onLoadURL: Event<string> = this._onLoadURL.event;
 
   constructor() {

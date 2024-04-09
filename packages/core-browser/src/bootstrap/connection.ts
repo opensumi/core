@@ -86,6 +86,7 @@ export function bindConnectionService(injector: Injector, modules: ModuleConstru
   const toDispose = channel.onClose(() => {
     dispose.dispose();
     toDispose.dispose();
+    clientCenter.dispose();
   });
 
   initConnectionService(injector, modules, clientCenter);
@@ -105,6 +106,7 @@ export function bindConnectionServiceDeprecated(
   const toDispose = connection.onClose(() => {
     dispose.dispose();
     toDispose.dispose();
+    clientCenter.dispose();
   });
 
   initConnectionService(injector, modules, clientCenter);

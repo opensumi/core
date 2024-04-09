@@ -11,6 +11,7 @@ import { RPCService } from '@opensumi/ide-connection';
 import {
   Deferred,
   DisposableCollection,
+  DisposableStore,
   Emitter,
   Event,
   FileUri,
@@ -66,7 +67,9 @@ export interface IWatcher {
 
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
-  private fileChangeEmitter = new Emitter<FileChangeEvent>();
+  private _disposables = new DisposableStore();
+
+  private fileChangeEmitter = this._disposables.add(new Emitter<FileChangeEvent>());
 
   private watcherServer: UnRecursiveFileSystemWatcher | FileSystemWatcherServer;
 
@@ -124,6 +127,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   dispose(): void {
     this.watcherServerDisposeCollection?.dispose();
+    this._disposables.dispose();
   }
 
   /**

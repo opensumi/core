@@ -28,7 +28,7 @@ export class TestServiceImpl extends Disposable implements ITestService {
   private controllerCount: IContextKey<number>;
   private canRefreshTests: IContextKey<boolean>;
 
-  private readonly processDiffEmitter = new Emitter<TestsDiff>();
+  private readonly processDiffEmitter = this.registerDispose(new Emitter<TestsDiff>());
   private viewId = '';
 
   readonly collection = new MainThreadTestCollection(this.expandTest.bind(this));

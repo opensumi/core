@@ -6,8 +6,8 @@ import { CompositeTreeNode, TreeNode } from './TreeNode';
 
 export abstract class Tree implements ITree {
   protected _root: CompositeTreeNode | undefined;
-  protected readonly onChangedEmitter = new Emitter<void>();
   protected readonly toDispose = new DisposableCollection();
+  protected readonly onChangedEmitter = this.toDispose.register(new Emitter<void>());
 
   protected nodes: {
     [id: string]: TreeNode | undefined;

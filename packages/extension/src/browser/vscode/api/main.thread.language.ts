@@ -88,7 +88,7 @@ const { extname } = path;
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
-  private readonly disposables = new Map<number, monaco.IDisposable>();
+  private readonly disposables = new Map<number, IDisposable>();
 
   @Autowired(MarkerManager)
   readonly markerManager: MarkerManager;

@@ -31,7 +31,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   @observable
   public menuItems = observable.map<string, MenuNode[]>();
 
-  private readonly _onDidMenuBarChange = new Emitter<IMenubarItem[]>();
+  private readonly _onDidMenuBarChange = this.registerDispose(new Emitter<IMenubarItem[]>());
   public get onDidMenuBarChange(): Event<IMenubarItem[]> {
     return this._onDidMenuBarChange.event;
   }

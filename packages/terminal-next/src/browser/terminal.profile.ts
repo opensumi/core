@@ -45,7 +45,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   private readonly _profilesReadyBarrier: AutoOpenBarrier;
 
-  private onTerminalProfileResolvedEmitter: Emitter<string> = new Emitter();
+  private onTerminalProfileResolvedEmitter: Emitter<string> = this.registerDispose(new Emitter());
 
   /**
    * 当用户创建了一个 Profile 时发出的事件
@@ -57,7 +57,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   get profilesReady(): Promise<void> {
     return this._profilesReadyBarrier.wait().then(() => {});
   }
-  private readonly _onDidChangeAvailableProfiles = new Emitter<ITerminalProfile[]>();
+  private readonly _onDidChangeAvailableProfiles = this.registerDispose(new Emitter<ITerminalProfile[]>());
   get onDidChangeAvailableProfiles(): Event<ITerminalProfile[]> {
     return this._onDidChangeAvailableProfiles.event;
   }

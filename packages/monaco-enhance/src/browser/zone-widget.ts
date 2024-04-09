@@ -156,7 +156,7 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   private _linesCount: number;
   private _resizeSash: Sash | null = null;
 
-  private _onDomNodeTop = new Emitter<number>();
+  private _onDomNodeTop = this.registerDispose(new Emitter<number>());
   protected onDomNodeTop = this._onDomNodeTop.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor, readonly options?: IOptions) {
@@ -395,7 +395,7 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   private heightInLines: number;
   private lineHeight: number;
   private wrap: HTMLDivElement;
-  protected readonly _onChangeZoneWidget = new Emitter<IRange>();
+  protected readonly _onChangeZoneWidget = this.registerDispose(new Emitter<IRange>());
   public readonly onChangeZoneWidget: Event<IRange> = this._onChangeZoneWidget.event;
   public onFirstDisplay = Event.once(this.onDomNodeTop);
   protected _isShow = false;

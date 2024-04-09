@@ -97,7 +97,9 @@ export class StickinessConnectManager extends Disposable {
   private resultView: BaseCodeEditor | undefined;
   private incomingView: BaseCodeEditor | undefined;
 
-  private readonly _onDidChangePiece = new Emitter<{ pieces: StickyPieceModel[]; editorType: EditorViewType }>();
+  private readonly _onDidChangePiece = this.registerDispose(
+    new Emitter<{ pieces: StickyPieceModel[]; editorType: EditorViewType }>(),
+  );
   public readonly onDidChangePiece: Event<{ pieces: StickyPieceModel[]; editorType: EditorViewType }> =
     this._onDidChangePiece.event;
 

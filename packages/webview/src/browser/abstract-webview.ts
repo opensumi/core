@@ -25,22 +25,24 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   state: any;
 
-  _onDidFocus: Emitter<void> = new Emitter<void>();
+  _onDidFocus: Emitter<void> = this.registerDispose(new Emitter<void>());
   onDidFocus: Event<void> = this._onDidFocus.event;
 
-  _onDidBlur: Emitter<void> = new Emitter<void>();
+  _onDidBlur: Emitter<void> = this.registerDispose(new Emitter<void>());
   onDidBlur: Event<void> = this._onDidFocus.event;
 
-  _onDidClickLink: Emitter<URI> = new Emitter<URI>();
+  _onDidClickLink: Emitter<URI> = this.registerDispose(new Emitter<URI>());
   onDidClickLink: Event<URI> = this._onDidClickLink.event;
 
-  _onDidScroll: Emitter<IWebviewContentScrollPosition> = new Emitter<IWebviewContentScrollPosition>();
+  _onDidScroll: Emitter<IWebviewContentScrollPosition> = this.registerDispose(
+    new Emitter<IWebviewContentScrollPosition>(),
+  );
   onDidScroll: Event<IWebviewContentScrollPosition> = this._onDidScroll.event;
 
-  _onDidUpdateState: Emitter<any> = new Emitter<any>();
+  _onDidUpdateState: Emitter<any> = this.registerDispose(new Emitter<any>());
   onDidUpdateState: Event<any> = this._onDidUpdateState.event;
 
-  _onRemove: Emitter<void> = new Emitter<void>();
+  _onRemove: Emitter<void> = this.registerDispose(new Emitter<void>());
   onRemove: Event<void> = this._onRemove.event;
 
   protected _isListening = true;

@@ -1,16 +1,18 @@
-import { Emitter, Event } from '@opensumi/ide-utils';
+import { DisposableStore, Emitter, Event, IDisposable } from '@opensumi/ide-utils';
 
 import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
 import { CompositeTreeNode, TreeNode } from '../TreeNode';
 
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
 
-export class TreeModel {
+export class TreeModel implements IDisposable {
+  protected _disposables = new DisposableStore();
+
   private _state: TreeStateManager;
   private _root: CompositeTreeNode;
   private _ensureReady: Promise<boolean | void>;
 
-  private onChangeEmitter: Emitter<void> = new Emitter();
+  private onChangeEmitter: Emitter<void> = this._disposables.add(new Emitter());
 
   get onChange(): Event<void> {
     return this.onChangeEmitter.event;
@@ -96,5 +98,9 @@ export class TreeModel {
 
   protected resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
     return Promise.resolve(Array.from(parent.children!) as TreeNode[]);
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }

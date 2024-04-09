@@ -15,11 +15,11 @@ export interface OpenedEditorEvent {
 
 @Injectable()
 export class OutlineEventService extends WithEventBus {
-  private _onDidDocumentSymbolChange: Emitter<URI | null> = new Emitter();
-  private _onDidSelectionChange: Emitter<URI | null> = new Emitter();
+  private _onDidDocumentSymbolChange: Emitter<URI | null> = this.registerDispose(new Emitter());
+  private _onDidSelectionChange: Emitter<URI | null> = this.registerDispose(new Emitter());
 
-  private _onDidEditorActiveResourceStateChange: Emitter<URI | null> = new Emitter();
-  private _onDidViewCollapseChange: Emitter<boolean> = new Emitter();
+  private _onDidEditorActiveResourceStateChange: Emitter<URI | null> = this.registerDispose(new Emitter());
+  private _onDidViewCollapseChange: Emitter<boolean> = this.registerDispose(new Emitter());
 
   /**
    * on did document symbol changed

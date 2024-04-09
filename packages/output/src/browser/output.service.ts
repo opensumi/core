@@ -2,14 +2,13 @@ import { action, makeObservable, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, WithEventBus } from '@opensumi/ide-core-common';
+import { Emitter, IDisposable, WithEventBus } from '@opensumi/ide-core-common';
 import {
   EditorCollectionService,
   ICodeEditor,
   IEditorDocumentModelService,
   getSimpleEditorOptions,
 } from '@opensumi/ide-editor/lib/browser';
-import * as monaco from '@opensumi/ide-monaco';
 
 import { OutputChannel } from './output.channel';
 
@@ -33,12 +32,12 @@ export class OutputService extends WithEventBus {
   readonly channels = observable.map<string, OutputChannel>();
 
   public selectedChannel: OutputChannel;
-  private onDidSelectedChannelChangeEmitter = new Emitter<OutputChannel>();
+  private onDidSelectedChannelChangeEmitter = this.registerDispose(new Emitter<OutputChannel>());
 
   @observable
   public keys: string = '' + Math.random();
 
-  private monacoDispose: monaco.IDisposable;
+  private monacoDispose: IDisposable;
 
   private autoReveal = true;
 

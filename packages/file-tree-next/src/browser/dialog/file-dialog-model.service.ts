@@ -89,8 +89,8 @@ export class FileTreeDialogModel implements IFileDialogModel {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
-  private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
+  private onDidFocusedFileChangeEmitter: Emitter<URI | void> = this.disposableCollection.register(new Emitter());
+  private onDidSelectedFileChangeEmitter: Emitter<URI[]> = this.disposableCollection.register(new Emitter());
 
   constructor() {
     this._whenReady = this.initTreeModel();

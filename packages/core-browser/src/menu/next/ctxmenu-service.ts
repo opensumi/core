@@ -31,12 +31,12 @@ export class ContextMenu extends Disposable implements IContextMenu {
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
 
-  private readonly _onDidMenuChange = new Emitter<string>();
+  private readonly _onDidMenuChange = this.registerDispose(new Emitter<string>());
   public get onDidChange(): Event<string> {
     return this._onDidMenuChange.event;
   }
 
-  private readonly _onMenuChange = new Emitter<string>();
+  private readonly _onMenuChange = this.registerDispose(new Emitter<string>());
   // internal 的 MenuChange 监听器，监听 menu/submenu 的变化
   private get onMenuChange(): Event<string | undefined> {
     return this._onMenuChange.event;

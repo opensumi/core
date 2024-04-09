@@ -55,13 +55,13 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
   private activeTaskExecutors: Map<string, IActivateTaskExecutorData> = new Map();
 
-  private _onDidStateChange: Emitter<TaskEvent> = new Emitter();
+  private _onDidStateChange: Emitter<TaskEvent> = this.registerDispose(new Emitter());
 
-  private _onDidBackgroundTaskBegin: Emitter<TaskEvent> = new Emitter();
+  private _onDidBackgroundTaskBegin: Emitter<TaskEvent> = this.registerDispose(new Emitter());
 
-  private _onDidBackgroundTaskEnded: Emitter<TaskEvent> = new Emitter();
+  private _onDidBackgroundTaskEnded: Emitter<TaskEvent> = this.registerDispose(new Emitter());
 
-  private _onDidProblemMatched: Emitter<TaskEvent> = new Emitter();
+  private _onDidProblemMatched: Emitter<TaskEvent> = this.registerDispose(new Emitter());
 
   private taskExecutors: TerminalTaskExecutor[] = [];
 

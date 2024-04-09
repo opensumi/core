@@ -236,7 +236,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     this._onDidChangeInput.fire(value);
   }
 
-  private readonly _onDidChangeInput = new Emitter<CommentInput | undefined>();
+  private readonly _onDidChangeInput = this.registerDispose(new Emitter<CommentInput | undefined>());
   get onDidChangeInput(): Event<CommentInput | undefined> {
     return this._onDidChangeInput.event;
   }
@@ -258,7 +258,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     this._thread.contextValue = context;
   }
 
-  private readonly _onDidChangeLabel = new Emitter<string | undefined>();
+  private readonly _onDidChangeLabel = this.registerDispose(new Emitter<string | undefined>());
   readonly onDidChangeLabel: Event<string | undefined> = this._onDidChangeLabel.event;
 
   public convertToIThreadComment(comment: CoreComment): IThreadComment {
@@ -324,7 +324,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     this._onDidChangeComments.fire(newComments);
   }
 
-  private readonly _onDidChangeComments = new Emitter<CoreComment[] | undefined>();
+  private readonly _onDidChangeComments = this.registerDispose(new Emitter<CoreComment[] | undefined>());
   get onDidChangeComments(): Event<CoreComment[] | undefined> {
     return this._onDidChangeComments.event;
   }
@@ -338,7 +338,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     return this._thread.range;
   }
 
-  private readonly _onDidChangeCanReply = new Emitter<boolean>();
+  private readonly _onDidChangeCanReply = this.registerDispose(new Emitter<boolean>());
   get onDidChangeCanReply(): Event<boolean> {
     return this._onDidChangeCanReply.event;
   }
@@ -351,7 +351,7 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     return !this._thread.readOnly;
   }
 
-  private readonly _onDidChangeRange = new Emitter<IRange>();
+  private readonly _onDidChangeRange = this.registerDispose(new Emitter<IRange>());
   public onDidChangeRange = this._onDidChangeRange.event;
 
   private _collapsibleState: CommentThreadCollapsibleState | undefined;
@@ -364,13 +364,13 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
     this._onDidChangeCollasibleState.fire(this._collapsibleState);
   }
 
-  private readonly _onDidChangeCollasibleState = new Emitter<CommentThreadCollapsibleState | undefined>();
+  private readonly _onDidChangeCollasibleState = this.registerDispose(
+    new Emitter<CommentThreadCollapsibleState | undefined>(),
+  );
   public onDidChangeCollasibleState = this._onDidChangeCollasibleState.event;
 
-  private _isDisposed: boolean;
-
   get isDisposed(): boolean {
-    return this._isDisposed;
+    return this.disposed;
   }
 
   private _thread: ICommentsThread;
@@ -413,14 +413,9 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
       this.onDidChangeComments(() => {
         this.commentsService.fireThreadCommentChange(this._thread);
       }),
-      this._onDidChangeCollasibleState,
-      this._onDidChangeComments,
-      this._onDidChangeInput,
-      this._onDidChangeLabel,
-      this._onDidChangeRange,
     );
-    this._isDisposed = false;
   }
+
   initialCollapsibleState?: CommentThreadCollapsibleState | undefined;
   onDidChangeInitialCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
 
@@ -459,7 +454,6 @@ export class MainThreadCommentThread extends Disposable implements CommentThread
   }
 
   dispose() {
-    this._isDisposed = true;
     this._thread.dispose();
     super.dispose();
   }

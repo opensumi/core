@@ -67,12 +67,13 @@ function transformReverse(delegates: {
 @Injectable()
 export abstract class PreferenceProvider implements IDisposable {
   public readonly name: string;
+  protected readonly toDispose = new DisposableCollection();
 
-  private readonly onDidPreferencesChangedEmitter = new Emitter<PreferenceProviderDataChanges>();
+  private readonly onDidPreferencesChangedEmitter = this.toDispose.register(
+    new Emitter<PreferenceProviderDataChanges>(),
+  );
   public readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges> =
     this.onDidPreferencesChangedEmitter.event;
-
-  protected readonly toDispose = new DisposableCollection();
 
   protected readonly _ready = new Deferred<void>();
 

@@ -1,7 +1,7 @@
 const path = require('path');
 
 const rulesDirPlugin = require('eslint-plugin-rulesdir');
-rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint_rules', 'rules');
+rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint-rules', 'rules');
 
 module.exports = {
   env: {
@@ -203,6 +203,7 @@ module.exports = {
       },
     ],
     'rulesdir/classnames-import-rule': ['error'],
+    'rulesdir/ensure-dispose-event-emitter': ['warn'],
     'no-restricted-imports': [
       'error',
       {

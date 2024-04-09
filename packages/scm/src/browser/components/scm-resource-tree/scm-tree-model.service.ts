@@ -113,8 +113,8 @@ export class SCMTreeModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
   private treeModelDisposableCollection: DisposableCollection;
 
-  private onDidRefreshedEmitter: Emitter<void> = new Emitter();
-  private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = new Emitter();
+  private onDidRefreshedEmitter: Emitter<void> = this.disposableCollection.register(new Emitter());
+  private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = this.disposableCollection.register(new Emitter());
 
   private treeModelCache: Map<
     string,

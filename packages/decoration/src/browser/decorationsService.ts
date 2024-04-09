@@ -205,8 +205,8 @@ export class FileDecorationsService extends Disposable implements IDecorationsSe
   private readonly logger = getDebugLogger();
 
   private readonly _data = new LinkedList<DecorationProviderWrapper>();
-  private readonly _onDidChangeDecorationsDelayed = new Emitter<Uri | Uri[]>();
-  private readonly _onDidChangeDecorations = new Emitter<IResourceDecorationChangeEvent>();
+  private readonly _onDidChangeDecorationsDelayed = this.registerDispose(new Emitter<Uri | Uri[]>());
+  private readonly _onDidChangeDecorations = this.registerDispose(new Emitter<IResourceDecorationChangeEvent>());
 
   readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent> = Event.any(
     this._onDidChangeDecorations.event,

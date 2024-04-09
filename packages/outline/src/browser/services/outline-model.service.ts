@@ -101,9 +101,11 @@ export class OutlineModelService {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  private onDidRefreshedEmitter: Emitter<void> = new Emitter();
-  private onLoadingStateChangedEmitter: Emitter<boolean> = new Emitter();
-  private onDidUpdateTreeModelEmitter: Emitter<OutlineTreeModel | undefined> = new Emitter();
+  private onDidRefreshedEmitter: Emitter<void> = this.disposableCollection.register(new Emitter());
+  private onLoadingStateChangedEmitter: Emitter<boolean> = this.disposableCollection.register(new Emitter());
+  private onDidUpdateTreeModelEmitter: Emitter<OutlineTreeModel | undefined> = this.disposableCollection.register(
+    new Emitter(),
+  );
 
   private _ignoreFollowCursorUpdateEventTimer = 0;
   private initTreeModelDelayer: ThrottledDelayer<void>;

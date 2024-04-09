@@ -137,10 +137,11 @@ export const WelcomeView: React.FC<WelcomeViewProps> = React.memo((props) => {
   const viewsController: ViewsController = useInjectable(ViewsController, [props.viewId]);
   const [contents, setContents] = React.useState<IViewContentDescriptor[]>(viewsController.contents);
   React.useEffect(() => {
-    viewsController.onDidChange(() => {
+    const toDispose = viewsController.onDidChange(() => {
       const newContents = viewsController.contents;
       setContents(newContents);
     });
+    return () => toDispose.dispose();
   }, []);
 
   return contents.length ? (

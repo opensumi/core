@@ -152,7 +152,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _isInitOption = true;
 
-  private readonly _onDidChangeEncoding = new Emitter<void>();
+  private readonly _onDidChangeEncoding = this.registerDispose(new Emitter<void>());
   readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {

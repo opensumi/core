@@ -33,7 +33,7 @@ export class TerminalLink extends Disposable implements ILink {
   private _hoverListeners: DisposableCollection | undefined;
   private _tooltipDisposable: IDisposable | undefined;
 
-  private readonly _onInvalidated = new Emitter<void>();
+  private readonly _onInvalidated = this.registerDispose(new Emitter<void>());
   public get onInvalidated(): Event<void> {
     return this._onInvalidated.event;
   }

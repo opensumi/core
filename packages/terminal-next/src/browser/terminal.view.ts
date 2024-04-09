@@ -79,10 +79,10 @@ export class Widget extends Disposable implements IWidget {
     this._onError.fire(status);
   }
 
-  protected _onRender = new Emitter<void>();
-  protected _onResize = new Emitter<void>();
-  protected _onShow = new Emitter<boolean>();
-  protected _onError = new Emitter<boolean>();
+  protected _onRender = this.registerDispose(new Emitter<void>());
+  protected _onResize = this.registerDispose(new Emitter<void>());
+  protected _onShow = this.registerDispose(new Emitter<boolean>());
+  protected _onError = this.registerDispose(new Emitter<boolean>());
   onRender: Event<void> = this._onRender.event;
   onResize: Event<void> = this._onResize.event;
   onShow: Event<boolean> = this._onShow.event;
@@ -239,7 +239,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 }
 
 @Injectable()
-export class TerminalGroupViewService implements ITerminalGroupViewService {
+export class TerminalGroupViewService extends Disposable implements ITerminalGroupViewService {
   protected _widgets: Map<string, Widget>;
 
   @observable.shallow
@@ -254,12 +254,13 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   @Autowired(ITerminalInternalService)
   private readonly service: ITerminalInternalService;
 
-  protected _onWidgetCreated = new Emitter<Widget>();
-  protected _onWidgetSelected = new Emitter<Widget>();
-  protected _onWidgetDisposed = new Emitter<Widget>();
-  protected _onWidgetEmpty = new Emitter<void>();
+  protected _onWidgetCreated = this.registerDispose(new Emitter<Widget>());
+  protected _onWidgetSelected = this.registerDispose(new Emitter<Widget>());
+  protected _onWidgetDisposed = this.registerDispose(new Emitter<Widget>());
+  protected _onWidgetEmpty = this.registerDispose(new Emitter<void>());
 
   constructor() {
+    super();
     makeObservable(this);
     this._widgets = new Map();
   }

@@ -28,17 +28,17 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
    * undefined 表示整个都需要刷新
    * 带了 menuId 只需要刷新单个 MenuBarItem
    */
-  private readonly _onDidMenuBarChange = new Emitter<void>();
+  private readonly _onDidMenuBarChange = this.registerDispose(new Emitter<void>());
   public get onDidMenubarChange(): Event<void> {
     return this._onDidMenuBarChange.event;
   }
 
-  private readonly _onDidMenuChange = new Emitter<string>();
+  private readonly _onDidMenuChange = this.registerDispose(new Emitter<string>());
   public get onDidMenuChange(): Event<string> {
     return this._onDidMenuChange.event;
   }
 
-  private readonly _onMenuChange = new Emitter<string>();
+  private readonly _onMenuChange = this.registerDispose(new Emitter<string>());
   // internal 的 MenuChange 监听器，监听 menu/submenu 的变化
   private get onMenuChange(): Event<string | undefined> {
     return this._onMenuChange.event;

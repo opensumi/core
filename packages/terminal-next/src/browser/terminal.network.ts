@@ -22,10 +22,10 @@ export class TerminalNetworkService extends Disposable implements ITerminalNetwo
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;
 
-  private _onConnect = new Emitter<void>();
+  private _onConnect = this.registerDispose(new Emitter<void>());
   public onConnect: Event<void> = this._onConnect.event;
 
-  private _onDisconnect = new Emitter<void>();
+  private _onDisconnect = this.registerDispose(new Emitter<void>());
   public onDisconnect: Event<void> = this._onDisconnect.event;
 
   private _status: TerminalNetworkStatus = TerminalNetworkStatus.DISCONNECTED;

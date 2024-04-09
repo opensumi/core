@@ -131,10 +131,10 @@ export function addDisposableListener(
 }
 
 export class FocusTracker extends Disposable {
-  private readonly didFocus = new Emitter<void>();
+  private readonly didFocus = this.registerDispose(new Emitter<void>());
   public readonly onDidFocus: BaseEvent<void> = this.didFocus.event;
 
-  private readonly didBlur = new Emitter<void>();
+  private readonly didBlur = this.registerDispose(new Emitter<void>());
   public readonly onDidBlur: BaseEvent<void> = this.didBlur.event;
 
   constructor(element: HTMLElement | Window) {

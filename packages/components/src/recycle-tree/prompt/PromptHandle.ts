@@ -39,13 +39,12 @@ export abstract class PromptHandle {
   private _validateClassName: string;
   private _inComposition = false;
 
-  // event
-  private onChangeEmitter: Emitter<string> = new Emitter();
-  private onCommitEmitter: Emitter<string> = new Emitter();
-  private onCancelEmitter: Emitter<string> = new Emitter();
-  private onFocusEmitter: Emitter<string> = new Emitter();
-  private onBlurEmitter: Emitter<string> = new Emitter();
-  private onDestroyEmitter: Emitter<string> = new Emitter();
+  private onChangeEmitter: Emitter<string> = this.disposables.register(new Emitter());
+  private onCommitEmitter: Emitter<string> = this.disposables.register(new Emitter());
+  private onCancelEmitter: Emitter<string> = this.disposables.register(new Emitter());
+  private onFocusEmitter: Emitter<string> = this.disposables.register(new Emitter());
+  private onBlurEmitter: Emitter<string> = this.disposables.register(new Emitter());
+  private onDestroyEmitter: Emitter<string> = this.disposables.register(new Emitter());
   private markdownRenderer = createMarkedRenderer();
 
   constructor() {

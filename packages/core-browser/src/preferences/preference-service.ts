@@ -56,22 +56,21 @@ export class PreferenceChangeImpl implements PreferenceChange {
 
 @Injectable()
 export class PreferenceServiceImpl implements PreferenceService {
-  protected readonly onPreferenceChangedEmitter = new Emitter<PreferenceChange>();
+  protected readonly toDispose = new DisposableCollection();
+
+  protected readonly onPreferenceChangedEmitter = this.toDispose.register(new Emitter<PreferenceChange>());
   public readonly onPreferenceChanged = this.onPreferenceChangedEmitter.event;
 
-  protected readonly onPreferencesChangedEmitter = new Emitter<PreferenceChanges>();
+  protected readonly onPreferencesChangedEmitter = this.toDispose.register(new Emitter<PreferenceChanges>());
   public readonly onPreferencesChanged = this.onPreferencesChangedEmitter.event;
 
-  private readonly onLanguagePreferencesChangedEmitter = new Emitter<{
-    overrideIdentifier: string;
-    changes: PreferenceChanges;
-  }>();
-  public readonly onLanguagePreferencesChanged = this.onLanguagePreferencesChangedEmitter.event;
-
-  protected readonly toDispose = new DisposableCollection(
-    this.onPreferenceChangedEmitter,
-    this.onPreferencesChangedEmitter,
+  private readonly onLanguagePreferencesChangedEmitter = this.toDispose.register(
+    new Emitter<{
+      overrideIdentifier: string;
+      changes: PreferenceChanges;
+    }>(),
   );
+  public readonly onLanguagePreferencesChanged = this.onLanguagePreferencesChangedEmitter.event;
 
   @Autowired(PreferenceSchemaProvider)
   protected readonly schema: PreferenceSchemaProvider;

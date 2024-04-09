@@ -37,19 +37,19 @@ export class PtyService extends Disposable {
   protected readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
   private _ptyProcess: IPtyProcessProxy | undefined;
 
-  private readonly _onData = new Emitter<string>();
+  private readonly _onData = this.registerDispose(new Emitter<string>());
   readonly onData = this._onData.event;
 
-  private readonly _onReady = new Emitter<IProcessReadyEvent>();
+  private readonly _onReady = this.registerDispose(new Emitter<IProcessReadyEvent>());
   readonly onReady = this._onReady.event;
 
-  private readonly _onExit = new Emitter<IProcessExitEvent>();
+  private readonly _onExit = this.registerDispose(new Emitter<IProcessExitEvent>());
   readonly onExit = this._onExit.event;
   // private readonly ptyServiceManager = new PtyServiceManager();
   // 终端的sessionId，也就是构造函数传入的id
   private readonly sessionId: string;
 
-  private readonly _onProcessChange = new Emitter<string>();
+  private readonly _onProcessChange = this.registerDispose(new Emitter<string>());
   readonly onProcessChange = this._onProcessChange.event;
 
   private previouslyProcess: string | undefined;

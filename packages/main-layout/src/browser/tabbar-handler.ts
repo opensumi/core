@@ -1,23 +1,27 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { DisposableStore, Emitter, Event, IDisposable } from '@opensumi/ide-core-common';
 
 import { IMainLayoutService } from '../common';
 
 import { TabbarService } from './tabbar/tabbar.service';
 
 @Injectable({ multiple: true })
-export class TabBarHandler {
+export class TabBarHandler implements IDisposable {
   @Autowired(IMainLayoutService)
   private layoutService!: IMainLayoutService;
 
-  protected readonly onActivateEmitter = new Emitter<void>();
+  private _disposables = new DisposableStore();
+
+  protected readonly onActivateEmitter = this._disposables.add(new Emitter<void>());
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
 
-  protected readonly onInActivateEmitter = new Emitter<void>();
+  protected readonly onInActivateEmitter = this._disposables.add(new Emitter<void>());
   readonly onInActivate: Event<void> = this.onInActivateEmitter.event;
 
-  // @deprecated
-  protected readonly onCollapseEmitter = new Emitter<void>();
+  /**
+   * @deprecated
+   */
+  protected readonly onCollapseEmitter = this._disposables.add(new Emitter<void>());
   protected readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
   public isVisible = false;
@@ -47,6 +51,7 @@ export class TabBarHandler {
     // remove tab
     this.tabbarService.containersMap.delete(this.containerId);
     this.tabbarService.disposeContainer(this.containerId);
+    this._disposables.dispose();
   }
   /**
    * dispose 子视图

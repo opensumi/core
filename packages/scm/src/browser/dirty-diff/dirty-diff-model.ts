@@ -58,7 +58,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   private repositoryDisposables = new Set<IDisposable>();
   private readonly originalModelDisposables: DisposableStore;
 
-  private _onDidChange = new Emitter<ISplice<ILineChange>[]>();
+  private _onDidChange = this.registerDispose(new Emitter<ISplice<ILineChange>[]>());
   readonly onDidChange: Event<ISplice<ILineChange>[]> = this._onDidChange.event;
 
   private _changes: ILineChange[] = [];

@@ -16,9 +16,11 @@ export interface OpenedEditorEvent {
 
 @Injectable()
 export class OpenedEditorEventService extends WithEventBus {
-  private _onDidChange: Emitter<OpenedEditorEvent | null> = new Emitter();
-  private _onDidDecorationChange: Emitter<IResourceDecorationChangeEventPayload | null> = new Emitter();
-  private _onDidActiveChange: Emitter<OpenedEditorEvent | null> = new Emitter();
+  private _onDidChange: Emitter<OpenedEditorEvent | null> = this.registerDispose(new Emitter());
+  private _onDidDecorationChange: Emitter<IResourceDecorationChangeEventPayload | null> = this.registerDispose(
+    new Emitter(),
+  );
+  private _onDidActiveChange: Emitter<OpenedEditorEvent | null> = this.registerDispose(new Emitter());
 
   public onDidChange: Event<OpenedEditorEvent | null> = this._onDidChange.event;
   public onDidDecorationChange: Event<IResourceDecorationChangeEventPayload | null> = this._onDidDecorationChange.event;

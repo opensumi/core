@@ -64,28 +64,32 @@ export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry
 
 @Injectable()
 export class FileServiceClient implements IFileServiceClient {
+  protected toDisposable = new DisposableCollection();
+
   protected readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
-  protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
-  protected readonly onFileProviderChangedEmitter = new Emitter<string[]>();
+  protected readonly onFileChangedEmitter = this.toDisposable.register(new Emitter<FileChangeEvent>());
+  protected readonly onFileProviderChangedEmitter = this.toDisposable.register(new Emitter<string[]>());
 
-  protected readonly _onFilesChanged = new Emitter<FileChangeEvent>();
+  protected readonly _onFilesChanged = this.toDisposable.register(new Emitter<FileChangeEvent>());
   readonly onFilesChanged: Event<FileChangeEvent> = this._onFilesChanged.event;
 
-  protected readonly _onFileProviderChanged = new Emitter<string[]>();
+  protected readonly _onFileProviderChanged = this.toDisposable.register(new Emitter<string[]>());
   readonly onFileProviderChanged: Event<string[]> = this._onFileProviderChanged.event;
 
-  protected readonly _onDidChangeFileSystemProviderRegistrations = new Emitter<IFileSystemProviderRegistrationEvent>();
+  protected readonly _onDidChangeFileSystemProviderRegistrations = this.toDisposable.register(
+    new Emitter<IFileSystemProviderRegistrationEvent>(),
+  );
   readonly onDidChangeFileSystemProviderRegistrations = this._onDidChangeFileSystemProviderRegistrations.event;
 
-  private readonly _onDidChangeFileSystemProviderCapabilities =
-    new Emitter<IFileSystemProviderCapabilitiesChangeEvent>();
+  private readonly _onDidChangeFileSystemProviderCapabilities = this.toDisposable.register(
+    new Emitter<IFileSystemProviderCapabilitiesChangeEvent>(),
+  );
   readonly onDidChangeFileSystemProviderCapabilities = this._onDidChangeFileSystemProviderCapabilities.event;
 
   protected filesExcludesMatcherList: ParsedPattern[] = [];
 
   protected watcherId = 0;
-  protected toDisposable = new DisposableCollection();
   protected watchFileExcludes: string[] = [];
   protected watchFileExcludesMatcherList: ParsedPattern[] = [];
   protected filesExcludes: string[] = [];

@@ -65,11 +65,11 @@ export class WalkthroughsService extends Disposable {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  private readonly _onDidOpenWalkthrough = new Emitter<string>();
+  private readonly _onDidOpenWalkthrough = this.registerDispose(new Emitter<string>());
   readonly onDidOpenWalkthrough: Event<string> = this._onDidOpenWalkthrough.event;
-  private readonly _onDidAddWalkthrough = new Emitter<IWalkthrough>();
+  private readonly _onDidAddWalkthrough = this.registerDispose(new Emitter<IWalkthrough>());
   readonly onDidAddWalkthrough: Event<IWalkthrough> = this._onDidAddWalkthrough.event;
-  private readonly _onDidProgressStep = new Emitter<IResolvedWalkthroughStep>();
+  private readonly _onDidProgressStep = this.registerDispose(new Emitter<IResolvedWalkthroughStep>());
   readonly onDidProgressStep: Event<IResolvedWalkthroughStep> = this._onDidProgressStep.event;
 
   private stepProgress: Record<string, StepProgress | undefined>;

@@ -11,6 +11,7 @@ import { PreferenceChange } from '@opensumi/ide-core-browser/lib/preferences';
 import {
   Disposable,
   DisposableCollection,
+  DisposableStore,
   Emitter,
   Event,
   debounce,
@@ -675,7 +676,7 @@ export class PredictionStats extends Disposable {
   private readonly _stats: [latency: number, correct: boolean][] = [];
   private _index = 0;
   private readonly _addedAtTime = new WeakMap<IPrediction, number>();
-  private readonly _changeEmitter = new Emitter<void>();
+  private readonly _changeEmitter = this.registerDispose(new Emitter<void>());
   readonly onChange = this._changeEmitter.event;
 
   /**
@@ -745,7 +746,9 @@ export class PredictionStats extends Disposable {
   }
 }
 
-export class PredictionTimeline {
+export class PredictionTimeline implements IDisposable {
+  private _disposables = new DisposableStore();
+
   /**
    * Expected queue of events. Only predictions for the lowest are
    * written into the terminal.
@@ -790,11 +793,11 @@ export class PredictionTimeline {
    */
   private _lookBehind?: IPrediction;
 
-  private readonly _addedEmitter = new Emitter<IPrediction>();
+  private readonly _addedEmitter = this._disposables.add(new Emitter<IPrediction>());
   readonly onPredictionAdded = this._addedEmitter.event;
-  private readonly _failedEmitter = new Emitter<IPrediction>();
+  private readonly _failedEmitter = this._disposables.add(new Emitter<IPrediction>());
   readonly onPredictionFailed = this._failedEmitter.event;
-  private readonly _succeededEmitter = new Emitter<IPrediction>();
+  private readonly _succeededEmitter = this._disposables.add(new Emitter<IPrediction>());
   readonly onPredictionSucceeded = this._succeededEmitter.event;
 
   private get _currentGenerationPredictions() {
@@ -1084,6 +1087,10 @@ export class PredictionTimeline {
   private _getActiveBuffer() {
     const buffer = this.terminal.buffer.active;
     return buffer.type === 'normal' ? buffer : undefined;
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 
@@ -1442,6 +1449,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
     typeAheadLogger('#DEBUG1# activate terminal type ahead addon');
     const style = (this._typeAheadStyle = this._register(new TypeAheadStyle(this._config.localEchoStyle, terminal)));
     const timeline = (this._timeline = new PredictionTimeline(terminal, this._typeAheadStyle));
+    this._register(timeline);
     const stats = (this.stats = new PredictionStats(this._timeline)); // register disposeable;
 
     timeline.setShowPredictions(this._config.localEchoLatencyThreshold === 0);

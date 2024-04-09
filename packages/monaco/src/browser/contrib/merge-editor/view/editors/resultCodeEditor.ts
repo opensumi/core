@@ -121,10 +121,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
 
-  private readonly _onDidChangeContent = new Emitter<void>();
+  private readonly _onDidChangeContent = this.registerDispose(new Emitter<void>());
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
-  private readonly _onChangeRangeIntelligentState = new Emitter<LineRange>();
+  private readonly _onChangeRangeIntelligentState = this.registerDispose(new Emitter<LineRange>());
   public readonly onChangeRangeIntelligentState: Event<LineRange> = this._onChangeRangeIntelligentState.event;
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {

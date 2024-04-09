@@ -136,22 +136,22 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
 
-  private _onInput = new Emitter<ITerminalDataEvent>();
+  private _onInput = this.registerDispose(new Emitter<ITerminalDataEvent>());
   onInput: Event<ITerminalDataEvent> = this._onInput.event;
 
-  private _onOutput = new Emitter<ITerminalDataEvent>();
+  private _onOutput = this.registerDispose(new Emitter<ITerminalDataEvent>());
   onOutput: Event<ITerminalDataEvent> = this._onOutput.event;
 
-  private _onExit = new Emitter<ITerminalExitEvent>();
+  private _onExit = this.registerDispose(new Emitter<ITerminalExitEvent>());
   onExit: Event<ITerminalExitEvent> = this._onExit.event;
 
-  private _onTitleChange = new Emitter<ITerminalTitleChangeEvent>();
+  private _onTitleChange = this.registerDispose(new Emitter<ITerminalTitleChangeEvent>());
   onTitleChange: Event<ITerminalTitleChangeEvent> = this._onTitleChange.event;
 
-  private readonly _onLinksReady = new Emitter<ITerminalClient>();
+  private readonly _onLinksReady = this.registerDispose(new Emitter<ITerminalClient>());
   onLinksReady: Event<ITerminalClient> = this._onLinksReady.event;
 
-  private readonly _onResponseTime = new Emitter<number>();
+  private readonly _onResponseTime = this.registerDispose(new Emitter<number>());
   onResponseTime: Event<number> = this._onResponseTime.event;
   private _attachAddon: AttachAddon;
 

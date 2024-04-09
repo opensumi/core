@@ -9,18 +9,18 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
   private _disposeConnection: Disposable | null;
   private _terminal: Terminal;
 
-  private _onData = new Emitter<string | ArrayBuffer>();
+  private _onData = this.registerDispose(new Emitter<string | ArrayBuffer>());
   onData = this._onData.event;
 
-  private _onExit = new Emitter<number | undefined>();
+  private _onExit = this.registerDispose(new Emitter<number | undefined>());
   onExit = this._onExit.event;
 
-  private _onTime = new Emitter<number>();
+  private _onTime = this.registerDispose(new Emitter<number>());
   onTime = this._onTime.event;
 
   private _lastInputTime = 0;
 
-  private readonly _onBeforeProcessData = new Emitter<{ data: string }>();
+  private readonly _onBeforeProcessData = this.registerDispose(new Emitter<{ data: string }>());
   readonly onBeforeProcessData = this._onBeforeProcessData.event;
 
   public setConnection(connection: ITerminalConnection | undefined) {

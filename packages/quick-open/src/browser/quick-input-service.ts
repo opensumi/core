@@ -22,6 +22,7 @@ export class QuickInputService implements IQuickInputService {
   open(options: QuickInputOptions): Promise<string | undefined> {
     if (this.inputBox) {
       this.inputBox.hide();
+      this.inputBox.dispose();
     }
 
     const result = new Deferred<string | undefined>();

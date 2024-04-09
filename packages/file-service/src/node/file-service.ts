@@ -66,10 +66,11 @@ export class FileService implements IFileService {
   protected watcherId = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
   protected readonly watcherWithSchemaMap = new Map<string, number[]>();
-  protected readonly onFileChangedEmitter = new Emitter<DidFilesChangedParams>();
+  protected toDisposable = new DisposableCollection();
+  protected readonly onFileChangedEmitter = this.toDisposable.register(new Emitter<DidFilesChangedParams>());
   protected readonly fileSystemManage = new FileSystemManage();
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
-  protected toDisposable = new DisposableCollection();
+
   protected filesExcludes: string[] = [];
   protected filesExcludesMatcherList: ParsedPattern[] = [];
   protected workspaceRoots: string[] = [];

@@ -35,7 +35,7 @@ export class SCMTreeService extends Tree {
     return this._isTreeMode;
   }
 
-  private readonly onDidTreeModeChangeEmitter: Emitter<boolean> = new Emitter();
+  private readonly onDidTreeModeChangeEmitter: Emitter<boolean> = this.toDispose.register(new Emitter());
   public get onDidTreeModeChange(): Event<boolean> {
     return this.onDidTreeModeChangeEmitter.event;
   }

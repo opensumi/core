@@ -11,10 +11,13 @@ export interface IBasicTreeServiceOptions {
 }
 
 export class BasicTreeService extends Tree {
-  private selectedDecoration: Decoration = new Decoration(DECORATIONS.SELECTED); // 选中态
-  private focusedDecoration: Decoration = new Decoration(DECORATIONS.FOCUSED); // 焦点态
-  private contextMenuDecoration: Decoration = new Decoration(DECORATIONS.ACTIVED); // 右键菜单激活态
-  private loadingDecoration: Decoration = new Decoration(DECORATIONS.LOADING); // 加载态
+  private disposableCollection: DisposableCollection = new DisposableCollection();
+
+  private selectedDecoration: Decoration = this.disposableCollection.register(new Decoration(DECORATIONS.SELECTED)); // 选中态
+  private focusedDecoration: Decoration = this.disposableCollection.register(new Decoration(DECORATIONS.FOCUSED)); // 焦点态
+  private contextMenuDecoration: Decoration = this.disposableCollection.register(new Decoration(DECORATIONS.ACTIVED)); // 右键菜单激活态
+  private loadingDecoration: Decoration = this.disposableCollection.register(new Decoration(DECORATIONS.LOADING)); // 加载态
+
   // 即使选中态也是焦点态的节点
   private _focusedNode: BasicCompositeTreeNode | BasicTreeNode | undefined;
   // 选中态的节点
@@ -25,10 +28,9 @@ export class BasicTreeService extends Tree {
   private _model: BasicTreeModel;
   private _decorations: DecorationsManager;
 
-  private disposableCollection: DisposableCollection = new DisposableCollection();
   private decorationDisposableCollection: DisposableCollection = new DisposableCollection();
 
-  private onDidUpdateTreeModelEmitter: Emitter<BasicTreeModel> = new Emitter();
+  private onDidUpdateTreeModelEmitter: Emitter<BasicTreeModel> = this.disposableCollection.register(new Emitter());
 
   constructor(
     private _treeData?: IBasicTreeData[],
@@ -37,7 +39,6 @@ export class BasicTreeService extends Tree {
     private treeOptions = {} as IBasicTreeServiceOptions,
   ) {
     super();
-    this.disposableCollection.push(this.onDidUpdateTreeModelEmitter);
   }
 
   private setUpTreeModel() {

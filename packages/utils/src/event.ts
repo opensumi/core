@@ -948,6 +948,7 @@ export class Relay<T> implements IDisposable {
   private inputEvent: Event<T> = Event.None;
   private inputEventListener: IDisposable = Disposable.None;
 
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   private emitter = new Emitter<T>({
     onFirstListenerDidAdd: () => {
       this.listening = true;
@@ -984,6 +985,7 @@ export class ReadyEvent<T = void> implements IDisposable {
 
   private _param: T | undefined = undefined;
 
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   private _emitter = new Emitter<T>();
 
   onceReady(cb: (param: T) => any): Promise<any> {
@@ -1024,6 +1026,7 @@ export class ReadyEvent<T = void> implements IDisposable {
 }
 
 export class Dispatcher<T = void> implements IDisposable {
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   private _emitter = new Emitter<{
     type: string;
     data: T;
@@ -1051,6 +1054,7 @@ export class Dispatcher<T = void> implements IDisposable {
 }
 
 export class EventQueue<T> {
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   emitter = new Emitter<T>();
 
   queue: T[] = [];

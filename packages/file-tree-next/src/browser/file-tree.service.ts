@@ -105,10 +105,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private effectedNodes: Directory[] = [];
 
-  private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
-  private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
-  private readonly onFilterModeChangeEmitter = new Emitter<boolean>();
-  private readonly onNodeRefreshedEmitter = new Emitter<void>();
+  private readonly onWorkspaceChangeEmitter = this.toDispose.register(new Emitter<Directory>());
+  private readonly onTreeIndentChangeEmitter = this.toDispose.register(new Emitter<ITreeIndent>());
+  private readonly onFilterModeChangeEmitter = this.toDispose.register(new Emitter<boolean>());
+  private readonly onNodeRefreshedEmitter = this.toDispose.register(new Emitter<void>());
 
   // 筛选模式开关
   private _filterMode = false;

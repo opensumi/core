@@ -6,7 +6,15 @@ import {
   StorageProvider,
   localize,
 } from '@opensumi/ide-core-browser';
-import { CommandRegistry, Emitter, Event, STORAGE_NAMESPACE, Schemes, URI } from '@opensumi/ide-core-common';
+import {
+  CommandRegistry,
+  Emitter,
+  Event,
+  IDisposable,
+  STORAGE_NAMESPACE,
+  Schemes,
+  URI,
+} from '@opensumi/ide-core-common';
 import { EditorCollectionService, IDecorationApplyOptions } from '@opensumi/ide-editor';
 import { ICodeEditor, IEditorDocumentModelService, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
@@ -86,7 +94,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 
   protected history: HistoryNavigator<string>;
   protected _consoleInputElement: HTMLDivElement | null = null;
-  protected _updateDisposable: monaco.IDisposable | null = null;
+  protected _updateDisposable: IDisposable | null = null;
   protected _consoleModel: ITextModel;
   protected get _isReadonly(): boolean {
     const session = this.manager.currentSession;

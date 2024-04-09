@@ -75,7 +75,7 @@ export class ProductIconService extends WithEventBus implements IProductIconServ
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  private themeChangeEmitter: Emitter<IProductIconTheme> = new Emitter();
+  private themeChangeEmitter: Emitter<IProductIconTheme> = this.registerDispose(new Emitter());
   public currentThemeId: string;
   public currentTheme: IProductIconTheme;
   public productIconThemeLoaded: Deferred<void> = new Deferred<void>();

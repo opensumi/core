@@ -45,7 +45,7 @@ export class CommentModelService extends Disposable {
   private _focusedNode: CommentFileNode | CommentContentNode | CommentReplyNode | null;
   private _selectedNodes: (CommentFileNode | CommentContentNode | CommentReplyNode)[] = [];
 
-  private onDidUpdateTreeModelEmitter: Emitter<CommentTreeModel | undefined> = new Emitter();
+  private onDidUpdateTreeModelEmitter: Emitter<CommentTreeModel | undefined> = this.registerDispose(new Emitter());
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 

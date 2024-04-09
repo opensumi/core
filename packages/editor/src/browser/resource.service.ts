@@ -42,10 +42,10 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
 
   private cachedProvider = new LRUMap<string, IResourceProvider | undefined>(500, 200);
 
-  private onRegisterResourceProviderEmitter = new Emitter<IResourceProvider>();
+  private onRegisterResourceProviderEmitter = this.registerDispose(new Emitter<IResourceProvider>());
   public readonly onRegisterResourceProvider = this.onRegisterResourceProviderEmitter.event;
 
-  private onUnregisterResourceProviderEmitter = new Emitter<IResourceProvider>();
+  private onUnregisterResourceProviderEmitter = this.registerDispose(new Emitter<IResourceProvider>());
   public readonly onUnregisterResourceProvider = this.onUnregisterResourceProviderEmitter.event;
 
   @Autowired(ILogger)

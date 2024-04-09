@@ -146,10 +146,10 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   private _editor: IEditor;
 
-  private _onShow = new Emitter<void>();
+  private _onShow = this.registerDispose(new Emitter<void>());
   public onShow: Event<void> = this._onShow.event;
 
-  private _onHide = new Emitter<void>();
+  private _onHide = this.registerDispose(new Emitter<void>());
   public onHide: Event<void> = this._onHide.event;
 
   constructor(editor: IEditor, thread: ICommentsThread, options?: IOptions) {

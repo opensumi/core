@@ -80,7 +80,7 @@ export class TestTreeViewModelImpl extends Disposable implements ITestTreeViewMo
 
   private readonly items = new Map<string, TestTreeItem>();
 
-  private readonly updateEmitter = new Emitter<void>();
+  private readonly updateEmitter = this.registerDispose(new Emitter<void>());
   readonly onUpdate = this.updateEmitter.event;
 
   public treeHandlerApi: IRecycleTreeHandle;

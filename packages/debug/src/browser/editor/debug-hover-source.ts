@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { Emitter, Event } from '@opensumi/ide-core-browser';
+import { Emitter, Event, IDisposable } from '@opensumi/ide-core-browser';
 
 import { IDebugSessionManager } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
@@ -13,7 +13,7 @@ import {
 export type ExpressionVariable = DebugHoverVariableRoot | DebugVariable | DebugVariableContainer | undefined;
 
 @Injectable()
-export class DebugHoverSource {
+export class DebugHoverSource implements IDisposable {
   @Autowired(IDebugSessionManager)
   protected readonly sessions: DebugSessionManager;
 
@@ -22,6 +22,7 @@ export class DebugHoverSource {
 
   dispose(): void {
     this._expression = undefined;
+    this.onDidChangeEmitter.dispose();
   }
 
   protected _expression: ExpressionVariable;

@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-common';
+import { DisposableStore, Emitter, IDisposable } from '@opensumi/ide-core-common';
 
 import { MessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
 import { RPCServiceMethod } from '../types';
@@ -26,8 +26,10 @@ export function getServiceMethods(service: any): string[] {
 /**
  * Store all executable services
  */
-export class ServiceRegistry {
-  protected emitter = new Emitter<string[]>();
+export class ServiceRegistry implements IDisposable {
+  private _disposables = new DisposableStore();
+
+  protected emitter = this._disposables.add(new Emitter<string[]>());
 
   private serviceMethodMap = new Map<PropertyKey, RPCServiceMethod>();
 
@@ -73,10 +75,16 @@ export class ServiceRegistry {
   methods() {
     return Array.from(this.serviceMethodMap.keys());
   }
+
+  dispose(): void {
+    this._disposables.dispose();
+  }
 }
 
-export class ProtocolRegistry {
-  protected emitter = new Emitter<string[]>();
+export class ProtocolRegistry implements IDisposable {
+  private _disposables = new DisposableStore();
+
+  protected emitter = this._disposables.add(new Emitter<string[]>());
 
   private protocolMap = new Map<PropertyKey, TSumiProtocolMethod>();
 
@@ -121,5 +129,9 @@ export class ProtocolRegistry {
         }
       }
     });
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }

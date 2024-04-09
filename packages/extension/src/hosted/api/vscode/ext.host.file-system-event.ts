@@ -21,7 +21,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   AsyncEmitter,
   CancellationToken,
-  Disposable,
+  DisposableStore,
   Emitter,
   Event,
   IRelativePattern,
@@ -49,10 +49,11 @@ import {
 import * as model from '../../../common/vscode/model.api';
 
 class FileSystemWatcher implements vscode.FileSystemWatcher {
-  private readonly _onDidCreate = new Emitter<vscode.Uri>();
-  private readonly _onDidChange = new Emitter<vscode.Uri>();
-  private readonly _onDidDelete = new Emitter<vscode.Uri>();
-  private _disposable: Disposable;
+  private _disposables = new DisposableStore();
+
+  private readonly _onDidCreate = this._disposables.add(new Emitter<vscode.Uri>());
+  private readonly _onDidChange = this._disposables.add(new Emitter<vscode.Uri>());
+  private readonly _onDidDelete = this._disposables.add(new Emitter<vscode.Uri>());
   private _config: number;
 
   get ignoreCreateEvents(): boolean {
@@ -114,11 +115,11 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
       }
     });
 
-    this._disposable = new Disposable(this._onDidCreate, this._onDidChange, this._onDidDelete, subscription);
+    this._disposables.add(subscription);
   }
 
   dispose() {
-    this._disposable.dispose();
+    this._disposables.dispose();
   }
 
   get onDidCreate(): Event<vscode.Uri> {
@@ -140,11 +141,13 @@ interface IExtensionListener<E> {
 }
 
 export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
-  private readonly _onFileSystemEvent = new Emitter<FileSystemEvents>();
+  private _disposables = new DisposableStore();
 
-  private readonly _onDidRenameFile = new Emitter<vscode.FileRenameEvent>();
-  private readonly _onDidCreateFile = new Emitter<vscode.FileCreateEvent>();
-  private readonly _onDidDeleteFile = new Emitter<vscode.FileDeleteEvent>();
+  private readonly _onFileSystemEvent = this._disposables.add(new Emitter<FileSystemEvents>());
+
+  private readonly _onDidRenameFile = this._disposables.add(new Emitter<vscode.FileRenameEvent>());
+  private readonly _onDidCreateFile = this._disposables.add(new Emitter<vscode.FileCreateEvent>());
+  private readonly _onDidDeleteFile = this._disposables.add(new Emitter<vscode.FileDeleteEvent>());
   private readonly _onWillRenameFile = new AsyncEmitter<vscode.FileWillRenameEvent>();
   private readonly _onWillCreateFile = new AsyncEmitter<vscode.FileWillCreateEvent>();
   private readonly _onWillDeleteFile = new AsyncEmitter<vscode.FileWillDeleteEvent>();
@@ -314,5 +317,9 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
 
       // return this._proxy.$tryApplyWorkspaceEdit(dto);
     }
+  }
+
+  dispose() {
+    this._disposables.dispose();
   }
 }

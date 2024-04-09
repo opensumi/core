@@ -7,12 +7,14 @@ import {
   QuickOpenItemOptions,
   QuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { Emitter, Event, localize } from '@opensumi/ide-core-common';
+import { DisposableStore, Emitter, Event, IDisposable, localize } from '@opensumi/ide-core-common';
 
 import { QuickTitleBar } from './quick-title-bar';
 
 @Injectable({ multiple: true })
-export class InputBoxImpl {
+export class InputBoxImpl implements IDisposable {
+  private _disposables = new DisposableStore();
+
   private _options: QuickInputOptions = {};
 
   constructor(options: QuickInputOptions) {
@@ -176,10 +178,7 @@ export class InputBoxImpl {
   }
 
   dispose() {
-    this.onDidAcceptEmitter.dispose();
-    this.onDidChangeValueEmitter.dispose();
-    this.onDidHideEmitter.dispose();
-    this.onDidTriggerButtonEmitter.dispose();
+    this._disposables.dispose();
   }
 
   hide(): void {
@@ -187,17 +186,17 @@ export class InputBoxImpl {
     this.quickOpenService.hide();
   }
 
-  private readonly onDidAcceptEmitter: Emitter<string> = new Emitter();
+  private readonly onDidAcceptEmitter: Emitter<string> = this._disposables.add(new Emitter());
   get onDidAccept(): Event<string> {
     return this.onDidAcceptEmitter.event;
   }
 
-  private readonly onDidChangeValueEmitter: Emitter<string> = new Emitter();
+  private readonly onDidChangeValueEmitter: Emitter<string> = this._disposables.add(new Emitter());
   get onDidChangeValue(): Event<string> {
     return this.onDidChangeValueEmitter.event;
   }
 
-  private readonly onDidTriggerButtonEmitter: Emitter<number> = new Emitter();
+  private readonly onDidTriggerButtonEmitter: Emitter<number> = this._disposables.add(new Emitter());
   get onDidTriggerButton(): Event<number> {
     return this.onDidTriggerButtonEmitter.event;
   }
@@ -206,7 +205,7 @@ export class InputBoxImpl {
    * 只在用户取消输入时触发，如果用户已经 accept 了输入，不会再触发该事件。
    * 如果用户主动调用了 hide() 方法，也会触发该事件。
    */
-  private readonly onDidHideEmitter: Emitter<void> = new Emitter();
+  private readonly onDidHideEmitter: Emitter<void> = this._disposables.add(new Emitter());
   get onDidHide(): Event<void> {
     return this.onDidHideEmitter.event;
   }

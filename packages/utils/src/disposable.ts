@@ -13,6 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+
 import { MaybePromise } from './async';
 import { Emitter, Event } from './event';
 
@@ -116,6 +117,7 @@ export function toDisposable(fn: () => void): IDisposable {
 
 export class Disposable implements IDisposable {
   protected readonly disposables: IDisposable[] = [];
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   protected readonly onDisposeEmitter = new Emitter<void>();
 
   constructor(...toDispose: IDisposable[]) {
@@ -206,6 +208,7 @@ export class Disposable implements IDisposable {
 
 export class DisposableCollection implements IDisposable {
   protected readonly disposables: IDisposable[] = [];
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   protected readonly onDisposeEmitter = new Emitter<void>();
 
   constructor(...toDispose: IDisposable[]) {
@@ -269,6 +272,11 @@ export class DisposableCollection implements IDisposable {
 
   pushAll(disposables: IDisposable[]): IDisposable[] {
     return disposables.map((disposable) => this.push(disposable));
+  }
+
+  register<T extends IDisposable>(disposable: T): T {
+    this.push(disposable);
+    return disposable;
   }
 }
 

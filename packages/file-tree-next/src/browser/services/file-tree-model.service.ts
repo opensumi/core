@@ -172,15 +172,16 @@ export class FileTreeModelService {
   private refreshedActionDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_REFRESHED_ACTION_DELAY);
   private labelChangedDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LABEL_CHANGED_DELAY);
   private locationThrottler: Throttler = new Throttler();
-  private onDidFocusedFileChangeEmitter: Emitter<URI | undefined> = new Emitter();
-  private onDidContextMenuFileChangeEmitter: Emitter<URI | undefined> = new Emitter();
-  private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
-  private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
+  private onDidFocusedFileChangeEmitter: Emitter<URI | undefined> = this.disposableCollection.register(new Emitter());
+  private onDidContextMenuFileChangeEmitter: Emitter<URI | undefined> = this.disposableCollection.register(
+    new Emitter(),
+  );
+  private onDidSelectedFileChangeEmitter: Emitter<URI[]> = this.disposableCollection.register(new Emitter());
+  private onFileTreeModelChangeEmitter: Emitter<TreeModel> = this.disposableCollection.register(new Emitter());
 
   private _fileToLocation: URI | string | undefined;
 
   private treeStateWatcher: TreeStateWatcher;
-  private willSelectedNodePath: string | null;
 
   private _initTreeModelReady = false;
 

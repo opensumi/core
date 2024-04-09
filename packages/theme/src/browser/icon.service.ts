@@ -55,7 +55,7 @@ export class IconService extends WithEventBus implements IIconService {
 
   iconThemeLoaded: Deferred<void> = new Deferred<void>();
 
-  private themeChangeEmitter: Emitter<IIconTheme> = new Emitter();
+  private themeChangeEmitter: Emitter<IIconTheme> = this.registerDispose(new Emitter());
 
   public onThemeChange: Event<IIconTheme> = this.themeChangeEmitter.event;
 

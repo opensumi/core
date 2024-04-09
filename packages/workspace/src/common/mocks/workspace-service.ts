@@ -1,11 +1,11 @@
 import { Injectable } from '@opensumi/di';
-import { Deferred, Emitter, URI } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, Emitter, URI } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import { IWorkspaceService } from '../../common';
 
 @Injectable()
-export class MockWorkspaceService implements IWorkspaceService {
+export class MockWorkspaceService extends Disposable implements IWorkspaceService {
   private _roots: FileStat[] = [];
 
   private _workspace: FileStat | undefined;
@@ -17,6 +17,7 @@ export class MockWorkspaceService implements IWorkspaceService {
   private deferredRoots = new Deferred<FileStat[]>();
 
   constructor() {
+    super();
     this.whenReady = this.init();
   }
 
@@ -66,13 +67,13 @@ export class MockWorkspaceService implements IWorkspaceService {
     this._onWorkspaceChanged.fire(this._roots);
   }
 
-  _onWorkspaceChanged: Emitter<FileStat[]> = new Emitter();
+  _onWorkspaceChanged: Emitter<FileStat[]> = this.registerDispose(new Emitter());
   onWorkspaceChanged = this._onWorkspaceChanged.event;
 
-  _onWorkspaceLocationChanged: Emitter<FileStat | undefined> = new Emitter();
+  _onWorkspaceLocationChanged: Emitter<FileStat | undefined> = this.registerDispose(new Emitter());
   onWorkspaceLocationChanged = this._onWorkspaceLocationChanged.event;
 
-  _onWorkspaceFileExcludeChangeEmitter: Emitter<void> = new Emitter();
+  _onWorkspaceFileExcludeChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
   onWorkspaceFileExcludeChanged = this._onWorkspaceFileExcludeChangeEmitter.event;
 
   async setMostRecentlyUsedWorkspace(): Promise<void> {

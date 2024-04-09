@@ -32,7 +32,7 @@ export class MenuServiceImpl implements AbstractMenuService {
 
 @Injectable()
 class Menu extends Disposable implements IMenu {
-  private readonly _onDidChange = new Emitter<IMenu | undefined>();
+  private readonly _onDidChange = this.registerDispose(new Emitter<IMenu | undefined>());
   public get onDidChange(): Event<IMenu | undefined> {
     return this._onDidChange.event;
   }

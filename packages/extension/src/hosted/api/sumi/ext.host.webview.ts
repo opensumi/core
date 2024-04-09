@@ -46,7 +46,7 @@ export class ExtHostWebview {
 }
 
 export class PlainWebviewHandle extends Disposable implements IPlainWebviewHandle {
-  public readonly onMessageEmitter = new Emitter<any>();
+  public readonly onMessageEmitter = this.registerDispose(new Emitter<any>());
 
   public readonly onMessage = this.onMessageEmitter.event;
 

@@ -33,10 +33,10 @@ export class ChatService extends Disposable {
   @Autowired(IChatManagerService)
   private chatManagerService: ChatManagerService;
 
-  private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
+  private readonly _onChatMessageLaunch = this.registerDispose(new Emitter<IChatMessageStructure>());
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
-  private readonly _onChangeSessionId = new Emitter<string>();
+  private readonly _onChangeSessionId = this.registerDispose(new Emitter<string>());
   public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
 
   private _latestSessionId: string;

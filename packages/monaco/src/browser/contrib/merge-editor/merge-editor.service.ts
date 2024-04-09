@@ -65,17 +65,17 @@ export class MergeEditorService extends Disposable {
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
 
-  private readonly _onDidInputNutrition = new Emitter<IOpenMergeEditorArgs>();
+  private readonly _onDidInputNutrition = this.registerDispose(new Emitter<IOpenMergeEditorArgs>());
   public readonly onDidInputNutrition: Event<IOpenMergeEditorArgs> = this._onDidInputNutrition.event;
 
-  private readonly _onDidMount = new Emitter<IEditorMountParameter>();
+  private readonly _onDidMount = this.registerDispose(new Emitter<IEditorMountParameter>());
   public readonly onDidMount: Event<IEditorMountParameter> = this._onDidMount.event;
 
-  private readonly _onRestoreState = new Emitter<URI>();
+  private readonly _onRestoreState = this.registerDispose(new Emitter<URI>());
   public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
 
   private loadingDispose = new Disposable();
-  private readonly _onHasIntelligentLoadingChange = new Emitter<boolean>();
+  private readonly _onHasIntelligentLoadingChange = this.registerDispose(new Emitter<boolean>());
   public readonly onHasIntelligentLoadingChange: Event<boolean> = this._onHasIntelligentLoadingChange.event;
 
   private nutrition: IOpenMergeEditorArgs | undefined;

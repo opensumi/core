@@ -73,7 +73,9 @@ export class KeymapService implements IKeymapService {
 
   protected resource: FileStat | undefined;
 
-  protected readonly keymapChangeEmitter = new Emitter<KeybindingItem[]>();
+  private disposableCollection: DisposableCollection = new DisposableCollection();
+
+  protected readonly keymapChangeEmitter = this.disposableCollection.register(new Emitter<KeybindingItem[]>());
 
   get onDidKeymapChanges(): Event<KeybindingItem[]> {
     return this.keymapChangeEmitter.event;
@@ -85,7 +87,6 @@ export class KeymapService implements IKeymapService {
   protected readonly toRestoreDefaultKeybindingMap: Map<string, IDisposable> = new Map();
 
   private searchDelayer = new ThrottledDelayer(KeymapService.DEFAULT_SEARCH_DELAY);
-  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private _whenReadyDeferred: Deferred<void> = new Deferred();
 

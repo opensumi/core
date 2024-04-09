@@ -1,3 +1,4 @@
+import { DisposableStore } from './disposable';
 import { Emitter, Event } from './event';
 
 export interface ILRULinkListNode<K> {
@@ -11,7 +12,8 @@ export interface ILRULinkListNode<K> {
  * 双向链表 + Map
  */
 export class LRUMap<K, V> extends Map<K, V> {
-  private _onDidDelete = new Emitter<{ key: K; value: V }>();
+  private readonly _disposables = new DisposableStore();
+  private _onDidDelete = this._disposables.add(new Emitter<{ key: K; value: V }>());
 
   public readonly onDidDelete: Event<{ key: K; value: V }> = this._onDidDelete.event;
   public readonly onKeyDidDelete = (key: K, ...args: Parameters<Event<{ key: K; value: V }>>) =>
@@ -100,6 +102,10 @@ export class LRUMap<K, V> extends Map<K, V> {
         this.delete(toDeleteNode.key!);
       }
     }
+  }
+
+  dispose() {
+    this._disposables.dispose();
   }
 }
 

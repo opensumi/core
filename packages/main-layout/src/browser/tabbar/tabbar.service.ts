@@ -124,10 +124,12 @@ export class TabbarService extends WithEventBus {
 
   private accordionRestored: Set<string> = new Set();
 
-  private readonly onCurrentChangeEmitter = new Emitter<{ previousId: string; currentId: string }>();
+  private readonly onCurrentChangeEmitter = this.registerDispose(
+    new Emitter<{ previousId: string; currentId: string }>(),
+  );
   readonly onCurrentChange: Event<{ previousId: string; currentId: string }> = this.onCurrentChangeEmitter.event;
 
-  private readonly onSizeChangeEmitter = new Emitter<{ size: number }>();
+  private readonly onSizeChangeEmitter = this.registerDispose(new Emitter<{ size: number }>());
   readonly onSizeChange: Event<{ size: number }> = this.onSizeChangeEmitter.event;
 
   protected barSize: number;

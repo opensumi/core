@@ -3,7 +3,7 @@ import { CancellationTokenSource, Disposable, Emitter, Event } from '@opensumi/i
 
 @Injectable()
 export class AINativeService extends Disposable {
-  private readonly _onInlineChatVisible = new Emitter<boolean>();
+  private readonly _onInlineChatVisible = this.registerDispose(new Emitter<boolean>());
   public readonly onInlineChatVisible: Event<boolean> = this._onInlineChatVisible.event;
 
   public launchInlineChatVisible(value: boolean) {

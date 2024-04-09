@@ -383,8 +383,11 @@ class TaskExecutionImpl implements vscode.TaskExecution {
 
 class CustomExecutionData implements IDisposable {
   private _cancellationSource?: CancellationTokenSource;
-  private readonly _onTaskExecutionComplete: Emitter<CustomExecutionData> = new Emitter<CustomExecutionData>();
   private readonly _disposables = new DisposableStore();
+
+  private readonly _onTaskExecutionComplete: Emitter<CustomExecutionData> = this._disposables.add(
+    new Emitter<CustomExecutionData>(),
+  );
   private terminalId?: number;
   public result: number | undefined;
 
@@ -452,13 +455,21 @@ export class ExtHostTasks implements IExtHostTasks {
 
   protected readonly proxy: IMainThreadTasks;
 
-  private readonly _onDidExecuteTask: Emitter<vscode.TaskStartEvent> = new Emitter<vscode.TaskStartEvent>();
-  private readonly _onDidTerminateTask: Emitter<vscode.TaskEndEvent> = new Emitter<vscode.TaskEndEvent>();
+  private readonly _disposables = new DisposableStore();
 
-  private readonly _onDidTaskProcessStarted: Emitter<vscode.TaskProcessStartEvent> =
-    new Emitter<vscode.TaskProcessStartEvent>();
-  private readonly _onDidTaskProcessEnded: Emitter<vscode.TaskProcessEndEvent> =
-    new Emitter<vscode.TaskProcessEndEvent>();
+  private readonly _onDidExecuteTask: Emitter<vscode.TaskStartEvent> = this._disposables.add(
+    new Emitter<vscode.TaskStartEvent>(),
+  );
+  private readonly _onDidTerminateTask: Emitter<vscode.TaskEndEvent> = this._disposables.add(
+    new Emitter<vscode.TaskEndEvent>(),
+  );
+
+  private readonly _onDidTaskProcessStarted: Emitter<vscode.TaskProcessStartEvent> = this._disposables.add(
+    new Emitter<vscode.TaskProcessStartEvent>(),
+  );
+  private readonly _onDidTaskProcessEnded: Emitter<vscode.TaskProcessEndEvent> = this._disposables.add(
+    new Emitter<vscode.TaskProcessEndEvent>(),
+  );
 
   constructor(
     private rpcProtocol: IRPCProtocol,
@@ -684,6 +695,10 @@ export class ExtHostTasks implements IExtHostTasks {
     }
 
     return resolvedTaskDTO;
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 

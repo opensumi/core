@@ -174,7 +174,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private untitledCloseIndex: number[] = [];
 
   public gridReady = false;
-  private _onDidGridReady = new Emitter<void>();
+  private _onDidGridReady = this.registerDispose(new Emitter<void>());
   public onDidGridReady = this._onDidGridReady.event;
 
   constructor() {
@@ -709,7 +709,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private holdDocumentModelRefs: Map<string, IEditorDocumentModelRef> = new Map();
 
-  private readonly toDispose: monaco.IDisposable[] = [];
+  private readonly toDispose: IDisposable[] = [];
 
   private _contextKeyService: IContextKeyService;
 

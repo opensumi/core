@@ -118,16 +118,18 @@ export class AccordionService extends WithEventBus {
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService: IScopedContextKeyService;
 
-  private didChangeViewTitleEmitter: Emitter<AccordionViewChangeEvent> = new Emitter<AccordionViewChangeEvent>();
+  private didChangeViewTitleEmitter: Emitter<AccordionViewChangeEvent> = this.registerDispose(
+    new Emitter<AccordionViewChangeEvent>(),
+  );
   public onDidChangeViewTitle: Event<AccordionViewChangeEvent> = this.didChangeViewTitleEmitter.event;
 
-  private beforeAppendViewEmitter = new Emitter<string>();
+  private beforeAppendViewEmitter = this.registerDispose(new Emitter<string>());
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
 
-  private afterAppendViewEmitter = new Emitter<string>();
+  private afterAppendViewEmitter = this.registerDispose(new Emitter<string>());
   public onAfterAppendViewEvent = this.afterAppendViewEmitter.event;
 
-  private afterDisposeViewEmitter = new Emitter<string>();
+  private afterDisposeViewEmitter = this.registerDispose(new Emitter<string>());
   public onAfterDisposeViewEvent = this.afterDisposeViewEmitter.event;
 
   constructor(public containerId: string, private noRestore?: boolean) {

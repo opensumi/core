@@ -40,13 +40,13 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   private _selection: HTMLDivElement;
   private _input: HTMLDivElement;
 
-  protected readonly _onDidChangeBreakpoint = new Emitter<BreakpointChangeData>();
+  protected readonly _onDidChangeBreakpoint = this.registerDispose(new Emitter<BreakpointChangeData>());
   readonly onDidChangeBreakpoint: Event<BreakpointChangeData> = this._onDidChangeBreakpoint.event;
 
-  protected readonly _onFocus = new Emitter<void>();
+  protected readonly _onFocus = this.registerDispose(new Emitter<void>());
   readonly onFocus: Event<void> = this._onFocus.event;
 
-  protected readonly _onBlur = new Emitter<void>();
+  protected readonly _onBlur = this.registerDispose(new Emitter<void>());
   readonly onBlur: Event<void> = this._onBlur.event;
 
   private input: ICodeEditor | undefined;

@@ -40,6 +40,7 @@ export class MarkerModelService {
 
   private refreshDeferred: Deferred<void> | null;
 
+  private disposableCollection: DisposableCollection = new DisposableCollection();
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
@@ -47,11 +48,11 @@ export class MarkerModelService {
   private _focusedNode: MarkerGroupNode | MarkerNode | undefined;
   // 选中态的节点
   private _selectedNodes: (MarkerGroupNode | MarkerNode)[] = [];
-  private onDidUpdateTreeModelEmitter: Emitter<MarkerTreeModel | undefined> = new Emitter();
+  private onDidUpdateTreeModelEmitter: Emitter<MarkerTreeModel | undefined> = this.disposableCollection.register(
+    new Emitter(),
+  );
 
   private preContextMenuFocusedNode: MarkerGroupNode | MarkerNode | null;
-
-  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private _whenReady = new Deferred<void>();
 

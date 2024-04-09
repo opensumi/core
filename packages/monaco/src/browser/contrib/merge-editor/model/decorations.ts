@@ -25,10 +25,10 @@ export class MergeEditorDecorations extends Disposable {
   private deltaDecoration: IDiffDecoration[] = [];
   private lineWidgetSet: Set<GuidelineWidget> = new Set();
 
-  private readonly _onDidChangeLineWidget = new Emitter<void>();
+  private readonly _onDidChangeLineWidget = this.registerDispose(new Emitter<void>());
   private readonly onDidChangeLineWidget: Event<void> = this._onDidChangeLineWidget.event;
 
-  private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
+  private readonly _onDidChangeDecorations = this.registerDispose(new Emitter<MergeEditorDecorations>());
   public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
 
   private get editor(): ICodeEditor {

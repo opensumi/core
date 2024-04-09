@@ -32,9 +32,9 @@ export class DebugWatch implements IDebugWatchData {
 
   whenReady: Promise<any>;
 
-  private onDidChangeEmitter: Emitter<void> = new Emitter();
-  private onDidVariableChangeEmitter: Emitter<void> = new Emitter();
-  private onDidExExpressionChangeEmitter: Emitter<string[]> = new Emitter();
+  private onDidChangeEmitter: Emitter<void> = this.toDispose.register(new Emitter());
+  private onDidVariableChangeEmitter: Emitter<void> = this.toDispose.register(new Emitter());
+  private onDidExExpressionChangeEmitter: Emitter<string[]> = this.toDispose.register(new Emitter());
 
   constructor(private readonly manager: DebugSessionManager, private readonly reporterService: IReporterService) {
     this.whenReady = this.init();

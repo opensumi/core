@@ -466,10 +466,10 @@ class ExtHostWebviewView extends IDEDisposable implements WebviewView {
     super.dispose();
   }
 
-  readonly #onDidChangeVisibility = new Emitter<void>();
+  readonly #onDidChangeVisibility = this.registerDispose(new Emitter<void>());
   public readonly onDidChangeVisibility = this.#onDidChangeVisibility.event;
 
-  readonly #onDidDispose = new Emitter<void>();
+  readonly #onDidDispose = this.registerDispose(new Emitter<void>());
   // @ts-ignore
   public readonly onDidDispose = this.#onDidDispose.event;
 

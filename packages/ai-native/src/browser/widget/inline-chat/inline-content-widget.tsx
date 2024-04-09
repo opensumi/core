@@ -30,7 +30,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
 
   private originTop = 0;
 
-  private readonly _onClickActions = new Emitter<string>();
+  private readonly _onClickActions = this.registerDispose(new Emitter<string>());
   public readonly onClickActions: Event<string> = this._onClickActions.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {

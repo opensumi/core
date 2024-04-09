@@ -6,6 +6,7 @@ import {
   Disposable,
   Emitter,
   Emitter as EventEmitter,
+  IDisposable,
   ILineChange,
   ISelection,
   OnEvent,
@@ -62,8 +63,8 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   private _editors: Set<IMonacoImplEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
 
-  private _onCodeEditorCreate = new Emitter<ICodeEditor>();
-  private _onDiffEditorCreate = new Emitter<IDiffEditor>();
+  private _onCodeEditorCreate = this.registerDispose(new Emitter<ICodeEditor>());
+  private _onDiffEditorCreate = this.registerDispose(new Emitter<IDiffEditor>());
 
   public onCodeEditorCreate = this._onCodeEditorCreate.event;
   public onDiffEditorCreate = this._onDiffEditorCreate.event;
@@ -429,7 +430,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
-  private readonly toDispose: monaco.IDisposable[] = [];
+  private readonly toDispose: IDisposable[] = [];
 
   protected _currentDocumentModelRef: IEditorDocumentModelRef;
 
@@ -438,7 +439,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
 
   public _disposed = false;
 
-  private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
+  private _onRefOpen = this.registerDispose(new Emitter<IEditorDocumentModelRef>());
 
   public onRefOpen = this._onRefOpen.event;
 

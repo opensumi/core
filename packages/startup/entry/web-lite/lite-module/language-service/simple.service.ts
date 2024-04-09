@@ -2,7 +2,7 @@
 import { CancellationToken, DefinitionProvider, DocumentSelector, HoverProvider, ReferenceProvider } from 'vscode';
 
 import { Autowired, ConstructorOf, Injectable } from '@opensumi/di';
-import { DisposableCollection, LRUMap, URI, Uri } from '@opensumi/ide-core-common';
+import { DisposableCollection, IDisposable, LRUMap, URI, Uri } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, LanguageSelector } from '@opensumi/ide-editor/lib/browser';
 import {
   ExtensionDocumentDataManager,
@@ -82,7 +82,7 @@ class LiteDocumentDataManager implements Partial<ExtensionDocumentDataManager> {
 export class SimpleLanguageService implements Partial<IExtHostLanguages> {
   private callId = 0;
   private adaptersMap = new Map<number, Adapter>();
-  private readonly disposables = new Map<number, monaco.IDisposable>();
+  private readonly disposables = new Map<number, IDisposable>();
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 

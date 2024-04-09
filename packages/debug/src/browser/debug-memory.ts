@@ -185,7 +185,7 @@ export class DebugMemoryFileSystemProvider implements FileSystemProvider {
 }
 
 class MemoryRegionView extends Disposable implements IMemoryRegion {
-  private readonly invalidateEmitter = new Emitter<IMemoryInvalidationEvent>();
+  private readonly invalidateEmitter = this.registerDispose(new Emitter<IMemoryInvalidationEvent>());
 
   public readonly onDidInvalidate = this.invalidateEmitter.event;
   public readonly writable: boolean;

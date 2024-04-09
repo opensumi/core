@@ -81,7 +81,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   setBanner(bannerDomNode: HTMLElement | null, height: number): void {
     throw new Error('Method not implemented.');
   }
-  onMouseDropCanceled(listener: () => void): monaco.IDisposable {
+  onMouseDropCanceled(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   popUndoStop(): boolean {
@@ -115,23 +115,23 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     throw new Error('Method not implemented.');
   }
   isSimpleWidget: boolean;
-  onWillType(listener: (text: string) => void): monaco.IDisposable {
+  onWillType(listener: (text: string) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   getConfiguration(): any {}
-  onDidType(listener: (text: string) => void): monaco.IDisposable {
+  onDidType(listener: (text: string) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidAttemptReadOnlyEdit(listener: () => void): monaco.IDisposable {
+  onDidAttemptReadOnlyEdit(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onMouseDrag(listener: (e: monaco.editor.IEditorMouseEvent) => void): monaco.IDisposable {
+  onMouseDrag(listener: (e: monaco.editor.IEditorMouseEvent) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onMouseDrop(listener: (e: monaco.editor.IPartialEditorMouseEvent) => void): monaco.IDisposable {
+  onMouseDrop(listener: (e: monaco.editor.IPartialEditorMouseEvent) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onMouseWheel(listener: (e: any) => void): monaco.IDisposable {
+  onMouseWheel(listener: (e: any) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   invokeWithinContext<T>(fn: (accessor: any) => T): T {
@@ -176,16 +176,16 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   changeDecorations(callback: (changeAccessor: monaco.editor.IModelDecorationsChangeAccessor) => any) {
     throw new Error('Method not implemented.');
   }
-  onDidCompositionStart(listener: () => void): monaco.IDisposable {
+  onDidCompositionStart(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidCompositionEnd(listener: () => void): monaco.IDisposable {
+  onDidCompositionEnd(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidPaste(listener: (e: monaco.editor.IPasteEvent) => void): monaco.IDisposable {
+  onDidPaste(listener: (e: monaco.editor.IPasteEvent) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
-  onDidContentSizeChange(listener: (e: monaco.editor.IContentSizeChangedEvent) => void): monaco.IDisposable {
+  onDidContentSizeChange(listener: (e: monaco.editor.IContentSizeChangedEvent) => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   getOptions(): monaco.editor.IComputedEditorOptions {
@@ -579,7 +579,7 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
   createContextKey<T extends ContextKeyValue>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
     throw new Error('Method not implemented.');
   }
-  addAction(descriptor: monaco.editor.IActionDescriptor): monaco.IDisposable {
+  addAction(descriptor: monaco.editor.IActionDescriptor): IDisposable {
     throw new Error('Method not implemented.');
   }
   setDecorations(description: string, decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {

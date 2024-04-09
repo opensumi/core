@@ -158,7 +158,7 @@ export class LabelService extends WithEventBus {
 
   private cachedProviderMap: Map<string, ICachedLabelProvider> = new LRUMap<string, ICachedLabelProvider>(1000, 500);
 
-  private onDidChangeEmitter: Emitter<URI> = new Emitter();
+  private onDidChangeEmitter: Emitter<URI> = this.registerDispose(new Emitter());
 
   constructor() {
     super();

@@ -552,7 +552,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     this.doSearch(value);
   };
 
-  private readonly _onFocus: Emitter<void> = new Emitter<void>();
+  private readonly _onFocus: Emitter<void> = this.registerDispose(new Emitter<void>());
 
   get onFocus(): Event<void> {
     return this._onFocus.event;

@@ -7,7 +7,7 @@ export class TreeStateWatcher implements IDisposable {
   private _disposed = false;
   private disposables: DisposableCollection = new DisposableCollection();
 
-  private onDidTreeStateChangeEmitter: Emitter<TreeStateChangeType> = new Emitter();
+  private onDidTreeStateChangeEmitter: Emitter<TreeStateChangeType> = this.disposables.register(new Emitter());
 
   private currentState: ISerializableState = {
     specVersion: 1,

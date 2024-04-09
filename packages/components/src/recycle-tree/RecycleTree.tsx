@@ -272,9 +272,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private listRef = React.createRef<FixedSizeList | VariableSizeList>();
   private disposables: DisposableCollection = new DisposableCollection();
 
-  private onErrorEmitter = new Emitter<IRecycleTreeError>();
-  private onDidUpdateEmitter: Emitter<void> = new Emitter();
-  private onDidModelChangeEmitter: Emitter<IModelChange> = new Emitter();
+  private onErrorEmitter = this.disposables.register(new Emitter<IRecycleTreeError>());
+  private onDidUpdateEmitter: Emitter<void> = this.disposables.register(new Emitter());
+  private onDidModelChangeEmitter: Emitter<IModelChange> = this.disposables.register(new Emitter());
   // 索引应该比目标折叠节点索引+1，即位于折叠节点下的首个节点
   private newPromptInsertionIndex = -1;
   // 目标索引

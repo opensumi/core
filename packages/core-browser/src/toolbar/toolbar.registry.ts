@@ -37,15 +37,15 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
 
   private computedGroups: Map<LocationName, IToolbarActionGroup[]> = new Map();
 
-  private _onGroupDisposed: Emitter<string> = new Emitter();
+  private _onGroupDisposed: Emitter<string> = this.registerDispose(new Emitter());
 
-  private _onGroupAdded: Emitter<string> = new Emitter();
+  private _onGroupAdded: Emitter<string> = this.registerDispose(new Emitter());
 
-  private _onLocationAdded: Emitter<string> = new Emitter();
+  private _onLocationAdded: Emitter<string> = this.registerDispose(new Emitter());
 
-  private _onActionDisposed: Emitter<IToolbarAction> = new Emitter();
+  private _onActionDisposed: Emitter<IToolbarAction> = this.registerDispose(new Emitter());
 
-  private _onActionAdded: Emitter<IToolbarAction> = new Emitter();
+  private _onActionAdded: Emitter<IToolbarAction> = this.registerDispose(new Emitter());
 
   private _contextKeys: Set<string> = new Set<string>();
 

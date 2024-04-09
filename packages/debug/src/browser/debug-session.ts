@@ -55,56 +55,56 @@ import { DebugThread, DebugThreadData, StoppedDetails } from './model/debug-thre
 import { ExpressionContainer } from './tree/debug-tree-node.define';
 
 export class DebugSession implements IDebugSession {
-  protected readonly onDidChangeEmitter = new Emitter<void>();
+  protected readonly _disposables = new DisposableCollection();
+
+  protected readonly onDidChangeEmitter = this._disposables.register(new Emitter<void>());
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
   public fireDidChange(): void {
     this.onDidChangeEmitter.fire(undefined);
     this.onStateChange();
   }
 
-  private readonly _onDidChangeCallStack = new Emitter<void>();
+  private readonly _onDidChangeCallStack = this._disposables.register(new Emitter<void>());
   readonly onDidChangeCallStack: Event<void> = this._onDidChangeCallStack.event;
 
-  private readonly _onVariableChange = new Emitter<void>();
+  private readonly _onVariableChange = this._disposables.register(new Emitter<void>());
   readonly onVariableChange: Event<void> = this._onVariableChange.event;
 
-  private readonly _onCurrentThreadChange = new Emitter<DebugThread | undefined>();
+  private readonly _onCurrentThreadChange = this._disposables.register(new Emitter<DebugThread | undefined>());
   readonly onCurrentThreadChange: Event<DebugThread | undefined> = this._onCurrentThreadChange.event;
 
-  private readonly _onDidStop = new Emitter<DebugProtocol.StoppedEvent>();
+  private readonly _onDidStop = this._disposables.register(new Emitter<DebugProtocol.StoppedEvent>());
   readonly onDidStop: Event<DebugProtocol.StoppedEvent> = this._onDidStop.event;
 
-  private readonly _onDidContinued = new Emitter<DebugProtocol.ContinuedEvent>();
+  private readonly _onDidContinued = this._disposables.register(new Emitter<DebugProtocol.ContinuedEvent>());
   readonly onDidContinued: Event<DebugProtocol.ContinuedEvent> = this._onDidContinued.event;
 
-  private readonly _onDidThread = new Emitter<DebugProtocol.ThreadEvent>();
+  private readonly _onDidThread = this._disposables.register(new Emitter<DebugProtocol.ThreadEvent>());
   readonly onDidThread: Event<DebugProtocol.ThreadEvent> = this._onDidThread.event;
 
-  private readonly _onRequest = new Emitter<keyof DebugRequestTypes>();
+  private readonly _onRequest = this._disposables.register(new Emitter<keyof DebugRequestTypes>());
   readonly onRequest: Event<keyof DebugRequestTypes> = this._onRequest.event;
 
-  private readonly _onDidExitAdapter = new Emitter<void>();
+  private readonly _onDidExitAdapter = this._disposables.register(new Emitter<void>());
   readonly onDidExitAdapter: Event<void> = this._onDidExitAdapter.event;
 
-  private readonly _onDidProgressStart = new Emitter<DebugProtocol.ProgressStartEvent>();
+  private readonly _onDidProgressStart = this._disposables.register(new Emitter<DebugProtocol.ProgressStartEvent>());
   readonly onDidProgressStart: Event<DebugProtocol.ProgressStartEvent> = this._onDidProgressStart.event;
 
-  private readonly _onDidProgressUpdate = new Emitter<DebugProtocol.ProgressUpdateEvent>();
+  private readonly _onDidProgressUpdate = this._disposables.register(new Emitter<DebugProtocol.ProgressUpdateEvent>());
   readonly onDidProgressUpdate: Event<DebugProtocol.ProgressUpdateEvent> = this._onDidProgressUpdate.event;
 
-  private readonly _onDidProgressEnd = new Emitter<DebugProtocol.ProgressEndEvent>();
+  private readonly _onDidProgressEnd = this._disposables.register(new Emitter<DebugProtocol.ProgressEndEvent>());
   readonly onDidProgressEnd: Event<DebugProtocol.ProgressEndEvent> = this._onDidProgressEnd.event;
 
-  private readonly _onDidInvalidated = new Emitter<DebugProtocol.InvalidatedEvent>();
+  private readonly _onDidInvalidated = this._disposables.register(new Emitter<DebugProtocol.InvalidatedEvent>());
   readonly onDidInvalidated: Event<DebugProtocol.InvalidatedEvent> = this._onDidInvalidated.event;
 
-  private readonly _onDidChangeState = new Emitter<DebugState>();
+  private readonly _onDidChangeState = this._disposables.register(new Emitter<DebugState>());
   readonly onDidChangeState: Event<DebugState> = this._onDidChangeState.event;
 
-  private readonly _onDidInvalidMemory = new Emitter<DebugProtocol.MemoryEvent>();
+  private readonly _onDidInvalidMemory = this._disposables.register(new Emitter<DebugProtocol.MemoryEvent>());
   readonly onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent> = this._onDidInvalidMemory.event;
-
-  protected readonly toDispose = new DisposableCollection();
 
   protected _capabilities: DebugProtocol.Capabilities = {};
 
@@ -143,8 +143,7 @@ export class DebugSession implements IDebugSession {
       async (request: DebugProtocol.RunInTerminalRequest) => await this.runInTerminal(request),
     );
 
-    this.toDispose.pushAll([
-      this.onDidChangeEmitter,
+    this._disposables.pushAll([
       this.connection,
       // 返回调试配置
       this.on('initialized', () => {
@@ -966,7 +965,7 @@ export class DebugSession implements IDebugSession {
   }
 
   dispose(): void {
-    this.toDispose.dispose();
+    this._disposables.dispose();
   }
 
   async evaluate(expression: string, context?: string): Promise<DebugProtocol.EvaluateResponse['body']> {

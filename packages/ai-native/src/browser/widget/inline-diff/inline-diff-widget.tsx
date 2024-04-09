@@ -118,7 +118,7 @@ export class AIDiffWidget extends ZoneWidget {
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
-  private readonly _onMaxLincCount = new Emitter<number>();
+  private readonly _onMaxLincCount = this._disposables.add(new Emitter<number>());
   public readonly onMaxLincCount: Event<number> = this._onMaxLincCount.event;
 
   private selection: monaco.Selection;

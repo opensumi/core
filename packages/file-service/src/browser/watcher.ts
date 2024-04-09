@@ -17,7 +17,7 @@ export class FileSystemWatcher implements IFileServiceWatcher {
   private uri: URI;
   watchId: number;
 
-  protected changeEmitter = new Emitter<FileChange[]>();
+  protected changeEmitter = this.toDispose.register(new Emitter<FileChange[]>());
 
   constructor(options: FileServiceWatcherOptions) {
     this.toDispose.push(this.changeEmitter);

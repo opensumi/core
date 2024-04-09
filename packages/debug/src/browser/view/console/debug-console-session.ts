@@ -33,7 +33,7 @@ export class DebugConsoleSession implements IDebugConsoleSession {
 
   protected fireDidChange: any = throttle(() => this.onDidChangeEmitter.fire(), 50);
 
-  private onDidChangeEmitter: Emitter<void> = new Emitter();
+  private onDidChangeEmitter: Emitter<void> = this.toDispose.register(new Emitter());
 
   constructor(@Optional() private session: DebugSession, @Optional() private treeModel: DebugConsoleTreeModel) {
     this.init();

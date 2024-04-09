@@ -34,10 +34,12 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   protected decorations: MergeEditorDecorations;
   protected mappingManagerService: MappingManagerService;
 
-  protected readonly _onDidConflictActions = new Emitter<IConflictActionsEvent>();
+  protected readonly _onDidConflictActions = this.registerDispose(new Emitter<IConflictActionsEvent>());
   public readonly onDidConflictActions: Event<IConflictActionsEvent> = this._onDidConflictActions.event;
 
-  protected readonly _onDidActionsProvider = new Emitter<{ provider: IActionsProvider; editor: BaseCodeEditor }>();
+  protected readonly _onDidActionsProvider = this.registerDispose(
+    new Emitter<{ provider: IActionsProvider; editor: BaseCodeEditor }>(),
+  );
   public readonly onDidActionsProvider: Event<{ provider: IActionsProvider; editor: BaseCodeEditor }> =
     this._onDidActionsProvider.event;
 

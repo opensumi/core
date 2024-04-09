@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { Autowired, Injectable } from '@opensumi/di';
-import { URI } from '@opensumi/ide-core-browser';
+import { IDisposable, URI } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/ide-monaco';
 import {
   ITextModelContentProvider,
@@ -39,7 +39,7 @@ export class MonacoTextModelService implements ITextModelService {
     }
   }
 
-  registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): monaco.IDisposable {
+  registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable {
     return {
       dispose(): void {
         // no-op

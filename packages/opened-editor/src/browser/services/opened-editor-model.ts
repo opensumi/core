@@ -23,9 +23,9 @@ export class OpenedEditorModel extends TreeModel {
   init(root: CompositeTreeNode) {
     this.root = root;
     // 分支更新时通知树刷新, 不是立即更新，而是延迟更新，待树稳定后再更新
-    this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.doDispatchChange.bind(this));
+    this._disposables.add(this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.doDispatchChange.bind(this)));
     // 主题或装饰器更新时，更新树
-    this.decorationService.onDidChange(this.doDispatchChange.bind(this));
+    this._disposables.add(this.decorationService.onDidChange(this.doDispatchChange.bind(this)));
   }
 
   doDispatchChange() {

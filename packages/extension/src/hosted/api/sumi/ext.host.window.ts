@@ -56,10 +56,10 @@ export class ExtHostIDEWindow implements IExtHostIDEWindow {
 }
 
 export class ExtIDEWebviewWindow implements IExtPlainWebviewWindow {
-  private _onMessageEmitter: Emitter<any> = new Emitter();
-  private _onClosedEmitter: Emitter<void> = new Emitter();
-
   private disposableCollection: DisposableCollection = new DisposableCollection();
+
+  private _onMessageEmitter: Emitter<any> = this.disposableCollection.register(new Emitter());
+  private _onClosedEmitter: Emitter<void> = this.disposableCollection.register(new Emitter());
 
   constructor(
     private webviewId: string,

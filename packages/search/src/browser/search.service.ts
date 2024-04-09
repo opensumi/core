@@ -128,10 +128,10 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   @Autowired()
   private readonly resourceService: ResourceService;
 
-  private onDidChangeEmitter: Emitter<void> = new Emitter();
-  private onDidTitleChangeEmitter: Emitter<void> = new Emitter();
-  private onDidUIStateChangeEmitter: Emitter<IUIState> = new Emitter();
-  private onDidSearchStateChangeEmitter: Emitter<string> = new Emitter();
+  private onDidChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+  private onDidTitleChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+  private onDidUIStateChangeEmitter: Emitter<IUIState> = this.registerDispose(new Emitter());
+  private onDidSearchStateChangeEmitter: Emitter<string> = this.registerDispose(new Emitter());
 
   protected eventBusDisposer: IDisposable;
 

@@ -73,22 +73,22 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   private exitDefer: Deferred<{ exitCode?: number }> = new Deferred();
 
-  private _onDidTerminalCreated: Emitter<string> = new Emitter();
+  private _onDidTerminalCreated: Emitter<string> = this.registerDispose(new Emitter());
   public onDidTerminalCreated: Event<string> = this._onDidTerminalCreated.event;
 
-  private _onDidTaskProcessExit: Emitter<number | undefined> = new Emitter();
+  private _onDidTaskProcessExit: Emitter<number | undefined> = this.registerDispose(new Emitter());
   public onDidTaskProcessExit: Event<number | undefined> = this._onDidTaskProcessExit.event;
 
-  private _onDidBackgroundTaskBegin: Emitter<void> = new Emitter();
+  private _onDidBackgroundTaskBegin: Emitter<void> = this.registerDispose(new Emitter());
   public onDidBackgroundTaskBegin: Event<void> = this._onDidBackgroundTaskBegin.event;
 
-  private _onDidBackgroundTaskEnd: Emitter<void> = new Emitter();
+  private _onDidBackgroundTaskEnd: Emitter<void> = this.registerDispose(new Emitter());
   public onDidBackgroundTaskEnd: Event<void> = this._onDidBackgroundTaskEnd.event;
 
-  private _onDidProblemMatched: Emitter<ProblemMatch[]> = new Emitter();
+  private _onDidProblemMatched: Emitter<ProblemMatch[]> = this.registerDispose(new Emitter());
   public onDidProblemMatched: Event<ProblemMatch[]> = this._onDidProblemMatched.event;
 
-  private _onDidTerminalWidgetRemove: Emitter<void> = new Emitter();
+  private _onDidTerminalWidgetRemove: Emitter<void> = this.registerDispose(new Emitter());
   public onDidTerminalWidgetRemove: Event<void> = this._onDidTerminalWidgetRemove.event;
 
   public processReady: Deferred<void> = new Deferred<void>();

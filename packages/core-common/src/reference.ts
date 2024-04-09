@@ -1,4 +1,4 @@
-import { Disposable, Emitter, Event, MaybePromise } from '@opensumi/ide-utils';
+import { Disposable, DisposableStore, Emitter, Event, IDisposable, MaybePromise } from '@opensumi/ide-utils';
 
 export interface IRef<T> {
   instance: T;
@@ -14,14 +14,16 @@ export function normalizeFileUrl(uri: string) {
   return uri.replace(/\w+\/\/\w+/gi, (match) => match.replace('//', '/'));
 }
 
-export class ReferenceManager<T> {
+export class ReferenceManager<T> implements IDisposable {
+  private _disposables = new DisposableStore();
+
   protected instances: Map<string, T> = new Map();
 
   protected refs: Map<string, Array<IRef<T>>> = new Map();
 
-  protected _onReferenceAllDisposed = new Emitter<string>();
+  protected _onReferenceAllDisposed = this._disposables.add(new Emitter<string>());
 
-  protected _onInstanceCreated = new Emitter<T>();
+  protected _onInstanceCreated = this._disposables.add(new Emitter<T>());
 
   public onReferenceAllDisposed: Event<string> = this._onReferenceAllDisposed.event;
 
@@ -108,6 +110,10 @@ export class ReferenceManager<T> {
         this._onReferenceAllDisposed.fire(key);
       }
     }
+  }
+
+  dispose(): void {
+    this._disposables.dispose();
   }
 }
 

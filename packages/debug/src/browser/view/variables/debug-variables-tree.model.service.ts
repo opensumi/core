@@ -124,12 +124,12 @@ export class DebugVariablesModelService {
   // 右键菜单选中态的节点
   private _contextMenuNode: ExpressionContainer | ExpressionNode | undefined;
 
-  private onDidRefreshedEmitter: Emitter<void> = new Emitter();
-  private onDidUpdateTreeModelEmitter: Emitter<TreeModel | void> = new Emitter();
+  private disposableCollection: DisposableCollection = new DisposableCollection();
+
+  private onDidRefreshedEmitter: Emitter<void> = this.disposableCollection.register(new Emitter());
+  private onDidUpdateTreeModelEmitter: Emitter<TreeModel | void> = this.disposableCollection.register(new Emitter());
 
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(DebugVariablesModelService.DEFAULT_TRIGGER_DELAY);
-
-  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private keepExpandedScopesModel: KeepExpandedScopesModel = new KeepExpandedScopesModel();
 

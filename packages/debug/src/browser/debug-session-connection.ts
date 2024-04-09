@@ -56,14 +56,10 @@ export class DebugSessionConnection implements IDisposable {
 
   protected readonly requestHandlers = new Map<string, DebugRequestHandler>();
 
-  protected readonly onDidCustomEventEmitter = new Emitter<DebugProtocol.Event>();
-  readonly onDidCustomEvent: Event<DebugProtocol.Event> = this.onDidCustomEventEmitter.event;
+  protected readonly toDispose = new DisposableCollection();
 
-  protected readonly toDispose = new DisposableCollection(
-    this.onDidCustomEventEmitter,
-    Disposable.create(() => this.pendingRequests.clear()),
-    Disposable.create(() => this.emitters.clear()),
-  );
+  protected readonly onDidCustomEventEmitter = this.toDispose.register(new Emitter<DebugProtocol.Event>());
+  readonly onDidCustomEvent: Event<DebugProtocol.Event> = this.onDidCustomEventEmitter.event;
 
   constructor(
     @Optional() readonly sessionId: string,
@@ -79,6 +75,8 @@ export class DebugSessionConnection implements IDisposable {
 
   dispose(): void {
     this.toDispose.dispose();
+    this.pendingRequests.clear();
+    this.emitters.clear();
   }
 
   /**

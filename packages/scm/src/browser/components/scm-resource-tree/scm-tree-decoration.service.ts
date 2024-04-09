@@ -20,7 +20,7 @@ export class SCMTreeDecorationService implements FileDecorationsProvider {
 
   private disposeCollection: DisposableCollection = new DisposableCollection();
 
-  private readonly onDidChangeEmitter: Emitter<void> = new Emitter();
+  private readonly onDidChangeEmitter: Emitter<void> = this.disposeCollection.register(new Emitter());
 
   constructor() {
     this.disposeCollection.pushAll([

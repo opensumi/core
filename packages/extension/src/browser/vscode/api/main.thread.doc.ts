@@ -4,6 +4,7 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
   Disposable,
+  DisposableStore,
   Emitter,
   Event,
   IDisposable,
@@ -39,8 +40,10 @@ const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument�
 const DEFAULT_EXT_HOLD_DOC_REF_LENGTH = 1024 * 1024 * 80; // 插件进程openDocument持有的最长长度
 
 @Injectable({ multiple: true })
-class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProvider {
-  public onDidChangeContentEmitter = new Emitter<URI>();
+class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProvider, IDisposable {
+  private _disposables = new DisposableStore();
+
+  public onDidChangeContentEmitter = this._disposables.add(new Emitter<URI>());
 
   public onDidChangeContent: Event<URI> = this.onDidChangeContentEmitter.event;
 
@@ -66,6 +69,10 @@ class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProv
 
   isReadonly(uri: URI): boolean {
     return true;
+  }
+
+  dispose() {
+    this._disposables.dispose();
   }
 }
 
@@ -310,6 +317,8 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
       disposable.dispose();
     }
     this.editorDisposers.clear();
+
+    this.provider.dispose();
   }
 }
 

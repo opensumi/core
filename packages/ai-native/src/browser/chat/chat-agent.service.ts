@@ -35,10 +35,10 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   private defaultAgentId: string | undefined;
 
-  private readonly _onDidChangeAgents = new Emitter<void>();
+  private readonly _onDidChangeAgents = this.registerDispose(new Emitter<void>());
   readonly onDidChangeAgents = this._onDidChangeAgents.event;
 
-  private readonly _onDidSendMessage = new Emitter<IChatContent>();
+  private readonly _onDidSendMessage = this.registerDispose(new Emitter<IChatContent>());
   public readonly onDidSendMessage = this._onDidSendMessage.event;
 
   @Autowired(ILogger)

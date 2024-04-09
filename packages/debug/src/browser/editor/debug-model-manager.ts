@@ -35,17 +35,17 @@ export class DebugModelManager extends Disposable implements IDebugModelManager 
   @Autowired(DebugConfigurationManager)
   private debugConfigurationManager: DebugConfigurationManager;
 
-  private _onMouseDown = new Emitter<monaco.editor.IEditorMouseEvent>();
-  private _onMouseMove = new Emitter<monaco.editor.IEditorMouseEvent>();
-  private _onMouseLeave = new Emitter<monaco.editor.IPartialEditorMouseEvent>();
-  private _onMouseUp = new Emitter<monaco.editor.IEditorMouseEvent>();
+  private _onMouseDown = this.registerDispose(new Emitter<monaco.editor.IEditorMouseEvent>());
+  private _onMouseMove = this.registerDispose(new Emitter<monaco.editor.IEditorMouseEvent>());
+  private _onMouseLeave = this.registerDispose(new Emitter<monaco.editor.IPartialEditorMouseEvent>());
+  private _onMouseUp = this.registerDispose(new Emitter<monaco.editor.IEditorMouseEvent>());
 
-  public onMouseDown = this._onMouseDown;
-  public onMouseMove = this._onMouseMove;
-  public onMouseLeave = this._onMouseLeave;
-  public onMouseUp = this._onMouseUp;
+  public onMouseDown = this._onMouseDown.event;
+  public onMouseMove = this._onMouseMove.event;
+  public onMouseLeave = this._onMouseLeave.event;
+  public onMouseUp = this._onMouseUp.event;
 
-  private _onModelChanged = new Emitter<monaco.editor.IModelChangedEvent>();
+  private _onModelChanged = this.registerDispose(new Emitter<monaco.editor.IModelChangedEvent>());
   public onModelChanged: Event<monaco.editor.IModelChangedEvent> = this._onModelChanged.event;
 
   constructor() {

@@ -35,7 +35,7 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
-  private _onTitleChanged = new Emitter<string>();
+  private _onTitleChanged = this.registerDispose(new Emitter<string>());
   onTitleChanged = this._onTitleChanged.event;
 
   private _appTitle: string;

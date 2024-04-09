@@ -10,7 +10,7 @@ export interface IPeekViewOptions extends IOptions {
 }
 
 export abstract class PeekViewWidget extends ZoneWidget {
-  private readonly _onDidClose = new Emitter<PeekViewWidget>();
+  private readonly _onDidClose = this.registerDispose(new Emitter<PeekViewWidget>());
   readonly onDidClose = this._onDidClose.event;
 
   private isDisposed?: true;

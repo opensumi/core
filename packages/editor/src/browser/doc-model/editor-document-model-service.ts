@@ -79,23 +79,25 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       // ReferenceManager 的构造参数 factory 只有一个入参
       return this.getOrCreateModel(key);
     });
-    this._modelReferenceManager.onReferenceAllDisposed((key: string) => {
-      this._delete(key);
-    });
-    this._modelReferenceManager.onInstanceCreated((model) => {
-      this.eventBus.fire(
-        new EditorDocumentModelCreationEvent({
-          uri: model.uri,
-          languageId: model.languageId,
-          eol: model.eol,
-          encoding: model.encoding,
-          content: model.getText(),
-          readonly: model.readonly,
-          versionId: model.getMonacoModel().getVersionId(),
-        }),
-      );
-    });
-    this.addDispose(
+
+    this.addDispose([
+      this._modelReferenceManager,
+      this._modelReferenceManager.onReferenceAllDisposed((key: string) => {
+        this._delete(key);
+      }),
+      this._modelReferenceManager.onInstanceCreated((model) => {
+        this.eventBus.fire(
+          new EditorDocumentModelCreationEvent({
+            uri: model.uri,
+            languageId: model.languageId,
+            eol: model.eol,
+            encoding: model.encoding,
+            content: model.getText(),
+            readonly: model.readonly,
+            versionId: model.getMonacoModel().getVersionId(),
+          }),
+        );
+      }),
       this.preferenceService.onPreferenceChanged((e) => {
         if (e.preferenceName === 'editor.detectIndentation') {
           this.editorDocModels.forEach((m) => {
@@ -103,7 +105,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
           });
         }
       }),
-    );
+    ]);
   }
 
   private _delete(uri: string | URI): void {

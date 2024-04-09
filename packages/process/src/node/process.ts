@@ -36,9 +36,11 @@ export class Process extends Disposable implements IProcess {
   readonly inputStream: stream.Writable;
   protected _killed = false;
 
-  protected readonly startEmitter: Emitter<IProcessStartEvent> = new Emitter<IProcessStartEvent>();
-  protected readonly exitEmitter: Emitter<IProcessExitEvent> = new Emitter<IProcessExitEvent>();
-  protected readonly errorEmitter: Emitter<ProcessErrorEvent> = new Emitter<ProcessErrorEvent>();
+  protected readonly startEmitter: Emitter<IProcessStartEvent> = this.registerDispose(
+    new Emitter<IProcessStartEvent>(),
+  );
+  protected readonly exitEmitter: Emitter<IProcessExitEvent> = this.registerDispose(new Emitter<IProcessExitEvent>());
+  protected readonly errorEmitter: Emitter<ProcessErrorEvent> = this.registerDispose(new Emitter<ProcessErrorEvent>());
 
   constructor(options: ProcessOptions | ForkOptions, readonly processManage: ProcessManage) {
     super();

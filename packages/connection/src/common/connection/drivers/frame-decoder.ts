@@ -1,6 +1,6 @@
 import { BinaryWriter } from '@furyjs/fury/dist/lib/writer';
 
-import { Emitter, readUInt32LE } from '@opensumi/ide-core-common';
+import { DisposableStore, Emitter, readUInt32LE } from '@opensumi/ide-core-common';
 
 import { Buffers } from '../../buffers/buffers';
 
@@ -14,7 +14,9 @@ export const indicator = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]);
  * we use a length field to represent the length of the data, and then read the data according to the length
  */
 export class LengthFieldBasedFrameDecoder {
-  protected dataEmitter = new Emitter<Uint8Array>();
+  private _disposables = new DisposableStore();
+
+  protected dataEmitter = this._disposables.add(new Emitter<Uint8Array>());
   onData = this.dataEmitter.event;
 
   protected buffers = new Buffers();
@@ -154,7 +156,7 @@ export class LengthFieldBasedFrameDecoder {
   }
 
   dispose() {
-    this.dataEmitter.dispose();
+    this._disposables.dispose();
     this.buffers.dispose();
   }
 

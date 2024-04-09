@@ -1,4 +1,4 @@
-import { Disposable, Event } from '@opensumi/ide-core-common';
+import { Disposable, Event, IDisposable } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
@@ -87,7 +87,7 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   createContextKey<T extends ContextKeyValue>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
     throw new Error('Method not implemented.');
   }
-  addAction(descriptor: monaco.editor.IActionDescriptor): monaco.IDisposable {
+  addAction(descriptor: monaco.editor.IActionDescriptor): IDisposable {
     throw new Error('Method not implemented.');
   }
   getOriginalEditor(): monaco.editor.IStandaloneCodeEditor {
@@ -99,7 +99,7 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   getDomNode(): HTMLElement {
     return this.dom;
   }
-  onDidUpdateDiff(listener: () => void): monaco.IDisposable {
+  onDidUpdateDiff(listener: () => void): IDisposable {
     throw new Error('Method not implemented.');
   }
   saveViewState(): monaco.editor.IDiffEditorViewState | null {

@@ -43,14 +43,14 @@ export class MarkerService extends Themable implements IMarkerService {
   }
 
   // marker filter 事件
-  protected readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
+  protected readonly onMarkerFilterChangedEmitter = this.registerDispose(new Emitter<FilterOptions | undefined>());
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
 
   // resource 事件
-  protected readonly onResourceOpenEmitter = new Emitter<string>();
+  protected readonly onResourceOpenEmitter = this.registerDispose(new Emitter<string>());
   public readonly onResouceOpen: Event<string> = this.onResourceOpenEmitter.event;
 
-  protected readonly onResourceCloseEmitter = new Emitter<string>();
+  protected readonly onResourceCloseEmitter = this.registerDispose(new Emitter<string>());
   public readonly onResourceClose: Event<string> = this.onResourceCloseEmitter.event;
 
   constructor() {

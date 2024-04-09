@@ -214,7 +214,7 @@ export class ViewModelContext extends Disposable {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  private onDidSelectedRepoChangeEmitter: Emitter<ISCMRepository> = new Emitter();
+  private onDidSelectedRepoChangeEmitter: Emitter<ISCMRepository> = this.registerDispose(new Emitter());
 
   get onDidSelectedRepoChange() {
     return this.onDidSelectedRepoChangeEmitter.event;
@@ -226,10 +226,10 @@ export class ViewModelContext extends Disposable {
 
   private toDisposableListener: IDisposable | null;
 
-  private onDidSCMListChangeEmitter: Emitter<void> = new Emitter();
+  private onDidSCMListChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
   public onDidSCMListChange = this.onDidSCMListChangeEmitter.event;
 
-  private onDidSCMRepoListChangeEmitter: Emitter<ISCMRepository[]> = new Emitter();
+  private onDidSCMRepoListChangeEmitter: Emitter<ISCMRepository[]> = this.registerDispose(new Emitter());
   public onDidSCMRepoListChange = this.onDidSCMRepoListChangeEmitter.event;
 
   public repoList: ISCMRepository[] = [];

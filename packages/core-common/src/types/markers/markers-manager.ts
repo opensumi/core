@@ -147,7 +147,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
   private _stats: MarkerStats;
 
   // marker 变更 事件
-  private readonly onMarkerChangedEmitter = new Emitter<string[]>();
+  private readonly onMarkerChangedEmitter = this.registerDispose(new Emitter<string[]>());
   public readonly onMarkerChanged: Event<string[]> = this.onMarkerChangedEmitter.event;
 
   constructor() {

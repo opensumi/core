@@ -60,7 +60,7 @@ export class UserStorageServiceImpl implements IUserStorageService {
   }
 
   protected readonly toDispose = new DisposableCollection();
-  protected readonly onDidChangeFileEmitter = new Emitter<FileChangeEvent>();
+  protected readonly onDidChangeFileEmitter = this.toDispose.register(new Emitter<FileChangeEvent>());
   private _whenReady: Promise<void>;
   private userStorageFolder: URI;
 

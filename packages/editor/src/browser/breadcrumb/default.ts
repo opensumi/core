@@ -29,7 +29,7 @@ import { DocumentSymbolChangedEvent, DocumentSymbolStore, INormalizedDocumentSym
 const { Path } = path;
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {
-  private _onDidUpdateBreadCrumb = new Emitter<URI>();
+  private _onDidUpdateBreadCrumb = this.registerDispose(new Emitter<URI>());
   public onDidUpdateBreadCrumb: Event<URI> = this._onDidUpdateBreadCrumb.event;
 
   @Autowired(IFileServiceClient)

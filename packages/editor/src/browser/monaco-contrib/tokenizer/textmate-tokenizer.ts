@@ -36,7 +36,7 @@ export interface TokenizerOption {
 export class TextMateTokenizer extends Disposable implements monaco.languages.EncodedTokensProvider {
   private readonly seenLanguages: boolean[];
 
-  private readonly onDidEncounterLanguageEmitter: Emitter<number> = new Emitter<number>();
+  private readonly onDidEncounterLanguageEmitter: Emitter<number> = this.registerDispose(new Emitter<number>());
   public readonly onDidEncounterLanguage: Event<number> = this.onDidEncounterLanguageEmitter.event;
 
   constructor(

@@ -43,7 +43,7 @@ import { WorkspacePreferences } from './workspace-preferences';
 const { Path } = path;
 
 @Injectable()
-export class WorkspaceService implements IWorkspaceService {
+export class WorkspaceService extends Disposable implements IWorkspaceService {
   private _workspace: FileStat | undefined;
 
   private _roots: FileStat[] = [];
@@ -221,18 +221,18 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   // 工作区改变事件
-  protected readonly onWorkspaceChangeEmitter = new Emitter<FileStat[]>();
+  protected readonly onWorkspaceChangeEmitter = this.registerDispose(new Emitter<FileStat[]>());
   get onWorkspaceChanged(): Event<FileStat[]> {
     return this.onWorkspaceChangeEmitter.event;
   }
 
-  protected readonly onWorkspaceFileExcludeChangeEmitter = new Emitter<void>();
+  protected readonly onWorkspaceFileExcludeChangeEmitter = this.registerDispose(new Emitter<void>());
   get onWorkspaceFileExcludeChanged(): Event<void> {
     return this.onWorkspaceFileExcludeChangeEmitter.event;
   }
 
   // 操作中的工作区改变事件
-  protected readonly onWorkspaceLocationChangedEmitter = new Emitter<FileStat | undefined>();
+  protected readonly onWorkspaceLocationChangedEmitter = this.registerDispose(new Emitter<FileStat | undefined>());
   get onWorkspaceLocationChanged(): Event<FileStat | undefined> {
     return this.onWorkspaceLocationChangedEmitter.event;
   }

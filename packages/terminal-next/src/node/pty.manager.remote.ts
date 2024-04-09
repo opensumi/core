@@ -57,6 +57,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
     return Disposable.create(() => {
       callbackDisposed = true;
       remove.dispose();
+      clientCenter.dispose();
     });
   }
 

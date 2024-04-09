@@ -18,6 +18,7 @@ export interface ISequence<T> {
 export class Sequence<T> implements ISequence<T>, ISpliceable<T> {
   readonly elements: T[] = [];
 
+  // eslint-disable-next-line rulesdir/ensure-dispose-event-emitter
   private _onDidSplice = new Emitter<ISplice<T>>();
   readonly onDidSplice: Event<ISplice<T>> = this._onDidSplice.event;
 

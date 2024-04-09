@@ -80,15 +80,15 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(ResourceService)
   private readonly resourceService: ResourceService;
 
-  private decorationChangeEmitter = new Emitter<URI>();
+  private decorationChangeEmitter = this.registerDispose(new Emitter<URI>());
 
   private threads = new Map<string, ICommentsThread>();
 
-  private threadsChangeEmitter = new Emitter<ICommentsThread>();
+  private threadsChangeEmitter = this.registerDispose(new Emitter<ICommentsThread>());
 
-  private threadsCommentChangeEmitter = new Emitter<ICommentsThread>();
+  private threadsCommentChangeEmitter = this.registerDispose(new Emitter<ICommentsThread>());
 
-  private threadsCreatedEmitter = new Emitter<ICommentsThread>();
+  private threadsCreatedEmitter = this.registerDispose(new Emitter<ICommentsThread>());
 
   private rangeProviderMap = new Map<string, ICommentRangeProvider>();
 
