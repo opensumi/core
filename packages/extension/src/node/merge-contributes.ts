@@ -5,8 +5,8 @@ import mergeWith from 'lodash/mergeWith';
 
 import { arrays } from '@opensumi/ide-core-common';
 
-import { ISumiExtensionContributions } from '../common/sumi/extension';
-import { IExtensionContributions } from '../common/vscode/extension';
+import type { ISumiExtensionContributions } from '../common/sumi/extension';
+import type { IExtensionContributions } from '../common/vscode/extension';
 
 const { asArray } = arrays;
 
