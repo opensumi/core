@@ -2,7 +2,7 @@ import os from 'os';
 
 import { Injector } from '@opensumi/di';
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { TerminalNodePtyModule } from '../../src/node';
 import { PtyService } from '../../src/node/pty';
@@ -42,7 +42,7 @@ describe('PtyService function should be valid', () => {
   afterAll(() => {
     // 强制关闭Socket Server 正常情况下会监听process的exit来关闭，但是在测试中，需要手动close
     proxyProvider['server']?.close();
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('cannot create a invalid shell case1', async () => {

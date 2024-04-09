@@ -1,7 +1,7 @@
 import path from 'path';
 import stream from 'stream';
 
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { IProcessManage, IProcessFactory } from '../../src/';
 import { ProcessErrorEvent, IProcessStartEvent } from '../../src/common';
@@ -14,7 +14,7 @@ describe('Process test', () => {
   const processFactory = injector.get(IProcessFactory);
 
   afterAll(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('test error on non-existent path', async () => {
@@ -148,7 +148,7 @@ describe('ProcessManage test', () => {
   const processManage = injector.get(IProcessManage);
   const processFactory = injector.get(IProcessFactory);
   afterAll(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('Method', () => {

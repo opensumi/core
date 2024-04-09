@@ -1,6 +1,6 @@
 import { INativeCryptoService } from '@opensumi/ide-core-common';
 
-import { MockInjector, createNodeInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector, disposeAll } from '../../../../tools/dev-tool/src/mock-injector';
 import { CryptoService } from '../../src/common-module/crypto.server';
 
 describe('test for core-browser/src/services/crypto-service.ts', () => {
@@ -18,7 +18,7 @@ describe('test for core-browser/src/services/crypto-service.ts', () => {
   });
 
   afterAll(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
   it('encrypt', async () => {
     hash = await cryptoService.encrypt(password);

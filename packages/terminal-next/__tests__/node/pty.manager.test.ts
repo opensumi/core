@@ -1,7 +1,7 @@
 import os from 'os';
 
 import { Injector } from '@opensumi/di';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { TerminalNodePtyModule } from '../../src/node';
 import { PtyServiceManagerToken, IPtyServiceManager, PtyServiceManager } from '../../src/node/pty.manager';
@@ -26,7 +26,7 @@ describe('Pty Manager Test Local', () => {
   });
 
   afterEach(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('pty manager create and kill', async () => {
@@ -55,7 +55,7 @@ describe('Pty Manager Test Local', () => {
   });
 
   afterEach(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   // 远程模式使用PtyService

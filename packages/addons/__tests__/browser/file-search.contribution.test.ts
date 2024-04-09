@@ -23,7 +23,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { disposeAll, MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ClientAddonModule } from '../../src/browser';
 import {
   FileSearchContribution,
@@ -77,7 +77,7 @@ describe('test for browser/file-search.contribution.ts', () => {
     fakeOpenFn.mockReset();
     disposables.dispose();
 
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('registerCommands', async () => {

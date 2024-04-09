@@ -1,7 +1,7 @@
 import { ILogServiceManager, LogLevel } from '@opensumi/ide-core-common';
 import { INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
 
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('NodeLogger', () => {
@@ -49,7 +49,7 @@ describe('NodeLogger', () => {
     for (const key of keys) {
       mockLogServiceManager[key]?.mockReset();
     }
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   test('error', () => {

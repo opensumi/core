@@ -1,7 +1,7 @@
 import { ConstructorOf, CreatorStatus, Injector, InstanceOpts, Token, TokenResult } from '@opensumi/di';
 import { MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { CommandRegistry, ILogServiceManager, ILoggerManagerClient, getDebugLogger } from '@opensumi/ide-core-common';
-import { INodeLogger, NodeModule, ServerApp } from '@opensumi/ide-core-node';
+import { INodeLogger, IServerAppOpts, NodeModule, ServerApp } from '@opensumi/ide-core-node';
 
 export class MockInjector extends Injector {
   private mockMap = new Map<Token, [any, any][]>();
@@ -117,9 +117,21 @@ export function getNodeMockInjector() {
   return injector;
 }
 
-export function createNodeInjector(modules: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
+export function createNodeInjector(
+  modules: Array<ConstructorOf<NodeModule>>,
+  inj?: Injector,
+  extraOptions?: IServerAppOpts,
+): MockInjector {
   const injector = inj || getNodeMockInjector();
-  const app = new ServerApp({ modules, injector } as any);
+  const app = new ServerApp({ modules, injector, ...extraOptions } as IServerAppOpts);
 
   return app.injector as MockInjector;
+}
+
+export async function disposeAll(inj: Injector) {
+  try {
+    await inj.disposeAll();
+  } catch (error) {
+    console.error('Dispose all failed', error);
+  }
 }

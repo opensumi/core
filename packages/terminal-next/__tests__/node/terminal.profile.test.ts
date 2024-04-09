@@ -1,5 +1,5 @@
 import { Injector } from '@opensumi/di';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { TerminalNodePtyModule } from '../../src/node';
 import { TerminalProfileServiceNode } from '../../src/node/terminal.profile.service';
@@ -14,7 +14,7 @@ describe('TerminalServiceClientImpl', () => {
   });
 
   afterEach(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('will get 0 profiles without any input data', async () => {

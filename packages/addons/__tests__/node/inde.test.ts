@@ -1,4 +1,4 @@
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { AddonsModule } from '../../src/node';
 
@@ -10,7 +10,7 @@ describe('test for ', () => {
   });
 
   afterEach(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('empty module', () => {

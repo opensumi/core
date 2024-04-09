@@ -27,8 +27,8 @@ describe('connection legacy', () => {
     const wss = new WebSocket.Server({ port: 7788 });
     const notificationMock = jest.fn();
 
-    let serviceCenter;
-    let clientConnection;
+    let serviceCenter: any;
+    let clientConnection: any;
 
     await Promise.all([
       new Promise<void>((resolve) => {
@@ -92,6 +92,8 @@ describe('connection legacy', () => {
 
     expect(notificationMock.mock.calls.length).toBe(2);
 
+    serviceCenter.dispose();
+    clientConnection.close();
     wss.close();
   });
 

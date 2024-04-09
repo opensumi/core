@@ -1,4 +1,4 @@
-import { MockInjector, createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 import {
   IRemoteOpenerClient,
   IRemoteOpenerService,
@@ -32,7 +32,7 @@ describe('packages/remote-opener/src/node/opener.service.ts', () => {
   });
 
   afterEach(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('openExternal should be work', async () => {

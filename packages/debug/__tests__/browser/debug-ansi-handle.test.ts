@@ -12,7 +12,7 @@ import {
 } from '@opensumi/ide-debug/lib/browser/debug-ansi-handle';
 import { LinkDetector } from '@opensumi/ide-debug/lib/browser/debug-link-detector';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { disposeAll, MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { registerTerminalColors } from '@opensumi/ide-terminal-next/lib/browser/terminal.color';
@@ -80,7 +80,7 @@ describe('Debug - ANSI escape sequence', () => {
   });
 
   afterAll(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   test('appendStylizedStringToContainer', () => {

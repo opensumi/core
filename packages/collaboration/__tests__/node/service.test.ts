@@ -3,7 +3,7 @@
 import * as Y from 'yjs';
 
 import { INodeLogger } from '@opensumi/ide-core-node';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IFileService } from '@opensumi/ide-file-service';
 import { FileService } from '@opensumi/ide-file-service/src/node';
@@ -11,6 +11,7 @@ import { FileService } from '@opensumi/ide-file-service/src/node';
 import { ICollaborationServiceForClient, IYWebsocketServer, ROOM_NAME } from '../../src';
 import { CollaborationServiceForClient } from '../../src/node/collaboration.service';
 import { YWebsocketServerImpl } from '../../src/node/y-websocket-server';
+import { findFreePort } from '@opensumi/ide-core-common/lib/node/port';
 
 describe('Collaboration node ws server test', () => {
   let injector: MockInjector;
@@ -20,8 +21,14 @@ describe('Collaboration node ws server test', () => {
 
   const MOCK_CONTENT = 'init mock content';
 
-  beforeAll(() => {
-    injector = createNodeInjector([]);
+  beforeAll(async () => {
+    const availablePort = await findFreePort(50000, 60000, 5000);
+
+    injector = createNodeInjector([], undefined, {
+      collaborationOptions: {
+        port: availablePort,
+      },
+    });
     injector.mockService(INodeLogger);
     injector.mockService(IFileService);
     injector.addProviders(
@@ -43,7 +50,7 @@ describe('Collaboration node ws server test', () => {
   });
 
   afterAll(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('should correctly initialize', () => {

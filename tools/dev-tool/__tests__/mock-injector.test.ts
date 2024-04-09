@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 
 import { createBrowserInjector } from '../src/injector-helper';
-import { createNodeInjector } from '../src/mock-injector';
+import { createNodeInjector, disposeAll } from '../src/mock-injector';
 import { MockInjector } from '../src/mock-injector';
 
 describe('mock-injector test', () => {
@@ -85,7 +85,7 @@ describe('mock-injector test', () => {
       expect(fn2).toBeCalledTimes(1);
       expect(fn2).toBeCalledWith(...args);
 
-      return injector.disposeAll();
+      return disposeAll(injector);
     });
   });
 });

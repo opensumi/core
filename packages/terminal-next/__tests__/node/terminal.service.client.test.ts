@@ -1,7 +1,7 @@
 import os from 'os';
 
 import { Injector } from '@opensumi/di';
-import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';
@@ -27,7 +27,8 @@ describe('TerminalServiceClientImpl', () => {
   });
 
   afterEach(() => {
-    return injector.disposeAll();
+    // will cause error because all instance need be disposed by dependency graph
+    return disposeAll(injector);
   });
 
   it('setConnectionClientId, should be set the id correctly.', () => {

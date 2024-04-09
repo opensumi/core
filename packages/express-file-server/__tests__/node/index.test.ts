@@ -5,7 +5,7 @@ import Koa from 'koa';
 import fetch from 'node-fetch';
 
 import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
-import { MockInjector, createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { MockInjector, createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ExpressFileServerModule } from '../../src/node';
 import { ExpressFileServerContribution } from '../../src/node/express-file-server.contribution';
@@ -39,7 +39,7 @@ describe('template test', () => {
   });
 
   afterAll(() => {
-    return injector.disposeAll();
+    return disposeAll(injector);
   });
 
   it('can get png if path in whitelist', async () => {
