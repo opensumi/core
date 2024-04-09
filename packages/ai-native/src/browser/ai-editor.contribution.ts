@@ -95,6 +95,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   private logger: ILogServiceClient;
   debounceInlineChatHandler: DebouncedFunc<() => void>;
 
+  /**
+   * widget 固定展示
+   */
+  widgetPin = false;
+
   constructor() {
     super();
 
@@ -106,7 +111,14 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   private aiInlineChatDisposed: Disposable = new Disposable();
   private aiInlineChatOperationDisposed: Disposable = new Disposable();
 
-  private disposeAllWidget() {
+  private disposeAllWidget(unpin?: boolean) {
+    if (unpin) {
+      this.widgetPin = false;
+    }
+
+    if (this.widgetPin) {
+      return;
+    }
     if (this.aiDiffWidget) {
       this.aiDiffWidget.dispose();
     }
@@ -153,7 +165,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposables.push(
       monacoEditor.onWillChangeModel(() => {
-        this.disposeAllWidget();
+        this.disposeAllWidget(true);
       }),
     );
 
@@ -179,7 +191,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         if (value) {
           this.registerInlineChat(editor);
         } else {
-          this.disposeAllWidget();
+          this.disposeAllWidget(true);
         }
       }),
     );
@@ -217,6 +229,10 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     });
 
     this.debounceInlineChatHandler = debounce(() => {
+      if (this.widgetPin) {
+        return;
+      }
+
       this.disposeAllWidget();
 
       if (!prefInlineChatAutoVisible) {
@@ -234,16 +250,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         return;
       }
 
-      const selection = monacoEditor.getSelection();
-
-      if (!selection) {
-        return;
-      }
-
-      if (selection.isEmpty()) {
-        return;
-      }
-
       this.registerInlineChat(editor);
     });
     Event.any<any>(monacoEditor.onDidChangeCursorSelection, monacoEditor.onMouseUp)(this.debounceInlineChatHandler);
@@ -254,6 +260,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   inlineChatInUsing = false;
+
   /**
    * 新版 inline chat（类似 cursor 那种）
    */
@@ -269,7 +276,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     this.disposeAllWidget();
 
     // 取消所有的在途的 debounce 函数
-    this.debounceInlineChatHandler && this.debounceInlineChatHandler.cancel();
+    if (this.debounceInlineChatHandler) {
+      this.debounceInlineChatHandler.cancel();
+    }
 
     const { monacoEditor, currentUri } = editor;
 
@@ -289,11 +298,11 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return;
     }
 
-    const selectCode = monacoEditor.getModel()?.getValueInRange(selection);
-    if (!selectCode?.trim()) {
+    if (selection.isEmpty()) {
       return;
     }
 
+    this.widgetPin = true;
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
 
     this.aiInlineContentWidget = this.injector.get(AiInlineContentWidget, [monacoEditor]);
@@ -306,7 +315,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         const handler = this.inlineChatFeatureRegistry.getHandler(id);
         const action = this.inlineChatFeatureRegistry.getAction(id);
         if (!handler || !action) {
-          this.disposeAllWidget();
+          this.disposeAllWidget(true);
           return;
         }
 
@@ -315,7 +324,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         if (execute) {
           this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
           await execute(editor);
-          this.disposeAllWidget();
+          this.disposeAllWidget(true);
         }
 
         if (providerDiffPreviewStrategy) {
@@ -338,7 +347,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
           this.aiInlineChatDisposed.addDispose(
             this.aiInlineChatService.onDiscard(() => {
               this.aiReporter.end(relationId, { message: result, success: !!result, isDrop: true });
-              this.disposeAllWidget();
+              this.disposeAllWidget(true);
             }),
           );
 
@@ -458,7 +467,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             () => null,
           );
           setTimeout(() => {
-            this.disposeAllWidget();
+            this.disposeAllWidget(true);
           }, 110);
         }),
         this.aiInlineChatService.onThumbs((isLike: boolean) => {
