@@ -14,16 +14,8 @@ import {
 } from 'yjs';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import {
-  ICodeEditor,
-  IDisposable,
-  ITextModel,
-  Position,
-  Range,
-  Selection,
-  SelectionDirection,
-  editor,
-} from '@opensumi/ide-monaco';
+import { IDisposable } from '@opensumi/ide-core-common';
+import { ICodeEditor, ITextModel, Position, Range, Selection, SelectionDirection, editor } from '@opensumi/ide-monaco';
 import { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 
 import { ICollaborationService, ITextModelBinding, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';
