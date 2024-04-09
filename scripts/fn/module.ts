@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { packagesDir, packageName } from './dir-constants';
-import { run } from './shell';
+import { exec } from './shell';
 
 export function getPkgFromFolder(folderName: string) {
   const packageJsonPath = path.join(packagesDir, `./${folderName}/${packageName}`);
@@ -8,7 +8,7 @@ export function getPkgFromFolder(folderName: string) {
 }
 
 export async function startFromFolder(folderName: string, scriptName: string = 'start') {
-  await run(`cd ${folderName} && yarn run ${scriptName}`);
+  await exec(`cd ${folderName} && yarn run ${scriptName}`);
 }
 
 export async function addNodeDep(folderName: string, depName: string) {
@@ -22,6 +22,6 @@ export async function addBrowserDep(depName: string) {
 }
 
 export async function addDep(depName: string, pkgName: string) {
-  await run(`npx lerna add ${depName} --scope ${pkgName}`);
-  await run(`yarn run init`);
+  await exec(`npx lerna add ${depName} --scope ${pkgName}`);
+  await exec(`yarn run init`);
 }
