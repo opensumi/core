@@ -28,7 +28,7 @@ export class MsgStreamManager extends Disposable {
   private _currentSessionId: string;
   private _status: EMsgStreamStatus;
 
-  private readonly _onMsgStatus = this.registerDispose(new Emitter<EMsgStreamStatus>());
+  private readonly _onMsgStatus = new Emitter<EMsgStreamStatus>();
   public readonly onMsgStatus: Event<EMsgStreamStatus> = this._onMsgStatus.event;
 
   public get status(): EMsgStreamStatus {

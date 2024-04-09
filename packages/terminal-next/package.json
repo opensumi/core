@@ -21,6 +21,7 @@
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-file-service": "workspace:*",
+    "event-kit": "^2.5.3",
     "node-pty": "1.0.0",
     "os-locale": "^4.0.0",
     "xterm": "5.2.0",
@@ -40,6 +41,7 @@
     "@opensumi/ide-theme": "workspace:*",
     "@opensumi/ide-variable": "workspace:*",
     "@opensumi/ide-workspace": "workspace:*",
+    "@types/event-kit": "^2.4.0",
     "@types/http-proxy": "^1.17.2",
     "http-proxy": "^1.18.0"
   }

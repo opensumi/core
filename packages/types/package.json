@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsx ./build.ts"
+    "build": "ts-node ./build"
   },
   "dependencies": {
     "@opensumi/ide-components": "workspace:*",
