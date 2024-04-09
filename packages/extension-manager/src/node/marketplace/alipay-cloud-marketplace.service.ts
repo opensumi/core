@@ -1,4 +1,4 @@
-import nodeFetch from 'node-fetch';
+import { fetch } from 'undici';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
@@ -44,13 +44,13 @@ export class AlipayCloudMarketplaceService implements IMarketplaceService {
   async getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined> {
     const { endpoint } = this.appConfig.marketplace;
     const uri = `${endpoint}/openapi/ide/extension/${param.extensionId}`;
-    const res = await nodeFetch(uri, {
+    const res = await fetch(uri, {
       headers: {
         ...alipayCloudCommonHeaders,
         ...this.getAKHeaders(),
       },
     });
-    const { data } = await res.json();
+    const { data } = (await res.json()) as any;
 
     return {
       extensions: [
@@ -66,18 +66,14 @@ export class AlipayCloudMarketplaceService implements IMarketplaceService {
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
     const { endpoint } = this.appConfig.marketplace;
-    const res = await nodeFetch(
-      `${endpoint}/openapi/ide/search?${param && new URLSearchParams(param as any).toString()}`,
-      {
-        headers: {
-          ...alipayCloudCommonHeaders,
-          ...this.getAKHeaders(),
-        },
-        timeout: 30000,
+    const res = await fetch(`${endpoint}/openapi/ide/search?${param && new URLSearchParams(param as any).toString()}`, {
+      headers: {
+        ...alipayCloudCommonHeaders,
+        ...this.getAKHeaders(),
       },
-    );
+    });
 
-    const { count: totalSize, data: extensions } = await res.json();
+    const { count: totalSize, data: extensions } = (await res.json()) as any;
 
     return {
       extensions: extensions.map((item) => {

@@ -2,10 +2,11 @@ import assert from 'assert';
 import os from 'os';
 import path from 'path';
 import { pipeline } from 'stream';
+import { promisify } from 'util';
 
 import compressing from 'compressing';
 import fs from 'fs-extra';
-import nodeFetch, { RequestInit } from 'node-fetch';
+import { Agent, RequestInit, fetch as nodeFetch } from 'undici';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
@@ -20,6 +21,8 @@ import {
   IVSXExtensionBackService,
 } from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';
+
+const promisifyAsync = promisify(pipeline);
 
 function cleanup(paths: string[]) {
   return Promise.all(paths.map((path) => fs.remove(path)));
@@ -139,11 +142,14 @@ export class VSXExtensionService implements IVSXExtensionBackService {
     const vsixFileName = id + '.vsix';
     const downloadPath = path.join(extensionDir, vsixFileName);
 
-    const res = await nodeFetchRetry(
+    const res = await fetchRetry(
       url,
       {
         method: 'GET',
         headers: this.getMarketplace().downloadHeaders,
+        dispatcher: new Agent({
+          bodyTimeout: 100 * 1000 * 30,
+        }),
       },
       {
         maxAttempts: 5,
@@ -161,17 +167,11 @@ export class VSXExtensionService implements IVSXExtensionBackService {
       throw new Error(`download extension ${id} from ${url} failed, status: ${res?.status} ${res?.statusText}`);
     }
 
-    return await new Promise((resolve, reject) => {
-      const fileStream = fs.createWriteStream(downloadPath);
-      res.body.pipe(fileStream);
+    assert(res.body, 'no body in response');
 
-      res.body.on('error', (err) => {
-        reject(err);
-      });
-      fileStream.on('finish', function () {
-        resolve({ downloadPath });
-      });
-    });
+    const fileStream = fs.createWriteStream(downloadPath);
+    await promisifyAsync(res.body, fileStream);
+    return { downloadPath };
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
@@ -183,7 +183,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const nodeFetchRetry = async (
+const fetchRetry = async (
   url: string,
   fetchOptions: RequestInit,
   opts: {

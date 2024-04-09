@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const compressing = require('compressing');
 const log = require('debug')('InstallExtension');
 const os = require('os');
-const nodeFetch = require('node-fetch');
+const { fetch: nodeFetch, Agent } = require('undici');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const retry = require('async-retry');
@@ -72,7 +72,12 @@ async function downloadExtension(url, namespace, extensionName) {
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
-  const res = await nodeFetch(url, { timeout: 100000, headers });
+  const res = await nodeFetch(url, {
+    headers,
+    dispatcher: new Agent({
+      bodyTimeout: 100 * 1000 * 30,
+    }),
+  });
 
   if (res.status !== 200) {
     throw {
@@ -150,7 +155,12 @@ const installExtension = async (namespace, name, version) => {
   } else {
     const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
     const getDetailApi = `https://open-vsx.org/api/${path}`;
-    const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
+    const res = await nodeFetch(getDetailApi, {
+      headers,
+      dispatcher: new Agent({
+        bodyTimeout: 100 * 1000 * 30,
+      }),
+    });
     const data = await res.json();
 
     downloadUrl = data.files?.download;

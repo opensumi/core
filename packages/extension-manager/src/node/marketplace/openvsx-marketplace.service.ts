@@ -1,4 +1,4 @@
-import nodeFetch from 'node-fetch';
+import { fetch as nodeFetch } from 'undici';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
@@ -26,7 +26,7 @@ export class OpenvsxMarketplaceService implements IMarketplaceService {
       body: JSON.stringify(param),
     });
 
-    return await res.json();
+    return (await res.json()) as unknown as QueryResult;
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
@@ -37,8 +37,7 @@ export class OpenvsxMarketplaceService implements IMarketplaceService {
       headers: {
         ...openvsxCommonHeaders,
       },
-      timeout: 30000,
     });
-    return await res.json();
+    return (await res.json()) as unknown as VSXSearchResult;
   }
 }

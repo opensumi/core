@@ -3,7 +3,7 @@ import { existsSync, statSync } from 'fs';
 import { join } from 'path';
 
 import { green, red } from 'chalk';
-import fetch from 'node-fetch';
+import { fetch } from 'undici';
 
 import { ArgvFactory } from '@opensumi/ide-utils/lib/argv';
 

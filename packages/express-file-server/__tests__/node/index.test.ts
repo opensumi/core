@@ -2,7 +2,7 @@ import http from 'http';
 import path from 'path';
 
 import Koa from 'koa';
-import fetch from 'node-fetch';
+import { fetch } from 'undici';
 
 import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
 import { MockInjector, createNodeInjector, disposeAll } from '@opensumi/ide-dev-tool/src/mock-injector';

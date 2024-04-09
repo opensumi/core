@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import { fetch } from 'undici';
 import { DefaultLogFields } from 'simple-git';
 import { ICommitLogFields, PR_STATE } from './types';
 
@@ -12,7 +12,7 @@ export function getPullRequestLink(prId: string) {
   return `${GITHUB_URL}/pull/${prId}`;
 }
 
-async function getPrDesc(prIid: string, projectId = 'opensumi/core') {
+async function getPrDesc(prIid: string, projectId = 'opensumi/core'): Promise<any> {
   const res = await fetch(`https://api.github.com/repos/${projectId}/pulls/${prIid}`, {
     method: 'GET',
     headers: {
@@ -100,7 +100,7 @@ export async function getPrList(startTime: number = Date.now(), state = PR_STATE
         },
       },
     );
-    const ret = await res.json();
+    const ret = (await res.json()) as any;
     if (ret.length === 0) {
       break;
     }
