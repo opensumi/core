@@ -4,9 +4,10 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
-import { IAIReporter, localize } from '@opensumi/ide-core-common';
+import { ChatRenderRegistryToken, IAIReporter, localize } from '@opensumi/ide-core-common';
 
 import { IAIChatService } from '../../common';
+import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
@@ -36,7 +37,13 @@ export const Thinking = ({
   thinkingText,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
+
+  const customThinkingRender = useMemo(
+    () => chatRenderRegistry.chatThinkingRender,
+    [chatRenderRegistry, chatRenderRegistry.chatThinkingRender],
+  );
 
   const handlePause = useCallback(async () => {
     // agent 处理有另外的流程
@@ -52,23 +59,29 @@ export const Thinking = ({
 
   const renderContent = useCallback(() => {
     if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
+      if (customThinkingRender) {
+        return customThinkingRender({ thinkingText });
+      }
+
       return <span className={styles.thinking_text}>{thinkingText || 'Thinking...'}</span>;
     }
 
     return children;
-  }, [status, message, children]);
+  }, [status, message, children, thinkingText, customThinkingRender]);
 
   return (
     <>
       <div className={styles.content}>{renderContent()}</div>
       <div className={styles.thinking_container}>
         <div className={styles.stop}>
-          <span className={styles.progress_bar}>
-            {/* 保持动画效果一致 */}
-            {(!!status || !children) && (
-              <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />
-            )}
-          </span>
+          {!customThinkingRender && (
+            <span className={styles.progress_bar}>
+              {/* 保持动画效果一致 */}
+              {(!!status || !children) && (
+                <Progress loading={true} wrapperClassName={styles.ai_native_progress_wrapper} />
+              )}
+            </span>
+          )}
           {showStop && (
             <div className={styles.block} onClick={handlePause}>
               <Icon className={getIcon('circle-pause')}></Icon>

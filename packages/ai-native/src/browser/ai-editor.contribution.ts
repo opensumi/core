@@ -11,6 +11,7 @@ import {
   Disposable,
   ErrorResponse,
   Event,
+  IAIReporter,
   IDisposable,
   IEventBus,
   ILogServiceClient,
@@ -65,6 +66,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
   @Autowired(InlineChatFeatureRegistryToken)
   private readonly inlineChatFeatureRegistry: InlineChatFeatureRegistry;
+
+  @Autowired(IAIReporter)
+  private readonly aiReporter: IAIReporter;
 
   @Autowired(AINativeCoreContribution)
   private readonly contributions: ContributionProvider<AINativeCoreContribution>;
@@ -323,16 +327,40 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-      await this.handleDiffPreviewStrategy(monacoEditor, providerDiffPreviewStrategy, crossSelection);
+      const relationId = this.aiReporter.start(action.name, { message: action.name });
+      const startTime = +new Date();
+
+      const result = await this.handleDiffPreviewStrategy(
+        monacoEditor,
+        providerDiffPreviewStrategy,
+        crossSelection,
+        relationId,
+      );
+
+      this.aiReporter.end(relationId, { message: result, success: !!result, replytime: +new Date() - startTime });
+
       this.aiInlineChatDisposed.addDispose(
         this.aiInlineChatService.onDiscard(() => {
+          this.aiReporter.end(relationId, { message: result, success: !!result, isDrop: true });
           this.disposeAllWidget();
         }),
       );
 
       this.aiInlineChatDisposed.addDispose(
         this.aiInlineChatService.onRegenerate(async () => {
-          await this.handleDiffPreviewStrategy(monacoEditor, providerDiffPreviewStrategy, crossSelection);
+          const retryStartTime = +new Date();
+          const retryResult = await this.handleDiffPreviewStrategy(
+            monacoEditor,
+            providerDiffPreviewStrategy,
+            crossSelection,
+            relationId,
+          );
+          this.aiReporter.end(relationId, {
+            message: retryResult,
+            success: !!result,
+            replytime: +new Date() - retryStartTime,
+            isRetry: true,
+          });
         }),
       );
     }
@@ -345,6 +373,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       cancelToken: CancellationToken,
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
     crossSelection: monaco.Selection,
+    relationId: string,
   ): Promise<string | undefined> {
     const model = monacoEditor.getModel();
     if (!model || !crossSelection) {
@@ -379,10 +408,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.aiInlineChatOperationDisposed.addDispose([
       this.aiInlineChatService.onAccept(() => {
+        this.aiReporter.end(relationId, { message: 'accept', success: true, isReceive: true });
         monacoEditor.getModel()?.pushEditOperations(null, [{ range: crossSelection, text: answer! }], () => null);
         runWhenIdle(() => {
           this.disposeAllWidget();
         });
+      }),
+      this.aiInlineChatService.onThumbs((isLike: boolean) => {
+        this.aiReporter.end(relationId, { isLike });
       }),
       this.aiDiffWidget.onMaxLincCount((count) => {
         requestAnimationFrame(() => {

@@ -19,6 +19,7 @@ import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 
 import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
+import { EMsgStreamStatus } from './model/msg-stream-manager';
 
 export interface IEditorInlineChatHandler {
   /**
@@ -65,6 +66,27 @@ export interface IChatFeatureRegistry {
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
 }
 
+export type ChatWelcomeRender = (props: {
+  message: IChatWelcomeMessageContent;
+  sampleQuestions: ISampleQuestions[];
+}) => React.ReactNode;
+export type ChatAIRoleRender = (props: { content: string; status: EMsgStreamStatus }) => React.ReactNode;
+export type ChatUserRoleRender = (props: { content: string; agentId?: string; command?: string }) => React.ReactNode;
+export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactNode;
+
+export interface IChatRenderRegistry {
+  registerWelcomeRender?: (render: ChatWelcomeRender) => void;
+  /**
+   * AI 对象的对话渲染
+   */
+  registerAIRoleRender?: (render: ChatAIRoleRender) => void;
+  /**
+   * 用户对象的对话渲染
+   */
+  registerUserRoleRender?: (render: ChatUserRoleRender) => void;
+  registerThinkingRender?: (render: ChatThinkingRender) => void;
+}
+
 export interface IResolveConflictRegistry {
   registerResolveConflictProvider(
     editorMode: keyof typeof MergeConflictEditorMode,
@@ -97,6 +119,10 @@ export interface AINativeCoreContribution {
    */
   registerChatFeature?(registry: IChatFeatureRegistry): void;
   /*
+   * 注册 chat 面板相关渲染层，可以自定义 render
+   */
+  registerChatRender?(registry: IChatRenderRegistry): void;
+  /*
    * 注册智能解决冲突相关功能
    */
   registerResolveConflictFeature?(registry: IResolveConflictRegistry): void;
@@ -104,10 +130,6 @@ export interface AINativeCoreContribution {
    * 注册智能重命名相关功能
    */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
-  /*
-   * 注册智能终端相关功能
-   */
-  registerTerminalFeature?(registry: IResolveConflictRegistry): void;
 }
 
 export interface IChatComponentConfig {

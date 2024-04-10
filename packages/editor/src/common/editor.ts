@@ -386,8 +386,9 @@ export interface IEditorGroup {
   /**
    * 关闭指定的 uri 的 tab， 如果存在的话
    * @param uri
+   * @return 是否成功关闭，不存在的话返回 true
    */
-  close(uri: URI): Promise<void>;
+  close(uri: URI): Promise<boolean>;
 
   getState(): IEditorGroupState;
 
@@ -395,7 +396,11 @@ export interface IEditorGroup {
 
   saveAll(): Promise<void>;
 
-  closeAll(): Promise<void>;
+  /**
+   * 关闭指定所有的 tab
+   * @return 是否成功关闭
+   */
+  closeAll(): Promise<boolean>;
 
   /**
    * 保存当前的 tab 的文件 (如果它能被保存的话)

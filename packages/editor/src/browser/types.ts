@@ -48,6 +48,11 @@ export interface IEditorComponent<MetaData = any> {
 
   // 渲染模式 默认为 ONE_PER_GROUP
   renderMode?: EditorComponentRenderMode;
+
+  /**
+   * 有关该 component 的额外信息
+   */
+  metadata?: Record<string, any>;
 }
 
 export type EditorSide = 'bottom' | 'top';
