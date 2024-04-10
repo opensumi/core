@@ -127,7 +127,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   }
   // restart extProcess on reconnect
   onReconnect() {
-    this.extensionService.restartExtProcess();
+    this.extensionService.restartExtProcess(true);
   }
 
   /**

@@ -130,6 +130,8 @@ export interface IExtensionNodeService {
   disposeAllClientExtProcess(): Promise<void>;
   tryEnableInspectPort(clientId: string, delay?: number): Promise<boolean>;
   getProcessInspectPort(clientId: string): Promise<number | undefined>;
+
+  getExtProcessId(clientId: string): Promise<number | null>;
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -155,6 +157,8 @@ export interface IExtensionNodeClientService {
   setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
   getLanguagePack(languageId: string): IExtensionLanguagePack | undefined;
+
+  connected(): Promise<boolean>;
 }
 
 export type ExtensionHostType = 'node' | 'worker';
@@ -244,7 +248,7 @@ export abstract class ExtensionService {
   /**
    * 重启插件进程
    */
-  abstract restartExtProcess(): Promise<void>;
+  abstract restartExtProcess(isSoft?: boolean): Promise<void>;
 
   /**
    * 激活插件, 给 Extension 实例使用

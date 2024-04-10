@@ -120,6 +120,11 @@ export class ExtensionServiceClientImpl
     return await this.extensionService.getAllExtensions(scan, extensionCandidate, localization, extraMetaData);
   }
 
+  async connected(): Promise<boolean> {
+    const pid = await this.extensionService.getExtProcessId(this.clientId);
+    return !!pid;
+  }
+
   public async disposeClientExtProcess(clientId: string, info = true): Promise<void> {
     return await this.extensionService.disposeClientExtProcess(clientId, info);
   }

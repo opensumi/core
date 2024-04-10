@@ -14,7 +14,6 @@ import {
   IThemeColor,
   IMarkdownString,
 } from '@opensumi/ide-core-common';
-import { IDiffEditorOptions } from '@opensumi/ide-monaco';
 // eslint-disable-next-line import/no-restricted-paths
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
@@ -173,11 +172,7 @@ export abstract class EditorCollectionService {
    * @param options
    * @param overrides
    */
-  public abstract createCodeEditor(
-    dom: HTMLElement,
-    options?: IEditorOptions,
-    overrides?: { [key: string]: any },
-  ): ICodeEditor;
+  public abstract createCodeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): ICodeEditor;
 
   /**
    * 创建一个 monaco diffEditor 实例
@@ -185,11 +180,7 @@ export abstract class EditorCollectionService {
    * @param options
    * @param overrides
    */
-  public abstract createDiffEditor(
-    dom: HTMLElement,
-    options?: IDiffEditorOptions,
-    overrides?: { [key: string]: any },
-  ): IDiffEditor;
+  public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): IDiffEditor;
 
   public abstract createMergeEditor(
     dom: HTMLElement,

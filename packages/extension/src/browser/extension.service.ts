@@ -25,6 +25,7 @@ import {
 import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { sleep } from '@opensumi/ide-utils/lib/async';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
@@ -306,24 +307,34 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   /**
    * 重启插件进程
    */
-  public async restartExtProcess() {
+  public async restartExtProcess(isSoft?: boolean) {
     /**
      * 只有在页面可见的情况下才执行插件进程重启操作
      * 如果当前页面不可见，那么 chrome 会对 socket 进行限流，导致进程重启的 rpc 调用得不到返回从而卡住
      */
     if (document.visibilityState === 'visible') {
-      this.extProcessRestartHandler();
+      this.extProcessRestartHandler(isSoft);
     } else {
       this.isExtProcessWaitingForRestart = true;
     }
   }
 
-  private async extProcessRestartHandler() {
+  private async connected(): Promise<boolean> {
+    return await Promise.race([this.extensionNodeClient.connected().then(() => true), sleep(500).then(() => false)]);
+  }
+
+  private async extProcessRestartHandler(isSoft?: boolean) {
     if (this.isExtProcessRestarting) {
       return;
     }
 
-    const restartProgress = () => {
+    const restartProgress = async () => {
+      if (isSoft) {
+        if (await this.connected()) {
+          return;
+        }
+      }
+
       this.progressService.withProgress(
         {
           location: ProgressLocation.Notification,
