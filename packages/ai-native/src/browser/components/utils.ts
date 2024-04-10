@@ -1,5 +1,7 @@
-import { CODICON_OWNER, getExternalIcon } from '@opensumi/ide-core-browser';
 import { ITextMessageProps } from 'react-chat-elements';
+
+import { CODICON_OWNER, getExternalIcon } from '@opensumi/ide-core-browser';
+
 import { IChatReplyFollowup, ISampleQuestions } from '../../common/index';
 
 export interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
@@ -17,8 +19,9 @@ type UserMessageData = Omit<MessageData, 'role' | 'position' | 'title'>;
 const createMessage = (message: MessageData) => ({
   ...message,
   type: 'text',
-  className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${message.className ? message.className : ''
-    }`,
+  className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${
+    message.className ? message.className : ''
+  }`,
 });
 
 export const createMessageByUser = (message: UserMessageData, className?: string) =>

@@ -1,13 +1,15 @@
-import { IAIReporter, uuid } from '@opensumi/ide-core-common';
 import * as React from 'react';
+
+import { IAIReporter, uuid } from '@opensumi/ide-core-common';
+
 import { IChatAgentService } from '../../common/index';
 import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus } from '../model/msg-stream-manager';
+
 import { ChatMarkdown } from './ChatMarkdown';
+import styles from './components.module.less';
 import { StreamMsgWrapper } from './StreamMsg';
 import { createMessageByAI } from './utils';
-
-import styles from './components.module.less';
 
 export interface IReplayComponentParam {
   rawMessage: string;
@@ -24,7 +26,7 @@ export interface IReplayComponentParam {
 export const StreamReplyRender = (prompt: string, params: IReplayComponentParam) => {
   const { aiChatService, relationId, renderContent } = params;
 
-  const send = (isRetry: boolean = false) => {
+  const send = (isRetry = false) => {
     aiChatService.setLatestSessionId(relationId);
     aiChatService.messageWithStream(prompt, isRetry ? { enableGptCache: false } : {}, relationId);
   };
