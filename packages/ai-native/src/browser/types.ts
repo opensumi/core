@@ -19,12 +19,13 @@ import { IChatWelcomeMessageContent, ISampleQuestions } from '../common';
 
 import { BaseTerminalDetectionLineMatcher } from './ai-terminal/matcher';
 import { CompletionRequestBean } from './inline-completions/model/competionModel';
+import { EMsgStreamStatus } from './model/msg-stream-manager';
 
 export interface IEditorInlineChatHandler {
   /**
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
-  execute?: (editor: ICodeEditor) => MaybePromise<void>;
+  execute?: (editor: ICodeEditor, ...args: any[]) => MaybePromise<void>;
   /**
    * 提供 diff editor 的预览策略
    */
@@ -40,8 +41,8 @@ export interface ITerminalInlineChatHandler {
 }
 
 export interface IInlineChatFeatureRegistry {
-  registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): void;
-  registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): void;
+  registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
+  registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
 }
 
 export interface IChatSlashCommandItem {
@@ -54,15 +55,40 @@ export interface IChatSlashCommandItem {
 }
 
 export type TChatSlashCommandSend = (value: string) => void;
+
+export type TSlashCommandCustomRender = (props: { userMessage: string }) => React.ReactNode;
+
 export interface IChatSlashCommandHandler {
   execute: (value: string, send: TChatSlashCommandSend, editor?: ICodeEditor) => MaybePromise<void>;
   providerInputPlaceholder?: (value: string, editor?: ICodeEditor) => string;
   providerPrompt?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
+  providerRender?: TSlashCommandCustomRender;
 }
 
 export interface IChatFeatureRegistry {
   registerWelcome(content: IChatWelcomeMessageContent | React.ReactNode, sampleQuestions?: ISampleQuestions[]): void;
   registerSlashCommand(command: IChatSlashCommandItem, handler: IChatSlashCommandHandler): void;
+}
+
+export type ChatWelcomeRender = (props: {
+  message: IChatWelcomeMessageContent;
+  sampleQuestions: ISampleQuestions[];
+}) => React.ReactNode;
+export type ChatAIRoleRender = (props: { content: string; status: EMsgStreamStatus }) => React.ReactNode;
+export type ChatUserRoleRender = (props: { content: string; agentId?: string; command?: string }) => React.ReactNode;
+export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactNode;
+
+export interface IChatRenderRegistry {
+  registerWelcomeRender?: (render: ChatWelcomeRender) => void;
+  /**
+   * AI 对象的对话渲染
+   */
+  registerAIRoleRender?: (render: ChatAIRoleRender) => void;
+  /**
+   * 用户对象的对话渲染
+   */
+  registerUserRoleRender?: (render: ChatUserRoleRender) => void;
+  registerThinkingRender?: (render: ChatThinkingRender) => void;
 }
 
 export interface IResolveConflictRegistry {
@@ -83,18 +109,23 @@ export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
   /**
+   * 通过中间件扩展部分 ai 能力
+   */
+  middleware?: IAIMiddleware;
+
+  /**
    * 注册 inline chat 相关功能
    * @param registry: IInlineChatFeatureRegistry
    */
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
-  /**
-   * 通过中间件扩展部分 ai 能力
-   */
-  middleware?: IAIMiddleware;
   /*
    * 注册 chat 面板相关功能
    */
   registerChatFeature?(registry: IChatFeatureRegistry): void;
+  /*
+   * 注册 chat 面板相关渲染层，可以自定义 render
+   */
+  registerChatRender?(registry: IChatRenderRegistry): void;
   /*
    * 注册智能解决冲突相关功能
    */
@@ -103,10 +134,6 @@ export interface AINativeCoreContribution {
    * 注册智能重命名相关功能
    */
   registerRenameProvider?(registry: IRenameCandidatesProviderRegistry): void;
-  /*
-   * 注册智能终端相关功能
-   */
-  registerTerminalFeature?(registry: IResolveConflictRegistry): void;
 }
 
 export interface IChatComponentConfig {

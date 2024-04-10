@@ -6,13 +6,13 @@ import { IAIReporter, localize } from '@opensumi/ide-core-common';
 
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
+import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
-import { Thinking, ThinkingResult } from './Thinking';
 
 interface IStreamMsgWrapperProps {
   sessionId: string;
   prompt: string;
-  renderContent: (content: string) => React.ReactNode;
+  renderContent: (content: string, status: EMsgStreamStatus) => React.ReactNode;
   onRegenerate?: () => void;
   onStop?: () => void;
   startTime?: number;
@@ -100,7 +100,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     () => (
       <div className={styles.ai_chat_code_wrapper}>
         <div className={styles.render_text}>
-          {isError ? <span>{localize('aiNative.chat.error.response')}</span> : renderContent(content)}
+          {isError ? <span>{localize('aiNative.chat.error.response')}</span> : renderContent(content, status)}
         </div>
       </div>
     ),
@@ -113,12 +113,12 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   };
 
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <Thinking status={status} message={content} onStop={onStop}>
+    <ChatThinking status={status} message={content} onStop={onStop}>
       {renderMsgList()}
-    </Thinking>
+    </ChatThinking>
   ) : (
-    <ThinkingResult status={status} message={content} onRegenerate={handleRegenerate} sessionId={sessionId}>
+    <ChatThinkingResult status={status} message={content} onRegenerate={handleRegenerate} sessionId={sessionId}>
       {renderMsgList()}
-    </ThinkingResult>
+    </ChatThinkingResult>
   );
 };

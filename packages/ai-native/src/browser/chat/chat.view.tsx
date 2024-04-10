@@ -1,11 +1,18 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { ITextMessageProps, MessageList, SystemMessage } from 'react-chat-elements';
+import { MessageList, SystemMessage } from 'react-chat-elements';
 
-import { CODICON_OWNER, getExternalIcon, getIcon, useInjectable } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Popover, Tooltip } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { AISerivceType, ChatFeatureRegistryToken, IAIReporter, localize, uuid } from '@opensumi/ide-core-common';
+import {
+  AISerivceType,
+  ChatFeatureRegistryToken,
+  ChatRenderRegistryToken,
+  IAIReporter,
+  localize,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
@@ -23,82 +30,26 @@ import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
-import { StreamMsgWrapper } from '../components/StreamMsg';
-import { Thinking } from '../components/Thinking';
+import { ChatThinking } from '../components/ChatThinking';
+import { SlashCustomRender } from '../components/SlashCustomRender';
+import { IReplayComponentParam, StreamReplyRender } from '../components/StreamReplyRender';
+import { MessageData, createMessageByAI, createMessageByUser, extractIcon } from '../components/utils';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
+import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
 
+import { ChatSlashCommandItemModel } from './chat-model';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 import styles from './chat.module.less';
+import { ChatRenderRegistry } from './chat.render.registry';
 import { ChatService } from './chat.service';
 
-interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
-  role: 'user' | 'ai';
-  relationId: string;
-  className?: string;
-  text: string | React.ReactNode;
-}
-
-type AIMessageData = Omit<MessageData, 'role' | 'position' | 'title'>;
-
-interface ReplayComponentParam {
-  aiChatService: ChatService;
-  aiReporter: IAIReporter;
-  chatAgentService: IChatAgentService;
-  relationId: string;
-  startTime: number;
-  isRetry?: boolean;
-}
-
-const createMessage = (message: MessageData) => ({
-  ...message,
-  type: 'text',
-  className: `${message.position === 'left' ? 'rce-ai-msg' : 'rce-user-msg'} ${
-    message.className ? message.className : ''
-  }`,
-});
-
-const createMessageByAI = (message: AIMessageData, className?: string) =>
-  createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
-const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
-  let { title } = question;
-  const { message, tooltip } = question;
-
-  if (!title) {
-    return {
-      icon: '',
-      title: message,
-      message,
-      tooltip,
-    };
-  }
-
-  let icon;
-
-  const iconMatched = title.match(/^\$\(([a-z.]+\/)?([a-z0-9-]+)(~[a-z]+)?\)/i);
-  if (iconMatched) {
-    const [matchedStr, owner, name, modifier] = iconMatched;
-    const iconOwner = owner ? owner.slice(0, -1) : CODICON_OWNER;
-    icon = getExternalIcon(name, iconOwner);
-    if (modifier) {
-      icon += ` ${modifier.slice(1)}`;
-    }
-    title = title.slice(matchedStr.length);
-  }
-  return {
-    icon,
-    title,
-    message,
-    tooltip,
-  };
-};
-
 const SCROLL_CLASSNAME = 'chat_scroll';
-const ME_NAME = '';
 
 const InitMsgComponent = () => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   const [sampleQuestions, setSampleQuestions] = React.useState<ISampleQuestions[]>([]);
 
@@ -117,7 +68,7 @@ const InitMsgComponent = () => {
     }
 
     const { content } = chatFeatureRegistry.chatWelcomeMessageModel;
-    return isMarkdownString(content) ? <ChatMarkdown markdown={content} /> : content;
+    return content;
   }, [chatFeatureRegistry.chatWelcomeMessageModel?.content]);
 
   React.useEffect(() => {
@@ -131,7 +82,7 @@ const InitMsgComponent = () => {
 
   if (!welcomeMessage) {
     return (
-      <Thinking
+      <ChatThinking
         status={EMsgStreamStatus.THINKING}
         showStop={false}
         thinkingText={localize('aiNative.chat.welcome.loading.text')}
@@ -139,34 +90,44 @@ const InitMsgComponent = () => {
     );
   }
 
-  return (
-    <div className={styles.chat_head}>
-      <div className={styles.chat_container_des}>{welcomeMessage}</div>
-      <div className={styles.chat_container_content}>
-        {welcomeSampleQuestions.concat(sampleQuestions).map((data: any, index) => {
-          const node = (
-            <a
-              href='javascript:void(0)'
-              className={styles.link_item}
-              onClick={() => {
-                aiChatService.launchChatMessage(chatAgentService.parseMessage(data.message));
-              }}
-            >
-              {data.icon ? <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} /> : ''}
-              <span>{data.title}</span>
-            </a>
-          );
-          return data.tooltip ? (
-            <Tooltip title={data.tooltip} key={index}>
-              {node}
-            </Tooltip>
-          ) : (
-            <React.Fragment key={index}>{node}</React.Fragment>
-          );
-        })}
+  const welcomeRender = React.useMemo(() => {
+    if (chatRenderRegistry.chatWelcomeRender) {
+      return chatRenderRegistry.chatWelcomeRender({ message: welcomeMessage, sampleQuestions: welcomeSampleQuestions });
+    }
+
+    return (
+      <div className={styles.chat_head}>
+        <div className={styles.chat_container_des}>
+          {isMarkdownString(welcomeMessage) ? <ChatMarkdown markdown={welcomeMessage} /> : welcomeMessage}
+        </div>
+        <div className={styles.chat_container_content}>
+          {welcomeSampleQuestions.concat(sampleQuestions).map((data: any, index) => {
+            const node = (
+              <a
+                href='javascript:void(0)'
+                className={styles.link_item}
+                onClick={() => {
+                  aiChatService.launchChatMessage(chatAgentService.parseMessage(data.message));
+                }}
+              >
+                {data.icon ? <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} /> : ''}
+                <span>{data.title}</span>
+              </a>
+            );
+            return data.tooltip ? (
+              <Tooltip title={data.tooltip} key={index}>
+                {node}
+              </Tooltip>
+            ) : (
+              <React.Fragment key={index}>{node}</React.Fragment>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }, [chatRenderRegistry.chatWelcomeRender, welcomeMessage, welcomeSampleQuestions]);
+
+  return welcomeRender as React.JSX.Element;
 };
 
 export const AIChatView = observer(() => {
@@ -175,6 +136,7 @@ export const AIChatView = observer(() => {
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
@@ -310,68 +272,96 @@ export const AIChatView = observer(() => {
     return () => disposer.dispose();
   }, []);
 
-  const handleAgentReply = React.useCallback(async (value: IChatMessageStructure) => {
-    const { message, agentId, command } = value;
+  const handleSlashCustomRender = React.useCallback(
+    async (value: { message: string; render: TSlashCommandCustomRender; relationId: string; startTime: number }) => {
+      const { message, relationId, render, startTime } = value;
 
-    const request = aiChatService.createRequest(message, agentId!, command);
-    if (!request) {
-      return;
-    }
+      const aiMessage = createMessageByAI({
+        id: uuid(6),
+        relationId,
+        className: styles.chat_with_more_actions,
+        text: (
+          <SlashCustomRender message={message} startTime={startTime} relationId={relationId} renderContent={render} />
+        ),
+      });
 
-    const startTime = Date.now();
-    const relationId = aiReporter.start(AISerivceType.Agent, {
-      msgType: AISerivceType.Agent,
-      message: value.message,
-    });
+      dispatchMessage({ type: 'add', payload: [aiMessage] });
 
-    const userMessage = createMessage({
-      id: uuid(6),
-      relationId,
-      position: 'right',
-      title: ME_NAME,
-      text: <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />,
-      className: styles.chat_message_code,
-      role: 'user',
-    });
+      if (containerRef && containerRef.current) {
+        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      }
+    },
+    [containerRef],
+  );
 
-    const aiMessage = createMessageByAI({
-      id: uuid(6),
-      relationId,
-      className: styles.chat_with_more_actions,
-      text: (
-        <ChatReply
-          relationId={relationId}
-          request={request}
-          startTime={startTime}
-          onRegenerate={() => {
-            msgStreamManager.sendThinkingStatue();
-            aiChatService.sendRequest(request, true);
-          }}
-        />
-      ),
-    });
+  const handleAgentReply = React.useCallback(
+    async (value: IChatMessageStructure) => {
+      const { message, agentId, command } = value;
+      const chatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
-    msgStreamManager.setCurrentSessionId(relationId);
-    msgStreamManager.sendThinkingStatue();
-    aiChatService.setLatestSessionId(relationId);
-    aiChatService.sendRequest(request);
+      const request = aiChatService.createRequest(message, agentId!, command);
+      if (!request) {
+        return;
+      }
 
-    dispatchMessage({ type: 'add', payload: [userMessage, aiMessage] });
+      const startTime = Date.now();
+      const relationId = aiReporter.start(AISerivceType.Agent, {
+        msgType: AISerivceType.Agent,
+        message: value.message,
+      });
 
-    if (containerRef && containerRef.current) {
-      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-    }
-  }, []);
+      const userMessage = createMessageByUser(
+        {
+          id: uuid(6),
+          relationId,
+          text: chatUserRoleRender ? (
+            chatUserRoleRender({ content: message, agentId, command })
+          ) : (
+            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />
+          ),
+        },
+        styles.chat_message_code,
+      );
+
+      const aiMessage = createMessageByAI({
+        id: uuid(6),
+        relationId,
+        className: styles.chat_with_more_actions,
+        text: (
+          <ChatReply
+            relationId={relationId}
+            request={request}
+            startTime={startTime}
+            onRegenerate={() => {
+              msgStreamManager.sendThinkingStatue();
+              aiChatService.sendRequest(request, true);
+            }}
+          />
+        ),
+      });
+
+      msgStreamManager.setCurrentSessionId(relationId);
+      msgStreamManager.sendThinkingStatue();
+      aiChatService.setLatestSessionId(relationId);
+      aiChatService.sendRequest(request);
+
+      dispatchMessage({ type: 'add', payload: [userMessage, aiMessage] });
+
+      if (containerRef && containerRef.current) {
+        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      }
+    },
+    [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender],
+  );
 
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, prompt, reportType, agentId, command } = value;
+      const chatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
       if (agentId) {
         return handleAgentReply({ message, agentId, command });
       }
-
-      setLoading(true);
 
       const userInput = {
         type: AISerivceType.Chat,
@@ -379,15 +369,16 @@ export const AIChatView = observer(() => {
       };
 
       const { nameWithSlash } = chatFeatureRegistry.parseSlashCommand(message);
+      let commandHandler: IChatSlashCommandHandler | undefined;
 
       if (nameWithSlash) {
-        const commandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(nameWithSlash);
-        if (commandHandler && commandHandler.providerPrompt) {
-          const editor = monacoCommandRegistry.getActiveCodeEditor();
-          const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
+        commandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(nameWithSlash);
+      }
 
-          userInput.message = slashCommandPrompt;
-        }
+      if (commandHandler && commandHandler.providerPrompt) {
+        const editor = monacoCommandRegistry.getActiveCodeEditor();
+        const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
+        userInput.message = slashCommandPrompt;
       }
 
       const startTime = +new Date();
@@ -396,34 +387,59 @@ export const AIChatView = observer(() => {
         message: userInput.message,
       });
 
-      const codeSendMessage = createMessage({
-        id: uuid(6),
-        relationId,
-        position: 'right',
-        title: ME_NAME,
-        text: <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />,
-        className: styles.chat_message_code,
-        role: 'user',
-      });
+      const sendMessage = createMessageByUser(
+        {
+          id: uuid(6),
+          relationId,
+          text: chatUserRoleRender ? (
+            chatUserRoleRender({ content: message, agentId: agentId ?? '', command: command ?? '' })
+          ) : (
+            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />
+          ),
+        },
+        styles.chat_message_code,
+      );
 
-      dispatchMessage({ type: 'add', payload: [codeSendMessage] });
+      dispatchMessage({ type: 'add', payload: [sendMessage] });
 
-      const replayCommandProps = {
+      if (commandHandler && commandHandler.providerRender) {
+        return handleSlashCustomRender({
+          message,
+          render: commandHandler.providerRender,
+          relationId,
+          startTime,
+        });
+      }
+
+      setLoading(true);
+
+      handleReply(userInput, {
         aiChatService,
         aiReporter,
         chatAgentService,
         relationId,
         startTime,
-      };
-
-      await handleReply(userInput, replayCommandProps);
+        rawMessage: message,
+      });
     },
-    [messageListData, containerRef, loading, chatFeatureRegistry],
+    [
+      messageListData,
+      containerRef,
+      loading,
+      chatFeatureRegistry,
+      chatRenderRegistry,
+      chatRenderRegistry.chatUserRoleRender,
+    ],
   );
 
   const handleReply = React.useCallback(
-    async (userInput: { type: AISerivceType; message: string }, replayCommandProps: ReplayComponentParam) => {
-      const aiMessage = await AIStreamReply(userInput.message, replayCommandProps);
+    (userInput: { type: AISerivceType; message: string }, replayCommandProps: IReplayComponentParam) => {
+      if (chatRenderRegistry.chatAIRoleRender) {
+        replayCommandProps.renderContent = (content: string, status: EMsgStreamStatus) =>
+          chatRenderRegistry.chatAIRoleRender!({ content, status });
+      }
+
+      const aiMessage = StreamReplyRender(userInput.message, replayCommandProps);
 
       if (aiMessage) {
         dispatchMessage({ type: 'add', payload: [aiMessage] });
@@ -433,7 +449,7 @@ export const AIChatView = observer(() => {
       }
       setLoading(false);
     },
-    [messageListData],
+    [messageListData, chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
   );
 
   const handleClear = React.useCallback(() => {
@@ -498,7 +514,7 @@ export const AIChatView = observer(() => {
                   title={aiAssistantName}
                   className={styles.smsg}
                   // @ts-ignore
-                  text={<Thinking status={EMsgStreamStatus.THINKING} />}
+                  text={<ChatThinking status={EMsgStreamStatus.THINKING} />}
                 />
               </div>
             )}
@@ -535,31 +551,3 @@ export const AIChatView = observer(() => {
     </div>
   );
 });
-
-// 流式输出渲染组件
-const AIStreamReply = async (prompt: string, params: ReplayComponentParam) => {
-  try {
-    const { aiChatService, relationId } = params;
-    const send = () => {
-      aiChatService.setLatestSessionId(relationId);
-      aiChatService.messageWithStream(prompt, {}, relationId);
-    };
-
-    send();
-
-    const aiMessage = createMessageByAI({
-      id: uuid(6),
-      relationId,
-      text: (
-        <StreamMsgWrapper
-          sessionId={relationId}
-          prompt={prompt}
-          onRegenerate={() => send()}
-          renderContent={(content) => <ChatMarkdown markdown={content} fillInIncompleteTokens />}
-        ></StreamMsgWrapper>
-      ),
-      className: styles.chat_with_more_actions,
-    });
-    return aiMessage;
-  } catch (error) {}
-};

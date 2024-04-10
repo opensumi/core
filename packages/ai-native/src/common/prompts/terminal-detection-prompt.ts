@@ -1,5 +1,8 @@
+import { Injectable } from '@opensumi/di';
+
 import { BasePromptManager } from './base-prompt-manager';
 
+@Injectable()
 export class TerminalDetectionPromptManager extends BasePromptManager {
   public generateBasePrompt(text: string): string {
     const prompt = `When developing in the IDE, the terminal outputs some error messages. There may be multiple errors, and you need to provide a solution for each error. The error message is as follows: \`\`\`\n${text}\n\`\`\``;
@@ -34,5 +37,3 @@ export class TerminalDetectionPromptManager extends BasePromptManager {
     return prompt;
   }
 }
-
-export const terminalDetectionPromptManager = new TerminalDetectionPromptManager();

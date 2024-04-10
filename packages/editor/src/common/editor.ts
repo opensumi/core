@@ -27,7 +27,7 @@ import type { EOL, ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco
 import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import type { ITextModel, ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-// eslint-disable-next-line import/no-restricted-paths
+export { ShowLightbulbIconMode } from '@opensumi/ide-monaco';
 
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel

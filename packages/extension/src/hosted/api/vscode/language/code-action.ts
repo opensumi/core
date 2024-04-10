@@ -1,4 +1,5 @@
 import { Cache, CancellationToken, DisposableStore, Uri as URI } from '@opensumi/ide-core-common';
+import { coalesce } from '@opensumi/ide-utils/lib/arrays';
 
 import { ExtensionDocumentDataManager, ICodeActionDto, ICodeActionListDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
@@ -23,7 +24,7 @@ export class CodeActionAdapter {
     private readonly diagnostics: Diagnostics,
   ) {}
 
-  async provideCodeAction(
+  async provideCodeActions(
     resource: URI,
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
@@ -103,7 +104,9 @@ export class CodeActionAdapter {
               edit: candidate.edit && (Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit),
               kind: candidate.kind && candidate.kind.value,
               isPreferred: candidate.isPreferred,
+              isAI: candidate.isAI,
               disabled: candidate.disabled?.reason,
+              ranges: candidate.ranges ? coalesce(candidate.ranges.map(Converter.Range.from)) : [],
             });
           }
         }

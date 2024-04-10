@@ -1144,6 +1144,11 @@ export const localizationBundle = {
     'editor.configuration.unicodeHighlight.ambiguousCharacters':
       '控制是否突出显示可能与基本 ASCII 字符混淆的字符，但当前用户区域设置中常见的字符除外。',
 
+    'editor.configuration.lightbulb.enabled': '在编辑器中启用代码操作菜单。',
+    'editor.configuration.lightbulb.enabled.off': '禁用代码操作菜单。',
+    'editor.configuration.lightbulb.enabled.onCode': '当光标与代码一起排列时，显示代码操作菜单。',
+    'editor.configuration.lightbulb.enabled.on': '当光标与代码一起排列或在空的行时，显示代码操作菜单。',
+
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
     'diffEditor.action.toggleCollapseUnchangedRegions': '折叠未更改的代码区域',

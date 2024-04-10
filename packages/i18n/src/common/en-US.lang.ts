@@ -920,6 +920,10 @@ export const localizationBundle = {
     'editor.configuration.colorDecorators':
       'Controls whether the editor should render the inline color decorators and color picker.',
     'editor.configuration.lightbulb.enabled': 'Enables the code action lightbulb in the editor.',
+    'editor.configuration.lightbulb.enabled.off': 'Disable the code action menu.',
+    'editor.configuration.lightbulb.enabled.onCode': 'Show the code action menu when the cursor is on lines with code.',
+    'editor.configuration.lightbulb.enabled.on':
+      'Show the code action menu when the cursor is on lines with code or on empty lines.',
     'editor.configuration.maxTokenizationLineLength':
       'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.codeActionsOnSave.organizeImports':
