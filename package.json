@@ -108,7 +108,6 @@
     "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "29.7.0",
     "jest-fetch-mock": "^3.0.3",
-    "jest-jasmine2": "^28.0.3",
     "jsdom": "^20.0.0",
     "jsdom-worker": "^0.3.0",
     "lerna": "^8.0.2",

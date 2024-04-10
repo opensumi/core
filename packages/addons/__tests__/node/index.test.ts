@@ -1,8 +1,8 @@
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { AddonsModule } from '../../src/node';
 
-describe('test for ', () => {
+describe('test for', () => {
   let injector: MockInjector;
 
   beforeEach(() => {
