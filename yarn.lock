@@ -3100,7 +3100,7 @@ __metadata:
     http-proxy: ^1.18.0
     node-pty: 1.0.0
     os-locale: ^4.0.0
-    xterm: 5.2.0
+    xterm: 5.3.0
     xterm-addon-canvas: 0.4.0
     xterm-addon-fit: 0.7.0
     xterm-addon-search: 0.12.0
@@ -20789,10 +20789,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xterm@npm:5.2.0":
-  version: 5.2.0
-  resolution: "xterm@npm:5.2.0"
-  checksum: d000875598360de8a18dfa4239cd557a3739825c5f14b499fad6c1ffac5655a959513339134e3c37acf0f64de3c58d107295ae5cb1b39a5091f21611018287ca
+"xterm@npm:5.3.0":
+  version: 5.3.0
+  resolution: "xterm@npm:5.3.0"
+  checksum: 1bdfdfe4cae4412128376180d85e476b43fb021cdd1114b18acad821c9ea44b5b600e0d88febf2b3572f38fad7741e5161ce0178a44369617cf937222cc6e011
   languageName: node
   linkType: hard
 
