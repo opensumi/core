@@ -273,6 +273,9 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
         longLive: webviewOptions.retainContextWhenHidden,
       },
       id,
+      {
+        extWebview: viewType,
+      },
     );
     const viewColumn = editorWebview.group ? editorWebview.group.index + 1 : persistedWebviewPanelMeta.viewColumn;
     await this.doCreateWebviewPanel(id, viewType, title, { viewColumn }, webviewOptions, extensionInfo, state);
@@ -346,6 +349,9 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
         longLive: options.retainContextWhenHidden,
       },
       id,
+      {
+        extWebview: viewType,
+      },
     );
     const webviewPanel = new WebviewPanel(
       id,

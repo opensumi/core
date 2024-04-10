@@ -41,3 +41,19 @@ export function removeObjectFromArray<T = any>(array: Array<T>, object: T, compa
     array.splice(index, 1);
   }
 }
+
+export function diffSets<T>(before: Set<T>, after: Set<T>): { removed: T[]; added: T[] } {
+  const removed: T[] = [];
+  const added: T[] = [];
+  for (const element of before) {
+    if (!after.has(element)) {
+      removed.push(element);
+    }
+  }
+  for (const element of after) {
+    if (!before.has(element)) {
+      added.push(element);
+    }
+  }
+  return { removed, added };
+}
