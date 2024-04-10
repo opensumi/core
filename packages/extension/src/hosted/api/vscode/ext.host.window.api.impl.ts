@@ -293,6 +293,9 @@ export function createWindowApiFactory(
     get onDidChangeOpenEditors() {
       return extHostEditorTabs.onDidChangeTabs;
     },
+    get tabGroups() {
+      return extHostEditorTabs.tabGroups;
+    },
   };
 }
 

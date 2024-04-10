@@ -12,7 +12,7 @@ import { Thinking, ThinkingResult } from './Thinking';
 interface IStreamMsgWrapperProps {
   sessionId: string;
   prompt: string;
-  renderContent: (content: string) => React.ReactNode;
+  renderContent: (content: string, status: EMsgStreamStatus) => React.ReactNode;
   onRegenerate?: () => void;
   onStop?: () => void;
   startTime?: number;
@@ -100,7 +100,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     () => (
       <div className={styles.ai_chat_code_wrapper}>
         <div className={styles.render_text}>
-          {isError ? <span>{localize('aiNative.chat.error.response')}</span> : renderContent(content)}
+          {isError ? <span>{localize('aiNative.chat.error.response')}</span> : renderContent(content, status)}
         </div>
       </div>
     ),

@@ -78,12 +78,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
     this.browser = new BrowserWindow({
       show: false,
-      webPreferences: {
-        ...defaultWebPreferences,
-        ...this.appConfig?.overrideWebPreferences,
-        nodeIntegration: this.appConfig?.browserNodeIntegrated,
-        preload: this.appConfig?.browserPreload,
-      },
       frame: isMacintosh,
       titleBarStyle: 'hidden',
       height: DEFAULT_WINDOW_HEIGHT,
@@ -92,6 +86,13 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       trafficLightPosition: { x: 10, y: 10 },
       ...this.appConfig.overrideBrowserOptions,
       ...options,
+      webPreferences: {
+        ...defaultWebPreferences,
+        ...this.appConfig?.overrideWebPreferences,
+        nodeIntegration: this.appConfig?.browserNodeIntegrated,
+        preload: this.appConfig?.browserPreload,
+        ...options.webPreferences,
+      },
     });
 
     if (options) {
