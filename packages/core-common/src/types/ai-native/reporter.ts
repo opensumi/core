@@ -20,6 +20,8 @@ export interface CommonLogInfo {
   model: string;
   copy: boolean;
   insert: boolean;
+  isRetry: boolean;
+  isDrop: boolean;
 }
 
 export interface CompletionRT extends Partial<CommonLogInfo> {
