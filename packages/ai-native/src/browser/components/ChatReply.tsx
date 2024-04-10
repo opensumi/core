@@ -27,9 +27,9 @@ import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager'
 import { IChatAgentViewService } from '../types';
 
 import { ChatMarkdown } from './ChatMarkdown';
+import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
 import { Loading } from './Loading';
-import { ChatThinking, ChatThinkingResult } from './Thinking';
 
 interface IChatReplyProps {
   relationId: string;

@@ -6,8 +6,8 @@ import { IAIReporter, localize } from '@opensumi/ide-core-common';
 
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
+import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
-import { ChatThinking, ChatThinkingResult } from './Thinking';
 
 interface IStreamMsgWrapperProps {
   sessionId: string;

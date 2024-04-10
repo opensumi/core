@@ -32,8 +32,6 @@ import {
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { CustomRender } from './customRender';
-
 enum EInlineOperation {
   Comments = 'Comments',
   Optimize = 'Optimize',
@@ -187,7 +185,6 @@ export class AiNativeContribution implements AINativeCoreContribution {
         execute: (value: string, send: TChatSlashCommandSend, editor: ICodeEditor) => {
           send(value);
         },
-        providerRender: CustomRender,
       },
     );
 

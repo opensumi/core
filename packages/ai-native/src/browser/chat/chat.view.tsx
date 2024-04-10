@@ -30,9 +30,9 @@ import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
+import { ChatThinking } from '../components/ChatThinking';
 import { SlashCustomRender } from '../components/SlashCustomRender';
 import { IReplayComponentParam, StreamReplyRender } from '../components/StreamReplyRender';
-import { ChatThinking } from '../components/Thinking';
 import { MessageData, createMessageByAI, createMessageByUser, extractIcon } from '../components/utils';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
@@ -42,7 +42,6 @@ import { ChatFeatureRegistry } from './chat.feature.registry';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 import { ChatService } from './chat.service';
-
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 
@@ -274,14 +273,8 @@ export const AIChatView = observer(() => {
   }, []);
 
   const handleSlashCustomRender = React.useCallback(
-    async (value: {
-      message: string;
-      slashCommand: ChatSlashCommandItemModel;
-      render: TSlashCommandCustomRender;
-      relationId: string;
-      startTime: number;
-    }) => {
-      const { message, slashCommand, relationId, render, startTime } = value;
+    async (value: { message: string; render: TSlashCommandCustomRender; relationId: string; startTime: number }) => {
+      const { message, relationId, render, startTime } = value;
 
       const aiMessage = createMessageByAI({
         id: uuid(6),
@@ -410,11 +403,8 @@ export const AIChatView = observer(() => {
       dispatchMessage({ type: 'add', payload: [sendMessage] });
 
       if (commandHandler && commandHandler.providerRender) {
-        const command = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
-
         return handleSlashCustomRender({
           message,
-          slashCommand: command!,
           render: commandHandler.providerRender,
           relationId,
           startTime,

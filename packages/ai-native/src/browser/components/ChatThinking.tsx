@@ -6,7 +6,7 @@ import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/a
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { ChatRenderRegistryToken, IAIReporter, localize } from '@opensumi/ide-core-common';
 
-import { IAIChatService } from '../../common';
+import { IAIChatService } from '../../common/index';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
@@ -99,10 +99,10 @@ export const ChatThinking = (props: ITinkingProps) => {
 export const ChatThinkingResult = ({
   children,
   message,
-  status,
+  status = EMsgStreamStatus.DONE,
   onRegenerate,
   sessionId,
-  hasMessage,
+  hasMessage = true,
   regenerateDisabled,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);

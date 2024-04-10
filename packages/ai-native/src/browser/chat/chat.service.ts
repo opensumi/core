@@ -2,12 +2,15 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { IAIReporter, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
+  CancelResponse,
   CancellationTokenSource,
   Disposable,
   Emitter,
+  ErrorResponse,
   Event,
   IAIBackService,
   IAIBackServiceOption,
+  ReplyResponse,
 } from '@opensumi/ide-core-common';
 
 import { IChatManagerService, IChatMessageStructure } from '../../common';
@@ -114,17 +117,17 @@ export class ChatService extends Disposable {
   }
 
   public async message(input: string, options: IAIBackServiceOption = {}) {
-    const res = await this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
+    const result = await this.aiBackService.request(input, options, this.cancelIndicatorChatView.token);
 
-    if (res.isCancel) {
-      return null;
+    if (result.isCancel) {
+      return new CancelResponse();
     }
 
-    if (res.errorCode !== 0) {
-      return res.errorMsg || '';
-    } else {
-      return res.data || '';
+    if (result.errorCode !== 0) {
+      return new ErrorResponse('');
     }
+
+    return new ReplyResponse(result.data!);
   }
 
   public setLatestSessionId(id: string): void {
