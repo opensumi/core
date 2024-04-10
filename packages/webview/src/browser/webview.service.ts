@@ -161,7 +161,8 @@ export class WebviewServiceImpl implements IWebviewService {
   private async storeWebviewResource(id: string) {
     return this.storage.then((storage) => {
       if (this.editorWebviewComponents.has(id)) {
-        const res = { ...this.editorWebviewComponents.get(id)!.resource };
+        const editorWebview = this.editorWebviewComponents.get(id)!;
+        const res = { v: 2, resource: editorWebview.resource, metadata: editorWebview.metadata };
         storage.set(id, JSON.stringify(res));
       } else {
         storage.delete(id);
@@ -171,16 +172,31 @@ export class WebviewServiceImpl implements IWebviewService {
 
   public async tryRestoredWebviewComponent(id: string): Promise<void> {
     const storage = await this.storage;
-    const resource: IResource<IEditorWebviewMetaData> | null = storage.get(id) ? JSON.parse(storage.get(id)!) : null;
+    const res = storage.get(id) ? JSON.parse(storage.get(id)!) : null;
+    if (!res) {
+      return;
+    }
+    let resource: IResource<IEditorWebviewMetaData> | null;
+    let metadata: Record<string, any> | undefined;
+    if (res?.v === 2) {
+      resource = res.resource;
+      metadata = res.metadata;
+    } else {
+      resource = res;
+    }
     if (resource) {
-      const component = this.createEditorWebviewComponent(resource.metadata?.options, resource.metadata?.id);
+      const component = this.createEditorWebviewComponent(resource.metadata?.options, resource.metadata?.id, metadata);
       component.title = resource.name;
       component.supportsRevive = !!resource.supportsRevive;
       this.tryReviveWebviewComponent(id);
     }
   }
 
-  createEditorWebviewComponent(options?: IWebviewContentOptions, id?: string): IEditorWebviewComponent<IWebview> {
+  createEditorWebviewComponent(
+    options?: IWebviewContentOptions,
+    id?: string,
+    metadata?: Record<string, any>,
+  ): IEditorWebviewComponent<IWebview> {
     if (!id) {
       id = (this.editorWebviewIdCount++).toString();
     }
@@ -190,6 +206,7 @@ export class WebviewServiceImpl implements IWebviewService {
     const component = this.injector.get(EditorWebviewComponent, [
       id,
       () => this.createWebview(options),
+      metadata,
     ]) as EditorWebviewComponent<IWebview>;
     this.editorWebviewComponents.set(id, component);
     component.addDispose({
@@ -420,7 +437,11 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview>
     return EDITOR_WEBVIEW_SCHEME + '_' + this.id;
   }
 
-  constructor(public readonly id: string, public webviewFactory: () => T) {
+  constructor(
+    public readonly id: string,
+    public webviewFactory: () => T,
+    public readonly metadata?: Record<string, any>,
+  ) {
     super();
     const componentId = EDITOR_WEBVIEW_SCHEME + '_' + this.id;
     this.addDispose(
@@ -429,6 +450,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview>
         uid: componentId,
         component: EditorWebviewComponentView,
         renderMode: EditorComponentRenderMode.ONE_PER_WORKBENCH,
+        metadata,
       }),
     );
     this.addDispose(
