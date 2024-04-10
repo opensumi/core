@@ -27,15 +27,17 @@ interface ITinkingProps {
   hasAgent?: boolean;
 }
 
-export const Thinking = ({
-  children,
-  status,
-  message,
-  onStop,
-  showStop = true,
-  hasAgent,
-  thinkingText,
-}: ITinkingProps) => {
+export const Thinking = (props: ITinkingProps) => {
+  const {
+    children,
+    status = EMsgStreamStatus.THINKING,
+    message,
+    onStop,
+    showStop = true,
+    hasAgent,
+    thinkingText,
+  } = props;
+
   const aiChatService = useInjectable<ChatService>(IAIChatService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
@@ -104,7 +106,6 @@ export const ThinkingResult = ({
   regenerateDisabled,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);
-  const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
   useEffect(() => {

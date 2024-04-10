@@ -55,10 +55,15 @@ export interface IChatSlashCommandItem {
 }
 
 export type TChatSlashCommandSend = (value: string) => void;
+
+export type TSlashCommandCustomRender = () => React.ReactNode;
+
 export interface IChatSlashCommandHandler {
   execute: (value: string, send: TChatSlashCommandSend, editor?: ICodeEditor) => MaybePromise<void>;
   providerInputPlaceholder?: (value: string, editor?: ICodeEditor) => string;
   providerPrompt?: (value: string, editor?: ICodeEditor) => MaybePromise<string>;
+  providerRender?: TSlashCommandCustomRender;
+  providerRenderWithStream?: TSlashCommandCustomRender;
 }
 
 export interface IChatFeatureRegistry {
