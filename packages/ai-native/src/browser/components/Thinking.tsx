@@ -27,7 +27,7 @@ interface ITinkingProps {
   hasAgent?: boolean;
 }
 
-export const Thinking = (props: ITinkingProps) => {
+export const ChatThinking = (props: ITinkingProps) => {
   const {
     children,
     status = EMsgStreamStatus.THINKING,
@@ -96,7 +96,7 @@ export const Thinking = (props: ITinkingProps) => {
   );
 };
 
-export const ThinkingResult = ({
+export const ChatThinkingResult = ({
   children,
   message,
   status,

@@ -11,7 +11,7 @@ import {
   ChatRenderRegistryToken,
   IAIReporter,
   localize,
-  uuid
+  uuid,
 } from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -24,24 +24,25 @@ import {
   IChatAgentService,
   IChatMessageStructure,
   IChatReplyFollowup,
-  ISampleQuestions
+  ISampleQuestions,
 } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
+import { SlashCustomRender } from '../components/SlashCustomRender';
 import { IReplayComponentParam, StreamReplyRender } from '../components/StreamReplyRender';
-import { Thinking } from '../components/Thinking';
+import { ChatThinking } from '../components/Thinking';
+import { MessageData, createMessageByAI, createMessageByUser, extractIcon } from '../components/utils';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
+import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
 
-import { createMessageByAI, createMessageByUser, extractIcon, MessageData } from '../components/utils';
+import { ChatSlashCommandItemModel } from './chat-model';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 import { ChatService } from './chat.service';
-import { ChatSlashCommandItemModel } from './chat-model';
-import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
-import { SlashCustomRender } from '../components/SlashCustomRender';
+
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 
@@ -82,7 +83,7 @@ const InitMsgComponent = () => {
 
   if (!welcomeMessage) {
     return (
-      <Thinking
+      <ChatThinking
         status={EMsgStreamStatus.THINKING}
         showStop={false}
         thinkingText={localize('aiNative.chat.welcome.loading.text')}
@@ -272,30 +273,33 @@ export const AIChatView = observer(() => {
     return () => disposer.dispose();
   }, []);
 
-  const handleSlashCustomRender = React.useCallback(async (value: { message: string, slashCommand: ChatSlashCommandItemModel, render: TSlashCommandCustomRender, relationId: string, startTime: number }) => {
-    const { message, slashCommand, relationId, render, startTime } = value;
+  const handleSlashCustomRender = React.useCallback(
+    async (value: {
+      message: string;
+      slashCommand: ChatSlashCommandItemModel;
+      render: TSlashCommandCustomRender;
+      relationId: string;
+      startTime: number;
+    }) => {
+      const { message, slashCommand, relationId, render, startTime } = value;
 
-    const aiMessage = createMessageByAI({
-      id: uuid(6),
-      relationId,
-      className: styles.chat_with_more_actions,
-      text: (
-        <SlashCustomRender
-          message={message}
-          startTime={startTime}
-          relationId={relationId}
-          renderContent={render}
-        />
-      ),
-    });
+      const aiMessage = createMessageByAI({
+        id: uuid(6),
+        relationId,
+        className: styles.chat_with_more_actions,
+        text: (
+          <SlashCustomRender message={message} startTime={startTime} relationId={relationId} renderContent={render} />
+        ),
+      });
 
-    dispatchMessage({ type: 'add', payload: [aiMessage] });
+      dispatchMessage({ type: 'add', payload: [aiMessage] });
 
-    if (containerRef && containerRef.current) {
-      containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-    }
-
-  }, [containerRef])
+      if (containerRef && containerRef.current) {
+        containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
+      }
+    },
+    [containerRef],
+  );
 
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
@@ -408,7 +412,13 @@ export const AIChatView = observer(() => {
       if (commandHandler && commandHandler.providerRender) {
         const command = chatFeatureRegistry.getSlashCommandBySlashName(nameWithSlash);
 
-        return handleSlashCustomRender({ message, slashCommand: command!, render: commandHandler.providerRender, relationId, startTime });
+        return handleSlashCustomRender({
+          message,
+          slashCommand: command!,
+          render: commandHandler.providerRender,
+          relationId,
+          startTime,
+        });
       }
 
       setLoading(true);
@@ -514,7 +524,7 @@ export const AIChatView = observer(() => {
                   title={aiAssistantName}
                   className={styles.smsg}
                   // @ts-ignore
-                  text={<Thinking status={EMsgStreamStatus.THINKING} />}
+                  text={<ChatThinking status={EMsgStreamStatus.THINKING} />}
                 />
               </div>
             )}

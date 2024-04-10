@@ -7,7 +7,7 @@ import { IAIReporter, localize } from '@opensumi/ide-core-common';
 import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
-import { Thinking, ThinkingResult } from './Thinking';
+import { ChatThinking, ChatThinkingResult } from './Thinking';
 
 interface IStreamMsgWrapperProps {
   sessionId: string;
@@ -113,12 +113,12 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   };
 
   return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <Thinking status={status} message={content} onStop={onStop}>
+    <ChatThinking status={status} message={content} onStop={onStop}>
       {renderMsgList()}
-    </Thinking>
+    </ChatThinking>
   ) : (
-    <ThinkingResult status={status} message={content} onRegenerate={handleRegenerate} sessionId={sessionId}>
+    <ChatThinkingResult status={status} message={content} onRegenerate={handleRegenerate} sessionId={sessionId}>
       {renderMsgList()}
-    </ThinkingResult>
+    </ChatThinkingResult>
   );
 };

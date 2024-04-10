@@ -29,7 +29,7 @@ import { IChatAgentViewService } from '../types';
 import { ChatMarkdown } from './ChatMarkdown';
 import styles from './components.module.less';
 import { Loading } from './Loading';
-import { Thinking, ThinkingResult } from './Thinking';
+import { ChatThinking, ChatThinkingResult } from './Thinking';
 
 interface IChatReplyProps {
   relationId: string;
@@ -263,14 +263,14 @@ export const ChatReply = (props: IChatReplyProps) => {
 
   if (!request.response.isComplete && isLastReply) {
     return (
-      <Thinking status={msgStreamManager.status} message={request.response.responseText} onStop={onStop} hasAgent>
+      <ChatThinking status={msgStreamManager.status} message={request.response.responseText} onStop={onStop} hasAgent>
         {contentNode}
-      </Thinking>
+      </ChatThinking>
     );
   }
 
   return (
-    <ThinkingResult
+    <ChatThinkingResult
       status={EMsgStreamStatus.DONE}
       hasMessage={request.response.responseParts.length > 0 || !!request.response.errorDetails?.message}
       onRegenerate={handleRegenerate}
@@ -289,7 +289,7 @@ export const ChatReply = (props: IChatReplyProps) => {
           </>
         )}
       </div>
-    </ThinkingResult>
+    </ChatThinkingResult>
   );
 };
 
@@ -298,7 +298,7 @@ interface IChatNotifyProps {
   chunk: IChatContent;
 }
 export const ChatNotify = (props: IChatNotifyProps) => (
-  <ThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
+  <ChatThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
     <ChatMarkdown markdown={props.chunk.content} relationId={props.relationId} />
-  </ThinkingResult>
+  </ChatThinkingResult>
 );
