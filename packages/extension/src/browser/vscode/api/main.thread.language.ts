@@ -963,9 +963,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       supportResolve,
     );
 
-    // 这里直接使用 languageFeaturesService.codeActionProvider 来注册 QuickFixProvider,
-    // 因为 monacoApi.languages.registerCodeActionProvider 过滤掉了 CodeActionKinds 参数
-    // 会导致 supportedCodeAction ContextKey 失效，右键菜单缺失了 Refactor 和 Source Action
     this.disposables.set(
       handle,
       languageFeaturesService.codeActionProvider.register(languageSelector, quickFixProvider),
@@ -1260,6 +1257,41 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           }
         : undefined,
     };
+  }
+
+  createNewSymbolNamesProvider(
+    handle: number,
+    selector: LanguageSelector | undefined,
+  ): monaco.languages.NewSymbolNamesProvider {
+    return {
+      provideNewSymbolNames: (model, range, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined;
+        }
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined;
+        }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_NEW_SYMBOL_NAMES);
+        return this.proxy.$provideNewSymbolNames(handle, model.uri, range, token).then((v) => {
+          if (v) {
+            timer.timeEnd(extname(model.uri.fsPath));
+          }
+          return v;
+        });
+      },
+    };
+  }
+
+  $registerNewSymbolNamesProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    if (!languageSelector) {
+      return;
+    }
+    const newSymbolsProvider = this.createNewSymbolNamesProvider(handle, languageSelector);
+    this.disposables.set(
+      handle,
+      monacoApi.languages.registerNewSymbolNameProvider(languageSelector, newSymbolsProvider),
+    );
   }
 
   /**

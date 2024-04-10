@@ -7,6 +7,8 @@ import {
   localize,
 } from '@opensumi/ide-core-browser';
 
+import { ShowLightbulbIconMode } from '../types';
+
 export const USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = "Consolas, 'Courier New', monospace";
@@ -233,7 +235,7 @@ export const EDITOR_DEFAULTS = {
       addExtraSpaceOnTop: true,
     },
     colorDecorators: true,
-    lightbulbEnabled: true,
+    lightbulbEnabled: ShowLightbulbIconMode.On,
     codeActionsOnSave: {},
     codeActionsOnSaveTimeout: 750,
   },
@@ -1382,8 +1384,10 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     description: '%editor.configuration.colorDecorators%',
   },
   'editor.lightbulb.enabled': {
-    type: 'boolean',
+    type: 'string',
     default: EDITOR_DEFAULTS.contribInfo.lightbulbEnabled,
+    enum: [ShowLightbulbIconMode.Off, ShowLightbulbIconMode.OnCode, ShowLightbulbIconMode.On],
+    enumDescriptions: [],
     description: '%editor.configuration.lightbulb.enabled%',
   },
   'editor.maxTokenizationLineLength': {

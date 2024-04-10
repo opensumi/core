@@ -25,7 +25,7 @@ export interface IEditorInlineChatHandler {
   /**
    * 直接执行 action 的操作，点击后 inline chat 立即消失
    */
-  execute?: (editor: ICodeEditor) => MaybePromise<void>;
+  execute?: (editor: ICodeEditor, ...args: any[]) => MaybePromise<void>;
   /**
    * 提供 diff editor 的预览策略
    */
@@ -41,8 +41,8 @@ export interface ITerminalInlineChatHandler {
 }
 
 export interface IInlineChatFeatureRegistry {
-  registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): void;
-  registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): void;
+  registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable;
+  registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable;
 }
 
 export interface IChatSlashCommandItem {
@@ -105,14 +105,15 @@ export const AINativeCoreContribution = Symbol('AINativeCoreContribution');
 
 export interface AINativeCoreContribution {
   /**
+   * 通过中间件扩展部分 ai 能力
+   */
+  middleware?: IAIMiddleware;
+
+  /**
    * 注册 inline chat 相关功能
    * @param registry: IInlineChatFeatureRegistry
    */
   registerInlineChatFeature?(registry: IInlineChatFeatureRegistry): void;
-  /**
-   * 通过中间件扩展部分 ai 能力
-   */
-  middleware?: IAIMiddleware;
   /*
    * 注册 chat 面板相关功能
    */

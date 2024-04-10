@@ -213,14 +213,14 @@ export interface AppConfig {
    */
   didRendered?: () => void;
   /**
-   * @deprecated
-   * vscode-oniguruma-wasm 资源地址，在 Windows 版本中很容易传送错误的地址，请使用 onigWasmUri 参数
-   */
-  onigWasmPath?: string;
-  /**
    * vscode-oniguruma-wasm 资源 Uri 地址
    */
   onigWasmUri?: string;
+  /**
+   * 提供一个 TreeSitter Wasm 资源的目录地址
+   * 会去该目录下寻找 `tree-sitter.wasm`/`tree-sitter-javascript.wasm` 等文件
+   */
+  treeSitterWasmDirectoryUri?: string;
   /**
    * 工作区文件后缀，默认后缀为 `sumi-workspace`
    */
@@ -232,8 +232,6 @@ export interface AppConfig {
   componentCDNType?: TComponentCDNType;
   /**
    * 指定前端是否为 Electron 环境 (Electron Renderer)
-   * 为兼容老的逻辑，若不兼容则 fallback 到 isElectronRenderer 的判断
-   * 新版本中建议优先使用 isElectronRenderer
    */
   isElectronRenderer: boolean;
   /**

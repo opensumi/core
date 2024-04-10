@@ -4,12 +4,12 @@ import { IDisposable, URI } from '@opensumi/ide-core-common';
 /**
  * @class StaticResourceService 静态资源转换服务
  * @description
- * 对于一些静态资源的展示，如图片，插件中的资源等等，在IDE中往往会以类似File协议的uri进行描述。
+ * 对于一些静态资源的展示，如图片，插件中的资源等等，在 IDE 中往往会以类似 file 协议的 uri 进行描述。
  *
- * 在WebIDE环境，我们无法将它直接挂载在对应的html标签或者css中。
- * 因此在使用之前，需要将这些资源的URI转换为浏览器可以访问的资源。
+ * 在 WebIDE 环境，我们无法将它直接挂载在对应的 html 标签或者 css 中。
+ * 因此在使用之前，需要将这些资源的 URI 转换为浏览器可以访问的资源。
  *
- * 在Electron中，由于File协议能直接访问，一般来说无需注册资源地址转换。
+ * 在 Electron 中，由于 File 协议能直接访问，一般来说无需注册资源地址转换。
  */
 @Injectable()
 export abstract class StaticResourceService {
@@ -20,10 +20,10 @@ export abstract class StaticResourceService {
   public abstract registerStaticResourceProvider(provider: IStaticResourceProvider): IDisposable;
 
   /**
-   * 将URI资源转换为静态资源
-   * 通常比如在WebIDE场景, 会将插件的file://路径，转换为某个静态服务的uri进行访问
-   * @param uri 待转换的uri
-   * @returns 转换后的uri
+   * 将 URI 资源转换为静态资源
+   * 通常比如在 WebIDE 场景, 会将插件的 `file://` 路径，转换为某个静态服务的 uri 进行访问
+   * @param uri 待转换的 uri
+   * @returns 转换后的 uri
    */
   public abstract resolveStaticResource(uri: URI): URI;
 
@@ -38,8 +38,7 @@ export abstract class StaticResourceService {
 }
 
 /**
- * @interface 提供静态资源转换方式的提供方
- *
+ * 提供静态资源转换方式的提供方
  */
 export interface IStaticResourceProvider {
   /**

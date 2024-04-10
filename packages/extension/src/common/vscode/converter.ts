@@ -141,16 +141,7 @@ export namespace Range {
 export function fromRange(range: undefined): undefined;
 export function fromRange(range: vscode.Range): model.Range;
 export function fromRange(range: vscode.Range | undefined): model.Range | undefined {
-  if (!range) {
-    return undefined;
-  }
-  const { start, end } = range;
-  return {
-    startLineNumber: start.line + 1,
-    startColumn: start.character + 1,
-    endLineNumber: end.line + 1,
-    endColumn: end.character + 1,
-  };
+  return Range.from(range);
 }
 
 /**
@@ -158,8 +149,7 @@ export function fromRange(range: vscode.Range | undefined): model.Range | undefi
  * @param range
  */
 export function toRange(range: model.Range): types.Range {
-  const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
-  return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
+  return Range.to(range);
 }
 
 interface Codeblock {

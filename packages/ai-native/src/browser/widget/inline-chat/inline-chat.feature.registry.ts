@@ -1,13 +1,32 @@
-import { Injectable } from '@opensumi/di';
-import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { Disposable, getDebugLogger, isUndefined } from '@opensumi/ide-core-common';
+import { Autowired, Injectable } from '@opensumi/di';
+import { Logger } from '@opensumi/ide-core-browser';
+import { AIActionItem, AICodeActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import {
+  CommandRegistry,
+  CommandService,
+  Disposable,
+  Emitter,
+  IDisposable,
+  IRange,
+  isUndefined,
+} from '@opensumi/ide-core-common';
+import { CodeAction } from '@opensumi/ide-monaco';
 
 import { IEditorInlineChatHandler, IInlineChatFeatureRegistry, ITerminalInlineChatHandler } from '../../types';
 
 @Injectable()
 export class InlineChatFeatureRegistry extends Disposable implements IInlineChatFeatureRegistry {
-  private readonly logger = getDebugLogger();
+  @Autowired(Logger)
+  private readonly logger: Logger;
+
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
   private actionsMap: Map<string, AIActionItem> = new Map();
+  private codeActionsMap = new Map<string, Partial<AICodeActionItem>>();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
 
@@ -17,7 +36,17 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     this.editorHandlerMap.clear();
   }
 
-  private collectActions(operational: AIActionItem): boolean {
+  private readonly _onActionRun = new Emitter<{
+    id: string;
+    range: IRange;
+  }>();
+  public readonly onActionRun = this._onActionRun.event;
+
+  static getCommandId(type: 'editor' | 'terminal', id: string) {
+    return `ai-native.inline-chat.${type}.${id}`;
+  }
+
+  private collectActions(type: 'editor' | 'terminal', operational: AIActionItem): boolean {
     const { id } = operational;
 
     if (this.actionsMap.has(id)) {
@@ -25,20 +54,54 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
       return false;
     }
 
+    this.disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: InlineChatFeatureRegistry.getCommandId(type, id),
+        },
+        {
+          execute: async (range: IRange) => {
+            this._onActionRun.fire({
+              id,
+              range,
+            });
+          },
+        },
+      ),
+    );
+
     this.actionsMap.set(id, operational);
+
+    if (operational.codeAction) {
+      this.codeActionsMap.set(id, operational.codeAction);
+    }
+
     return true;
   }
 
-  public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): void {
-    const isCollect = this.collectActions(operational);
+  private removeCollectedActions(type: 'editor' | 'terminal', operational: AIActionItem): void {
+    this.actionsMap.delete(operational.id);
+    this.codeActionsMap.delete(operational.id);
+
+    this.commandRegistry.unregisterCommand(InlineChatFeatureRegistry.getCommandId(type, operational.id));
+  }
+
+  public registerEditorInlineChat(operational: AIActionItem, handler: IEditorInlineChatHandler): IDisposable {
+    const isCollect = this.collectActions('editor', operational);
 
     if (isCollect) {
       this.editorHandlerMap.set(operational.id, handler);
     }
+
+    return {
+      dispose: () => {
+        this.removeCollectedActions('editor', operational);
+      },
+    };
   }
 
-  public registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): void {
-    const isCollect = this.collectActions(operational);
+  public registerTerminalInlineChat(operational: AIActionItem, handler: ITerminalInlineChatHandler): IDisposable {
+    const isCollect = this.collectActions('terminal', operational);
 
     if (isCollect) {
       if (isUndefined(handler.triggerRules)) {
@@ -47,6 +110,12 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
 
       this.terminalHandlerMap.set(operational.id, handler);
     }
+
+    return {
+      dispose: () => {
+        this.removeCollectedActions('terminal', operational);
+      },
+    };
   }
 
   public getEditorActionButtons(): AIActionItem[] {
@@ -56,6 +125,24 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
         return actions && actions.renderType === 'button';
       })
       .map((id) => this.actionsMap.get(id)!);
+  }
+
+  public getCodeActions(): CodeAction[] {
+    return Array.from(this.codeActionsMap.keys()).map((key) => {
+      const aiAction = this.actionsMap.get(key) || ({} as AIActionItem);
+      const codeAction = this.codeActionsMap.get(key) || {};
+
+      return {
+        title: codeAction.title || aiAction.name,
+        isAI: true,
+        isPreferred: codeAction.isPreferred ?? true,
+        kind: codeAction.kind || 'InlineChat',
+        disabled: codeAction.disabled,
+        command: {
+          id: InlineChatFeatureRegistry.getCommandId('editor', aiAction.id),
+        },
+      } as CodeAction;
+    });
   }
 
   public getEditorActionMenus(): AIActionItem[] {

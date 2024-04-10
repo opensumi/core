@@ -3,7 +3,6 @@
  * 并且 editor.main 也包含对 editor.all 的导入
  */
 import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
-import ResizeObserver from 'resize-observer-polyfill';
 
 import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
@@ -49,6 +48,7 @@ import { ESupportRuntime, ElectronConnectionHelper, WebConnectionHelper } from '
 import { CONNECTION_HELPER_TOKEN } from '../application/runtime/base-socket';
 import { BrowserRuntime } from '../application/runtime/browser';
 import { ElectronRendererRuntime } from '../application/runtime/electron-renderer';
+import { IRendererRuntime } from '../application/runtime/types';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
@@ -76,12 +76,9 @@ import { IAppRenderer, renderClientApp } from './app.view';
 import { bindConnectionServiceDeprecated, createConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
 
-import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
+import './polyfills';
 
-// 添加resize observer polyfill
-if (typeof (window as any).ResizeObserver === 'undefined') {
-  (window as any).ResizeObserver = ResizeObserver;
-}
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 export class ClientApp implements IClientApp, IDisposable {
   /**
@@ -125,8 +122,6 @@ export class ClientApp implements IClientApp, IDisposable {
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer ?? this.detectRuntime() === ESupportRuntime.Electron;
 
-    this.runtime = isDesktop ? new ElectronRendererRuntime() : new BrowserRuntime();
-
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
       appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
@@ -147,6 +142,12 @@ export class ClientApp implements IClientApp, IDisposable {
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
       layoutViewSize: new LayoutViewSizeConfig(opts.layoutViewSize),
     };
+
+    this.injector.addProviders({ token: IClientApp, useValue: this });
+    this.injector.addProviders({ token: AppConfig, useValue: this.config });
+
+    this.runtime = isDesktop ? this.injector.get(ElectronRendererRuntime) : this.injector.get(BrowserRuntime);
+    this.injector.addProviders({ token: IRendererRuntime, useValue: this.runtime });
 
     if (this.config.devtools) {
       // set a global so the opensumi devtools can identify that
@@ -310,8 +311,6 @@ export class ClientApp implements IClientApp, IDisposable {
    * 给 injector 初始化默认的 Providers
    */
   private initBaseProvider() {
-    this.injector.addProviders({ token: IClientApp, useValue: this });
-    this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
 
     this.runtime.registerRuntimeInnerProviders(this.injector);

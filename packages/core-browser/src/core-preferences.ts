@@ -301,6 +301,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    'editor.codeActionWidget.showHeaders': {
+      type: 'boolean',
+      default: true,
+    },
   },
 };
 
@@ -332,6 +336,7 @@ export interface CoreConfiguration {
   'general.theme': string;
   'view.saveLayoutWithWorkspace': boolean;
   'menubar.compactMode': boolean;
+  'editor.codeActionWidget.showHeaders': boolean;
 }
 
 export const CorePreferences = Symbol('CorePreferences');

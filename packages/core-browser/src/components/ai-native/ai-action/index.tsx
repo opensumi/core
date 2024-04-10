@@ -9,6 +9,13 @@ import styles from './index.module.less';
 
 export type InlineChatOperationalRenderType = 'button' | 'dropdown';
 
+export interface AICodeActionItem {
+  title?: string;
+  kind?: string;
+  isPreferred?: boolean;
+  disabled?: string;
+}
+
 export interface AIActionItem {
   /**
    * 唯一标识的 id
@@ -27,6 +34,13 @@ export interface AIActionItem {
    * 排序
    */
   order?: number;
+
+  /**
+   * Show in code action list, default is not show
+   * Only support editor inline chat now
+   * @example {}
+   */
+  codeAction?: AICodeActionItem;
 }
 
 export interface AIActionProps {

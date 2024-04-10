@@ -44,3 +44,6 @@
 /// <reference path='./vscode/typings/vscode.proposed.chatVariables.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.interactive.d.ts' />
 /// <reference path='./vscode/typings/vscode.proposed.inlineCompletionsAdditions.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.codeActionAI.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.codeActionRanges.d.ts' />
+/// <reference path='./vscode/typings/vscode.proposed.newSymbolNamesProvider.d.ts' />

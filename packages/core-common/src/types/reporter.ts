@@ -29,6 +29,7 @@ export enum REPORT_NAME {
   PROVIDE_IMPLEMENTATION = 'provideImplementation',
   PROVIDE_CODE_ACTIONS = 'provideCodeActions',
   PROVIDE_RENAME_EDITS = 'provideRenameEdits',
+  PROVIDE_NEW_SYMBOL_NAMES = 'provideNewSymbolNames',
   PROVIDE_SIGNATURE_HELP = 'provideSignatureHelp',
   PROVIDE_CODE_LENSES = 'provideCodeLenses',
   RESOLVE_CODE_LENS = 'resolveCodeLens',

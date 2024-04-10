@@ -134,8 +134,8 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   public createDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): IDiffEditor {
-    const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
-    const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
+    const convertedOptions = getConvertedMonacoOptions(this.configurationService);
+    const mergedOptions = { ...convertedOptions.editorOptions, ...convertedOptions.diffOptions, ...options };
     const monacoDiffEditor = this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor, options]);
     this._onDiffEditorCreate.fire(editor);
@@ -143,10 +143,10 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
-    const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
+    const convertedOptions = getConvertedMonacoOptions(this.configurationService);
     const mergedOptions: IDiffEditorConstructionOptions = {
-      ...preferenceOptions.editorOptions,
-      ...preferenceOptions.diffOptions,
+      ...convertedOptions.editorOptions,
+      ...convertedOptions.diffOptions,
       ...options,
       // merge editor not support wordWrap
       wordWrap: 'off',

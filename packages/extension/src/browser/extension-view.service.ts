@@ -331,7 +331,7 @@ export class ViewExtProcessService extends Disposable implements AbstractViewExt
     });
   }
 
-  /*
+  /**
    * @deprecated 废弃的用法兼容
    * 对于老的 kaitian.js 的兼容激活
    */
