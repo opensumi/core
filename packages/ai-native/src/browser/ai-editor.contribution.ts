@@ -302,7 +302,6 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       return;
     }
 
-    this.widgetPin = true;
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
 
     this.aiInlineContentWidget = this.injector.get(AiInlineContentWidget, [monacoEditor]);
@@ -312,6 +311,8 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     });
     this.aiInlineChatDisposed.addDispose(
       this.aiInlineContentWidget.onClickActions(async (id: string) => {
+        this.widgetPin = true;
+
         const handler = this.inlineChatFeatureRegistry.getHandler(id);
         const action = this.inlineChatFeatureRegistry.getAction(id);
         if (!handler || !action) {
