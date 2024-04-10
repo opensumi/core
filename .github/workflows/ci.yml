@@ -17,6 +17,8 @@ on:
       - v*.*
     paths:
       - 'packages/**'
+      - package.json
+      - yarn.lock
 
 jobs:
   unittest:
@@ -24,7 +26,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
-        node-version: [20.x]
+        node-version: [18.x]
         ci-project: [node, jsdom]
 
     steps:
@@ -53,7 +55,7 @@ jobs:
         run: |
           yarn run ci --selectProjects ${{ matrix.ci-project }}
 
-      - if: ${{ matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest' }}
+      - if: ${{ matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
