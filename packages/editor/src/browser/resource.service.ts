@@ -71,8 +71,9 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 
   @OnEvent(ResourceDecorationNeedChangeEvent)
-  onResourceDecorationChangeEvent(e: ResourceDecorationNeedChangeEvent) {
-    this.getResourceDecoration(e.payload.uri); // ensure object
+  onResourceDecorationNeedChangeEvent(e: ResourceDecorationNeedChangeEvent) {
+    // ensure object
+    void this.getResourceDecoration(e.payload.uri);
     let changed = false;
     const previous = this.resourceDecoration.get(e.payload.uri.toString()) || {};
     new Set([...Object.keys(previous), ...Object.keys(e.payload.decoration)]).forEach((key) => {
