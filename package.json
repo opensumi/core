@@ -109,7 +109,7 @@
     "jest-fetch-mock": "^3.0.3",
     "jest-jasmine2": "^28.0.3",
     "jsdom": "^20.0.0",
-    "jsdom-worker": "^0.2.1",
+    "jsdom-worker": "^0.3.0",
     "lerna": "^8.0.2",
     "lint-staged": "^15.2.2",
     "lodash": "^4.17.21",

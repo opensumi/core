@@ -2136,7 +2136,7 @@ __metadata:
     jest-fetch-mock: ^3.0.3
     jest-jasmine2: ^28.0.3
     jsdom: ^20.0.0
-    jsdom-worker: ^0.2.1
+    jsdom-worker: ^0.3.0
     lerna: ^8.0.2
     lint-staged: ^15.2.2
     lodash: ^4.17.21
@@ -3242,7 +3242,7 @@ __metadata:
   resolution: "@opensumi/playwright@workspace:tools/playwright"
   dependencies:
     "@opensumi/ide-utils": "workspace:*"
-    "@playwright/test": 1.40.1
+    "@playwright/test": 1.43.0
     allure-commandline: ^2.25.0
     allure-playwright: ^2.10.0
     typescript: 4.9.3
@@ -3322,14 +3322,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.40.1":
-  version: 1.40.1
-  resolution: "@playwright/test@npm:1.40.1"
+"@playwright/test@npm:1.43.0":
+  version: 1.43.0
+  resolution: "@playwright/test@npm:1.43.0"
   dependencies:
-    playwright: 1.40.1
+    playwright: 1.43.0
   bin:
     playwright: cli.js
-  checksum: ae094e6cb809365c0707ee2b184e42d2a2542569ada020d2d44ca5866066941262bd9a67af185f86c2fb0133c9b712ea8cb73e2959a289e4261c5fd17077283c
+  checksum: c7c0c6e8fde4e9dceea22d48384642b78c3d539fb0512edeaa581dc4dc07cedfd166dba92c5e9e69a378b7fd63362b142450dbdd5c9b65d76c4def162a5c470d
   languageName: node
   linkType: hard
 
@@ -12444,15 +12444,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom-worker@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "jsdom-worker@npm:0.2.1"
+"jsdom-worker@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "jsdom-worker@npm:0.3.0"
   dependencies:
-    mitt: ^1.1.3
+    mitt: ^3.0.0
     uuid-v4: ^0.1.0
   peerDependencies:
     node-fetch: "*"
-  checksum: e27582f5b64f1fe664af168d1e9b5e543907869a3424c4b1da7da894075dc53742d194aedc48ca5a431438e1f17a58ae5f3d7746fcb4daf84dc3dded28d2d07e
+  checksum: 43bc1777752cbc5c5bf9a1dc456300e853b0b0c2ef274b31ce0f4bbdaf093f0837e25e654f6fc173addaef22213c0329eaaf925c18aa580de46bfcc1ac145167
   languageName: node
   linkType: hard
 
@@ -14133,10 +14133,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mitt@npm:^1.1.3":
-  version: 1.2.0
-  resolution: "mitt@npm:1.2.0"
-  checksum: 53abb94c6203250e2498e152ae096288c4866c6aab1dc093922084a7414af4aa6cda5a51d480267a8f0bd7908b0e896099bc953317aca8a18672dc67ee7e923d
+"mitt@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "mitt@npm:3.0.1"
+  checksum: b55a489ac9c2949ab166b7f060601d3b6d893a852515ae9eca4e11df01c013876df777ea109317622b5c1c60e8aae252558e33c8c94e14124db38f64a39614b1
   languageName: node
   linkType: hard
 
@@ -16009,27 +16009,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.40.1":
-  version: 1.40.1
-  resolution: "playwright-core@npm:1.40.1"
+"playwright-core@npm:1.43.0":
+  version: 1.43.0
+  resolution: "playwright-core@npm:1.43.0"
   bin:
     playwright-core: cli.js
-  checksum: 84d92fb9b86e3c225b16b6886bf858eb5059b4e60fa1205ff23336e56a06dcb2eac62650992dede72f406c8e70a7b6a5303e511f9b4bc0b85022ede356a01ee0
+  checksum: b35265d356d87eb4114997e6af985ee3cb5a473f15a465d6e02834288a55f0cae4233a18178658389ff443f92405e020815fc165274d2262c3ca1c2b5be948cf
   languageName: node
   linkType: hard
 
-"playwright@npm:1.40.1":
-  version: 1.40.1
-  resolution: "playwright@npm:1.40.1"
+"playwright@npm:1.43.0":
+  version: 1.43.0
+  resolution: "playwright@npm:1.43.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.40.1
+    playwright-core: 1.43.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 9e36791c1b4a649c104aa365fdd9d049924eeb518c5967c0e921aa38b9b00994aa6ee54784d6c2af194b3b494b6f69772673081ef53c6c4a4b2065af9955c4ba
+  checksum: edd4ef9644398c197d20e957cf2a5e5a95d7e0144f3c971923e709247f5b48551bf6168c74b34909f263ab96fac6e49466b65a9cd1349ad400dabd4b8b364acf
   languageName: node
   linkType: hard
 
