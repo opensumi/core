@@ -1,8 +1,6 @@
-import { Emitter as Dispatcher } from 'event-kit';
-
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { OperatingSystem, PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Event, IApplicationService, ILogger } from '@opensumi/ide-core-common';
+import { Dispatcher, Disposable, Emitter, Event, IApplicationService, ILogger } from '@opensumi/ide-core-common';
 
 import {
   IDetectProfileOptionsPreference,
@@ -28,7 +26,7 @@ export interface EventMessage {
   data: string;
 }
 @Injectable()
-export class NodePtyTerminalService implements ITerminalService {
+export class NodePtyTerminalService extends Disposable implements ITerminalService {
   static countId = 1;
 
   private backendOs: OperatingSystem | undefined;
@@ -48,25 +46,22 @@ export class NodePtyTerminalService implements ITerminalService {
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
 
-  private _onError = new Emitter<ITerminalError>();
+  private _onError = this.registerDispose(new Emitter<ITerminalError>());
   public onError: Event<ITerminalError> = this._onError.event;
 
-  private _onExit = new Emitter<IPtyExitEvent>();
+  private _onExit = this.registerDispose(new Emitter<IPtyExitEvent>());
   public onExit: Event<IPtyExitEvent> = this._onExit.event;
 
-  private _onProcessChange = new Emitter<IPtyProcessChangeEvent>();
+  private _onProcessChange = this.registerDispose(new Emitter<IPtyProcessChangeEvent>());
   public onProcessChange = this._onProcessChange.event;
 
-  private _onDataDispatcher = new Dispatcher<void, { [key: string]: string }>();
-  private _onExitDispatcher = new Dispatcher<
-    void,
-    {
-      [key: string]: {
-        code?: number;
-        signal?: number;
-      };
-    }
-  >();
+  private _onDataDispatcher = this.registerDispose(new Dispatcher<string>());
+  private _onExitDispatcher = this.registerDispose(
+    new Dispatcher<{
+      code?: number;
+      signal?: number;
+    }>(),
+  );
 
   generateSessionId() {
     return this.applicationService.clientId + TERMINAL_ID_SEPARATOR + generateSessionId();
@@ -80,9 +75,9 @@ export class NodePtyTerminalService implements ITerminalService {
   private _createCustomWebSocket = (sessionId: string, pty: INodePtyInstance): ITerminalConnection => ({
     name: pty.name,
     readonly: false,
-    onData: (handler: (value: string | ArrayBuffer) => void) => this._onDataDispatcher.on(sessionId, handler),
+    onData: (handler: (value: string | ArrayBuffer) => void) => this._onDataDispatcher.on(sessionId)(handler),
     onExit: (handler: (exitCode: number | undefined) => void) =>
-      this._onExitDispatcher.on(sessionId, (e) => {
+      this._onExitDispatcher.on(sessionId)((e) => {
         handler(e.code);
       }),
     sendData: (message: string) => {
@@ -160,7 +155,7 @@ export class NodePtyTerminalService implements ITerminalService {
    * @param message
    */
   onMessage(sessionId: string, message: string) {
-    this._onDataDispatcher.emit(sessionId, message);
+    this._onDataDispatcher.dispatch(sessionId, message);
   }
 
   /**
@@ -177,11 +172,11 @@ export class NodePtyTerminalService implements ITerminalService {
       this._onError.fire(data);
     } else if (typeof data === 'number') {
       // 说明是 pty 报出来的正常退出
-      this._onExitDispatcher.emit(sessionId, { code: data, signal });
+      this._onExitDispatcher.dispatch(sessionId, { code: data, signal });
       this._onExit.fire({ sessionId, code: data, signal });
     } else if (data) {
       // 说明是 pty 报出来的正常退出
-      this._onExitDispatcher.emit(sessionId, { code: data.code, signal: data.signal });
+      this._onExitDispatcher.dispatch(sessionId, { code: data.code, signal: data.signal });
       this._onExit.fire({ sessionId, code: data.code, signal: data.signal });
     }
   }
@@ -220,10 +215,5 @@ export class NodePtyTerminalService implements ITerminalService {
 
   async getDefaultSystemShell(): Promise<string> {
     return await this.serviceClientRPC.getDefaultSystemShell(await this.getOS());
-  }
-
-  dispose() {
-    this._onDataDispatcher.dispose();
-    this._onExitDispatcher.dispose();
   }
 }

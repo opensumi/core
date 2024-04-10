@@ -14,8 +14,6 @@ export async function expectThrowsAsync(promise: Promise<any>, ...args: any[]): 
   try {
     await promise;
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log('expectThrowsAsync', e);
     synchronous = () => {
       throw e;
     };

@@ -490,7 +490,7 @@ export class MonacoClientContribution
           command,
           args: item.commandArgs,
           keybinding: rawKeybinding,
-          when: (item.when && item.when.serialize()) ?? undefined,
+          when: (when && when.serialize()) ?? undefined,
           // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
           priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
         };
