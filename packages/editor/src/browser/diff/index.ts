@@ -3,7 +3,13 @@ import { URI, Domain, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
+import {
+  IResourceProvider,
+  IDiffResource,
+  ResourceService,
+  ResourceDecorationChangeEvent,
+  ResourceDecorationNeedChangeEvent,
+} from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
 
 // diff URI:
@@ -32,7 +38,7 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
   onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
     if (e.payload.uri && this.modifiedToResource.has(e.payload.uri.toString())) {
       this.eventBus.fire(
-        new ResourceDecorationChangeEvent({
+        new ResourceDecorationNeedChangeEvent({
           uri: this.modifiedToResource.get(e.payload.uri.toString())!,
           decoration: e.payload.decoration,
         }),
@@ -75,15 +81,15 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
       // 默认显示 modified 文件路径
       this.getReadableTooltip(modifiedUri),
     ]).then(([icon, title]) => ({
-        name,
-        icon,
-        uri,
-        metadata: {
-          original: originalUri,
-          modified: modifiedUri,
-        },
-        title,
-      }));
+      name,
+      icon,
+      uri,
+      metadata: {
+        original: originalUri,
+        modified: modifiedUri,
+      },
+      title,
+    }));
   }
 
   async shouldCloseResource(resource, openedResources): Promise<boolean> {

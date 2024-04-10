@@ -6,7 +6,7 @@ import { Doc as YDoc, Map as YMap, YMapEvent, Text as YText } from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AppConfig, DisposableCollection } from '@opensumi/ide-core-browser';
-import { Deferred, ILogger, OnEvent, uuid, WithEventBus } from '@opensumi/ide-core-common';
+import { Deferred, DisposableStore, ILogger, OnEvent, uuid, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorDocumentModelCreationEvent,
@@ -81,6 +81,8 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   protected readonly toDisposableCollection: DisposableCollection = new DisposableCollection();
 
+  protected cssStyleSheetsDisposables = new DisposableStore();
+
   private yMapObserver = (event: YMapEvent<YText>) => {
     const changes = event.changes.keys;
     changes.forEach((change, key) => {
@@ -149,11 +151,8 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   destroy() {
     this.yWebSocketProvider.awareness.off('update', this.updateCSSManagerWhenAwarenessUpdated);
-    this.clientIDStyleAddedSet.forEach((clientID) => {
-      this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
-      this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
-      this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
-    });
+    this.cssStyleSheetsDisposables.dispose();
+    this.clientIDStyleAddedSet.clear();
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
     this.bindingMap.forEach((binding) => binding.destroy());
@@ -258,26 +257,32 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       changes.added.forEach((clientID) => {
         if (!this.clientIDStyleAddedSet.has(clientID)) {
           const [foregroundColor, backgroundColor] = getColorByClientID(clientID);
-          this.cssManager.addClass(`${Y_REMOTE_SELECTION}-${clientID}`, {
-            backgroundColor,
-            opacity: '0.25',
-            color: foregroundColor,
-          });
-          this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`, {
-            position: 'absolute',
-            borderLeft: `${backgroundColor} solid 2px`,
-            borderBottom: `${backgroundColor} solid 2px`,
-            borderTop: `${backgroundColor} solid 2px`,
-            height: '100%',
-            boxSizing: 'border-box',
-          });
-          this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`, {
-            position: 'absolute',
-            content: ' ',
-            border: `3px solid ${backgroundColor}`,
-            left: '-4px',
-            top: '-5px',
-          });
+          this.cssStyleSheetsDisposables.add(
+            this.cssManager.addClass(`${Y_REMOTE_SELECTION}-${clientID}`, {
+              backgroundColor,
+              opacity: '0.25',
+              color: foregroundColor,
+            }),
+          );
+          this.cssStyleSheetsDisposables.add(
+            this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`, {
+              position: 'absolute',
+              borderLeft: `${backgroundColor} solid 2px`,
+              borderBottom: `${backgroundColor} solid 2px`,
+              borderTop: `${backgroundColor} solid 2px`,
+              height: '100%',
+              boxSizing: 'border-box',
+            }),
+          );
+          this.cssStyleSheetsDisposables.add(
+            this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`, {
+              position: 'absolute',
+              content: ' ',
+              border: `3px solid ${backgroundColor}`,
+              left: '-4px',
+              top: '-5px',
+            }),
+          );
           this.clientIDStyleAddedSet.add(clientID);
         }
       });
