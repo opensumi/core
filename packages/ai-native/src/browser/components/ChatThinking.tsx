@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
-import { ChatRenderRegistryToken, IAIReporter, localize } from '@opensumi/ide-core-common';
+import { ChatRenderRegistryToken, isUndefined, localize } from '@opensumi/ide-core-common';
 
 import { IAIChatService } from '../../common/index';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
@@ -18,12 +18,12 @@ interface ITinkingProps {
   status?: EMsgStreamStatus;
   hasMessage?: boolean;
   message?: string;
-  regenerateDisabled?: boolean;
   onRegenerate?: () => void;
   sessionId?: string;
   onStop?: () => void;
   thinkingText?: string;
   showStop?: boolean;
+  showRegenerate?: boolean;
   hasAgent?: boolean;
 }
 
@@ -103,18 +103,9 @@ export const ChatThinkingResult = ({
   onRegenerate,
   sessionId,
   hasMessage = true,
-  regenerateDisabled,
+  showRegenerate,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);
-  const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const dispose = aiChatService.onChangeSessionId((sid) => {
-      setLatestSessionId(sid);
-    });
-
-    return () => dispose.dispose();
-  }, [aiChatService]);
 
   const handleRegenerate = useCallback(() => {
     if (onRegenerate) {
@@ -134,7 +125,13 @@ export const ChatThinkingResult = ({
     return children;
   }, [status, message, children]);
 
-  const isRenderRegenerate = useMemo(() => aiChatService.latestSessionId === sessionId, [sessionId, latestSessionId]);
+  const isRenderRegenerate = useMemo(() => {
+    if (isUndefined(showRegenerate)) {
+      return aiChatService.latestSessionId === sessionId;
+    }
+
+    return !!showRegenerate;
+  }, [aiChatService.latestSessionId, sessionId, showRegenerate]);
 
   return (
     <>
@@ -142,7 +139,7 @@ export const ChatThinkingResult = ({
       <div className={styles.thinking_container}>
         <div className={styles.bottom_container}>
           <div className={styles.reset}>
-            {isRenderRegenerate && !regenerateDisabled ? (
+            {isRenderRegenerate ? (
               <EnhanceIcon
                 icon={'refresh'}
                 wrapperClassName={styles.text_btn}

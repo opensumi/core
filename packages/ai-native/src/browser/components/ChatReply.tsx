@@ -298,7 +298,7 @@ interface IChatNotifyProps {
   chunk: IChatContent;
 }
 export const ChatNotify = (props: IChatNotifyProps) => (
-  <ChatThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} regenerateDisabled>
+  <ChatThinkingResult status={EMsgStreamStatus.DONE} hasMessage sessionId={props.relationId} showRegenerate={false}>
     <ChatMarkdown markdown={props.chunk.content} relationId={props.relationId} />
   </ChatThinkingResult>
 );
