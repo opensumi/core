@@ -3,7 +3,13 @@ import { Domain, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { IDiffResource, IResourceProvider, ResourceDecorationChangeEvent, ResourceService } from '../../common';
+import {
+  IDiffResource,
+  IResourceProvider,
+  ResourceDecorationChangeEvent,
+  ResourceDecorationNeedChangeEvent,
+  ResourceService,
+} from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
 
 // diff URI:
@@ -32,7 +38,7 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
   onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
     if (e.payload.uri && this.modifiedToResource.has(e.payload.uri.toString())) {
       this.eventBus.fire(
-        new ResourceDecorationChangeEvent({
+        new ResourceDecorationNeedChangeEvent({
           uri: this.modifiedToResource.get(e.payload.uri.toString())!,
           decoration: e.payload.decoration,
         }),
