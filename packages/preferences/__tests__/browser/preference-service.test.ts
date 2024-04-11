@@ -254,7 +254,6 @@ describe('PreferenceService should be work', () => {
       const testPreferenceName = 'editor.fontSize';
       const dispose = preferenceService.onPreferencesChanged((changes) => {
         for (const preferenceName of Object.keys(changes)) {
-          done();
           if (preferenceName === testPreferenceName && changes[preferenceName].scope === PreferenceScope.Workspace) {
             dispose.dispose();
             done();
