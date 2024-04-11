@@ -402,9 +402,7 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: () => {
-            runInAction(() => {
-              this.updateCurrentContainerId(containerId);
-            });
+            this.updateCurrentContainerId(containerId);
           },
         },
       ),
@@ -416,9 +414,7 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: () => {
-            runInAction(() => {
-              this.updateCurrentContainerId('');
-            });
+            this.updateCurrentContainerId('');
           },
         },
       ),
@@ -430,13 +426,11 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: () => {
-            runInAction(() => {
-              if (this.currentContainerId === containerId) {
-                this.updateCurrentContainerId('');
-              } else {
-                this.updateCurrentContainerId(containerId);
-              }
-            });
+            if (this.currentContainerId === containerId) {
+              this.updateCurrentContainerId('');
+            } else {
+              this.updateCurrentContainerId(containerId);
+            }
           },
         },
       ),
@@ -685,14 +679,12 @@ export class TabbarService extends WithEventBus {
         },
         {
           execute: ({ forceShow }: { forceShow?: boolean } = {}) => {
-            runInAction(() => {
-              // 支持toggle
-              if (this.location === 'bottom' && !forceShow) {
-                this.updateCurrentContainerId(this.currentContainerId === containerId ? '' : containerId);
-              } else {
-                this.updateCurrentContainerId(containerId);
-              }
-            });
+            // 支持toggle
+            if (this.location === 'bottom' && !forceShow) {
+              this.updateCurrentContainerId(this.currentContainerId === containerId ? '' : containerId);
+            } else {
+              this.updateCurrentContainerId(containerId);
+            }
           },
         },
       ),
@@ -762,18 +754,16 @@ export class TabbarService extends WithEventBus {
         {
           execute: ({ lastContainerId }: { lastContainerId?: string }) => {
             // 切换激活tab
-            runInAction(() => {
-              this.updateCurrentContainerId(containerId);
-              if (lastContainerId) {
-                // 替换最后一个可见tab
-                const sourceState = this.getContainerState(containerId);
-                const targetState = this.getContainerState(lastContainerId);
-                const sourcePriority = sourceState.priority;
-                sourceState.priority = targetState.priority;
-                targetState.priority = sourcePriority;
-                this.storeState();
-              }
-            });
+            this.updateCurrentContainerId(containerId);
+            if (lastContainerId) {
+              // 替换最后一个可见tab
+              const sourceState = this.getContainerState(containerId);
+              const targetState = this.getContainerState(lastContainerId);
+              const sourcePriority = sourceState.priority;
+              sourceState.priority = targetState.priority;
+              targetState.priority = sourcePriority;
+              this.storeState();
+            }
           },
         },
       ),
