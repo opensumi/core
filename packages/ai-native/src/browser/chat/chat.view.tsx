@@ -37,7 +37,6 @@ import { MessageData, createMessageByAI, createMessageByUser, extractIcon } from
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
 
-import { ChatSlashCommandItemModel } from './chat-model';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
