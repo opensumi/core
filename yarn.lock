@@ -1995,7 +1995,7 @@ __metadata:
     is-git-clean: ^1.1.0
     jest: ^29.7.0
     jest-canvas-mock: ^2.4.0
-    jest-environment-jsdom: 29.7.0
+    jest-environment-jsdom: ^29.7.0
     jest-fetch-mock: ^3.0.3
     jsdom: ^20.0.0
     jsdom-worker: ^0.3.0
@@ -11698,7 +11698,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-environment-jsdom@npm:29.7.0":
+"jest-environment-jsdom@npm:^29.7.0":
   version: 29.7.0
   resolution: "jest-environment-jsdom@npm:29.7.0"
   dependencies:
