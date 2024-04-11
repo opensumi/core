@@ -16,9 +16,9 @@ import {
   IResolveConflictRegistry,
   TChatSlashCommandSend,
 } from '@opensumi/ide-ai-native/lib/browser/types';
-import { mergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
-import { renamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
-import { terminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
+import { MergeConflictPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/merge-conflict-prompt';
+import { RenamePromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/rename-prompt';
+import { TerminalDetectionPromptManager } from '@opensumi/ide-ai-native/lib/common/prompts/terminal-detection-prompt';
 import { Domain, getIcon } from '@opensumi/ide-core-browser';
 import {
   AIBackSerivcePath,
@@ -41,6 +41,15 @@ enum EInlineOperation {
 export class AiNativeContribution implements AINativeCoreContribution {
   @Autowired(AIBackSerivcePath)
   private readonly aiBackService: IAIBackService;
+
+  @Autowired(TerminalDetectionPromptManager)
+  terminalDetectionPromptManager: TerminalDetectionPromptManager;
+
+  @Autowired(RenamePromptManager)
+  renamePromptManager: RenamePromptManager;
+
+  @Autowired(MergeConflictPromptManager)
+  mergeConflictPromptManager: MergeConflictPromptManager;
 
   logger = getDebugLogger();
 
@@ -70,6 +79,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         name: EInlineOperation.Comments,
         title: '添加注释',
         renderType: 'button',
+        codeAction: {},
       },
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
@@ -96,6 +106,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         id: 'ai-optimize',
         name: EInlineOperation.Optimize,
         renderType: 'dropdown',
+        codeAction: {},
       },
       {
         providerDiffPreviewStrategy: async (editor: ICodeEditor, token) => {
@@ -148,7 +159,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
           },
         ],
         execute: async (stdout: string, stdin: string, rule) => {
-          const prompt = terminalDetectionPromptManager.generateBasePrompt(stdout);
+          const prompt = this.terminalDetectionPromptManager.generateBasePrompt(stdout);
           // 通过 ai 后端服务请求
         },
       },
@@ -216,9 +227,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
           let prompt = '';
 
           if (isRegenerate) {
-            prompt = mergeConflictPromptManager.convertDefaultThreeWayRegeneratePrompt(contentMetadata);
+            prompt = this.mergeConflictPromptManager.convertDefaultThreeWayRegeneratePrompt(contentMetadata);
           } else {
-            prompt = mergeConflictPromptManager.convertDefaultThreeWayPrompt(contentMetadata);
+            prompt = this.mergeConflictPromptManager.convertDefaultThreeWayPrompt(contentMetadata);
           }
 
           await new Promise((resolve, reject) => {
@@ -243,7 +254,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
 
   registerRenameProvider(registry: IRenameCandidatesProviderRegistry): void {
     registry.registerRenameSuggestionsProvider(async (model, range, token): Promise<NewSymbolName[] | undefined> => {
-      const prompt = renamePromptManager.requestPrompt(model.getValueInRange(range));
+      const prompt = this.renamePromptManager.requestPrompt(model.getValueInRange(range));
 
       this.logger.info('rename prompt', prompt);
 
@@ -258,7 +269,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
       this.logger.info('rename result', result);
 
       if (result.data) {
-        const names = renamePromptManager.extractResponse(result.data);
+        const names = this.renamePromptManager.extractResponse(result.data);
 
         return names.map((name) => ({
           newSymbolName: name,

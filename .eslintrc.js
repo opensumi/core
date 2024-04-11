@@ -1,7 +1,7 @@
 const path = require('path');
 
 const rulesDirPlugin = require('eslint-plugin-rulesdir');
-rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint_rules', 'rules');
+rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint-rules', 'rules');
 
 module.exports = {
   env: {
@@ -220,6 +220,7 @@ module.exports = {
         ],
       },
     ],
+    '@typescript-eslint/no-unused-vars': ['warn'],
   },
   overrides: [
     {

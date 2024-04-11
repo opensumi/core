@@ -6,7 +6,7 @@ import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/a
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { ChatRenderRegistryToken, IAIReporter, localize } from '@opensumi/ide-core-common';
 
-import { IAIChatService } from '../../common';
+import { IAIChatService } from '../../common/index';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
@@ -27,15 +27,17 @@ interface ITinkingProps {
   hasAgent?: boolean;
 }
 
-export const Thinking = ({
-  children,
-  status,
-  message,
-  onStop,
-  showStop = true,
-  hasAgent,
-  thinkingText,
-}: ITinkingProps) => {
+export const ChatThinking = (props: ITinkingProps) => {
+  const {
+    children,
+    status = EMsgStreamStatus.THINKING,
+    message,
+    onStop,
+    showStop = true,
+    hasAgent,
+    thinkingText,
+  } = props;
+
   const aiChatService = useInjectable<ChatService>(IAIChatService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
@@ -94,17 +96,16 @@ export const Thinking = ({
   );
 };
 
-export const ThinkingResult = ({
+export const ChatThinkingResult = ({
   children,
   message,
-  status,
+  status = EMsgStreamStatus.DONE,
   onRegenerate,
   sessionId,
-  hasMessage,
+  hasMessage = true,
   regenerateDisabled,
 }: ITinkingProps) => {
   const aiChatService = useInjectable<ChatService>(IAIChatService);
-  const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
 
   useEffect(() => {

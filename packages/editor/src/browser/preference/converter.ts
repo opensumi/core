@@ -20,15 +20,25 @@ export function getConvertedMonacoOptions(
   const editorOptions: Partial<monaco.editor.IEditorOptions> = {};
   const diffOptions: Partial<monaco.editor.IDiffEditorOptions> = {};
   const modelOptions: Partial<monaco.editor.ITextModelUpdateOptions> = {};
-  const editorOptionsKeys = updatingKey
-    ? updatingKey.filter((key) => editorOptionsConverters.has(key))
-    : Array.from(editorOptionsConverters.keys());
-  const textModelUpdateOptionsKeys = updatingKey
-    ? updatingKey.filter((key) => textModelUpdateOptionsConverters.has(key))
-    : Array.from(textModelUpdateOptionsConverters.keys());
-  const diffEditorOptionsKeys = updatingKey
-    ? updatingKey.filter((key) => diffEditorOptionsConverters.has(key))
-    : Array.from(diffEditorOptionsConverters.keys());
+  const editorOptionsKeys = [] as string[];
+  const textModelUpdateOptionsKeys = [] as string[];
+  const diffEditorOptionsKeys = [] as string[];
+
+  if (updatingKey) {
+    updatingKey.forEach((key) => {
+      if (editorOptionsConverters.has(key)) {
+        editorOptionsKeys.push(key);
+      } else if (textModelUpdateOptionsConverters.has(key)) {
+        textModelUpdateOptionsKeys.push(key);
+      } else if (diffEditorOptionsConverters.has(key)) {
+        diffEditorOptionsKeys.push(key);
+      }
+    });
+  } else {
+    editorOptionsKeys.push(...editorOptionsConverters.keys());
+    textModelUpdateOptionsKeys.push(...textModelUpdateOptionsConverters.keys());
+    diffEditorOptionsKeys.push(...diffEditorOptionsConverters.keys());
+  }
 
   editorOptionsKeys.forEach((key) => {
     const value = configurationService.getValue(key, {

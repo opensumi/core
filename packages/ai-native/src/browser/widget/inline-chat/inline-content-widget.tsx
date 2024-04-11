@@ -30,8 +30,8 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
 
   private originTop = 0;
 
-  private readonly _onClickActions = new Emitter<string>();
-  public readonly onClickActions: Event<string> = this._onClickActions.event;
+  private readonly _onActionClickEmitter = new Emitter<string>();
+  public readonly onActionClick: Event<string> = this._onActionClickEmitter.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
@@ -51,8 +51,12 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     super.dispose();
   }
 
+  clickActionId(actionId: string): void {
+    this._onActionClickEmitter.fire(actionId);
+  }
+
   public renderView(): React.ReactNode {
-    return <AIInlineChatController onClickActions={this._onClickActions} onClose={() => this.dispose()} />;
+    return <AIInlineChatController onClickActions={this._onActionClickEmitter} onClose={() => this.dispose()} />;
   }
 
   override async show(options?: ShowAIContentOptions | undefined): Promise<void> {

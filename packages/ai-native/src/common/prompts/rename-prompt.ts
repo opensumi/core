@@ -1,5 +1,8 @@
+import { Injectable } from '@opensumi/di';
+
 import { BasePromptManager } from './base-prompt-manager';
 
+@Injectable()
 export class RenamePromptManager extends BasePromptManager {
   requestPrompt(varName: string) {
     const prompt = `please rename this variable: \`\`\`\n${varName}\n\`\`\`, put all the possible names in a code block line by line.`;
@@ -18,5 +21,3 @@ export class RenamePromptManager extends BasePromptManager {
     return lines;
   }
 }
-
-export const renamePromptManager = new RenamePromptManager();
