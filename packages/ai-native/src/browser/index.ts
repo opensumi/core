@@ -10,7 +10,6 @@ import {
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
-  TerminalRegistryToken,
 } from '@opensumi/ide-core-browser';
 
 import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerService } from '../common';
@@ -18,7 +17,6 @@ import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerServic
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
 import { TerminalAIContribution } from './ai-terminal/terminal-ai.contributon';
-import { TerminalRegistry } from './ai-terminal/terminal.feature.registry';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
@@ -27,6 +25,7 @@ import { ChatRenderRegistry } from './chat/chat.render.registry';
 import { ChatService } from './chat/chat.service';
 import { LanguageParserFactory } from './languages/parser';
 import { AIMenuBarContribution } from './layout/menu-bar/menu-bar.contribution';
+import { MergeConflictContribution } from './merge-conflict';
 import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
 import { RenameCandidatesProviderRegistry } from './rename/rename.feature.registry';
 import { AINativeCoreContribution } from './types';
@@ -40,6 +39,7 @@ export class AINativeModule extends BrowserModule {
     AINativeBrowserContribution,
     AIMenuBarContribution,
     TerminalAIContribution,
+    MergeConflictContribution,
     {
       token: InlineChatFeatureRegistryToken,
       useClass: InlineChatFeatureRegistry,
@@ -55,10 +55,6 @@ export class AINativeModule extends BrowserModule {
     {
       token: ResolveConflictRegistryToken,
       useClass: ResolveConflictRegistry,
-    },
-    {
-      token: TerminalRegistryToken,
-      useClass: TerminalRegistry,
     },
     {
       token: IAINativeService,
@@ -83,10 +79,6 @@ export class AINativeModule extends BrowserModule {
     {
       token: IAIChatService,
       useClass: ChatService,
-    },
-    {
-      token: ResolveConflictRegistryToken,
-      useClass: ResolveConflictRegistry,
     },
     {
       token: RenameCandidatesProviderRegistryToken,
