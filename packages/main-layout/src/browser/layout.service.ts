@@ -119,7 +119,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     // 这里保证的 viewReady 并不是真实的 viewReady，只是保证在此刻之前注册进来的 Tabbar Ready 了
     // 仅确保 tabbar 视图加载完毕
     this.tabbarServices.forEach((service) => {
-      if (slotRendererRegistry.isTabbar(service.location)) {
+      if (slotRendererRegistry.isTabbar(service.location) && service.containersMap.size > 0) {
         list.push(service.viewReady.promise);
       }
     });
