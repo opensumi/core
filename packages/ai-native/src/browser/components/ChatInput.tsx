@@ -344,7 +344,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
           if (inputValue === '@' || (command && inputValue === AI_SLASH)) {
             setValue('');
           }
-          runWhenIdle(() => textareaRef.current?.focus());
+          runWhenIdle(() => textareaRef.current!.focus());
         }
       } else if (themeValue) {
         setIsShowOptions(false);
@@ -359,11 +359,11 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         }
 
         if (textareaRef && textareaRef.current) {
-          textareaRef.current.focus();
           const inputValue = textareaRef.current.value;
           if (inputValue.length === 1 && inputValue.startsWith(AI_SLASH)) {
             setValue('');
           }
+          runWhenIdle(() => textareaRef.current!.focus());
         }
       }
     },
