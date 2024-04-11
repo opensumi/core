@@ -42,7 +42,7 @@ export const ChatThinking = (props: ITinkingProps) => {
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
-  const customThinkingRender = useMemo(
+  const CustomThinkingRender = useMemo(
     () => chatRenderRegistry.chatThinkingRender,
     [chatRenderRegistry, chatRenderRegistry.chatThinkingRender],
   );
@@ -61,22 +61,22 @@ export const ChatThinking = (props: ITinkingProps) => {
 
   const renderContent = useCallback(() => {
     if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
-      if (customThinkingRender) {
-        return customThinkingRender({ thinkingText });
+      if (CustomThinkingRender) {
+        return <CustomThinkingRender thinkingText={thinkingText} />;
       }
 
       return <span className={styles.thinking_text}>{thinkingText || 'Thinking...'}</span>;
     }
 
     return children;
-  }, [status, message, children, thinkingText, customThinkingRender]);
+  }, [status, message, children, thinkingText, CustomThinkingRender]);
 
   return (
     <>
       <div className={styles.content}>{renderContent()}</div>
       <div className={styles.thinking_container}>
         <div className={styles.stop}>
-          {!customThinkingRender && (
+          {!CustomThinkingRender && (
             <span className={styles.progress_bar}>
               {/* 保持动画效果一致 */}
               {(!!status || !children) && (

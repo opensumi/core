@@ -79,16 +79,16 @@ export type ChatUserRoleRender = (props: { content: string; agentId?: string; co
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactNode;
 
 export interface IChatRenderRegistry {
-  registerWelcomeRender?: (render: ChatWelcomeRender) => void;
+  registerWelcomeRender: (render: ChatWelcomeRender) => void;
   /**
    * AI 对象的对话渲染
    */
-  registerAIRoleRender?: (render: ChatAIRoleRender) => void;
+  registerAIRoleRender: (render: ChatAIRoleRender) => void;
   /**
    * 用户对象的对话渲染
    */
-  registerUserRoleRender?: (render: ChatUserRoleRender) => void;
-  registerThinkingRender?: (render: ChatThinkingRender) => void;
+  registerUserRoleRender: (render: ChatUserRoleRender) => void;
+  registerThinkingRender: (render: ChatThinkingRender) => void;
 }
 
 export interface IResolveConflictRegistry {
