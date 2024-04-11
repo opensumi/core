@@ -23,7 +23,7 @@ describe('reference Manager Test', () => {
 
     ref2.dispose();
 
-    expect(() => ref2.instance).toThrowError();
+    expect(() => ref2.instance).toThrow();
     expect(ref1.instance).toBeDefined();
 
     const ref3 = ref1.hold('ref3');
@@ -44,14 +44,14 @@ describe('reference Manager Test', () => {
     const d2 = refManager.onReferenceAllDisposed(disposedListener);
 
     const ref1 = await refManager.getReference('test1', 'ref1');
-    expect(createdListener).toBeCalledTimes(1);
+    expect(createdListener).toHaveBeenCalledTimes(1);
     const ref2 = await refManager.getReference('test1', 'ref2');
-    expect(createdListener).toBeCalledTimes(1);
+    expect(createdListener).toHaveBeenCalledTimes(1);
 
     ref1.dispose();
-    expect(disposedListener).toBeCalledTimes(0);
+    expect(disposedListener).toHaveBeenCalledTimes(0);
     ref2.dispose();
-    expect(disposedListener).toBeCalledTimes(1);
+    expect(disposedListener).toHaveBeenCalledTimes(1);
 
     d1.dispose();
     d2.dispose();
@@ -74,7 +74,7 @@ describe('reference Manager Test', () => {
     expect(ref1.instance!.id).toBe('test1');
 
     ref1.dispose();
-    expect(disposedListener).toBeCalledTimes(1);
+    expect(disposedListener).toHaveBeenCalledTimes(1);
 
     d1.dispose();
     d2.dispose();

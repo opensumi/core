@@ -1,6 +1,6 @@
 import { ReconnectingWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/reconnecting-websocket';
-import { IEventBus, BrowserConnectionErrorEvent } from '@opensumi/ide-core-common';
-import { WebSocket, Server } from '@opensumi/mock-socket';
+import { BrowserConnectionErrorEvent, IEventBus } from '@opensumi/ide-core-common';
+import { Server, WebSocket } from '@opensumi/mock-socket';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

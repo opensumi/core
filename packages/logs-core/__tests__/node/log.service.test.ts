@@ -3,11 +3,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import { toLocalISOString, ILogService } from '@opensumi/ide-core-common';
+import { ILogService, toLocalISOString } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
+import { ILogServiceManager, LogLevel, SupportLogNamespace } from '../../src/common';
 import { LogServiceModule } from '../../src/node';
 import { LogServiceManager } from '../../src/node/log-manager';
 import { LogLevelMessageMap } from '../../src/node/log.service';
@@ -50,7 +50,7 @@ describe('LogService', () => {
     track.cleanupSync();
   });
 
-  test('Test level with default Info', async () => {
+  test('level with default Info', async () => {
     const logger = loggerManager.getLogger(SupportLogNamespace.Browser);
 
     doAllLog(logger);

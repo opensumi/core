@@ -13,6 +13,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { TestEditorDocumentProvider } from '../test-providers';
@@ -68,7 +69,7 @@ describe('EditorDocumentModelService', () => {
 
     const testCodeUri = new URI('test://testUri2');
     const testDoc2 = await editorDocModelService.createModelReference(testCodeUri);
-    expect(createFn).toBeCalledTimes(1);
+    expect(createFn).toHaveBeenCalledTimes(1);
 
     disposer.dispose();
   });

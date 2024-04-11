@@ -1,9 +1,9 @@
 import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 
-import { TreeNodeType, PromptValidateMessage, PROMPT_VALIDATE_TYPE } from '../../../src';
+import { PROMPT_VALIDATE_TYPE, PromptValidateMessage, TreeNodeType } from '../../../src';
 import { NewPromptHandle, RenamePromptHandle } from '../../../src/recycle-tree/prompt';
 import { Tree } from '../../../src/recycle-tree/tree/Tree';
-import { TreeNode, CompositeTreeNode } from '../../../src/recycle-tree/tree/TreeNode';
+import { CompositeTreeNode, TreeNode } from '../../../src/recycle-tree/tree/TreeNode';
 
 describe('NewPromptHandle', () => {
   class TreeA extends Tree {
@@ -56,28 +56,28 @@ describe('NewPromptHandle', () => {
     const setSelectionRange = jest.fn();
     prompt.$.setSelectionRange = setSelectionRange;
     prompt.setSelectionRange(0, 5);
-    expect(setSelectionRange).toBeCalledWith(0, 5);
+    expect(setSelectionRange).toHaveBeenCalledWith(0, 5);
   });
 
   test('addClassName', () => {
     const addClassName = jest.fn();
     prompt.$.classList.add = addClassName;
     prompt.addClassName('test');
-    expect(addClassName).toBeCalledWith('test');
+    expect(addClassName).toHaveBeenCalledWith('test');
   });
 
   test('removeClassName', () => {
     const removeClassName = jest.fn();
     prompt.$.classList.remove = removeClassName;
     prompt.removeClassName('test');
-    expect(removeClassName).toBeCalledWith('test');
+    expect(removeClassName).toHaveBeenCalledWith('test');
   });
 
   test('addAddonAfter', () => {
     const appendChild = jest.fn();
     prompt.$addonAfter.appendChild = appendChild;
     prompt.addAddonAfter('test');
-    expect(appendChild).toBeCalledTimes(1);
+    expect(appendChild).toHaveBeenCalledTimes(1);
   });
 
   test('removeAddonAfter', () => {

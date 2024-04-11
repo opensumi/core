@@ -1,9 +1,7 @@
-import type vscode from 'vscode';
-
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { Uri, uuid } from '@opensumi/ide-core-common';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { UIKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/envApiFactory';
 import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ext.host.env';
@@ -11,6 +9,8 @@ import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ex
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+
+import type vscode from 'vscode';
 
 const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
@@ -59,11 +59,11 @@ describe('vscode extHostEnv Test', () => {
 
   it('env is readonly', () => {
     // 加上 any 防止 ts 静态检测
-    expect(() => ((env as any).language = '234')).toThrowError();
-    expect(() => ((env as any).appRoot = '234')).toThrowError();
-    expect(() => ((env as any).appName = '234')).toThrowError();
-    expect(() => ((env as any).machineId = '234')).toThrowError();
-    expect(() => ((env as any).sessionId = '234')).toThrowError();
+    expect(() => ((env as any).language = '234')).toThrow();
+    expect(() => ((env as any).appRoot = '234')).toThrow();
+    expect(() => ((env as any).appName = '234')).toThrow();
+    expect(() => ((env as any).machineId = '234')).toThrow();
+    expect(() => ((env as any).sessionId = '234')).toThrow();
   });
 
   it('get uiKind', () => {

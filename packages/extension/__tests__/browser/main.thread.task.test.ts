@@ -7,7 +7,7 @@ import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extens
 import { MainthreadTasks } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.tasks';
 import { MainThreadWorkspace } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.workspace';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { Task, ShellExecution } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { ShellExecution, Task } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
@@ -22,7 +22,7 @@ import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-prefe
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
 import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
-import { ITerminalInternalService, ITerminalController } from '@opensumi/ide-terminal-next';
+import { ITerminalController, ITerminalInternalService } from '@opensumi/ide-terminal-next';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
 import { VariableModule } from '@opensumi/ide-variable/lib/browser';

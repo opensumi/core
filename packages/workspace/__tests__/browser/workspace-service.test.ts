@@ -1,7 +1,7 @@
-import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@opensumi/ide-core-browser';
+import { FILES_DEFAULTS, IClientApp, IWindowService, PreferenceService } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { URI, StorageProvider, Disposable } from '@opensumi/ide-core-common';
-import { FileStat, DiskFileServicePath } from '@opensumi/ide-file-service';
+import { Disposable, StorageProvider, URI } from '@opensumi/ide-core-common';
+import { DiskFileServicePath, FileStat } from '@opensumi/ide-file-service';
 import { MockFsProvider } from '@opensumi/ide-file-service/__mocks__/file-system-provider';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -168,9 +168,9 @@ describe('WorkspaceService should be work while workspace was a single directory
       lastModification: new Date().getTime(),
     } as never);
     await workspaceService.open(newWorkspaceUri, { preserveWindow: true });
-    expect(mockClientApp.fireOnReload).toBeCalledWith(true);
+    expect(mockClientApp.fireOnReload).toHaveBeenCalledWith(true);
     await workspaceService.open(newWorkspaceUri);
-    expect(mockWindowService.openNewWindow).toBeCalledTimes(1);
+    expect(mockWindowService.openNewWindow).toHaveBeenCalledTimes(1);
   });
 
   it('addRoot method should be work', async () => {
@@ -203,7 +203,7 @@ describe('WorkspaceService should be work while workspace was a single directory
     });
     mockFileSystem.setContent.mockImplementation((stat) => stat);
     await workspaceService.addRoot(newWorkspaceUri);
-    expect(mockFileSystem.setContent).toBeCalledTimes(2);
+    expect(mockFileSystem.setContent).toHaveBeenCalledTimes(2);
   });
 
   it('removeRoots method should be work', async () => {
@@ -227,7 +227,7 @@ describe('WorkspaceService should be work while workspace was a single directory
       }),
     });
     await workspaceService.removeRoots([newWorkspaceUri]);
-    expect(mockFileSystem.setContent).toBeCalledTimes(1);
+    expect(mockFileSystem.setContent).toHaveBeenCalledTimes(1);
   });
 
   it('containsSome method should be work', async () => {

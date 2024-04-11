@@ -1,7 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { ILineChange, URI } from '@opensumi/ide-core-common';
-import { OverviewRulerLane, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import { IDocPersistentCacheProvider, OverviewRulerLane } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/src/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';

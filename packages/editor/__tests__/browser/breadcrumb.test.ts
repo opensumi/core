@@ -1,4 +1,4 @@
-import { URI, IEventBus } from '@opensumi/ide-core-browser';
+import { IEventBus, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { BreadCrumbServiceImpl } from '@opensumi/ide-editor/lib/browser/breadcrumb';

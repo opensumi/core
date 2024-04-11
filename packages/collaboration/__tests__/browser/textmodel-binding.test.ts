@@ -4,10 +4,10 @@
 import { Awareness } from 'y-protocols/awareness';
 import { WebsocketProvider } from 'y-websocket';
 import {
+  AbsolutePosition,
+  RelativePosition,
   Doc as YDoc,
   Text as YText,
-  RelativePosition,
-  AbsolutePosition,
   createAbsolutePositionFromRelativePosition,
   // @ts-ignore
 } from 'yjs';
@@ -15,10 +15,10 @@ import {
 import { Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
-import { ICollaborationService, DEFAULT_COLLABORATION_PORT } from '../../src/common';
-import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { DEFAULT_COLLABORATION_PORT, ICollaborationService } from '../../src/common';
 
 const injector = new Injector();
 
@@ -95,8 +95,8 @@ describe('TextModelBinding test for yText and TextModel', () => {
     expect(user1.textModel.getValue() === '1145141919810').toBeTruthy();
     expect(user2.textModel.getValue() === '1145141919810').toBeTruthy();
 
-    expect(f1).toBeCalled();
-    expect(f2).toBeCalled();
+    expect(f1).toHaveBeenCalled();
+    expect(f2).toHaveBeenCalled();
 
     disposable1.dispose();
     disposable2.dispose();
@@ -109,7 +109,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     const modelSpy = jest.spyOn(model, 'setValue');
     const binding = new TextModelBinding(doc.getText('test'), model, wsProvider.awareness);
 
-    expect(modelSpy).toBeCalled();
+    expect(modelSpy).toHaveBeenCalled();
     expect(model.getValue()).toBe('1145141919810');
     expect(user1.textModel.getValue()).toBe('1145141919810');
 
@@ -122,12 +122,12 @@ describe('TextModelBinding test for yText and TextModel', () => {
     const textModel = user2.textModel;
     const insertionSpy = jest.spyOn(textModel, 'applyEdits');
     user1.yText.insert(0, 'insert');
-    expect(insertionSpy).toBeCalled();
+    expect(insertionSpy).toHaveBeenCalled();
     expect(user2.textModel.getValue()).toBe('insert');
     // deletion
     const deletionSpy = jest.spyOn(textModel, 'applyEdits');
     user2.yText.delete(0, 3);
-    expect(deletionSpy).toBeCalled();
+    expect(deletionSpy).toHaveBeenCalled();
     expect(user2.textModel.getValue()).toBe('ert');
   });
 
@@ -143,8 +143,8 @@ describe('TextModelBinding test for yText and TextModel', () => {
     user1.textModel.onDidChangeContent(() => mutex(() => TextModelEventFn()));
 
     user1.yText.insert(0, 'foo');
-    expect(yTextEventFn).toBeCalledTimes(1);
-    expect(TextModelEventFn).toBeCalledTimes(0);
+    expect(yTextEventFn).toHaveBeenCalledTimes(1);
+    expect(TextModelEventFn).toHaveBeenCalledTimes(0);
 
     // the same
     mutex = user2.binding['mutex'];
@@ -158,8 +158,8 @@ describe('TextModelBinding test for yText and TextModel', () => {
     const range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
     user2.textModel.applyEdits([{ range, text: 'bar' }]);
 
-    expect(yTextEventFn).toBeCalledTimes(0);
-    expect(TextModelEventFn).toBeCalledTimes(1);
+    expect(yTextEventFn).toHaveBeenCalledTimes(0);
+    expect(TextModelEventFn).toHaveBeenCalledTimes(1);
   });
 
   it('should undo and redo correctly', () => {
@@ -240,8 +240,8 @@ describe('TextModelBinding test for editor', () => {
     const setSpy = jest.spyOn(binding, 'addEditor');
     const registerSpy = jest.spyOn(editor, 'onDidChangeCursorSelection');
     binding.addEditor(editor);
-    expect(setSpy).toBeCalledTimes(1);
-    expect(registerSpy).toBeCalledTimes(1);
+    expect(setSpy).toHaveBeenCalledTimes(1);
+    expect(registerSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should fire relevant events after changing selection', () => {
@@ -258,8 +258,8 @@ describe('TextModelBinding test for editor', () => {
     // will fire events
     editor.setSelection(range);
 
-    expect(probeFnForAwareness).toBeCalled();
-    expect(probeFnForEditor).toBeCalled();
+    expect(probeFnForAwareness).toHaveBeenCalled();
+    expect(probeFnForEditor).toHaveBeenCalled();
 
     const state = binding['awareness'].getLocalState()!;
     expect('selection' in state).toBeTruthy();
@@ -305,7 +305,7 @@ describe('TextModelBinding test for editor', () => {
     // then apply edits to editor
     yText.insert(1, '1919810'); // simulate edit from other person
 
-    expect(probeFnForYDocBeforeAllTransaction).toBeCalled();
+    expect(probeFnForYDocBeforeAllTransaction).toHaveBeenCalled();
 
     // check selection backup result, check if it can be restored correctly
     expect(binding['savedSelections'].has(editor)).toBeTruthy();

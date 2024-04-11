@@ -1,15 +1,15 @@
 import {
+  ILogger,
   KeybindingRegistry,
   KeybindingRegistryImpl,
-  RecentFilesManager,
-  ILogger,
   PreferenceService,
+  RecentFilesManager,
 } from '@opensumi/ide-core-browser';
 import {
+  CommandRegistry,
+  CommandRegistryImpl,
   CommandService,
   CommandServiceImpl,
-  CommandRegistryImpl,
-  CommandRegistry,
   DisposableCollection,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -27,10 +27,10 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ClientAddonModule } from '../../src/browser';
 import {
   FileSearchContribution,
-  quickFileOpen,
   FileSearchQuickCommandHandler,
-  matchLineReg,
   getValidateInput,
+  matchLineReg,
+  quickFileOpen,
 } from '../../src/browser/file-search.contribution';
 
 describe('test for browser/file-search.contribution.ts', () => {
@@ -89,8 +89,8 @@ describe('test for browser/file-search.contribution.ts', () => {
     expect(commands[0].id).toBe(quickFileOpen.id);
 
     await commandService.executeCommand(quickFileOpen.id);
-    expect(fakeOpenFn).toBeCalledTimes(1);
-    expect(fakeOpenFn).toBeCalledWith('...');
+    expect(fakeOpenFn).toHaveBeenCalledTimes(1);
+    expect(fakeOpenFn).toHaveBeenCalledWith('...');
   });
 
   it('registerKeybindings', () => {

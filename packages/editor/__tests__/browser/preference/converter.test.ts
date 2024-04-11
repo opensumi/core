@@ -1,4 +1,4 @@
-import { isEditorOption, getConvertedMonacoOptions } from '@opensumi/ide-editor/lib/browser/preference/converter';
+import { getConvertedMonacoOptions, isEditorOption } from '@opensumi/ide-editor/lib/browser/preference/converter';
 
 describe('editor Options Converter Tests', () => {
   const preferences: Map<string, any> = new Map();

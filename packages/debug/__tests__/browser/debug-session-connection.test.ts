@@ -91,7 +91,7 @@ describe('DebugSessionConnection', () => {
   });
 
   it('first, create connection', () => {
-    expect(mockConnection.onceClose).toBeCalledTimes(1);
+    expect(mockConnection.onceClose).toHaveBeenCalledTimes(1);
   });
 
   it('send initialize command', async () => {
@@ -104,7 +104,7 @@ describe('DebugSessionConnection', () => {
         request: 'node-debug',
       },
     );
-    expect(mockConnection.send).toBeCalledTimes(1);
+    expect(mockConnection.send).toHaveBeenCalledTimes(1);
     mockConnection.send.mockClear();
   });
 
@@ -125,14 +125,14 @@ describe('DebugSessionConnection', () => {
         request: 'node-debug',
       },
     );
-    expect(mockConnection.send).toBeCalledTimes(1);
+    expect(mockConnection.send).toHaveBeenCalledTimes(1);
     mockConnection.send.mockClear();
     await defered.promise;
   });
 
   it('send custom request', async () => {
     await debugSessionConnection.sendCustomRequest('abc', {});
-    expect(mockConnection.send).toBeCalledTimes(1);
+    expect(mockConnection.send).toHaveBeenCalledTimes(1);
   });
 
   it('handle request message', (done) => {

@@ -9,6 +9,7 @@ import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+
 import type { Position } from '@opensumi/ide-monaco';
 
 describe('Debug Breakpoint Widget', () => {
@@ -114,9 +115,9 @@ describe('Debug Breakpoint Widget', () => {
     act(() => {
       debugBreakpointWidget.show(position);
     });
-    expect(mockDebugEditor.onDidLayoutChange).toBeCalledTimes(1);
-    expect(mockDebugEditor.getLayoutInfo).toBeCalledTimes(1);
-    expect(mockDebugEditor.changeViewZones).toBeCalledTimes(1);
+    expect(mockDebugEditor.onDidLayoutChange).toHaveBeenCalledTimes(1);
+    expect(mockDebugEditor.getLayoutInfo).toHaveBeenCalledTimes(1);
+    expect(mockDebugEditor.changeViewZones).toHaveBeenCalledTimes(1);
 
     expect(debugBreakpointWidget.position).toBe(position);
   });

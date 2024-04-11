@@ -4,9 +4,9 @@ import * as fs from 'fs-extra';
 import temp from 'temp';
 
 import { Injectable, Injector } from '@opensumi/di';
-import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA } from '@opensumi/ide-core-browser';
+import { AppConfig, Disposable, FileUri, STORAGE_SCHEMA, URI } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { Storage } from '@opensumi/ide-storage/lib/browser/storage';
@@ -15,11 +15,11 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { StorageModule } from '../../src/browser';
 import {
-  IStorageServer,
+  IGlobalStorageServer,
   IStoragePathServer,
+  IStorageServer,
   IUpdateRequest,
   IWorkspaceStorageServer,
-  IGlobalStorageServer,
 } from '../../src/common';
 
 const track = temp.track();
@@ -195,12 +195,12 @@ describe('WorkspaceStorage should be work', () => {
       const scopedStorage = await databaseStorageContribution.resolve(scopedStorageUri);
       expect(scopedStorage).toBeDefined();
       expect((scopedStorage as Storage).whenReady).toBeDefined();
-      expect(MockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(1);
+      expect(MockWorkspaceService.onWorkspaceChanged).toHaveBeenCalledTimes(1);
       const globalStorageUri = new URI('global').withScheme(STORAGE_SCHEMA.GLOBAL);
       const globalStorage = await databaseStorageContribution.resolve(globalStorageUri);
       expect(globalStorage).toBeDefined();
       expect((globalStorage as Storage).whenReady).toBeDefined();
-      expect(MockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(2);
+      expect(MockWorkspaceService.onWorkspaceChanged).toHaveBeenCalledTimes(2);
     });
   });
 });

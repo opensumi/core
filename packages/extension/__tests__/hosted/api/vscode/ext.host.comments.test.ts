@@ -1,24 +1,22 @@
-import type vscode from 'vscode';
-
 import { Injector } from '@opensumi/di';
-import { ICommentsService, ICommentsFeatureRegistry, CommentReactionClick } from '@opensumi/ide-comments';
+import { CommentReactionClick, ICommentsFeatureRegistry, ICommentsService } from '@opensumi/ide-comments';
 import { CommentsFeatureRegistry } from '@opensumi/ide-comments/lib/browser/comments-feature.registry';
 import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Uri, Disposable, IEventBus, URI, Deferred, sleep } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, IEventBus, URI, Uri, sleep } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { MainthreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
 import {
-  MainThreadAPIIdentifier,
-  IMainThreadComments,
   ExtHostAPIIdentifier,
+  IMainThreadComments,
+  MainThreadAPIIdentifier,
 } from '@opensumi/ide-extension/lib/common/vscode';
 import * as types from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import {
+  ExtHostCommentThread,
   ExtHostComments,
   createCommentsApiFactory,
-  ExtHostCommentThread,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.comments';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
@@ -27,6 +25,8 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.context-key.service';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+
+import type vscode from 'vscode';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () => {
   jest.setTimeout(10 * 1000);
@@ -103,7 +103,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     expect(controller.id).toBe(id);
     expect(controller.label).toBe(label);
     await 0;
-    expect($registerCommentController).toBeCalledTimes(1);
+    expect($registerCommentController).toHaveBeenCalledTimes(1);
   });
 
   it('createCommentThread', async () => {
@@ -129,7 +129,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     expect(thread.comments[0].author.name).toBe(author);
     expect(thread.comments[0].mode).toBe(types.CommentMode.Preview);
     await 0;
-    expect($createCommentThread).toBeCalledTimes(1);
+    expect($createCommentThread).toHaveBeenCalledTimes(1);
   });
 
   it('updateCommentThread', async () => {
@@ -170,7 +170,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
         mode: types.CommentMode.Preview,
       },
     ];
-    expect($updateCommentThread).toBeCalledTimes(2);
+    expect($updateCommentThread).toHaveBeenCalledTimes(2);
   });
 
   it('comment options', async () => {
@@ -185,7 +185,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     };
 
     await 0;
-    expect($updateCommentControllerFeatures).toBeCalledTimes(1);
+    expect($updateCommentControllerFeatures).toHaveBeenCalledTimes(1);
     expect(commentsFeatureRegistry.getProviderFeature(id)?.placeholder).toBe('please comment from test');
   });
 
@@ -238,7 +238,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     ];
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
-    expect($updateCommentControllerFeatures).toBeCalled();
+    expect($updateCommentControllerFeatures).toHaveBeenCalled();
     const modelReaction = {
       ...reaction,
       iconPath: URI.parse(reaction.iconPath.toString()),
@@ -271,8 +271,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     thread.canReply = false;
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
-    expect($updateCommentThread).toBeCalled();
-    expect($updateCommentThread).toBeCalledWith(
+    expect($updateCommentThread).toHaveBeenCalled();
+    expect($updateCommentThread).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
       expect.anything(),
@@ -302,8 +302,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     ];
     // 修改属性会加 100ms 的 debounce
     await sleep(100);
-    expect($updateCommentThread).toBeCalledTimes(1);
-    expect($updateCommentThread).toBeCalledWith(
+    expect($updateCommentThread).toHaveBeenCalledTimes(1);
+    expect($updateCommentThread).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
       expect.anything(),
@@ -347,6 +347,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     controller.dispose();
     // 有一个 remote call 的调用，需要等下一个微任务队列
     await 0;
-    expect($deleteCommentThread).toBeCalledTimes(1);
+    expect($deleteCommentThread).toHaveBeenCalledTimes(1);
   });
 });

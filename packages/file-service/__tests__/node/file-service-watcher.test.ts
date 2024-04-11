@@ -3,8 +3,8 @@ import temp from 'temp';
 
 import { isMacintosh, sleep } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
-
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
@@ -143,13 +143,13 @@ const sleepTime = 1000;
     let id = await watcherServer.watchFileChanges(newFolder, { excludes: [] });
     await fse.ensureFile(fileA);
     await sleep(sleepTime);
-    expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
+    expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
     await watcherServer.unwatchFileChanges(id);
 
     id = await watcherServer.watchFileChanges(newFolder, { excludes: ['**/b/**'] });
     await fse.ensureFile(fileB);
     await sleep(sleepTime);
-    expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
+    expect(watcherClient.onDidFilesChanged).toHaveBeenCalledTimes(1);
     await watcherServer.unwatchFileChanges(id);
     watcherServerList.push(watcherServer);
   });

@@ -1,5 +1,5 @@
 import { Emitter, IContextKeyService, IReporterService, LabelService } from '@opensumi/ide-core-browser';
-import { IDebugServer, IDebugSessionManager, IDebugProgress, IDebugModelManager } from '@opensumi/ide-debug';
+import { IDebugModelManager, IDebugProgress, IDebugServer, IDebugSessionManager } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import {
   DebugSessionContributionRegistry,
@@ -145,8 +145,8 @@ describe('DebugSessionManager', () => {
     debugSessionManager.reportAction('1001', '10001', 'start');
     const message = 'tracker message';
     report(message);
-    expect(mockReporterService.time).toBeCalledTimes(1);
-    expect(mockReporterServiceTimeEnd).toBeCalledTimes(1);
+    expect(mockReporterService.time).toHaveBeenCalledTimes(1);
+    expect(mockReporterServiceTimeEnd).toHaveBeenCalledTimes(1);
     mockReporterService.time.mockClear();
   });
 
@@ -160,12 +160,12 @@ describe('DebugSessionManager', () => {
       preLaunchTask: 'build',
     };
     await debugSessionManager.start({ configuration });
-    expect(mockDebugServer.createDebugSession).toBeCalledTimes(1);
-    expect(mockDebugServer.resolveDebugConfiguration).toBeCalledTimes(1);
-    expect(mockDebugServer.resolveDebugConfigurationWithSubstitutedVariables).toBeCalledTimes(1);
-    expect(mockVariableResolverService.resolve).toBeCalledTimes(1);
-    expect(mockTaskService.getTask).toBeCalledTimes(1);
-    expect(mockTaskService.run).toBeCalledTimes(1);
+    expect(mockDebugServer.createDebugSession).toHaveBeenCalledTimes(1);
+    expect(mockDebugServer.resolveDebugConfiguration).toHaveBeenCalledTimes(1);
+    expect(mockDebugServer.resolveDebugConfigurationWithSubstitutedVariables).toHaveBeenCalledTimes(1);
+    expect(mockVariableResolverService.resolve).toHaveBeenCalledTimes(1);
+    expect(mockTaskService.getTask).toHaveBeenCalledTimes(1);
+    expect(mockTaskService.run).toHaveBeenCalledTimes(1);
   });
 
   it('destroy debug session', (done) => {
@@ -173,6 +173,6 @@ describe('DebugSessionManager', () => {
       done();
     });
     debugSessionManager.destroy(sessionId);
-    expect(mockDebugServer.terminateDebugSession).toBeCalledTimes(1);
+    expect(mockDebugServer.terminateDebugSession).toHaveBeenCalledTimes(1);
   });
 });

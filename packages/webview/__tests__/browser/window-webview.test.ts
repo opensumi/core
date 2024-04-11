@@ -45,22 +45,22 @@ describe('webview-window-test', () => {
     expect((window as any)._windowId).toBe(windowId);
     expect(window.webContentsId).toBe(windowId + 1);
 
-    await expect(createWindow).toBeCalled();
+    await expect(createWindow).toHaveBeenCalled();
     expect(windowCalledEnvJSON).toBe(JSON.stringify(testEnv));
 
-    expect(onListen).toBeCalledTimes(1);
+    expect(onListen).toHaveBeenCalledTimes(1);
 
     await window.show();
-    expect(showBrowserWindow).toBeCalledWith(windowId);
+    expect(showBrowserWindow).toHaveBeenCalledWith(windowId);
 
     const url = 'http://example.com';
     await window.loadURL(url);
     expect(window.url).toBe(url);
-    expect(browserWindowLoadUrl).toBeCalledWith(windowId, url);
+    expect(browserWindowLoadUrl).toHaveBeenCalledWith(windowId, url);
 
     const message = 'test Message';
     window.postMessage(message);
-    expect(postMessageToBrowserWindow).toBeCalledWith(windowId, 'webview-message', message);
+    expect(postMessageToBrowserWindow).toHaveBeenCalledWith(windowId, 'webview-message', message);
 
     const onClosed = jest.fn();
     window.onClosed(onClosed);
@@ -69,6 +69,6 @@ describe('webview-window-test', () => {
 
     expect((window as any)._closed).toBeTruthy();
     expect(window.disposed).toBeTruthy();
-    expect(onClosed).toBeCalledTimes(1);
+    expect(onClosed).toHaveBeenCalledTimes(1);
   });
 });

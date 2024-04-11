@@ -2,8 +2,8 @@ import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexe
 import { Deferred, Emitter } from '@opensumi/ide-core-common';
 import { ExtHostCommon } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.common';
 import {
-  createToolbarAPIFactory,
   ExtHostToolbarActionService,
+  createToolbarAPIFactory,
 } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.toolbar';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';

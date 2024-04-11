@@ -44,8 +44,8 @@ describe('packages/remote-opener/src/browser/remote.opener.service.ts', () => {
     const mockFileUri = Uri.file('/path/to/file.js');
     await remoteOpenerService.$openExternal('file', mockFileUri);
 
-    expect(spyOnOpenExternal).toBeCalledWith('file', mockFileUri);
-    expect(spyOnOpen).toBeCalledWith(URI.parse(mockFileUri.toString()), { preview: false, focus: true });
+    expect(spyOnOpenExternal).toHaveBeenCalledWith('file', mockFileUri);
+    expect(spyOnOpen).toHaveBeenCalledWith(URI.parse(mockFileUri.toString()), { preview: false, focus: true });
   });
 
   it('$openExternal open url should be work', async () => {
@@ -64,17 +64,17 @@ describe('packages/remote-opener/src/browser/remote.opener.service.ts', () => {
     const mockUrl = Uri.parse('https://opensumi-ide.com');
     await remoteOpenerService.$openExternal('url', mockUrl);
 
-    expect(spyOnOpenExternal).toBeCalledWith('url', mockUrl);
-    expect(spyOnOpen).toBeCalledWith(mockUrl.toString());
+    expect(spyOnOpenExternal).toHaveBeenCalledWith('url', mockUrl);
+    expect(spyOnOpen).toHaveBeenCalledWith(mockUrl.toString());
 
     spyOnOpen.mockClear();
 
     const mockLocalUrl = Uri.parse('http://0.0.0.0:3030');
     await remoteOpenerService.$openExternal('url', mockLocalUrl);
 
-    expect(spyOnOpenExternal).toBeCalledWith('url', mockLocalUrl);
-    expect(spyOnOpen).toBeCalledWith('https://opensumi-3030-ide.com/');
+    expect(spyOnOpenExternal).toHaveBeenCalledWith('url', mockLocalUrl);
+    expect(spyOnOpen).toHaveBeenCalledWith('https://opensumi-3030-ide.com/');
 
-    expect(spyOnConverter).toBeCalledWith('3030');
+    expect(spyOnConverter).toHaveBeenCalledWith('3030');
   });
 });

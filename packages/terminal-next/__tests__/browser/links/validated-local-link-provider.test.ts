@@ -1,6 +1,6 @@
-import { Terminal, ILink } from 'xterm';
+import { ILink, Terminal } from 'xterm';
 
-import { URI, OperatingSystem } from '@opensumi/ide-core-common';
+import { OperatingSystem, URI } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { TerminalValidatedLocalLinkProvider } from '../../../src/browser/links/validated-local-link-provider';

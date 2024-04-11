@@ -8,7 +8,7 @@ import { MonacoService, ServiceNames } from '../../src/common';
 
 let injector: MockInjector;
 
-describe(' monaco service test', () => {
+describe('monaco service test', () => {
   injector = createBrowserInjector([]);
   injector.overrideProviders(
     ...[

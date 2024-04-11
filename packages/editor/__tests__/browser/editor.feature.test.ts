@@ -1,19 +1,19 @@
-import { QuickPickService, PreferenceService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IContextKeyService, PreferenceService, QuickPickService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, IEventBus, ILogger, ISelection, URI } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import {
-  IEditorFeatureRegistry,
-  IEditorDocumentModelService,
-  getSplitActionFromDragDrop,
   DragOverPosition,
-  EditorGroupSplitAction,
-  WorkbenchEditorService,
-  EditorSelectionChangeEvent,
-  IEditorGroup,
   EditorGroupChangeEvent,
   EditorGroupCloseEvent,
+  EditorGroupSplitAction,
   EditorOpenType,
+  EditorSelectionChangeEvent,
+  IEditorDocumentModelService,
+  IEditorFeatureRegistry,
+  IEditorGroup,
+  WorkbenchEditorService,
+  getSplitActionFromDragDrop,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
 import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatterSelect';
@@ -22,11 +22,11 @@ import { EditorContextMenuController } from '@opensumi/ide-editor/lib/browser/me
 import { TabTitleMenuService } from '@opensumi/ide-editor/lib/browser/menu/title-context.menu';
 import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
 import { EditorExtensionsRegistry } from '@opensumi/ide-monaco/lib/browser/contrib/command';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 Error.stackTraceLimit = 100;
 describe('editor status bar item test', () => {
@@ -53,13 +53,13 @@ describe('editor status bar item test', () => {
 
     const disposer = service.registerEditorFeatureContribution(contribution);
 
-    expect(listener).toBeCalledWith(contribution);
+    expect(listener).toHaveBeenCalledWith(contribution);
 
     service.runContributions({
       onDispose: jest.fn(),
     } as any);
 
-    expect(contribution.contribute).toBeCalledTimes(1);
+    expect(contribution.contribute).toHaveBeenCalledTimes(1);
 
     disposer.dispose();
   });
@@ -82,8 +82,8 @@ describe('editor status bar item test', () => {
     };
     service.runContributions(editor as any);
     _onDidChangeModel.fire();
-    expect(editor.monacoEditor.changeViewZones).toBeCalled();
-    expect(accessor.addZone).toBeCalled();
+    expect(editor.monacoEditor.changeViewZones).toHaveBeenCalled();
+    expect(accessor.addZone).toHaveBeenCalled();
   });
 
   const config = {};
@@ -506,7 +506,7 @@ describe('editor menu test', () => {
       } as any,
     });
 
-    expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toBeCalled();
+    expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toHaveBeenCalled();
   });
 
   it('editor title context menu test', () => {
@@ -522,6 +522,6 @@ describe('editor menu test', () => {
         })),
       },
     } as any);
-    expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toBeCalled();
+    expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toHaveBeenCalled();
   });
 });

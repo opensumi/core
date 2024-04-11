@@ -40,17 +40,17 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.secret.test.ts', () => 
 
   it('get', async () => {
     await extHostSecret.get(extensionId, key);
-    expect(moackMainThreadSecret.$getPassword).toBeCalledTimes(1);
+    expect(moackMainThreadSecret.$getPassword).toHaveBeenCalledTimes(1);
   });
 
   it('store', async () => {
     await extHostSecret.store(extensionId, key, 'test');
-    expect(moackMainThreadSecret.$setPassword).toBeCalledTimes(1);
+    expect(moackMainThreadSecret.$setPassword).toHaveBeenCalledTimes(1);
   });
 
   it('delete', async () => {
     await extHostSecret.delete(extensionId, key);
-    expect(moackMainThreadSecret.$deletePassword).toBeCalledTimes(1);
+    expect(moackMainThreadSecret.$deletePassword).toHaveBeenCalledTimes(1);
   });
 
   it('onDidChangePassword', (done) => {

@@ -1,6 +1,6 @@
 import { Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser/src/preferences';
-import { IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { EventBusImpl, IEventBus } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,

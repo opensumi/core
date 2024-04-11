@@ -1,11 +1,11 @@
 import {
+  Disposable,
+  IPreferenceSettingsService,
   PreferenceProviderProvider,
+  PreferenceSchemaProvider,
   PreferenceScope,
   PreferenceService,
-  PreferenceSchemaProvider,
   URI,
-  IPreferenceSettingsService,
-  Disposable,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { PreferenceSettingId } from '@opensumi/ide-preferences';
@@ -143,12 +143,12 @@ describe('PreferenceSettingService should be work', () => {
       const open = jest.fn();
       injector.mockCommand(PREFERENCE_COMMANDS.OPEN_SOURCE_FILE.id, open);
       preferenceSettingsService.openJSON(PreferenceScope.User, 'general.theme');
-      expect(open).toBeCalledTimes(1);
+      expect(open).toHaveBeenCalledTimes(1);
     });
 
     it('setPreference', () => {
       preferenceSettingsService.setPreference('general.theme', 'ide-dark', PreferenceScope.User);
-      expect(mockPreferenceService.set).toBeCalledTimes(1);
+      expect(mockPreferenceService.set).toHaveBeenCalledTimes(1);
       mockPreferenceService.set.mockClear();
     });
 
@@ -175,7 +175,7 @@ describe('PreferenceSettingService should be work', () => {
 
     it('getPreference', () => {
       preferenceSettingsService.getPreference('general.theme', PreferenceScope.User);
-      expect(mockPreferenceService.resolve).toBeCalledTimes(2);
+      expect(mockPreferenceService.resolve).toHaveBeenCalledTimes(2);
     });
 
     it('getEnumLabels', () => {
@@ -185,7 +185,7 @@ describe('PreferenceSettingService should be work', () => {
 
     it('reset', () => {
       preferenceSettingsService.reset('general.theme', PreferenceScope.User);
-      expect(mockPreferenceService.set).toBeCalledTimes(1);
+      expect(mockPreferenceService.set).toHaveBeenCalledTimes(1);
       mockPreferenceService.set.mockClear();
     });
 
@@ -197,9 +197,9 @@ describe('PreferenceSettingService should be work', () => {
     it('getCurrentPreferenceUrl', async () => {
       const uri = await preferenceSettingsService.getCurrentPreferenceUrl(PreferenceScope.User);
       expect(uri).toBe(mockResource.uri);
-      expect(mockFileServiceClient.access).toBeCalledTimes(1);
-      expect(mockFileServiceClient.createFile).toBeCalledTimes(1);
-      expect(mockFileServiceClient.setContent).toBeCalledTimes(1);
+      expect(mockFileServiceClient.access).toHaveBeenCalledTimes(1);
+      expect(mockFileServiceClient.createFile).toHaveBeenCalledTimes(1);
+      expect(mockFileServiceClient.setContent).toHaveBeenCalledTimes(1);
     });
 
     it('search', () => {

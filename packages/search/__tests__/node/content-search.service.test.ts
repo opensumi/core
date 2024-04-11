@@ -4,12 +4,12 @@ import path from 'path';
 import temp from 'temp';
 
 import { isWindows } from '@opensumi/ide-core-common';
-import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
+import { AppConfig, FileUri, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { ProcessModule } from '@opensumi/ide-process/lib/node';
 
-import { IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
+import { ContentSearchResult, IContentSearchServer, SEARCH_STATE } from '../../src';
 import { SearchModule } from '../../src/node';
 
 // Allow creating temporary files, but remove them when we are done.
@@ -691,7 +691,7 @@ describe('ripgrep-search-in-workspace-server', () => {
     contentSearchServer.search(searchId++, pattern, [rootDirAUri + '/small']);
   });
 
-  it('should search a pattern with special matchStarts ', (done) => {
+  it('should search a pattern with special matchStarts', (done) => {
     const pattern = 'salut";\' echo foo && echo bar; "';
 
     const client = new MockContentSearchClient(() => {

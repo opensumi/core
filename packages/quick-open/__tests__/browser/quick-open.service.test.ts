@@ -82,8 +82,8 @@ describe('quick-open service test', () => {
     const $widgetShow = jest.spyOn(widget, 'show');
     quickOpenService.open(model);
     expect(widget.isShow).toBeTruthy();
-    expect($widgetShow).toBeCalledTimes(1);
-    expect($widgetShow).toBeCalledWith('', {
+    expect($widgetShow).toHaveBeenCalledTimes(1);
+    expect($widgetShow).toHaveBeenCalledWith('', {
       inputEnable: true,
       password: false,
       placeholder: '',
@@ -100,8 +100,8 @@ describe('quick-open service test', () => {
       enabled: false,
       valueSelection: [2, 2],
     });
-    expect($widgetShow).toBeCalledTimes(1);
-    expect($widgetShow).toBeCalledWith('>', {
+    expect($widgetShow).toHaveBeenCalledTimes(1);
+    expect($widgetShow).toHaveBeenCalledWith('>', {
       inputEnable: false,
       password: true,
       placeholder: 'This is placeholder',
@@ -113,7 +113,7 @@ describe('quick-open service test', () => {
     quickOpenService.open(model, {
       prefix: '>',
     });
-    expect(model.onType).toBeCalledWith('>', expect.anything());
+    expect(model.onType).toHaveBeenCalledWith('>', expect.anything());
   });
 
   it('hide quick-open with element select', () => {
@@ -123,11 +123,11 @@ describe('quick-open service test', () => {
       onClose: $onClose,
     });
     quickOpenService.hide(HideReason.ELEMENT_SELECTED);
-    expect($widgetHide).toBeCalledTimes(1);
+    expect($widgetHide).toHaveBeenCalledTimes(1);
     expect(widget.isShow).toBeFalsy();
-    expect($onClose).toBeCalledTimes(1);
+    expect($onClose).toHaveBeenCalledTimes(1);
     // false 为非取消类型的关闭
-    expect($onClose).toBeCalledWith(false);
+    expect($onClose).toHaveBeenCalledWith(false);
   });
 
   it('hide quick-open with element select', () => {
@@ -137,17 +137,17 @@ describe('quick-open service test', () => {
       onClose: $onClose,
     });
     quickOpenService.hide(HideReason.FOCUS_LOST);
-    expect($widgetHide).toBeCalledTimes(1);
+    expect($widgetHide).toHaveBeenCalledTimes(1);
     expect(widget.isShow).toBeFalsy();
     // true 为取消类型的关闭
-    expect($onClose).toBeCalledWith(true);
+    expect($onClose).toHaveBeenCalledWith(true);
   });
 
   it('refresh quick-open', () => {
     quickOpenService.open(model);
     quickOpenService.refresh();
     // refresh 时 onType 会被重新调用
-    expect(model.onType).toBeCalledWith(widget.inputValue, expect.anything());
+    expect(model.onType).toHaveBeenCalledWith(widget.inputValue, expect.anything());
   });
 
   it('show quick-open decoration', () => {
@@ -300,7 +300,7 @@ describe('quick-open service test', () => {
       });
       // trigger onSelect
       widget.callbacks.onSelect(item, 1);
-      expect($onSelect).toBeCalledWith(item, 1);
+      expect($onSelect).toHaveBeenCalledWith(item, 1);
     });
 
     it('onConfirm to be call', () => {
@@ -313,7 +313,7 @@ describe('quick-open service test', () => {
       });
       // trigger onSelect
       widget.callbacks.onConfirm([item]);
-      expect($onConfirm).toBeCalledWith([item]);
+      expect($onConfirm).toHaveBeenCalledWith([item]);
     });
 
     it('the inQuickOpen contextkey to be false when onHide be called', () => {
@@ -334,7 +334,7 @@ describe('quick-open service test', () => {
       });
       // trigger onOk
       widget.callbacks.onOk();
-      expect($onClose).toBeCalledWith(false);
+      expect($onClose).toHaveBeenCalledWith(false);
     });
 
     it('onClose to be called when onCancel be called', () => {
@@ -345,7 +345,7 @@ describe('quick-open service test', () => {
       });
       // trigger onOk
       widget.callbacks.onCancel();
-      expect($onClose).toBeCalledWith(true);
+      expect($onClose).toHaveBeenCalledWith(true);
     });
 
     it('onClose to be called when ignoreFocusOut is true', () => {
@@ -357,7 +357,7 @@ describe('quick-open service test', () => {
       // trigger onFocusLost
       const ignoreFocusOut = widget.callbacks.onFocusLost();
       expect(ignoreFocusOut).toBeTruthy();
-      expect($onClose).toBeCalledTimes(0);
+      expect($onClose).toHaveBeenCalledTimes(0);
     });
 
     it('onClose to be called when ignoreFocusOut is false', () => {
@@ -370,7 +370,7 @@ describe('quick-open service test', () => {
       const ignoreFocusOut = widget.callbacks.onFocusLost();
       // true 为取消类型的关闭
       expect(ignoreFocusOut).toBeFalsy();
-      expect($onClose).toBeCalledWith(true);
+      expect($onClose).toHaveBeenCalledWith(true);
     });
   });
 

@@ -1,10 +1,11 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common';
+
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MainThreadSumiAPIIdentifier } from '../../../../lib/common/sumi';
 import { IMainThreadChatAgents } from '../../../../lib/common/sumi/chat-agents';
 import { IExtensionDescription } from '../../../../lib/common/vscode';
 import { ExtHostChatAgents } from '../../../../lib/hosted/api/sumi/ext.host.chat.impl';
-import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common';
 
 describe('ExtHostChatAgents', () => {
   let chatAgents: IMainThreadChatAgents;

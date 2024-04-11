@@ -85,6 +85,6 @@ describe('DebugProgressService', () => {
   it('run should be ok.', () => {
     debugProgressService.run(debugSessionManager as any);
 
-    expect(debugSessionManager.onDidChangeActiveDebugSession).toBeCalledTimes(1);
+    expect(debugSessionManager.onDidChangeActiveDebugSession).toHaveBeenCalledTimes(1);
   });
 });

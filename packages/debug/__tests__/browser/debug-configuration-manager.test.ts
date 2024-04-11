@@ -1,11 +1,11 @@
 import {
   Disposable,
-  QuickPickService,
+  FileStat,
   IContextKeyService,
   PreferenceService,
-  URI,
-  FileStat,
+  QuickPickService,
   StorageProvider,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { IDebugServer } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
@@ -194,7 +194,7 @@ describe('Debug Configuration Manager', () => {
   afterAll(() => {});
 
   it('debugModelManager should be init success', () => {
-    expect(mockPreferenceService.onPreferenceChanged).toBeCalledTimes(2);
+    expect(mockPreferenceService.onPreferenceChanged).toHaveBeenCalledTimes(2);
   });
 
   it('should have enough API', () => {
@@ -227,24 +227,24 @@ describe('Debug Configuration Manager', () => {
 
   it('openConfiguration method should be work', async () => {
     await debugConfigurationManager.openConfiguration();
-    expect(mockWorkbenchEditorService.open).toBeCalledTimes(1);
+    expect(mockWorkbenchEditorService.open).toHaveBeenCalledTimes(1);
   });
 
   it('addConfiguration method should be work', async () => {
     await debugConfigurationManager.addConfiguration();
-    expect(mockMonacoEditorModel.getLineLastNonWhitespaceColumn).toBeCalledTimes(2);
-    expect(mockMonacoEditor.setPosition).toBeCalledTimes(1);
-    expect(mockMonacoEditor.trigger).toBeCalledTimes(2);
+    expect(mockMonacoEditorModel.getLineLastNonWhitespaceColumn).toHaveBeenCalledTimes(2);
+    expect(mockMonacoEditor.setPosition).toHaveBeenCalledTimes(1);
+    expect(mockMonacoEditor.trigger).toHaveBeenCalledTimes(2);
   });
 
   it('load method should be work', async () => {
     await debugConfigurationManager.load();
-    expect(mockDebugStorage.get).toBeCalledTimes(1);
+    expect(mockDebugStorage.get).toHaveBeenCalledTimes(1);
   });
 
   it('save method should be work', async () => {
     await debugConfigurationManager.save();
-    expect(mockDebugStorage.set).toBeCalledTimes(1);
+    expect(mockDebugStorage.set).toHaveBeenCalledTimes(1);
   });
 
   it('canSetBreakpointsIn method should be work', () => {

@@ -1,6 +1,4 @@
-import type vscode from 'vscode';
-
-import { CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
+import { CancellationToken, DisposableCollection, MonacoService } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { URI, Uri } from '@opensumi/ide-core-common';
 import {
@@ -10,20 +8,20 @@ import {
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import {
-  EditorDocumentModelServiceImpl,
   EditorDocumentModelContentRegistryImpl,
+  EditorDocumentModelServiceImpl,
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { CallHierarchyService, TypeHierarchyService } from '@opensumi/ide-editor/lib/browser/monaco-contrib';
 import {
-  IEditorDocumentModelService,
-  IEditorDocumentModelContentRegistry,
   EmptyDocCacheImpl,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
 } from '@opensumi/ide-editor/src/browser';
+import * as monaco from '@opensumi/ide-monaco';
 import { ICallHierarchyService, ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
+import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monaco from '@opensumi/ide-monaco';
-import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -39,6 +37,8 @@ import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/do
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { createToken } from '../../src/hosted/api/vscode/language/util';
+
+import type vscode from 'vscode';
 
 const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 
@@ -912,7 +912,7 @@ An error case:
     );
 
     setTimeout(() => {
-      expect(mockMainThreadFunc).toBeCalled();
+      expect(mockMainThreadFunc).toHaveBeenCalled();
       const uri = monaco.Uri.parse('file:///path/to/simple.semanticLanguage');
       const textModel = createModel('', 'semanticLanguage', uri);
       expect(languageFeaturesService.documentSemanticTokensProvider.ordered(textModel as any).length).toBe(1);
@@ -944,7 +944,7 @@ An error case:
     const mockProvideFunc = jest.spyOn(hostedProvider, 'provideDocumentSemanticTokens');
     const tokens = await provider.provideDocumentSemanticTokens(textModel as any, null, tokenSource.token);
 
-    expect(mockProvideFunc).toBeCalled();
+    expect(mockProvideFunc).toHaveBeenCalled();
     expect(tokens?.resultId).toBe('1');
     expect((tokens as types.SemanticTokens)?.data instanceof Uint32Array).toBeTruthy();
   });
@@ -1022,7 +1022,7 @@ An error case:
 
       await 0;
 
-      expect(mockMainThreadFunc).toBeCalled();
+      expect(mockMainThreadFunc).toHaveBeenCalled();
       const prepareCallHierarchyItems = await callHierarchyService.prepareCallHierarchyProvider(
         model.uri as Uri,
         new monaco.Position(1, 1),
@@ -1129,7 +1129,7 @@ An error case:
 
       await 0;
 
-      expect(mockMainThreadFunc).toBeCalled();
+      expect(mockMainThreadFunc).toHaveBeenCalled();
 
       const prepareTypeHierarchyItems = await typeHierarchyService.prepareTypeHierarchyProvider(
         model.uri as Uri,
@@ -1178,7 +1178,7 @@ An error case:
     extHost.registerEvaluatableExpressionProvider(extension as any, 'test', expressionProvider);
 
     setTimeout(() => {
-      expect(mockedMainthreadFunc).toBeCalled();
+      expect(mockedMainthreadFunc).toHaveBeenCalled();
       expect(evaluatableExpressionService.hasEvaluatableExpressProvider(textModel)).toBeTruthy();
       done();
     }, 0);
@@ -1204,7 +1204,7 @@ An error case:
     const tokenSource = new monaco.CancellationTokenSource();
     const expression = await providers[0].provideEvaluatableExpression(textModel, pos, tokenSource.token);
 
-    expect(mockProvideFunc).toBeCalled();
+    expect(mockProvideFunc).toHaveBeenCalled();
     expect(expression?.range).toEqual({
       startLineNumber: 1,
       startColumn: 7,
@@ -1235,8 +1235,8 @@ An error case:
 
     await 0;
 
-    expect(mockMainThreadFunc).toBeCalled();
-    expect(mockMainThreadFunc).toBeCalledWith(expect.anything(), [{ $serialized: true, language: 'plaintext' }]);
+    expect(mockMainThreadFunc).toHaveBeenCalled();
+    expect(mockMainThreadFunc).toHaveBeenCalledWith(expect.anything(), [{ $serialized: true, language: 'plaintext' }]);
   });
   // #endregion registerLinkedEditingRangeProvider
   // #region registerInlayHintsProvider

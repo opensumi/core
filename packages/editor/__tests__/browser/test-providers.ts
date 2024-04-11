@@ -1,10 +1,10 @@
-import { URI, Emitter } from '@opensumi/ide-core-common';
-import { IResourceProvider, IResource } from '@opensumi/ide-editor';
+import { Emitter, URI } from '@opensumi/ide-core-common';
+import { IResource, IResourceProvider } from '@opensumi/ide-editor';
 import {
-  IEditorDocumentModelContentProvider,
-  IEditorComponentResolver,
-  IEditorComponent,
   EditorOpenType,
+  IEditorComponent,
+  IEditorComponentResolver,
+  IEditorDocumentModelContentProvider,
 } from '@opensumi/ide-editor/lib/browser';
 
 export const doNotClose: string[] = [];

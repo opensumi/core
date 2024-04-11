@@ -1,12 +1,12 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpc/multiplexer';
-import { URI, StoragePaths } from '@opensumi/ide-core-common';
+import { StoragePaths, URI } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import {
+  ExtHostStorage,
   ExtensionGlobalMemento,
   ExtensionMemento,
-  ExtHostStorage,
 } from '../../../../src/hosted/api/vscode/ext.host.storage';
 
 const cache = {
@@ -63,12 +63,12 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.storage.test.ts', () =>
 
   it('getValue', async () => {
     await extHostStorage.getValue(false, 'test');
-    expect(mockMainThreadStorage.$getValue).toBeCalledTimes(1);
+    expect(mockMainThreadStorage.$getValue).toHaveBeenCalledTimes(1);
   });
 
   it('setValue', async () => {
     await extHostStorage.setValue(false, 'test', {});
-    expect(mockMainThreadStorage.$setValue).toBeCalledTimes(1);
+    expect(mockMainThreadStorage.$setValue).toHaveBeenCalledTimes(1);
   });
 
   it('ExtensionMemento', async () => {

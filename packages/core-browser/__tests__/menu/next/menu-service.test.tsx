@@ -2,23 +2,23 @@ import React from 'react';
 
 import { Injector } from '@opensumi/di';
 import { Command } from '@opensumi/ide-core-common';
-import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
+import { CommandRegistry, CoreCommandRegistryImpl, DisposableStore } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { IContextKeyService } from '../../../src/context-key';
 import {
-  SeparatorMenuItemNode,
-  IComponentMenuItemProps,
   AbstractMenuService,
-  MenuRegistryImpl,
-  MenuServiceImpl,
+  ComponentMenuItemNode,
+  IComponentMenuItemProps,
   IMenuRegistry,
   MenuId,
-  isIMenuItem,
+  MenuRegistryImpl,
+  MenuServiceImpl,
+  SeparatorMenuItemNode,
   generateMergedCtxMenu,
-  ComponentMenuItemNode,
+  isIMenuItem,
 } from '../../../src/menu/next';
 
 const contextKeyService = new (class extends MockContextKeyService {

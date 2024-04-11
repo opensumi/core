@@ -1,4 +1,4 @@
-import { SymbolInformation, Location } from 'vscode-languageserver-types';
+import { Location, SymbolInformation } from 'vscode-languageserver-types';
 
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
@@ -8,9 +8,9 @@ import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/moc
 import { WorkspaceSymbolQuickOpenHandler } from '../../../src/browser/quick-open/workspace-symbol-quickopen';
 import {
   ILanguageService,
-  WorkspaceSymbolProvider,
-  WorkspaceSymbolParams,
   WorkbenchEditorService,
+  WorkspaceSymbolParams,
+  WorkspaceSymbolProvider,
 } from '../../../src/common';
 
 class MockWorkspaceSymbolProvider implements WorkspaceSymbolProvider {

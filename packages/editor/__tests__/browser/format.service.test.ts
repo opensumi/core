@@ -123,16 +123,16 @@ describe('FormatService', () => {
   it('Format Document With...', async () => {
     const formatService = injector.get(DocumentFormatService);
     await formatService.formatDocumentWith();
-    expect(executeEdit).toBeCalled();
-    expect(executeEdit).toBeCalledWith(mockEditor, edits, true);
-    expect(spyOnProvideDocumentFormattingEdits).toBeCalled();
+    expect(executeEdit).toHaveBeenCalled();
+    expect(executeEdit).toHaveBeenCalledWith(mockEditor, edits, true);
+    expect(spyOnProvideDocumentFormattingEdits).toHaveBeenCalled();
   });
 
   it('Format Selection With...', async () => {
     const formatService = injector.get(DocumentFormatService);
     await formatService.formatSelectionWith();
-    expect(executeEdit).toBeCalled();
-    expect(executeEdit).toBeCalledWith(mockEditor, edits, true);
-    expect(spyOnProvideDocumentRangeFormattingEdits).toBeCalled();
+    expect(executeEdit).toHaveBeenCalled();
+    expect(executeEdit).toHaveBeenCalledWith(mockEditor, edits, true);
+    expect(spyOnProvideDocumentRangeFormattingEdits).toHaveBeenCalled();
   });
 });

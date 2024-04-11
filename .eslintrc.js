@@ -8,6 +8,7 @@ module.exports = {
     browser: true,
     es6: true,
     node: true,
+    'jest/globals': true,
   },
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'rulesdir', 'import', 'unused-imports'],
@@ -154,8 +155,12 @@ module.exports = {
     'no-control-regex': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'unused-imports/no-unused-imports': 'warn',
+    'import/no-named-as-default-member': 'off',
+    'import/no-unresolved': 'off',
     'import/export': 'off',
     'import/namespace': 'off',
+    'import/default': 'off',
+    'import/named': 'off',
     'sort-imports': [
       'error',
       {
@@ -228,6 +233,12 @@ module.exports = {
       rules: {
         'no-restricted-imports': 0,
       },
+    },
+    {
+      files: ['__tests__/**', 'tests/**'],
+      plugins: ['jest'],
+      extends: ['plugin:jest/recommended'],
+      rules: { 'jest/prefer-expect-assertions': 'warn', 'jest/no-done-callback': 'warn' },
     },
   ],
 };

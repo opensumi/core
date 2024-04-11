@@ -1,6 +1,6 @@
 import { Emitter } from '@opensumi/ide-core-common';
 import { MainThreadTheming } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.theming';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { ColorThemeKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { ExtHostTheming } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.theming';
 import { IThemeService, ThemeType } from '@opensumi/ide-theme';

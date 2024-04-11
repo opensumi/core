@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Event, Emitter } from '@opensumi/ide-core-browser';
+import { Emitter, Event } from '@opensumi/ide-core-browser';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
 
@@ -114,6 +114,6 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
 
   it('ok for fn#handleMenubarClick', () => {
     menubarStore.handleMenubarClick('fakeMenuId');
-    expect(fakeRebuildMenuNodes).toBeCalled();
+    expect(fakeRebuildMenuNodes).toHaveBeenCalled();
   });
 });

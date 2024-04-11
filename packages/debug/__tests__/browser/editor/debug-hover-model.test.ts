@@ -18,11 +18,11 @@ describe('Debug Hover Model', () => {
 
   it('should have enough API', () => {
     expect(typeof debugHoverModel.init).toBe('function');
-    expect(mockRoot.watcher.on).toBeCalledTimes(3);
+    expect(mockRoot.watcher.on).toHaveBeenCalledTimes(3);
   });
 
   it('init method should be work', () => {
     debugHoverModel.init(mockRoot);
-    expect(mockRoot.watcher.on).toBeCalledTimes(6);
+    expect(mockRoot.watcher.on).toHaveBeenCalledTimes(6);
   });
 });

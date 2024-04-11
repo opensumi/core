@@ -1,18 +1,19 @@
 import { URI } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
+import { IEditorGroup, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient, FileSystemError } from '@opensumi/ide-file-service/lib/common';
+import { FileSystemError, IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { Uri } from '@opensumi/ide-monaco';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
-import type {
-  ResourceEdit,
-  IBulkEditOptions,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { WorkspaceEditModule } from '../../src/browser';
 import { MonacoBulkEditService } from '../../src/browser/bulk-edit.service';
-import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../../src/common';
-import { Uri } from '@opensumi/ide-monaco';
+import { IResourceFileEdit, IWorkspaceEditService, IWorkspaceFileService } from '../../src/common';
+
+import type {
+  IBulkEditOptions,
+  ResourceEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 
 function mockService(target) {
   return new Proxy(target, {
@@ -141,10 +142,10 @@ describe('workspace edit tests', () => {
     });
 
     const model = monaco.editor.getModel(Uri.parse('file:///test.ts'))!;
-    expect(model.pushEditOperations).toBeCalled();
-    expect(model.pushStackElement).toBeCalled();
+    expect(model.pushEditOperations).toHaveBeenCalled();
+    expect(model.pushStackElement).toHaveBeenCalled();
 
-    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
+    expect(injector.get(WorkbenchEditorService).open).toHaveBeenCalled();
   });
 
   it('file edit tests', async () => {
@@ -230,9 +231,9 @@ describe('workspace edit tests', () => {
       expect.objectContaining({}),
     );
 
-    expect(mockParticipant).toBeCalledTimes(3);
-    expect(mockWillCall).toBeCalledTimes(3);
-    expect(mockDidCall).toBeCalledTimes(3);
+    expect(mockParticipant).toHaveBeenCalledTimes(3);
+    expect(mockWillCall).toHaveBeenCalledTimes(3);
+    expect(mockDidCall).toHaveBeenCalledTimes(3);
 
     // 已存在的文件，不添加 ignoreIfExists 和 overwrite 选项， 应该抛出文件已存在的问题
     const createEdit2: IResourceFileEdit = {
@@ -301,8 +302,8 @@ describe('workspace edit tests', () => {
 
     const model = monaco.editor.getModel(Uri.parse('file:///monaco-test.ts'))!;
 
-    expect(model.pushEditOperations).toBeCalled();
-    expect(model.pushStackElement).toBeCalled();
+    expect(model.pushEditOperations).toHaveBeenCalled();
+    expect(model.pushStackElement).toHaveBeenCalled();
   });
 
   it('monaco bulk edit preview test', async () => {
@@ -331,12 +332,12 @@ describe('workspace edit tests', () => {
     );
 
     const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-2.ts'))!;
-    expect(model.pushEditOperations).toBeCalled();
-    expect(model.pushStackElement).toBeCalled();
+    expect(model.pushEditOperations).toHaveBeenCalled();
+    expect(model.pushStackElement).toHaveBeenCalled();
 
-    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
+    expect(injector.get(WorkbenchEditorService).open).toHaveBeenCalled();
 
-    expect(mockedPreviewFn).toBeCalled();
+    expect(mockedPreviewFn).toHaveBeenCalled();
   });
 
   it('monaco bulk edit metadata needsConfirmation test', async () => {
@@ -365,11 +366,11 @@ describe('workspace edit tests', () => {
     ] as unknown as ResourceEdit[]);
 
     const model = monaco.editor.getModel(Uri.parse('file:///monaco-test-3.ts'))!;
-    expect(model.pushEditOperations).toBeCalled();
-    expect(model.pushStackElement).toBeCalled();
+    expect(model.pushEditOperations).toHaveBeenCalled();
+    expect(model.pushStackElement).toHaveBeenCalled();
 
-    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
+    expect(injector.get(WorkbenchEditorService).open).toHaveBeenCalled();
 
-    expect(mockedPreviewFn).toBeCalled();
+    expect(mockedPreviewFn).toHaveBeenCalled();
   });
 });

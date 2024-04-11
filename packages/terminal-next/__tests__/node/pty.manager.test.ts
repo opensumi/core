@@ -4,7 +4,7 @@ import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { TerminalNodePtyModule } from '../../src/node';
-import { PtyServiceManagerToken, IPtyServiceManager, PtyServiceManager } from '../../src/node/pty.manager';
+import { IPtyServiceManager, PtyServiceManager, PtyServiceManagerToken } from '../../src/node/pty.manager';
 import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
 let shellPath = '';

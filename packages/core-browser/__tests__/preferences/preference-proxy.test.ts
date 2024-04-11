@@ -1,5 +1,4 @@
 import {
-  createPreferenceProxy,
   DefaultPreferenceProvider,
   PreferenceChangeEvent,
   PreferenceConfigurations,
@@ -13,11 +12,12 @@ import {
   PreferenceScope,
   PreferenceService,
   PreferenceServiceImpl,
+  createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
+import { MockPreferenceProvider, injectMockPreferences } from '../../__mocks__/preference';
 
 describe('Preference Proxy', () => {
   let injector: MockInjector;
@@ -93,21 +93,21 @@ describe('Preference Proxy', () => {
     expect(Object.keys(proxy).join()).toBe(['my.pref'].join());
   });
 
-  it('it should get provide access in deep style but not flat', () => {
+  it('should get provide access in deep style but not flat', () => {
     const proxy = getProxy(undefined, { style: 'deep' });
     expect(proxy['my.pref']).toBe(undefined);
     expect(proxy.my.pref).toBe('foo');
     expect(Object.keys(proxy).join()).toBe(['my'].join());
   });
 
-  it('it should get provide access in to both styles', () => {
+  it('should get provide access in to both styles', () => {
     const proxy = getProxy(undefined, { style: 'both' });
     expect(proxy['my.pref']).toBe('foo');
     expect(proxy.my.pref).toBe('foo');
     expect(Object.keys(proxy).join()).toBe(['my', 'my.pref'].join());
   });
 
-  it('it should forward change events', (done) => {
+  it('should forward change events', (done) => {
     const proxy = getProxy(undefined, { style: 'both' });
     let theChange: PreferenceChangeEvent<{ [key: string]: any }>;
     proxy.onPreferenceChanged((change) => {

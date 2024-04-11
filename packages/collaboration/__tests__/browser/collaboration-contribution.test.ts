@@ -5,10 +5,10 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IFileService, IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
+  CollaborationModuleContribution,
   CollaborationServiceForClientPath,
   ICollaborationService,
   IYWebsocketServer,
-  CollaborationModuleContribution,
 } from '../../src';
 import { CollaborationContribution } from '../../src/browser/collaboration.contribution';
 import { CollaborationService } from '../../src/browser/collaboration.service';
@@ -93,6 +93,6 @@ describe('CollaborationContribution test', () => {
 
   it('should registry file watcher', () => {
     contribution.onFileServiceReady();
-    expect(mockCollaborationService.initFileWatch).toBeCalledTimes(1);
+    expect(mockCollaborationService.initFileWatch).toHaveBeenCalledTimes(1);
   });
 });

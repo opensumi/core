@@ -5,7 +5,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationTokenSource, CancellationToken } from '../src/cancellation';
+import { CancellationToken, CancellationTokenSource } from '../src/cancellation';
 
 describe('CancellationToken', () => {
   test('None', () => {

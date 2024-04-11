@@ -1,4 +1,4 @@
-import { ITerminalNetwork, ITerminalErrorService, TerminalNetworkStatus } from '../../src/common';
+import { ITerminalErrorService, ITerminalNetwork, TerminalNetworkStatus } from '../../src/common';
 
 import { injector } from './inject';
 import { delay } from './utils';

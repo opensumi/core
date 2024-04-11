@@ -1,4 +1,4 @@
-import { SearchHistory, SEARCH_WORD_SCOPE } from '../../src/browser/search-history';
+import { SEARCH_WORD_SCOPE, SearchHistory } from '../../src/browser/search-history';
 
 class MockSearchServiceClient {
   searchValue: string;

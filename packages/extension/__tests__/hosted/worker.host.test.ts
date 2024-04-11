@@ -8,7 +8,7 @@ import { MainThreadExtensionService } from '../../__mocks__/api/mainthread.exten
 import { MainThreadStorage } from '../../__mocks__/api/mathread.storage';
 import { mockExtensionProps, mockExtensionProps2 } from '../../__mocks__/extensions';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
-import { MockWorker, MessagePort, MessageChannel, mockFetch } from '../../__mocks__/worker';
+import { MessageChannel, MessagePort, MockWorker, mockFetch } from '../../__mocks__/worker';
 import { ExtensionWorkerHost } from '../../src/hosted/worker.host';
 
 (global as any).self = global;
@@ -73,7 +73,7 @@ describe('Extension Worker Thread Test Suites', () => {
     expect(typeof (exportsAPI2 as any).sayHello).toBe('function');
     expect(() => {
       (exportsAPI2 as any).sayHello();
-    }).toThrowError('worker runtime error.');
+    }).toThrow('worker runtime error.');
   });
 
   it('should register view proxy', async () => {

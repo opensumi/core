@@ -1,5 +1,5 @@
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Disposable, ILogger, OperatingSystem, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, Emitter, ILogger, OperatingSystem } from '@opensumi/ide-core-common';
 import { IExtension } from '@opensumi/ide-extension';
 import {
   ITerminalApiService,
@@ -20,7 +20,7 @@ import {
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import {
   EnvironmentVariableCollection,
   ExtHostTerminal,
@@ -127,7 +127,7 @@ describe('ext host terminal test', () => {
     });
 
     await mainThread['proxy'].$onDidCloseTerminal({ id: 'test-id', code: -1 });
-    expect(proxyFn).toBeCalled();
+    expect(proxyFn).toHaveBeenCalled();
     await defered.promise;
   });
 
@@ -188,7 +188,7 @@ describe('ext host terminal test', () => {
       rows: 30,
     });
 
-    expect(mockCreateTerminal).toBeCalled();
+    expect(mockCreateTerminal).toHaveBeenCalled();
 
     const mockSetStatus = jest.spyOn(terminal4, 'setExitCode');
 
@@ -198,8 +198,8 @@ describe('ext host terminal test', () => {
 
       // 要等待事件 fire 后能监听到
       setTimeout(() => {
-        expect(mockTerminalExit).toBeCalledWith(terminalId, 2);
-        expect(mockSetStatus).toBeCalled();
+        expect(mockTerminalExit).toHaveBeenCalledWith(terminalId, 2);
+        expect(mockSetStatus).toHaveBeenCalled();
         expect(terminal4.exitStatus).toBeDefined();
         expect(terminal4.exitStatus?.code).toBe(2);
         defered.resolve();
@@ -259,8 +259,8 @@ describe('ext host terminal test', () => {
     collection.append('FOO', 'BAR');
     const serialized = [['FOO', { value: 'BAR', type: 2 /** EnvironmentVariableMutatorType.Append */ }]];
 
-    expect(mocksyncEnvironmentVariableCollection).toBeCalled();
-    expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
+    expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalled();
+    expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalledWith(mockExtension.id, collection);
     expect([...collection.map.entries()]).toEqual(serialized);
   });
 
@@ -268,8 +268,8 @@ describe('ext host terminal test', () => {
     collection.replace('FOO', 'BAR2');
     const serialized = [['FOO', { value: 'BAR2', type: 1 /** EnvironmentVariableMutatorType.Replace */ }]];
 
-    expect(mocksyncEnvironmentVariableCollection).toBeCalled();
-    expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
+    expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalled();
+    expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalledWith(mockExtension.id, collection);
     expect([...collection.map.entries()]).toEqual(serialized);
   });
 
@@ -277,8 +277,8 @@ describe('ext host terminal test', () => {
     collection.prepend('FOO', 'BAR3');
     const serialized = [['FOO', { value: 'BAR3', type: 3 /** EnvironmentVariableMutatorType.Prepend */ }]];
 
-    expect(mocksyncEnvironmentVariableCollection).toBeCalled();
-    expect(mocksyncEnvironmentVariableCollection).toBeCalledWith(mockExtension.id, collection);
+    expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalled();
+    expect(mocksyncEnvironmentVariableCollection).toHaveBeenCalledWith(mockExtension.id, collection);
     expect([...collection.map.entries()]).toEqual(serialized);
   });
 

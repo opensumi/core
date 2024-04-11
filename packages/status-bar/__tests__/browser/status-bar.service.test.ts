@@ -65,7 +65,7 @@ describe('template test', () => {
         text: 'GBK',
         alignment: StatusBarAlignment.LEFT,
       });
-    }).toThrowError('not found id is encoding1 element');
+    }).toThrow('not found id is encoding1 element');
   });
 
   it('execute onclick function', () => {
@@ -83,7 +83,7 @@ describe('template test', () => {
     enCodingEntry.onClick!({});
 
     // 执行到了命令
-    expect($execute).toBeCalled();
+    expect($execute).toHaveBeenCalled();
   });
 
   it('delete elements', () => {
@@ -125,8 +125,8 @@ describe('template test', () => {
       alignment: StatusBarAlignment.RIGHT,
     });
     expect(statusBarService.rightEntries[0].name).toBe('Source Control');
-    expect($registerMenu).toBeCalledTimes(1);
-    expect($registerMenu).toBeCalledWith('statusbar/context', {
+    expect($registerMenu).toHaveBeenCalledTimes(1);
+    expect($registerMenu).toHaveBeenCalledWith('statusbar/context', {
       command: { id: 'statusbar.toggleElement', label: 'Source Control' },
       extraTailArgs: ['status.scm'],
       order: 9007199254740991,
@@ -152,7 +152,7 @@ describe('template test', () => {
     expect(statusBarService.rightEntries.length).toBe(2);
     expect(statusBarService.rightEntries[0].name).toBe('Source Control');
     // 菜单只应该注册一次
-    expect($registerMenu).toBeCalledTimes(1);
+    expect($registerMenu).toHaveBeenCalledTimes(1);
   });
 
   it('the menu should be sorted left and right', () => {

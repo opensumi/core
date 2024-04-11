@@ -7,8 +7,8 @@ import temp = require('temp');
 import vscode from 'vscode';
 
 import {
-  PreferenceProviderProvider,
   PreferenceProvider,
+  PreferenceProviderProvider,
   PreferenceService,
   PreferenceServiceImpl,
 } from '@opensumi/ide-core-browser';
@@ -17,30 +17,30 @@ import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { StaticResourceServiceImpl } from '@opensumi/ide-core-browser/lib/static-resource/static.service';
 import {
-  Uri as vscodeUri,
+  CommonServerPath,
+  Deferred,
+  DisposableCollection,
   Emitter,
+  FileUri,
+  IApplicationService,
+  IEventBus,
+  ILoggerManagerClient,
+  OS,
+  PreferenceScope,
   URI,
   Uri,
-  IEventBus,
-  PreferenceScope,
-  ILoggerManagerClient,
-  FileUri,
-  CommonServerPath,
-  OS,
-  IApplicationService,
-  DisposableCollection,
-  Deferred,
+  Uri as vscodeUri,
 } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
+  EditorComponentRegistry,
+  EditorDocumentModelCreationEvent,
+  EditorPreferences,
+  EmptyDocCacheImpl,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
-  EmptyDocCacheImpl,
-  EditorDocumentModelCreationEvent,
-  EditorComponentRegistry,
-  EditorPreferences,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import {
@@ -75,8 +75,8 @@ import {
   IDiskFileProvider,
 } from '@opensumi/ide-file-service';
 import {
-  FileServiceClient,
   BrowserFileSystemRegistryImpl,
+  FileServiceClient,
 } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';

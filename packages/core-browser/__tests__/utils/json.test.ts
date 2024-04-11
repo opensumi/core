@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { JSONArray, JSONUtils, JSONObject, JSONPrimitive } from '../../src/utils/json';
+import { JSONArray, JSONObject, JSONPrimitive, JSONUtils } from '../../src/utils/json';
 
 describe('JSONUtils', () => {
   describe('isPrimitive()', () => {

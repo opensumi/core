@@ -1,4 +1,4 @@
-import { IContextKeyService, CommandService } from '@opensumi/ide-core-browser';
+import { CommandService, IContextKeyService } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
@@ -50,23 +50,23 @@ describe('WorkspaceContribution should be work', () => {
       }),
     };
     workspaceVariableContribution.registerVariables(variables as any);
-    expect(variables.registerVariable).toBeCalledTimes(11);
+    expect(variables.registerVariable).toHaveBeenCalledTimes(11);
   });
 
   it('getWorkspaceRootUri method should be work', async () => {
     const workspaceUri = new URI('file://userhome/');
     workspaceVariableContribution.getWorkspaceRootUri(workspaceUri);
-    expect(mockWorkspaceService.getWorkspaceRootUri).toBeCalledWith(workspaceUri);
+    expect(mockWorkspaceService.getWorkspaceRootUri).toHaveBeenCalledWith(workspaceUri);
   });
 
   it('getResourceUri method should be work', async () => {
     await workspaceVariableContribution.getResourceUri();
-    expect(mockCommandService.executeCommand).toBeCalledWith('editor.getCurrentResource');
+    expect(mockCommandService.executeCommand).toHaveBeenCalledWith('editor.getCurrentResource');
   });
 
   it('getWorkspaceRelativePath method should be work', async () => {
     const workspaceUri = new URI('file://userhome/');
     workspaceVariableContribution.getWorkspaceRelativePath(workspaceUri);
-    expect(mockWorkspaceService.getWorkspaceRootUri).toBeCalledWith(workspaceUri);
+    expect(mockWorkspaceService.getWorkspaceRootUri).toHaveBeenCalledWith(workspaceUri);
   });
 });

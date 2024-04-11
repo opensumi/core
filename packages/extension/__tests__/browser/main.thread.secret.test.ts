@@ -68,18 +68,18 @@ describe('MainThreadSecret API Test Suite', () => {
 
   it('$setPassword', async () => {
     await mainThreadSecret.$setPassword(extensionId, key, value);
-    expect(mockCredentialsService.setPassword).toBeCalled();
-    expect(mockCryptoService.encrypt).toBeCalled();
+    expect(mockCredentialsService.setPassword).toHaveBeenCalled();
+    expect(mockCryptoService.encrypt).toHaveBeenCalled();
   });
 
   it('$getPassword', async () => {
     await mainThreadSecret.$getPassword(extensionId, key);
-    expect(mockCredentialsService.getPassword).toBeCalled();
-    expect(mockCryptoService.decrypt).toBeCalled();
+    expect(mockCredentialsService.getPassword).toHaveBeenCalled();
+    expect(mockCryptoService.decrypt).toHaveBeenCalled();
   });
 
   it('$deletePassword', async () => {
     await mainThreadSecret.$deletePassword(extensionId, key);
-    expect(mockCredentialsService.deletePassword).toBeCalled();
+    expect(mockCredentialsService.deletePassword).toHaveBeenCalled();
   });
 });

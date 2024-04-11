@@ -1,8 +1,8 @@
-import type { TaskProvider } from 'vscode';
-
-import { Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
+import { Event, Emitter as EventEmitter } from '@opensumi/ide-core-common';
 
 import * as extTypes from '../../../../../src/common/vscode/ext-types';
+
+import type { TaskProvider } from 'vscode';
 
 // Test case
 class CustomBuildTaskTerminal {

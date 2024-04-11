@@ -35,8 +35,8 @@ describe('EmptyDocCacheImpl', () => {
     const getCacheSpy = jest.spyOn(cacheProvider, 'getCache');
 
     injector.get(EditorDocumentModel, [uri, content]);
-    expect(hasCacheSpy).toBeCalledTimes(1);
-    expect(getCacheSpy).toBeCalledTimes(0);
+    expect(hasCacheSpy).toHaveBeenCalledTimes(1);
+    expect(getCacheSpy).toHaveBeenCalledTimes(0);
   });
 
   it('call getCache during DocumentModel constructing', () => {
@@ -46,9 +46,9 @@ describe('EmptyDocCacheImpl', () => {
     const getCacheSpy = jest.spyOn(cacheProvider, 'getCache');
 
     injector.get(EditorDocumentModel, [uri, content]);
-    expect(hasCacheSpy).toBeCalledTimes(1);
-    expect(getCacheSpy).toBeCalledTimes(1);
-    expect(getCacheSpy).toBeCalledWith(uri, 'utf8');
+    expect(hasCacheSpy).toHaveBeenCalledTimes(1);
+    expect(getCacheSpy).toHaveBeenCalledTimes(1);
+    expect(getCacheSpy).toHaveBeenCalledWith(uri, 'utf8');
   });
 
   it('call persistCache when content change', () => {
@@ -59,8 +59,8 @@ describe('EmptyDocCacheImpl', () => {
     const newContent = uniqueId('content');
     docModel.getMonacoModel().setValue(newContent);
 
-    expect(persistCacheSpy).toBeCalledTimes(1);
-    expect(persistCacheSpy).toBeCalledWith(uri, {
+    expect(persistCacheSpy).toHaveBeenCalledTimes(1);
+    expect(persistCacheSpy).toHaveBeenCalledWith(uri, {
       changeMatrix: [
         [
           {

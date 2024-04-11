@@ -1,4 +1,4 @@
-import { IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { EventBusImpl, IEventBus } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';

@@ -82,7 +82,7 @@ describe('DebugSource Model', () => {
 
     it('Load source should be work', async () => {
       await debugSource.load();
-      expect(sessions.sendRequest).toBeCalledWith('source', {
+      expect(sessions.sendRequest).toHaveBeenCalledWith('source', {
         sourceReference: raw.sourceReference,
         source: raw,
       });
@@ -96,7 +96,7 @@ describe('DebugSource Model', () => {
       };
       debugSource.update({ raw: newRaw });
       await debugSource.open({});
-      expect(fileSystem.setContent).toBeCalledWith(
+      expect(fileSystem.setContent).toHaveBeenCalledWith(
         {
           uri: memoryFile.toString(),
           lastModification: 0,
@@ -116,13 +116,13 @@ describe('DebugSource Model', () => {
         },
       };
       await debugSource.open({}, frame as any);
-      expect(workbenchEditorService.open).toBeCalledTimes(1);
-      expect(model.focusStackFrame).toBeCalledWith();
+      expect(workbenchEditorService.open).toHaveBeenCalledTimes(1);
+      expect(model.focusStackFrame).toHaveBeenCalledWith();
     });
 
     it('Open source should be work with no frame and no memory file', async () => {
       await debugSource.open({});
-      expect(workbenchEditorService.open).toBeCalledTimes(1);
+      expect(workbenchEditorService.open).toHaveBeenCalledTimes(1);
     });
   });
 });

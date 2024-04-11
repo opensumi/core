@@ -1,4 +1,4 @@
-import { Terminal, ILink } from 'xterm';
+import { ILink, Terminal } from 'xterm';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { TerminalProtocolLinkProvider } from '../../../src/browser/links/protocol-link-provider';

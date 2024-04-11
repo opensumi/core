@@ -45,7 +45,7 @@ describe('Collaboration node ws server test', () => {
   it('should correctly initialize', () => {
     const spy = jest.spyOn(server, 'initialize');
     server.initialize();
-    expect(spy).toBeCalled();
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should get Y.Doc', () => {
@@ -73,7 +73,7 @@ describe('Collaboration node ws server test', () => {
   it('should correctly dispose', () => {
     const spy = jest.spyOn(server, 'destroy');
     server.destroy();
-    expect(spy).toBeCalled();
+    expect(spy).toHaveBeenCalled();
   });
 
   afterAll(() => {

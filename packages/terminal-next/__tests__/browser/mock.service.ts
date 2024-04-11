@@ -6,26 +6,26 @@ import { WSChannel } from '@opensumi/ide-connection';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
 import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { uuid, URI, Emitter, IDisposable, PreferenceScope, Deferred, OperatingSystem } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, IDisposable, OperatingSystem, PreferenceScope, URI, uuid } from '@opensumi/ide-core-common';
 import { Color, RGBA } from '@opensumi/ide-theme/lib/common/color';
 
 import {
-  ITerminalService,
-  ITerminalConnection,
-  ITerminalError,
-  IShellLaunchConfig,
-  ITerminalProfile,
-  ITerminalProfileService,
-  IResolveDefaultProfileOptions,
-  ITerminalProfileProvider,
-  IExtensionTerminalProfile,
-  ITerminalProfileInternalService,
-  IPtyProcessChangeEvent,
-  ITerminalContributions,
   ICreateContributedTerminalProfileOptions,
+  IExtensionTerminalProfile,
+  IPtyProcessChangeEvent,
+  IResolveDefaultProfileOptions,
+  IShellLaunchConfig,
+  ITerminalConnection,
+  ITerminalContributions,
+  ITerminalError,
+  ITerminalProfile,
+  ITerminalProfileInternalService,
+  ITerminalProfileProvider,
+  ITerminalProfileService,
+  ITerminalService,
 } from '../../src/common';
 
-import { getPort, localhost, MessageMethod } from './proxy';
+import { MessageMethod, getPort, localhost } from './proxy';
 import { delay } from './utils';
 
 // Ref: https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom

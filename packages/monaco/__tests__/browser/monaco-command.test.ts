@@ -1,6 +1,6 @@
 import { MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
-import { Emitter, CommandRegistry } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService, EditorCollectionService } from '@opensumi/ide-editor';
+import { CommandRegistry, Emitter } from '@opensumi/ide-core-common';
+import { EditorCollectionService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   MonacoActionRegistry,
   MonacoCommandRegistry,
@@ -18,7 +18,7 @@ import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
 import { MonacoService } from '../../src/common';
 
-describe(' monaco command service test', () => {
+describe('monaco command service test', () => {
   let injector: MockInjector;
   let commandRegistry: CommandRegistry;
   let monacoCommandRegistry: MonacoCommandRegistry;
@@ -76,8 +76,8 @@ describe(' monaco command service test', () => {
       const execute = jest.fn();
       commandRegistry.registerCommand({ id }, { execute });
       await monacoCommandService.executeCommand(id, 123);
-      expect(execute).toBeCalledTimes(1);
-      expect(execute).toBeCalledWith(123);
+      expect(execute).toHaveBeenCalledTimes(1);
+      expect(execute).toHaveBeenCalledWith(123);
     });
 
     it('execute delegate command', async () => {
@@ -94,9 +94,9 @@ describe(' monaco command service test', () => {
       });
       monacoCommandService.onWillExecuteCommand(onWillExecuteCommandCallBack);
       await monacoCommandService.executeCommand(id);
-      expect(onWillExecuteCommandCallBack).toBeCalledTimes(1);
-      expect(executeCommand).toBeCalledTimes(1);
-      expect(executeCommand).toBeCalledWith(id);
+      expect(onWillExecuteCommandCallBack).toHaveBeenCalledTimes(1);
+      expect(executeCommand).toHaveBeenCalledTimes(1);
+      expect(executeCommand).toHaveBeenCalledWith(id);
     });
   });
 
@@ -114,9 +114,9 @@ describe(' monaco command service test', () => {
       );
 
       await monacoCommandService.executeCommand(id);
-      expect(execute).toBeCalledTimes(1);
+      expect(execute).toHaveBeenCalledTimes(1);
       // monaco command execute 第一个参数是当前激活的 monaco 实例
-      expect(execute).toBeCalledWith(monacoEditor);
+      expect(execute).toHaveBeenCalledWith(monacoEditor);
     });
 
     it('should execute second command handler', async () => {
@@ -136,8 +136,8 @@ describe(' monaco command service test', () => {
       });
 
       await monacoCommandService.executeCommand(id);
-      expect(execute).toBeCalledTimes(0);
-      expect(handlerExecute).toBeCalledTimes(1);
+      expect(execute).toHaveBeenCalledTimes(0);
+      expect(handlerExecute).toHaveBeenCalledTimes(1);
     });
 
     it('validate a command', async () => {

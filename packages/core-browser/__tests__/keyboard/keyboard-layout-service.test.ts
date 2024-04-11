@@ -1,10 +1,10 @@
 import {
   GlobalBrowserStorageService,
-  KeyboardNativeLayoutService,
-  Key,
-  KeyboardLayoutService,
-  KeyCode,
   ILinuxKeyboardLayoutInfo,
+  Key,
+  KeyCode,
+  KeyboardLayoutService,
+  KeyboardNativeLayoutService,
   isOSX,
 } from '@opensumi/ide-core-browser';
 

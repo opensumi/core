@@ -1,8 +1,8 @@
 import {
-  GlobalBrowserStorageService,
-  KeyboardNativeLayoutService,
   BrowserKeyboardLayoutImpl,
+  GlobalBrowserStorageService,
   Key,
+  KeyboardNativeLayoutService,
 } from '@opensumi/ide-core-browser';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

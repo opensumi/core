@@ -3,7 +3,7 @@
 // @ts-ignore
 import { Text as YText } from 'yjs';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { EventBusImpl, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
 import { INodeLogger, AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
@@ -15,10 +15,11 @@ import {
   EditorDocumentModelRemovalEvent,
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
-import { IFileService, FileChangeType } from '@opensumi/ide-file-service';
+import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/ide-monaco';
+import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 
 import { CollaborationService } from '../../src/browser/collaboration.service';
@@ -26,7 +27,6 @@ import { TextModelBinding } from '../../src/browser/textmodel-binding';
 import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src/common';
 import { CollaborationServiceForClient } from '../../src/node/collaboration.service';
 import { YWebsocketServerImpl } from '../../src/node/y-websocket-server';
-import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 @Injectable()
 class MockWorkbenchEditorService {
@@ -147,7 +147,7 @@ describe('CollaborationService basic routines', () => {
   it('should successfully initialize', () => {
     const spy = jest.spyOn(service, 'initialize');
     service.initialize();
-    expect(spy).toBeCalled();
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should create a new binding when all things are ready', async () => {
@@ -165,8 +165,8 @@ describe('CollaborationService basic routines', () => {
     const redoSpy = jest.spyOn(targetBinding, 'redo');
     service.undoOnFocusedTextModel();
     service.redoOnFocusedTextModel();
-    expect(undoSpy).toBeCalled();
-    expect(redoSpy).toBeCalled();
+    expect(undoSpy).toHaveBeenCalled();
+    expect(redoSpy).toHaveBeenCalled();
   });
 
   it('should change YText when remote YText was changed', async () => {
@@ -184,7 +184,7 @@ describe('CollaborationService basic routines', () => {
 
     await yMapReady.promise;
 
-    expect(spy).toBeCalled();
+    expect(spy).toHaveBeenCalled();
     expect(binding['yText'].toJSON()).toBe('1919810');
   });
 

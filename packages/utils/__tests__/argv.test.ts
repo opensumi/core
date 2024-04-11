@@ -1,7 +1,7 @@
 /**
  * 目前依赖了 mri 这个包，这里主要是测一些我们自己期望的表现
  */
-import { parseString, ArgvFactory } from '../src/argv';
+import { ArgvFactory, parseString } from '../src/argv';
 
 describe('parse cli args', () => {
   it('can get value as expected', () => {

@@ -1,10 +1,11 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
-import { URI, CommandService, ILineChange, registerLocalizationBundle } from '@opensumi/ide-core-common';
+import { CommandService, ILineChange, URI, registerLocalizationBundle } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { positionToRange } from '@opensumi/ide-monaco';
 import { toChange } from '@opensumi/ide-scm/lib/browser/dirty-diff/dirty-diff-util';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
@@ -14,7 +15,6 @@ import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.conte
 import { SCMService } from '../../../src';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
-import { positionToRange } from '@opensumi/ide-monaco';
 
 registerLocalizationBundle({
   languageId: 'zh-CN',
@@ -189,7 +189,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
 
       // add
       actionList[0].click();
-      expect(fakeExecCmd).toBeCalledTimes(1);
+      expect(fakeExecCmd).toHaveBeenCalledTimes(1);
       expect(fakeExecCmd.mock.calls[0]).toEqual([
         'git.stageChange',
         URI.file('/test/workspace/abc.ts'),
@@ -200,7 +200,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
 
       // revert
       actionList[1].click();
-      expect(fakeExecCmd).toBeCalledTimes(2);
+      expect(fakeExecCmd).toHaveBeenCalledTimes(2);
       expect(fakeExecCmd.mock.calls[1]).toEqual([
         'git.revertChange',
         URI.file('/test/workspace/abc.ts'),
@@ -211,17 +211,17 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
 
       // next
       actionList[2].click();
-      expect(fakeExecCmd).toBeCalledTimes(3);
+      expect(fakeExecCmd).toHaveBeenCalledTimes(3);
       expect(fakeExecCmd.mock.calls[2]).toEqual(['OPEN_DIRTY_DIFF_WIDGET', 14]);
 
       // prev
       actionList[3].click();
-      expect(fakeExecCmd).toBeCalledTimes(4);
+      expect(fakeExecCmd).toHaveBeenCalledTimes(4);
       expect(fakeExecCmd.mock.calls[3]).toEqual(['OPEN_DIRTY_DIFF_WIDGET', 12]);
 
       // close
       actionList[4].click();
-      expect(fakeExecCmd).toBeCalledTimes(4);
+      expect(fakeExecCmd).toHaveBeenCalledTimes(4);
       expect(fakeDispose).toHaveBeenCalledTimes(3);
 
       dirtyDiffWidget['_current'] = positionToRange(14);
@@ -229,7 +229,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       actionList[2].click();
       dirtyDiffModel['findPreviousClosestChangeLineNumber'] = (n) => n;
       actionList[3].click();
-      expect(fakeExecCmd).toBeCalledTimes(4);
+      expect(fakeExecCmd).toHaveBeenCalledTimes(4);
     });
 
     it('ok for applyStyle', () => {

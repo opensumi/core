@@ -6,7 +6,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color, RGBA, HSLA, HSVA } from '../../src/common/color';
+import { Color, HSLA, HSVA, RGBA } from '../../src/common/color';
 
 describe('Color', () => {
   test('isLighterColor', () => {

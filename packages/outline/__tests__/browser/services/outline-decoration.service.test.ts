@@ -1,9 +1,9 @@
-import { MarkerManager, URI, MarkerSeverity } from '@opensumi/ide-core-common';
+import { MarkerManager, MarkerSeverity, URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
-import { OutlineRoot, OutlineCompositeTreeNode } from '../../../src/browser/outline-node.define';
+import { OutlineCompositeTreeNode, OutlineRoot } from '../../../src/browser/outline-node.define';
 import { OutlineDecorationService } from '../../../src/browser/services/outline-decoration.service';
 
 describe('OutlineDecorationService', () => {
@@ -51,7 +51,7 @@ describe('OutlineDecorationService', () => {
 
   it('updateDiagnosisInfo method should be work', () => {
     outlineDecorationService.updateDiagnosisInfo(new URI('test.js'));
-    expect(mockMarkerManager.getMarkers).toBeCalledTimes(1);
+    expect(mockMarkerManager.getMarkers).toHaveBeenCalledTimes(1);
   });
 
   it('getDecoration method should be work', () => {
@@ -71,6 +71,6 @@ describe('OutlineDecorationService', () => {
       '',
     );
     outlineDecorationService.getDecoration(decorationNode);
-    expect(mocThemeService.getColor).toBeCalledTimes(1);
+    expect(mocThemeService.getColor).toHaveBeenCalledTimes(1);
   });
 });

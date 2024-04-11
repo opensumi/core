@@ -6,21 +6,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import {
+  FuzzyScorer,
   IFilter,
-  or,
-  matchesPrefix,
-  matchesStrictPrefix,
-  matchesCamelCase,
-  matchesSubString,
-  matchesContiguousSubString,
-  matchesWords,
-  fuzzyScore,
   IMatch,
+  anyScore,
+  createMatches,
+  fuzzyScore,
   fuzzyScoreGraceful,
   fuzzyScoreGracefulAggressive,
-  FuzzyScorer,
-  createMatches,
-  anyScore,
+  matchesCamelCase,
+  matchesContiguousSubString,
+  matchesPrefix,
+  matchesStrictPrefix,
+  matchesSubString,
+  matchesWords,
+  or,
 } from '../src/filters';
 
 function deepStrictEqual(a, b) {

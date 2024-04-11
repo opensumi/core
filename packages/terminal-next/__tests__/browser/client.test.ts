@@ -4,23 +4,24 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import httpProxy from 'http-proxy';
 import WebSocket from 'ws';
-import type { ITerminalAddon } from 'xterm';
 
-import { Disposable, FileUri, URI, Event } from '@opensumi/ide-core-common';
+import { Disposable, Event, FileUri, URI } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
-  ITerminalGroupViewService,
-  ITerminalClient,
-  IWidget,
-  ITerminalClientFactory2,
-  ITerminalInternalService,
   IShellLaunchConfig,
+  ITerminalClient,
+  ITerminalClientFactory2,
+  ITerminalGroupViewService,
+  ITerminalInternalService,
+  IWidget,
 } from '../../src/common';
 
 import { injector } from './inject';
 import { createProxyServer, createWsServer } from './proxy';
 import { createBufferLineArray, delay } from './utils';
+
+import type { ITerminalAddon } from 'xterm';
 
 function createDOMContainer() {
   const div = document.createElement('div');

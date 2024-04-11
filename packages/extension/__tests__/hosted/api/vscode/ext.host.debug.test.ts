@@ -6,9 +6,9 @@ import { Deferred, URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import {
-  DebugAdapterServer,
   DebugAdapterExecutable,
   DebugAdapterInlineImplementation,
+  DebugAdapterServer,
 } from '../../../../src/common/vscode/ext-types';
 import { ExtHostDebug, createDebugApiFactory } from '../../../../src/hosted/api/vscode/debug/ext.host.debug';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
@@ -98,7 +98,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
       },
     ];
     extHostDebug.registerDebuggersContributions(URI.file('home/extension/test').toString(), contributions);
-    expect(mockMainThreadDebug.$registerDebuggerContribution).toBeCalledTimes(1);
+    expect(mockMainThreadDebug.$registerDebuggerContribution).toHaveBeenCalledTimes(1);
     mockMainThreadDebug.$registerDebuggerContribution.mockClear();
   });
 
@@ -110,7 +110,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
       },
     ];
     extHostDebug.addBreakpoints(breakpoints);
-    expect(mockMainThreadDebug.$addBreakpoints).toBeCalledTimes(1);
+    expect(mockMainThreadDebug.$addBreakpoints).toHaveBeenCalledTimes(1);
     mockMainThreadDebug.$addBreakpoints.mockClear();
   });
 
@@ -122,7 +122,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
       },
     ];
     extHostDebug.removeBreakpoints(breakpoints);
-    expect(mockMainThreadDebug.$removeBreakpoints).toBeCalledTimes(1);
+    expect(mockMainThreadDebug.$removeBreakpoints).toHaveBeenCalledTimes(1);
     mockMainThreadDebug.$removeBreakpoints.mockClear();
   });
 
@@ -151,7 +151,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
 
   it('startDebugging method should be work', () => {
     extHostDebug.startDebugging(undefined, 'test');
-    expect(mockMainThreadDebug.$startDebugging).toBeCalledTimes(1);
+    expect(mockMainThreadDebug.$startDebugging).toHaveBeenCalledTimes(1);
     mockMainThreadDebug.$startDebugging.mockClear();
   });
 
@@ -187,7 +187,7 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
       id: 1000,
       index: 1,
     });
-    expect(mockMainThreadConnection.$createConnection).toBeCalledTimes(1);
+    expect(mockMainThreadConnection.$createConnection).toHaveBeenCalledTimes(1);
     await extHostDebug.$onSessionCustomEvent(sessionId, 'event');
     await extHostDebug.$sessionDidStart(sessionId);
     await extHostDebug.$sessionDidDestroy(sessionId);

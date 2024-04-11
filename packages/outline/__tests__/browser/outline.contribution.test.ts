@@ -24,21 +24,21 @@ describe('Outline contribution should be work', () => {
     it('should onDidRender be work', async () => {
       const contribution = mockInjector.get(OutlineContribution);
       contribution.onDidRender();
-      expect(mockMainLayoutService.collectViewComponent).toBeCalledTimes(1);
+      expect(mockMainLayoutService.collectViewComponent).toHaveBeenCalledTimes(1);
     });
 
     it('should registerCommands be work', async () => {
       const contribution = mockInjector.get(OutlineContribution);
       const register = jest.fn();
       contribution.registerCommands({ registerCommand: register } as any);
-      expect(register).toBeCalledTimes(5);
+      expect(register).toHaveBeenCalledTimes(5);
     });
 
     it('should registerToolbarItems be work', async () => {
       const contribution = mockInjector.get(OutlineContribution);
       const register = jest.fn();
       contribution.registerToolbarItems({ registerItem: register } as any);
-      expect(register).toBeCalledTimes(5);
+      expect(register).toHaveBeenCalledTimes(5);
     });
   });
 });

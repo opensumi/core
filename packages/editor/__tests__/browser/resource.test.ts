@@ -1,20 +1,20 @@
 import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, IEventBus, Schemes, Deferred } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
-import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
+import { Deferred, IEventBus, Schemes, URI } from '@opensumi/ide-core-common';
+import { ICompareService, IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { DefaultDiffEditorContribution, DiffResourceProvider } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
 import { UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
-  ResourceService,
   IResourceProvider,
-  ResourceDecorationNeedChangeEvent,
   ResourceDecorationChangeEvent,
-  ResourceNeedUpdateEvent,
+  ResourceDecorationNeedChangeEvent,
   ResourceDidUpdateEvent,
+  ResourceNeedUpdateEvent,
+  ResourceService,
   WorkbenchEditorService,
 } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
@@ -128,7 +128,7 @@ describe('resource service tests', () => {
     );
 
     expect(service.getResourceDecoration(resUri).dirty).toBeTruthy();
-    expect(changedListener).toBeCalledWith(
+    expect(changedListener).toHaveBeenCalledWith(
       expect.objectContaining({ payload: { uri: resUri, decoration: { dirty: true } } }),
     );
 
@@ -143,7 +143,7 @@ describe('resource service tests', () => {
     );
 
     expect(service.getResourceDecoration(resUri).dirty).toBeFalsy();
-    expect(changedListener).toBeCalledWith(
+    expect(changedListener).toHaveBeenCalledWith(
       expect.objectContaining({ payload: { uri: resUri, decoration: { dirty: false } } }),
     );
 
@@ -232,7 +232,7 @@ describe('resource service tests', () => {
 
     await provider.saveDocumentModel(untitledURI, 'test document', '', [], 'utf8');
 
-    expect(mockSave).toBeCalled();
+    expect(mockSave).toHaveBeenCalled();
   });
 
   it('diff resource tests', async () => {
@@ -271,8 +271,8 @@ describe('resource service tests', () => {
     const resourceService: ResourceService = injector.get(ResourceService);
 
     expect(await provider.shouldCloseResource(res, [[]])).toBe(true);
-    expect(resourceService.getResource).toBeCalled();
-    expect(resourceService.shouldCloseResource).toBeCalled();
+    expect(resourceService.getResource).toHaveBeenCalled();
+    expect(resourceService.shouldCloseResource).toHaveBeenCalled();
 
     const eventBus: IEventBus = injector.get(IEventBus);
 

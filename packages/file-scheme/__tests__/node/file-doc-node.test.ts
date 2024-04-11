@@ -1,16 +1,16 @@
 import { tmpdir } from 'os';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 
-import { ensureDir, writeFile, readFile } from 'fs-extra';
+import { ensureDir, readFile, writeFile } from 'fs-extra';
 
-import { URI, iconvEncode, iconvDecode } from '@opensumi/ide-core-common';
+import { URI, iconvDecode, iconvEncode } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IFileService, FileStat } from '@opensumi/ide-file-service';
-
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { FileStat, IFileService } from '@opensumi/ide-file-service';
+
 import { IFileSchemeDocNodeService } from '../../src/common';
 import { FileSchemeNodeModule } from '../../src/node';
 import { FileSchemeDocNodeServiceImpl } from '../../src/node/file-scheme-doc.service';
@@ -92,7 +92,7 @@ describe('node file doc service test', () => {
 
     expect(res.state).toBe('success');
 
-    expect(fileService.setContent).toBeCalledTimes(1);
+    expect(fileService.setContent).toHaveBeenCalledTimes(1);
 
     // diff 情况
     const res2 = await fileDocNodeService.$saveByContent('file:///anyFile', {
@@ -102,7 +102,7 @@ describe('node file doc service test', () => {
 
     expect(res2.state).toBe('diff');
 
-    expect(fileService.setContent).toBeCalledTimes(1);
+    expect(fileService.setContent).toHaveBeenCalledTimes(1);
 
     const res3 = await fileDocNodeService.$saveByContent(
       'file:///anyFile',
@@ -116,7 +116,7 @@ describe('node file doc service test', () => {
 
     expect(res3.state).toBe('success');
 
-    expect(fileService.setContent).toBeCalledTimes(2);
+    expect(fileService.setContent).toHaveBeenCalledTimes(2);
 
     const res4 = await fileDocNodeService.$saveByContent('file:///anyFilenotexist', {
       baseMd5: hashCalculateService.calculate(''),
@@ -125,7 +125,7 @@ describe('node file doc service test', () => {
 
     expect(res4.state).toBe('success');
 
-    expect(fileService.createFile).toBeCalledTimes(1);
+    expect(fileService.createFile).toHaveBeenCalledTimes(1);
 
     const file1 = await createFixtureFile();
     await writeFile(file1, '\n\n2', 'utf8');

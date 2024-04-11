@@ -1,16 +1,14 @@
-import type vscode from 'vscode';
-
 import { Injector } from '@opensumi/di';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { IMenuRegistry, MenuId, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
-import { Emitter, StorageProvider, IAuthenticationService, CommandRegistry } from '@opensumi/ide-core-common';
+import { IMenuItem, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/src/menu/next';
+import { CommandRegistry, Emitter, IAuthenticationService, StorageProvider } from '@opensumi/ide-core-common';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 import { MainThreadAuthentication } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.authentication';
 import {
-  MainThreadAPIIdentifier,
-  IMainThreadAuthentication,
   ExtHostAPIIdentifier,
+  IMainThreadAuthentication,
+  MainThreadAPIIdentifier,
 } from '@opensumi/ide-extension/lib/common/vscode';
 import {
   ExtHostAuthentication,
@@ -22,6 +20,8 @@ import { QuickPickService } from '@opensumi/ide-quick-open';
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+
+import type vscode from 'vscode';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts', () => {
   let injector: Injector;
@@ -118,9 +118,9 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const $getSession = jest.spyOn(mainThreadAuthentication, '$getSession');
     const $requestNewSession = jest.spyOn(authenticationService, 'requestNewSession');
     const session = await authenticationAPI.getSession('github', ['getRepo']);
-    expect($ensureProvider).toBeCalledWith('github');
-    expect($getSession).toBeCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', {});
-    expect($requestNewSession).toBeCalled();
+    expect($ensureProvider).toHaveBeenCalledWith('github');
+    expect($getSession).toHaveBeenCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', {});
+    expect($requestNewSession).toHaveBeenCalled();
     const commandRegistry: CommandRegistry = injector.get(CommandRegistry);
     const menuRegistry: IMenuRegistry = injector.get(IMenuRegistry);
     const signInCommandId = `${extensionId}signIn`;
@@ -143,10 +143,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = await authenticationAPI.getSession('github', ['getRepo'], {
       createIfNone: true,
     });
-    expect(loginSpy).toBeCalledWith(['getRepo']);
-    expect($ensureProvider).toBeCalledWith('github');
-    expect($getSession).toBeCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', { createIfNone: true });
-    expect(loginPrompt).toBeCalled();
+    expect(loginSpy).toHaveBeenCalledWith(['getRepo']);
+    expect($ensureProvider).toHaveBeenCalledWith('github');
+    expect($getSession).toHaveBeenCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', { createIfNone: true });
+    expect(loginPrompt).toHaveBeenCalled();
     expect(session).toStrictEqual({
       id: '1',
       accessToken: 'this_is_github_token',
@@ -175,10 +175,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
       clearSessionPreference: true,
       createIfNone: true,
     });
-    expect($loginPrompt).toBeCalled();
-    expect($selectSession).toBeCalled();
+    expect($loginPrompt).toHaveBeenCalled();
+    expect($selectSession).toHaveBeenCalled();
     // 会清空 session
-    expect(removeExtensionSessionId).toBeCalled();
+    expect(removeExtensionSessionId).toHaveBeenCalled();
   });
 
   it('get session with forceNewSession', async () => {
@@ -195,7 +195,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     await authenticationAPI.getSession('github', ['getRepo'], {
       forceNewSession: true,
     });
-    expect($loginPrompt).toBeCalled();
+    expect($loginPrompt).toHaveBeenCalled();
     expect($loginPrompt.mock.calls[0][2]).toBe(true);
   });
 
@@ -212,7 +212,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     await authenticationAPI.getSession('github', ['getRepo'], {
       silent: true,
     });
-    expect($requestNewSession).not.toBeCalled();
+    expect($requestNewSession).not.toHaveBeenCalled();
   });
 
   it('get session errorCase', async () => {
@@ -272,10 +272,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = await authenticationAPI.getSession('github', ['getRepo'], {
       createIfNone: true,
     });
-    expect(loginPrompt).toBeCalled();
+    expect(loginPrompt).toHaveBeenCalled();
     await authenticationAPI.logout('github', session.id);
-    expect(logoutSpy).toBeCalled();
-    expect($logout).toBeCalledWith('github', session.id);
+    expect(logoutSpy).toHaveBeenCalled();
+    expect($logout).toHaveBeenCalledWith('github', session.id);
   });
 
   it('onDidChangeSessions', (done) => {

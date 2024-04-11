@@ -18,7 +18,7 @@ function assertOk(value) {
 }
 
 function assertFail(value) {
-  expect(value).toThrowError();
+  expect(value).toThrow();
 }
 
 describe('Arrays', () => {

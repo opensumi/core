@@ -6,7 +6,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
-import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
+import { FileServicePath, IDiskFileProvider, IFileServiceClient } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 

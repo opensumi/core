@@ -51,7 +51,7 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
     expect(ctxMenuService.menuNodes.length).toBe(1);
 
     ctxMenuService.hide(true);
-    expect(onHide).toBeCalledTimes(1);
+    expect(onHide).toHaveBeenCalledTimes(1);
     expect(ctxMenuService.visible).toBeFalsy();
 
     ctxMenuService.show({

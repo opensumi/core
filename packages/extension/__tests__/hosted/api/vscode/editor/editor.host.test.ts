@@ -1,4 +1,4 @@
-import { SnippetString, Position, Range } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { Position, Range, SnippetString } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { TextEditorData } from '@opensumi/ide-extension/lib/hosted/api/vscode/editor/editor.host';
 
 import { mockService } from '../../../../../../../tools/dev-tool/src/mock-injector';
@@ -34,7 +34,7 @@ describe('editor host test', () => {
     it('insert snippet when no location', () => {
       textData.insertSnippet(snippetString);
       // when location does not exist, snippet is used
-      expect($insertSnippet).toBeCalledWith(
+      expect($insertSnippet).toHaveBeenCalledWith(
         expect.anything(),
         snippetString.value,
         [{ endColumn: 1, endLineNumber: 1, startColumn: 1, startLineNumber: 1 }],
@@ -46,7 +46,7 @@ describe('editor host test', () => {
       const position1 = new Position(0, 0);
       const position2 = new Position(1, 0);
       textData.insertSnippet(snippetString, [position1, position2]);
-      expect($insertSnippet).toBeCalledWith(
+      expect($insertSnippet).toHaveBeenCalledWith(
         expect.anything(),
         snippetString.value,
         [
@@ -60,7 +60,7 @@ describe('editor host test', () => {
     it('insert snippet with range', () => {
       const range = new Range(0, 0, 0, 0);
       textData.insertSnippet(snippetString, range);
-      expect($insertSnippet).toBeCalledWith(
+      expect($insertSnippet).toHaveBeenCalledWith(
         expect.anything(),
         snippetString.value,
         [{ endColumn: 1, endLineNumber: 1, startColumn: 1, startLineNumber: 1 }],
@@ -72,7 +72,7 @@ describe('editor host test', () => {
       const range1 = new Range(0, 0, 0, 0);
       const range2 = new Range(1, 0, 1, 0);
       textData.insertSnippet(snippetString, [range1, range2]);
-      expect($insertSnippet).toBeCalledWith(
+      expect($insertSnippet).toHaveBeenCalledWith(
         expect.anything(),
         snippetString.value,
         [

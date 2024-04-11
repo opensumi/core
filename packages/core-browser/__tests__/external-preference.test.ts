@@ -2,13 +2,13 @@ import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { IPreferences } from '../src';
 import {
-  registerExternalPreferenceProvider,
-  getPreferenceLanguageId,
   PreferenceScope,
-  getExternalPreferenceProvider,
-  getPreferenceThemeId,
-  getPreferenceIconThemeId,
   getExternalPreference,
+  getExternalPreferenceProvider,
+  getPreferenceIconThemeId,
+  getPreferenceLanguageId,
+  getPreferenceThemeId,
+  registerExternalPreferenceProvider,
   registerLocalStorageProvider,
 } from '../src/preferences';
 

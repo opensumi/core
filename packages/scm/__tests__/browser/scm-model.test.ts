@@ -1,6 +1,6 @@
 import { IContextKeyService, PreferenceService, URI } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DisposableCollection, Event, Disposable } from '@opensumi/ide-core-common';
+import { Disposable, DisposableCollection, Event } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

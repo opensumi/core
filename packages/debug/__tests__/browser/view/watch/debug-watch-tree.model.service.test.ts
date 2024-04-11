@@ -1,6 +1,6 @@
 import { IContextKeyService, StorageProvider } from '@opensumi/ide-core-browser';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
@@ -193,10 +193,10 @@ describe('Debug Watch Tree Model', () => {
     let mockNode = { expanded: false };
     debugWatchModelService.handleTreeHandler(treeHandle);
     debugWatchModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.expandNode).toBeCalledTimes(1);
+    expect(treeHandle.expandNode).toHaveBeenCalledTimes(1);
     mockNode = { expanded: true };
     debugWatchModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.collapseNode).toBeCalledTimes(1);
+    expect(treeHandle.collapseNode).toHaveBeenCalledTimes(1);
   });
 
   it('handleContextMenu method should be work', () => {
@@ -210,9 +210,9 @@ describe('Debug Watch Tree Model', () => {
       },
     } as any;
     debugWatchModelService.handleContextMenu(mockEvent, mockNode);
-    expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
-    expect(mockEvent.stopPropagation).toBeCalledTimes(1);
-    expect(mockEvent.preventDefault).toBeCalledTimes(1);
+    expect(mockCtxMenuRenderer.show).toHaveBeenCalledTimes(1);
+    expect(mockEvent.stopPropagation).toHaveBeenCalledTimes(1);
+    expect(mockEvent.preventDefault).toHaveBeenCalledTimes(1);
   });
 
   it('refresh method should be work', (done) => {
