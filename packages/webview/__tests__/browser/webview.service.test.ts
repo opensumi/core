@@ -151,9 +151,7 @@ describe('electron platform webview service test suite', () => {
   });
 
   afterAll(() => {
-    beforeAll(() => {
-      global.isElectronRenderer = false;
-    });
+    global.isElectronRenderer = false;
   });
 });
 
