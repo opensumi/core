@@ -133,7 +133,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       const res = await this.dialogService.open<string[]>(
         <FileDialog model={model} options={{ ...defaultOptions, ...options }} isOpenDialog={true} />,
         MessageType.Empty,
-        undefined,
+        [],
         true,
         undefined,
         { className: styles.file_dialog_wrapper },
@@ -183,7 +183,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       const res = await this.dialogService.open<string[]>(
         <FileDialog model={model} options={options} isOpenDialog={false} />,
         MessageType.Empty,
-        undefined,
+        [],
         true,
         undefined,
         { className: styles.file_dialog_wrapper },
