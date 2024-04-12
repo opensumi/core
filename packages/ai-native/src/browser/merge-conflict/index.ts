@@ -822,7 +822,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       }
 
       if (ErrorResponse.is(resolveConflictResult)) {
-        this.debounceMessageWarning();
         this.loadingRange.delete(range);
         return Promise.resolve(resolveConflictResult);
       }
@@ -872,9 +871,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       }
       if (!ErrorResponse.is(res)) {
         return Promise.resolve();
-      }
-      if (!conflicts?.length) {
-        this.debounceMessageSuccess();
       }
       return this.acceptAllConflict();
     });
@@ -1012,12 +1008,4 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       languageFeaturesService.codeLensProvider._onDidChange.fire();
     }
   }, 2000);
-
-  private debounceMessageWarning = debounce(() => {
-    message.warning('未解决此次冲突，AI 暂无法处理本文件的冲突，需人工处理。');
-  }, 1000);
-
-  private debounceMessageSuccess = debounce(() => {
-    message.warning('生成成功，AI 已完成冲突的处理');
-  }, 1000);
 }
