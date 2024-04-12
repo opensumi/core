@@ -705,6 +705,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         base: '',
         current: model.getValueInRange(conflict.current.content),
         incoming: model.getValueInRange(conflict.incoming.content),
+
+        currentName: conflict.current.name,
+        incomingName: conflict.incoming.name,
       };
     } else {
       lineRange = lineRan!;
@@ -904,7 +907,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
     if (isRegenerate) {
       const newContent = this.getModel()!.getValueInRange(range.toRange());
-      metadata.base = newContent;
+      metadata.resultContent = newContent;
     }
 
     const response = await handler.providerRequest(metadata, { isRegenerate }, this.createRequestToken(range.id).token);
