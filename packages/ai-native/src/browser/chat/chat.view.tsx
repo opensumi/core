@@ -91,7 +91,8 @@ const InitMsgComponent = () => {
 
   const welcomeRender = React.useMemo(() => {
     if (chatRenderRegistry.chatWelcomeRender) {
-      return chatRenderRegistry.chatWelcomeRender({ message: welcomeMessage, sampleQuestions: welcomeSampleQuestions });
+      const Render = chatRenderRegistry.chatWelcomeRender;
+      return <Render message={welcomeMessage} sampleQuestions={welcomeSampleQuestions} />;
     }
 
     return (
@@ -222,7 +223,7 @@ export const AIChatView = observer(() => {
   React.useEffect(() => {
     const dispose = aiChatService.onChatMessageLaunch(async (message) => {
       if (message.immediate !== false) {
-        if (loading) {
+        if (loading || loading2) {
           return;
         }
         await handleSend(message);
@@ -237,7 +238,7 @@ export const AIChatView = observer(() => {
       }
     });
     return () => dispose.dispose();
-  }, [messageListData, loading]);
+  }, [messageListData, loading, loading2]);
 
   React.useEffect(() => {
     const disposer = chatAgentService.onDidSendMessage((chunk) => {
@@ -296,7 +297,7 @@ export const AIChatView = observer(() => {
   const handleAgentReply = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, agentId, command } = value;
-      const chatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
+      const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
       const request = aiChatService.createRequest(message, agentId!, command);
       if (!request) {
@@ -313,8 +314,8 @@ export const AIChatView = observer(() => {
         {
           id: uuid(6),
           relationId,
-          text: chatUserRoleRender ? (
-            chatUserRoleRender({ content: message, agentId, command })
+          text: ChatUserRoleRender ? (
+            <ChatUserRoleRender content={message} agentId={agentId} command={command} />
           ) : (
             <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />
           ),
@@ -356,7 +357,7 @@ export const AIChatView = observer(() => {
   const handleSend = React.useCallback(
     async (value: IChatMessageStructure) => {
       const { message, prompt, reportType, agentId, command } = value;
-      const chatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
+      const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
 
       if (agentId) {
         return handleAgentReply({ message, agentId, command });
@@ -390,8 +391,8 @@ export const AIChatView = observer(() => {
         {
           id: uuid(6),
           relationId,
-          text: chatUserRoleRender ? (
-            chatUserRoleRender({ content: message, agentId: agentId ?? '', command: command ?? '' })
+          text: ChatUserRoleRender ? (
+            <ChatUserRoleRender content={message} agentId={agentId} command={command} />
           ) : (
             <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />
           ),
