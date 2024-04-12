@@ -124,7 +124,7 @@ export class AiNativeContribution implements AiNativeCoreContribution, ClientApp
           }
 
           if (result.errorCode !== 0) {
-            return new ErrorResponse('');
+            return new ErrorResponse(result.errorCode, result.errorMsg);
           }
 
           return new ReplyResponse(result.data!);

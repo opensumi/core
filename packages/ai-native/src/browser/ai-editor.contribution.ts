@@ -334,39 +334,31 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
             .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
           const relationId = this.aiReporter.start(action.name, { message: action.name, runByCodeAction });
-          const startTime = +new Date();
 
           const result = await this.handleDiffPreviewStrategy(
             editor,
             providerDiffPreviewStrategy,
             crossSelection,
             relationId,
+            false,
           );
-
-          this.aiReporter.end(relationId, { message: result, success: !!result, replytime: +new Date() - startTime });
 
           this.aiInlineChatDisposed.addDispose(
             this.aiInlineChatService.onDiscard(() => {
-              this.aiReporter.end(relationId, { message: result, success: !!result, isDrop: true });
+              this.aiReporter.end(relationId, { message: result.message, success: true, isDrop: true });
               this.disposeAllWidget(true);
             }),
           );
 
           this.aiInlineChatDisposed.addDispose(
             this.aiInlineChatService.onRegenerate(async () => {
-              const retryStartTime = +new Date();
-              const retryResult = await this.handleDiffPreviewStrategy(
+              await this.handleDiffPreviewStrategy(
                 editor,
                 providerDiffPreviewStrategy,
                 crossSelection,
                 relationId,
+                true,
               );
-              this.aiReporter.end(relationId, {
-                message: retryResult,
-                success: !!result,
-                replytime: +new Date() - retryStartTime,
-                isRetry: true,
-              });
             }),
           );
         }
@@ -385,11 +377,9 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
     ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>,
     crossSelection: monaco.Selection,
     relationId: string,
-  ): Promise<string | undefined> {
+    isRetry: boolean,
+  ): Promise<ReplyResponse | ErrorResponse | CancelResponse> {
     const model = editor.monacoEditor.getModel();
-    if (!model) {
-      return;
-    }
 
     if (this.aiDiffWidget) {
       this.aiDiffWidget.dispose();
@@ -399,23 +389,44 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiInlineChatOperationDisposed.dispose();
     }
 
-    const crossCode = model.getValueInRange(crossSelection);
+    const crossCode = model!.getValueInRange(crossSelection);
 
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
 
+    const startTime = +new Date();
     const response = await strategy(editor, this.aiChatService.cancelIndicator.token);
 
     if (this.aiInlineChatDisposed.disposed || CancelResponse.is(response)) {
       this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
-      return;
+      this.aiReporter.end(relationId, {
+        message: response.message,
+        success: true,
+        replytime: +new Date() - startTime,
+        isStop: true,
+        isRetry,
+      });
+      return response;
     }
 
     if (ErrorResponse.is(response)) {
       this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR);
-      return;
+      this.aiReporter.end(relationId, {
+        message: response.message,
+        success: false,
+        replytime: +new Date() - startTime,
+        isRetry,
+      });
+      return response;
     } else {
       this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE);
     }
+
+    this.aiReporter.end(relationId, {
+      message: response.message,
+      success: true,
+      replytime: +new Date() - startTime,
+      isRetry,
+    });
 
     let answer = response && response.message;
 
@@ -476,7 +487,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
         }),
         this.aiDiffWidget.onMaxLincCount((count) => {
           requestAnimationFrame(() => {
-            if (crossSelection.endLineNumber === model.getLineCount()) {
+            if (crossSelection.endLineNumber === model!.getLineCount()) {
               const lineHeight = editor.monacoEditor.getOption(monaco.editor.EditorOption.lineHeight);
               this.aiInlineContentWidget.offsetTop(lineHeight * count + 12);
             }
@@ -485,7 +496,7 @@ export class AiEditorContribution extends Disposable implements IEditorFeatureCo
       ]);
     }
 
-    return answer;
+    return response;
   }
 
   provideEditorOptionsForUri?(uri: URI): MaybePromise<Partial<MonacoEditor.IEditorOptions>> {
