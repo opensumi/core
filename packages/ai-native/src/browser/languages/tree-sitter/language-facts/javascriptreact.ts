@@ -23,7 +23,12 @@ export class JavaScriptReactLanguageFacts implements AbstractLanguageFacts {
     end: ' */',
     linePrefix: ' * ',
   };
+
   provideCodeBlocks(): Set<string> {
     return blockSet;
+  }
+
+  isCodeBlock(type: string): boolean {
+    return blockSet.has(type);
   }
 }

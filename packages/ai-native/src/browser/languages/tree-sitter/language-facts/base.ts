@@ -24,7 +24,8 @@ export abstract class AbstractLanguageFacts {
 
   abstract provideFunctionInfo?(node: Parser.SyntaxNode): IFunctionInfo | null;
   abstract provideCodeBlocks(): Set<string>;
-  abstract provideFunctionCodeBlocks?(): Set<string>;
+  abstract isCodeBlock(type: string): boolean;
+  abstract isFunctionCodeBlocks?(type: string): boolean;
 }
 
 export type AbstractLanguageFactsDerived = (new () => AbstractLanguageFacts) & typeof AbstractLanguageFacts;

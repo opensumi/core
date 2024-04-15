@@ -41,27 +41,20 @@ export class TreeSitterLanguageFacts {
 
   isCodeBlock(language: SupportedTreeSitterLanguages, type: string): boolean {
     const languageFacts = this.langs.get(language);
-    if (languageFacts) {
-      return languageFacts.provideCodeBlocks().has(type);
+    if (languageFacts && languageFacts.isCodeBlock) {
+      return languageFacts.isCodeBlock(type);
     }
     return false;
-  }
-
-  provideCodeBlocks(language: SupportedTreeSitterLanguages): Set<string> {
-    const languageFacts = this.langs.get(language);
-    if (languageFacts) {
-      return languageFacts.provideCodeBlocks();
-    }
-    return emptySet;
   }
 
   isFunctionCodeBlock(language: SupportedTreeSitterLanguages, type: string): boolean {
     const languageFacts = this.langs.get(language);
-    if (languageFacts && languageFacts.provideFunctionCodeBlocks) {
-      return languageFacts.provideFunctionCodeBlocks().has(type);
+    if (languageFacts && languageFacts.isFunctionCodeBlocks) {
+      return languageFacts.isFunctionCodeBlocks(type);
     }
     return false;
   }
+
   provideFunctionInfo(language: SupportedTreeSitterLanguages, node: Parser.SyntaxNode): IFunctionInfo | null {
     const languageFacts = this.langs.get(language);
     if (languageFacts && languageFacts.provideFunctionInfo) {

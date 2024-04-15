@@ -570,9 +570,16 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                 if (!parser) {
                   return;
                 }
-
-                const cursorPosition = monacoEditor.getPosition()!;
                 const actions = this.inlineChatFeatureRegistry.getCodeActions();
+                if (!actions || actions.length === 0) {
+                  return;
+                }
+
+                const cursorPosition = monacoEditor.getPosition();
+                if (!cursorPosition) {
+                  return;
+                }
+
                 const functionInfo = await parser.provideFunctionInfo(model, cursorPosition);
 
                 if (functionInfo) {

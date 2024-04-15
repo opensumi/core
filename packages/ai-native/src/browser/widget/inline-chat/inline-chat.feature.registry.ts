@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Logger } from '@opensumi/ide-core-browser';
-import { AIActionItem, AICodeActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { AIActionItem } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import {
   CommandRegistry,
   CommandService,
@@ -26,7 +26,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   commandService: CommandService;
 
   private actionsMap: Map<string, AIActionItem> = new Map();
-  private codeActionsMap = new Map<string, Partial<AICodeActionItem>>();
+  private codeActionsMap = new Map<string, CodeAction>();
   private editorHandlerMap: Map<string, IEditorInlineChatHandler> = new Map();
   private terminalHandlerMap: Map<string, ITerminalInlineChatHandler> = new Map();
 
@@ -73,7 +73,19 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     this.actionsMap.set(id, operational);
 
     if (operational.codeAction) {
-      this.codeActionsMap.set(id, operational.codeAction);
+      const { codeAction } = operational;
+      const action = {
+        title: codeAction.title || operational.name,
+        isAI: true,
+        isPreferred: codeAction.isPreferred ?? true,
+        kind: codeAction.kind || 'InlineChat',
+        disabled: codeAction.disabled,
+        command: {
+          id: InlineChatFeatureRegistry.getCommandId('editor', operational.id),
+        },
+      } as CodeAction;
+
+      this.codeActionsMap.set(id, action);
     }
 
     return true;
@@ -128,21 +140,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
   }
 
   public getCodeActions(): CodeAction[] {
-    return Array.from(this.codeActionsMap.keys()).map((key) => {
-      const aiAction = this.actionsMap.get(key) || ({} as AIActionItem);
-      const codeAction = this.codeActionsMap.get(key) || {};
-
-      return {
-        title: codeAction.title || aiAction.name,
-        isAI: true,
-        isPreferred: codeAction.isPreferred ?? true,
-        kind: codeAction.kind || 'InlineChat',
-        disabled: codeAction.disabled,
-        command: {
-          id: InlineChatFeatureRegistry.getCommandId('editor', aiAction.id),
-        },
-      } as CodeAction;
-    });
+    return Array.from(this.codeActionsMap.values());
   }
 
   public getEditorActionMenus(): AIActionItem[] {

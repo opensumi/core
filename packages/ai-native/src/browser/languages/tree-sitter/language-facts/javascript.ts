@@ -46,12 +46,17 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
     end: ' */',
     linePrefix: ' * ',
   };
+
   provideCodeBlocks(): Set<string> {
     return blockSet;
   }
 
-  provideFunctionCodeBlocks(): Set<string> {
-    return functionBlockSet;
+  isCodeBlock(type: string): boolean {
+    return blockSet.has(type);
+  }
+
+  isFunctionCodeBlocks(type: string): boolean {
+    return functionBlockSet.has(type);
   }
 
   provideFunctionInfo(node: SyntaxNode): IFunctionInfo | null {

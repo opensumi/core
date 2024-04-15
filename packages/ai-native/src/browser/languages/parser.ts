@@ -140,8 +140,8 @@ export class LanguageParser {
     if (!cursorNode) {
       return null;
     }
-    const functionNode = this.findFunctionCodeBlock(cursorNode, cursor);
 
+    const functionNode = this.findFunctionCodeBlock(cursorNode, cursor);
     if (!functionNode) {
       return null;
     }
