@@ -15,8 +15,15 @@ import {
   LabelService,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { getIcon, Icon } from '@opensumi/ide-core-browser/lib/components';
-import { ChatAgentViewServiceToken, ChatRenderRegistryToken, ChatServiceToken, FileType, IAIReporter, URI } from '@opensumi/ide-core-common';
+import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
+import {
+  ChatAgentViewServiceToken,
+  ChatRenderRegistryToken,
+  ChatServiceToken,
+  FileType,
+  IAIReporter,
+  URI,
+} from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
