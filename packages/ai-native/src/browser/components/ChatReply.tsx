@@ -15,8 +15,8 @@ import {
   LabelService,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { ChatAgentViewServiceToken, ChatServiceToken, FileType, IAIReporter, URI } from '@opensumi/ide-core-common';
+import { getIcon, Icon } from '@opensumi/ide-core-browser/lib/components';
+import { ChatAgentViewServiceToken, ChatRenderRegistryToken, ChatServiceToken, FileType, IAIReporter, URI } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
@@ -24,6 +24,7 @@ import { IChatAgentService, IChatContent, IChatInternalService, IChatResponsePro
 import { ChatRequestModel } from '../chat/chat-model';
 import { ChatService } from '../chat/chat.api.service';
 import { ChatInternalService } from '../chat/chat.internal.service';
+import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 
@@ -156,6 +157,7 @@ export const ChatReply = (props: IChatReplyProps) => {
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
+  const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;
 
@@ -205,10 +207,18 @@ export const ChatReply = (props: IChatReplyProps) => {
     aiChatService.cancelRequest();
   };
 
-  const renderMarkdown = (markdown: IMarkdownString) => (
-    // TODO: Markdown 属性限制
-    <ChatMarkdown markdown={markdown} fillInIncompleteTokens />
+  const renderMarkdown = useCallback(
+    (markdown: IMarkdownString) => {
+      if (chatRenderRegistry.chatAIRoleRender) {
+        const Render = chatRenderRegistry.chatAIRoleRender;
+        return <Render content={markdown.value} status={msgStreamManager.status} />;
+      }
+
+      return <ChatMarkdown markdown={markdown} fillInIncompleteTokens />;
+    },
+    [chatRenderRegistry, chatRenderRegistry.chatAIRoleRender, msgStreamManager.status],
   );
+
   const renderTreeData = (treeData: IChatResponseProgressFileTreeData) => <TreeRenderer treeData={treeData} />;
 
   const renderPlaceholder = (markdown: IMarkdownString) => (
