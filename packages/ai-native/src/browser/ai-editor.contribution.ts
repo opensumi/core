@@ -580,21 +580,29 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                   return;
                 }
 
-                const functionInfo = await parser.provideFunctionInfo(model, cursorPosition);
+                const info = await parser.provideCodeBlockInfo(model, cursorPosition);
 
-                if (functionInfo) {
+                if (info) {
                   return {
                     actions: actions.map((v) => {
                       const command = {} as monaco.Command;
                       if (v.command) {
                         command.id = v.command.id;
-                        command.arguments = [functionInfo.range];
+                        command.arguments = [info.range];
+                      }
+
+                      let title = v.title;
+
+                      switch (info.infoCategory) {
+                        case 'function': {
+                          title = title + ` for Function: ${info.name}`;
+                        }
                       }
 
                       return {
                         ...v,
-                        title: v.title + ` for Function: ${functionInfo.name}`,
-                        ranges: [functionInfo.range],
+                        title,
+                        ranges: [info.range],
                         command,
                       };
                     }) as monaco.CodeAction[],
@@ -602,26 +610,21 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                   };
                 }
 
-                const codeblock = await parser.findCodeBlock(model, cursorPosition);
-                if (codeblock) {
-                  return {
-                    actions: actions.map((v) => {
-                      const command = {} as monaco.Command;
-                      if (v.command) {
-                        command.id = v.command.id;
-                        command.arguments = [codeblock.range];
-                      }
+                // // check current line is empty
+                // const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
+                // if (currentLineLength !== 0) {
+                //   return;
+                // }
 
-                      return {
-                        ...v,
-                        title: v.title,
-                        ranges: [codeblock.range],
-                        command,
-                      };
-                    }) as monaco.CodeAction[],
-                    dispose() {},
-                  };
-                }
+                // // 获取视窗范围内的代码块
+                // const range = monacoEditor.getVisibleRanges();
+                // if (range.length === 0) {
+                //   return;
+                // }
+                // console.log('🚀 ~ AIEditorContribution ~ provideCodeActions: ~ range:', range);
+                // const endLineNumber = range[0].endLineNumber + 1;
+
+                // // 查找从当前行至视窗最后一行的代码块中是否包含函数
               },
             }),
           );

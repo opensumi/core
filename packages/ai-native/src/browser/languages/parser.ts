@@ -6,14 +6,8 @@ import { Deferred, LRUCache } from '@opensumi/ide-utils';
 
 import { toMonacoRange } from './tree-sitter/common';
 import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-sitter/language-facts';
-import { IFunctionInfo } from './tree-sitter/language-facts/base';
+import { ICodeBlockInfo, IOtherBlockInfo } from './tree-sitter/language-facts/base';
 import { WasmModuleManager } from './tree-sitter/wasm-manager';
-
-interface CodeBlock {
-  range: monaco.IRange;
-  codeBlock: string;
-  type: string;
-}
 
 @Injectable({ multiple: true })
 export class LanguageParser {
@@ -109,51 +103,10 @@ export class LanguageParser {
     return null;
   }
 
-  async findCodeBlock(model: monaco.ITextModel, position: monaco.Position): Promise<CodeBlock | null> {
-    const cursor = model.getOffsetAt(position);
-    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
-    if (cursorNode) {
-      const selectedNode = this.findContainingCodeBlockWithPosition(cursorNode, cursor);
-      if (!selectedNode) {
-        return null;
-      }
-
-      return {
-        codeBlock: selectedNode.text,
-        range: {
-          startLineNumber: selectedNode.startPosition.row + 1,
-          startColumn: 0,
-          endLineNumber: selectedNode.endPosition.row + 1,
-          endColumn: Infinity,
-        },
-        type: selectedNode.type,
-      };
-    }
-
-    return null;
-  }
-
-  async provideFunctionInfo(model: monaco.ITextModel, position: monaco.Position): Promise<IFunctionInfo | null> {
-    const cursor = model.getOffsetAt(position);
-
-    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
-    if (!cursorNode) {
-      return null;
-    }
-
-    const functionNode = this.findFunctionCodeBlock(cursorNode, cursor);
-    if (!functionNode) {
-      return null;
-    }
-
-    const functionInfo = this.languageFacts.provideFunctionInfo(this.language, functionNode);
-    return functionInfo;
-  }
-
   /**
    * 从给定的位置开始，找到最近的没有语法错误的代码块
    */
-  async findCodeBlockWithSyntaxError(sourceCode: string, range: monaco.IRange): Promise<CodeBlock | null> {
+  async findCodeBlockWithSyntaxError(sourceCode: string, range: monaco.IRange): Promise<IOtherBlockInfo | null> {
     await this.parserLoaded.promise;
     const tree = this.parser.parse(sourceCode);
     if (tree) {
@@ -167,9 +120,9 @@ export class LanguageParser {
       let parentNode = selectedNode.parent;
       if (!parentNode) {
         return {
-          codeBlock: selectedNode.text,
           range: toMonacoRange(selectedNode),
           type: selectedNode.type,
+          infoCategory: 'other',
         };
       }
 
@@ -188,17 +141,47 @@ export class LanguageParser {
 
       if (parentNode) {
         return {
-          codeBlock: parentNode.text,
           range: toMonacoRange(parentNode),
           type: parentNode.type,
+          infoCategory: 'other',
         };
       }
       return {
-        codeBlock: selectedNode.text,
         range,
+        type: selectedNode.type,
+        infoCategory: 'other',
+      };
+    }
+    return null;
+  }
+
+  async provideCodeBlockInfo(model: monaco.ITextModel, position: monaco.Position): Promise<ICodeBlockInfo | null> {
+    const cursor = model.getOffsetAt(position);
+
+    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
+    if (!cursorNode) {
+      return null;
+    }
+
+    const functionNode = this.findFunctionCodeBlock(cursorNode, cursor);
+    if (functionNode) {
+      return this.languageFacts.provideFunctionInfo(this.language, functionNode);
+    }
+
+    const selectedNode = this.findContainingCodeBlockWithPosition(cursorNode, cursor);
+    if (selectedNode) {
+      return {
+        infoCategory: 'other',
+        range: {
+          startLineNumber: selectedNode.startPosition.row + 1,
+          startColumn: 0,
+          endLineNumber: selectedNode.endPosition.row + 1,
+          endColumn: Infinity,
+        },
         type: selectedNode.type,
       };
     }
+
     return null;
   }
 }

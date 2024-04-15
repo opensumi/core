@@ -1,6 +1,6 @@
 import { toMonacoRange } from '../common';
 
-import { AbstractLanguageFacts, IFunctionInfo } from './base';
+import { AbstractLanguageFacts, IFunctionBlockInfo } from './base';
 
 import type { SyntaxNode } from 'web-tree-sitter';
 
@@ -59,11 +59,13 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
     return functionBlockSet.has(type);
   }
 
-  provideFunctionInfo(node: SyntaxNode): IFunctionInfo | null {
+  provideFunctionInfo(node: SyntaxNode): IFunctionBlockInfo | null {
     switch (node.type) {
       case 'function_declaration':
       case 'function_expression':
         return {
+          infoCategory: 'function',
+          type: node.type,
           name: node.firstNamedChild?.text || '',
           signatures: node.children
             .filter((child) => child.type === 'parameter')
@@ -82,6 +84,8 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
             parent.parent.type === 'variable_declaration')
         ) {
           return {
+            infoCategory: 'function',
+            type: node.type,
             name: parent.firstChild?.text || '',
             signatures: node.children
               .filter((child) => child.type === 'parameter')
@@ -93,6 +97,8 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
       }
       case 'method_definition':
         return {
+          infoCategory: 'function',
+          type: node.type,
           name: node.firstNamedChild?.text || '',
           signatures: node.children
             .filter((child) => child.type === 'parameter')

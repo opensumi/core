@@ -5,7 +5,7 @@ import Parser from 'web-tree-sitter';
 
 import { Injectable } from '@opensumi/di';
 
-import { AbstractLanguageFacts, AbstractLanguageFactsDerived, IFunctionInfo } from './base';
+import { AbstractLanguageFacts, AbstractLanguageFactsDerived, IFunctionBlockInfo } from './base';
 import { GolangLanguageFacts } from './golang';
 import { JavaLanguageFacts } from './java';
 import { JavaScriptLanguageFacts } from './javascript';
@@ -55,7 +55,7 @@ export class TreeSitterLanguageFacts {
     return false;
   }
 
-  provideFunctionInfo(language: SupportedTreeSitterLanguages, node: Parser.SyntaxNode): IFunctionInfo | null {
+  provideFunctionInfo(language: SupportedTreeSitterLanguages, node: Parser.SyntaxNode): IFunctionBlockInfo | null {
     const languageFacts = this.langs.get(language);
     if (languageFacts && languageFacts.provideFunctionInfo) {
       return languageFacts.provideFunctionInfo(node);
