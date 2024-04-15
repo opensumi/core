@@ -307,7 +307,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   /**
    * 重启插件进程
    */
-  public async restartExtProcess(restartPolicy?: ERestartPolicy) {
+  public async restartExtProcess(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
     /**
      * 只有在页面可见的情况下才执行插件进程重启操作
      * 如果当前页面不可见，那么 chrome 会对 socket 进行限流，导致进程重启的 rpc 调用得不到返回从而卡住
