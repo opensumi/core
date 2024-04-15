@@ -586,6 +586,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
+  public async getExtProcessId(clientId: string): Promise<number | null> {
+    if (this.clientExtProcessMap.has(clientId)) {
+      return this.clientExtProcessMap.get(clientId)!;
+    }
+
+    return null;
+  }
+
   public async disposeAllClientExtProcess(): Promise<void> {
     await this.extensionHostManager.dispose();
   }
