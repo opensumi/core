@@ -11,9 +11,7 @@ const randomPort = randomPortFn();
 
 describe('connection browser', () => {
   it('init connection', async () => {
-    jest.setTimeout(20000);
-
-    const fakeWSURL = `ws://localhost:${randomPort}`;
+    const fakeWSURL = `ws://127.0.0.1:${randomPort}`;
     const mockServer = new Server(fakeWSURL);
 
     let receivedHeartbeat = false;
@@ -69,5 +67,5 @@ describe('connection browser', () => {
 
     mockServer.close();
     wsChannelHandler.dispose();
-  });
+  }, 20000);
 });
