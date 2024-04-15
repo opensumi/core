@@ -20,4 +20,9 @@ export class LanguageParserService {
       return this.pool.get(treeSitterLang);
     }
   }
+
+  dispose() {
+    this.pool.forEach((parser) => parser.dispose());
+    this.pool.clear();
+  }
 }

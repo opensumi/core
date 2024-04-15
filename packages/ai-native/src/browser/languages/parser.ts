@@ -2,7 +2,7 @@ import Parser from 'web-tree-sitter';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
-import { Deferred, LRUCache } from '@opensumi/ide-utils';
+import { Deferred, IDisposable, LRUCache } from '@opensumi/ide-utils';
 
 import { toMonacoRange } from './tree-sitter/common';
 import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-sitter/language-facts';
@@ -10,7 +10,7 @@ import { ICodeBlockInfo, IOtherBlockInfo } from './tree-sitter/language-facts/ba
 import { WasmModuleManager } from './tree-sitter/wasm-manager';
 
 @Injectable({ multiple: true })
-export class LanguageParser {
+export class LanguageParser implements IDisposable {
   private parser: Parser;
 
   private parserLoaded = new Deferred<void>();
@@ -183,5 +183,10 @@ export class LanguageParser {
     }
 
     return null;
+  }
+
+  dispose() {
+    this.parser.delete();
+    this.lruCache.clear();
   }
 }
