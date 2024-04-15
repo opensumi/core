@@ -62,4 +62,12 @@ export class TreeSitterLanguageFacts {
     }
     return null;
   }
+
+  getCodeBlockTypes(language: SupportedTreeSitterLanguages): Set<string> {
+    const languageFacts = this.langs.get(language);
+    if (languageFacts) {
+      return languageFacts.provideCodeBlocks();
+    }
+    return emptySet;
+  }
 }

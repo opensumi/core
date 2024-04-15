@@ -12,7 +12,7 @@ export const javascriptBlockCodeTypes = [
   'function_declaration',
   'function_expression',
   'arrow_function',
-  'class_body',
+  'class_declaration',
   'method_definition',
   'if_statement',
   'switch_case',

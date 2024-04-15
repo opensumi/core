@@ -94,7 +94,6 @@ export class LanguageParser implements IDisposable {
   }
 
   async getSyntaxNodeAsPosition(model: monaco.ITextModel, cursor: number): Promise<Parser.SyntaxNode | null> {
-    await this.parserLoaded.promise;
     const rootNode = await this.parseAST(model);
     if (rootNode) {
       const cursorNode = rootNode.namedDescendantForIndex(cursor);
@@ -180,6 +179,38 @@ export class LanguageParser implements IDisposable {
         },
         type: selectedNode.type,
       };
+    }
+
+    return null;
+  }
+
+  async provideCodeBlockInfoInRange(model: monaco.ITextModel, range: monaco.IRange): Promise<ICodeBlockInfo | null> {
+    const rootNode = await this.parseAST(model);
+    if (rootNode) {
+      const startPosition = {
+        row: range.startLineNumber - 1,
+        column: range.startColumn - 1,
+      };
+      const endPosition = {
+        row: range.endLineNumber,
+        column: range.endColumn,
+      };
+
+      const types = this.languageFacts.getCodeBlockTypes(this.language);
+      if (!types || types.size === 0) {
+        return null;
+      }
+
+      const nodes = rootNode.descendantsOfType(Array.from(types), startPosition, endPosition);
+      if (nodes && nodes.length > 0) {
+        const firstNode = nodes[0];
+        const range = toMonacoRange(firstNode);
+        return {
+          infoCategory: 'other',
+          range,
+          type: firstNode.type,
+        };
+      }
     }
 
     return null;

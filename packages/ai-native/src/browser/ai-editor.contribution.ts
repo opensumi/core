@@ -34,6 +34,7 @@ import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
 import { LanguageParserService } from './languages/service';
+import { ICodeBlockInfo } from './languages/tree-sitter/language-facts/base';
 import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -580,9 +581,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                   return;
                 }
 
-                const info = await parser.provideCodeBlockInfo(model, cursorPosition);
-
-                if (info) {
+                function constructCodeActions(info: ICodeBlockInfo) {
                   return {
                     actions: actions.map((v) => {
                       const command = {} as monaco.Command;
@@ -610,21 +609,31 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                   };
                 }
 
-                // // check current line is empty
-                // const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
-                // if (currentLineLength !== 0) {
-                //   return;
-                // }
+                const info = await parser.provideCodeBlockInfo(model, cursorPosition);
 
-                // // 获取视窗范围内的代码块
-                // const range = monacoEditor.getVisibleRanges();
-                // if (range.length === 0) {
-                //   return;
-                // }
-                // console.log('🚀 ~ AIEditorContribution ~ provideCodeActions: ~ range:', range);
-                // const endLineNumber = range[0].endLineNumber + 1;
+                if (info) {
+                  return constructCodeActions(info);
+                }
 
-                // // 查找从当前行至视窗最后一行的代码块中是否包含函数
+                // check current line is empty
+                const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
+                if (currentLineLength !== 0) {
+                  return;
+                }
+
+                // 获取视窗范围内的代码块
+                const range = monacoEditor.getVisibleRanges();
+                if (range.length === 0) {
+                  return;
+                }
+
+                // 查找从当前行至视窗最后一行的代码块中是否包含函数
+                const newRange = new monaco.Range(cursorPosition.lineNumber, 0, range[0].endLineNumber + 1, 0);
+
+                const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
+                if (rangeInfo) {
+                  return constructCodeActions(rangeInfo);
+                }
               },
             }),
           );
