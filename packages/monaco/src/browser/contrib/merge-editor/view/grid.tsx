@@ -104,22 +104,23 @@ const MergeActions: React.FC = () => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const commandService = useInjectable<CommandService>(CommandService);
-  const [isAiResolving, setIsAiResolving] = useState(false);
+  const [isAIResolving, setIsAIResolving] = useState(false);
 
-  const isSupportAiResolve = useCallback(
+  const isSupportAIResolve = useCallback(
     () => aiNativeConfigService.capabilities.supportsConflictResolve,
     [aiNativeConfigService],
   );
 
   useEffect(() => {
     const dispose = mergeEditorService.onHasIntelligentLoadingChange((isLoading) => {
-      setIsAiResolving(isLoading);
+      setIsAIResolving(isLoading);
     });
 
     return () => dispose.dispose();
   }, [mergeEditorService]);
 
   const handleApply = useCallback(() => {
+    // todo: apply and stash
     mergeEditorService.accept();
   }, [mergeEditorService]);
 
@@ -132,7 +133,7 @@ const MergeActions: React.FC = () => {
   }, [mergeEditorService]);
 
   const handleOpenTradition = useCallback(() => {
-    const uri = mergeEditorService.getResultEditor()?.getModel()?.uri;
+    const uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
     if (uri) {
       const fileUri = uri.with({ scheme: 'file', path: uri.path, query: '' });
       commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, fileUri);
@@ -147,23 +148,44 @@ const MergeActions: React.FC = () => {
   }, [mergeEditorService]);
 
   const handleAIResolve = useCallback(() => {
-    if (isAiResolving) {
+    if (isAIResolving) {
       mergeEditorService.stopAllAiResolveConflict();
     } else {
       mergeEditorService.handleAiResolveConflict();
     }
-  }, [mergeEditorService, isAiResolving]);
+  }, [mergeEditorService, isAIResolving]);
+
+  const handlePrev = useCallback(() => {
+    commandService.tryExecuteCommand('merge-conflict.previous');
+  }, []);
+
+  const handleNext = useCallback(() => {
+    commandService.tryExecuteCommand('merge-conflict.next');
+  }, []);
 
   return (
     <div className={styles.merge_editor_float_container}>
       <div className={styles.container_box}>
         <div id='merge.editor.action.button.accept'>
-          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptLeft}>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
             <Icon icon={'left'} />
             <span>{localize('mergeEditor.action.button.accept.left')}</span>
           </Button>
-          <Button className={styles.merge_conflict_bottom_btn} size='large' onClick={handleAcceptRight}>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptRight}>
             <span>{localize('mergeEditor.action.button.accept.right')}</span>
+            <Icon icon={'right'} />
+          </Button>
+        </div>
+
+        <span className={styles.line_vertical}></span>
+
+        <div id='merge.editor.action.button.nav'>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
+            <Icon icon={'left'} />
+            <span>{localize('mergeEditor.conflict.prev')}</span>
+          </Button>
+          <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleNext}>
+            <span>{localize('mergeEditor.conflict.next')}</span>
             <Icon icon={'right'} />
           </Button>
         </div>
@@ -173,24 +195,29 @@ const MergeActions: React.FC = () => {
         <Button
           id='merge.editor.open.tradition'
           className={styles.merge_conflict_bottom_btn}
-          size='large'
+          size='default'
           onClick={handleOpenTradition}
         >
           <Icon icon={'swap'} />
           <span>{localize('mergeEditor.open.tradition')}</span>
         </Button>
-        <Button id='merge.editor.rest' className={styles.merge_conflict_bottom_btn} size='large' onClick={handleReset}>
+        <Button
+          id='merge.editor.rest'
+          className={styles.merge_conflict_bottom_btn}
+          size='default'
+          onClick={handleReset}
+        >
           <Icon icon={'discard'} />
           <span>{localize('mergeEditor.reset')}</span>
         </Button>
-        {isSupportAiResolve() && (
+        {isSupportAIResolve() && (
           <Button
             id='merge.editor.conflict.resolve.all'
-            size='large'
+            size='default'
             className={`${styles.merge_conflict_bottom_btn} ${styles.magic_btn}`}
             onClick={handleAIResolve}
           >
-            {isAiResolving ? (
+            {isAIResolving ? (
               <>
                 <Icon icon={'circle-pause'} />
                 <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
@@ -206,11 +233,11 @@ const MergeActions: React.FC = () => {
         <span className={styles.line_vertical}></span>
         <Button
           id='merge.editor.action.button.apply'
-          size='large'
+          size='default'
           className={styles.merge_editor_apply_btn}
           onClick={handleApply}
         >
-          {localize('mergeEditor.action.button.apply')}
+          {localize('mergeEditor.action.button.apply-and-stash')}
         </Button>
       </div>
     </div>

@@ -117,7 +117,7 @@ export class MergeEditorService extends Disposable {
         }
 
         runWhenIdle(() => {
-          const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAiConflictPoint);
+          const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAIConflictPoint);
           if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
             this._onHasIntelligentLoadingChange.fire(false);
             this.loadingDispose.dispose();
@@ -170,12 +170,12 @@ export class MergeEditorService extends Disposable {
     this.mergeConflictReportService.dispose();
   }
 
-  public async acceptLeft(isIgnoreAi = false): Promise<void> {
+  public async acceptLeft(isIgnoreAI = false): Promise<void> {
     const mappings = this.mappingManagerService.documentMappingTurnLeft;
     const lineRanges = mappings.getOriginalRange();
     lineRanges
       .filter((range) => range.isComplete === false)
-      .filter((range) => (isIgnoreAi && range.isAiConflictPoint ? null : range))
+      .filter((range) => (isIgnoreAI && range.isAIConflictPoint ? null : range))
       .forEach((range) => {
         if (range.isMerge) {
           const oppositeRange = this.mappingManagerService.documentMappingTurnLeft.adjacentComputeRangeMap.get(
@@ -197,12 +197,12 @@ export class MergeEditorService extends Disposable {
       });
   }
 
-  public async acceptRight(isIgnoreAi = false): Promise<void> {
+  public async acceptRight(isIgnoreAI = false): Promise<void> {
     const mappings = this.mappingManagerService.documentMappingTurnRight;
     const lineRanges = mappings.getModifiedRange();
     lineRanges
       .filter((range) => range.isComplete === false)
-      .filter((range) => (isIgnoreAi && range.isAiConflictPoint ? null : range))
+      .filter((range) => (isIgnoreAI && range.isAIConflictPoint ? null : range))
       .forEach((range) => {
         if (range.isMerge) {
           const oppositeRange = this.mappingManagerService.documentMappingTurnRight.adjacentComputeRangeMap.get(
@@ -251,7 +251,7 @@ export class MergeEditorService extends Disposable {
       let receiveNum = 0;
 
       allRanges
-        .filter((range) => range.isAiConflictPoint && range.getIntelligentStateModel().isComplete)
+        .filter((range) => range.isAIConflictPoint && range.getIntelligentStateModel().isComplete)
         .forEach((range) => {
           const intelligentStateModel = range.getIntelligentStateModel();
           const preAnswerCode = intelligentStateModel.answerCode;
@@ -321,7 +321,7 @@ export class MergeEditorService extends Disposable {
 
       const allRanges = this.resultView.getAllDiffRanges();
       const conflictPointRanges = allRanges.filter(
-        (range) => range.isAiConflictPoint && !!range.getIntelligentStateModel().isLoading === false,
+        (range) => range.isAIConflictPoint && !!range.getIntelligentStateModel().isLoading === false,
       );
 
       let resolveLen = 0;

@@ -638,7 +638,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
     if (isAiConflictResolve) {
       changesResult
-        .filter((range) => range.isAiConflictPoint)
+        .filter((range) => range.isAIConflictPoint)
         .forEach((range) => {
           const model = range.getIntelligentStateModel();
 
@@ -762,7 +762,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     });
 
     runWhenIdle(() => {
-      const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
+      const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAIConflictPoint ? pre + 1 : pre), 0);
       this.mergeConflictReportService.record(this.getUri(), {
         conflictPointNum: aiConflictNum,
         editorMode: MergeConflictEditorMode['3way'],

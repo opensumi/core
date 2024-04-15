@@ -7,6 +7,7 @@ import {
   AINativeSettingSectionsId,
   CancelResponse,
   CancellationToken,
+  ChatResponse,
   ContributionProvider,
   Disposable,
   ErrorResponse,
@@ -23,7 +24,6 @@ import {
   SupportLogNamespace,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
-import { ChatResponse } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { EditorSelectionChangeEvent, IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
@@ -229,7 +229,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
     const selectionChange = () => {
       this.aiCompletionsService.hideStatusBarItem();
-      const selection = monacoEditor.getSelection()!;
+      const selection = monacoEditor.getSelection();
+      if (!selection) {
+        return;
+      }
+
       // 判断是否选中区域
       if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
         this.aiInlineCompletionsProvider.cancelRequest();

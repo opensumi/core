@@ -1,7 +1,6 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { message } from '@opensumi/ide-components';
 import { AINativeConfigService, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
@@ -502,7 +501,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }
 
   private getUri(): string {
-    return this.getModel().uri.toString();
+    return this.getModel()?.uri.toString();
   }
 
   /* cache widget */
