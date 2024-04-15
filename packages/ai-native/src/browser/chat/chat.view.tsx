@@ -9,6 +9,8 @@ import {
   AISerivceType,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
+  ChatServiceToken,
+  Disposable,
   IAIReporter,
   localize,
   uuid,
@@ -20,8 +22,8 @@ import { isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/commo
 import 'react-chat-elements/dist/main.css';
 import {
   AI_CHAT_VIEW_ID,
-  IAIChatService,
   IChatAgentService,
+  IChatInternalService,
   IChatMessageStructure,
   IChatReplyFollowup,
   ISampleQuestions,
@@ -37,15 +39,16 @@ import { MessageData, createMessageByAI, createMessageByUser, extractIcon } from
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
 
+import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
+import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
-import { ChatService } from './chat.service';
 
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 const InitMsgComponent = () => {
-  const aiChatService = useInjectable<ChatService>(IAIChatService);
+  const aiChatService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
@@ -107,7 +110,7 @@ const InitMsgComponent = () => {
                 href='javascript:void(0)'
                 className={styles.link_item}
                 onClick={() => {
-                  aiChatService.launchChatMessage(chatAgentService.parseMessage(data.message));
+                  aiChatService.sendMessage(chatAgentService.parseMessage(data.message));
                 }}
               >
                 {data.icon ? <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} /> : ''}
@@ -131,7 +134,8 @@ const InitMsgComponent = () => {
 };
 
 export const AIChatView = observer(() => {
-  const aiChatService = useInjectable<ChatService>(IAIChatService);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
@@ -177,6 +181,10 @@ export const AIChatView = observer(() => {
       } else if (event === EMsgStreamStatus.THINKING) {
         setLoading2(true);
       }
+
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
     });
     return () => {
       msgStreamManager.dispose();
@@ -212,65 +220,94 @@ export const AIChatView = observer(() => {
   }, [loading, loading2]);
 
   React.useEffect(() => {
-    const dispose = msgStreamManager.onMsgStatus(() => {
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    });
-    return () => dispose.dispose();
-  }, [msgStreamManager.onMsgStatus]);
+    const disposer = new Disposable();
 
-  React.useEffect(() => {
-    const dispose = aiChatService.onChatMessageLaunch(async (message) => {
-      if (message.immediate !== false) {
-        if (loading || loading2) {
-          return;
+    disposer.addDispose(
+      chatApiService.onChatMessageLaunch(async (message) => {
+        if (message.immediate !== false) {
+          if (loading || loading2) {
+            return;
+          }
+          await handleSend(message);
+        } else {
+          if (message.agentId) {
+            setAgentId(message.agentId);
+          }
+          if (message.command) {
+            setCommand(message.command);
+          }
+          chatInputRef?.current?.setInputValue(message.message);
         }
-        await handleSend(message);
-      } else {
-        if (message.agentId) {
-          setAgentId(message.agentId);
-        }
-        if (message.command) {
-          setCommand(message.command);
-        }
-        chatInputRef?.current?.setInputValue(message.message);
-      }
-    });
-    return () => dispose.dispose();
-  }, [messageListData, loading, loading2]);
+      }),
+    );
 
-  React.useEffect(() => {
-    const disposer = chatAgentService.onDidSendMessage((chunk) => {
-      const relationId = aiReporter.start(AISerivceType.Agent, {
-        msgType: AISerivceType.Agent,
-        message: '',
-      });
+    disposer.addDispose(
+      chatApiService.onChatReplyMessageLaunch((chunk) => {
+        const userInput = {
+          type: AISerivceType.CustomReplay,
+          message: chunk,
+        };
 
-      const notifyMessage = createMessageByAI(
-        {
+        const relationId = aiReporter.start(AISerivceType.CustomReplay, {
+          msgType: userInput.type,
+          message: userInput.message,
+        });
+
+        let renderContent = <ChatMarkdown markdown={userInput.message} fillInIncompleteTokens />;
+
+        if (chatRenderRegistry.chatAIRoleRender) {
+          const ChatAIRoleRender = chatRenderRegistry.chatAIRoleRender;
+          renderContent = <ChatAIRoleRender content={userInput.message} status={EMsgStreamStatus.DONE} />;
+        }
+
+        const aiMessage = createMessageByAI({
           id: uuid(6),
           relationId,
-          text: <ChatNotify relationId={relationId} chunk={chunk} />,
-        },
-        styles.chat_notify,
-      );
-      dispatchMessage({ type: 'add', payload: [notifyMessage] });
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    });
+          text: renderContent,
+          className: styles.chat_with_more_actions,
+        });
+
+        dispatchMessage({ type: 'add', payload: [aiMessage] });
+      }),
+    );
+
     return () => disposer.dispose();
-  }, []);
+  }, [chatApiService, chatRenderRegistry.chatAIRoleRender]);
 
   React.useEffect(() => {
-    const disposer = chatAgentService.onDidChangeAgents(async () => {
-      const newDefaultAgentId = chatAgentService.getDefaultAgentId();
+    const disposer = new Disposable();
 
-      setDefaultAgentId(newDefaultAgentId ?? '');
-    });
+    disposer.addDispose(
+      chatAgentService.onDidSendMessage((chunk) => {
+        const relationId = aiReporter.start(AISerivceType.Agent, {
+          msgType: AISerivceType.Agent,
+          message: '',
+        });
+
+        const notifyMessage = createMessageByAI(
+          {
+            id: uuid(6),
+            relationId,
+            text: <ChatNotify relationId={relationId} chunk={chunk} />,
+          },
+          styles.chat_notify,
+        );
+        dispatchMessage({ type: 'add', payload: [notifyMessage] });
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      }),
+    );
+
+    disposer.addDispose(
+      chatAgentService.onDidChangeAgents(async () => {
+        const newDefaultAgentId = chatAgentService.getDefaultAgentId();
+        setDefaultAgentId(newDefaultAgentId ?? '');
+      }),
+    );
+
     return () => disposer.dispose();
-  }, []);
+  }, [chatAgentService]);
 
   const handleSlashCustomRender = React.useCallback(
     async (value: { message: string; render: TSlashCommandCustomRender; relationId: string; startTime: number }) => {
@@ -413,14 +450,7 @@ export const AIChatView = observer(() => {
 
       setLoading(true);
 
-      handleReply(userInput, {
-        aiChatService,
-        aiReporter,
-        chatAgentService,
-        relationId,
-        startTime,
-        rawMessage: message,
-      });
+      handleReply(userInput, { relationId });
     },
     [
       messageListData,
@@ -439,7 +469,12 @@ export const AIChatView = observer(() => {
           chatRenderRegistry.chatAIRoleRender!({ content, status });
       }
 
-      const aiMessage = StreamReplyRender(userInput.message, replayCommandProps);
+      const aiMessage = createMessageByAI({
+        id: uuid(6),
+        relationId: replayCommandProps.relationId,
+        text: <StreamReplyRender prompt={userInput.message} params={replayCommandProps} />,
+        className: styles.chat_with_more_actions,
+      });
 
       if (aiMessage) {
         dispatchMessage({ type: 'add', payload: [aiMessage] });

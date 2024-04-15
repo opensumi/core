@@ -3,8 +3,8 @@ import * as React from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { IAIReporter } from '@opensumi/ide-core-common';
 
-import { IAIChatService } from '../../common/index';
-import { ChatService } from '../chat/chat.service';
+import { IChatInternalService } from '../../common/index';
+import { ChatInternalService } from '../chat/chat.internal.service';
 import { TSlashCommandCustomRender } from '../types';
 
 // slash command 自定义渲染组件
@@ -16,7 +16,7 @@ export const SlashCustomRender = (props: {
 }) => {
   const { message, relationId, renderContent, startTime } = props;
 
-  const aiChatService = useInjectable<ChatService>(IAIChatService);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
 
   React.useEffect(() => {

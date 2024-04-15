@@ -16,13 +16,14 @@ import {
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
-import { ChatAgentViewServiceToken, FileType, IAIReporter, URI } from '@opensumi/ide-core-common';
+import { ChatAgentViewServiceToken, ChatServiceToken, FileType, IAIReporter, URI } from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IMarkdownString, MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
-import { IAIChatService, IChatAgentService, IChatContent, IChatResponseProgressFileTreeData } from '../../common';
+import { IChatAgentService, IChatContent, IChatInternalService, IChatResponseProgressFileTreeData } from '../../common';
 import { ChatRequestModel } from '../chat/chat-model';
-import { ChatService } from '../chat/chat.service';
+import { ChatService } from '../chat/chat.api.service';
+import { ChatInternalService } from '../chat/chat.internal.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 import { IChatAgentViewService } from '../types';
 
@@ -152,7 +153,8 @@ export const ChatReply = (props: IChatReplyProps) => {
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
   const iconService = useInjectable<IIconService>(IIconService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
-  const aiChatService = useInjectable<ChatService>(IAIChatService);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
+  const chatApiService = useInjectable<ChatService>(ChatServiceToken);
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
 
   const isLastReply = msgStreamManager.currentSessionId === relationId;
@@ -246,7 +248,7 @@ export const ChatReply = (props: IChatReplyProps) => {
       let node: React.ReactNode = null;
       if (item.kind === 'reply') {
         const a = (
-          <a onClick={() => aiChatService.launchChatMessage(chatAgentService.parseMessage(item.message))}>
+          <a onClick={() => chatApiService.sendMessage(chatAgentService.parseMessage(item.message))}>
             {item.title || item.message}
           </a>
         );

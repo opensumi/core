@@ -6,6 +6,7 @@ import {
   ChatAgentViewServiceToken,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
+  ChatServiceToken,
   IAIInlineChatService,
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
@@ -13,7 +14,7 @@ import {
   TerminalRegistryToken,
 } from '@opensumi/ide-core-browser';
 
-import { IAIChatService, IAINativeService, IChatAgentService, IChatManagerService } from '../common';
+import { IAINativeService, IChatAgentService, IChatInternalService, IChatManagerService } from '../common';
 
 import { AINativeBrowserContribution } from './ai-core.contribution';
 import { AINativeService } from './ai-native.service';
@@ -22,9 +23,10 @@ import { TerminalRegistry } from './ai-terminal/terminal.feature.registry';
 import { ChatAgentService } from './chat/chat-agent.service';
 import { ChatAgentViewService } from './chat/chat-agent.view.service';
 import { ChatManagerService } from './chat/chat-manager.service';
+import { ChatService } from './chat/chat.api.service';
 import { ChatFeatureRegistry } from './chat/chat.feature.registry';
+import { ChatInternalService } from './chat/chat.internal.service';
 import { ChatRenderRegistry } from './chat/chat.render.registry';
-import { ChatService } from './chat/chat.service';
 import { LanguageParserFactory } from './languages/parser';
 import { AIMenuBarContribution } from './layout/menu-bar/menu-bar.contribution';
 import { ResolveConflictRegistry } from './merge-conflict/merge-conflict.feature.registry';
@@ -81,7 +83,11 @@ export class AINativeModule extends BrowserModule {
       useClass: ChatAgentViewService,
     },
     {
-      token: IAIChatService,
+      token: IChatInternalService,
+      useClass: ChatInternalService,
+    },
+    {
+      token: ChatServiceToken,
       useClass: ChatService,
     },
     {
@@ -102,7 +108,7 @@ export class AINativeModule extends BrowserModule {
     {
       servicePath: AIBackSerivcePath,
       token: AIBackSerivceToken,
-      clientToken: IAIChatService,
+      clientToken: IChatInternalService,
     },
   ];
 }
