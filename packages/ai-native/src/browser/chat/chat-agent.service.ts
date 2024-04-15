@@ -4,6 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   CancellationToken,
   ChatFeatureRegistryToken,
+  ChatServiceToken,
   Disposable,
   Emitter,
   IDisposable,
@@ -12,7 +13,6 @@ import {
 } from '@opensumi/ide-core-common';
 
 import {
-  IAIChatService,
   IChatAgent,
   IChatAgentCommand,
   IChatAgentMetadata,
@@ -21,13 +21,15 @@ import {
   IChatAgentService,
   IChatContent,
   IChatFollowup,
+  IChatInternalService,
   IChatMessage,
   IChatMessageStructure,
   IChatProgress,
 } from '../../common';
 import { IChatFeatureRegistry } from '../types';
 
-import { ChatService } from './chat.service';
+import { ChatService } from './chat.api.service';
+import { ChatInternalService } from './chat.internal.service';
 
 @Injectable()
 export class ChatAgentService extends Disposable implements IChatAgentService {
@@ -44,8 +46,8 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired(IAIChatService)
-  aiChatService: ChatService;
+  @Autowired(ChatServiceToken)
+  private aiChatService: ChatService;
 
   @Autowired(ChatFeatureRegistryToken)
   private readonly chatFeatureRegistry: IChatFeatureRegistry;
@@ -127,7 +129,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
   }
 
   populateChatInput(id: string, message: IChatMessageStructure) {
-    this.aiChatService.launchChatMessage({
+    this.aiChatService.sendMessage({
       ...message,
       agentId: id,
       immediate: false,
