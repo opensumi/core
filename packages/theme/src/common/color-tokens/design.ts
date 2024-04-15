@@ -227,3 +227,17 @@ export const designLanguageBackground = registerColor(
   '',
   true,
 );
+
+export const designSkeletonDecorationBackground = registerColor(
+  'design.skeleton.decoration.background',
+  { dark: '#312f24', light: '#312f24', hcDark: null, hcLight: null },
+  '',
+  true,
+);
+
+export const designSkeletonDecorationBlackBackground = registerColor(
+  'design.skeleton.decoration.black.background',
+  { dark: '#1f2224', light: '#1f2224', hcDark: null, hcLight: null },
+  '',
+  true,
+);

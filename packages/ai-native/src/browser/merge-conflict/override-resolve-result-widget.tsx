@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { Injectable } from '@opensumi/di';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
-import { uuid } from '@opensumi/ide-core-common';
+import { localize, uuid } from '@opensumi/ide-core-common';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AiResolveConflictContentWidget,
@@ -31,8 +31,8 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
   protected iconItems(): IAiInlineResultIconItemsProps[] {
     return [
       {
-        icon: 'diuqi',
-        text: '丢弃',
+        icon: 'discard',
+        text: localize('aiNative.operate.discard.title'),
         onClick: () => {
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
