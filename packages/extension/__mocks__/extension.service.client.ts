@@ -7,6 +7,9 @@ import { mockExtensionProps } from './extensions';
 
 @Injectable()
 export class MockExtNodeClientService implements IExtensionNodeClientService {
+  async pid(): Promise<number | null> {
+    return 1;
+  }
   async setupNLSConfig(languageId: string, storagePath: string): Promise<void> {
     // void
   }
