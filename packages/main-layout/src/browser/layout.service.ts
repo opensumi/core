@@ -119,7 +119,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     // 这里保证的 viewReady 并不是真实的 viewReady，只是保证在此刻之前注册进来的 Tabbar Ready 了
     // 仅确保 tabbar 视图加载完毕
     this.tabbarServices.forEach((service) => {
-      if (slotRendererRegistry.isTabbar(service.location)) {
+      if (slotRendererRegistry.isTabbar(service.location) && service.containersMap.size > 0) {
+        // 当初始容器组件数量为 0 时，不阻塞 LayoutService 初始化
+        // 后续在新注册容器时会通过 onDidRegisterContainer 事件初始化对应面板的 TabbarService
         list.push(service.viewReady.promise);
       }
     });
