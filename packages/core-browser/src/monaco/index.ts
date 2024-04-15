@@ -75,7 +75,7 @@ export type FormattingSelectorType = (
 export interface MonacoContribution {
   registerOverrideService?(registry: MonacoOverrideServiceRegistry): void;
 
-  registerMonacoDefaultFormattingSelector?(registry: (selector: IFormattingEditProviderSelector) => void): void;
+  registerMonacoDefaultFormattingSelector?(registry: (selector: IFormattingEditProviderSelector) => IDisposable): void;
 
   registerEditorExtensionContribution?<Services extends BrandedService[]>(
     register: (
