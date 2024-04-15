@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import { FileUri, UTF8 } from '@opensumi/ide-core-common';
+import { DisposableCollection, FileUri, UTF8 } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
@@ -14,6 +14,7 @@ describe('FileServiceClient should be work', () => {
   jest.setTimeout(10000);
 
   const injector = createBrowserInjector([FileServiceClientModule]);
+  const toDispose = new DisposableCollection();
   let fileServiceClient: IFileServiceClient;
   const track = temp.track();
   const tempDir = FileUri.create(fs.realpathSync(temp.mkdirSync('file-service-client-test')));
@@ -33,10 +34,11 @@ describe('FileServiceClient should be work', () => {
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     fileServiceClient = injector.get(IFileServiceClient);
-    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
+    toDispose.push(fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider)));
   });
 
   afterAll(async () => {
+    toDispose.dispose();
     await injector.disposeAll();
     track.cleanupSync();
   });
