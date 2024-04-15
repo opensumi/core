@@ -11,6 +11,8 @@ import { FileServiceClientModule } from '../../src/browser';
 import { FileSystemWatcherServer } from '../../src/node/recursive/file-service-watcher';
 
 describe('FileServiceClient should be work', () => {
+  jest.setTimeout(10000);
+
   const injector = createBrowserInjector([FileServiceClientModule]);
   let fileServiceClient: IFileServiceClient;
   const track = temp.track();
@@ -28,7 +30,6 @@ describe('FileServiceClient should be work', () => {
   );
 
   beforeAll(() => {
-    jest.setTimeout(10000);
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     fileServiceClient = injector.get(IFileServiceClient);

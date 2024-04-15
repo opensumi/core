@@ -409,8 +409,6 @@ describe('ripgrep-search-in-workspace-server', () => {
   // Try with an output size that exceeds the default node buffer size
   // (200 * 1024) when spawning a new process.
   it('should work with a lot of results', (done) => {
-    // This can take a bit of time.
-    jest.setTimeout(150000);
     const pattern = 'lots-of-matches';
 
     const client = new MockContentSearchClient(() => {
@@ -432,7 +430,7 @@ describe('ripgrep-search-in-workspace-server', () => {
 
     (contentSearchServer as any).rpcClient = [client];
     contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
-  });
+  }, 150000);
 
   // Try limiting the number of returned results.
   it('should limit the number of returned results', (done) => {

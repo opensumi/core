@@ -122,8 +122,6 @@ describe('Extension Service', () => {
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
     });
 
-    // jest.setTimeout(20 * 1000);
-
     it('should create extension host process', async () => {
       await extensionService.createProcess(mockExtClientId);
       const port = await extensionService.getProcessInspectPort(mockExtClientId);

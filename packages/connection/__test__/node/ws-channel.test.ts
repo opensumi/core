@@ -47,103 +47,107 @@ describe('ws channel node', () => {
     socket2.end();
   });
 
-  it('[send text] communicate with each other N times', async () => {
-    jest.setTimeout(20 * 1000);
+  it(
+    '[send text] communicate with each other N times',
+    async () => {
+      let count = 0;
 
-    let count = 0;
+      const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
 
-    const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
+      const server = new net.Server();
 
-    const server = new net.Server();
-
-    server.on('connection', (socket) => {
-      const channel1 = createWSChannel(socket, {
-        id: 'channel1',
-      });
-      channel1.onMessage((d) => {
-        channel1.send(d + 'resp');
-      });
-    });
-
-    server.listen(ipcPath);
-
-    const socket2 = net.createConnection(ipcPath);
-
-    const channel2 = createWSChannel(socket2, {
-      id: 'channel2',
-    });
-
-    await Promise.all([
-      new Promise<void>((resolve) => {
-        channel2.onMessage(() => {
-          count++;
-          if (count === total) {
-            resolve();
-          }
+      server.on('connection', (socket) => {
+        const channel1 = createWSChannel(socket, {
+          id: 'channel1',
         });
-      }),
-      new Promise<void>((resolve) => {
-        for (let i = 0; i < total; i++) {
-          channel2.send('hello');
-        }
-        resolve();
-      }),
-    ]);
-
-    server.close();
-    socket2.destroy();
-    socket2.end();
-  });
-
-  it('[send binary] communicate with each other N times', async () => {
-    jest.setTimeout(20 * 1000);
-
-    let count = 0;
-
-    const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
-
-    const server = new net.Server();
-
-    server.on('connection', (socket) => {
-      const channel1 = createWSChannel(socket, {
-        id: 'channel1',
-      });
-      channel1.onBinary((d) => {
-        const newBuffer = Buffer.alloc(d.length + 4);
-        newBuffer.writeUInt32BE(d.length, 0);
-        copy(d, newBuffer, 4);
-        channel1.sendBinary(newBuffer);
-      });
-    });
-
-    server.listen(ipcPath);
-
-    const socket2 = net.createConnection(ipcPath);
-
-    const channel2 = createWSChannel(socket2, {
-      id: 'channel2',
-    });
-    const helloBinary = Buffer.from('hello');
-
-    await Promise.all([
-      new Promise<void>((resolve) => {
-        channel2.onBinary(() => {
-          count++;
-          if (count === total) {
-            resolve();
-          }
+        channel1.onMessage((d) => {
+          channel1.send(d + 'resp');
         });
-      }),
-      new Promise<void>((resolve) => {
-        for (let i = 0; i < total; i++) {
-          channel2.sendBinary(helloBinary);
-        }
-        resolve();
-      }),
-    ]);
+      });
 
-    server.close();
-    socket2.destroy();
-    socket2.end();
-  });
+      server.listen(ipcPath);
+
+      const socket2 = net.createConnection(ipcPath);
+
+      const channel2 = createWSChannel(socket2, {
+        id: 'channel2',
+      });
+
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          channel2.onMessage(() => {
+            count++;
+            if (count === total) {
+              resolve();
+            }
+          });
+        }),
+        new Promise<void>((resolve) => {
+          for (let i = 0; i < total; i++) {
+            channel2.send('hello');
+          }
+          resolve();
+        }),
+      ]);
+
+      server.close();
+      socket2.destroy();
+      socket2.end();
+    },
+    20 * 1000,
+  );
+
+  it(
+    '[send binary] communicate with each other N times',
+    async () => {
+      let count = 0;
+
+      const ipcPath = await normalizedIpcHandlerPathAsync('test', true);
+
+      const server = new net.Server();
+
+      server.on('connection', (socket) => {
+        const channel1 = createWSChannel(socket, {
+          id: 'channel1',
+        });
+        channel1.onBinary((d) => {
+          const newBuffer = Buffer.alloc(d.length + 4);
+          newBuffer.writeUInt32BE(d.length, 0);
+          copy(d, newBuffer, 4);
+          channel1.sendBinary(newBuffer);
+        });
+      });
+
+      server.listen(ipcPath);
+
+      const socket2 = net.createConnection(ipcPath);
+
+      const channel2 = createWSChannel(socket2, {
+        id: 'channel2',
+      });
+      const helloBinary = Buffer.from('hello');
+
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          channel2.onBinary(() => {
+            count++;
+            if (count === total) {
+              resolve();
+            }
+          });
+        }),
+        new Promise<void>((resolve) => {
+          for (let i = 0; i < total; i++) {
+            channel2.sendBinary(helloBinary);
+          }
+          resolve();
+        }),
+      ]);
+
+      server.close();
+      socket2.destroy();
+      socket2.end();
+    },
+    20 * 1000,
+  );
 });
