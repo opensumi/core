@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
+  AINativeConfigService,
   AppConfig,
   ClientAppContribution,
   CommandContribution,
@@ -73,7 +74,7 @@ import { EditorView } from './editor.view';
 import { DocumentFormatService } from './format/format.service';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorHistoryService } from './history';
-import { LightBulbWidget } from './light-bulb-widget';
+import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
@@ -226,6 +227,9 @@ export class EditorContribution
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
   registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);
     register(formatSelector.select.bind(formatSelector));
@@ -248,7 +252,13 @@ export class EditorContribution
       ]),
     );
 
-    register(LightBulbWidget.ID, LightBulbWidget, EditorContributionInstantiation.Lazy);
+    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
+      register(
+        OpenSumiLightBulbWidget.ID,
+        new SyncDescriptor(OpenSumiLightBulbWidget, []),
+        EditorContributionInstantiation.Lazy,
+      );
+    }
   }
 
   protected getMimeForMode(langId: string): string | undefined {
