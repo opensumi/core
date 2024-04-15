@@ -33,7 +33,7 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { LanguageParserFactory } from './languages/parser';
+import { LanguageParserService } from './languages/service';
 import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -85,8 +85,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IEventBus)
   protected eventBus: IEventBus;
 
-  @Autowired(LanguageParserFactory)
-  protected languageParserFactory: LanguageParserFactory;
+  @Autowired(LanguageParserService)
+  protected languageParserService: LanguageParserService;
 
   private latestMiddlewareCollector: IAIMiddleware;
 
@@ -277,9 +277,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     const selection = monacoEditor.getSelection();
-    const selectCode = selection && monacoEditor.getModel()?.getValueInRange(selection);
 
-    if (!selection || !selectCode?.trim()) {
+    if (!selection || selection.isEmpty()) {
       this.disposeAllWidget();
       return;
     }
@@ -318,7 +317,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const { execute, providerDiffPreviewStrategy } = handler;
 
     if (execute) {
-      execute(monacoEditor);
+      await execute(monacoEditor);
       this.disposeAllWidget();
     }
 
@@ -567,7 +566,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerCodeActionProvider(languageId, {
               provideCodeActions: async (model) => {
-                const parser = this.languageParserFactory(languageId);
+                const parser = this.languageParserService.createParser(languageId);
                 if (!parser) {
                   return;
                 }

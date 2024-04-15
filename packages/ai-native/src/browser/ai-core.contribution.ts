@@ -126,7 +126,7 @@ export class AINativeBrowserContribution
     const { useMenubarView } = this.aiNativeConfigService.layout;
 
     let layoutConfig = this.appConfig.layoutConfig;
-    let layoutViewSize = this.appConfig.layoutViewSize as LayoutViewSizeConfig;
+    const layoutViewSize = this.appConfig.layoutViewSize as LayoutViewSizeConfig;
 
     if (supportsChatAssistant) {
       layoutConfig = {

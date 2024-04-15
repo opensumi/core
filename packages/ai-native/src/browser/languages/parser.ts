@@ -1,16 +1,11 @@
 import Parser from 'web-tree-sitter';
 
-import { Autowired, Injectable, Injector } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
 import { Deferred, LRUCache } from '@opensumi/ide-utils';
 
 import { toMonacoRange } from './tree-sitter/common';
-import {
-  SupportedLanguages,
-  SupportedTreeSitterLanguages,
-  TreeSitterLanguageFacts,
-  parserNameMap,
-} from './tree-sitter/language-facts';
+import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-sitter/language-facts';
 import { IFunctionInfo } from './tree-sitter/language-facts/base';
 import { WasmModuleManager } from './tree-sitter/wasm-manager';
 
@@ -206,20 +201,4 @@ export class LanguageParser {
     }
     return null;
   }
-  private static pool = new Map<SupportedTreeSitterLanguages, LanguageParser>();
-  static get(injector: Injector, language: SupportedTreeSitterLanguages) {
-    if (!LanguageParser.pool.has(language)) {
-      LanguageParser.pool.set(language, injector.get(LanguageParser, [language]));
-    }
-
-    return LanguageParser.pool.get(language);
-  }
 }
-
-export const LanguageParserFactory = (injector: Injector) => (language: SupportedLanguages | string) => {
-  const treeSitterLang = parserNameMap[language];
-  if (treeSitterLang) {
-    return LanguageParser.get(injector, treeSitterLang);
-  }
-};
-export type LanguageParserFactory = ReturnType<typeof LanguageParserFactory>;
