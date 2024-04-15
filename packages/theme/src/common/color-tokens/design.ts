@@ -229,14 +229,14 @@ export const designLanguageBackground = registerColor(
 );
 
 export const designSkeletonDecorationBackground = registerColor(
-  'design.skeleton.decoration.background',
+  'design.skeletonDecoration.background',
   { dark: '#312f24', light: '#312f24', hcDark: null, hcLight: null },
   '',
   true,
 );
 
 export const designSkeletonPlaceholderDecorationBackground = registerColor(
-  'design.skeleton.placeholder.decoration.background',
+  'design.skeletonPlaceholderDecoration.background',
   { dark: '#1f2224', light: '#1f2224', hcDark: null, hcLight: null },
   '',
   true,
