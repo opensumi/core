@@ -1,5 +1,5 @@
 import { localize } from '@opensumi/ide-core-common';
-import { Codicon, Sumiicon } from '@opensumi/ide-core-common/lib/codicons';
+import { Codicon, Sumicon } from '@opensumi/ide-core-common/lib/codicons';
 
 // https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
 export const codIconIdentifier = {
@@ -906,117 +906,120 @@ export const codIconIdentifier = {
 // proxy to codicon
 export const sumiIconIdentifier = {
   'sumi-explorer': {
-    defaults: Sumiicon.explorer,
+    defaults: Sumicon.explorer,
     description: 'View icon in the Explorer view.',
   },
   'sumi-search': {
-    defaults: Sumiicon.search,
+    defaults: Sumicon.search,
     description: 'View icon in the Search view.',
   },
   'sumi-debug': {
-    defaults: Sumiicon.debug,
+    defaults: Sumicon.debug,
     description: 'View icon in the Debug view.',
   },
   'sumi-scm': {
-    defaults: Sumiicon.scm,
+    defaults: Sumicon.scm,
     description: 'View icon in the Source Control  view.',
   },
   'sumi-extension': {
-    defaults: Sumiicon.extension,
+    defaults: Sumicon.extension,
     description: 'View icon in the Extension view.',
   },
   'sumi-embed': {
-    defaults: Sumiicon.embed,
+    defaults: Sumicon.embed,
   },
   'sumi-setting': {
-    defaults: Sumiicon.setting,
+    defaults: Sumicon.setting,
   },
   'sumi-sync': {
-    defaults: Sumiicon.sync,
+    defaults: Sumicon.sync,
   },
   'sumi-zsh': {
-    defaults: Sumiicon.zsh,
+    defaults: Sumicon.zsh,
   },
   'sumi-bash': {
-    defaults: Sumiicon.bash,
+    defaults: Sumicon.bash,
   },
   'sumi-clear': {
-    defaults: Sumiicon.clear,
+    defaults: Sumicon.clear,
   },
   'sumi-new-file': {
-    defaults: Sumiicon.newFile,
+    defaults: Sumicon.newFile,
   },
   'sumi-new-folder': {
-    defaults: Sumiicon.newFolder,
+    defaults: Sumicon.newFolder,
   },
   'sumi-refresh': {
-    defaults: Sumiicon.refresh,
+    defaults: Sumicon.refresh,
   },
   'sumi-more': {
-    defaults: Sumiicon.more,
+    defaults: Sumicon.more,
   },
   'sumi-open': {
-    defaults: Sumiicon.open,
+    defaults: Sumicon.open,
   },
   'sumi-close': {
-    defaults: Sumiicon.close,
+    defaults: Sumicon.close,
   },
   'sumi-delete': {
-    defaults: Sumiicon.delete,
+    defaults: Sumicon.delete,
   },
   'sumi-right': {
-    defaults: Sumiicon.right,
+    defaults: Sumicon.right,
   },
   'sumi-left': {
-    defaults: Sumiicon.left,
+    defaults: Sumicon.left,
   },
   'sumi-down': {
-    defaults: Sumiicon.down,
+    defaults: Sumicon.down,
   },
   'sumi-up': {
-    defaults: Sumiicon.up,
+    defaults: Sumicon.up,
   },
   'sumi-arrowright': {
-    defaults: Sumiicon.arrowRight,
+    defaults: Sumicon.arrowRight,
   },
   'sumi-arrowleft': {
-    defaults: Sumiicon.arrowLeft,
+    defaults: Sumicon.arrowLeft,
   },
   'sumi-arrowdown': {
-    defaults: Sumiicon.arrowDown,
+    defaults: Sumicon.arrowDown,
   },
   'sumi-arrowup': {
-    defaults: Sumiicon.arrowUp,
+    defaults: Sumicon.arrowUp,
   },
   // TODO arrow-down arrow-right 需要改为 down right
   'sumi-arrow-right': {
-    defaults: Sumiicon.right,
+    defaults: Sumicon.right,
   },
   'sumi-arrow-down': {
-    defaults: Sumiicon.down,
+    defaults: Sumicon.down,
   },
   'sumi-start': {
-    defaults: Sumiicon.start,
+    defaults: Sumicon.start,
   },
   'sumi-save-all': {
-    defaults: Sumiicon.saveAll,
+    defaults: Sumicon.saveAll,
   },
   'sumi-close-all': {
-    defaults: Sumiicon.closeAll,
+    defaults: Sumicon.closeAll,
   },
   'sumi-collapse-all': {
-    defaults: Sumiicon.collapseAll,
+    defaults: Sumicon.collapseAll,
   },
   'sumi-expand-all': {
-    defaults: Sumiicon.expandAll,
+    defaults: Sumicon.expandAll,
   },
   'sumi-retrieval': {
-    defaults: Sumiicon.retrieval,
+    defaults: Sumicon.retrieval,
   },
   'sumi-eye-close': {
-    defaults: Sumiicon.eyeClose,
+    defaults: Sumicon.eyeClose,
   },
   'sumi-ellipsis': {
-    defaults: Sumiicon.ellipsis,
+    defaults: Sumicon.ellipsis,
+  },
+  'sumi-magic-wand': {
+    defaults: Sumicon.magicWand,
   },
 };

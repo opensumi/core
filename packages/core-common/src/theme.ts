@@ -9,7 +9,7 @@ export interface IThemeColor {
 export interface ThemeIcon {
   readonly id: string;
   readonly color?: IThemeColor;
-  // for  sumiicon proxy
+  // for sumicon proxy
   readonly alias?: string[];
 }
 

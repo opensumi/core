@@ -635,8 +635,7 @@ export const Codicon = {
   quickInputBack: register('quick-input-back', 'arrow-left'),
 } as const;
 
-// proxy to sumiicon
-export const Sumiicon = {
+export const Sumicon = {
   explorer: registerSumi('files', 0xe71e, ['files', 'explorer-view-icon']),
   search: registerSumi('search', 0xe710, ['search', 'search-editor-label-icon', 'search-view-icon']),
   debug: registerSumi('debug-alt', 0xe712, [
@@ -748,4 +747,10 @@ export const Sumiicon = {
   retrieval: registerSumi('sumi-retrieval', 0xea61, []),
   eyeClose: registerSumi('eye-closed', 0xe8ff, ['eye-closed']),
   ellipsis: registerSumi('ellipsis', 0xe7fc, ['ellipsis', 'search-details']),
+  magicWand: registerSumi('magic-wand', 0xe60e, ['magic-wand']),
 } as const;
+
+/**
+ * @deprecated use `Sumicon` instead
+ */
+export const Sumiicon = Sumicon;

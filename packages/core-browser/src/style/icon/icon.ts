@@ -1,3 +1,4 @@
+import { ThemeIcon } from '@opensumi/ide-core-common';
 import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { IDE_CODICONS_CN_CSS, IDE_ICONFONT_CN_CSS, IDE_OCTICONS_CN_CSS } from './ide-iconfont';
@@ -557,18 +558,30 @@ const codIconId = [
   'copilot',
 ];
 
+const codIconIdSet = new Set(codIconId);
+
+const sumiconSet = new Set(['magic-wand']);
+
 /**
  * @param iconKey icon id
  * @param fallback codicon 找不到 icon 时是否回退到 octicon
  */
 export function getExternalIcon(iconKey: string, iconOwner = CODICON_OWNER, fallback = iconOwner === CODICON_OWNER) {
-  if (fallback && iconOwner === CODICON_OWNER && !codIconId.includes(iconKey)) {
+  if (fallback && iconOwner === CODICON_OWNER && !codIconIdSet.has(iconKey)) {
     return getOctIcon(iconKey);
   }
   if (iconOwner === KTICON_OWNER) {
     return `kaitian-icon ${iconOwner}-${iconKey}`;
   }
   return `${iconOwner} ${iconOwner}-${iconKey}`;
+}
+
+export function asClassNameArrayWrapper(icon: ThemeIcon) {
+  if (sumiconSet.has(icon.id)) {
+    return ['kaitian-icon', `${KTICON_OWNER}-${icon.id}`];
+  }
+
+  return ThemeIcon.asClassNameArray(icon);
 }
 
 /**

@@ -2,3 +2,21 @@
   width: 16px;
   height: 16px;
 }
+
+.lightBulbWidget.kaitian-icon.kticon-magic-wand::before {
+  background-image: radial-gradient(circle at -21% -22%, #19cfff, #8429ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  border: none;
+  font-weight: 500;
+  span {
+    color: #fff;
+  }
+  :global {
+    .kt-icon {
+      color: #fff;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+  }
+}
