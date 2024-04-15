@@ -376,7 +376,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const crossCode = model!.getValueInRange(crossSelection);
     this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
 
-    const startTime = +new Date();
+    const startTime = Date.now();
     const response = await strategy(monacoEditor, this.aiNativeService.cancelIndicator.token);
 
     if (this.aiInlineChatDisposed.disposed || CancelResponse.is(response)) {
@@ -384,7 +384,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiReporter.end(relationId, {
         message: response.message,
         success: true,
-        replytime: +new Date() - startTime,
+        replytime: Date.now() - startTime,
         isStop: true,
         isRetry,
       });
@@ -396,7 +396,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       this.aiReporter.end(relationId, {
         message: response.message,
         success: false,
-        replytime: +new Date() - startTime,
+        replytime: Date.now() - startTime,
         isRetry,
       });
       return response;
@@ -407,7 +407,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.aiReporter.end(relationId, {
       message: response.message,
       success: true,
-      replytime: +new Date() - startTime,
+      replytime: Date.now() - startTime,
       isRetry,
     });
 
