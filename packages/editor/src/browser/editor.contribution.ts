@@ -14,6 +14,7 @@ import {
   IClientApp,
   IClipboardService,
   IContextKeyService,
+  IEditorExtensionContribution,
   IEventBus,
   IOpenerService,
   IPreferenceSettingsService,
@@ -237,7 +238,7 @@ export class EditorContribution
     this.addDispose(register(formatSelector.selectFormatter.bind(formatSelector)));
   }
 
-  registerEditorExtensionContribution(register): void {
+  registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
     register(
       EditorContextMenuController.ID,
       /**
@@ -255,11 +256,7 @@ export class EditorContribution
     );
 
     if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
-      register(
-        OpenSumiLightBulbWidget.ID,
-        new SyncDescriptor(OpenSumiLightBulbWidget, []),
-        EditorContributionInstantiation.Lazy,
-      );
+      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
     }
   }
 

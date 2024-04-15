@@ -8,7 +8,7 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/lightBulbWidget';
 
 export class OpenSumiLightBulbWidget extends LightBulbWidget {
-  protected _updateLightBulbTitleAndIcon(): void {
+  protected override _updateLightBulbTitleAndIcon(): void {
     this._domNode.classList.remove(...this._iconClasses);
     this._iconClasses = [];
     if (this.state.type !== LightBulbState.Type.Showing) {
