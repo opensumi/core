@@ -163,6 +163,13 @@ export interface IConflictContentMetadata {
   current: string;
   base: string;
   incoming: string;
+
+  // 各分支的名称
+  currentName?: string;
+  baseName?: string;
+  incomingName?: string;
+
+  resultContent?: string;
 }
 export interface IResolveConflictHandler {
   providerRequest: (
