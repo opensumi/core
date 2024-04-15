@@ -38,6 +38,7 @@ import { IWebviewService } from '@opensumi/ide-webview';
 
 import {
   EMIT_EXT_HOST_EVENT,
+  ERestartPolicy,
   ExtensionHostProfilerServicePath,
   ExtensionHostTypeUpperCase,
   ExtensionNodeServiceServerPath,
@@ -125,9 +126,10 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
      */
     this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
   }
+
   // restart extProcess on reconnect
   onReconnect() {
-    this.extensionService.restartExtProcess();
+    this.extensionService.restartExtProcess(ERestartPolicy.WhenExit);
   }
 
   /**

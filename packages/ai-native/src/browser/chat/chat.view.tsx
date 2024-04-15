@@ -418,7 +418,7 @@ export const AIChatView = observer(() => {
         userInput.message = slashCommandPrompt;
       }
 
-      const startTime = +new Date();
+      const startTime = Date.now();
       const relationId = aiReporter.start(reportType || userInput.type, {
         msgType: reportType || userInput.type,
         message: userInput.message,
