@@ -117,7 +117,7 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
     () =>
       iconItems.concat([
         {
-          icon: 'zhongxin',
+          icon: 'afresh',
           text: renderGenerate(),
           onClick: handleRenerate,
         },
