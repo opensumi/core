@@ -89,6 +89,7 @@ export interface IExtensionNodeService {
   ): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string, options?: ICreateProcessOptions): Promise<void>;
   ensureProcessReady(clientId: string): Promise<boolean>;
+  getExtProcessId(clientId: string): Promise<number | null>;
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
   getElectronMainThreadListenPath2(clientId: string): Promise<string>;
   getExtServerListenOption(clientId: string);
@@ -127,6 +128,7 @@ export interface IExtensionNodeClientService {
   setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
   getLanguagePack(languageId: string): IExtensionLanguagePack | undefined;
+  pid(): Promise<number | null>;
 }
 
 export type ExtensionHostType = 'node' | 'worker';
@@ -207,6 +209,17 @@ export abstract class AbstractExtensionManagementService {
   ): Promise<IExtensionProps | undefined>;
 }
 
+export enum ERestartPolicy {
+  /**
+   * Always restart extension process
+   */
+  Always = 'always',
+  /**
+   * Restart extension process when extension process is not running or not responding
+   */
+  WhenExit = 'WhenExit',
+}
+
 export abstract class ExtensionService {
   /**
    * 激活插件服务
@@ -216,7 +229,7 @@ export abstract class ExtensionService {
   /**
    * 重启插件进程
    */
-  abstract restartExtProcess(): Promise<void>;
+  abstract restartExtProcess(restartPolicy?: ERestartPolicy): Promise<void>;
 
   /**
    * 激活插件, 给 Extension 实例使用
