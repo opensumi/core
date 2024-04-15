@@ -93,7 +93,7 @@ class RequestImp {
     };
 
     this.aiCompletionsService.updateStatusBarItem('running', true);
-    const beginAlgTime = +new Date();
+    const beginAlgTime = Date.now();
     let status = 0; // 0: 远程请求的结果 1: 网络缓存中的结果
     if (this.isCancelFlag) {
       return [];
@@ -114,7 +114,7 @@ class RequestImp {
       } catch (error) {
         this.aiCompletionsService.reporterEnd(relationId, {
           success: false,
-          replytime: +new Date() - beginAlgTime,
+          replytime: Date.now() - beginAlgTime,
           message: error.toString(),
         });
         this.aiCompletionsService.hideStatusBarItem();
@@ -124,7 +124,7 @@ class RequestImp {
     }
 
     if (!(rs && rs.sessionId)) {
-      this.aiCompletionsService.reporterEnd(relationId, { success: false, replytime: +new Date() - beginAlgTime });
+      this.aiCompletionsService.reporterEnd(relationId, { success: false, replytime: Date.now() - beginAlgTime });
       this.aiCompletionsService.hideStatusBarItem();
       return [];
     }
@@ -135,7 +135,7 @@ class RequestImp {
     if ((rs && rs.isCancel) || this.isCancelFlag) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
-        replytime: +new Date() - beginAlgTime,
+        replytime: Date.now() - beginAlgTime,
         isStop: true,
         completionNum: 0,
       });
@@ -155,7 +155,7 @@ class RequestImp {
     if (rs.codeModelList.length === 0) {
       this.aiCompletionsService.reporterEnd(relationId, {
         success: true,
-        replytime: +new Date() - beginAlgTime,
+        replytime: Date.now() - beginAlgTime,
         completionNum: 0,
       });
       this.aiCompletionsService.updateStatusBarItem('no result', false);
