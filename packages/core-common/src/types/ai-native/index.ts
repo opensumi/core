@@ -153,6 +153,7 @@ export const ResolveConflictRegistryToken = Symbol('ResolveConflictRegistryToken
 export const RenameCandidatesProviderRegistryToken = Symbol('RenameCandidatesProviderRegistryToken');
 export const TerminalRegistryToken = Symbol('TerminalRegistryToken');
 
+export const ChatServiceToken = Symbol('ChatServiceToken');
 export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
 
 /**
@@ -162,6 +163,13 @@ export interface IConflictContentMetadata {
   current: string;
   base: string;
   incoming: string;
+
+  // 各分支的名称
+  currentName?: string;
+  baseName?: string;
+  incomingName?: string;
+
+  resultContent?: string;
 }
 export interface IResolveConflictHandler {
   providerRequest: (

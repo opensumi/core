@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon, Thumbs } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
-import { ChatRenderRegistryToken, IAIReporter, localize } from '@opensumi/ide-core-common';
+import { ChatRenderRegistryToken, isUndefined, localize } from '@opensumi/ide-core-common';
 
-import { IAIChatService } from '../../common/index';
+import { IChatInternalService } from '../../common/index';
+import { ChatInternalService } from '../chat/chat.internal.service';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
-import { ChatService } from '../chat/chat.service';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
 
 import styles from './components.module.less';
@@ -18,12 +18,12 @@ interface ITinkingProps {
   status?: EMsgStreamStatus;
   hasMessage?: boolean;
   message?: string;
-  regenerateDisabled?: boolean;
   onRegenerate?: () => void;
   sessionId?: string;
   onStop?: () => void;
   thinkingText?: string;
   showStop?: boolean;
+  showRegenerate?: boolean;
   hasAgent?: boolean;
 }
 
@@ -38,11 +38,11 @@ export const ChatThinking = (props: ITinkingProps) => {
     thinkingText,
   } = props;
 
-  const aiChatService = useInjectable<ChatService>(IAIChatService);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
 
-  const customThinkingRender = useMemo(
+  const CustomThinkingRender = useMemo(
     () => chatRenderRegistry.chatThinkingRender,
     [chatRenderRegistry, chatRenderRegistry.chatThinkingRender],
   );
@@ -61,22 +61,22 @@ export const ChatThinking = (props: ITinkingProps) => {
 
   const renderContent = useCallback(() => {
     if (!children || (status === EMsgStreamStatus.THINKING && !message?.trim())) {
-      if (customThinkingRender) {
-        return customThinkingRender({ thinkingText });
+      if (CustomThinkingRender) {
+        return <CustomThinkingRender thinkingText={thinkingText} />;
       }
 
       return <span className={styles.thinking_text}>{thinkingText || 'Thinking...'}</span>;
     }
 
     return children;
-  }, [status, message, children, thinkingText, customThinkingRender]);
+  }, [status, message, children, thinkingText, CustomThinkingRender]);
 
   return (
     <>
       <div className={styles.content}>{renderContent()}</div>
       <div className={styles.thinking_container}>
         <div className={styles.stop}>
-          {!customThinkingRender && (
+          {!CustomThinkingRender && (
             <span className={styles.progress_bar}>
               {/* 保持动画效果一致 */}
               {(!!status || !children) && (
@@ -103,18 +103,9 @@ export const ChatThinkingResult = ({
   onRegenerate,
   sessionId,
   hasMessage = true,
-  regenerateDisabled,
+  showRegenerate,
 }: ITinkingProps) => {
-  const aiChatService = useInjectable<ChatService>(IAIChatService);
-  const [latestSessionId, setLatestSessionId] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const dispose = aiChatService.onChangeSessionId((sid) => {
-      setLatestSessionId(sid);
-    });
-
-    return () => dispose.dispose();
-  }, [aiChatService]);
+  const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
 
   const handleRegenerate = useCallback(() => {
     if (onRegenerate) {
@@ -134,7 +125,13 @@ export const ChatThinkingResult = ({
     return children;
   }, [status, message, children]);
 
-  const isRenderRegenerate = useMemo(() => aiChatService.latestSessionId === sessionId, [sessionId, latestSessionId]);
+  const isRenderRegenerate = useMemo(() => {
+    if (isUndefined(showRegenerate)) {
+      return aiChatService.latestSessionId === sessionId;
+    }
+
+    return !!showRegenerate;
+  }, [aiChatService.latestSessionId, sessionId, showRegenerate]);
 
   return (
     <>
@@ -142,7 +139,7 @@ export const ChatThinkingResult = ({
       <div className={styles.thinking_container}>
         <div className={styles.bottom_container}>
           <div className={styles.reset}>
-            {isRenderRegenerate && !regenerateDisabled ? (
+            {isRenderRegenerate ? (
               <EnhanceIcon
                 icon={'refresh'}
                 wrapperClassName={styles.text_btn}

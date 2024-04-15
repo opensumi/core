@@ -19,8 +19,11 @@ import { MsgStreamManager } from '../model/msg-stream-manager';
 import { ChatManagerService } from './chat-manager.service';
 import { ChatModel, ChatRequestModel } from './chat-model';
 
+/**
+ * @internal
+ */
 @Injectable()
-export class ChatService extends Disposable {
+export class ChatInternalService extends Disposable {
   @Autowired(AIBackSerivcePath)
   public aiBackService: IAIBackService;
 
@@ -35,9 +38,6 @@ export class ChatService extends Disposable {
 
   @Autowired(IChatManagerService)
   private chatManagerService: ChatManagerService;
-
-  private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
-  public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
 
   private readonly _onChangeSessionId = new Emitter<string>();
   public readonly onChangeSessionId: Event<string> = this._onChangeSessionId.event;
@@ -55,10 +55,6 @@ export class ChatService extends Disposable {
   constructor() {
     super();
     this.#sessionModel = this.chatManagerService.startSession();
-  }
-
-  public launchChatMessage(data: IChatMessageStructure) {
-    this._onChatMessageLaunch.fire(data);
   }
 
   public cancelIndicatorChatView = new CancellationTokenSource();

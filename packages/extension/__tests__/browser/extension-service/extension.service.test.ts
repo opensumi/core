@@ -263,7 +263,7 @@ describe('Extension service', () => {
       extensionService.restartExtProcess();
 
       expect(extProcessRestartHandler).not.toHaveBeenCalled();
-      expect(extensionService['isExtProcessWaitingForRestart']).toBe(true);
+      expect(extensionService['isExtProcessWaitingForRestart']).toBeTruthy();
 
       /**
        * 页面变为可见后，开始执行插件进程重启操作

@@ -71,7 +71,7 @@ export interface ChatCompletionRequestMessage {
   name?: string;
 }
 
-export const IAIChatService = Symbol('IAIChatService');
+export const IChatInternalService = Symbol('IChatInternalService');
 export const IChatManagerService = Symbol('IChatManagerService');
 export const IChatAgentService = Symbol('IChatAgentService');
 

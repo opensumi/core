@@ -48,7 +48,7 @@ export interface IDialogService extends IMessageService {
   onDidDialogVisibleChange: Event<boolean>;
   getMessage(): string | React.ReactNode;
   getIcon(): Icon | undefined;
-  getButtons(): string[];
+  getButtons(): string[] | undefined;
   getType(): MessageType | undefined;
   getProps(): Record<string, any>;
   reset(): void;

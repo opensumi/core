@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 
 import { Button, Dialog as DialogView } from '@opensumi/ide-components';
-import { strings, useInjectable } from '@opensumi/ide-core-browser';
+import { localize, strings, useInjectable } from '@opensumi/ide-core-browser';
 
 import { IDialogService } from '../common';
 
@@ -53,18 +53,22 @@ export const Dialog: FC = () => {
       icon={icon}
       keyboard={true}
       buttons={
-        buttons.length
-          ? buttons.map((button, index) => (
-              <Button
-                size='large'
-                onClick={() => handlerClickButton(button)}
-                key={button}
-                type={index === buttons.length - 1 ? 'primary' : 'secondary'}
-              >
-                {strings.mnemonicButtonLabel(button, true)}
-              </Button>
-            ))
-          : []
+        buttons ? (
+          buttons.map((button, index) => (
+            <Button
+              size='large'
+              onClick={() => handlerClickButton(button)}
+              key={button}
+              type={index === buttons.length - 1 ? 'primary' : 'secondary'}
+            >
+              {strings.mnemonicButtonLabel(button, true)}
+            </Button>
+          ))
+        ) : (
+          <Button size='large' onClick={handleClose} type='primary'>
+            {localize('dialog.confirm')}
+          </Button>
+        )
       }
       {...customProps}
     />

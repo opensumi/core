@@ -22,7 +22,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
 
   public closable = true;
 
-  protected buttons: string[] = [];
+  protected buttons: string[] | undefined;
 
   protected props: Record<string, any> = {};
 
@@ -52,9 +52,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.contextkeyService.dialogViewVisibleContext.set(true);
     this.closable = closable;
     this.props = props ?? {};
-    if (buttons) {
-      this.buttons = buttons;
-    }
+    this.buttons = buttons;
     return this.deferred.promise;
   }
 
@@ -102,7 +100,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     }
   }
 
-  getButtons(): string[] {
+  getButtons() {
     return this.buttons;
   }
 

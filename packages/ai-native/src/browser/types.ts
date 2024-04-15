@@ -73,22 +73,29 @@ export interface IChatFeatureRegistry {
 export type ChatWelcomeRender = (props: {
   message: IChatWelcomeMessageContent;
   sampleQuestions: ISampleQuestions[];
-}) => React.ReactNode;
-export type ChatAIRoleRender = (props: { content: string; status: EMsgStreamStatus }) => React.ReactNode;
-export type ChatUserRoleRender = (props: { content: string; agentId?: string; command?: string }) => React.ReactNode;
-export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactNode;
+}) => React.ReactElement | React.JSX.Element;
+export type ChatAIRoleRender = (props: {
+  content: string;
+  status: EMsgStreamStatus;
+}) => React.ReactElement | React.JSX.Element;
+export type ChatUserRoleRender = (props: {
+  content: string;
+  agentId?: string;
+  command?: string;
+}) => React.ReactElement | React.JSX.Element;
+export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
 
 export interface IChatRenderRegistry {
-  registerWelcomeRender?: (render: ChatWelcomeRender) => void;
+  registerWelcomeRender(render: ChatWelcomeRender): void;
   /**
    * AI 对象的对话渲染
    */
-  registerAIRoleRender?: (render: ChatAIRoleRender) => void;
+  registerAIRoleRender(render: ChatAIRoleRender): void;
   /**
    * 用户对象的对话渲染
    */
-  registerUserRoleRender?: (render: ChatUserRoleRender) => void;
-  registerThinkingRender?: (render: ChatThinkingRender) => void;
+  registerUserRoleRender(render: ChatUserRoleRender): void;
+  registerThinkingRender(render: ChatThinkingRender): void;
 }
 
 export interface IResolveConflictRegistry {
