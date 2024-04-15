@@ -69,7 +69,7 @@ describe('FormatService', () => {
       {
         token: FormattingSelector,
         useValue: {
-          select() {
+          pickFormatter() {
             return Promise.resolve(provider);
           },
         },
