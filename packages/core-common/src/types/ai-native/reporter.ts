@@ -2,6 +2,7 @@ export const AI_REPORTER_NAME = 'AI';
 
 export enum AISerivceType {
   Chat = 'chat',
+  CustomReplay = 'customReplay',
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',

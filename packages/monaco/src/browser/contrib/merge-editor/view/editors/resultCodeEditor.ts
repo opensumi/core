@@ -212,7 +212,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     if (isRegenerate) {
       const newContent = this.getModel()!.getValueInRange(range.toRange());
-      metadata.base = newContent;
+      metadata.resultContent = newContent;
     }
 
     const response = await handler.providerRequest(metadata, { isRegenerate }, this.createRequestToken(range.id).token);

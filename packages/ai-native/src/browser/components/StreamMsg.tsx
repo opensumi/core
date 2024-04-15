@@ -75,7 +75,7 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     (success: boolean, stop: boolean) => {
       aiReporter.end(sessionId, {
         message: content,
-        replytime: +new Date() - startTime,
+        replytime: Date.now() - startTime,
         success,
         isStop: stop,
       });

@@ -43,13 +43,14 @@ import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-brow
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
+import { IDisposable, ILogger, PreferenceScope, isWindows } from '@opensumi/ide-core-common';
 import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/ide-monaco/lib/common/common';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
@@ -72,7 +73,7 @@ import { MonacoCodeService, MonacoContextViewService } from './editor.override';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { EditorView } from './editor.view';
 import { DocumentFormatService } from './format/format.service';
-import { FormattingSelector } from './format/formatterSelect';
+import { FormattingSelector } from './format/formatter-selector';
 import { EditorHistoryService } from './history';
 import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { EditorContextMenuController } from './menu/editor.context';
@@ -99,6 +100,7 @@ interface ResourceArgs {
   QuickOpenContribution,
 )
 export class EditorContribution
+  extends Disposable
   implements
     CommandContribution,
     ClientAppContribution,
@@ -230,9 +232,9 @@ export class EditorContribution
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
 
-  registerMonacoDefaultFormattingSelector(register): void {
+  registerMonacoDefaultFormattingSelector(register: (selector: IFormattingEditProviderSelector) => IDisposable): void {
     const formatSelector = this.injector.get(FormattingSelector);
-    register(formatSelector.select.bind(formatSelector));
+    this.addDispose(register(formatSelector.selectFormatter.bind(formatSelector)));
   }
 
   registerEditorExtensionContribution(register): void {

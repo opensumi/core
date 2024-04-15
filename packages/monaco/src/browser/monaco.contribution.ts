@@ -302,7 +302,7 @@ export class MonacoClientContribution
   }
 
   private registryDefaultFormattingSelector(selector: IFormattingEditProviderSelector) {
-    (FormattingConflicts as unknown as any)._selectors.unshift(selector);
+    return FormattingConflicts.setFormatterSelector(selector);
   }
 
   protected updateMonacoKeybindings() {

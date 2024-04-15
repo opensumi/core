@@ -9,7 +9,7 @@ import { localize } from '@opensumi/ide-core-browser';
 import { Disposable, IAIReporter } from '@opensumi/ide-core-common';
 import { ITerminalConnection, ITerminalController } from '@opensumi/ide-terminal-next';
 
-import { ChatService } from '../chat/chat.service';
+import { ChatInternalService } from '../chat/chat.internal.service';
 import { MsgStreamManager } from '../model/msg-stream-manager';
 
 import { AITerminalPrompt, SmartCommandDesc } from './component/terminal-command-suggest-controller';
@@ -27,8 +27,8 @@ export class PS1TerminalService extends Disposable {
   @Autowired(ITerminalController)
   private terminalController: ITerminalController;
 
-  @Autowired(ChatService)
-  private readonly aiChatService: ChatService;
+  @Autowired(ChatInternalService)
+  private readonly aiChatService: ChatInternalService;
 
   @Autowired(MsgStreamManager)
   private readonly msgStreamManager: MsgStreamManager;
