@@ -235,8 +235,8 @@ export const designSkeletonDecorationBackground = registerColor(
   true,
 );
 
-export const designSkeletonDecorationBlackBackground = registerColor(
-  'design.skeleton.decoration.black.background',
+export const designSkeletonPlaceholderDecorationBackground = registerColor(
+  'design.skeleton.placeholder.decoration.background',
   { dark: '#1f2224', light: '#1f2224', hcDark: null, hcLight: null },
   '',
   true,
