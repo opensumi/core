@@ -21,6 +21,7 @@ import {
   WithEventBus,
   getLanguageId,
   localize,
+  sleep,
 } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -28,6 +29,7 @@ import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
+  ERestartPolicy,
   ExtensionHostType,
   ExtensionNodeServiceServerPath,
   ExtensionService,
@@ -141,7 +143,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private isExtProcessRestarting = false;
 
   // 插件进程是否正在等待重启，页面不可见的时候被设置
-  private isExtProcessWaitingForRestart = false;
+  private isExtProcessWaitingForRestart: ERestartPolicy | undefined;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -212,7 +214,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this.isExtProcessWaitingForRestart &&
         !this.isExtProcessRestarting
       ) {
-        this.extProcessRestartHandler();
+        this.extProcessRestartHandler(this.isExtProcessWaitingForRestart);
       }
     };
 
@@ -306,19 +308,19 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   /**
    * 重启插件进程
    */
-  public async restartExtProcess() {
+  public async restartExtProcess(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
     /**
      * 只有在页面可见的情况下才执行插件进程重启操作
      * 如果当前页面不可见，那么 chrome 会对 socket 进行限流，导致进程重启的 rpc 调用得不到返回从而卡住
      */
     if (document.visibilityState === 'visible') {
-      this.extProcessRestartHandler();
+      this.extProcessRestartHandler(restartPolicy);
     } else {
-      this.isExtProcessWaitingForRestart = true;
+      this.isExtProcessWaitingForRestart = restartPolicy;
     }
   }
 
-  private async extProcessRestartHandler() {
+  private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
     if (this.isExtProcessRestarting) {
       return;
     }
@@ -330,14 +332,25 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
           title: localize('extension.exthostRestarting.content'),
         },
         async () => {
-          try {
-            await this.startExtProcess(false);
-          } catch (err) {
-            this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+          const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+
+          switch (policy) {
+            // @ts-expect-error Need fall-through
+            case ERestartPolicy.WhenExit:
+              if (await this.ping()) {
+                break;
+              }
+            case ERestartPolicy.Always:
+              try {
+                await this.startExtProcess(false);
+              } catch (err) {
+                this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+              }
+              break;
           }
 
           this.isExtProcessRestarting = false;
-          this.isExtProcessWaitingForRestart = false;
+          this.isExtProcessWaitingForRestart = undefined;
         },
       );
     };
@@ -354,6 +367,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     } else {
       restartProgress();
     }
+  }
+
+  private async ping(): Promise<number | null> {
+    return await Promise.race([this.extensionNodeClient.pid(), sleep(1000).then(() => null)]);
   }
 
   private async startExtProcess(init: boolean) {
@@ -691,7 +708,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // RPC call from node
   public async $restartExtProcess() {
-    await this.restartExtProcess();
+    await this.restartExtProcess(ERestartPolicy.Always);
   }
 
   public async $processNotExist() {
@@ -727,7 +744,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       !!ifRequiredReload,
     );
     if (msg === okText) {
-      await this.restartExtProcess();
+      await this.restartExtProcess(ERestartPolicy.Always);
     }
   }
 }

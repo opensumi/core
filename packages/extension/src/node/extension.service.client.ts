@@ -58,6 +58,10 @@ export class ExtensionServiceClientImpl
     return this.appConfig.marketplace.endpoint;
   }
 
+  async pid(): Promise<number | null> {
+    return this.extensionService.getExtProcessId(this.clientId);
+  }
+
   public infoProcessNotExist() {
     if (this.client) {
       this.client.$processNotExist(this.clientId);

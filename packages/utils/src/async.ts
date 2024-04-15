@@ -580,5 +580,5 @@ export function disposableTimeout(handler: () => void, timeout = 0): IDisposable
 }
 
 export function sleep(time: number) {
-  return new Promise((resolve) => setTimeout(resolve, time));
+  return new Promise<void>((resolve) => setTimeout(resolve, time));
 }
