@@ -1,7 +1,25 @@
 import cls from 'classnames';
-import React, { FC, createContext, memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  FC,
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
-import { ComponentRegistryInfo, IEventBus, ResizeEvent, SlotLocation, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  ComponentRegistryInfo,
+  IDisposable,
+  IEventBus,
+  ResizeEvent,
+  SlotLocation,
+  runWhenIdle,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { EDirection, PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
@@ -45,18 +63,23 @@ export const TabRendererBase: FC<{
     tabbarService.ensureViewReady();
   }, [components]);
 
-  useEffect(() => {
+  const handleResize = useCallback(() => {
     if (rootRef.current) {
       setFullSize(rootRef.current[Layout.getDomSizeProperty(direction)]);
-      let lastFrame: number | null;
+    }
+  }, [fullSize, rootRef.current]);
+
+  useEffect(() => {
+    if (rootRef.current) {
+      handleResize();
+      let dispose: IDisposable | null;
       eventBus.on(ResizeEvent, (e) => {
         if (e.payload.slotLocation === side) {
-          if (lastFrame) {
-            window.cancelAnimationFrame(lastFrame);
+          if (dispose) {
+            dispose.dispose();
+            dispose = null;
           }
-          lastFrame = window.requestAnimationFrame(() => {
-            setFullSize(rootRef.current![Layout.getDomSizeProperty(direction)]);
-          });
+          dispose = runWhenIdle(handleResize);
         }
       });
     }

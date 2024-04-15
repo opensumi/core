@@ -17,7 +17,7 @@ export interface PromptValidateMessage {
 }
 
 export enum VALIDATE_CLASS_NAME {
-  INFO = 'validate-error',
+  INFO = 'validate-info',
   ERROR = 'validate-error',
   WARNING = 'validate-warning',
 }
