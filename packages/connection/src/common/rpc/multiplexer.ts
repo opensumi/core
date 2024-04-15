@@ -24,7 +24,7 @@ export interface IRPCProtocol {
   get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
-const SEP = '/';
+const SEP = '!';
 
 function getRPCName(serviceId: string, methodName: string) {
   return `${serviceId}${SEP}${methodName}`;

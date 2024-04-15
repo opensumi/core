@@ -5,8 +5,8 @@ import WebSocket from 'ws';
 import { WSWebSocketConnection } from '@opensumi/ide-connection/src/common/connection';
 import { SumiConnection } from '@opensumi/ide-connection/src/common/rpc/connection';
 import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
+import { createMockPairRPCProtocol } from '@opensumi/ide-extension/__mocks__/initRPCProtocol';
 
-import { createMockPairRPCProtocol } from '../../../extension/__mocks__/initRPCProtocol';
 import { ProxyIdentifier, RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService } from '../../src/common';
 import { SimpleConnection } from '../../src/common/connection/drivers/simple';
@@ -264,5 +264,20 @@ describe('connection', () => {
     await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(
       'method testTimeoutIdentifier/$test timeout',
     );
+  });
+  it('multiplexer rpc id can have slash', async () => {
+    const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
+
+    const rpcId = '@opensumi/runner';
+    const method = '$fetchConfigurations';
+
+    rpcProtocolMain.set(ProxyIdentifier.for(rpcId), {
+      [method]: () => 'mock',
+    });
+
+    const runner = rpcProtocolExt.getProxy(ProxyIdentifier.for(rpcId));
+
+    const result = await runner.$fetchConfigurations();
+    expect(result).toBe('mock');
   });
 });
