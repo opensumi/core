@@ -123,7 +123,7 @@ export const ChatThinkingResult = ({
     }
 
     return children;
-  }, [status, message, children]);
+  }, [status, message, hasMessage, children]);
 
   const isRenderRegenerate = useMemo(() => {
     if (isUndefined(showRegenerate)) {

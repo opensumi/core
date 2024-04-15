@@ -17,22 +17,17 @@ export interface IReplayComponentParam {
 // 流式输出渲染组件
 export const StreamReplyRender = (props: { prompt: string; params: IReplayComponentParam }) => {
   const { prompt, params } = props;
+  const { relationId, renderContent } = params;
 
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
-
-  const { relationId, renderContent } = params;
 
   const send = React.useCallback(
     (isRetry = false) => {
       aiChatService.setLatestSessionId(relationId);
       aiChatService.messageWithStream(prompt, isRetry ? { enableGptCache: false } : {}, relationId);
     },
-    [aiChatService],
+    [aiChatService, relationId, prompt],
   );
-
-  React.useEffect(() => {
-    send();
-  }, []);
 
   return (
     <StreamMsgWrapper
