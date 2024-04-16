@@ -1,6 +1,3 @@
-// eslint-disable-next-line no-console
-console.time('Render');
-
 import { Injector } from '@opensumi/di';
 import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
@@ -17,6 +14,9 @@ import { DefaultLayout } from './layout';
 const CLIENT_ID = 'W_' + uuid();
 
 export async function renderApp(opts: IClientAppOpts) {
+  // eslint-disable-next-line no-console
+  console.time('Render');
+
   const defaultHost = process.env.HOST || window.location.hostname;
   const injector = new Injector();
   opts.workspaceDir =
@@ -90,5 +90,11 @@ export const getDefaultClientAppOpts = ({
   useVSCodeWorkspaceConfiguration: true,
   // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
   devtools: true,
+  AINativeConfig: {
+    layout: {
+      useMenubarView: true,
+      useMergeRightWithLeftPanel: true,
+    },
+  },
   ...opts,
 });
