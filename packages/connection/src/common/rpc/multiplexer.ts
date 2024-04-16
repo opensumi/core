@@ -24,15 +24,16 @@ export interface IRPCProtocol {
   get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
-const SEP = '/';
+const SEP = '||';
+const SEP_LENGTH = SEP.length;
 
-function getRPCName(serviceId: string, methodName: string) {
+export function getRPCName(serviceId: string, methodName: string) {
   return `${serviceId}${SEP}${methodName}`;
 }
 
-function extractServiceAndMethod(rpcId: string): [string, string] {
+export function extractServiceAndMethod(rpcId: string): [string, string] {
   const idx = rpcId.indexOf(SEP);
-  return [rpcId.substring(0, idx), rpcId.substring(idx + 1)];
+  return [rpcId.substring(0, idx), rpcId.substring(idx + SEP_LENGTH)];
 }
 
 /**
