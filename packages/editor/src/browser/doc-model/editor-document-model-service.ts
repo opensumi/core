@@ -1,5 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
+  Dispatcher,
+  IDisposable,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
   ILogger,
@@ -27,6 +29,7 @@ import {
   EditorDocumentModelCreationEvent,
   EditorDocumentModelOptionExternalUpdatedEvent,
   IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelCreationEventPayload,
   IEditorDocumentModelService,
   IPreferredModelOptions,
 } from './types';
@@ -67,7 +70,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private preferredModelOptions = new Map<string, IPreferredModelOptions>();
 
-  private _ready = new ReadyEvent<void>();
+  private _ready = this.registerDispose(new ReadyEvent<void>());
+
+  private modelCreationEventDispatcher = this.registerDispose(new Dispatcher<void>());
 
   constructor() {
     super();
@@ -83,6 +88,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       this._delete(key);
     });
     this._modelReferenceManager.onInstanceCreated((model) => {
+      this.modelCreationEventDispatcher.dispatch(model.uri.toString());
       this.eventBus.fire(
         new EditorDocumentModelCreationEvent({
           uri: model.uri,
@@ -104,6 +110,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         }
       }),
     );
+  }
+
+  onDocumentModelCreated(uri: string, listener: () => void): IDisposable {
+    return this.modelCreationEventDispatcher.on(uri)(listener);
   }
 
   private _delete(uri: string | URI): void {

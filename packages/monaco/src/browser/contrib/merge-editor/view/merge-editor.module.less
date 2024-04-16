@@ -32,11 +32,19 @@
     padding: 16px 28px;
     // minimap's z-index is 5
     z-index: 6;
+    display: flex;
+    flex-direction: column;
+
+    .merge_info {
+      display: flex;
+      width: 100%;
+    }
 
     .container_box {
       display: flex;
       float: right;
       white-space: nowrap;
+      width: 100%;
 
       .merge_conflict_bottom_btn {
         border: 1px solid var(--kt-button-disableForeground);

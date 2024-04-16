@@ -1,0 +1,71 @@
+// -------------- styles for merge editor component starts --------------
+.merge_editor_float_container {
+  display: flex;
+  flex-direction: column;
+  background: var(--kt-panelTab-activeBackground);
+  box-shadow: inset 1px 1px 3px 0px var(--kt-panelTab-border);
+  justify-content: space-between;
+  white-space: nowrap;
+  // minimap's z-index is 5
+  z-index: 6;
+
+  .merge_editor_float_container_info {
+    width: 100%;
+    display: flex;
+    padding-left: 20px;
+  }
+
+  .merge_editor_float_container_operation_bar {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    white-space: nowrap;
+    padding-top: 4px;
+    padding-right: 20px;
+  }
+
+  .merge_conflict_bottom_btn {
+    border: 1px solid var(--kt-button-disableForeground);
+    border-radius: 8px;
+    padding: 5px 16px;
+    background: var(--editor-background);
+    margin: 0 4px;
+    line-height: 22px;
+    justify-content: end;
+    white-space: nowrap;
+    cursor: pointer;
+    :global {
+      .kt-icon {
+        font-size: 12px;
+      }
+    }
+    :first-child {
+      margin-right: 8px;
+    }
+  }
+
+  .magic_btn {
+    background-image: radial-gradient(circle at -21% -22%, #19cfff, #8429ff);
+    border: none;
+    font-weight: 500;
+    span {
+      color: #fff;
+    }
+    :global {
+      .kt-icon {
+        color: #fff;
+        font-size: 12px;
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .line_vertical {
+    background-color: var(--design-borderColor-common);
+    width: 1px;
+    min-width: 1px;
+    height: 24px;
+    margin: 4px;
+  }
+}
+// -------------- styles for merge editor component ends --------------

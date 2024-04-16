@@ -166,6 +166,10 @@ const MergeActions: React.FC = () => {
 
   return (
     <div className={styles.merge_editor_float_container}>
+      <div className={styles.merge_info}>
+        当前冲突变更共 {1} 处 (已解决 0 处，剩余 0 处) ｜ {0} 处非冲突变更已自动合并（目标分支：1 处，来源分支：1
+        处；两者 0 处）
+      </div>
       <div className={styles.container_box}>
         <div id='merge.editor.action.button.accept'>
           <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
