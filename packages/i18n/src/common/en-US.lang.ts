@@ -585,11 +585,6 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
-    // AI Native
-    'preference.aiNative.inlineChat.title': 'Inline Chat',
-    'preference.aiNative.inlineChat.auto.visible':
-      'Does Inline Chat automatically appear when code snippets are selected ?',
-
     // Editor Configurations
     'editor.configuration.formatOnSaveTimeout':
       'Control the timeout time of formatting (ms). Effective Only when `#editor.formatOnSave#` enables.',
@@ -1473,6 +1468,12 @@ export const localizationBundle = {
     'aiNative.operate.clear.title': 'Clear',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
+
+    'preference.aiNative.inlineChat.title': 'Inline Chat',
+    'preference.aiNative.chat.title': 'Chat',
+    'preference.aiNative.inlineChat.auto.visible':
+      'Does Inline Chat automatically appear when code snippets are selected ?',
+    'preference.aiNative.chat.visible.type': 'Control how the chat panel is displayed by default',
     // #endregion AI Native
 
     // #endregion merge editor

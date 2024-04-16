@@ -523,10 +523,6 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} 不是有效选项',
 
-    // AI Native Preference
-    'preference.aiNative.inlineChat.title': 'Inline Chat',
-    'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
-
     'editor.saveAll': '保存全部',
     'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
     'editor.saveCodeActions.saving': '保存 "{0}"',
@@ -1241,6 +1237,11 @@ export const localizationBundle = {
     'aiNative.operate.clear.title': '清空',
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
+
+    'preference.aiNative.inlineChat.title': 'Inline Chat',
+    'preference.aiNative.chat.title': 'Chat',
+    'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
+    'preference.aiNative.chat.visible.type': '控制 Chat 面板默认的展示方式',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

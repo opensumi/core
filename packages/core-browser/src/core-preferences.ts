@@ -301,6 +301,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    [AINativeSettingSectionsId.CHAT_VISIBLE_TYPE]: {
+      type: 'string',
+      enum: ['never', 'always', 'default'],
+      default: 'default',
+    },
     'editor.codeActionWidget.showHeaders': {
       type: 'boolean',
       default: true,
