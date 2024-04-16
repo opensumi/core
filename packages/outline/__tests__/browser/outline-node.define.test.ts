@@ -1,6 +1,6 @@
 import { INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '../../src/browser/outline-node.define';
+import { OutlineCompositeTreeNode, OutlineRoot, OutlineTreeNode } from '../../src/browser/outline-node.define';
 import { OutlineTreeService } from '../../src/browser/services/outline-tree.service';
 
 describe('OutlineCompositeTreeNode', () => {

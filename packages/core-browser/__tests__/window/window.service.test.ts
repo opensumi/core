@@ -3,7 +3,7 @@ import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { URI, IWindowService } from '../../src';
+import { IWindowService, URI } from '../../src';
 import { IExternalUriService } from '../../src/services';
 
 describe('test windowService on Electron env', () => {
@@ -59,12 +59,12 @@ describe('test windowService on Electron env', () => {
 
   it('openNewWindow method should be work', () => {
     windowService.openNewWindow('http://opensumi.com');
-    expect(mockElectronMainUIService.openExternal).toBeCalled();
+    expect(mockElectronMainUIService.openExternal).toHaveBeenCalled();
   });
 
   it('openWorkspace method should be work', () => {
     windowService.openWorkspace(URI.file('home/test'));
-    expect(mockElectronMainLifeCycleService.openWorkspace).toBeCalled();
+    expect(mockElectronMainLifeCycleService.openWorkspace).toHaveBeenCalled();
   });
 
   it('close method should be work', () => {
@@ -73,22 +73,22 @@ describe('test windowService on Electron env', () => {
 
   it('maximize method should be work', () => {
     windowService.maximize();
-    expect(mockElectronMainLifeCycleService.maximizeWindow).toBeCalled();
+    expect(mockElectronMainLifeCycleService.maximizeWindow).toHaveBeenCalled();
   });
 
   it('unmaximize method should be work', () => {
     windowService.unmaximize();
-    expect(mockElectronMainLifeCycleService.unmaximizeWindow).toBeCalled();
+    expect(mockElectronMainLifeCycleService.unmaximizeWindow).toHaveBeenCalled();
   });
 
   it('fullscreen method should be work', () => {
     windowService.fullscreen();
-    expect(mockElectronMainLifeCycleService.fullscreenWindow).toBeCalled();
+    expect(mockElectronMainLifeCycleService.fullscreenWindow).toHaveBeenCalled();
   });
 
   it('minimize method should be work', () => {
     windowService.minimize();
-    expect(mockElectronMainLifeCycleService.minimizeWindow).toBeCalled();
+    expect(mockElectronMainLifeCycleService.minimizeWindow).toHaveBeenCalled();
   });
 });
 
@@ -121,30 +121,30 @@ describe('test windowService on web', () => {
 
   it('openNewWindow method should be work', () => {
     windowService.openNewWindow('http://opensumi.com', { external: true });
-    expect(mockExternalUriService.resolveExternalUri).toBeCalled();
+    expect(mockExternalUriService.resolveExternalUri).toHaveBeenCalled();
   });
 
   it('openWorkspace method should be work', () => {
-    expect(windowService.openWorkspace).toThrowError();
+    expect(windowService.openWorkspace).toThrow();
   });
 
   it('close method should be work', () => {
-    expect(windowService.close).toThrowError();
+    expect(windowService.close).toThrow();
   });
 
   it('maximize method should be work', () => {
-    expect(windowService.maximize).toThrowError();
+    expect(windowService.maximize).toThrow();
   });
 
   it('unmaximize method should be work', () => {
-    expect(windowService.unmaximize).toThrowError();
+    expect(windowService.unmaximize).toThrow();
   });
 
   it('fullscreen method should be work', () => {
-    expect(windowService.fullscreen).toThrowError();
+    expect(windowService.fullscreen).toThrow();
   });
 
   it('minimize method should be work', () => {
-    expect(windowService.minimize).toThrowError();
+    expect(windowService.minimize).toThrow();
   });
 });

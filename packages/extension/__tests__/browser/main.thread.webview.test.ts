@@ -1,12 +1,12 @@
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource/static.definition';
 import {
-  Emitter,
-  makeRandomHexString,
-  IEventBus,
-  Disposable,
   CancellationTokenSource,
   CommandRegistry,
+  Disposable,
+  Emitter,
+  IEventBus,
+  makeRandomHexString,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { WebviewViewShouldShowEvent } from '@opensumi/ide-extension/lib/browser/components/extension-webview-view';
@@ -14,20 +14,20 @@ import {
   MainThreadWebview,
   MainThreadWebviewView,
 } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
-import { IExtensionDescription, ExtensionIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { WebviewViewProvider, WebviewView } from '@opensumi/ide-extension/lib/common/vscode/webview';
+import { ExtensionIdentifier, IExtensionDescription } from '@opensumi/ide-extension/lib/common/vscode';
+import { WebviewView, WebviewViewProvider } from '@opensumi/ide-extension/lib/common/vscode/webview';
 import {
-  ExtHostWebviewViews,
   ExtHostWebviewService,
+  ExtHostWebviewViews,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
-import { IWebviewService, IWebview } from '@opensumi/ide-webview';
+import { IWebview, IWebviewService } from '@opensumi/ide-webview';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
-import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
+import { ExtHostAPIIdentifier, IExtHostWebview, MainThreadAPIIdentifier } from '../../lib/common/vscode';
 
 async function delay(ms: number) {
   return new Promise<void>((resolve) => {
@@ -37,7 +37,7 @@ async function delay(ms: number) {
   });
 }
 
-describe('Webview view tests ', () => {
+describe('Webview view tests', () => {
   jest.setTimeout(10 * 1000);
 
   let extHostWebview: IExtHostWebview;
@@ -159,8 +159,8 @@ describe('Webview view tests ', () => {
     expect(webviews.size).toBe(1);
 
     const webview = webviews.get(Array.from(webviews.keys())[0])!;
-    expect(webview.appendTo).toBeCalledWith(container);
-    expect(webview.setContent).toBeCalledWith('testHtmlContent');
+    expect(webview.appendTo).toHaveBeenCalledWith(container);
+    expect(webview.setContent).toHaveBeenCalledWith('testHtmlContent');
   });
 
   afterAll(async () => {

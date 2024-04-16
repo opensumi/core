@@ -1,11 +1,11 @@
 import { BinaryBuffer } from '../src/buffer';
 import { SUPPORTED_ENCODINGS } from '../src/const';
 import {
-  iconvDecode,
-  encodingExists,
-  toIconvLiteEncoding,
-  toCanonicalName,
   detectEncodingFromBuffer,
+  encodingExists,
+  iconvDecode,
+  toCanonicalName,
+  toIconvLiteEncoding,
 } from '../src/encoding';
 
 const utf8BOM = [0xef, 0xbb, 0xbf];

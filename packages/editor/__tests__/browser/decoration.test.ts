@@ -1,8 +1,8 @@
-import { URI, Emitter, IEventBus, Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, IEventBus, URI } from '@opensumi/ide-core-browser';
 import {
-  IEditorDecorationCollectionService,
   EditorDecorationChangeEvent,
   EditorDecorationTypeRemovedEvent,
+  IEditorDecorationCollectionService,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
 import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
@@ -135,19 +135,19 @@ describe('editor decoration service test', () => {
       },
     ]);
 
-    expect(editor.deltaDecorations).toBeCalled();
+    expect(editor.deltaDecorations).toHaveBeenCalled();
     (editor.deltaDecorations as any).mockClear();
 
     const eventBus: IEventBus = injector.get(IEventBus);
 
     await eventBus.fireAndAwait(new EditorDecorationTypeRemovedEvent('test2'));
 
-    expect(editor.deltaDecorations).toBeCalled();
+    expect(editor.deltaDecorations).toHaveBeenCalled();
     (editor.deltaDecorations as any).mockClear();
 
     (editor as any)._onDidChangeModel.fire();
 
-    expect(editor.deltaDecorations).toBeCalled();
+    expect(editor.deltaDecorations).toHaveBeenCalled();
     (editor.deltaDecorations as any).mockClear();
 
     await eventBus.fireAndAwait(
@@ -157,7 +157,7 @@ describe('editor decoration service test', () => {
       }),
     );
 
-    expect(editor.deltaDecorations).toBeCalled();
+    expect(editor.deltaDecorations).toHaveBeenCalled();
     (editor.deltaDecorations as any).mockClear();
 
     disposer.dispose();

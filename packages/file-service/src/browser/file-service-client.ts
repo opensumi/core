@@ -63,7 +63,7 @@ export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry
 }
 
 @Injectable()
-export class FileServiceClient implements IFileServiceClient {
+export class FileServiceClient implements IFileServiceClient, IDisposable {
   protected readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();

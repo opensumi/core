@@ -9,7 +9,7 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainThreadQuickOpen } from '../../../../src/browser/vscode/api/main.thread.quickopen';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { InputBoxValidationSeverity, QuickPickItemKind } from '../../../../src/common/vscode/ext-types';
 import { ExtHostQuickOpen } from '../../../../src/hosted/api/vscode/ext.host.quickopen';
 
@@ -79,7 +79,7 @@ describe('ext host quickopen test', () => {
     expect(item).toBe('a');
   });
 
-  it('get quickpick separator item ', async () => {
+  it('get quickpick separator item', async () => {
     const $showQuickPick = jest.spyOn(mainThread, '$showQuickPick');
     await extHost.showQuickPick([
       {
@@ -90,7 +90,7 @@ describe('ext host quickopen test', () => {
         label: 'bbb',
       },
     ]);
-    expect($showQuickPick).toBeCalledWith(
+    expect($showQuickPick).toHaveBeenCalledWith(
       expect.anything(),
       [
         {
@@ -133,18 +133,18 @@ describe('ext host quickopen test', () => {
     expect(quickPick.items.length).toBe(1);
   });
 
-  it('set input validation message severity by default ', async () => {
+  it('set input validation message severity by default', async () => {
     const $createOrUpdateInputBox = jest.spyOn(mainThread, '$createOrUpdateInputBox');
     const quickInput = extHost.createInputBox();
     quickInput.validationMessage = 'test';
     await sleep(10);
-    expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
+    expect($createOrUpdateInputBox).toHaveBeenCalledWith(expect.anything(), {
       validationMessage: 'test',
       severity: InputBoxValidationSeverity.Error,
     });
   });
 
-  it('set input validation message severity is warning  ', async () => {
+  it('set input validation message severity is warning', async () => {
     const $createOrUpdateInputBox = jest.spyOn(mainThread, '$createOrUpdateInputBox');
     const quickInput = extHost.createInputBox();
     quickInput.validationMessage = {
@@ -152,7 +152,7 @@ describe('ext host quickopen test', () => {
       severity: InputBoxValidationSeverity.Warning,
     };
     await sleep(10);
-    expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
+    expect($createOrUpdateInputBox).toHaveBeenCalledWith(expect.anything(), {
       validationMessage: 'test',
       severity: InputBoxValidationSeverity.Warning,
     });
@@ -160,7 +160,7 @@ describe('ext host quickopen test', () => {
     quickInput.validationMessage = undefined;
     await sleep(50);
 
-    expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
+    expect($createOrUpdateInputBox).toHaveBeenCalledWith(expect.anything(), {
       validationMessage: null,
       severity: InputBoxValidationSeverity.Ignore,
     });

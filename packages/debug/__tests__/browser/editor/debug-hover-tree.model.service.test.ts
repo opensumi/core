@@ -81,7 +81,7 @@ describe('Debug Hover Model', () => {
 
   it('initTreeModel method should be work', () => {
     debugHoverTreeModelService.initTreeModel(mockRoot);
-    expect(mockRoot.watcher.on).toBeCalledTimes(8);
+    expect(mockRoot.watcher.on).toHaveBeenCalledTimes(8);
   });
 
   it('activeNodeDecoration method should be work', () => {
@@ -142,15 +142,15 @@ describe('Debug Hover Model', () => {
     let mockNode = { expanded: false };
     debugHoverTreeModelService.handleTreeHandler(treeHandle);
     debugHoverTreeModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.expandNode).toBeCalledTimes(1);
+    expect(treeHandle.expandNode).toHaveBeenCalledTimes(1);
     mockNode = { expanded: true };
     debugHoverTreeModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.collapseNode).toBeCalledTimes(1);
+    expect(treeHandle.collapseNode).toHaveBeenCalledTimes(1);
   });
 
   it('refresh method should be work', (done) => {
     debugHoverTreeModelService.onDidRefreshed(() => {
-      expect(mockWatcher.callback).toBeCalledTimes(1);
+      expect(mockWatcher.callback).toHaveBeenCalledTimes(1);
       done();
     });
     debugHoverTreeModelService.refresh();

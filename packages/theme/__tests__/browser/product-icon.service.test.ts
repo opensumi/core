@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, URI } from '@opensumi/ide-core-browser';
+import { IPreferenceSettingsService, PreferenceSchemaProvider, URI } from '@opensumi/ide-core-browser';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,

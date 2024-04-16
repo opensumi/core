@@ -10,16 +10,16 @@ import { URI } from 'vscode-uri';
 
 import { IteratorResult } from '../src/iterator';
 import {
-  ResourceMap,
-  TernarySearchTree,
-  PathIterator,
-  StringIterator,
-  LinkedMap,
-  Touch,
   LRUCache,
+  LinkedMap,
+  PathIterator,
+  ResourceMap,
+  SetMap,
+  StringIterator,
+  TernarySearchTree,
+  Touch,
   mapToSerializable,
   serializableToMap,
-  SetMap,
 } from '../src/map';
 
 function assertDeepStrictEqual(a, b) {

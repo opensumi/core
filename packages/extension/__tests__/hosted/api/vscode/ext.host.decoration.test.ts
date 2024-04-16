@@ -1,15 +1,15 @@
-import type vscode from 'vscode';
-
 import {
+  CancellationToken,
+  CancellationTokenSource,
+  Emitter,
   Event,
+  URI,
   Uri,
   UriComponents,
-  URI,
-  Emitter,
-  CancellationTokenSource,
-  CancellationToken,
 } from '@opensumi/ide-core-common';
 import { ExtHostDecorations } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.decoration';
+
+import type vscode from 'vscode';
 
 function URI2UriComponents(uri: URI): UriComponents {
   return {
@@ -98,8 +98,8 @@ describe('ExtHostFileSystem', () => {
     const disposable = service.registerFileDecorationProvider(extDecoProvider, 'mock-ext-async-id');
 
     extDecoProvider.onDidChangeFileDecorationsEmitter.fire(undefined as any);
-    expect(mock$onDidChange).toBeCalledTimes(1);
-    expect(mock$onDidChange).toBeCalledWith(0, null);
+    expect(mock$onDidChange).toHaveBeenCalledTimes(1);
+    expect(mock$onDidChange).toHaveBeenCalledWith(0, null);
 
     const request = {
       id: 121,
@@ -146,8 +146,8 @@ describe('ExtHostFileSystem', () => {
     const uri = new URI('/workspace/test/a.ts');
 
     extDecoProvider.onDidChangeFileDecorationsEmitter.fire([uri.codeUri]);
-    expect(mock$onDidChange).toBeCalledTimes(1);
-    expect(mock$onDidChange).toBeCalledWith(0, [uri.codeUri]);
+    expect(mock$onDidChange).toHaveBeenCalledTimes(1);
+    expect(mock$onDidChange).toHaveBeenCalledWith(0, [uri.codeUri]);
 
     const request = {
       id: 121,

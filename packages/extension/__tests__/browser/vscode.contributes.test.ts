@@ -5,12 +5,12 @@ import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
 import { AppLifeCycleService } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   AppLifeCycleServiceToken,
-  LifeCyclePhase,
   CommandRegistry,
   CommandService,
   CommandServiceImpl,
   EventBusImpl,
   IEventBus,
+  LifeCyclePhase,
   Uri,
 } from '@opensumi/ide-core-common';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
@@ -165,7 +165,7 @@ describe('VSCodeContributeRunner', () => {
 
   it('register localization contribution', async () => {
     expect(process.env['TEST_KAITIAN_LANGUAGE_ID']?.toLowerCase()).toBe('zh-cn');
-    expect(spyOnUpdateLanguagePack).toBeCalledWith('zh-CN', extension.path, os.tmpdir());
+    expect(spyOnUpdateLanguagePack).toHaveBeenCalledWith('zh-CN', extension.path, os.tmpdir());
   });
 
   it('register command contribution', async () => {

@@ -33,14 +33,14 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {
     extHostUrls.registerUriHandler('vscode.git', {
       handleUri,
     });
-    expect(mainService.$registerUriHandler).toBeCalledTimes(1);
+    expect(mainService.$registerUriHandler).toHaveBeenCalledTimes(1);
     const uri = Uri.file('/123');
     extHostUrls.$handleExternalUri(0, uri);
-    expect(handleUri).toBeCalledTimes(1);
-    expect(handleUri).toBeCalledWith(uri);
+    expect(handleUri).toHaveBeenCalledTimes(1);
+    expect(handleUri).toHaveBeenCalledWith(uri);
   });
 
-  it('it will throw error when the extension already registered handler ', () => {
+  it('will throw error when the extension already registered handler', () => {
     const extensionId = 'vscode.git';
     extHostUrls.registerUriHandler(extensionId, {
       handleUri: jest.fn(),
@@ -50,7 +50,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {
       extHostUrls.registerUriHandler(extensionId, {
         handleUri: jest.fn(),
       }),
-    ).toThrowError();
+    ).toThrow();
   });
 
   it('distpose a url handler', () => {
@@ -58,6 +58,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.urls.test.ts', () => {
       handleUri: jest.fn(),
     });
     disposer.dispose();
-    expect(mainService.$unregisterUriHandler).toBeCalledTimes(1);
+    expect(mainService.$unregisterUriHandler).toHaveBeenCalledTimes(1);
   });
 });

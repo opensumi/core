@@ -94,6 +94,6 @@ describe('Editor Hover Contribution', () => {
       },
     };
     contribution.contribute(mockEditor as any);
-    expect(mockContextKeyService.onDidChangeContext).toBeCalledTimes(0);
+    expect(mockContextKeyService.onDidChangeContext).toHaveBeenCalledTimes(0);
   });
 });

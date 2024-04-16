@@ -8,7 +8,7 @@ describe('dom', () => {
     const event = new window.Event(EventType.FOCUS);
     element.dispatchEvent(event);
     setTimeout(() => {
-      expect(onFocus).toBeCalled();
+      expect(onFocus).toHaveBeenCalled();
       dom.dispose();
       done();
     }, 100);

@@ -9,7 +9,7 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import { mockExtensionDescription } from '../../../../__mocks__/extensions';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ThemeColor } from '../../../../src/common/vscode/ext-types';
 import { ExtHostStatusBar } from '../../../../src/hosted/api/vscode/ext.host.statusbar';
 

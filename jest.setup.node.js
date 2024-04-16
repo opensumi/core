@@ -102,4 +102,4 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // https://stackoverflow.com/a/44143119/9443819
-process.setMaxListeners(0);
+require('events').EventEmitter.defaultMaxListeners = 100;

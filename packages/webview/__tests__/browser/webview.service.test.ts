@@ -2,7 +2,7 @@ import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-res
 import { Disposable } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
-import { IThemeService, ITheme } from '@opensumi/ide-theme';
+import { ITheme, IThemeService } from '@opensumi/ide-theme';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -95,8 +95,8 @@ describe('web platform webview service test suite', () => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createEditorPlainWebviewComponent();
     expect(webview).toBeDefined();
-    expect(registerFn).toBeCalled();
-    expect(registerFn2).toBeCalled();
+    expect(registerFn).toHaveBeenCalled();
+    expect(registerFn2).toHaveBeenCalled();
   });
 });
 
@@ -146,14 +146,12 @@ describe('electron platform webview service test suite', () => {
     const service: IWebviewService = injector.get(IWebviewService);
     const webview = service.createEditorPlainWebviewComponent();
     expect(webview).toBeDefined();
-    expect(registerFn).toBeCalled();
-    expect(registerFn2).toBeCalled();
+    expect(registerFn).toHaveBeenCalled();
+    expect(registerFn2).toHaveBeenCalled();
   });
 
   afterAll(() => {
-    beforeAll(() => {
-      global.isElectronRenderer = false;
-    });
+    global.isElectronRenderer = false;
   });
 });
 

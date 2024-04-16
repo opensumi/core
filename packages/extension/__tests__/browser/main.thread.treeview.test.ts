@@ -1,6 +1,6 @@
 import { IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser/src';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/src/menu/next';
-import { Emitter, Disposable } from '@opensumi/ide-core-common';
+import { Disposable, Emitter } from '@opensumi/ide-core-common';
 import { MainThreadTreeView } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.treeview';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
@@ -93,16 +93,16 @@ describe('MainThreadTreeView API Test Suite', () => {
   });
 
   it('$registerTreeDataProvider api should be worked', async () => {
-    expect(mockMainLayoutService.replaceViewComponent).toBeCalledTimes(1);
-    expect(mockMenuRegistry.registerMenuItem).toBeCalledTimes(0);
+    expect(mockMainLayoutService.replaceViewComponent).toHaveBeenCalledTimes(1);
+    expect(mockMenuRegistry.registerMenuItem).toHaveBeenCalledTimes(0);
 
     mainThreadTreeView.$registerTreeDataProvider('testView1', {
       showCollapseAll: true,
       hasHandleDrag: false,
       hasHandleDrop: false,
     });
-    expect(mockMainLayoutService.replaceViewComponent).toBeCalledTimes(2);
-    expect(mockMenuRegistry.registerMenuItem).toBeCalledTimes(1);
+    expect(mockMainLayoutService.replaceViewComponent).toHaveBeenCalledTimes(2);
+    expect(mockMenuRegistry.registerMenuItem).toHaveBeenCalledTimes(1);
     mainThreadTreeView.$unregisterTreeDataProvider('testView1');
   });
 
@@ -114,28 +114,24 @@ describe('MainThreadTreeView API Test Suite', () => {
 
   it('$reveal api should be worked', async () => {
     await mainThreadTreeView.$reveal(treeViewId, 'treeItemId', {});
-    expect(mockMainLayoutService.revealView).toBeCalledTimes(1);
+    expect(mockMainLayoutService.revealView).toHaveBeenCalledTimes(1);
   });
 
   it('$unregisterTreeDataProvider api should be worked', () => {
     mainThreadTreeView.$unregisterTreeDataProvider(treeViewId);
-    expect(mockTabbarHandler.disposeView).toBeCalledTimes(1);
+    expect(mockTabbarHandler.disposeView).toHaveBeenCalledTimes(1);
   });
 
   it('$resolveDropFileData api should be worked', async () => {
     const unknownTreeViewId = 'unknown';
-    await expect(mainThreadTreeView.$resolveDropFileData(unknownTreeViewId, 0, '')).rejects.toThrowError(
-      'Unknown tree',
-    );
-    await expect(mainThreadTreeView.$resolveDropFileData(treeViewId, 0, '')).rejects.toThrowError(
-      'No data transfer found',
-    );
+    await expect(mainThreadTreeView.$resolveDropFileData(unknownTreeViewId, 0, '')).rejects.toThrow('Unknown tree');
+    await expect(mainThreadTreeView.$resolveDropFileData(treeViewId, 0, '')).rejects.toThrow('No data transfer found');
   });
 
   it('Active event should be effected', () => {
     mockActiveEmitter.fire();
-    expect(mockExtThreadTreeViewProxy.$setVisible).toBeCalledTimes(1);
+    expect(mockExtThreadTreeViewProxy.$setVisible).toHaveBeenCalledTimes(1);
     mockInActiveEmitter.fire();
-    expect(mockExtThreadTreeViewProxy.$setVisible).toBeCalledTimes(2);
+    expect(mockExtThreadTreeViewProxy.$setVisible).toHaveBeenCalledTimes(2);
   });
 });

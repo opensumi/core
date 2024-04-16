@@ -8,17 +8,17 @@
 
 import { timeout } from '../src/async';
 import { CancellationToken } from '../src/cancellation';
-import { IDisposable, Disposable } from '../src/disposable';
+import { Disposable, IDisposable } from '../src/disposable';
 import { errorHandler, setUnexpectedErrorHandler } from '../src/errors';
 import {
-  Event,
+  AsyncEmitter,
+  Dispatcher,
   Emitter,
+  Event,
   EventBufferer,
   EventMultiplexer,
   PauseableEmitter,
-  AsyncEmitter,
   WaitUntilEvent,
-  Dispatcher,
 } from '../src/event';
 
 function deepStrictEqual(a, b) {
@@ -926,9 +926,9 @@ describe('Dispatcher', () => {
     dispatcher.on('type2')(listener2);
 
     dispatcher.dispatch('type1', 'foo');
-    expect(listener1).toBeCalledWith('foo');
+    expect(listener1).toHaveBeenCalledWith('foo');
     dispatcher.dispatch('type2', 'bar');
-    expect(listener2).toBeCalledWith('bar');
+    expect(listener2).toHaveBeenCalledWith('bar');
 
     dispatcher.dispose();
   });

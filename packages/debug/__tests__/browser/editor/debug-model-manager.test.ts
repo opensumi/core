@@ -1,4 +1,4 @@
-import { Disposable, QuickPickService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { Disposable, IContextKeyService, QuickPickService } from '@opensumi/ide-core-browser';
 import { DebugModelFactory, IDebugServer } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
@@ -8,7 +8,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { EditorCollectionService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IWorkspaceStorageService, IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceService, IWorkspaceStorageService } from '@opensumi/ide-workspace';
 
 describe('Debug Model Manager', () => {
   const mockInjector = createBrowserInjector([]);
@@ -95,8 +95,8 @@ describe('Debug Model Manager', () => {
 
   it('debugModelManager should be init success', () => {
     debugModelManager.init();
-    expect(mockEditorCollectionService.onCodeEditorCreate).toBeCalledTimes(1);
-    expect(mockBreakpointManager.onDidChangeBreakpoints).toBeCalledTimes(1);
+    expect(mockEditorCollectionService.onCodeEditorCreate).toHaveBeenCalledTimes(1);
+    expect(mockBreakpointManager.onDidChangeBreakpoints).toHaveBeenCalledTimes(1);
   });
 
   it('should have enough API', () => {

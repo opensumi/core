@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadCommands } from '@opensumi/ide-extension/lib/common/vscode';
+import { IMainThreadCommands, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { createCommandsApiFactory } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.command';
 import { ExtHostCommands } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.command';
 
@@ -37,11 +37,11 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
       const extTest = jest.fn();
       const commandId = 'ext.test';
       sumiCommand.registerCommandWithPermit(commandId, extTest, (extension) => extension.isBuiltin);
-      expect(sumiCommand.executeCommand(commandId)).rejects.toThrowError(
+      expect(sumiCommand.executeCommand(commandId)).rejects.toThrow(
         new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
       );
       // 实际命令执行注册一次
-      expect(extTest).toBeCalledTimes(0);
+      expect(extTest).toHaveBeenCalledTimes(0);
     });
 
     it('execute a allow command', async () => {
@@ -50,7 +50,7 @@ describe('extension/__tests__/hosted/api/sumi/ext.host.command.test.ts', () => {
       sumiCommand.registerCommandWithPermit(commandId, extTest, (extension) => !extension.isBuiltin);
       await sumiCommand.executeCommand(commandId);
       // 实际命令执行注册一次
-      expect(extTest).toBeCalledTimes(1);
+      expect(extTest).toHaveBeenCalledTimes(1);
     });
   });
 });

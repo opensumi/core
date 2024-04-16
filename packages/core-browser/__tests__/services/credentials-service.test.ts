@@ -40,7 +40,7 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
 
   it('getPassword', async () => {
     await credentialsService.getPassword(testData.service, testData.account);
-    expect(mockNativeCredentialService.getPassword).toBeCalledWith(testData.service, testData.account);
+    expect(mockNativeCredentialService.getPassword).toHaveBeenCalledWith(testData.service, testData.account);
   });
 
   it('setPassword', async () => {
@@ -54,7 +54,7 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
       defered.resolve();
     });
     await credentialsService.setPassword(testData.service, testData.account, password);
-    expect(mockNativeCredentialService.setPassword).toBeCalledWith(testData.service, testData.account, password);
+    expect(mockNativeCredentialService.setPassword).toHaveBeenCalledWith(testData.service, testData.account, password);
     await defered.promise;
   });
 
@@ -69,17 +69,17 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
       defered.resolve();
     });
     await credentialsService.deletePassword(testData.service, testData.account);
-    expect(mockNativeCredentialService.deletePassword).toBeCalledWith(testData.service, testData.account);
+    expect(mockNativeCredentialService.deletePassword).toHaveBeenCalledWith(testData.service, testData.account);
     await defered.promise;
   });
 
   it('findPassword', async () => {
     await credentialsService.findPassword(testData.service);
-    expect(mockNativeCredentialService.findPassword).toBeCalledWith(testData.service);
+    expect(mockNativeCredentialService.findPassword).toHaveBeenCalledWith(testData.service);
   });
 
   it('findCredentials', async () => {
     await credentialsService.findCredentials(testData.service);
-    expect(mockNativeCredentialService.findCredentials).toBeCalledWith(testData.service);
+    expect(mockNativeCredentialService.findCredentials).toHaveBeenCalledWith(testData.service);
   });
 });

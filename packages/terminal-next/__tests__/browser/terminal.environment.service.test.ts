@@ -70,7 +70,7 @@ describe('terminal.environment.service', () => {
   it('TerminalEnvironmentService#initEnvironmentVariableCollections', async () => {
     const mockGetDataFn = jest.spyOn(storageService, 'getData');
     await terminalEnvService.initEnvironmentVariableCollections();
-    expect(mockGetDataFn).toBeCalled();
+    expect(mockGetDataFn).toHaveBeenCalled();
 
     const existingCollection = terminalEnvService.collections.get(mockData[0].extensionIdentifier);
 

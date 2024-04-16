@@ -1,16 +1,16 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Disposable, URI, MarkerManager, Emitter } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, MarkerManager, URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import {
-  INormalizedDocumentSymbol,
   DocumentSymbolStore,
+  INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import styles from '../../../../src/browser/outline-node.module.less';
-import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '../../../src/browser/outline-node.define';
+import { OutlineCompositeTreeNode, OutlineRoot, OutlineTreeNode } from '../../../src/browser/outline-node.define';
 import { OutlineEventService } from '../../../src/browser/services/outline-event.service';
 import { OutlineModelService } from '../../../src/browser/services/outline-model.service';
 import { OutlineTreeService } from '../../../src/browser/services/outline-tree.service';
@@ -165,14 +165,14 @@ describe('OutlineTreeModelService', () => {
   });
 
   it('should init success', () => {
-    expect(mockOutlineTreeService.resolveChildren).toBeCalledTimes(3);
+    expect(mockOutlineTreeService.resolveChildren).toHaveBeenCalledTimes(3);
   });
 
   it('initTreeModel method should be work', () => {
-    expect(mockOutlineEventService.onDidActiveChange).toBeCalledTimes(1);
-    expect(mockOutlineEventService.onDidChange).toBeCalledTimes(1);
-    expect(mockOutlineEventService.onDidSelectionChange).toBeCalledTimes(1);
-    expect(mockMarkerManager.onMarkerChanged).toBeCalledTimes(1);
+    expect(mockOutlineEventService.onDidActiveChange).toHaveBeenCalledTimes(1);
+    expect(mockOutlineEventService.onDidChange).toHaveBeenCalledTimes(1);
+    expect(mockOutlineEventService.onDidSelectionChange).toHaveBeenCalledTimes(1);
+    expect(mockMarkerManager.onMarkerChanged).toHaveBeenCalledTimes(1);
   });
 
   it('activeNodeDecoration method should be work', () => {
@@ -229,15 +229,15 @@ describe('OutlineTreeModelService', () => {
     let mockNode = { expanded: false };
     outlineTreeModelService.handleTreeHandler(treeHandle);
     outlineTreeModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.expandNode).toBeCalledTimes(1);
+    expect(treeHandle.expandNode).toHaveBeenCalledTimes(1);
     mockNode = { expanded: true };
     outlineTreeModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.collapseNode).toBeCalledTimes(1);
+    expect(treeHandle.collapseNode).toHaveBeenCalledTimes(1);
   });
 
   it('refresh method should be work', (done) => {
     outlineTreeModelService.onDidRefreshed(() => {
-      expect(mockOutlineDecorationService.updateDiagnosisInfo).toBeCalledTimes(1);
+      expect(mockOutlineDecorationService.updateDiagnosisInfo).toHaveBeenCalledTimes(1);
       done();
     });
     outlineTreeModelService.refresh();
@@ -254,6 +254,6 @@ describe('OutlineTreeModelService', () => {
     outlineTreeModelService.handleTreeHandler(treeHandle);
     const node = outlineTreeModelService.treeModel?.root?.getTreeNodeAtIndex(0) as OutlineTreeNode;
     await outlineTreeModelService.location(node);
-    expect(treeHandle.ensureVisible).toBeCalledTimes(1);
+    expect(treeHandle.ensureVisible).toHaveBeenCalledTimes(1);
   });
 });

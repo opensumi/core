@@ -1,5 +1,5 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { Disposable, EventBusImpl, IEventBus, IFileServiceClient, URI } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
@@ -13,7 +13,7 @@ import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceService, IWorkspaceStorageService } from '@opensumi/ide-workspace';
-import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
+import { WorkspaceEditDidDeleteFileEvent, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
 describe('Debug Breakpoints Service', () => {
   const mockInjector = createBrowserInjector(
@@ -113,10 +113,10 @@ describe('Debug Breakpoints Service', () => {
   });
 
   it('should init success', async () => {
-    expect(mockBreakpointManager.onDidChangeBreakpoints).toBeCalledTimes(1);
-    expect(mockBreakpointManager.onDidChangeExceptionsBreakpoints).toBeCalledTimes(1);
-    expect(mockContextKeyService.onDidChangeContext).toBeCalledTimes(1);
-    expect(mockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(1);
+    expect(mockBreakpointManager.onDidChangeBreakpoints).toHaveBeenCalledTimes(1);
+    expect(mockBreakpointManager.onDidChangeExceptionsBreakpoints).toHaveBeenCalledTimes(1);
+    expect(mockContextKeyService.onDidChangeContext).toHaveBeenCalledTimes(1);
+    expect(mockWorkspaceService.onWorkspaceChanged).toHaveBeenCalledTimes(1);
   });
 
   it('updateRoots method should be work', async () => {
@@ -128,11 +128,11 @@ describe('Debug Breakpoints Service', () => {
     const breakpoint = DebugBreakpoint.create(URI.file('test.js'), { line: 1 });
     mockBreakpointManager.getBreakpoint.mockReturnValueOnce(breakpoint as any);
     await debugBreakpointsService.toggleBreakpointEnable(breakpoint);
-    expect(mockBreakpointManager.updateBreakpoint).toBeCalledTimes(1);
+    expect(mockBreakpointManager.updateBreakpoint).toHaveBeenCalledTimes(1);
     // DebugExceptionBreakpoint
     const exceptionBreakpoint = { filter: 'test' };
     await debugBreakpointsService.toggleBreakpointEnable(exceptionBreakpoint as any);
-    expect(mockBreakpointManager.updateExceptionBreakpoints).toBeCalledTimes(1);
+    expect(mockBreakpointManager.updateExceptionBreakpoints).toHaveBeenCalledTimes(1);
   });
 
   it('extractNodes method should be work', () => {
@@ -146,7 +146,7 @@ describe('Debug Breakpoints Service', () => {
 
   it('removeAllBreakpoints method should be work', () => {
     debugBreakpointsService.removeAllBreakpoints();
-    expect(mockBreakpointManager.clearBreakpoints).toBeCalledTimes(1);
+    expect(mockBreakpointManager.clearBreakpoints).toHaveBeenCalledTimes(1);
   });
 
   it('toggleBreakpoints method should be work', () => {
@@ -157,11 +157,11 @@ describe('Debug Breakpoints Service', () => {
 
   it('onRenameFile should be work', async () => {
     await eventBus.fireAndAwait(new WorkspaceEditDidRenameFileEvent({ oldUri: URI.file('test.js') } as any));
-    expect(mockBreakpointManager.cleanAllMarkers).toBeCalledTimes(1);
+    expect(mockBreakpointManager.cleanAllMarkers).toHaveBeenCalledTimes(1);
   });
 
   it('onDeleteFile should be work', async () => {
     await eventBus.fireAndAwait(new WorkspaceEditDidDeleteFileEvent({ oldUri: URI.file('test.js') } as any));
-    expect(mockBreakpointManager.cleanAllMarkers).toBeCalledTimes(2);
+    expect(mockBreakpointManager.cleanAllMarkers).toHaveBeenCalledTimes(2);
   });
 });

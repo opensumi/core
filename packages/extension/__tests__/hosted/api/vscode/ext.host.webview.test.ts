@@ -1,5 +1,5 @@
-import { Uri, IExtensionInfo } from '@opensumi/ide-core-common';
-import { MainThreadAPIIdentifier, IMainThreadWebview } from '@opensumi/ide-extension/lib/common/vscode';
+import { IExtensionInfo, Uri } from '@opensumi/ide-core-common';
+import { IMainThreadWebview, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { ExtHostWebview } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.webview';
 import { ExtHostWebviewService } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
 
@@ -40,7 +40,7 @@ describe('vscode extHostWebview Test', () => {
 
     const id = (webviewPanel as any)._handle;
 
-    expect(mainService.$createWebviewPanel).toBeCalledWith(
+    expect(mainService.$createWebviewPanel).toHaveBeenCalledWith(
       id,
       'editor',
       'testWebview',
@@ -59,30 +59,30 @@ describe('vscode extHostWebview Test', () => {
     const uri = Uri.parse('file:///testicon');
     webviewPanel.iconPath = uri;
     expect(webviewPanel.iconPath).toBe(uri);
-    expect(mainService.$setIconPath).toBeCalled();
+    expect(mainService.$setIconPath).toHaveBeenCalled();
 
     // setHtml
     webviewPanel.webview.html = '<div>test<div>';
     expect(webviewPanel.webview.html).toBe('<div>test<div>');
-    expect(mainService.$setHtml).toBeCalledWith(id, '<div>test<div>');
+    expect(mainService.$setHtml).toHaveBeenCalledWith(id, '<div>test<div>');
 
     // setOption
     webviewPanel.webview.options = { enableScripts: true };
     expect(webviewPanel.webview.options.enableScripts).toBeTruthy();
-    expect(mainService.$setOptions).toBeCalledWith(id, expect.objectContaining({ enableScripts: true }));
+    expect(mainService.$setOptions).toHaveBeenCalledWith(id, expect.objectContaining({ enableScripts: true }));
 
     // setTitle
     webviewPanel.title = 'testTitle2';
-    expect(mainService.$setTitle).toBeCalledWith(id, 'testTitle2');
+    expect(mainService.$setTitle).toHaveBeenCalledWith(id, 'testTitle2');
 
     // messaging
     const onMessageHandler = jest.fn();
     webviewPanel.webview.onDidReceiveMessage(onMessageHandler);
     extHostWebview.$onMessage(id, 'testMessage');
-    expect(onMessageHandler).toBeCalledWith('testMessage');
+    expect(onMessageHandler).toHaveBeenCalledWith('testMessage');
 
     webviewPanel.webview.postMessage('testPostMessage');
-    expect(mainService.$postMessage).toBeCalledWith(id, 'testPostMessage');
+    expect(mainService.$postMessage).toHaveBeenCalledWith(id, 'testPostMessage');
 
     // viewState
     const states = [
@@ -107,7 +107,7 @@ describe('vscode extHostWebview Test', () => {
     // dispose
     await extHostWebview.$onDidDisposeWebviewPanel(id);
     expect((webviewPanel as any)._isDisposed).toBeTruthy();
-    expect(() => webviewPanel.webview).toThrowError();
+    expect(() => webviewPanel.webview).toThrow();
   });
 });
 
@@ -126,26 +126,26 @@ describe('sumi extHostWebview Test', () => {
 
   it('ext host sumi webview test', async () => {
     const handle1 = await extHostWebview.getWebviewHandle('existingWebview');
-    expect(mainService.$connectPlainWebview).toBeCalledWith('existingWebview');
+    expect(mainService.$connectPlainWebview).toHaveBeenCalledWith('existingWebview');
 
     const handle2 = await extHostWebview.createPlainWebview('testPlain', 'path/to/icon');
-    expect(mainService.$createPlainWebview).toBeCalledWith((handle2 as any).id, 'testPlain', 'path/to/icon');
+    expect(mainService.$createPlainWebview).toHaveBeenCalledWith((handle2 as any).id, 'testPlain', 'path/to/icon');
 
     const handle2Id = (handle2 as any).id;
 
     await handle2.reveal(1);
-    expect(mainService.$revealPlainWebview).toBeCalledWith(handle2Id, 1);
+    expect(mainService.$revealPlainWebview).toHaveBeenCalledWith(handle2Id, 1);
 
     await handle2.loadUrl('http://example.com');
-    expect(mainService.$plainWebviewLoadUrl).toBeCalledWith(handle2Id, 'http://example.com');
+    expect(mainService.$plainWebviewLoadUrl).toHaveBeenCalledWith(handle2Id, 'http://example.com');
 
     const onMessageHandler = jest.fn();
     handle2.onMessage(onMessageHandler);
     extHostWebview.$acceptMessage(handle2Id, 'testMessage');
-    expect(onMessageHandler).toBeCalledWith('testMessage');
+    expect(onMessageHandler).toHaveBeenCalledWith('testMessage');
 
     handle2.postMessage('postTestMessage');
-    expect(mainService.$postMessageToPlainWebview).toBeCalledWith(handle2Id, 'postTestMessage');
+    expect(mainService.$postMessageToPlainWebview).toHaveBeenCalledWith(handle2Id, 'postTestMessage');
 
     handle1.dispose();
     handle2.dispose();

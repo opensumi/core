@@ -2,11 +2,11 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
 import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-common';
 import {
-  IDebugSessionManager,
-  IDebugService,
-  IDebugServer,
-  IDebugModelManager,
   IDebugConsoleModelService,
+  IDebugModelManager,
+  IDebugServer,
+  IDebugService,
+  IDebugSessionManager,
 } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
@@ -190,41 +190,41 @@ describe('MainThreadDebug API Test Suite', () => {
   });
 
   it('MainThreadDebug can be initial correctly', () => {
-    expect(mockBreakpointManager.onDidChangeBreakpoints).toBeCalledTimes(1);
-    expect(mockDebugSessionManager.onDidStartDebugSession).toBeCalledTimes(1);
-    expect(mockDebugSessionManager.onDidDestroyDebugSession).toBeCalledTimes(1);
-    expect(mockDebugSessionManager.onDidChangeActiveDebugSession).toBeCalledTimes(1);
-    expect(mockDebugSessionManager.onDidReceiveDebugSessionCustomEvent).toBeCalledTimes(1);
-    expect(mockDebugService.onDidDebugContributionPointChange).toBeCalledTimes(1);
-    expect(mockDebugSessionManager.onDidStartDebugSession).toBeCalledTimes(1);
-    expect(mockExtThreadDebug.$registerDebuggerContributions).toBeCalledTimes(1);
+    expect(mockBreakpointManager.onDidChangeBreakpoints).toHaveBeenCalledTimes(1);
+    expect(mockDebugSessionManager.onDidStartDebugSession).toHaveBeenCalledTimes(1);
+    expect(mockDebugSessionManager.onDidDestroyDebugSession).toHaveBeenCalledTimes(1);
+    expect(mockDebugSessionManager.onDidChangeActiveDebugSession).toHaveBeenCalledTimes(1);
+    expect(mockDebugSessionManager.onDidReceiveDebugSessionCustomEvent).toHaveBeenCalledTimes(1);
+    expect(mockDebugService.onDidDebugContributionPointChange).toHaveBeenCalledTimes(1);
+    expect(mockDebugSessionManager.onDidStartDebugSession).toHaveBeenCalledTimes(1);
+    expect(mockExtThreadDebug.$registerDebuggerContributions).toHaveBeenCalledTimes(1);
     mockExtThreadDebug.$getTerminalCreationOptions.mockClear();
   });
 
   it('$appendToDebugConsole method should be work', () => {
     const value = 'test';
     mainThreadDebug.$appendToDebugConsole(value);
-    expect(mockDebugConsoleModelService.debugConsoleSession.append).toBeCalledWith(value);
+    expect(mockDebugConsoleModelService.debugConsoleSession.append).toHaveBeenCalledWith(value);
   });
 
   it('$appendLineToDebugConsole method should be work', () => {
     const value = 'test';
     mainThreadDebug.$appendLineToDebugConsole(value);
-    expect(mockDebugConsoleModelService.debugConsoleSession.appendLine).toBeCalledWith(value);
+    expect(mockDebugConsoleModelService.debugConsoleSession.appendLine).toHaveBeenCalledWith(value);
   });
 
   it('$registerDebuggerContribution method should be work', async () => {
     // TODO: 这个 case 应该是在别的地方已经被调用过一次了，这里加个先检测为 1，然后调用一次，下一次检测是不是 2
-    expect(mockDebugServer.registerDebugAdapterContribution).toBeCalledTimes(1);
-    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toBeCalledTimes(1);
+    expect(mockDebugServer.registerDebugAdapterContribution).toHaveBeenCalledTimes(1);
+    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toHaveBeenCalledTimes(1);
 
     await mainThreadDebug.$registerDebuggerContribution({
       type: 'node',
       label: 'Node Debug',
     });
-    expect(mockExtThreadDebug.$getTerminalCreationOptions).toBeCalledTimes(1);
-    expect(mockDebugServer.registerDebugAdapterContribution).toBeCalledTimes(2);
-    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toBeCalledTimes(2);
+    expect(mockExtThreadDebug.$getTerminalCreationOptions).toHaveBeenCalledTimes(1);
+    expect(mockDebugServer.registerDebugAdapterContribution).toHaveBeenCalledTimes(2);
+    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toHaveBeenCalledTimes(2);
   });
 
   it('$addBreakpoints method should be work', async () => {
@@ -245,8 +245,8 @@ describe('MainThreadDebug API Test Suite', () => {
     ];
     mockBreakpointManager.findMarkers.mockClear();
     await mainThreadDebug.$addBreakpoints(breakpoints as any);
-    expect(mockBreakpointManager.addBreakpoint).toBeCalledTimes(1);
-    expect(mockBreakpointManager.findMarkers).toBeCalledTimes(1);
+    expect(mockBreakpointManager.addBreakpoint).toHaveBeenCalledTimes(1);
+    expect(mockBreakpointManager.findMarkers).toHaveBeenCalledTimes(1);
   });
 
   it('$removeBreakpoints method should be work', async () => {
@@ -265,7 +265,7 @@ describe('MainThreadDebug API Test Suite', () => {
     ]);
     mockBreakpointManager.findMarkers.mockClear();
     await mainThreadDebug.$removeBreakpoints(breakpoints as any);
-    expect(mockBreakpointManager.findMarkers).toBeCalledTimes(1);
+    expect(mockBreakpointManager.findMarkers).toHaveBeenCalledTimes(1);
   });
 
   it('$customRequest method should be work', async () => {
@@ -274,7 +274,7 @@ describe('MainThreadDebug API Test Suite', () => {
       sendCustomRequest,
     });
     await mainThreadDebug.$customRequest('1', 'source');
-    expect(sendCustomRequest).toBeCalledTimes(1);
+    expect(sendCustomRequest).toHaveBeenCalledTimes(1);
   });
 
   it('$getDebugProtocolBreakpoint method should be work', async () => {
@@ -283,7 +283,7 @@ describe('MainThreadDebug API Test Suite', () => {
       getDebugProtocolBreakpoint,
     });
     await mainThreadDebug.$getDebugProtocolBreakpoint('1', '1');
-    expect(getDebugProtocolBreakpoint).toBeCalledTimes(1);
+    expect(getDebugProtocolBreakpoint).toHaveBeenCalledTimes(1);
   });
 
   it('$startDebugging method should be work', async () => {
@@ -294,7 +294,7 @@ describe('MainThreadDebug API Test Suite', () => {
       },
     });
     await mainThreadDebug.$startDebugging(undefined, 'test', {});
-    expect(mockDebugSessionManager.start).toBeCalledTimes(1);
+    expect(mockDebugSessionManager.start).toHaveBeenCalledTimes(1);
   });
 
   it('$unregisterDebuggerContribution method should be work', () => {

@@ -1,13 +1,12 @@
-
-import { Injector, Injectable } from '@opensumi/di';
+import { Injectable, Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
-  IEditorDocumentModelService,
   IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
@@ -24,9 +23,9 @@ import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
 import { SearchTreeService } from '../../src/browser/tree/search-tree.service';
 import {
-  IContentSearchClientService,
-  ContentSearchServerPath,
   ContentSearchResult,
+  ContentSearchServerPath,
+  IContentSearchClientService,
   ISearchTreeService,
 } from '../../src/common';
 

@@ -1,8 +1,8 @@
-import { Uri, DisposableCollection, Event, Emitter, CancellationToken } from '@opensumi/ide-core-common';
+import { CancellationToken, DisposableCollection, Emitter, Event, Uri } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IDecorationsService, IDecorationsProvider, IDecorationData } from '../../src';
+import { IDecorationData, IDecorationsProvider, IDecorationsService } from '../../src';
 import { DecorationModule } from '../../src/browser';
 
 describe('DecorationsService', () => {

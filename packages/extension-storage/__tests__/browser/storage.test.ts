@@ -4,9 +4,9 @@ import * as fs from 'fs-extra';
 import temp from 'temp';
 
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { FileUri, IFileServiceClient, ILoggerManagerClient, StoragePaths, URI } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
+import { IExtensionStoragePathServer, IExtensionStorageServer } from '@opensumi/ide-extension-storage';
 import { FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';

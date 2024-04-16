@@ -30,7 +30,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { path, isWindows } from '../src';
+import { isWindows, path } from '../src';
 
 const { Path } = path;
 

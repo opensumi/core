@@ -16,7 +16,7 @@ describe('Explorer contribution should be work', () => {
       const register = jest.fn();
       const contribution = injector.get(ExplorerContribution);
       contribution.registerComponent({ register } as any);
-      expect(register).toBeCalledTimes(1);
+      expect(register).toHaveBeenCalledTimes(1);
     });
   });
 });

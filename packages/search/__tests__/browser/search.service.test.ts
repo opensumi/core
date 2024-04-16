@@ -1,4 +1,4 @@
-import { Injector, Injectable } from '@opensumi/di';
+import { Injectable, Injector } from '@opensumi/di';
 import { CorePreferences } from '@opensumi/ide-core-browser';
 import { URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -11,12 +11,12 @@ import { MockContentSearchServer } from '../../__mocks__/content-search.service'
 import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
 import {
-  IContentSearchClientService,
-  ContentSearchServerPath,
-  SendClientResult,
-  SEARCH_STATE,
   ContentSearchResult,
+  ContentSearchServerPath,
+  IContentSearchClientService,
   IUIState,
+  SEARCH_STATE,
+  SendClientResult,
 } from '../../src/common';
 
 const rootUri = new URI('root');

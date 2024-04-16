@@ -1,5 +1,5 @@
 import { Emitter } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService, ILanguageService, CursorStatus } from '@opensumi/ide-editor';
+import { CursorStatus, ILanguageService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorStatusBarService } from '@opensumi/ide-editor/lib/browser/editor.status-bar.service';
 import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
 
@@ -40,7 +40,7 @@ describe('editor status bar item test', () => {
     service.setListener();
 
     _activeResourceChangeEvent.fire();
-    expect(statusBarService.addElement).toBeCalledTimes(4);
+    expect(statusBarService.addElement).toHaveBeenCalledTimes(4);
 
     _cursorChangeEmitter.fire({
       selectionLength: 10,
@@ -50,11 +50,11 @@ describe('editor status bar item test', () => {
       },
     });
 
-    expect(statusBarService.addElement).toBeCalledTimes(5);
+    expect(statusBarService.addElement).toHaveBeenCalledTimes(5);
 
     editorService.currentEditor = undefined;
 
     _activeResourceChangeEvent.fire();
-    expect(statusBarService.removeElement).toBeCalledTimes(4);
+    expect(statusBarService.removeElement).toHaveBeenCalledTimes(4);
   });
 });

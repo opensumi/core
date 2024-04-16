@@ -1,4 +1,4 @@
-import { PreferenceService, IJSONSchemaRegistry, ISchemaStore, QuickOpenService } from '@opensumi/ide-core-browser';
+import { IJSONSchemaRegistry, ISchemaStore, PreferenceService, QuickOpenService } from '@opensumi/ide-core-browser';
 import { FileUri, Uri } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
@@ -16,10 +16,10 @@ import {
 } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
-import { taskSchemaUri, schema } from '@opensumi/ide-task/lib/browser/task.schema';
+import { schema, taskSchemaUri } from '@opensumi/ide-task/lib/browser/task.schema';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
-import { ITaskService, ITaskSystem, ITaskProvider } from '@opensumi/ide-task/lib/common';
+import { ITaskProvider, ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 

@@ -1,11 +1,9 @@
-import type vscode from 'vscode';
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IExtensionInfo, Uri } from '@opensumi/ide-core-common';
 import {
-  MainThreadAPIIdentifier,
-  IMainThreadCommands,
   CommandHandler,
+  IMainThreadCommands,
+  MainThreadAPIIdentifier,
 } from '@opensumi/ide-extension/lib/common/vscode';
 import * as types from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 import { SymbolKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
@@ -18,6 +16,7 @@ import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/ra
 
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 
+import type vscode from 'vscode';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () => {
   let vscodeCommand: typeof vscode.commands;
@@ -88,7 +87,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       vscodeCommand.registerCommand(commandId, extTest);
       await vscodeCommand.executeCommand(commandId);
       // 实际命令执行注册一次
-      expect(extTest).toBeCalledTimes(1);
+      expect(extTest).toHaveBeenCalledTimes(1);
     });
 
     it('execute a no-permitted command', async () => {
@@ -99,10 +98,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
 
       const commandId = 'ext.test';
       extCommand.registerCommand(false, commandId, commandHandler);
-      expect(vscodeCommand.executeCommand(commandId)).rejects.toThrowError(
+      expect(vscodeCommand.executeCommand(commandId)).rejects.toThrow(
         new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
       );
-      expect(commandHandler.handler).toBeCalledTimes(0);
+      expect(commandHandler.handler).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -112,10 +111,10 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const commandId = 'ext.test';
       extCommand.registerCommand(true, commandId, extTest);
       // 远端注册被调用一次
-      expect(mainService.$registerCommand).toBeCalledTimes(1);
+      expect(mainService.$registerCommand).toHaveBeenCalledTimes(1);
       await extCommand.executeCommand(commandId);
       // 实际命令执行注册一次
-      expect(extTest).toBeCalledTimes(1);
+      expect(extTest).toHaveBeenCalledTimes(1);
     });
 
     it('throw error when register exist command', () => {
@@ -123,7 +122,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const commandId = 'ext.test';
       extCommand.registerCommand(true, commandId, extTest);
       // 再注册一次
-      expect(() => extCommand.registerCommand(true, commandId, extTest)).toThrowError();
+      expect(() => extCommand.registerCommand(true, commandId, extTest)).toThrow();
     });
 
     it('register a command with thisArg', async () => {
@@ -143,7 +142,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const commandId = 'ext.test';
       extCommand.registerCommand(false, commandId, extTest);
       // 如果 global 设置为 false，则不会执行远端命令注册
-      expect(mainService.$registerCommand).toBeCalledTimes(0);
+      expect(mainService.$registerCommand).toHaveBeenCalledTimes(0);
     });
 
     it('execute a command', async () => {
@@ -152,14 +151,14 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       extCommand.registerCommand(false, commandId, extTest);
       await extCommand.executeCommand(commandId);
       // 本地有命令的，远端不会执行
-      expect(mainService.$executeCommand).toBeCalledTimes(0);
+      expect(mainService.$executeCommand).toHaveBeenCalledTimes(0);
     });
 
     it('execute a command then localCommand not found', async () => {
       const commandId = 'ext.notfound';
       await extCommand.executeCommand(commandId);
       // 本地找不到会到远端找
-      expect(mainService.$executeCommand).toBeCalledTimes(1);
+      expect(mainService.$executeCommand).toHaveBeenCalledTimes(1);
     });
 
     it('execute a builtin command', async () => {
@@ -172,7 +171,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     it('execute a builtin command will not permitted', async () => {
       extCommand.$registerBuiltInCommands();
       const commandId = 'test:builtinCommand:unpermitted';
-      expect(() => vscodeCommand.executeCommand(commandId)).rejects.toThrowError(
+      expect(() => vscodeCommand.executeCommand(commandId)).rejects.toThrow(
         new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
       );
     });
@@ -189,12 +188,12 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const command = extCommand.registerCommand(true, 'ext.test', extTest);
       command.dispose();
       // 卸载远端命令
-      expect(mainService.$unregisterCommand).toBeCalledTimes(1);
+      expect(mainService.$unregisterCommand).toHaveBeenCalledTimes(1);
     });
 
     it('call getCommands', async () => {
       await extCommand.getCommands();
-      expect(mainService.$getCommands).toBeCalledTimes(1);
+      expect(mainService.$getCommands).toHaveBeenCalledTimes(1);
     });
 
     it('call $executeContributedCommand with exist command', async () => {
@@ -202,12 +201,12 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const commandId = 'ext.test';
       extCommand.registerCommand(true, commandId, extTest);
       await extCommand.$executeContributedCommand(commandId);
-      expect(extTest).toBeCalledTimes(1);
+      expect(extTest).toHaveBeenCalledTimes(1);
     });
 
     it('call $executeContributedCommand with no-exist command', () => {
       const commandId = 'ext.notfound';
-      expect(extCommand.$executeContributedCommand(commandId)).rejects.toThrowError();
+      expect(extCommand.$executeContributedCommand(commandId)).rejects.toThrow();
     });
 
     it('register argument processor', async () => {
@@ -219,7 +218,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
       const commandId = 'ext.test';
       extCommand.registerCommand(true, commandId, extTest);
       await extCommand.$executeContributedCommand(commandId, '123');
-      expect(argumentProcessor.processArgument).toBeCalledTimes(1);
+      expect(argumentProcessor.processArgument).toHaveBeenCalledTimes(1);
     });
 
     it('execute requiring authentication command to frontend command when permitted', async () => {
@@ -237,7 +236,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         extensionId: 'cloud-ide.vim',
         isBuiltin: false,
       };
-      expect(extCommand.$executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).rejects.toThrowError(
+      expect(extCommand.$executeCommandWithExtensionInfo(commandShouldAuth, extensionInfo)).rejects.toThrow(
         new Error('not permitted'),
       );
     });
@@ -254,7 +253,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
         isPermitted: () => false,
       };
       extCommand.registerCommand(false, commandId, commandHandler);
-      expect(extCommand.$executeCommandWithExtensionInfo(commandId, extensionInfo)).rejects.toThrowError(
+      expect(extCommand.$executeCommandWithExtensionInfo(commandId, extensionInfo)).rejects.toThrow(
         new Error(`Extension vscode.vim has not permit to execute ${commandId}`),
       );
     });
@@ -326,7 +325,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.command.test.ts', () =>
     it('vscode.executeReferenceProvider', async () => {
       const file = Uri.file('/a.txt');
       await extCommand.executeCommand('vscode.executeReferenceProvider', file, new types.Position(1, 1), []);
-      expect(mainService.$executeCommand).toBeCalledWith('_executeReferenceProvider', expect.anything(), {
+      expect(mainService.$executeCommand).toHaveBeenCalledWith('_executeReferenceProvider', expect.anything(), {
         column: 2,
         lineNumber: 2,
       });

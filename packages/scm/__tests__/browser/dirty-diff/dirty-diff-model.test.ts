@@ -4,16 +4,15 @@ import { CommandService, Event, ILineChange, URI, toDisposable } from '@opensumi
 import { EditorCollectionService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/ide-monaco';
+import { DetailedLineRangeMapping, positionToRange } from '@opensumi/ide-monaco';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import {
   IDiffComputationResult,
   IEditorWorkerService,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
-import * as monaco from '@opensumi/ide-monaco';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
-import { DetailedLineRangeMapping, positionToRange } from '@opensumi/ide-monaco';
-import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/lineRange';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
@@ -22,6 +21,8 @@ import { ISCMRepository, SCMService } from '../../../src';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
 import { MockSCMProvider } from '../../scm-test-util';
+
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable()
 class MockEditorDocumentModelService {
@@ -93,15 +94,13 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
     beforeEach(() => {
       StandaloneServices.get(IEditorWorkerService).canComputeDirtyDiff = () => true;
-      StandaloneServices.get(IEditorWorkerService).computeDiff = async () => {
-        return {
-          ...computeDiffRet!,
-          changes: computeDiffRet!.changes.map((e) => {
-            return new DetailedLineRangeMapping(new LineRange(e[0], e[1]), new LineRange(e[2], e[3]), []);
-          }),
-          moves: [],
-        };
-      };
+      StandaloneServices.get(IEditorWorkerService).computeDiff = async () => ({
+        ...computeDiffRet!,
+        changes: computeDiffRet!.changes.map(
+          (e) => new DetailedLineRangeMapping(new LineRange(e[0], e[1]), new LineRange(e[2], e[3]), []),
+        ),
+        moves: [],
+      });
 
       injector = createBrowserInjector(
         [],
@@ -344,7 +343,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
       expect(dirtyDiffModel.original).toBeNull();
       expect(dirtyDiffModel.modified).toBeNull();
-      expect(delayerSpy).toBeCalledTimes(1);
+      expect(delayerSpy).toHaveBeenCalledTimes(1);
       expect(dirtyDiffModel['diffDelayer']).toBeNull();
       expect(dirtyDiffModel['repositoryDisposables'].size).toBe(0);
 
@@ -397,16 +396,16 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         const range = positionToRange(10);
         const spy = jest.spyOn(dirtyDiffWidget, 'dispose');
         dirtyDiffModel['_widget'] = null;
-        expect(spy).toBeCalledTimes(0);
+        expect(spy).toHaveBeenCalledTimes(0);
 
         dirtyDiffModel.onClickDecoration(dirtyDiffWidget, range);
         expect(dirtyDiffModel['_widget']).toEqual(dirtyDiffWidget);
-        expect(spy).toBeCalledTimes(0);
+        expect(spy).toHaveBeenCalledTimes(0);
 
         const newDirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);
 
         dirtyDiffModel.onClickDecoration(newDirtyDiffWidget, range);
-        expect(spy).toBeCalledTimes(1);
+        expect(spy).toHaveBeenCalledTimes(1);
         expect(dirtyDiffModel['_widget']).toEqual(newDirtyDiffWidget);
 
         spy.mockReset();
@@ -436,24 +435,24 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         await dirtyDiffModel.onClickDecoration(dirtyDiffWidget, range);
 
         // createDiffEditor
-        expect(createDiffEditorSpy).toBeCalledTimes(1);
+        expect(createDiffEditorSpy).toHaveBeenCalledTimes(1);
         expect((createDiffEditorSpy.mock.calls[0][0] as HTMLDivElement).tagName).toBe('DIV');
         expect(createDiffEditorSpy.mock.calls[0][1]).toEqual({ automaticLayout: true, renderSideBySide: false });
 
         // editor.compare
-        expect(mockCompare).toBeCalledTimes(1);
+        expect(mockCompare).toHaveBeenCalledTimes(1);
         expect(mockCompare.mock.calls[0][0].instance.uri.scheme).toBe('git');
         expect(mockCompare.mock.calls[0][1].instance.uri.scheme).toBe('file');
 
         // monacoEditor.updateOption
-        expect(updateOptionsSpy1).toBeCalledTimes(1);
-        expect(updateOptionsSpy2).toBeCalledTimes(1);
+        expect(updateOptionsSpy1).toHaveBeenCalledTimes(1);
+        expect(updateOptionsSpy2).toHaveBeenCalledTimes(1);
         expect(updateOptionsSpy1.mock.calls[0][0]).toEqual({ readOnly: true });
         expect(updateOptionsSpy2.mock.calls[0][0]).toEqual({ readOnly: true });
 
         // monacoEditor.revealLineInCenter
-        expect(revealLineInCenterSpy).toBeCalledTimes(1);
-        expect(revealLineInCenterSpy).toBeCalledWith(7);
+        expect(revealLineInCenterSpy).toHaveBeenCalledTimes(1);
+        expect(revealLineInCenterSpy).toHaveBeenCalledWith(7);
 
         expect(dirtyDiffWidget.currentIndex).toBe(1);
         expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(11));
@@ -475,8 +474,8 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
         // originalEditor.monacoEditor.onDidChangeModelContent
         originalMonacoEditor['_onDidChangeModelContent'].fire();
-        expect(relayoutSpy).toBeCalledTimes(1);
-        expect(relayoutSpy).toBeCalledWith(10);
+        expect(relayoutSpy).toHaveBeenCalledTimes(1);
+        expect(relayoutSpy).toHaveBeenCalledWith(10);
 
         // widget.onDispose
         dirtyDiffWidget.dispose();

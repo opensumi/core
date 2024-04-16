@@ -1,6 +1,6 @@
 import { INodeLogger } from '@opensumi/ide-core-node';
-
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+
 import { IRemoteOpenerClient, IRemoteOpenerService, RemoteOpenerClientToken } from '../../src/common';
 import { RemoteOpenerClientImpl } from '../../src/node/opener.client';
 
@@ -29,7 +29,7 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
     expect(remoteOpenerClient['remoteOpenerServices'].get('mock_clientId')).toBe(service);
     const spyErrorLog = jest.spyOn(logger, 'error');
     remoteOpenerClient.setRemoteOpenerServiceInstance('mock_clientId', service);
-    expect(spyErrorLog).toBeCalledWith('Remote opener service instance for client mock_clientId already set.');
+    expect(spyErrorLog).toHaveBeenCalledWith('Remote opener service instance for client mock_clientId already set.');
   });
 
   it('removeRemoteOpenerServiceInstance should be work', () => {
@@ -63,7 +63,7 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
       'mock_clientId_2',
     );
 
-    expect(service.openExternal).toBeCalledWith({
+    expect(service.openExternal).toHaveBeenCalledWith({
       file: 'mock_file',
       type: 'file',
       clientId: 'mock_clientId_2',
@@ -89,7 +89,7 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
       'stub_clientId',
     );
 
-    expect(service.openExternal).toBeCalledWith({
+    expect(service.openExternal).toHaveBeenCalledWith({
       file: 'mock_file',
       type: 'file',
       clientId: 'mock_clientId_3', // 被fallback到了mock_clientId_3

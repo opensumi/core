@@ -101,16 +101,16 @@ describe('FileDialogService should be work', () => {
 
   it('resolveChildren method should be work', async () => {
     const children = await fileTreeDialogService.resolveChildren();
-    expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(1);
+    expect(mockFileTreeAPI.resolveChildren).toHaveBeenCalledTimes(1);
     expect(children.length > 0).toBeTruthy();
     await fileTreeDialogService.resolveChildren(children![0] as Directory);
-    expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(2);
+    expect(mockFileTreeAPI.resolveChildren).toHaveBeenCalledTimes(2);
   });
 
   it('resolveRoot method should be work', async () => {
     await fileTreeDialogService.resolveRoot(rootUri.toString());
-    expect(mockFileTreeAPI.resolveFileStat).toBeCalledTimes(2);
-    expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(1);
+    expect(mockFileTreeAPI.resolveFileStat).toHaveBeenCalledTimes(2);
+    expect(mockFileTreeAPI.resolveChildren).toHaveBeenCalledTimes(1);
   });
 
   it('getDirectoryList method should be work', async () => {

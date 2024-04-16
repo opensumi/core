@@ -20,7 +20,7 @@ describe('Editor contribution should be work', () => {
       const contribution = injector.get(EditorContribution);
       const register = jest.fn();
       contribution.registerCommands({ registerCommand: register } as any);
-      expect(register).toBeCalled();
+      expect(register).toHaveBeenCalled();
     });
 
     it('should recive correct command arguments', async () => {
@@ -34,7 +34,7 @@ describe('Editor contribution should be work', () => {
         uri: new URI('/test.js'),
       };
       await commandService.executeCommand(EDITOR_COMMANDS.COPY_RELATIVE_PATH.id, resource);
-      expect(mockCopyRelativePath).toBeCalledWith(resource.uri);
+      expect(mockCopyRelativePath).toHaveBeenCalledWith(resource.uri);
     });
   });
 });

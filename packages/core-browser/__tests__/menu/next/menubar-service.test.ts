@@ -1,17 +1,17 @@
 import { Injector } from '@opensumi/di';
-import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@opensumi/ide-core-common';
+import { CommandRegistry, CoreCommandRegistryImpl, DisposableStore } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { IContextKeyService } from '../../../src/context-key';
 import {
-  AbstractMenubarService,
-  MenubarServiceImpl,
   AbstractMenuService,
+  AbstractMenubarService,
+  IMenuRegistry,
   MenuRegistryImpl,
   MenuServiceImpl,
-  IMenuRegistry,
+  MenubarServiceImpl,
 } from '../../../src/menu/next';
 
 jest.useFakeTimers();
@@ -207,7 +207,7 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       }),
     );
 
-    expect(fakeListener).not.toBeCalled();
+    expect(fakeListener).not.toHaveBeenCalled();
   });
 
   it('registerMenubarItem and then registerMenuItem again', () => {

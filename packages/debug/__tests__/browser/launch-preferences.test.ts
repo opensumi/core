@@ -4,19 +4,19 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import {
-  PreferenceService,
-  FileUri,
+  AppConfig,
   Disposable,
   DisposableCollection,
-  PreferenceScope,
-  URI,
+  FileUri,
   IContextKeyService,
-  AppConfig,
+  PreferenceScope,
+  PreferenceService,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { DebugContribution } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
-import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
+import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';

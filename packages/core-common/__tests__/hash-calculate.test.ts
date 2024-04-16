@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 
-import { IHashCalculateService, HashCalculateServiceImpl } from '../src/hash-calculate/hash-calculate';
+import { HashCalculateServiceImpl, IHashCalculateService } from '../src/hash-calculate/hash-calculate';
 
 describe('HashCalculate', () => {
   const injector: Injector = new Injector([

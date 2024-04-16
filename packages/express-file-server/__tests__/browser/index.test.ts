@@ -1,8 +1,8 @@
 import { URI, createContributionProvider } from '@opensumi/ide-core-browser';
 import {
-  StaticResourceService,
-  StaticResourceContribution,
   StaticResourceClientAppContribution,
+  StaticResourceContribution,
+  StaticResourceService,
 } from '@opensumi/ide-core-browser/lib/static-resource';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 

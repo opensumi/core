@@ -2,15 +2,15 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 
 import {
-  ComponentRegistryImpl,
-  ComponentRegistry,
-  SlotLocation,
   AppConfig,
-  IContextKeyService,
   CommandRegistry,
-  ViewContainerOptions,
-  PreferenceService,
+  ComponentRegistry,
+  ComponentRegistryImpl,
   Disposable,
+  IContextKeyService,
+  PreferenceService,
+  SlotLocation,
+  ViewContainerOptions,
 } from '@opensumi/ide-core-browser';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
@@ -303,7 +303,7 @@ describe('main layout test', () => {
       handler.setCollapsed('test-view-id5', true);
     });
     expect(handler.isCollapsed('test-view-id5')).toBeTruthy();
-    expect(mockCb).toBeCalledTimes(4);
+    expect(mockCb).toHaveBeenCalledTimes(4);
     let newTitle = 'new title';
     act(() => {
       handler.setBadge('20');

@@ -1,13 +1,13 @@
 import { Injectable } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { LogServiceForClientPath, LogLevel, getLanguageId } from '@opensumi/ide-core-common';
+import { LogLevel, LogServiceForClientPath, getLanguageId } from '@opensumi/ide-core-common';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadStorage } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.storage';
 import {
-  IMainThreadEnv,
-  MainThreadAPIIdentifier,
   ExtHostAPIIdentifier,
+  IMainThreadEnv,
   IMainThreadStorage,
+  MainThreadAPIIdentifier,
 } from '@opensumi/ide-extension/lib/common/vscode';
 import { createEnvApiFactory, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/envApiFactory';
 import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ext.host.env';
@@ -41,7 +41,7 @@ class MockLogServiceForClient {
   }
 }
 
-describe('MainThreadEnvAPI Test Suites ', () => {
+describe('MainThreadEnvAPI Test Suites', () => {
   const injector = createBrowserInjector([]);
   let extHostEnvAPI: ReturnType<typeof createEnvApiFactory>;
   const appConfig = {

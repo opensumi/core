@@ -1,7 +1,7 @@
-import { CancellationTokenSource, Emitter, Disposable } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Disposable, Emitter } from '@opensumi/ide-core-common';
 import { IMarkdownService } from '@opensumi/ide-markdown';
 import { MarkdownModule } from '@opensumi/ide-markdown/lib/browser';
-import { IWebviewService, IWebview } from '@opensumi/ide-webview';
+import { IWebview, IWebviewService } from '@opensumi/ide-webview';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
@@ -30,13 +30,13 @@ describe('markdown test', () => {
       updateEvent.event,
     );
 
-    expect(webview.appendTo).toBeCalledWith(element);
-    expect(webview.setContent).toBeCalledTimes(1);
+    expect(webview.appendTo).toHaveBeenCalledWith(element);
+    expect(webview.setContent).toHaveBeenCalledTimes(1);
     expect(webview.content).toContain('<li>');
     expect(webview.content).toContain('h1Content');
     expect(webview.content).toContain('list element1');
 
-    expect(webview.onDidClickLink).toBeCalledTimes(1);
+    expect(webview.onDidClickLink).toHaveBeenCalledTimes(1);
 
     await updateEvent.fireAndAwait('## h2Content');
     expect(webview.content).toContain('h2Content');

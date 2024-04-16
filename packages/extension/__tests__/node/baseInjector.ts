@@ -7,8 +7,8 @@ import {
 import { AppConfig, INodeLogger, getDebugLogger, path } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
-import { IFileService, IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
-import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
+import { IDiskFileProvider, IFileService } from '@opensumi/ide-file-service/lib/common';
+import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
 import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';

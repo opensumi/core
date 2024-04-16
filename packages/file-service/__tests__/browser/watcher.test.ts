@@ -1,6 +1,6 @@
 import { URI } from '@opensumi/ide-core-common';
 
-import { FileChangeType, FileChange } from '../../src';
+import { FileChange, FileChangeType } from '../../src';
 import { FileSystemWatcher } from '../../src/browser/watcher';
 
 describe('ExtensionFileSystemManage', () => {

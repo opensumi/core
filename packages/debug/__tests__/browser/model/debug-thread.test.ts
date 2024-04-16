@@ -69,14 +69,14 @@ describe('DebugThread Model', () => {
 
     it('terminate method should be work', async () => {
       debugThread.terminate();
-      expect(session.sendRequest).toBeCalledWith('terminateThreads', {
+      expect(session.sendRequest).toHaveBeenCalledWith('terminateThreads', {
         threadIds: [raw.id],
       });
     });
 
     it('fetchFrames method should be work', async () => {
       await debugThread.fetchFrames();
-      expect(session.sendRequest).toBeCalledWith('stackTrace', {
+      expect(session.sendRequest).toHaveBeenCalledWith('stackTrace', {
         threadId: raw.id,
         startFrame: 0,
         levels: 20,
@@ -85,35 +85,35 @@ describe('DebugThread Model', () => {
 
     it('continue method should be work', async () => {
       debugThread.continue();
-      expect(session.sendRequest).toBeCalledWith('continue', {
+      expect(session.sendRequest).toHaveBeenCalledWith('continue', {
         threadId: raw.id,
       });
     });
 
     it('stepOver method should be work', async () => {
       debugThread.stepOver();
-      expect(session.sendRequest).toBeCalledWith('next', {
+      expect(session.sendRequest).toHaveBeenCalledWith('next', {
         threadId: raw.id,
       });
     });
 
     it('stepIn method should be work', async () => {
       debugThread.stepIn();
-      expect(session.sendRequest).toBeCalledWith('stepIn', {
+      expect(session.sendRequest).toHaveBeenCalledWith('stepIn', {
         threadId: raw.id,
       });
     });
 
     it('stepOut method should be work', async () => {
       debugThread.stepOut();
-      expect(session.sendRequest).toBeCalledWith('stepOut', {
+      expect(session.sendRequest).toHaveBeenCalledWith('stepOut', {
         threadId: raw.id,
       });
     });
 
     it('pause method should be work', async () => {
       debugThread.pause();
-      expect(session.sendRequest).toBeCalledWith('pause', {
+      expect(session.sendRequest).toHaveBeenCalledWith('pause', {
         threadId: raw.id,
       });
     });

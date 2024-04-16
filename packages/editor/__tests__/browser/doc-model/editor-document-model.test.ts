@@ -1,18 +1,19 @@
 import uniqueId from 'lodash/uniqueId';
 
-import { URI, IEventBus } from '@opensumi/ide-core-browser';
+import { IEventBus, URI } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
-import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { isLinux, isMacintosh } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
+
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../src/browser/doc-model/main';
 import {
-  EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelContentChangedEvent,
+  EditorDocumentModelOptionChangedEvent,
 } from '../../../src/browser/doc-model/types';
 import { IDocPersistentCacheProvider } from '../../../src/common';
 
@@ -72,8 +73,8 @@ describe('EditorDocumentModel', () => {
       // Monaco 20 开始，没有指定 languageId 会 fallback 到 plaintext
       expect(docModel.languageId).toBe('plaintext');
 
-      expect(optionChangeFn).toBeCalledTimes(0);
-      expect(chagneFn).toBeCalledTimes(0);
+      expect(optionChangeFn).toHaveBeenCalledTimes(0);
+      expect(chagneFn).toHaveBeenCalledTimes(0);
     });
 
     it('create EditorDocumentModel with Options', () => {
@@ -100,8 +101,8 @@ describe('EditorDocumentModel', () => {
       expect(docModel.eol).toBe(opts.eol);
       expect(docModel.languageId).toBe(opts.languageId);
 
-      expect(optionChangeFn).toBeCalledTimes(0);
-      expect(chagneFn).toBeCalledTimes(0);
+      expect(optionChangeFn).toHaveBeenCalledTimes(0);
+      expect(chagneFn).toHaveBeenCalledTimes(0);
     });
 
     it('create EditorDocumentModel with synchronous cache', () => {
@@ -113,7 +114,7 @@ describe('EditorDocumentModel', () => {
       expect(docModel.baseContent).toBe(content);
       expect(docModel.dirty).toBeFalsy();
 
-      expect(chagneFn).toBeCalledTimes(0);
+      expect(chagneFn).toHaveBeenCalledTimes(0);
     });
 
     it('create EditorDocumentModel with synchronous content cache', () => {
@@ -132,7 +133,7 @@ describe('EditorDocumentModel', () => {
       expect(docModel.getMonacoModel().getValue()).toBe(newContent);
       expect(docModel.dirty).toBeTruthy();
 
-      expect(chagneFn).toBeCalledTimes(1);
+      expect(chagneFn).toHaveBeenCalledTimes(1);
     });
 
     it('create EditorDocumentModel with synchronous change cache', () => {
@@ -150,7 +151,7 @@ describe('EditorDocumentModel', () => {
       expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
       expect(docModel.dirty).toBeTruthy();
 
-      expect(chagneFn).toBeCalledTimes(1);
+      expect(chagneFn).toHaveBeenCalledTimes(1);
     });
 
     it('create EditorDocumentModel with async change cache', async () => {
@@ -166,12 +167,12 @@ describe('EditorDocumentModel', () => {
       const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
       expect(docModel.getMonacoModel().getValue()).toBe(content);
       expect(docModel.dirty).toBeFalsy();
-      expect(chagneFn).toBeCalledTimes(0);
+      expect(chagneFn).toHaveBeenCalledTimes(0);
 
       await Promise.resolve();
 
       expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
-      expect(chagneFn).toBeCalledTimes(1);
+      expect(chagneFn).toHaveBeenCalledTimes(1);
     });
   });
 });

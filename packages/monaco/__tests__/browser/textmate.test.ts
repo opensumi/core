@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { IEventBus, EventBusImpl, URI } from '@opensumi/ide-core-browser';
+import { EventBusImpl, IEventBus, URI } from '@opensumi/ide-core-browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/editor-document-model-service';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';

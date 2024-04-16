@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@opensumi/di';
 
-import { EventBusImpl, BasicEvent, WithEventBus, OnEvent, IEventBus } from '../src/event-bus';
+import { BasicEvent, EventBusImpl, IEventBus, OnEvent, WithEventBus } from '../src/event-bus';
 
 describe('event-bus', () => {
   class AEvent extends BasicEvent<number> {}
@@ -16,13 +16,13 @@ describe('event-bus', () => {
 
     const aEvent = new AEvent(1);
     eventBus.fire(aEvent);
-    expect(spyA).toBeCalledTimes(1);
-    expect(spyA).toBeCalledWith(aEvent);
+    expect(spyA).toHaveBeenCalledTimes(1);
+    expect(spyA).toHaveBeenCalledWith(aEvent);
 
     const bEvent = new BEvent('B');
     eventBus.fire(bEvent);
-    expect(spyB).toBeCalledTimes(1);
-    expect(spyB).toBeCalledWith(bEvent);
+    expect(spyB).toHaveBeenCalledTimes(1);
+    expect(spyB).toHaveBeenCalledWith(bEvent);
   });
 
   it('event bus fireAndAwait should be work', async () => {
@@ -41,8 +41,8 @@ describe('event-bus', () => {
 
     const aEvent = new AEvent(1);
     const res = await eventBus.fireAndAwait<AEvent, any>(aEvent);
-    expect(spyA).toBeCalledTimes(1);
-    expect(spyA).toBeCalledWith(aEvent);
+    expect(spyA).toHaveBeenCalledTimes(1);
+    expect(spyA).toHaveBeenCalledWith(aEvent);
 
     expect(res[1].result).toBe('result');
     expect(res[1].err).toBeUndefined();
@@ -65,10 +65,10 @@ describe('event-bus', () => {
     const b1 = new BEvent('b1');
     eventBus.fire(b1);
 
-    expect(spy).toBeCalledTimes(3);
-    expect(spy).toBeCalledWith(a1);
-    expect(spy).toBeCalledWith(a2);
-    expect(spy).toBeCalledWith(b1);
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(spy).toHaveBeenCalledWith(a1);
+    expect(spy).toHaveBeenCalledWith(a2);
+    expect(spy).toHaveBeenCalledWith(b1);
   });
 
   it('fire will not report an error when no listener function is registered', () => {
@@ -106,14 +106,14 @@ describe('event-bus', () => {
     ]);
     const layoutStore = injector.get(LayoutStore);
     layoutStore.changeSize();
-    expect(spy).toBeCalledTimes(0);
+    expect(spy).toHaveBeenCalledTimes(0);
 
     // 获取对象实例的时候才开始注册事件
     injector.get(FileTreeStore);
     layoutStore.changeSize();
     layoutStore.changeSize();
-    expect(spy).toBeCalledTimes(2);
-    expect(spy).toBeCalledWith(resizeEvent);
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith(resizeEvent);
   });
 
   it('event bus once can only be triggered once', () => {
@@ -127,7 +127,7 @@ describe('event-bus', () => {
     const a2 = new AEvent(2);
     eventBus.fire(a2);
 
-    expect(spy).toBeCalledTimes(1);
-    expect(spy).toBeCalledWith(a1);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(a1);
   });
 });

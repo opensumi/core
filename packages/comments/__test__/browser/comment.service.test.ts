@@ -201,7 +201,7 @@ describe('comment service test', () => {
     widget?.onShow(onShow);
     thread.showWidgetsIfShowed();
     // 不会被调用 show 方法
-    expect(onShow).not.toBeCalled();
+    expect(onShow).not.toHaveBeenCalled();
     expect(widget?.isShow).toBeFalsy();
   });
 
@@ -220,7 +220,7 @@ describe('comment service test', () => {
     const onShow = jest.fn();
     widget?.onShow(onShow);
     thread.showWidgetsIfShowed();
-    expect(onShow).toBeCalled();
+    expect(onShow).toHaveBeenCalled();
   });
 
   it('dispose should not effect isShow state', async () => {
@@ -246,7 +246,7 @@ describe('comment service test', () => {
       scheme: 'pr',
       provideResource: () => mockService({}),
     });
-    expect($registerDecorationProvider).toBeCalled();
+    expect($registerDecorationProvider).toHaveBeenCalled();
   });
 
   function createTestThreads(uri: URI) {

@@ -1,6 +1,6 @@
 import { Tree } from '../../../src/recycle-tree/tree/Tree';
-import { TreeNode, CompositeTreeNode } from '../../../src/recycle-tree/tree/TreeNode';
-import { TreeNodeEvent, MetadataChangeType, WatchEvent } from '../../../src/recycle-tree/types';
+import { CompositeTreeNode, TreeNode } from '../../../src/recycle-tree/tree/TreeNode';
+import { MetadataChangeType, TreeNodeEvent, WatchEvent } from '../../../src/recycle-tree/types';
 
 describe('Tree', () => {
   class TreeA extends Tree {

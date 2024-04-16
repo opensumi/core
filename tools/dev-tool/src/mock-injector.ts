@@ -121,9 +121,5 @@ export function createNodeInjector(modules: Array<ConstructorOf<NodeModule>>, in
   const injector = inj || getNodeMockInjector();
   const app = new ServerApp({ modules, injector } as any);
 
-  afterAll(() => {
-    app.injector.disposeAll();
-  });
-
   return app.injector as MockInjector;
 }

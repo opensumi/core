@@ -1,10 +1,10 @@
 import {
-  registerLocalizationBundle,
+  getLanguageId,
   localize,
-  setLanguageId,
+  registerLocalizationBundle,
   replaceLocalizePlaceholder,
   replaceNlsField,
-  getLanguageId,
+  setLanguageId,
 } from '../src/localize';
 
 describe('localize test', () => {

@@ -15,7 +15,7 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
       host: REPORT_HOST.NODE,
     });
   });
-  it.skip('use time func ', async () => {
+  it.skip('use time func', async () => {
     const reporterTimer = reporterService.time('test');
     // 执行耗时 3000 毫秒的方法
     await sleep(3000);
@@ -25,7 +25,7 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
     // 延时不应该相差 1000 毫秒 (考虑 ci 机器性能）
     expect(reporter.performance.mock.calls[0][1].duration - 3000).toBeLessThan(1000);
   });
-  it('use point func ', async () => {
+  it('use point func', async () => {
     reporterService.point('active_extension', 'vscode.vim');
     expect(reporter.point.mock.calls[0][0]).toBe('active_extension');
     expect(reporter.point.mock.calls[0][1].msg).toBe('vscode.vim');

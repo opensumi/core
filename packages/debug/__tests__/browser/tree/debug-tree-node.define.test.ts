@@ -1,16 +1,16 @@
 import {
-  ExpressionContainer,
-  ExpressionNode,
+  DebugConsoleNode,
+  DebugConsoleRoot,
+  DebugConsoleVariableContainer,
+  DebugHoverVariableRoot,
+  DebugScope,
   DebugVariable,
   DebugVariableContainer,
-  DebugScope,
-  DebugWatchNode,
-  DebugConsoleNode,
-  DebugConsoleVariableContainer,
-  DebugConsoleRoot,
-  DebugWatchRoot,
   DebugVariableRoot,
-  DebugHoverVariableRoot,
+  DebugWatchNode,
+  DebugWatchRoot,
+  ExpressionContainer,
+  ExpressionNode,
 } from '@opensumi/ide-debug/lib/browser/tree';
 
 describe('ExpressionContainer', () => {
@@ -178,9 +178,9 @@ describe('DebugVariableRoot —— DebugVariable —— DebugVariableContainer',
 
   it('setValue method should be work', async () => {
     await containerNode.setValue('value_1');
-    expect(mockSession.sendRequest).toBeCalledTimes(1);
+    expect(mockSession.sendRequest).toHaveBeenCalledTimes(1);
     await node.setValue('value_2');
-    expect(mockSession.sendRequest).toBeCalledTimes(2);
+    expect(mockSession.sendRequest).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -238,12 +238,12 @@ describe('DebugWatchRoot —— DebugWatchNode', () => {
 
   it('evaluate method should be work', async () => {
     await node.evaluate();
-    expect(mockSession.evaluate).toBeCalledTimes(1);
+    expect(mockSession.evaluate).toHaveBeenCalledTimes(1);
   });
 
   it('getClipboardValue method should be work', async () => {
     await node.getClipboardValue();
-    expect(mockSession.evaluate).toBeCalledTimes(2);
+    expect(mockSession.evaluate).toHaveBeenCalledTimes(2);
   });
 
   it('updatePresetChildren method should be work', () => {
@@ -310,12 +310,12 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
 
   it('setValue method should be work', async () => {
     await containerNode.setValue('test');
-    expect(mockSession.sendRequest).toBeCalledTimes(1);
+    expect(mockSession.sendRequest).toHaveBeenCalledTimes(1);
   });
 
   it('evaluate method should be work', async () => {
     await node.evaluate();
-    expect(mockSession.evaluate).toBeCalledTimes(1);
+    expect(mockSession.evaluate).toHaveBeenCalledTimes(1);
   });
 
   it('updatePresetChildren method should be work', () => {
@@ -346,6 +346,6 @@ describe('DebugHoverVariableRoot', () => {
 
   it('evaluate method should be work', async () => {
     await root.evaluate();
-    expect(mockSession.evaluate).toBeCalledTimes(1);
+    expect(mockSession.evaluate).toHaveBeenCalledTimes(1);
   });
 });

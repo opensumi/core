@@ -1,6 +1,6 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { URI } from '../../src';
-import { IOpenerService, IOpener } from '../../src/opener';
+import { IOpener, IOpenerService } from '../../src/opener';
 import { DefaultOpener } from '../../src/opener/default-opener';
 import { OpenerService } from '../../src/opener/opener.service';
 
@@ -45,8 +45,8 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
         scheme: 'bbb',
       }),
     );
-    expect(opener1.open).toBeCalledTimes(0);
-    expect(opener2.open).toBeCalledTimes(1);
+    expect(opener1.open).toHaveBeenCalledTimes(0);
+    expect(opener2.open).toHaveBeenCalledTimes(1);
   });
 
   it('open same opener when no returns', async () => {
@@ -65,8 +65,8 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
         scheme: 'aaa',
       }),
     );
-    expect(opener1.open).toBeCalledTimes(1);
-    expect(opener2.open).toBeCalledTimes(1);
+    expect(opener1.open).toHaveBeenCalledTimes(1);
+    expect(opener2.open).toHaveBeenCalledTimes(1);
   });
 
   it('open same opener when return true', async () => {
@@ -85,9 +85,9 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
         scheme: 'aaa',
       }),
     );
-    expect(opener1.open).toBeCalledTimes(1);
+    expect(opener1.open).toHaveBeenCalledTimes(1);
     // 如果前一个 opener 返回 true，则不会执行下面的 opener
-    expect(opener2.open).toBeCalledTimes(0);
+    expect(opener2.open).toHaveBeenCalledTimes(0);
   });
 
   it('use handleURI', async () => {
@@ -102,16 +102,16 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
         scheme: 'aaa',
       }),
     );
-    expect(opener1.open).toBeCalledTimes(1);
+    expect(opener1.open).toHaveBeenCalledTimes(1);
     // 使用 handleURI 后不会执行 handleScheme
-    expect(opener1.handleScheme).toBeCalledTimes(0);
+    expect(opener1.handleScheme).toHaveBeenCalledTimes(0);
   });
 
   it('use default opener', async () => {
     await openerService.open(URI.parse('alipays://app'));
     const defaultOpener = (openerService as any).defaultOpener;
-    expect(defaultOpener.open).toBeCalledTimes(1);
-    expect(defaultOpener.handleScheme).toBeCalledTimes(0);
+    expect(defaultOpener.open).toHaveBeenCalledTimes(1);
+    expect(defaultOpener.handleScheme).toHaveBeenCalledTimes(0);
   });
 
   it('dispose a opener', async () => {
@@ -132,8 +132,8 @@ describe('packages/core-browser/src/opener/opener.service.ts', () => {
         scheme: 'aaa',
       }),
     );
-    expect(opener1.open).toBeCalledTimes(0);
+    expect(opener1.open).toHaveBeenCalledTimes(0);
     // 前一个被 dispose 了，则会执行到 2
-    expect(opener2.open).toBeCalledTimes(1);
+    expect(opener2.open).toHaveBeenCalledTimes(1);
   });
 });

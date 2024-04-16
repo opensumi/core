@@ -61,6 +61,7 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
               const requestId = id++;
               ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
               enableCaptured && capture({ type: 'request', service: name, method: String(method), requestId, args });
+
               const listener = (event, id, error, result) => {
                 if (id === requestId) {
                   ElectronIpcRenderer.removeListener('response:' + name, listener);
@@ -81,7 +82,13 @@ export function createElectronMainApi(name: string, enableCaptured?: boolean): I
                     });
                 }
               };
-              ElectronIpcRenderer.on('response:' + name, listener);
+
+              switch (method) {
+                case 'dispose':
+                  return resolve(undefined);
+                default:
+                  ElectronIpcRenderer.on('response:' + name, listener);
+              }
             });
         }
         return target[method];

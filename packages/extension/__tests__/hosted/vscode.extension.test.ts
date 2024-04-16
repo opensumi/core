@@ -32,7 +32,7 @@ describe('extension/__tests__/hosted/vscode.extension.test.ts', () => {
     const exportsData2 = await extension.activate();
 
     // 激活插件函数只会调用一次
-    expect(mainThreadExtensionService.$activateExtension).toBeCalledTimes(1);
+    expect(mainThreadExtensionService.$activateExtension).toHaveBeenCalledTimes(1);
     // 两次导出的结果应该是相同的
     expect(exportsData1).toEqual(exportsData2);
   });

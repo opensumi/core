@@ -1,18 +1,18 @@
 import ReactDom from 'react-dom/client';
 
 import {
-  CommandRegistryImpl,
   CommandRegistry,
+  CommandRegistryImpl,
   IPreferenceSettingsService,
-  PreferenceScope,
-  KeybindingRegistryImpl,
   KeybindingRegistry,
+  KeybindingRegistryImpl,
+  PreferenceScope,
 } from '@opensumi/ide-core-browser';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
-import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
+import { IMenuItem, IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { NextToolbarRegistryImpl } from '@opensumi/ide-core-browser/src/toolbar/toolbar.registry';
 import { AppLifeCycleServiceToken, IAppLifeCycleService, IEventBus, LifeCyclePhase } from '@opensumi/ide-core-common';
-import { IActivationEventService, ExtensionBeforeActivateEvent } from '@opensumi/ide-extension/lib/browser/types';
+import { ExtensionBeforeActivateEvent, IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { TabbarService } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
@@ -27,9 +27,9 @@ import { SumiContributionsServiceToken } from '../../../src/browser/sumi/contrib
 import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
 import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../../src/browser/vscode/contributes';
 import {
+  AbstractExtensionManagementService,
   ExtensionService,
   IExtCommandManagement,
-  AbstractExtensionManagementService,
   IRequireInterceptorService,
 } from '../../../src/common';
 
@@ -262,7 +262,7 @@ describe('Extension service', () => {
 
       extensionService.restartExtProcess();
 
-      expect(extProcessRestartHandler).not.toBeCalled();
+      expect(extProcessRestartHandler).not.toHaveBeenCalled();
       expect(extensionService['isExtProcessWaitingForRestart']).toBeTruthy();
 
       /**
@@ -281,7 +281,7 @@ describe('Extension service', () => {
 
       document.dispatchEvent(visibilityChangeEvent);
 
-      expect(extProcessRestartHandler).toBeCalled();
+      expect(extProcessRestartHandler).toHaveBeenCalled();
     });
   });
 });

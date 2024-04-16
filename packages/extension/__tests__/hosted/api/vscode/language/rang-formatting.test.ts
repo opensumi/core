@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { createPatch, applyPatch } from 'diff';
+import { applyPatch, createPatch } from 'diff';
 import { readFile } from 'fs-extra';
 
 describe('range-formatting', () => {

@@ -32,9 +32,9 @@ describe('mock-injector test', () => {
       const a = injector.get(A);
       a.log(...args);
 
-      expect(fn1).toBeCalledTimes(0);
-      expect(fn2).toBeCalledTimes(1);
-      expect(fn2).toBeCalledWith(...args);
+      expect(fn1).toHaveBeenCalledTimes(0);
+      expect(fn2).toHaveBeenCalledTimes(1);
+      expect(fn2).toHaveBeenCalledWith(...args);
     });
 
     it('Can mock a created service', () => {
@@ -44,9 +44,9 @@ describe('mock-injector test', () => {
       injector.mock(A, 'log', fn2);
       a.log(...args);
 
-      expect(fn1).toBeCalledTimes(0);
-      expect(fn2).toBeCalledTimes(1);
-      expect(fn2).toBeCalledWith(...args);
+      expect(fn1).toHaveBeenCalledTimes(0);
+      expect(fn2).toHaveBeenCalledTimes(1);
+      expect(fn2).toHaveBeenCalledWith(...args);
     });
 
     it('Work as expected', () => {
@@ -54,8 +54,8 @@ describe('mock-injector test', () => {
       const a = injector.get(A);
       a.log(...args);
 
-      expect(fn1).toBeCalledTimes(1);
-      expect(fn1).toBeCalledWith(...args);
+      expect(fn1).toHaveBeenCalledTimes(1);
+      expect(fn1).toHaveBeenCalledWith(...args);
     });
   });
 
@@ -68,9 +68,9 @@ describe('mock-injector test', () => {
       const a = injector.get(A);
       a.log(...args);
 
-      expect(fn1).toBeCalledTimes(0);
-      expect(fn2).toBeCalledTimes(1);
-      expect(fn2).toBeCalledWith(...args);
+      expect(fn1).toHaveBeenCalledTimes(0);
+      expect(fn2).toHaveBeenCalledTimes(1);
+      expect(fn2).toHaveBeenCalledWith(...args);
     });
 
     it('Can mock service with the Injector created by `createNodeInjector` method', () => {
@@ -81,9 +81,9 @@ describe('mock-injector test', () => {
       const a = injector.get(A);
       a.log(...args);
 
-      expect(fn1).toBeCalledTimes(0);
-      expect(fn2).toBeCalledTimes(1);
-      expect(fn2).toBeCalledWith(...args);
+      expect(fn1).toHaveBeenCalledTimes(0);
+      expect(fn2).toHaveBeenCalledTimes(1);
+      expect(fn2).toHaveBeenCalledWith(...args);
     });
   });
 });

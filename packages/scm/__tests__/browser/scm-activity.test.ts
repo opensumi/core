@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@opensumi/di';
-import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
-import { MaybeNull, Uri, URI, Event, Emitter } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
+import { IStatusBarService, StatusBarAlignment } from '@opensumi/ide-core-browser/lib/services';
+import { Emitter, Event, MaybeNull, URI, Uri } from '@opensumi/ide-core-common';
+import { IResource, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -9,7 +9,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { SCMModule } from '../../src/browser';
 import { SCMBadgeController, SCMStatusBarController } from '../../src/browser/scm-activity';
 import { SCMService } from '../../src/common/scm.service';
-import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
+import { MockSCMProvider, MockSCMResource, MockSCMResourceGroup } from '../scm-test-util';
 
 jest.useFakeTimers();
 

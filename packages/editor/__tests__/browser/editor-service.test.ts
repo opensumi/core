@@ -1,19 +1,19 @@
 import { CorePreferences, IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser';
-import { URI, Disposable, createContributionProvider, IEventBus, Deferred } from '@opensumi/ide-core-common';
+import { Deferred, Disposable, IEventBus, URI, createContributionProvider } from '@opensumi/ide-core-common';
 import {
+  BrowserEditorContribution,
+  CodeEditorDidVisibleEvent,
   EditorComponentRegistry,
+  EditorGroupChangeEvent,
+  EditorOpenType,
+  EmptyDocCacheImpl,
   IEditorDecorationCollectionService,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
-  EmptyDocCacheImpl,
   IEditorFeatureRegistry,
-  BrowserEditorContribution,
-  EditorGroupChangeEvent,
-  CodeEditorDidVisibleEvent,
-  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
-import { isEditStack, isEOLStack } from '@opensumi/ide-editor/lib/browser/doc-model/editor-is-fn';
+import { isEOLStack, isEditStack } from '@opensumi/ide-editor/lib/browser/doc-model/editor-is-fn';
 import {
   EditorDocumentModelContentRegistryImpl,
   EditorDocumentModelServiceImpl,
@@ -24,13 +24,13 @@ import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/brow
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
 import { LanguageService } from '@opensumi/ide-editor/lib/browser/language/language.service';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { WorkbenchEditorServiceImpl, EditorGroup } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { EditorGroup, WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import {
   EditorCollectionService,
-  WorkbenchEditorService,
-  ResourceService,
-  ILanguageService,
   EditorGroupSplitAction,
+  ILanguageService,
+  ResourceService,
+  WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor/lib/common';
 import { MonacoService } from '@opensumi/ide-monaco';
@@ -45,11 +45,11 @@ import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 
 import {
+  TestEditorDocumentProvider,
+  TestResourceComponent,
   TestResourceProvider,
   TestResourceResolver,
-  TestEditorDocumentProvider,
   TestResourceResolver2,
-  TestResourceComponent,
   doNotClose,
 } from './test-providers';
 
@@ -212,7 +212,7 @@ describe('workbench editor service tests', () => {
 
     expect(editorService.currentResource).toBeDefined();
     expect(editorService.currentResource!.uri.toString()).toBe(testCodeUri.toString());
-    expect(listener).toBeCalled();
+    expect(listener).toHaveBeenCalled();
 
     await editorService.closeAll();
     disposer.dispose();
@@ -237,11 +237,11 @@ describe('workbench editor service tests', () => {
 
     await editorService.open(testCodeUri);
     await editorService.open(testLoadingCodeUri);
-    expect(listener).toBeCalledTimes(1);
+    expect(listener).toHaveBeenCalledTimes(1);
     await defered.promise;
   });
 
-  it('should be able to open component ', async () => {
+  it('should be able to open component', async () => {
     const testComponentUri = new URI('test://component');
     const listener = jest.fn();
     const disposer = (editorService.currentEditorGroup as EditorGroup).onDidEditorGroupBodyChanged(listener);
@@ -249,7 +249,7 @@ describe('workbench editor service tests', () => {
     await editorService.open(testComponentUri);
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
     expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.component);
-    expect(listener).toBeCalled();
+    expect(listener).toHaveBeenCalled();
 
     await editorService.closeAll();
 
@@ -292,7 +292,7 @@ describe('workbench editor service tests', () => {
       }),
     );
 
-    expect(focused).toBeCalled();
+    expect(focused).toHaveBeenCalled();
 
     await editorService.closeAll();
   });
@@ -385,7 +385,7 @@ describe('workbench editor service tests', () => {
 
     await (editorService.currentEditorGroup as EditorGroup).closeOthers(testCodeUri2);
 
-    expect(listener).toBeCalled();
+    expect(listener).toHaveBeenCalled();
 
     await editorService.closeAll();
     disposer.dispose();
@@ -406,7 +406,7 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
 
-    expect(listener).toBeCalledWith(
+    expect(listener).toHaveBeenCalledWith(
       expect.objectContaining({
         payload: expect.objectContaining({
           newResource: null,
@@ -428,7 +428,7 @@ describe('workbench editor service tests', () => {
 
     await editorService.close(testCodeUri);
 
-    expect(listener).toBeCalledWith(
+    expect(listener).toHaveBeenCalledWith(
       expect.objectContaining({
         payload: expect.objectContaining({
           newResource: null,

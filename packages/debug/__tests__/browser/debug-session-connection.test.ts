@@ -91,7 +91,7 @@ describe('DebugSessionConnection', () => {
   });
 
   it('first, create connection', () => {
-    expect(mockConnection.onceClose).toBeCalledTimes(1);
+    expect(mockConnection.onceClose).toHaveBeenCalledTimes(1);
   });
 
   it('send initialize command', async () => {
@@ -104,7 +104,7 @@ describe('DebugSessionConnection', () => {
         request: 'node-debug',
       },
     );
-    expect(mockConnection.send).toBeCalledTimes(1);
+    expect(mockConnection.send).toHaveBeenCalledTimes(1);
     mockConnection.send.mockClear();
   });
 
@@ -125,14 +125,14 @@ describe('DebugSessionConnection', () => {
         request: 'node-debug',
       },
     );
-    expect(mockConnection.send).toBeCalledTimes(1);
+    expect(mockConnection.send).toHaveBeenCalledTimes(1);
     mockConnection.send.mockClear();
     await defered.promise;
   });
 
   it('send custom request', async () => {
     await debugSessionConnection.sendCustomRequest('abc', {});
-    expect(mockConnection.send).toBeCalledTimes(1);
+    expect(mockConnection.send).toHaveBeenCalledTimes(1);
   });
 
   it('handle request message', (done) => {
@@ -175,72 +175,75 @@ describe('DebugSessionConnection', () => {
     );
   });
 
-  it('handle cancel request', async () => {
-    jest.setTimeout(20000);
-    const threadId = 10086;
-    const delayDebugSessionConnection = injector.get(DebugSessionConnection, [
-      '10010',
-      async (sessionId: string) =>
-        ({
-          onceClose: jest.fn(),
-          onMessage: messageEmitter.event,
-          sessionId: 10010,
-          send: jest.fn(async (request: string) => {
-            const requestJson: DebugProtocol.Request = JSON.parse(request);
-            for (let i = 0; i < 30; i++) {
-              await sleep(100);
-              if (requestJson && cancelationTokensMap.get(requestJson.seq)) {
-                messageEmitter.fire(
-                  JSON.stringify({
-                    type: 'response',
-                    request_seq: requestJson.seq,
-                    body: {
-                      threads: ['TQL'],
-                    },
-                    success: true,
-                  }),
-                );
-                return;
+  it(
+    'handle cancel request',
+    async () => {
+      const threadId = 10086;
+      const delayDebugSessionConnection = injector.get(DebugSessionConnection, [
+        '10010',
+        async (sessionId: string) =>
+          ({
+            onceClose: jest.fn(),
+            onMessage: messageEmitter.event,
+            sessionId: 10010,
+            send: jest.fn(async (request: string) => {
+              const requestJson: DebugProtocol.Request = JSON.parse(request);
+              for (let i = 0; i < 30; i++) {
+                await sleep(100);
+                if (requestJson && cancelationTokensMap.get(requestJson.seq)) {
+                  messageEmitter.fire(
+                    JSON.stringify({
+                      type: 'response',
+                      request_seq: requestJson.seq,
+                      body: {
+                        threads: ['TQL'],
+                      },
+                      success: true,
+                    }),
+                  );
+                  return;
+                }
               }
-            }
-            messageEmitter.fire(
-              JSON.stringify({
-                type: 'response',
-                request_seq: requestJson.seq,
-                body: {
-                  threads: ['TQL', 'TQL', 'TQL', 'TQL', 'TQL'],
-                },
-                success: true,
-              }),
-            );
-          }),
-        } as any),
-      traceOutputChannel,
-    ]);
+              messageEmitter.fire(
+                JSON.stringify({
+                  type: 'response',
+                  request_seq: requestJson.seq,
+                  body: {
+                    threads: ['TQL', 'TQL', 'TQL', 'TQL', 'TQL'],
+                  },
+                  success: true,
+                }),
+              );
+            }),
+          } as any),
+        traceOutputChannel,
+      ]);
 
-    const requestToken = getNewCancellationToken(threadId);
+      const requestToken = getNewCancellationToken(threadId);
 
-    delayDebugSessionConnection
-      .sendRequest(
-        'threads',
-        {},
-        {
-          type: 'node',
-          name: 'test',
-          request: 'node-debug',
-        },
-        requestToken,
-      )
-      .then((result) => {
-        const {
-          body: { threads },
-        } = result as DebugProtocol.ThreadsResponse;
-        expect(threads.length).toBe(1);
-      });
+      delayDebugSessionConnection
+        .sendRequest(
+          'threads',
+          {},
+          {
+            type: 'node',
+            name: 'test',
+            request: 'node-debug',
+          },
+          requestToken,
+        )
+        .then((result) => {
+          const {
+            body: { threads },
+          } = result as DebugProtocol.ThreadsResponse;
+          expect(threads.length).toBe(1);
+        });
 
-    await sleep(500);
+      await sleep(500);
 
-    cancellationRequestMap.forEach((c) => c.forEach((t) => t.cancel()));
-    cancellationRequestMap.clear();
-  });
+      cancellationRequestMap.forEach((c) => c.forEach((t) => t.cancel()));
+      cancellationRequestMap.clear();
+    },
+    20 * 1000,
+  );
 });

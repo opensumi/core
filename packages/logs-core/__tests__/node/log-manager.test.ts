@@ -8,7 +8,7 @@ import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
-import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
+import { ILogServiceManager, LogLevel, SupportLogNamespace } from '../../src/common';
 import { LogServiceModule } from '../../src/node';
 
 let track;

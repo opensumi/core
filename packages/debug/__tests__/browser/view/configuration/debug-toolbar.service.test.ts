@@ -1,4 +1,4 @@
-import { IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { EventBusImpl, IEventBus } from '@opensumi/ide-core-common';
 import { DebugToolbarService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
 import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -67,47 +67,47 @@ describe('Debug Configuration Service', () => {
   });
 
   it('should init success', () => {
-    expect(mockDebugViewModel.onDidChange).toBeCalledTimes(1);
+    expect(mockDebugViewModel.onDidChange).toHaveBeenCalledTimes(1);
   });
 
   it('onStart method should be work', () => {
     debugToolbarService.doStart();
-    expect(mockDebugViewModel.start).toBeCalledTimes(1);
+    expect(mockDebugViewModel.start).toHaveBeenCalledTimes(1);
   });
 
   it('doRestart method should be work', async () => {
     await debugToolbarService.doRestart();
-    expect(mockDebugViewModel.restart).toBeCalledTimes(1);
+    expect(mockDebugViewModel.restart).toHaveBeenCalledTimes(1);
   });
 
   it('doStop method should be work', async () => {
     await debugToolbarService.doStop();
-    expect(mockDebugViewModel.currentSession.terminate).toBeCalledTimes(1);
+    expect(mockDebugViewModel.currentSession.terminate).toHaveBeenCalledTimes(1);
   });
 
   it('doContinue method should be work', async () => {
     await debugToolbarService.doContinue();
-    expect(mockDebugViewModel.currentThread.continue).toBeCalledTimes(1);
+    expect(mockDebugViewModel.currentThread.continue).toHaveBeenCalledTimes(1);
   });
 
   it('doPause method should be work', async () => {
     await debugToolbarService.doPause();
-    expect(mockDebugViewModel.currentThread.pause).toBeCalledTimes(1);
+    expect(mockDebugViewModel.currentThread.pause).toHaveBeenCalledTimes(1);
   });
 
   it('doStepIn method should be work', async () => {
     await debugToolbarService.doStepIn();
-    expect(mockDebugViewModel.currentThread.stepIn).toBeCalledTimes(1);
+    expect(mockDebugViewModel.currentThread.stepIn).toHaveBeenCalledTimes(1);
   });
 
   it('doStepOver method should be work', async () => {
     await debugToolbarService.doStepOver();
-    expect(mockDebugViewModel.currentThread.stepOver).toBeCalledTimes(1);
+    expect(mockDebugViewModel.currentThread.stepOver).toHaveBeenCalledTimes(1);
   });
 
   it('doStepOut method should be work', async () => {
     await debugToolbarService.doStepOut();
-    expect(mockDebugViewModel.currentThread.stepOut).toBeCalledTimes(1);
+    expect(mockDebugViewModel.currentThread.stepOut).toHaveBeenCalledTimes(1);
   });
 
   it('updateCurrentSession method should be work', () => {

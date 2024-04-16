@@ -1,4 +1,6 @@
 import { Injectable, Injector } from '@opensumi/di';
+import { MockLogger, MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { BrowserModule } from '@opensumi/ide-core-browser/lib/browser-module';
 import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
@@ -14,10 +16,7 @@ import {
   OS,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-
-import { MockLogger, MockLoggerManageClient, MockLoggerService } from '../../../packages/core-browser/__mocks__/logger';
-import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';
-import { MockContextKeyService } from '../../../packages/monaco/__mocks__/monaco.context-key.service';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 
 import { MockInjector } from './mock-injector';
 
@@ -129,8 +128,6 @@ function getBrowserMockInjector() {
 export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
   const injector = inj || getBrowserMockInjector();
   const app = new ClientApp({ modules, injector } as any);
-  afterAll(() => {
-    app.injector.disposeAll();
-  });
+
   return app.injector as MockInjector;
 }

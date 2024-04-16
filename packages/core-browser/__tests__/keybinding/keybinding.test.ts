@@ -1,11 +1,11 @@
 import {
+  BrowserKeyboardLayoutImpl,
   IContextKeyService,
+  Keybinding,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingRegistryImpl,
-  Keybinding,
   KeybindingScope,
-  BrowserKeyboardLayoutImpl,
   KeybindingService,
   SpecialCases,
 } from '@opensumi/ide-core-browser';
@@ -16,10 +16,10 @@ import {
 import {
   ContextKeyDefinedExpr,
   ContextKeyEqualsExpr,
+  ContextKeyExpr,
   ContextKeyNotEqualsExpr,
   ContextKeyNotExpr,
   ContextKeyRegexExpr,
-  ContextKeyExpr,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -471,7 +471,7 @@ describe('KeybindingService', () => {
       (ctrlSEvent as any).character = 's';
       (ctrlSEvent as any).ctrlKey = true;
       keybindingService.run(ctrlSEvent as any);
-      expect(testFn).toBeCalled();
+      expect(testFn).toHaveBeenCalled();
       handle.dispose();
     });
   });

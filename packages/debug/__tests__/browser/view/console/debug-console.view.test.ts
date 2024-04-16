@@ -1,14 +1,14 @@
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { SimpleConnection } from '@opensumi/ide-connection/lib/common/connection/drivers/simple';
-import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IContextKeyService, IFileServiceClient } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import {
   DebugModelFactory,
-  IDebugServer,
-  IDebugSessionManager,
-  IDebugSession,
   DebugSessionOptions,
+  IDebugServer,
+  IDebugSession,
+  IDebugSessionManager,
 } from '@opensumi/ide-debug';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
@@ -158,7 +158,7 @@ describe('Debug console component Test Suites', () => {
     await tree.execute('KTTQL\n');
     await tree.execute('KATATAQAL\n');
     await tree.execute('🐜\n');
-    expect(ensureVisible).toBeCalledTimes(5);
+    expect(ensureVisible).toHaveBeenCalledTimes(5);
     const filterString = 'KTTQL';
     debugConsoleFilterService.onDidValueChange((event) => {
       expect(event).toBe(filterString);

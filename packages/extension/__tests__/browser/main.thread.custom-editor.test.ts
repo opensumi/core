@@ -1,22 +1,22 @@
-import { IEventBus, URI, CancellationTokenSource } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, IEventBus, URI } from '@opensumi/ide-core-common';
 import { ResourceDecorationNeedChangeEvent } from '@opensumi/ide-editor/lib/browser/types';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { MainThreadWebview } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.api.webview';
 import { MainThreadCustomEditor } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.custom-editor';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import {
-  IExtHostCustomEditor,
-  CustomEditorType,
   CustomEditorOptionChangeEvent,
   CustomEditorShouldDisplayEvent,
   CustomEditorShouldEditEvent,
-  CustomEditorShouldSaveEvent,
   CustomEditorShouldRevertEvent,
+  CustomEditorShouldSaveEvent,
+  CustomEditorType,
+  IExtHostCustomEditor,
 } from '@opensumi/ide-extension/lib/common/vscode/custom-editor';
 import { IWebviewService } from '@opensumi/ide-webview/lib/browser/types';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { mockService, MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 
 const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
@@ -70,7 +70,7 @@ describe('MainThread CustomEditor Test', () => {
 
     await mainThread.$registerCustomEditor(viewType, CustomEditorType.TextEditor, {}, testExtInfo);
 
-    expect(CustomEditorOptionChangeEventListener).toBeCalled();
+    expect(CustomEditorOptionChangeEventListener).toHaveBeenCalled();
 
     const fileUri = new URI('file:///test/test1.json');
     const webviewPanelId = 'test_webviewPanel_Id';
@@ -114,7 +114,7 @@ describe('MainThread CustomEditor Test', () => {
       }),
     );
 
-    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toBeCalledWith(
+    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toHaveBeenCalledWith(
       webview,
       {
         uri: fileUri,
@@ -141,7 +141,7 @@ describe('MainThread CustomEditor Test', () => {
 
     await mainThread.$registerCustomEditor(viewType, CustomEditorType.FullEditor, {}, testExtInfo);
 
-    expect(CustomEditorOptionChangeEventListener).toBeCalled();
+    expect(CustomEditorOptionChangeEventListener).toHaveBeenCalled();
 
     const fileUri = new URI('file:///test/test2.json');
     const webviewPanelId = 'test_webviewPanel_Id2';
@@ -170,7 +170,7 @@ describe('MainThread CustomEditor Test', () => {
       }),
     );
 
-    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toBeCalledWith(
+    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toHaveBeenCalledWith(
       webview,
       {
         uri: fileUri,
@@ -190,7 +190,7 @@ describe('MainThread CustomEditor Test', () => {
       }),
     );
 
-    expect(extHost.$undo).toBeCalledWith(viewType, fileUri.codeUri);
+    expect(extHost.$undo).toHaveBeenCalledWith(viewType, fileUri.codeUri);
 
     // 用户执行一次 redo
     await eventBus.fireAndAwait(
@@ -201,7 +201,7 @@ describe('MainThread CustomEditor Test', () => {
       }),
     );
 
-    expect(extHost.$redo).toBeCalledWith(viewType, fileUri.codeUri);
+    expect(extHost.$redo).toHaveBeenCalledWith(viewType, fileUri.codeUri);
 
     // 用户执行一次 save
     await eventBus.fireAndAwait(
@@ -212,7 +212,7 @@ describe('MainThread CustomEditor Test', () => {
       }),
     );
 
-    expect(extHost.$saveCustomDocument).toBeCalledWith(viewType, fileUri.codeUri, expect.anything());
+    expect(extHost.$saveCustomDocument).toHaveBeenCalledWith(viewType, fileUri.codeUri, expect.anything());
 
     // 用户执行一次 revert
     await eventBus.fireAndAwait(
@@ -223,14 +223,14 @@ describe('MainThread CustomEditor Test', () => {
       }),
     );
 
-    expect(extHost.$revertCustomDocument).toBeCalledWith(viewType, fileUri.codeUri, expect.anything());
+    expect(extHost.$revertCustomDocument).toHaveBeenCalledWith(viewType, fileUri.codeUri, expect.anything());
 
     // extHost 进程报告一次 dirty
     const ResourceDecorationNeedUpdateListener = jest.fn();
     eventBus.on(ResourceDecorationNeedChangeEvent, ResourceDecorationNeedUpdateListener);
 
     mainThread.$acceptCustomDocumentDirty(fileUri.codeUri, true);
-    expect(ResourceDecorationNeedUpdateListener).toBeCalledWith(
+    expect(ResourceDecorationNeedUpdateListener).toHaveBeenCalledWith(
       expect.objectContaining({
         payload: {
           uri: fileUri,
@@ -243,7 +243,7 @@ describe('MainThread CustomEditor Test', () => {
 
     ResourceDecorationNeedUpdateListener.mockClear();
     mainThread.$acceptCustomDocumentDirty(fileUri.codeUri, false);
-    expect(ResourceDecorationNeedUpdateListener).toBeCalledWith(
+    expect(ResourceDecorationNeedUpdateListener).toHaveBeenCalledWith(
       expect.objectContaining({
         payload: {
           uri: fileUri,

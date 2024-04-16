@@ -8,7 +8,7 @@ import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.com
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 
-describe('MainThreadCommandAPI Test Suites ', () => {
+describe('MainThreadCommandAPI Test Suites', () => {
   let extHostCommands: ExtHostCommands;
   let mainThreadCommands: MainThreadCommands;
   const injector = createBrowserInjector([]);
@@ -61,7 +61,7 @@ describe('MainThreadCommandAPI Test Suites ', () => {
     extHostCommands.executeCommand(commandId);
     setTimeout(() => {
       // 插件进程可以执行前端的命令
-      expect(commandHandle).toBeCalledTimes(1);
+      expect(commandHandle).toHaveBeenCalledTimes(1);
       done();
     }, 50);
   });
@@ -82,8 +82,8 @@ describe('MainThreadCommandAPI Test Suites ', () => {
     extHostCommands.executeCommand(commandId);
     setTimeout(() => {
       // 插件进程执行命令时，会覆盖前端注册的命令
-      expect(mainCommandHandle).toBeCalledTimes(0);
-      expect(extCommandHandle).toBeCalledTimes(1);
+      expect(mainCommandHandle).toHaveBeenCalledTimes(0);
+      expect(extCommandHandle).toHaveBeenCalledTimes(1);
       done();
     }, 50);
   });

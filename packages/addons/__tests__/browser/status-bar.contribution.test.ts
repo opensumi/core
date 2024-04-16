@@ -1,9 +1,9 @@
 import {
-  CommandService,
-  IEventBus,
-  EventBusImpl,
   BrowserConnectionCloseEvent,
   BrowserConnectionOpenEvent,
+  CommandService,
+  EventBusImpl,
+  IEventBus,
 } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -44,13 +44,16 @@ describe('test for browser/status-bar-contribution.ts', () => {
 
   it('handle BrowserConnectionOpenEvent event', () => {
     eventBus.fire(new BrowserConnectionOpenEvent());
-    expect(fakeExecCmd).toBeCalledTimes(1);
-    expect(fakeExecCmd).toBeCalledWith('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
+    expect(fakeExecCmd).toHaveBeenCalledTimes(1);
+    expect(fakeExecCmd).toHaveBeenCalledWith('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
   });
 
   it('handle BrowserConnectionCloseEvent event', () => {
     eventBus.fire(new BrowserConnectionCloseEvent());
-    expect(fakeExecCmd).toBeCalledTimes(1);
-    expect(fakeExecCmd).toBeCalledWith('statusbar.changeBackgroundColor', 'var(--kt-statusbar-offline-background)');
+    expect(fakeExecCmd).toHaveBeenCalledTimes(1);
+    expect(fakeExecCmd).toHaveBeenCalledWith(
+      'statusbar.changeBackgroundColor',
+      'var(--kt-statusbar-offline-background)',
+    );
   });
 });

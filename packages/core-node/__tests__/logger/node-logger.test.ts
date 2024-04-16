@@ -1,7 +1,7 @@
 import { ILogServiceManager, LogLevel } from '@opensumi/ide-core-common';
 import { INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
-
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 describe('NodeLogger', () => {
@@ -55,42 +55,42 @@ describe('NodeLogger', () => {
   test('error', () => {
     const message = 'hello';
     logger.error(message);
-    expect(mockLogServiceManager.error).toBeCalledWith(message);
+    expect(mockLogServiceManager.error).toHaveBeenCalledWith(message);
   });
 
   test('log', () => {
     const message = 'hello';
     logger.log(message);
-    expect(mockLogServiceManager.log).toBeCalledWith(message);
+    expect(mockLogServiceManager.log).toHaveBeenCalledWith(message);
   });
 
   test('warn', () => {
     const message = 'hello';
     logger.warn(message);
-    expect(mockLogServiceManager.warn).toBeCalledWith(message);
+    expect(mockLogServiceManager.warn).toHaveBeenCalledWith(message);
   });
 
   test('debug', () => {
     const message = 'hello';
     logger.debug(message);
-    expect(mockLogServiceManager.debug).toBeCalledWith(message);
+    expect(mockLogServiceManager.debug).toHaveBeenCalledWith(message);
   });
 
   test('verbose', () => {
     const message = 'hello';
     logger.verbose(message);
-    expect(mockLogServiceManager.verbose).toBeCalledWith(message);
+    expect(mockLogServiceManager.verbose).toHaveBeenCalledWith(message);
   });
 
   test('critical', () => {
     const message = 'hello';
     logger.critical(message);
-    expect(mockLogServiceManager.critical).toBeCalledWith(message);
+    expect(mockLogServiceManager.critical).toHaveBeenCalledWith(message);
   });
 
   test('dispose', () => {
     logger.dispose();
-    expect(mockLogServiceManager.dispose).toBeCalledWith();
+    expect(mockLogServiceManager.dispose).toHaveBeenCalledWith();
   });
 
   test('setOptions', () => {
@@ -99,32 +99,32 @@ describe('NodeLogger', () => {
       logLevel: LogLevel.Error,
     };
     logger.setOptions(options);
-    expect(mockLogServiceManager.setOptions).toBeCalledWith(options);
+    expect(mockLogServiceManager.setOptions).toHaveBeenCalledWith(options);
   });
 
   test('sendLog', () => {
     const message = 'hello';
     logger.sendLog(LogLevel.Error, message);
-    expect(mockLogServiceManager.sendLog).toBeCalledWith(LogLevel.Error, message);
+    expect(mockLogServiceManager.sendLog).toHaveBeenCalledWith(LogLevel.Error, message);
   });
 
   test('drop', () => {
     logger.drop();
-    expect(mockLogServiceManager.drop).toBeCalled();
+    expect(mockLogServiceManager.drop).toHaveBeenCalled();
   });
 
   test('flush', () => {
     logger.flush();
-    expect(mockLogServiceManager.flush).toBeCalled();
+    expect(mockLogServiceManager.flush).toHaveBeenCalled();
   });
 
   test('getLevel', () => {
     logger.getLevel();
-    expect(mockLogServiceManager.getLevel).toBeCalled();
+    expect(mockLogServiceManager.getLevel).toHaveBeenCalled();
   });
 
   test('setLevel', () => {
     logger.setLevel(LogLevel.Error);
-    expect(mockLogServiceManager.setLevel).toBeCalledWith(LogLevel.Error);
+    expect(mockLogServiceManager.setLevel).toHaveBeenCalledWith(LogLevel.Error);
   });
 });

@@ -73,8 +73,8 @@ describe('LocalStorageDocCacheImpl', () => {
     const newContent = uniqueId('content');
     docModel.getMonacoModel().setValue(newContent);
 
-    expect(setDataSpy).toBeCalledTimes(1);
-    expect(setDataSpy).toBeCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, {
+    expect(setDataSpy).toHaveBeenCalledTimes(1);
+    expect(setDataSpy).toHaveBeenCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, {
       path: '',
       startMD5: hashCalculateService.calculate(content),
       changeMatrix: [[[newContent, 1, 1, 1, 9]]],
@@ -89,7 +89,7 @@ describe('LocalStorageDocCacheImpl', () => {
     const newContent = uniqueId('content');
     docModel.getMonacoModel().setValue(newContent);
 
-    expect(setDataSpy).toBeCalledTimes(1);
-    expect(setDataSpy).toBeCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, undefined);
+    expect(setDataSpy).toHaveBeenCalledTimes(1);
+    expect(setDataSpy).toHaveBeenCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, undefined);
   });
 });

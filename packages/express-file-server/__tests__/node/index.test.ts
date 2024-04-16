@@ -4,7 +4,7 @@ import path from 'path';
 import Koa from 'koa';
 import fetch from 'node-fetch';
 
-import { IServerApp, AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig, IServerApp } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { ExpressFileServerModule } from '../../src/node';

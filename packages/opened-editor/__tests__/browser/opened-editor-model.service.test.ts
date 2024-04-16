@@ -1,14 +1,14 @@
-import { URI, Disposable, IContextKeyService, StorageProvider } from '@opensumi/ide-core-browser';
+import { Disposable, IContextKeyService, StorageProvider, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IDecorationsService } from '@opensumi/ide-decoration';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { createMockedMonaco } from '@opensumi/ide-monaco/__mocks__/monaco';
+import { MockContextKeyService } from '@opensumi/ide-monaco/__mocks__/monaco.context-key.service';
 import { IThemeService } from '@opensumi/ide-theme';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import styles from '../../src/browser/file-tree-node.modules.less';
 import { EditorFile, EditorFileGroup } from '../../src/browser/opened-editor-node.define';
 import { OpenedEditorDecorationService } from '../../src/browser/services/opened-editor-decoration.service';
@@ -145,9 +145,9 @@ describe('OpenedEditorModelService should be work', () => {
   });
 
   it('should init success', () => {
-    expect(mockLabelService.onDidChange).toBeCalledTimes(1);
-    expect(mockThemeService.onThemeChange).toBeCalledTimes(1);
-    expect(mockDecorationsService.onDidChangeDecorations).toBeCalledTimes(1);
+    expect(mockLabelService.onDidChange).toHaveBeenCalledTimes(1);
+    expect(mockThemeService.onThemeChange).toHaveBeenCalledTimes(1);
+    expect(mockDecorationsService.onDidChangeDecorations).toHaveBeenCalledTimes(1);
     expect(openedEditorModelService.treeModel).toBeDefined();
   });
 
@@ -216,8 +216,8 @@ describe('OpenedEditorModelService should be work', () => {
       },
     } as any;
     openedEditorModelService.handleContextMenu(mockEvent, node);
-    expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
-    expect(mockEvent.stopPropagation).toBeCalledTimes(1);
-    expect(mockEvent.preventDefault).toBeCalledTimes(1);
+    expect(mockCtxMenuRenderer.show).toHaveBeenCalledTimes(1);
+    expect(mockEvent.stopPropagation).toHaveBeenCalledTimes(1);
+    expect(mockEvent.preventDefault).toHaveBeenCalledTimes(1);
   });
 });

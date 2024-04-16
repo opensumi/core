@@ -69,9 +69,9 @@ describe('DebugWatch Model', () => {
 
     it('Should have enough values', async () => {
       await debugWatch.whenReady;
-      expect(debugManager.onDidStopDebugSession).toBeCalledTimes(1);
-      expect(debugManager.onDidDestroyDebugSession).toBeCalledTimes(1);
-      expect(debugManager.onDidChangeActiveDebugSession).toBeCalledTimes(1);
+      expect(debugManager.onDidStopDebugSession).toHaveBeenCalledTimes(1);
+      expect(debugManager.onDidDestroyDebugSession).toHaveBeenCalledTimes(1);
+      expect(debugManager.onDidChangeActiveDebugSession).toHaveBeenCalledTimes(1);
     });
 
     it('addWatchExpression method should be work', async () => {

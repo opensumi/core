@@ -1,15 +1,15 @@
 import {
   AppConfig,
-  SlotLocation,
-  ComponentRegistry,
   CommandRegistry,
+  ComponentRegistry,
   KeybindingRegistry,
+  SlotLocation,
   arrays,
   electronEnv,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { WorkbenchEditorService, ResourceService } from '@opensumi/ide-editor';
+import { ResourceService, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -39,7 +39,7 @@ describe('electron basic contribution test', () => {
     const appConfig = injector.get(AppConfig) as AppConfig;
     expect(appConfig.layoutConfig[SlotLocation.top].modules[0]).toBe('electron-header');
 
-    expect(registry.register).toBeCalledTimes(1);
+    expect(registry.register).toHaveBeenCalledTimes(1);
   });
 
   it('menu register', () => {
@@ -55,7 +55,7 @@ describe('electron basic contribution test', () => {
 
     contribution.registerMenus(registry);
 
-    expect(registry.registerMenuItem).toBeCalled();
+    expect(registry.registerMenuItem).toHaveBeenCalled();
   });
 
   it('command register', async () => {
@@ -75,7 +75,7 @@ describe('electron basic contribution test', () => {
 
     contribution.registerCommands(registry);
 
-    expect(registry.registerCommand).toBeCalled();
+    expect(registry.registerCommand).toHaveBeenCalled();
 
     await Promise.all(
       commands.map(async (c) => {
@@ -93,7 +93,7 @@ describe('electron basic contribution test', () => {
 
     contribution.registerKeybindings(registry);
 
-    expect(registry.registerKeybinding).toBeCalled();
+    expect(registry.registerKeybinding).toHaveBeenCalled();
   });
 });
 
@@ -110,11 +110,11 @@ describe('native dialog test', () => {
     const dialogService = injector.get(ElectronNativeDialogService);
     const optionA = {};
     dialogService.showOpenDialog(optionA);
-    expect(injector.get(IElectronMainUIService).showOpenDialog).toBeCalledWith(windowId, optionA);
+    expect(injector.get(IElectronMainUIService).showOpenDialog).toHaveBeenCalledWith(windowId, optionA);
 
     const optionB = {};
     dialogService.showSaveDialog(optionB);
-    expect(injector.get(IElectronMainUIService).showSaveDialog).toBeCalledWith(windowId, optionB);
+    expect(injector.get(IElectronMainUIService).showSaveDialog).toHaveBeenCalledWith(windowId, optionB);
   });
 });
 
@@ -137,13 +137,13 @@ describe('welcomeContribution test', () => {
     const resourceService: ResourceService = mockService({});
 
     contribution.registerEditorComponent(editorComponentRegistry);
-    expect(editorComponentRegistry.registerEditorComponent).toBeCalled();
-    expect(editorComponentRegistry.registerEditorComponentResolver).toBeCalled();
+    expect(editorComponentRegistry.registerEditorComponent).toHaveBeenCalled();
+    expect(editorComponentRegistry.registerEditorComponentResolver).toHaveBeenCalled();
 
     contribution.registerResource(resourceService);
-    expect(resourceService.registerResourceProvider).toBeCalled();
+    expect(resourceService.registerResourceProvider).toHaveBeenCalled();
 
     contribution.onDidStart();
-    expect(injector.get(WorkbenchEditorService).open).toBeCalled();
+    expect(injector.get(WorkbenchEditorService).open).toHaveBeenCalled();
   });
 });

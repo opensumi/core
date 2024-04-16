@@ -1,7 +1,7 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { SemanticTokenRegistryImpl } from '../../src/browser/semantic-tokens-registry';
-import { getStylingSchemeEntry, ISemanticTokenRegistry } from '../../src/common/semantic-tokens-registry';
+import { ISemanticTokenRegistry, getStylingSchemeEntry } from '../../src/common/semantic-tokens-registry';
 
 describe('Semantic Tokens Registry', () => {
   let injector: MockInjector;

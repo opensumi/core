@@ -1,6 +1,6 @@
-import { URI, Uri, Event, Emitter, Sequence, ISplice } from '@opensumi/ide-core-common';
+import { Emitter, Event, ISplice, Sequence, URI, Uri } from '@opensumi/ide-core-common';
 
-import { ISCMProvider, ISCMResourceGroup, ISCMResource, VSCommand } from '../src/common';
+import { ISCMProvider, ISCMResource, ISCMResourceGroup, VSCommand } from '../src/common';
 
 // use the `git scheme` from vscode.git
 export function toGitUri(uri: Uri, ref: string): Uri {

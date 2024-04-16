@@ -1,10 +1,10 @@
-import { QuickOpenService, VariableRegistry, Variable, URI } from '@opensumi/ide-core-browser';
+import { QuickOpenService, URI, Variable, VariableRegistry } from '@opensumi/ide-core-browser';
 import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { VariableModule } from '../../src/browser';
-import { VariableQuickOpenService, VariableQuickOpenItem } from '../../src/browser/variable-quick-open.service';
+import { VariableQuickOpenItem, VariableQuickOpenService } from '../../src/browser/variable-quick-open.service';
 
 describe('VariableQuickOpenService should be work', () => {
   let variableQuickOpenService: VariableQuickOpenService;
@@ -54,7 +54,7 @@ describe('VariableQuickOpenService should be work', () => {
       // hack test, cause the mock quickOpen Service will not call it.
       const mockAcceptor = jest.fn();
       variableQuickOpenService.onType('', mockAcceptor);
-      expect(mockAcceptor).toBeCalledTimes(1);
+      expect(mockAcceptor).toHaveBeenCalledTimes(1);
     });
 
     it('VariableQuickOpenItem should be right', () => {

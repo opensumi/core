@@ -1,13 +1,13 @@
 import { TreeNodeType } from '@opensumi/ide-components';
 import {
-  URI,
-  Disposable,
-  IContextKeyService,
-  StorageProvider,
-  IApplicationService,
-  Emitter,
-  OS,
   CommandRegistry,
+  Disposable,
+  Emitter,
+  IApplicationService,
+  IContextKeyService,
+  OS,
+  StorageProvider,
+  URI,
 } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -18,9 +18,10 @@ import { IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/services/file-tree-model.service';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -28,7 +29,6 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import styles from '../../src/browser/file-tree-node.modules.less';
 import { Directory, File } from '../../src/common/file-tree-node.define';
-import { RETRACT_BOTTOM_PANEL } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 
 class TempDirectory {}
 class TempFile {}
@@ -220,12 +220,12 @@ describe('FileTreeModelService should be work', () => {
   });
 
   it('should init success', () => {
-    expect(mockLabelService.onDidChange).toBeCalledTimes(1);
-    expect(mockFileTreeService.onNodeRefreshed).toBeCalledTimes(1);
-    expect(mockFileTreeService.onWorkspaceChange).toBeCalledTimes(1);
-    expect(mockFileTreeService.startWatchFileEvent).toBeCalledTimes(1);
-    expect(mockThemeService.onThemeChange).toBeCalledTimes(1);
-    expect(mockDecorationsService.onDidChangeDecorations).toBeCalledTimes(1);
+    expect(mockLabelService.onDidChange).toHaveBeenCalledTimes(1);
+    expect(mockFileTreeService.onNodeRefreshed).toHaveBeenCalledTimes(1);
+    expect(mockFileTreeService.onWorkspaceChange).toHaveBeenCalledTimes(1);
+    expect(mockFileTreeService.startWatchFileEvent).toHaveBeenCalledTimes(1);
+    expect(mockThemeService.onThemeChange).toHaveBeenCalledTimes(1);
+    expect(mockDecorationsService.onDidChangeDecorations).toHaveBeenCalledTimes(1);
     expect(fileTreeModelService.onDidFocusedFileChange).toBeDefined();
     expect(fileTreeModelService.onDidSelectedFileChange).toBeDefined();
     expect(fileTreeModelService.treeModel).toBeDefined();
@@ -369,10 +369,10 @@ describe('FileTreeModelService should be work', () => {
     let mockNode = { expanded: false };
     fileTreeModelService.handleTreeHandler(treeHandle);
     await fileTreeModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.expandNode).toBeCalledTimes(1);
+    expect(treeHandle.expandNode).toHaveBeenCalledTimes(1);
     mockNode = { expanded: true };
     await fileTreeModelService.toggleDirectory(mockNode as any);
-    expect(treeHandle.collapseNode).toBeCalledTimes(1);
+    expect(treeHandle.collapseNode).toHaveBeenCalledTimes(1);
   });
 
   it('handleContextMenu method should be work', () => {
@@ -386,9 +386,9 @@ describe('FileTreeModelService should be work', () => {
       },
     } as any;
     fileTreeModelService.handleContextMenu(mockEvent, mockNode);
-    expect(mockCtxMenuRenderer.show).toBeCalledTimes(1);
-    expect(mockEvent.stopPropagation).toBeCalledTimes(1);
-    expect(mockEvent.preventDefault).toBeCalledTimes(1);
+    expect(mockCtxMenuRenderer.show).toHaveBeenCalledTimes(1);
+    expect(mockEvent.stopPropagation).toHaveBeenCalledTimes(1);
+    expect(mockEvent.preventDefault).toHaveBeenCalledTimes(1);
   });
 
   it('should set correct context key', () => {
@@ -425,11 +425,11 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService.activeFileDecoration(directory);
     fileTreeModelService.handleTreeHandler(treeHandle);
     await fileTreeModelService.toggleOrOpenCurrentFile();
-    expect(treeHandle.expandNode).toBeCalledTimes(1);
+    expect(treeHandle.expandNode).toHaveBeenCalledTimes(1);
     // Open File
     const file = newFileByName('test.js');
     fileTreeModelService.activeFileDecoration(file);
     await fileTreeModelService.toggleOrOpenCurrentFile();
-    expect(mockFileTreeService.openFile).toBeCalledTimes(1);
+    expect(mockFileTreeService.openFile).toHaveBeenCalledTimes(1);
   });
 });

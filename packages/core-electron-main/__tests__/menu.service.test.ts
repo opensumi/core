@@ -72,7 +72,7 @@ describe('electron main menu tests', () => {
     emitter.emit('focus');
 
     await delay(1);
-    expect(Menu.setApplicationMenu).toBeCalledWith(
+    expect(Menu.setApplicationMenu).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
           label: 'test1',
@@ -97,7 +97,7 @@ describe('electron main menu tests', () => {
     (Menu.setApplicationMenu as jest.Mock).mockClear();
     emitter.emit('focus');
     await delay(1);
-    expect(Menu.setApplicationMenu).toBeCalledWith(
+    expect(Menu.setApplicationMenu).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
           label: 'test2',
