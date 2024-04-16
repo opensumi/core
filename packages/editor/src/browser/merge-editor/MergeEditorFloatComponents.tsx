@@ -6,12 +6,14 @@ import {
   CommandRegistry,
   CommandService,
   IContextKeyService,
+  MERGE_CONFLICT_COMMANDS,
   SCM_COMMANDS,
   URI,
   Uri,
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { MergeConflictCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
 
 import styles from '../editor.module.less';
 import { ReactEditorComponent } from '../types';
@@ -58,25 +60,25 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   );
 
   const handlePrev = useCallback(() => {
-    commandService.tryExecuteCommand('merge-conflict.previous');
+    commandService.tryExecuteCommand(MergeConflictCommands.Previous);
   }, []);
 
   const handleNext = useCallback(() => {
-    commandService.tryExecuteCommand('merge-conflict.next');
+    commandService.tryExecuteCommand(MergeConflictCommands.Next);
   }, []);
 
   const handleAIResolve = useCallback(async () => {
     setIsAIResolving(true);
     if (isAIResolving) {
-      await commandService.executeCommand('merge-conflict.ai.all-accept-stop', resource.uri);
+      await commandService.executeCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT_STOP.id, resource.uri);
     } else {
-      await commandService.executeCommand('merge-conflict.ai.all-accept', resource.uri);
+      await commandService.executeCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT.id, resource.uri);
     }
     setIsAIResolving(false);
   }, [resource, isAIResolving]);
 
   const handleReset = useCallback(() => {
-    commandService.executeCommand('merge-conflict.ai.all-reset', resource.uri);
+    commandService.executeCommand(MERGE_CONFLICT_COMMANDS.ALL_RESET.id, resource.uri);
   }, [resource]);
 
   if (!isVisiable) {

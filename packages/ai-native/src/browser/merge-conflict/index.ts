@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { AINativeConfigService, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { AINativeConfigService, ClientAppContribution, MERGE_CONFLICT_COMMANDS } from '@opensumi/ide-core-browser';
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import {
   CancelResponse,
@@ -57,25 +57,6 @@ import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core
 import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
-export namespace MERGE_CONFLICT {
-  const CATEGORY = 'MergeConflict';
-  export const AI_ACCEPT: Command = {
-    id: 'merge-conflict.ai.accept',
-    category: CATEGORY,
-  };
-  export const ALL_RESET: Command = {
-    id: 'merge-conflict.ai.all-reset',
-    category: CATEGORY,
-  };
-  export const AI_ALL_ACCEPT: Command = {
-    id: 'merge-conflict.ai.all-accept',
-    category: CATEGORY,
-  };
-  export const AI_ALL_ACCEPT_STOP: Command = {
-    id: 'merge-conflict.ai.all-accept-stop',
-    category: CATEGORY,
-  };
-}
 
 const MERGE_CONFLICT_CODELENS_STYLE = 'merge-conflict-codelens-style';
 
@@ -577,12 +558,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   registerCommands(commands: CommandRegistry): void {
     this.disposables.push(
-      commands.registerCommand(MERGE_CONFLICT.AI_ACCEPT, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ACCEPT, {
         execute: async (type: CommitType, conflict: DocumentMergeConflict) => {
           this.conflictAIAccept(conflict);
         },
       }),
-      commands.registerCommand(MERGE_CONFLICT.ALL_RESET, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.ALL_RESET, {
         execute: async (uri: Uri) => {
           const content = this.conflictParser.getConflictText(uri.toString());
           this.cancelRequestToken();
@@ -600,7 +581,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         },
       }),
 
-      commands.registerCommand(MERGE_CONFLICT.AI_ALL_ACCEPT, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT, {
         execute: async () => {
           const document = this.getModel();
           if (!document) {
@@ -617,7 +598,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
           await this.acceptAllConflict();
         },
       }),
-      commands.registerCommand(MERGE_CONFLICT.AI_ALL_ACCEPT_STOP, {
+      commands.registerCommand(MERGE_CONFLICT_COMMANDS.AI_ALL_ACCEPT_STOP, {
         execute: async () => {
           this.cancelRequestToken();
         },
@@ -666,7 +647,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     const items: monaco.languages.CodeLens[] = [];
     conflicts.forEach((conflict) => {
       const aiAcceptCommand = {
-        id: MERGE_CONFLICT.AI_ACCEPT.id,
+        id: MERGE_CONFLICT_COMMANDS.AI_ACCEPT.id,
         title: `$(ai-magic) ${localize('mergeEditor.conflict.resolve.all')}`,
         arguments: ['know-conflict', conflict],
         tooltip: localize('mergeEditor.conflict.resolve.all'),
@@ -680,7 +661,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       items.push({
         range: conflict.range,
         command: aiAcceptCommand,
-        id: MERGE_CONFLICT.AI_ACCEPT.id,
+        id: MERGE_CONFLICT_COMMANDS.AI_ACCEPT.id,
       });
     });
 

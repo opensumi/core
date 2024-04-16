@@ -13,7 +13,7 @@ import { LineRange } from '../model/line-range';
 import { AI_RESOLVE_REGENERATE_ACTIONS, AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
 
-interface IWrapperAiInlineResultProps {
+interface IWrapperAIInlineResultProps {
   iconItems: IAiInlineResultIconItemsProps[];
   isRenderThumbs: boolean;
   codeEditor: ResultCodeEditor;
@@ -23,7 +23,7 @@ interface IWrapperAiInlineResultProps {
   disablePopover?: boolean;
 }
 
-export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
+export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
   const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose, disablePopover = false } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
@@ -162,7 +162,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
 
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
-        <WapperAiInlineResult
+        <WapperAIInlineResult
           iconItems={iconResultItems}
           isRenderThumbs={isRenderThumbs}
           codeEditor={this.codeEditor}

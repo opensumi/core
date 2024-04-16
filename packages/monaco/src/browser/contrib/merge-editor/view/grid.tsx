@@ -19,6 +19,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MergeConflictCommands } from '../constants';
 import { MergeEditorService } from '../merge-editor.service';
 import { EditorViewType } from '../types';
 
@@ -141,7 +142,7 @@ const MergeActions: React.FC = () => {
   }, [mergeEditorService]);
 
   const handleReset = useCallback(async () => {
-    await mergeEditorService.stopAllAiResolveConflict();
+    await mergeEditorService.stopAllAIResolveConflict();
     runWhenIdle(() => {
       commandService.executeCommand(EDITOR_COMMANDS.MERGEEDITOR_RESET.id);
     });
@@ -149,18 +150,18 @@ const MergeActions: React.FC = () => {
 
   const handleAIResolve = useCallback(() => {
     if (isAIResolving) {
-      mergeEditorService.stopAllAiResolveConflict();
+      mergeEditorService.stopAllAIResolveConflict();
     } else {
-      mergeEditorService.handleAiResolveConflict();
+      mergeEditorService.handleAIResolveConflict();
     }
   }, [mergeEditorService, isAIResolving]);
 
   const handlePrev = useCallback(() => {
-    commandService.tryExecuteCommand('merge-conflict.previous');
+    commandService.tryExecuteCommand(MergeConflictCommands.Previous);
   }, []);
 
   const handleNext = useCallback(() => {
-    commandService.tryExecuteCommand('merge-conflict.next');
+    commandService.tryExecuteCommand(MergeConflictCommands.Next);
   }, []);
 
   return (

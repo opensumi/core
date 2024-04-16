@@ -13,7 +13,7 @@ import {
 import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
 import {
   ResolveResultWidget,
-  WapperAiInlineResult,
+  WapperAIInlineResult,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/resolve-result-widget';
 
 @Injectable({ multiple: true })
@@ -56,7 +56,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
 
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
-        <WapperAiInlineResult
+        <WapperAIInlineResult
           iconItems={iconResultItems}
           isRenderThumbs={isRenderThumbs}
           codeEditor={this.codeEditor}

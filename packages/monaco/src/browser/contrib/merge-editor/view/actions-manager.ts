@@ -271,7 +271,7 @@ export class ActionsManager extends Disposable {
   /**
    * 处理 AI 智能解决冲突时的逻辑
    */
-  public async handleAiConflictResolve(
+  public async handleAIConflictResolve(
     flushRange: LineRange,
     options: {
       isRegenerate: boolean;
@@ -369,14 +369,17 @@ export class ActionsManager extends Disposable {
   private markComplete(range: LineRange): void {
     const { turnDirection } = range;
 
-    if (turnDirection === ETurnDirection.CURRENT) {
-      this.mappingManagerService.markCompleteTurnLeft(range);
-      this.currentView!.updateDecorations().updateActions();
-    }
-
-    if (turnDirection === ETurnDirection.INCOMING) {
-      this.mappingManagerService.markCompleteTurnRight(range);
-      this.incomingView!.updateDecorations().updateActions();
+    switch (turnDirection) {
+      case ETurnDirection.CURRENT: {
+        this.mappingManagerService.markCompleteTurnLeft(range);
+        this.currentView!.updateDecorations().updateActions();
+        break;
+      }
+      case ETurnDirection.INCOMING: {
+        this.mappingManagerService.markCompleteTurnRight(range);
+        this.incomingView!.updateDecorations().updateActions();
+        break;
+      }
     }
   }
 
@@ -405,57 +408,61 @@ export class ActionsManager extends Disposable {
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
       )(async ({ range, action }) => {
-        if (action === ACCEPT_CURRENT_ACTIONS) {
-          this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [
-            { range: oppositeRange, text: applyText },
-          ]);
-        }
-
-        if (action === IGNORE_ACTIONS) {
-          this.markComplete(range);
-          this.resultView?.updateActions();
-        }
-
-        if (action === REVOKE_ACTIONS) {
-          this.handleAcceptRevoke(range);
-        }
-
-        if (action === ACCEPT_COMBINATION_ACTIONS) {
-          this.handleAcceptCombination(range);
-        }
-
-        /**
-         * range 如果是 merge range 合成的，当 accept 某一视图的代码变更时，另一边的 accpet 就变成 append 追加内容，而不是覆盖内容
-         */
-        if (action === APPEND_ACTIONS) {
-          this.handleAcceptChange(range, (_, oppositeRange, { applyText, eol }) => [
+        switch (action) {
+          case ACCEPT_CURRENT_ACTIONS:
+            this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [
+              { range: oppositeRange, text: applyText },
+            ]);
+            break;
+          case IGNORE_ACTIONS:
+            this.markComplete(range);
+            this.resultView?.updateActions();
+            break;
+          case REVOKE_ACTIONS:
+            this.handleAcceptRevoke(range);
+            break;
+          case ACCEPT_COMBINATION_ACTIONS:
+            this.handleAcceptCombination(range);
+            break;
+          case APPEND_ACTIONS:
             /**
-             * 在 diff 区域的最后一行追加代码内容
+             * range 如果是 merge range 合成的，当 accept 某一视图的代码变更时，另一边的 accpet 就变成 append 追加内容，而不是覆盖内容
              */
-            {
-              range: LineRange.fromPositions(
-                oppositeRange.endLineNumberExclusive,
-                oppositeRange.endLineNumberExclusive,
-              ),
-              text: applyText,
-            },
-          ]);
+            this.handleAcceptChange(range, (_, oppositeRange, { applyText, eol }) => [
+              /**
+               * 在 diff 区域的最后一行追加代码内容
+               */
+              {
+                range: LineRange.fromPositions(
+                  oppositeRange.endLineNumberExclusive,
+                  oppositeRange.endLineNumberExclusive,
+                ),
+                text: applyText,
+              },
+            ]);
+            break;
+          /**
+           * 处理 AI 智能解决冲突
+           */
+          case AI_RESOLVE_ACTIONS:
+          case AI_RESOLVE_REGENERATE_ACTIONS:
+            if (this.resultView) {
+              const flushRange = this.resultView.getFlushRange(range) || range;
+              await this.handleAIConflictResolve(flushRange, {
+                isRegenerate: action === AI_RESOLVE_REGENERATE_ACTIONS,
+              });
+            }
+            break;
         }
-
-        /**
-         * 处理 AI 智能解决冲突
-         */
-        if ((action === AI_RESOLVE_ACTIONS || action === AI_RESOLVE_REGENERATE_ACTIONS) && this.resultView) {
-          const flushRange = this.resultView.getFlushRange(range) || range;
-
-          await this.handleAiConflictResolve(flushRange, {
-            isRegenerate: action === AI_RESOLVE_REGENERATE_ACTIONS,
-          });
+        if (this.resultView) {
+          this.resultView.updateDecorations();
         }
-
-        this.resultView!.updateDecorations();
-        this.currentView!.launchChange();
-        this.incomingView!.launchChange();
+        if (this.currentView) {
+          this.currentView.launchChange();
+        }
+        if (this.incomingView) {
+          this.incomingView.launchChange();
+        }
       }),
     );
   }

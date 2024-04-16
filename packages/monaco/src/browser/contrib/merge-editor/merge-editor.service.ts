@@ -60,7 +60,7 @@ export class MergeEditorService extends Disposable {
   private computerDiffModel: ComputerDiffModel;
   private actionsManager: ActionsManager;
 
-  private isCancelAllAiResolveConflict = false;
+  private isCancelAllAIResolveConflict = false;
 
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
@@ -297,13 +297,13 @@ export class MergeEditorService extends Disposable {
     }
   }
 
-  public async stopAllAiResolveConflict(): Promise<void> {
-    this.isCancelAllAiResolveConflict = true;
+  public async stopAllAIResolveConflict(): Promise<void> {
+    this.isCancelAllAIResolveConflict = true;
     this.resultView.cancelRequestToken();
     this.resultView.hideStopWidget();
   }
 
-  public async handleAiResolveConflict(): Promise<void> {
+  public async handleAIResolveConflict(): Promise<void> {
     this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickAllNum');
 
     this.listenIntelligentLoadingChange();
@@ -317,7 +317,7 @@ export class MergeEditorService extends Disposable {
     }, 1);
 
     runWhenIdle(async () => {
-      this.isCancelAllAiResolveConflict = false;
+      this.isCancelAllAIResolveConflict = false;
 
       const allRanges = this.resultView.getAllDiffRanges();
       const conflictPointRanges = allRanges.filter(
@@ -329,9 +329,9 @@ export class MergeEditorService extends Disposable {
 
       for await (const range of conflictPointRanges) {
         const flushRange = this.resultView.getFlushRange(range) || range;
-        const result = await this.actionsManager.handleAiConflictResolve(flushRange, { isRegenerate: false });
-        if (this.isCancelAllAiResolveConflict) {
-          this.isCancelAllAiResolveConflict = false;
+        const result = await this.actionsManager.handleAIConflictResolve(flushRange, { isRegenerate: false });
+        if (this.isCancelAllAIResolveConflict) {
+          this.isCancelAllAIResolveConflict = false;
           return;
         }
 
