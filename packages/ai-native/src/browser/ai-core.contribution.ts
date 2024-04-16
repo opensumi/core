@@ -19,6 +19,8 @@ import {
   SlotRendererRegistry,
   URI,
   getIcon,
+  Disposable,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import {
   AI_CHAT_PANEL_TOGGLE_VISIBLE,
@@ -88,6 +90,7 @@ import {
   KeybindingContribution,
 )
 export class AiNativeBrowserContribution
+  extends Disposable
   implements
     ClientAppContribution,
     ComponentContribution,
@@ -152,7 +155,11 @@ export class AiNativeBrowserContribution
   @Autowired(RenameCandidatesProviderRegistryToken)
   private readonly renameCandidatesProviderRegistry: IRenameCandidatesProviderRegistry;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   constructor() {
+    super();
     this.registerFeature();
   }
 
@@ -162,6 +169,14 @@ export class AiNativeBrowserContribution
 
   onDidStart() {
     this.aiSumi.classifyCommand();
+
+    const prefChatVisibleType = this.preferenceService.getValid(AiNativeSettingSectionsId.CHAT_VISIBLE_TYPE);
+
+    if (prefChatVisibleType === 'always') {
+      this.commandService.executeCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE.id, true);
+    } else if (prefChatVisibleType === 'never') {
+      this.commandService.executeCommand(AI_CHAT_PANEL_TOGGLE_VISIBLE.id, false);
+    }
   }
 
   private registerFeature() {
@@ -191,6 +206,16 @@ export class AiNativeBrowserContribution
 
   handleSettingSections(settingSections: { [key: string]: ISettingSection[] }) {
     const groups: ISettingSection[] = [];
+
+    groups.push({
+      title: 'Chat',
+      preferences: [
+        {
+          id: AiNativeSettingSectionsId.CHAT_VISIBLE_TYPE,
+          localized: 'preference.aiNative.chat.visible.type',
+        },
+      ],
+    });
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       groups.push({
@@ -318,9 +343,7 @@ export class AiNativeBrowserContribution
         }
 
         if (visible === false) {
-          if (this.aiMenubarService.getLatestWidth() === 0) {
-            this.aiMenubarService.toggleRightPanel();
-          }
+          this.aiMenubarService.hideRightPanel();
           return;
         }
 

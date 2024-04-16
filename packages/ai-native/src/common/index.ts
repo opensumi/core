@@ -75,7 +75,8 @@ export interface ChatCompletionRequestMessage {
 }
 
 export enum AiNativeSettingSectionsId {
-  INLINE_CHAT_AUTO_VISIBLE = 'inlineChat.auto.visible',
+  INLINE_CHAT_AUTO_VISIBLE = 'ai.native.inlineChat.auto.visible',
+  CHAT_VISIBLE_TYPE = 'ai.native.chat.visible.type',
 }
 
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';

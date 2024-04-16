@@ -590,6 +590,7 @@ export const localizationBundle = {
     // AI Native
     'preference.aiNative.inlineChat.auto.visible':
       'Does Inline Chat automatically appear when code snippets are selected ?',
+    'preference.aiNative.chat.visible.type': 'Control how the chat panel is displayed by default',
 
     // Editor Configurations
     'editor.configuration.formatOnSaveTimeout':

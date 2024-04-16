@@ -291,9 +291,14 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
-    'inlineChat.auto.visible': {
+    'ai.native.inlineChat.auto.visible': {
       type: 'boolean',
       default: true,
+    },
+    'ai.native.chat.visible.type': {
+      type: 'string',
+      enum: ['never', 'always', 'default'],
+      default: 'default',
     },
   },
 };
