@@ -59,7 +59,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   @Autowired(IEditorFeatureRegistry)
   protected readonly editorFeatureRegistry: EditorFeatureRegistryImpl;
 
-  private _editors: Set<IMonacoImplEditor> = new Set();
+  private _editors: Set<ISumiEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
 
   private _onCodeEditorCreate = new Emitter<ICodeEditor>();
@@ -97,11 +97,11 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
-  public listEditors(): IMonacoImplEditor[] {
+  public listEditors(): ISumiEditor[] {
     return Array.from(this._editors.values());
   }
 
-  public addEditors(editors: IMonacoImplEditor[]) {
+  public addEditors(editors: ISumiEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
       if (!this._editors.has(editor)) {
@@ -120,7 +120,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     }
   }
 
-  public removeEditors(editors: IMonacoImplEditor[]) {
+  public removeEditors(editors: ISumiEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
       this._editors.delete(editor);
@@ -196,7 +196,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 }
 
-export type IMonacoImplEditor = IEditor;
+export type ISumiEditor = IEditor;
 
 export function insertSnippetWithMonacoEditor(
   editor: IMonacoCodeEditor,
@@ -573,9 +573,9 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     return null;
   }
 
-  public originalEditor: IMonacoImplEditor;
+  public originalEditor: ISumiEditor;
 
-  public modifiedEditor: IMonacoImplEditor;
+  public modifiedEditor: ISumiEditor;
 
   public _disposed: boolean;
 
