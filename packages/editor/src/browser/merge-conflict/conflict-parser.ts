@@ -50,9 +50,8 @@ export class TextLine {
   }
 }
 
-// 内置 MergeConflict 插件 以支持AI交互
 @Injectable()
-export class CacheConflict extends Disposable {
+export class MergeConflictParser extends Disposable {
   private _conflictTextCaches = new Map<string, string>();
 
   private _conflictRangeCaches = new Map<string, IConflictCache[]>();
