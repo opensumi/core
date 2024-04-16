@@ -36,7 +36,7 @@
     "@opensumi/ide-workspace": "workspace:*",
     "react-chat-elements": "^12.0.10",
     "react-highlight": "^0.15.0",
-    "web-tree-sitter": "^0.22.2"
+    "web-tree-sitter": "0.22.2"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
