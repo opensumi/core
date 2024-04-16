@@ -528,6 +528,7 @@ export const localizationBundle = {
 
     // AI Native
     'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
+    'preference.aiNative.chat.visible.type': '控制 Chat 面板默认的展示方式',
 
     'editor.saveAll': '保存全部',
     'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
