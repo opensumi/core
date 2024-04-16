@@ -34,7 +34,8 @@ import { AIInlineChatContentWidget } from '../common';
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { LanguageParserFactory } from './languages/parser';
+import { LanguageParserService } from './languages/service';
+import { ICodeBlockInfo } from './languages/tree-sitter/language-facts/base';
 import { RenameSuggestionsService } from './rename/rename.service';
 import { AINativeCoreContribution, IAIMiddleware } from './types';
 import { InlineChatFeatureRegistry } from './widget/inline-chat/inline-chat.feature.registry';
@@ -86,8 +87,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(IEventBus)
   protected eventBus: IEventBus;
 
-  @Autowired(LanguageParserFactory)
-  protected languageParserFactory: LanguageParserFactory;
+  @Autowired(LanguageParserService)
+  protected languageParserService: LanguageParserService;
 
   private latestMiddlewareCollector: IAIMiddleware;
 
@@ -278,9 +279,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     const selection = monacoEditor.getSelection();
-    const selectCode = selection && monacoEditor.getModel()?.getValueInRange(selection);
 
-    if (!selection || !selectCode?.trim()) {
+    if (!selection || selection.isEmpty()) {
       this.disposeAllWidget();
       return;
     }
@@ -319,7 +319,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const { execute, providerDiffPreviewStrategy } = handler;
 
     if (execute) {
-      execute(monacoEditor);
+      await execute(monacoEditor);
       this.disposeAllWidget();
     }
 
@@ -577,28 +577,41 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.modelSessionDisposable.addDispose(
             monacoApi.languages.registerCodeActionProvider(languageId, {
               provideCodeActions: async (model) => {
-                const parser = this.languageParserFactory(languageId);
+                const parser = this.languageParserService.createParser(languageId);
                 if (!parser) {
                   return;
                 }
-
-                const cursorPosition = monacoEditor.getPosition()!;
                 const actions = this.inlineChatFeatureRegistry.getCodeActions();
-                const functionInfo = await parser.provideFunctionInfo(model, cursorPosition);
+                if (!actions || actions.length === 0) {
+                  return;
+                }
 
-                if (functionInfo) {
+                const cursorPosition = monacoEditor.getPosition();
+                if (!cursorPosition) {
+                  return;
+                }
+
+                function constructCodeActions(info: ICodeBlockInfo) {
                   return {
                     actions: actions.map((v) => {
                       const command = {} as monaco.Command;
                       if (v.command) {
                         command.id = v.command.id;
-                        command.arguments = [functionInfo.range];
+                        command.arguments = [info.range];
+                      }
+
+                      let title = v.title;
+
+                      switch (info.infoCategory) {
+                        case 'function': {
+                          title = title + ` for Function: ${info.name}`;
+                        }
                       }
 
                       return {
                         ...v,
-                        title: v.title + ` for Function: ${functionInfo.name}`,
-                        ranges: [functionInfo.range],
+                        title,
+                        ranges: [info.range],
                         command,
                       };
                     }) as monaco.CodeAction[],
@@ -606,25 +619,30 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                   };
                 }
 
-                const codeblock = await parser.findCodeBlock(model, cursorPosition);
-                if (codeblock) {
-                  return {
-                    actions: actions.map((v) => {
-                      const command = {} as monaco.Command;
-                      if (v.command) {
-                        command.id = v.command.id;
-                        command.arguments = [codeblock.range];
-                      }
+                const info = await parser.provideCodeBlockInfo(model, cursorPosition);
 
-                      return {
-                        ...v,
-                        title: v.title,
-                        ranges: [codeblock.range],
-                        command,
-                      };
-                    }) as monaco.CodeAction[],
-                    dispose() {},
-                  };
+                if (info) {
+                  return constructCodeActions(info);
+                }
+
+                // check current line is empty
+                const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
+                if (currentLineLength !== 0) {
+                  return;
+                }
+
+                // 获取视窗范围内的代码块
+                const range = monacoEditor.getVisibleRanges();
+                if (range.length === 0) {
+                  return;
+                }
+
+                // 查找从当前行至视窗最后一行的代码块中是否包含函数
+                const newRange = new monaco.Range(cursorPosition.lineNumber, 0, range[0].endLineNumber + 1, 0);
+
+                const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
+                if (rangeInfo) {
+                  return constructCodeActions(rangeInfo);
                 }
               },
             }),

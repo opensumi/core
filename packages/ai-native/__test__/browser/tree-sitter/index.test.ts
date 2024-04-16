@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Injector } from '@opensumi/di';
-import { LanguageParserFactory } from '@opensumi/ide-ai-native/lib/browser/languages/parser';
+import { LanguageParserService } from '@opensumi/ide-ai-native/lib/browser/languages/service';
 import { AppConfig, BrowserModule } from '@opensumi/ide-core-browser';
 import { ESupportRuntime } from '@opensumi/ide-core-browser/lib/application/runtime';
 import { IRendererRuntime } from '@opensumi/ide-core-browser/lib/application/runtime/types';
@@ -30,16 +30,16 @@ describe.skip('tree sitter', () => {
   beforeAll(() => {
     injector = new MockInjector([
       {
-        token: LanguageParserFactory,
-        useFactory: LanguageParserFactory,
+        token: LanguageParserService,
+        useClass: LanguageParserService,
       },
     ]);
     injector.mockService(IRendererRuntime, new MockRendererRuntime());
   });
 
   it('parser', async () => {
-    const factory = injector.get(LanguageParserFactory) as LanguageParserFactory;
-    const parser = factory('javascript');
+    const service = injector.get(LanguageParserService) as LanguageParserService;
+    const parser = service.createParser('javascript');
     expect(parser).toBeDefined();
 
     await parser!.ready();

@@ -25,12 +25,19 @@ export class WasmModuleManager {
     this.resolveResourceUri();
   }
 
+  private parserInitialized = false;
+
   async initParser() {
     const baseUrl = await this.resolvedResourceUriDeferred.promise;
     const wasmPath = `${baseUrl}/tree-sitter.wasm`;
-    return Parser.init({
-      locateFile: () => wasmPath,
-    }).then(async () => new Parser());
+    if (!this.parserInitialized) {
+      await Parser.init({
+        locateFile: () => wasmPath,
+      });
+      this.parserInitialized = true;
+    }
+
+    return new Parser();
   }
 
   async loadLanguage(language: string): Promise<ArrayBuffer> {

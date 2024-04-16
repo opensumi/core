@@ -7,7 +7,6 @@ import {
   Disposable,
   Domain,
   EDITOR_COMMANDS,
-  IContextKeyService,
   IJSONSchemaRegistry,
   IOpenerService,
   ISchemaStore,
@@ -30,7 +29,15 @@ import {
   MenuContribution,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandService, DisposableCollection, ILogger, URI, isOSX, isString } from '@opensumi/ide-core-common';
+import {
+  CommandService,
+  DisposableCollection,
+  ILogger,
+  URI,
+  isOSX,
+  isString,
+  removeReadonly,
+} from '@opensumi/ide-core-common';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import {
@@ -143,9 +150,6 @@ export class MonacoClientContribution
   @Autowired(KeybindingRegistry)
   private readonly keybindings: KeybindingRegistry;
 
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
-
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
   }
@@ -172,13 +176,18 @@ export class MonacoClientContribution
       // 注册/覆盖一些 monaco 内置的 EditorExtensionContribution，例如 ContextMenu
       if (contrib.registerEditorExtensionContribution) {
         contrib.registerEditorExtensionContribution(
-          (id: string, contribCtor: new (editor: ICodeEditor, ...services: any) => IEditorContribution) => {
+          (
+            id: string,
+            contribCtor: new (editor: ICodeEditor, ...services: any) => IEditorContribution,
+            instantiation?: EditorContributionInstantiation,
+          ) => {
             const existContrib = this.editorExtensionsRegistry.getSomeEditorContributions([id]);
             if (existContrib.length === 0) {
-              registerEditorContribution(id, contribCtor, EditorContributionInstantiation.Eager);
+              registerEditorContribution(id, contribCtor, instantiation || EditorContributionInstantiation.Eager);
             } else {
-              // @ts-ignore
-              existContrib[0].ctor = contribCtor;
+              const contrib = removeReadonly(existContrib[0]);
+              contrib.ctor = contribCtor;
+              contrib.instantiation = instantiation || EditorContributionInstantiation.Eager;
             }
           },
         );

@@ -1,4 +1,6 @@
 import { BasicEvent, Event, IDisposable, IJSONSchema } from '@opensumi/ide-core-common';
+import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import { IMergeEditorEditor } from './merge-editor-widget';
 
@@ -72,16 +74,19 @@ export type FormattingSelectorType = (
   document: ITextModel,
 ) => DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider;
 
+export type IEditorExtensionContribution<T extends BrandedService[]> = (
+  id: string,
+  contribCtor: (new (editor: ICodeEditor, ...services: T) => IEditorContribution) | SyncDescriptor<IEditorContribution>,
+  instantiation?: EditorContributionInstantiation,
+) => void;
+
 export interface MonacoContribution {
   registerOverrideService?(registry: MonacoOverrideServiceRegistry): void;
 
   registerMonacoDefaultFormattingSelector?(registry: (selector: IFormattingEditProviderSelector) => IDisposable): void;
 
   registerEditorExtensionContribution?<Services extends BrandedService[]>(
-    register: (
-      id: string,
-      contribCtor: new (editor: ICodeEditor, ...services: Services) => IEditorContribution,
-    ) => void,
+    register: IEditorExtensionContribution<Services>,
   ): void;
 
   /**

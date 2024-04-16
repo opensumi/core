@@ -8,7 +8,7 @@ export const typescriptBlockTypes = [
   'function_declaration',
   'function_expression',
   'arrow_function',
-  'class_body',
+  'class_declaration',
   'method_definition',
   'method_signature',
   'enum_declaration',
@@ -40,7 +40,12 @@ export class TypeScriptLanguageFacts implements AbstractLanguageFacts {
     end: ' */',
     linePrefix: ' * ',
   };
+
   provideCodeBlocks(): Set<string> {
     return blockSet;
+  }
+
+  isCodeBlock(type: string): boolean {
+    return blockSet.has(type);
   }
 }

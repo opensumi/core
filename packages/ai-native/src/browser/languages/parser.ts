@@ -1,27 +1,16 @@
 import Parser from 'web-tree-sitter';
 
-import { Autowired, Injectable, Injector } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import * as monaco from '@opensumi/ide-monaco/lib/common';
-import { Deferred, LRUCache } from '@opensumi/ide-utils';
+import { Deferred, IDisposable, LRUCache } from '@opensumi/ide-utils';
 
 import { toMonacoRange } from './tree-sitter/common';
-import {
-  SupportedLanguages,
-  SupportedTreeSitterLanguages,
-  TreeSitterLanguageFacts,
-  parserNameMap,
-} from './tree-sitter/language-facts';
-import { IFunctionInfo } from './tree-sitter/language-facts/base';
+import { SupportedTreeSitterLanguages, TreeSitterLanguageFacts } from './tree-sitter/language-facts';
+import { ICodeBlockInfo, IOtherBlockInfo } from './tree-sitter/language-facts/base';
 import { WasmModuleManager } from './tree-sitter/wasm-manager';
 
-interface CodeBlock {
-  range: monaco.IRange;
-  codeBlock: string;
-  type: string;
-}
-
 @Injectable({ multiple: true })
-export class LanguageParser {
+export class LanguageParser implements IDisposable {
   private parser: Parser;
 
   private parserLoaded = new Deferred<void>();
@@ -105,7 +94,6 @@ export class LanguageParser {
   }
 
   async getSyntaxNodeAsPosition(model: monaco.ITextModel, cursor: number): Promise<Parser.SyntaxNode | null> {
-    await this.parserLoaded.promise;
     const rootNode = await this.parseAST(model);
     if (rootNode) {
       const cursorNode = rootNode.namedDescendantForIndex(cursor);
@@ -114,51 +102,10 @@ export class LanguageParser {
     return null;
   }
 
-  async findCodeBlock(model: monaco.ITextModel, position: monaco.Position): Promise<CodeBlock | null> {
-    const cursor = model.getOffsetAt(position);
-    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
-    if (cursorNode) {
-      const selectedNode = this.findContainingCodeBlockWithPosition(cursorNode, cursor);
-      if (!selectedNode) {
-        return null;
-      }
-
-      return {
-        codeBlock: selectedNode.text,
-        range: {
-          startLineNumber: selectedNode.startPosition.row + 1,
-          startColumn: 0,
-          endLineNumber: selectedNode.endPosition.row + 1,
-          endColumn: Infinity,
-        },
-        type: selectedNode.type,
-      };
-    }
-
-    return null;
-  }
-
-  async provideFunctionInfo(model: monaco.ITextModel, position: monaco.Position): Promise<IFunctionInfo | null> {
-    const cursor = model.getOffsetAt(position);
-
-    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
-    if (!cursorNode) {
-      return null;
-    }
-    const functionNode = this.findFunctionCodeBlock(cursorNode, cursor);
-
-    if (!functionNode) {
-      return null;
-    }
-
-    const functionInfo = this.languageFacts.provideFunctionInfo(this.language, functionNode);
-    return functionInfo;
-  }
-
   /**
    * 从给定的位置开始，找到最近的没有语法错误的代码块
    */
-  async findCodeBlockWithSyntaxError(sourceCode: string, range: monaco.IRange): Promise<CodeBlock | null> {
+  async findCodeBlockWithSyntaxError(sourceCode: string, range: monaco.IRange): Promise<IOtherBlockInfo | null> {
     await this.parserLoaded.promise;
     const tree = this.parser.parse(sourceCode);
     if (tree) {
@@ -172,9 +119,9 @@ export class LanguageParser {
       let parentNode = selectedNode.parent;
       if (!parentNode) {
         return {
-          codeBlock: selectedNode.text,
           range: toMonacoRange(selectedNode),
           type: selectedNode.type,
+          infoCategory: 'other',
         };
       }
 
@@ -193,33 +140,84 @@ export class LanguageParser {
 
       if (parentNode) {
         return {
-          codeBlock: parentNode.text,
           range: toMonacoRange(parentNode),
           type: parentNode.type,
+          infoCategory: 'other',
         };
       }
       return {
-        codeBlock: selectedNode.text,
         range,
         type: selectedNode.type,
+        infoCategory: 'other',
       };
     }
     return null;
   }
-  private static pool = new Map<SupportedTreeSitterLanguages, LanguageParser>();
-  static get(injector: Injector, language: SupportedTreeSitterLanguages) {
-    if (!LanguageParser.pool.has(language)) {
-      LanguageParser.pool.set(language, injector.get(LanguageParser, [language]));
+
+  async provideCodeBlockInfo(model: monaco.ITextModel, position: monaco.Position): Promise<ICodeBlockInfo | null> {
+    const cursor = model.getOffsetAt(position);
+
+    const cursorNode = await this.getSyntaxNodeAsPosition(model, cursor);
+    if (!cursorNode) {
+      return null;
     }
 
-    return LanguageParser.pool.get(language);
+    const functionNode = this.findFunctionCodeBlock(cursorNode, cursor);
+    if (functionNode) {
+      return this.languageFacts.provideFunctionInfo(this.language, functionNode);
+    }
+
+    const selectedNode = this.findContainingCodeBlockWithPosition(cursorNode, cursor);
+    if (selectedNode) {
+      return {
+        infoCategory: 'other',
+        range: {
+          startLineNumber: selectedNode.startPosition.row + 1,
+          startColumn: 0,
+          endLineNumber: selectedNode.endPosition.row + 1,
+          endColumn: Infinity,
+        },
+        type: selectedNode.type,
+      };
+    }
+
+    return null;
+  }
+
+  async provideCodeBlockInfoInRange(model: monaco.ITextModel, range: monaco.IRange): Promise<ICodeBlockInfo | null> {
+    const rootNode = await this.parseAST(model);
+    if (rootNode) {
+      const startPosition = {
+        row: range.startLineNumber - 1,
+        column: range.startColumn - 1,
+      };
+      const endPosition = {
+        row: range.endLineNumber,
+        column: range.endColumn,
+      };
+
+      const types = this.languageFacts.getCodeBlockTypes(this.language);
+      if (!types || types.size === 0) {
+        return null;
+      }
+
+      const nodes = rootNode.descendantsOfType(Array.from(types), startPosition, endPosition);
+      if (nodes && nodes.length > 0) {
+        const firstNode = nodes[0];
+        const range = toMonacoRange(firstNode);
+        return {
+          infoCategory: 'other',
+          range,
+          type: firstNode.type,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  dispose() {
+    this.parser.delete();
+    this.lruCache.clear();
   }
 }
-
-export const LanguageParserFactory = (injector: Injector) => (language: SupportedLanguages | string) => {
-  const treeSitterLang = parserNameMap[language];
-  if (treeSitterLang) {
-    return LanguageParser.get(injector, treeSitterLang);
-  }
-};
-export type LanguageParserFactory = ReturnType<typeof LanguageParserFactory>;

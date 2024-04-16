@@ -1,6 +1,6 @@
 import { toMonacoRange } from '../common';
 
-import { AbstractLanguageFacts, IFunctionInfo } from './base';
+import { AbstractLanguageFacts, IFunctionBlockInfo } from './base';
 
 import type { SyntaxNode } from 'web-tree-sitter';
 
@@ -12,7 +12,7 @@ export const javascriptBlockCodeTypes = [
   'function_declaration',
   'function_expression',
   'arrow_function',
-  'class_body',
+  'class_declaration',
   'method_definition',
   'if_statement',
   'switch_case',
@@ -46,19 +46,26 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
     end: ' */',
     linePrefix: ' * ',
   };
+
   provideCodeBlocks(): Set<string> {
     return blockSet;
   }
 
-  provideFunctionCodeBlocks(): Set<string> {
-    return functionBlockSet;
+  isCodeBlock(type: string): boolean {
+    return blockSet.has(type);
   }
 
-  provideFunctionInfo(node: SyntaxNode): IFunctionInfo | null {
+  isFunctionCodeBlocks(type: string): boolean {
+    return functionBlockSet.has(type);
+  }
+
+  provideFunctionInfo(node: SyntaxNode): IFunctionBlockInfo | null {
     switch (node.type) {
       case 'function_declaration':
       case 'function_expression':
         return {
+          infoCategory: 'function',
+          type: node.type,
           name: node.firstNamedChild?.text || '',
           signatures: node.children
             .filter((child) => child.type === 'parameter')
@@ -77,6 +84,8 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
             parent.parent.type === 'variable_declaration')
         ) {
           return {
+            infoCategory: 'function',
+            type: node.type,
             name: parent.firstChild?.text || '',
             signatures: node.children
               .filter((child) => child.type === 'parameter')
@@ -88,6 +97,8 @@ export class JavaScriptLanguageFacts implements AbstractLanguageFacts {
       }
       case 'method_definition':
         return {
+          infoCategory: 'function',
+          type: node.type,
           name: node.firstNamedChild?.text || '',
           signatures: node.children
             .filter((child) => child.type === 'parameter')

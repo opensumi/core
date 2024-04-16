@@ -24,6 +24,8 @@ const javaBlockCodeTypes = [
   'finally_clause',
 ];
 
+const functionCodeBlocks = new Set(['method_declaration', 'constructor_declaration']);
+
 const blockSet = new Set(javaBlockCodeTypes);
 
 export class JavaLanguageFacts implements AbstractLanguageFacts {
@@ -34,7 +36,16 @@ export class JavaLanguageFacts implements AbstractLanguageFacts {
     end: ' */',
     linePrefix: ' * ',
   };
+
   provideCodeBlocks(): Set<string> {
     return blockSet;
+  }
+
+  isCodeBlock(type: string): boolean {
+    return blockSet.has(type);
+  }
+
+  isFunctionCodeBlocks(type: string): boolean {
+    return functionCodeBlocks.has(type);
   }
 }

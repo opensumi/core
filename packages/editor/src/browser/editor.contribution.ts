@@ -1,5 +1,6 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
+  AINativeConfigService,
   AppConfig,
   ClientAppContribution,
   CommandContribution,
@@ -13,6 +14,7 @@ import {
   IClientApp,
   IClipboardService,
   IContextKeyService,
+  IEditorExtensionContribution,
   IEventBus,
   IOpenerService,
   IPreferenceSettingsService,
@@ -47,6 +49,7 @@ import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/mer
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/ide-monaco/lib/common/common';
+import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -73,6 +76,7 @@ import { EditorView } from './editor.view';
 import { DocumentFormatService } from './format/format.service';
 import { FormattingSelector } from './format/formatter-selector';
 import { EditorHistoryService } from './history';
+import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
@@ -81,7 +85,6 @@ import { BrowserEditorContribution, EditorGroupsResetSizeEvent, IEditorFeatureRe
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
-
 interface ResourceArgs {
   group: EditorGroup;
   uri: URI;
@@ -227,16 +230,19 @@ export class EditorContribution
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(AINativeConfigService)
+  private readonly aiNativeConfigService: AINativeConfigService;
+
   registerMonacoDefaultFormattingSelector(register: (selector: IFormattingEditProviderSelector) => IDisposable): void {
     const formatSelector = this.injector.get(FormattingSelector);
     this.addDispose(register(formatSelector.selectFormatter.bind(formatSelector)));
   }
 
-  registerEditorExtensionContribution(register): void {
+  registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
     register(
       EditorContextMenuController.ID,
       /**
-       * 如果使用 common-di 的 Injectable 装饰，在内部会无法被 monaco 实例化
+       * 如果使用 opensumi/di 的 Injectable 装饰，在内部会无法被 monaco 实例化
        * 这里借用 monaco 内置的 DI 注入方式，将依赖的 Services 通过参数传递进去
        * 在内部重新实例化时会拼接两份参数，对于 EditorContextMenuController
        * monaco 将会自动补充另一个 editor 实例作为参数
@@ -248,6 +254,10 @@ export class EditorContribution
         this.contextMenuRenderer,
       ]),
     );
+
+    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
+      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+    }
   }
 
   protected getMimeForMode(langId: string): string | undefined {

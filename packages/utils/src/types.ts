@@ -231,3 +231,10 @@ export function isPromise<T = any>(obj: any): obj is Promise<T> {
 export function isUint8Array(obj: any): obj is Uint8Array {
   return obj instanceof Uint8Array || Object.prototype.toString.call(obj) === '[object Uint8Array]';
 }
+
+export type RemoveReadonly<T> = {
+  -readonly [P in keyof T]: T[P];
+};
+export function removeReadonly<T>(obj: T): RemoveReadonly<T> {
+  return obj as any;
+}
