@@ -5,7 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/main/extensions/merge-conflict/src/mergeConflictParser.ts
 
 import { Injectable } from '@opensumi/di';
-import { Disposable, uuid } from '@opensumi/ide-core-common';
+import { Disposable, LRUCache, uuid } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 
 import { ICacheDocumentMergeConflict, IDocumentMergeConflictDescriptor, IMergeRegion } from './types';
@@ -52,11 +52,22 @@ export class TextLine {
 
 @Injectable()
 export class MergeConflictParser extends Disposable {
+  cache = new LRUCache<string, DocumentMergeConflict[]>(100);
+
   private _conflictTextCaches = new Map<string, string>();
 
   private _conflictRangeCaches = new Map<string, IConflictCache[]>();
 
+  private static createCacheKey(document: monaco.editor.ITextModel) {
+    return `${document.uri.toString()}-${document.getAlternativeVersionId()}`;
+  }
+
   scanDocument(document: monaco.editor.ITextModel) {
+    const cacheKey = MergeConflictParser.createCacheKey(document);
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
     // Scan each line in the document, we already know there is at least a <<<<<<< and
     // >>>>>> marker within the document, we need to group these into conflict ranges.
     // We initially build a scan match, that references the lines of the header, splitter
@@ -128,7 +139,10 @@ export class MergeConflictParser extends Disposable {
       this._conflictRangeCaches.set(document.uri.toString(), conflictRanges);
     }
 
-    return conflictDescriptors?.filter(Boolean).map((descriptor) => new DocumentMergeConflict(descriptor));
+    const result = conflictDescriptors?.filter(Boolean).map((descriptor) => new DocumentMergeConflict(descriptor));
+    this.cache.set(cacheKey, result);
+
+    return result;
   }
   getConflictText(uri: string) {
     return this._conflictTextCaches.get(uri);

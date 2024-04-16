@@ -622,46 +622,6 @@ export class LinkedMap<K, V> {
     return result;
   }
 
-  /* VS Code / Monaco editor runs on es5 which has no Symbol.iterator
-	keys(): IterableIterator<K> {
-		const current = this._head;
-		const iterator: IterableIterator<K> = {
-			[Symbol.iterator]() {
-				return iterator;
-			},
-			next():IteratorResult<K> {
-				if (current) {
-					const result = { value: current.key, done: false };
-					current = current.next;
-					return result;
-				} else {
-					return { value: undefined, done: true };
-				}
-			}
-		};
-		return iterator;
-	}
-
-	values(): IterableIterator<V> {
-		const current = this._head;
-		const iterator: IterableIterator<V> = {
-			[Symbol.iterator]() {
-				return iterator;
-			},
-			next():IteratorResult<V> {
-				if (current) {
-					const result = { value: current.value, done: false };
-					current = current.next;
-					return result;
-				} else {
-					return { value: undefined, done: true };
-				}
-			}
-		};
-		return iterator;
-	}
-	*/
-
   protected trimOld(newSize: number) {
     if (newSize >= this.size) {
       return;

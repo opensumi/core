@@ -753,6 +753,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         range,
         text,
       };
+
       let validEditOperation: IValidEditOperation[] = [];
       const selections = this.getModel()?.pushEditOperations(null, [edit], (operation) => {
         validEditOperation = operation;
