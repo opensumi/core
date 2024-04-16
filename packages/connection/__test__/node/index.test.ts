@@ -261,8 +261,8 @@ describe('connection', () => {
 
     await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(undefined);
 
-    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrow(
-      'method testTimeoutIdentifier!$test timeout',
+    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toThrowErrorMatchingInlineSnapshot(
+      '"method testTimeoutIdentifier||$test timeout"',
     );
   });
   it('multiplexer rpc id can have slash', async () => {
