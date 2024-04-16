@@ -464,14 +464,19 @@ export const AIChatView = observer(() => {
 
   const handleReply = React.useCallback(
     (userInput: { type: AISerivceType; message: string }, replayCommandProps: IReplayComponentParam) => {
+      const { relationId } = replayCommandProps;
+
       if (chatRenderRegistry.chatAIRoleRender) {
         replayCommandProps.renderContent = (content: string, status: EMsgStreamStatus) =>
           chatRenderRegistry.chatAIRoleRender!({ content, status });
       }
 
+      aiChatService.setLatestSessionId(relationId);
+      aiChatService.messageWithStream(userInput.message, {}, relationId);
+
       const aiMessage = createMessageByAI({
         id: uuid(6),
-        relationId: replayCommandProps.relationId,
+        relationId,
         text: <StreamReplyRender prompt={userInput.message} params={replayCommandProps} />,
         className: styles.chat_with_more_actions,
       });
@@ -484,7 +489,7 @@ export const AIChatView = observer(() => {
       }
       setLoading(false);
     },
-    [messageListData, chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
+    [messageListData, aiChatService, chatRenderRegistry, chatRenderRegistry.chatAIRoleRender],
   );
 
   const handleClear = React.useCallback(() => {

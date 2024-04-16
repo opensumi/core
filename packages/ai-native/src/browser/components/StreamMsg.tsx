@@ -1,5 +1,5 @@
 import hljs from 'highlight.js';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 import { IAIReporter, localize } from '@opensumi/ide-core-common';
@@ -20,6 +20,7 @@ interface IStreamMsgWrapperProps {
 
 export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
   const { sessionId, prompt, startTime = 0, onRegenerate, renderContent } = props;
+
   const [chunk, setChunk] = React.useState('');
   const [content, setContent] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
@@ -112,11 +113,17 @@ export const StreamMsgWrapper = (props: IStreamMsgWrapperProps) => {
     props.onStop?.();
   };
 
-  return status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId ? (
-    <ChatThinking status={status} message={content} onStop={onStop}>
-      {renderMsgList()}
-    </ChatThinking>
-  ) : (
+  const isThinking = useMemo(() => status === EMsgStreamStatus.THINKING && msgStreamManager.currentSessionId === sessionId, [status, sessionId, msgStreamManager.currentSessionId]);
+
+  if (isThinking) {
+    return (
+      <ChatThinking status={status} message={content} onStop={onStop}>
+        {renderMsgList()}
+      </ChatThinking>
+    );
+  }
+
+  return (
     <ChatThinkingResult status={status} message={content} onRegenerate={handleRegenerate} sessionId={sessionId}>
       {renderMsgList()}
     </ChatThinkingResult>
