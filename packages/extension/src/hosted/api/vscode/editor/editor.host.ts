@@ -160,9 +160,11 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     return this.openResource(uri, options);
   }
 
-  $acceptPropertiesChange(change: IEditorStatusChangeDTO) {
-    if (this._editors.get(change.id)) {
-      this._editors.get(change.id)!.acceptStatusChange(change);
+  $acceptPropertiesChanges(changes: IEditorStatusChangeDTO[]) {
+    for (const change of changes) {
+      if (this._editors.get(change.id)) {
+        this._editors.get(change.id)!.acceptStatusChange(change);
+      }
     }
   }
 

@@ -17,8 +17,8 @@ import type { RenderLineNumbersType as MonacoRenderLineNumbersType } from '@open
 export * from './custom-editor';
 export * from './enums';
 export interface IExtensionHostEditorService {
-  $acceptChange(change: IEditorChangeDTO);
-  $acceptPropertiesChange(change: IEditorStatusChangeDTO);
+  $acceptChange(change: IEditorChangeDTO): Promise<void>;
+  $acceptPropertiesChanges(changes: IEditorStatusChangeDTO[]): Promise<void>;
 }
 
 export interface IMainThreadEditorsService {
