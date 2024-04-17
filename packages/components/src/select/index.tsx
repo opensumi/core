@@ -452,7 +452,7 @@ export function Select<T = string>({
             <span className={'kt-select-option'}>{selected.label}</span>
           </React.Fragment>
         )}
-        <Icon iconClass={getIcon('down')} />
+        <Icon iconClass={cls(getIcon('down'), 'kt-select-value-default-icon')} />
       </React.Fragment>
     );
   };

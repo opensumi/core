@@ -8,10 +8,14 @@ import { DebugConfigurationService } from '../../view/configuration/debug-config
 import styles from './index.module.less';
 
 export const FloatingClickWidget = (_: React.HtmlHTMLAttributes<HTMLDivElement>) => {
-  const { addConfiguration, openLaunchEditor } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+  const { addConfiguration, openLaunchEditor, showDynamicQuickPickToInsert } =
+    useInjectable<DebugConfigurationService>(DebugConfigurationService);
 
   return (
     <div className={styles.floating_click_widget}>
+      <Button onClick={showDynamicQuickPickToInsert} size='large'>
+        {localize('debug.action.add.smartAddConfiguration')}
+      </Button>
       <Button onClick={addConfiguration} size='large'>
         {localize('debug.action.add.configuration')}
       </Button>

@@ -33,7 +33,7 @@ import { Extension } from '../hosted/vscode.extension';
 import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IExtensionLanguagePack, IMainThreadCommands } from './vscode';
-import { ThemeIcon } from './vscode/ext-types';
+import { ExtensionKind, ThemeIcon } from './vscode/ext-types';
 
 export interface IExtensionMetaData {
   id: string;
@@ -49,6 +49,35 @@ export interface IExtensionMetaData {
   extendConfig: JSONType;
   isBuiltin: boolean;
   isDevelopment?: boolean;
+}
+
+export interface IExtensionManifest {
+  name: string;
+  displayName?: string;
+  publisher: string;
+  version: string;
+  engines: { readonly vscode: string };
+  description?: string;
+  main?: string;
+  browser?: string;
+  preview?: boolean;
+  // For now this only supports pointing to l10n bundle files
+  // but it will be used for package.l10n.json files in the future
+  l10n?: string;
+  icon?: string;
+  categories?: string[];
+  keywords?: string[];
+  activationEvents?: string[];
+  extensionDependencies?: string[];
+  extensionPack?: string[];
+  extensionKind?: ExtensionKind | ExtensionKind[];
+  contributes?: IExtensionContributions;
+  repository?: { url: string };
+  bugs?: { url: string };
+  enabledApiProposals?: readonly string[];
+  api?: string;
+  scripts?: { [key: string]: string };
+  // capabilities?: IExtensionCapabilities;
 }
 
 /**

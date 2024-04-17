@@ -44,7 +44,7 @@ import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
-import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID } from '../common';
+import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
@@ -53,6 +53,7 @@ import { AIInlineCompletionsProvider } from './inline-completions/completeProvid
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
 import { AIChatLayoutConfig, AIMenubarLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
+import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -279,6 +280,10 @@ export class AINativeBrowserContribution
     registry.register(AI_CHAT_CONTAINER_ID, [], {
       component: AIChatView,
       containerId: AI_CHAT_CONTAINER_ID,
+    });
+    registry.register(AI_MENU_BAR_DEBUG_TOOLBAR, {
+      id: AI_MENU_BAR_DEBUG_TOOLBAR,
+      component: AIRunToolbar,
     });
   }
 
