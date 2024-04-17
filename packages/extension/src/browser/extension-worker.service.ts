@@ -199,6 +199,7 @@ export class WorkerExtProcessService
 
     const protocol = new SumiConnectionMultiplexer(msgPortConnection, {
       timeout: this.appConfig.rpcMessageTimeout,
+      name: 'worker-ext-host',
     });
 
     this.logger.log('[Worker Host] web worker extension host ready');

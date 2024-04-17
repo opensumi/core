@@ -140,7 +140,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  async $createTextEditorDecorationType(key, options: IDecorationRenderOptions) {
+  async $createTextEditorDecorationType(key: string, options: IDecorationRenderOptions) {
     this.resolveIconPaths(options);
     this.resolveIconPaths(options.dark);
     this.resolveIconPaths(options.light);
@@ -162,7 +162,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  async $deleteTextEditorDecorationType(key) {
+  async $deleteTextEditorDecorationType(key: string) {
     const type = this.decorationService.getTextEditorDecorationType(key);
     if (type) {
       type.dispose();
@@ -239,18 +239,20 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
       this.proxy.$acceptPropertiesChanges(changes);
     },
-    50,
+    300,
     {
-      maxWait: 200,
+      maxWait: 500,
       leading: true,
       trailing: true,
     },
   );
 
+  /**
+   * 按 id 缓存 change, 每次 change 都会合并到缓存中，debounce 发送给插件进程
+   */
   protected batchPropertiesChanges(change: Partial<IEditorStatusChangeDTO> & { id: string }) {
     const { id } = change;
 
-    // 按 id 缓存 change, 每次 change 都会合并到缓存中，debounce 50ms 发送给插件进程
     let propertiesChange = this.propertiesChangeCache.get(id);
     if (!propertiesChange) {
       propertiesChange = {} as IEditorStatusChangeDTO;

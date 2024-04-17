@@ -35,6 +35,10 @@ const nullHeaders = {};
 export interface ISumiConnectionOptions {
   timeout?: number;
   logger?: ILogger;
+  /**
+   * The name of the connection, used for debugging(and can see in ).
+   */
+  name?: string;
 }
 
 export class SumiConnection implements IDisposable {
@@ -57,7 +61,7 @@ export class SumiConnection implements IDisposable {
   public io = new MessageIO();
   protected logger: ILogger;
 
-  protected capturer = new Capturer('sumi');
+  protected capturer: Capturer;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
     if (options.logger) {
@@ -65,6 +69,8 @@ export class SumiConnection implements IDisposable {
     } else {
       this.logger = getDebugLogger();
     }
+
+    this.capturer = new Capturer(options.name || 'sumi');
   }
 
   sendNotification(method: string, ...args: any[]) {
