@@ -1,5 +1,6 @@
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
+import { Capturer } from '../../capturer';
 import { METHOD_NOT_REGISTERED } from '../../constants';
 
 import { ProxyBase } from './base';
@@ -11,12 +12,13 @@ interface IRPCResult {
 
 export class ProxyJson extends ProxyBase<MessageConnection> {
   protected engine = 'json' as const;
+  protected capturer = new Capturer(this.engine);
 
   protected bindMethods(methods: string[]): void {
     for (const method of methods) {
       if (method.startsWith('on')) {
         this.connection.onNotification(method, async (...args: any[]) => {
-          this.captureOnNotification(method, args);
+          this.capturer.captureOnNotification('_', method, args);
           try {
             await this.registry.invoke(method, ...this.serializeArguments(args));
           } catch (e) {
@@ -26,19 +28,19 @@ export class ProxyJson extends ProxyBase<MessageConnection> {
       } else {
         this.connection.onRequest(method, async (...args: any[]) => {
           const requestId = this.nextRequestId();
-          this.captureOnRequest(requestId, method, args);
+          this.capturer.captureOnRequest(requestId, method, args);
 
           try {
             const result = await this.registry.invoke(method, ...this.serializeArguments(args));
 
-            this.captureOnRequestResult(requestId, method, result);
+            this.capturer.captureOnRequestResult(requestId, method, result);
 
             return {
               error: false,
               data: result,
             };
           } catch (e) {
-            this.captureOnRequestFail(requestId, method, e);
+            this.capturer.captureOnRequestFail(requestId, method, e);
 
             return {
               error: true,
@@ -63,7 +65,7 @@ export class ProxyJson extends ProxyBase<MessageConnection> {
 
     // 调用方法为 on 开头时，作为单项通知
     if (prop.startsWith('on')) {
-      this.captureSendNotification(prop, args);
+      this.capturer.captureSendNotification('_', prop, args);
       if (isSingleArray) {
         this.connection.sendNotification(prop, [...args]);
       } else {
@@ -81,7 +83,7 @@ export class ProxyJson extends ProxyBase<MessageConnection> {
         requestResult = this.connection.sendRequest(prop, ...args) as Promise<any>;
       }
 
-      this.captureSendRequest(requestId, prop, args);
+      this.capturer.captureSendRequest(requestId, prop, args);
 
       const result: IRPCResult = await requestResult;
 
@@ -91,10 +93,10 @@ export class ProxyJson extends ProxyBase<MessageConnection> {
           error.stack = result.data.stack;
         }
 
-        this.captureSendRequestFail(requestId, prop, result.data);
+        this.capturer.captureSendRequestFail(requestId, prop, result.data);
         throw error;
       } else {
-        this.captureSendRequestResult(requestId, prop, result.data);
+        this.capturer.captureSendRequestResult(requestId, prop, result.data);
         return result.data;
       }
     }
@@ -128,11 +130,11 @@ export class ProxyJson extends ProxyBase<MessageConnection> {
     connection.onRequest((method) => {
       if (!this.registry.has(method)) {
         const requestId = this.nextRequestId();
-        this.captureOnRequest(requestId, method, []);
+        this.capturer.captureOnRequest(requestId, method, []);
         const result = {
           data: METHOD_NOT_REGISTERED,
         };
-        this.captureOnRequestFail(requestId, method, result.data);
+        this.capturer.captureOnRequestFail(requestId, method, result.data);
         return result;
       }
     });
