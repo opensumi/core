@@ -80,6 +80,8 @@ export class SumiConnection implements IDisposable {
 
       this._callbacks.set(requestId, (headers, error, result) => {
         if (error) {
+          this.traceRequestError(requestId, method, args, error);
+
           if (error === METHOD_NOT_REGISTERED) {
             // we should not treat `METHOD_NOT_REGISTERED` as an error.
             // it is a special case, it means the method is not registered on the other side.
@@ -87,7 +89,6 @@ export class SumiConnection implements IDisposable {
             return;
           }
 
-          this.traceRequestError(requestId, method, args, error);
           reject(error);
           return;
         }
