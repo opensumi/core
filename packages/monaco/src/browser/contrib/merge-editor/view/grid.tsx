@@ -135,10 +135,15 @@ const MergeActions: React.FC = () => {
 
   const handleOpenTradition = useCallback(() => {
     const uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
-    if (uri) {
-      const fileUri = uri.with({ scheme: 'file', path: uri.path, query: '' });
-      commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, fileUri);
+    if (!uri) {
+      return;
     }
+
+    if (uri.scheme !== 'file') {
+      return;
+    }
+
+    commandService.executeCommand(EDITOR_COMMANDS.API_OPEN_EDITOR_COMMAND_ID, uri);
   }, [mergeEditorService]);
 
   const handleReset = useCallback(async () => {
