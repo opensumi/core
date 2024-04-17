@@ -9,7 +9,7 @@ import { DebugControllerView } from '@opensumi/ide-debug/lib/browser/view/config
 import { DebugToolbarService } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-toolbar.service';
 import { DebugToolbarView } from '@opensumi/ide-debug/lib/browser/view/configuration/debug-toolbar.view';
 
-import * as styles from './run-toolbar.module.less';
+import styles from './run-toolbar.module.less';
 
 const CustomDebugBar = observer(() => {
   const { start } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
