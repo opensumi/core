@@ -1,4 +1,4 @@
-import { parseError, transformErrorForSerialization, uuid } from '@opensumi/ide-core-common';
+import { isUint8Array, transformErrorForSerialization, uuid } from '@opensumi/ide-core-common';
 
 declare global {
   interface Window {
@@ -28,6 +28,8 @@ export interface ICapturedMessage {
   status?: ResponseStatus;
   data?: any;
   error?: any;
+
+  source?: string;
 }
 
 const _global = (typeof window !== 'undefined' ? window : global) || {
@@ -56,23 +58,37 @@ export class Capturer {
       return;
     }
 
-    this.capturer({
+    const data: ICapturedMessage = {
       ...message,
-      requestId: `${this.prefix}-${message.requestId}`,
       source: this.source,
-      error: transformErrorForSerialization(message.error),
-    });
+    };
+
+    if (data.data) {
+      if (isUint8Array(data.data)) {
+        data.data = '<Uint8Array>';
+      }
+    }
+
+    if (message.requestId) {
+      data.requestId = `${this.prefix}-${message.requestId}`;
+    }
+
+    if (message.error) {
+      data.error = transformErrorForSerialization(message.error);
+    }
+
+    this.capturer(data);
   }
 
   captureOnRequest(requestId: ICapturedMessage['requestId'], serviceMethod: string, args: any[]): void {
-    this.capture({ type: MessageType.OnRequest, requestId, serviceMethod, arguments: args });
+    this.capture({ type: MessageType.OnRequest, requestId: `↓${requestId}`, serviceMethod, arguments: args });
   }
 
   captureOnRequestResult(requestId: ICapturedMessage['requestId'], serviceMethod: string, data: any): void {
     this.capture({
       type: MessageType.OnRequestResult,
       status: ResponseStatus.Success,
-      requestId,
+      requestId: `↓${requestId}`,
       serviceMethod,
       data,
     });
@@ -82,7 +98,7 @@ export class Capturer {
     this.capture({
       type: MessageType.OnRequestResult,
       status: ResponseStatus.Fail,
-      requestId,
+      requestId: `↓${requestId}`,
       serviceMethod,
       error,
     });
@@ -117,6 +133,6 @@ export class Capturer {
   }
 
   captureOnNotification(requestId: ICapturedMessage['requestId'], serviceMethod: string, args: any[]): void {
-    this.capture({ type: MessageType.OnNotification, serviceMethod, arguments: args, requestId });
+    this.capture({ type: MessageType.OnNotification, serviceMethod, arguments: args, requestId: `↓${requestId}` });
   }
 }
