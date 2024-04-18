@@ -301,6 +301,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    [AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED]: {
+      type: 'boolean',
+      default: true,
+    },
     [AINativeSettingSectionsId.CHAT_VISIBLE_TYPE]: {
       type: 'string',
       enum: ['never', 'always', 'default'],

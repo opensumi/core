@@ -222,7 +222,7 @@ export class AINativeBrowserContribution
             localized: 'preference.ai.native.inlineChat.auto.visible',
           },
           {
-            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_AUTO_VISIBLE,
+            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
             localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
         ],

@@ -562,7 +562,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                 return list;
               },
               freeInlineCompletions() {},
-              handleItemDidShow: (completions, item) => {
+              handleItemDidShow: (completions) => {
                 if (completions.items.length > 0) {
                   this.aiCompletionsService.setVisibleCompletion(true);
                 }
@@ -576,97 +576,25 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-          this.modelSessionDisposable.addDispose(
-            monacoApi.languages.registerCodeActionProvider(languageId, {
-              provideCodeActions: async (model) => {
-                const parser = this.languageParserService.createParser(languageId);
-                if (!parser) {
-                  return;
-                }
-                const actions = this.inlineChatFeatureRegistry.getCodeActions();
-                if (!actions || actions.length === 0) {
-                  return;
-                }
-
-                const cursorPosition = monacoEditor.getPosition();
-                if (!cursorPosition) {
-                  return;
-                }
-
-                function constructCodeActions(info: ICodeBlockInfo) {
-                  return {
-                    actions: actions.map((v) => {
-                      const command = {} as monaco.Command;
-                      if (v.command) {
-                        command.id = v.command.id;
-                        command.arguments = [info.range];
-                      }
-
-                      let title = v.title;
-
-                      switch (info.infoCategory) {
-                        case 'function': {
-                          title = title + ` for Function: ${info.name}`;
-                        }
-                      }
-
-                      return {
-                        ...v,
-                        title,
-                        ranges: [info.range],
-                        command,
-                      };
-                    }) as monaco.CodeAction[],
-                    dispose() {},
-                  };
-                }
-
-                const info = await parser.provideCodeBlockInfo(model, cursorPosition);
-
-                if (info) {
-                  return constructCodeActions(info);
-                }
-
-                // check current line is empty
-                const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
-                if (currentLineLength !== 0) {
-                  return;
-                }
-
-                // 获取视窗范围内的代码块
-                const ranges = monacoEditor.getVisibleRanges();
-                if (ranges.length === 0) {
-                  return;
-                }
-
-                // 查找从当前行至视窗最后一行的代码块中是否包含函数
-                const newRange = new monaco.Range(cursorPosition.lineNumber, 0, ranges[0].endLineNumber + 1, 0);
-
-                const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
-                if (rangeInfo) {
-                  return constructCodeActions(rangeInfo);
-                }
-              },
-            }),
-          );
+          this.modelSessionDisposable.addDispose(this.contributeCodeActionFeature(languageId, editor));
         }
       }),
     );
   }
 
-  lastmodelRequestRenameEndTime: number | undefined;
-  lastmodelRequestRenameSessionId: string | undefined;
+  lastModelRequestRenameEndTime: number | undefined;
+  lastModelRequestRenameSessionId: string | undefined;
 
   protected contributeRenameFeature(languageId: string): IDisposable {
     const disposable = new Disposable();
 
     disposable.addDispose(
       this.monacoTelemetryService.onEventLog(({ type, event }) => {
-        if (type === 'renameInvokedEvent' && this.lastmodelRequestRenameSessionId) {
-          this.aiReporter.end(this.lastmodelRequestRenameSessionId, {
+        if (type === 'renameInvokedEvent' && this.lastModelRequestRenameSessionId) {
+          this.aiReporter.end(this.lastModelRequestRenameSessionId, {
             message: 'done',
             success: true,
-            modelRequestEndTime: this.lastmodelRequestRenameEndTime,
+            modelRequestEndTime: this.lastModelRequestRenameEndTime,
             ...event,
           });
         }
@@ -674,7 +602,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     );
 
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
-      this.lastmodelRequestRenameSessionId = undefined;
+      this.lastModelRequestRenameSessionId = undefined;
 
       const startTime = +new Date();
       const relationId = this.aiReporter.start('rename', {
@@ -682,7 +610,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         type: AISerivceType.Rename,
         modelRequestStartTime: startTime,
       });
-      this.lastmodelRequestRenameSessionId = relationId;
+      this.lastModelRequestRenameSessionId = relationId;
 
       const toDispose = token.onCancellationRequested(() => {
         const endTime = +new Date();
@@ -695,13 +623,13 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           modelRequestEndTime: endTime,
         });
 
-        this.lastmodelRequestRenameSessionId = undefined;
+        this.lastModelRequestRenameSessionId = undefined;
       });
 
       try {
         const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
         toDispose.dispose();
-        this.lastmodelRequestRenameEndTime = +new Date();
+        this.lastModelRequestRenameEndTime = +new Date();
         return result;
       } catch (error) {
         const endTime = +new Date();
@@ -718,6 +646,110 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     disposable.addDispose(
       monacoApi.languages.registerNewSymbolNameProvider(languageId, {
         provideNewSymbolNames: provider,
+      }),
+    );
+
+    return disposable;
+  }
+
+  protected contributeCodeActionFeature(languageId: string, editor: IEditor): IDisposable {
+    const disposable = new Disposable();
+
+    let prefInlineChatActionEnabled = this.preferenceService.getValid(
+      AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+      true,
+    );
+    this.disposables.push({
+      dispose: () => {
+        this.preferenceService.onSpecificPreferenceChange(
+          AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+          ({ newValue }) => {
+            prefInlineChatActionEnabled = newValue;
+          },
+        );
+      },
+    });
+
+    if (!prefInlineChatActionEnabled) {
+      return disposable;
+    }
+
+    const { monacoEditor } = editor;
+
+    disposable.addDispose(
+      monacoApi.languages.registerCodeActionProvider(languageId, {
+        provideCodeActions: async (model) => {
+          if (!prefInlineChatActionEnabled) {
+            return;
+          }
+
+          const parser = this.languageParserService.createParser(languageId);
+          if (!parser) {
+            return;
+          }
+          const actions = this.inlineChatFeatureRegistry.getCodeActions();
+          if (!actions || actions.length === 0) {
+            return;
+          }
+
+          const cursorPosition = monacoEditor.getPosition();
+          if (!cursorPosition) {
+            return;
+          }
+
+          function constructCodeActions(info: ICodeBlockInfo) {
+            return {
+              actions: actions.map((v) => {
+                const command = {} as monaco.Command;
+                if (v.command) {
+                  command.id = v.command.id;
+                  command.arguments = [info.range];
+                }
+
+                let title = v.title;
+
+                switch (info.infoCategory) {
+                  case 'function': {
+                    title = title + ` for Function: ${info.name}`;
+                  }
+                }
+
+                return {
+                  ...v,
+                  title,
+                  ranges: [info.range],
+                  command,
+                };
+              }) as monaco.CodeAction[],
+              dispose() {},
+            };
+          }
+
+          const info = await parser.provideCodeBlockInfo(model, cursorPosition);
+          if (info) {
+            return constructCodeActions(info);
+          }
+
+          // check current line is empty
+          const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
+          if (currentLineLength !== 0) {
+            return;
+          }
+
+          // 获取视窗范围内的代码块
+          const ranges = monacoEditor.getVisibleRanges();
+          if (ranges.length === 0) {
+            return;
+          }
+
+          // 查找从当前行至视窗最后一行的代码块中是否包含函数
+          const newRange = new monaco.Range(cursorPosition.lineNumber, 0, ranges[0].endLineNumber + 1, 0);
+
+          const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
+          if (rangeInfo) {
+            return constructCodeActions(rangeInfo);
+          }
+        },
       }),
     );
 
