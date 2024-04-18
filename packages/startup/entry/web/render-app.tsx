@@ -2,8 +2,6 @@
 console.time('Render');
 
 import { Injector } from '@opensumi/di';
-import { AI_MENU_BAR_LEFT } from '@opensumi/ide-ai-native/lib/browser/layout/layout-config';
-import { AI_MENU_BAR_DEBUG_TOOLBAR } from '@opensumi/ide-ai-native/lib/common';
 import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { uuid } from '@opensumi/ide-core-common';
@@ -72,20 +70,10 @@ export const getDefaultClientAppOpts = ({
       [SlotLocation.action]: {
         modules: ['@opensumi/ide-toolbar-action'],
       },
-      [AI_MENU_BAR_LEFT]: {
-        modules: [AI_MENU_BAR_DEBUG_TOOLBAR],
-      },
     },
   },
   useCdnIcon: true,
   useExperimentalShadowDom: true,
-  AINativeConfig: {
-    layout: {
-      useMenubarView: true,
-      useMergeRightWithLeftPanel: true,
-      menubarLogo: 'https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*BstfT6p0xWUAAAAAAAAAAAAADhl8AQ/original',
-    },
-  },
   defaultPreferences: {
     'general.language': defaultLanguage,
     'general.theme': 'opensumi-dark',
