@@ -1469,11 +1469,12 @@ export const localizationBundle = {
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
 
-    'preference.aiNative.inlineChat.title': 'Inline Chat',
-    'preference.aiNative.chat.title': 'Chat',
-    'preference.aiNative.inlineChat.auto.visible':
-      'Does Inline Chat automatically appear when code snippets are selected ?',
-    'preference.aiNative.chat.visible.type': 'Control how the chat panel is displayed by default',
+    'preference.ai.native.inlineChat.title': 'Inline Chat',
+    'preference.ai.native.chat.title': 'Chat',
+    'preference.ai.native.inlineChat.auto.visible': 'Does Inline Chat automatically appear when code are selected?',
+    'preference.ai.native.inlineChat.codeAction.enabled':
+      'Does Inline Chat related code actions automatically appear when code are selected?',
+    'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
     // #endregion AI Native
 
     // #endregion merge editor

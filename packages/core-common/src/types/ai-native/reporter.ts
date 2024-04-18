@@ -6,6 +6,7 @@ export enum AISerivceType {
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
+  Rename = 'rename',
 }
 
 export interface CommonLogInfo {
@@ -68,10 +69,26 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
   cancelNum: number;
 }
 
+export interface RenameRT extends Partial<CommonLogInfo> {
+  /**
+   * 用户取消了重命名操作
+   */
+  isCancel?: boolean;
+  /**
+   * 开始请求重命名候选项的时间
+   */
+  modelRequestStartTime: number;
+  /**
+   * 请求重命名候选项结束的时间
+   */
+  modelRequestEndTime: number;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
   | ({ type: AISerivceType.Completion } & CompletionRT)
-  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT);
+  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
+  | ({ type: AISerivceType.Rename } & RenameRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 
