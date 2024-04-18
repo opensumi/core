@@ -1,14 +1,13 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 
-import { IChatInternalService, IChatMessageStructure } from '../../common';
-
-import { ChatInternalService } from './chat.internal.service';
+import { IChatMessageStructure } from '../../common';
+import { IHistoryChatMessage, MsgHistoryManager } from '../model/msg-history-manager';
 
 @Injectable()
 export class ChatService extends Disposable {
-  @Autowired(IChatInternalService)
-  private chatInternalService: ChatInternalService;
+  @Autowired(MsgHistoryManager)
+  private msgHistoryManager: MsgHistoryManager;
 
   private readonly _onChatMessageLaunch = new Emitter<IChatMessageStructure>();
   public readonly onChatMessageLaunch: Event<IChatMessageStructure> = this._onChatMessageLaunch.event;
@@ -25,5 +24,9 @@ export class ChatService extends Disposable {
    */
   public sendReplyMessage(data: string) {
     this._onChatReplyMessageLaunch.fire(data);
+  }
+
+  public getHistoryMessages(): IHistoryChatMessage[] {
+    return this.msgHistoryManager.getMessages();
   }
 }
