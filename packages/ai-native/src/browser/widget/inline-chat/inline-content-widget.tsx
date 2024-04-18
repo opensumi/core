@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService } from '@opensumi/ide-core-browser';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { Emitter } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
@@ -30,8 +30,11 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
 
   private originTop = 0;
 
-  private readonly _onActionClickEmitter = new Emitter<string>();
-  public readonly onActionClick: Event<string> = this._onActionClickEmitter.event;
+  private readonly _onActionClickEmitter = new Emitter<{
+    actionId: string;
+    source: string;
+  }>();
+  public readonly onActionClick = this._onActionClickEmitter.event;
 
   constructor(protected readonly editor: IMonacoCodeEditor) {
     super(editor);
@@ -51,12 +54,17 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     super.dispose();
   }
 
-  clickActionId(actionId: string): void {
-    this._onActionClickEmitter.fire(actionId);
+  clickActionId(actionId: string, source: string): void {
+    this._onActionClickEmitter.fire({ actionId, source });
   }
 
   public renderView(): React.ReactNode {
-    return <AIInlineChatController onClickActions={this._onActionClickEmitter} onClose={() => this.dispose()} />;
+    return (
+      <AIInlineChatController
+        onClickActions={(id) => this.clickActionId(id, 'widget')}
+        onClose={() => this.dispose()}
+      />
+    );
   }
 
   override async show(options?: ShowAIContentOptions | undefined): Promise<void> {
@@ -72,7 +80,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
     return domNode;
   }
 
-  override async hide(options?: ShowAIContentOptions | undefined): Promise<void> {
+  override async hide(): Promise<void> {
     this.aiNativeContextKey.inlineChatIsVisible.set(false);
     super.hide();
   }

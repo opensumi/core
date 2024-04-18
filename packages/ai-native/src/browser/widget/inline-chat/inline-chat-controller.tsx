@@ -4,7 +4,7 @@ import { IAIInlineChatService, useInjectable } from '@opensumi/ide-core-browser'
 import { AIAction, AIInlineResult, EnhancePopover } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
-import { Emitter, InlineChatFeatureRegistryToken, localize } from '@opensumi/ide-core-common';
+import { InlineChatFeatureRegistryToken, localize } from '@opensumi/ide-core-common';
 
 import { Loading } from '../../components/Loading';
 
@@ -67,7 +67,7 @@ const AIInlineOperation = (props: IAIInlineOperationProps) => {
 };
 
 export interface IAIInlineChatControllerProps {
-  onClickActions: Emitter<string>;
+  onClickActions: (id: string) => void;
   onClose?: () => void;
 }
 
@@ -128,7 +128,7 @@ export const AIInlineChatController = (props: IAIInlineChatControllerProps) => {
   const handleClickActions = useCallback(
     (id: string) => {
       if (onClickActions) {
-        onClickActions.fire(id);
+        onClickActions(id);
       }
     },
     [onClickActions],

@@ -2,6 +2,7 @@ export const AI_REPORTER_NAME = 'AI';
 
 export enum AISerivceType {
   Chat = 'chat',
+  InlineChat = 'inlineChat',
   CustomReplay = 'customReplay',
   Completion = 'completion',
   Agent = 'agent',
@@ -84,11 +85,24 @@ export interface RenameRT extends Partial<CommonLogInfo> {
   modelRequestEndTime: number;
 }
 
+export interface InlineChatRT extends Partial<CommonLogInfo> {
+  /**
+   * 用户触发 Inline Chat 的来源
+   */
+  source: string;
+
+  /**
+   * @deprecated Please use `source` instead
+   */
+  runByCodeAction?: boolean;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
   | ({ type: AISerivceType.Completion } & CompletionRT)
   | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
-  | ({ type: AISerivceType.Rename } & RenameRT);
+  | ({ type: AISerivceType.Rename } & RenameRT)
+  | ({ type: AISerivceType.InlineChat } & InlineChatRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 
