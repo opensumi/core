@@ -45,6 +45,7 @@ interface IChatReplyProps {
   request: ChatRequestModel;
   startTime?: number;
   onRegenerate?: () => void;
+  onDidChange?: (content: string) => void;
 }
 
 const TreeRenderer = (props: { treeData: IChatResponseProgressFileTreeData }) => {
@@ -154,7 +155,7 @@ const ComponentRender = (props: { component: string; value?: unknown }) => {
 };
 
 export const ChatReply = (props: IChatReplyProps) => {
-  const { relationId, request, startTime = 0, onRegenerate } = props;
+  const { relationId, request, startTime = 0, onRegenerate, onDidChange } = props;
 
   const [, update] = useReducer((num) => (num + 1) % 1_000_000, 0);
   const msgStreamManager = useInjectable<MsgStreamManager>(MsgStreamManager);
@@ -173,6 +174,10 @@ export const ChatReply = (props: IChatReplyProps) => {
 
     disposableCollection.push(
       request.response.onDidChange(() => {
+        if (onDidChange) {
+          onDidChange(request.response.responseText);
+        }
+
         if (request.response.isComplete) {
           aiReporter.end(relationId, {
             message: request.response.responseText,
@@ -197,7 +202,7 @@ export const ChatReply = (props: IChatReplyProps) => {
     );
 
     return () => disposableCollection.dispose();
-  }, [relationId]);
+  }, [relationId, onDidChange]);
 
   const handleRegenerate = useCallback(() => {
     request.response.reset();

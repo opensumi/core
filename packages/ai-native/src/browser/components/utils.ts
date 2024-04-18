@@ -2,10 +2,10 @@ import { ITextMessageProps } from 'react-chat-elements';
 
 import { CODICON_OWNER, getExternalIcon } from '@opensumi/ide-core-browser';
 
-import { IChatReplyFollowup, ISampleQuestions } from '../../common/index';
+import { ChatMessageRole, IChatReplyFollowup, ISampleQuestions } from '../../common/index';
 
 export interface MessageData extends Pick<ITextMessageProps, 'id' | 'position' | 'className' | 'title'> {
-  role: 'user' | 'ai';
+  role: ChatMessageRole;
   relationId: string;
   className?: string;
   text: string | React.ReactNode;
@@ -25,10 +25,10 @@ const createMessage = (message: MessageData) => ({
 });
 
 export const createMessageByUser = (message: UserMessageData, className?: string) =>
-  createMessage({ ...message, position: 'right', title: ME_NAME, className, role: 'user' });
+  createMessage({ ...message, position: 'right', title: ME_NAME, className, role: ChatMessageRole.User });
 
 export const createMessageByAI = (message: AIMessageData, className?: string) =>
-  createMessage({ ...message, position: 'left', title: '', className, role: 'ai' });
+  createMessage({ ...message, position: 'left', title: '', className, role: ChatMessageRole.Assistant });
 
 export const extractIcon = (question: IChatReplyFollowup): ISampleQuestions => {
   let { title } = question;

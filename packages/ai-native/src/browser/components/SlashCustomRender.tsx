@@ -9,12 +9,12 @@ import { TSlashCommandCustomRender } from '../types';
 
 // slash command 自定义渲染组件
 export const SlashCustomRender = (props: {
-  message: string;
+  userMessage: string;
   relationId: string;
   renderContent: TSlashCommandCustomRender;
   startTime: number;
 }) => {
-  const { message, relationId, renderContent, startTime } = props;
+  const { userMessage, relationId, renderContent, startTime } = props;
 
   const aiChatService = useInjectable<ChatInternalService>(IChatInternalService);
   const aiReporter = useInjectable<IAIReporter>(IAIReporter);
@@ -23,12 +23,12 @@ export const SlashCustomRender = (props: {
     aiChatService.setLatestSessionId(relationId);
 
     aiReporter.end(relationId, {
-      message,
+      message: userMessage,
       replytime: Date.now() - startTime,
       success: true,
       isStop: false,
     });
   }, [renderContent, relationId]);
 
-  return <div>{renderContent({ userMessage: message })}</div>;
+  return <div>{renderContent({ userMessage })}</div>;
 };
