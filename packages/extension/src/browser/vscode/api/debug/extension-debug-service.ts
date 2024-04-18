@@ -14,8 +14,7 @@ import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { IExtensionManifest } from '../../../../common';
-import { DebugActivationEvent } from '../../../../common/vscode';
+import { DebugActivationEvent, IExtensionManifest } from '../../../../common/vscode';
 import { DebugConfigurationProviderTriggerKind } from '../../../../common/vscode/ext-types';
 import { AbstractExtInstanceManagementService, IActivationEventService } from '../../../types';
 

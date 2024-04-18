@@ -1,7 +1,8 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceConfigurations, PreferenceService, URI, isUndefined } from '@opensumi/ide-core-browser';
+import { IEventBus, PreferenceConfigurations, PreferenceService, URI, isUndefined } from '@opensumi/ide-core-browser';
+import { ExtensionsInitializedEvent } from '@opensumi/ide-extension/lib/browser/types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
@@ -43,6 +44,9 @@ export class DebugConfigurationService {
 
   @Autowired(PreferenceConfigurations)
   protected readonly preferenceConfigurations: PreferenceConfigurations;
+
+  @Autowired(IEventBus)
+  protected eventBus: IEventBus;
 
   private _whenReady: Promise<void>;
 
@@ -89,6 +93,9 @@ export class DebugConfigurationService {
         }
       }
     });
+    this.eventBus.on(ExtensionsInitializedEvent, async (event) => {
+      this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
+    });
     await this.updateWorkspaceState();
     // onWorkspaceLocationChanged 事件不能满足实时更新workspaceRoots的需求
     // onWorkspaceChanged 能获取到在工作区状态添加文件夹的节点变化
@@ -127,10 +134,6 @@ export class DebugConfigurationService {
       this.updateCurrentValue(DEFAULT_ADD_CONFIGURATION_KEY);
     }
     this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
-    setTimeout(async () => {
-      // 这里也许需要感知一下 Extension 的初始化事件做一下优化
-      this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
-    }, 1000);
   }
 
   start = async () => {
