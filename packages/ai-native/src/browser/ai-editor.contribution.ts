@@ -147,10 +147,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
           this.disposeAllWidget();
         }
       }),
-    );
-
-    // 通过 code actions 来透出我们 inline chat 的功能
-    this.disposables.push(
+      // 通过 code actions 来透出我们 inline chat 的功能
       this.inlineChatFeatureRegistry.onCodeActionRun(({ id, range }) => {
         monacoEditor.setSelection(range);
         this.showInlineChat(editor);
@@ -161,7 +158,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     );
 
     let needShowInlineChat = false;
-
     this.disposables.push(
       monacoEditor.onMouseDown(() => {
         needShowInlineChat = false;
@@ -224,11 +220,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         (_, e) => e,
         100,
       )(() => {
-        if (!prefInlineChatAutoVisible) {
-          return;
-        }
-
-        if (!needShowInlineChat) {
+        if (!prefInlineChatAutoVisible || !needShowInlineChat) {
           return;
         }
 
@@ -246,7 +238,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
     const selectionChange = () => {
       this.aiCompletionsService.hideStatusBarItem();
-      const selection = monacoEditor.getSelection()!;
+      const selection = monacoEditor.getSelection();
+      if (!selection) {
+        return;
+      }
+
       // 判断是否选中区域
       if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
         this.aiInlineCompletionsProvider.cancelRequest();
@@ -256,7 +252,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       });
     };
 
-    const debouncedSelectionChange = debounce(() => selectionChange(), 50, {
+    const debouncedSelectionChange = debounce(selectionChange, 50, {
       maxWait: 200,
       leading: true,
       trailing: true,
@@ -588,19 +584,6 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   protected contributeRenameFeature(languageId: string): IDisposable {
     const disposable = new Disposable();
 
-    disposable.addDispose(
-      this.monacoTelemetryService.onEventLog(({ type, event }) => {
-        if (type === 'renameInvokedEvent' && this.lastModelRequestRenameSessionId) {
-          this.aiReporter.end(this.lastModelRequestRenameSessionId, {
-            message: 'done',
-            success: true,
-            modelRequestEndTime: this.lastModelRequestRenameEndTime,
-            ...event,
-          });
-        }
-      }),
-    );
-
     const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
       this.lastModelRequestRenameSessionId = undefined;
 
@@ -643,11 +626,21 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       }
     };
 
-    disposable.addDispose(
+    disposable.addDispose([
       monacoApi.languages.registerNewSymbolNameProvider(languageId, {
         provideNewSymbolNames: provider,
       }),
-    );
+      this.monacoTelemetryService.onEventLog(({ type, event }) => {
+        if (type === 'renameInvokedEvent' && this.lastModelRequestRenameSessionId) {
+          this.aiReporter.end(this.lastModelRequestRenameSessionId, {
+            message: 'done',
+            success: true,
+            modelRequestEndTime: this.lastModelRequestRenameEndTime,
+            ...event,
+          });
+        }
+      }),
+    ]);
 
     return disposable;
   }
