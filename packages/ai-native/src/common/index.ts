@@ -142,12 +142,6 @@ export const enum ChatMessageRole {
   Function,
 }
 
-export interface IChatMessage {
-  readonly role: ChatMessageRole;
-  readonly content: string;
-  readonly name?: string;
-}
-
 export interface IChatContent {
   content: string;
   kind: 'content';
