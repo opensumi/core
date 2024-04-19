@@ -57,6 +57,7 @@ enum EInternalModule {
 }
 
 const __interceptModule = enumValueToArray(EInternalModule);
+const __interceptModuleSet = new Set<string>(__interceptModule);
 
 abstract class ApiImplFactory {
   private apiFactory: any;
@@ -315,17 +316,15 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const that = this;
     module._load = function load(request: string, parent: any, isMain: any) {
-      if (!__interceptModule.some((m) => m === request)) {
+      if (!__interceptModuleSet.has(request)) {
         return originalLoad.apply(this, arguments);
       }
 
-      //
       // 可能存在开发插件时通过 npm link 的方式安装的依赖
       // 只通过 parent.filename 查找插件无法兼容这种情况
       // 因为 parent.filename 拿到的路径并不在同一个目录下
       // 往上递归遍历依赖的模块是否在插件目录下
       // 最多只查找 3 层，因为不太可能存在更长的依赖关系
-      //
       const extension = that.lookup(parent, 0);
       if (!extension) {
         return;
@@ -385,7 +384,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         version: extension.packageJSON?.version,
       });
 
-      this.logger.error(err.message);
+      this.logger.error(`extension ${extension.id} throw error`, err.message);
     }
   }
 
@@ -406,8 +405,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const isSumiContributes = this.containsSumiContributes(extension);
 
     const modulePath: string = extension.path;
-    this.logger.debug(`${extension.name} - ${modulePath}`);
-
+    this.logger.debug(`active ${extension.name} from ${modulePath}`);
     this.logger.debug(`active extension host process by ${modulePath}`);
     const extendProxy = this.getExtendModuleProxy(extension, isSumiContributes);
 
@@ -522,13 +520,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }, {});
   }
 
+  /**
+   * @example
+   * "sumiContributes": {
+   *  "viewsProxies": ["ViewComponentID"],
+   * }
+   */
   private getExtendModuleProxy(extension: IExtensionDescription, isSumiContributes: boolean) {
-    /**
-     * @example
-     * "sumiContributes": {
-     *  "viewsProxies": ["ViewComponentID"],
-     * }
-     */
     if (
       isSumiContributes &&
       extension.packageJSON.sumiContributes &&
