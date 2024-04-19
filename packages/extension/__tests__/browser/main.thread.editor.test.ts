@@ -5,7 +5,15 @@ import isEqual from 'lodash/isEqual';
 import { CorePreferences, IContextKeyService, MonacoOverrideServiceRegistry, URI } from '@opensumi/ide-core-browser';
 import { injectMockPreferences } from '@opensumi/ide-core-browser/__mocks__/preference';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { CommonServerPath, Deferred, Emitter, IApplicationService, IEventBus, OS } from '@opensumi/ide-core-common';
+import {
+  CommonServerPath,
+  Deferred,
+  Emitter,
+  IApplicationService,
+  IEventBus,
+  OS,
+  sleep,
+} from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorOpenType, IResource } from '@opensumi/ide-editor';
 import {
@@ -104,7 +112,6 @@ describe('MainThreadEditor Test Suites', () => {
   let extEditor: ExtensionHostEditorService;
   let workbenchEditorService: WorkbenchEditorService;
   let eventBus: IEventBus;
-  let monacoservice: MonacoService;
 
   const disposables: types.OutputChannel[] = [];
   beforeAll(async () => {
@@ -212,7 +219,6 @@ describe('MainThreadEditor Test Suites', () => {
         'editor.previewMode': true,
       },
     });
-    monacoservice = injector.get(MonacoService);
     workbenchEditorService = injector.get(WorkbenchEditorService);
     const extHostDocs = rpcProtocolExt.set(
       ExtHostAPIIdentifier.ExtHostDocuments,
@@ -346,34 +352,63 @@ describe('MainThreadEditor Test Suites', () => {
     );
   });
 
-  it('should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed', (done) => {
-    const resource: IResource = {
-      name: 'test-file',
-      uri: URI.file(path.join(__dirname, 'main.thread.output.test2.ts')),
-      icon: 'file',
-    };
-    const disposer = extEditor.onDidChangeTextEditorVisibleRanges((e) => {
-      disposer.dispose();
-      const converted = e.visibleRanges.map((v) => TypeConverts.Range.from(v));
-      expect(converted.length).toBe(1);
-      expect(converted[0]).toEqual(range);
-      done();
-    });
-    const range = {
-      startLineNumber: 1,
-      startColumn: 12,
-      endLineNumber: 1,
-      endColumn: 12,
-    };
-    eventBus.fire(
-      new EditorVisibleChangeEvent({
-        group: workbenchEditorService.currentEditorGroup,
-        resource: (workbenchEditorService.currentResource as IResource) || resource,
-        visibleRanges: [new monaco.Range(1, 12, 1, 12)],
-        editorUri: workbenchEditorService.currentResource!.uri!,
-      }),
-    );
-  });
+  it(
+    'should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed',
+    async () => {
+      const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+      await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test2.ts')));
+
+      const resource: IResource = {
+        name: 'test-file1',
+        uri: URI.file(path.join(__dirname, 'main.thread.output.test2.ts')),
+        icon: 'file',
+      };
+
+      const defered = new Deferred<void>();
+      const disposer = extEditor.onDidChangeTextEditorVisibleRanges((e) => {
+        // e.payload.uri 是 mock 的，这里用 textEditor.id 来判断
+        if (!(e.textEditor as any).id.includes(resource.uri.toString())) {
+          return;
+        }
+
+        disposer.dispose();
+        const converted = e.visibleRanges.map((v) => TypeConverts.Range.from(v));
+        expect(converted.length).toBe(1);
+        expect(converted[0]).toEqual({
+          startLineNumber: 1,
+          startColumn: 12,
+          endLineNumber: 1,
+          endColumn: 12,
+        });
+
+        defered.resolve();
+      });
+
+      eventBus.fire(
+        new EditorGroupChangeEvent({
+          group: workbenchEditorService.currentEditorGroup,
+          newOpenType: workbenchEditorService.currentEditorGroup.currentOpenType,
+          newResource: resource,
+          oldOpenType: null,
+          oldResource: null,
+        }),
+      );
+
+      await sleep(3 * 1000);
+
+      eventBus.fire(
+        new EditorVisibleChangeEvent({
+          group: workbenchEditorService.currentEditorGroup,
+          resource,
+          visibleRanges: [new monaco.Range(1, 12, 1, 12)],
+          editorUri: resource.uri,
+        }),
+      );
+
+      await defered.promise;
+    },
+    10 * 1000,
+  );
 
   it.skip('should receive onDidChangeTextEditorViewColumn event when editor view column has changed', (done) => {
     extEditor.onDidChangeTextEditorViewColumn((e) => {
