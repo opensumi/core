@@ -2,7 +2,6 @@ import { action, makeObservable, observable, runInAction } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { IEventBus, PreferenceConfigurations, PreferenceService, URI, isUndefined } from '@opensumi/ide-core-browser';
-import { ExtensionsInitializedEvent } from '@opensumi/ide-extension/lib/browser/types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceVariableContribution } from '@opensumi/ide-workspace/lib/browser/workspace-variable-contribution';
 
@@ -10,6 +9,7 @@ import {
   DEFAULT_ADD_CONFIGURATION_KEY,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
+  DebugConfigurationsReadyEvent,
   DebugSessionOptions,
 } from '../../../common';
 import { DebugConfiguration } from '../../../common';
@@ -93,7 +93,7 @@ export class DebugConfigurationService {
         }
       }
     });
-    this.eventBus.on(ExtensionsInitializedEvent, async (event) => {
+    this.eventBus.on(DebugConfigurationsReadyEvent, async (event) => {
       this.dynamicConfigurations = await this.debugConfigurationManager.getDynamicConfigurationsSupportTypes();
     });
     await this.updateWorkspaceState();
