@@ -467,14 +467,35 @@ export class ExtHostDebug implements IExtHostDebugService {
     return undefined;
   }
 
+  // 根据 debugType 和 triggerKind 来检查 DebugConfigurationProvider 的数目
+  async $getDebugConfigurationProvidersCount(
+    debugType: string,
+    triggerKind?: vscode.DebugConfigurationProviderTriggerKind,
+  ): Promise<number> {
+    let providers = this.configurationProviders.get(debugType);
+    if (providers) {
+      if (triggerKind) {
+        providers = new Set(Array.from(providers).filter((provider) => provider.triggerKind === triggerKind));
+      }
+      return providers.size;
+    } else {
+      return 0;
+    }
+  }
+
   async $provideDebugConfigurations(
     debugType: string,
     workspaceFolderUri: string | undefined,
     token?: vscode.CancellationToken,
+    triggerKind?: vscode.DebugConfigurationProviderTriggerKind,
   ): Promise<vscode.DebugConfiguration[]> {
     let result: DebugConfiguration[] = [];
-    const providers = this.configurationProviders.get(debugType);
+    let providers = this.configurationProviders.get(debugType);
     if (providers) {
+      if (triggerKind) {
+        providers = new Set(Array.from(providers).filter((provider) => provider.triggerKind === triggerKind));
+      }
+
       for (const provider of providers) {
         if (provider.provideDebugConfigurations) {
           result = result.concat(

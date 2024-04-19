@@ -2,6 +2,7 @@ import { visit } from 'jsonc-parser';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  CancellationToken,
   CommandService,
   CommonLanguageId,
   Deferred,
@@ -9,11 +10,14 @@ import {
   Event,
   IContextKey,
   IContextKeyService,
+  ILogServiceClient,
+  ILoggerManagerClient,
   IStorage,
   PreferenceConfigurations,
   PreferenceService,
   STORAGE_NAMESPACE,
   StorageProvider,
+  SupportLogNamespace,
   ThrottledDelayer,
   URI,
   WaitUntilEvent,
@@ -32,6 +36,7 @@ import { EditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 
 import {
   DebugConfiguration,
+  DebugConfigurationProviderTriggerKind,
   DebugServer,
   DebugSessionOptions,
   IDebugServer,
@@ -52,6 +57,19 @@ export interface IDebugConfigurationData {
     workspaceFolderUri?: string;
     index: number;
   };
+}
+
+export interface DebugConfigurationType {
+  type: string;
+  label?: string;
+  popupHint?: string;
+}
+
+export interface InternalDebugConfigurationProvider {
+  type: string;
+  label?: string;
+  popupHint?: string;
+  provideDebugConfigurations(folderUri: string | undefined, token?: CancellationToken): Promise<DebugConfiguration[]>;
 }
 
 @Injectable()
@@ -100,6 +118,17 @@ export class DebugConfigurationManager {
   @Autowired(EditorCollectionService)
   protected readonly editorCollectionService: EditorCollectionService;
 
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManagerClient: ILoggerManagerClient;
+
+  protected logger: ILogServiceClient;
+
+  // DebugConfigManager 直接维护的一批内部 DebugConfigurationProvider，用于模块级的快速自定义 Dynamic DebugConfiguration
+  protected readonly internalDebugConfigurationProviders = new Map<string, InternalDebugConfigurationProvider>();
+
+  // DebugConfigManager 维护 DebugConfigurationOverride，用于模块级的修改 Debugger 的 Label 和提示
+  protected readonly internalDebugConfigurationOverride = new Map<string, DebugConfigurationType>();
+
   private contextDebuggersAvailable: IContextKey<boolean>;
 
   // 用于存储支持断点的语言
@@ -123,6 +152,7 @@ export class DebugConfigurationManager {
   constructor() {
     this.init();
     this.contextDebuggersAvailable = CONTEXT_DEBUGGERS_AVAILABLE.bind(this.contextKeyService);
+    this.logger = this.loggerManagerClient.getLogger(SupportLogNamespace.Browser);
   }
 
   protected async init(): Promise<void> {
@@ -180,12 +210,22 @@ export class DebugConfigurationManager {
 
   protected getAll(): DebugSessionOptions[] {
     const debugSessionOptions: DebugSessionOptions[] = [];
+    const recentDynamicOptions = this.getRecentDynamicConfigurations();
+
+    recentDynamicOptions.forEach((config, index) => {
+      debugSessionOptions.push({
+        configuration: config,
+        workspaceFolderUri: this.model?.workspaceFolderUri,
+        index,
+      });
+    });
+
     for (const model of this.models.values()) {
       for (let index = 0, len = model.configurations.length; index < len; index++) {
         debugSessionOptions.push({
           configuration: model.configurations[index],
           workspaceFolderUri: model.workspaceFolderUri,
-          index,
+          index, // 这里的 index 要遵循 model.configurations 的顺序，后面的 find 函数需要用 index 去匹配
         });
       }
     }
@@ -239,6 +279,16 @@ export class DebugConfigurationManager {
   }
 
   find(name: string, workspaceFolderUri: string | undefined, index?: number): DebugSessionOptions | undefined {
+    const recentDynamicOptions = this.getRecentDynamicConfigurations();
+    const matchedRecentDynamicOptions = recentDynamicOptions.find((config) => config.name === name);
+    if (matchedRecentDynamicOptions) {
+      return {
+        configuration: matchedRecentDynamicOptions,
+        workspaceFolderUri: this.model?.workspaceFolderUri,
+        index: recentDynamicOptions.indexOf(matchedRecentDynamicOptions),
+      };
+    }
+
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {
         if (typeof index === 'number') {
@@ -434,19 +484,10 @@ export class DebugConfigurationManager {
     });
   }
 
-  protected async doCreate(model: DebugConfigurationModel): Promise<URI> {
-    // 设置launch初始值
-    await this.preferences.set('launch', {});
-    // 获取可写入内容的文件
-    const { configUri } = this.preferences.resolve('launch');
-    let uri: URI;
-    if (configUri && configUri.path.base === 'launch.json') {
-      uri = configUri;
-    } else {
-      uri = new URI(model.workspaceFolderUri).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
-    }
-    const debugType = await this.selectDebugType();
-    const configurations = debugType ? await this.provideDebugConfigurations(debugType, model.workspaceFolderUri) : [];
+  /**
+   * 初始化 launch 文件
+   */
+  public async createInitialConfig(uri: URI, configurations: DebugConfiguration[] = []): Promise<void> {
     const content = this.getInitialConfigurationContent(configurations);
     const fileStat = await this.filesystem.getFileStat(uri.toString());
 
@@ -463,7 +504,71 @@ export class DebugConfigurationManager {
         }
       }
     }
+  }
 
+  public async showDynamicConfigurationsTypesQuickPick() {
+    const debugTypes = await this.getDynamicConfigurationsSupportTypes();
+    const debugType = await this.quickPick.show(
+      debugTypes.map((debugType) => ({ label: debugType.label || debugType.type, value: debugType.type })),
+      {
+        placeholder: localize('debug.configuration.selectAutomaticDebugTypes'),
+      },
+    );
+    return debugType;
+  }
+
+  public async getDynamicConfigurationsSupportTypes(): Promise<DebugConfigurationType[]> {
+    const debugTypes = new Set<string>();
+
+    const typesFromInternal = Array.from(this.internalDebugConfigurationProviders.keys());
+    typesFromInternal.forEach((type) => debugTypes.add(type));
+    const typesFromExt = await this.debug.getDynamicConfigurationsSupportTypes();
+    typesFromExt.forEach((type) => debugTypes.add(type));
+
+    return Array.from(debugTypes).map((type) => ({
+      type,
+      label: this.getDebuggerLabel(type),
+      popupHint: this.getDebuggerExtraPopupHint(type),
+    }));
+  }
+
+  public async showDynamicConfigurationsQuickPick(type: string): Promise<DebugConfiguration | undefined> {
+    const configurations = await this.provideDynamicDebugConfigurations(type, this.model?.workspaceFolderUri);
+    let result: DebugConfiguration | undefined;
+    if (configurations.length > 0 && configurations[0]['autoPick']) {
+      // 无需拉起 QuickPick，直接选中第一个（某些情况下，ProvideConfiguration 后不希望用户多余的操作）
+      result = configurations[0];
+      delete result['autoPick'];
+    } else {
+      result = await this.quickPick.show(
+        configurations.map((config) => ({ label: config.name, value: config })),
+        {
+          placeholder: localize('debug.configuration.selectAutomaticDebugConfiguration'),
+        },
+      );
+    }
+
+    if (result) {
+      await this.addRecentDynamicConfiguration(result);
+      this.onDidChangeEmitter.fire(undefined);
+    }
+    return result;
+  }
+
+  protected async doCreate(model: DebugConfigurationModel): Promise<URI> {
+    // 设置launch初始值
+    await this.preferences.set('launch', {});
+    // 获取可写入内容的文件
+    const { configUri } = this.preferences.resolve('launch');
+    let uri: URI;
+    if (configUri && configUri.path.base === 'launch.json') {
+      uri = configUri;
+    } else {
+      uri = new URI(model.workspaceFolderUri).resolve(`${this.preferenceConfigurations.getPaths()[0]}/launch.json`);
+    }
+    const debugType = await this.selectDebugType();
+    const configurations = debugType ? await this.provideDebugConfigurations(debugType, model.workspaceFolderUri) : [];
+    await this.createInitialConfig(uri, configurations);
     return uri;
   }
 
@@ -475,8 +580,77 @@ export class DebugConfigurationManager {
     return this.debug.provideDebugConfigurations(debugType, workspaceFolderUri);
   }
 
+  public async provideDynamicDebugConfigurations(
+    debugType: string,
+    workspaceFolderUri: string | undefined,
+  ): Promise<DebugConfiguration[]> {
+    await this.fireWillProvideDebugConfiguration();
+    const configurationList: DebugConfiguration[] = [];
+    const internalProvider = this.internalDebugConfigurationProviders.get(debugType);
+    // 额外从 internalProvider 中获取配置
+    if (internalProvider) {
+      const internalList = internalProvider && (await internalProvider.provideDebugConfigurations(workspaceFolderUri));
+      internalList && configurationList.push(...internalList);
+    }
+    const extList = await this.debug.provideDebugConfigurations(
+      debugType,
+      workspaceFolderUri,
+      DebugConfigurationProviderTriggerKind.Dynamic,
+    );
+    configurationList.push(...extList);
+    return configurationList;
+  }
+
+  /**
+   * 通过模块的方式注册 DynamicDebugConfigurationProvider
+   * 此途径不经过插件，可以基于模块能力做更加便捷的集成
+   */
+  registerInternalDebugConfigurationProvider(type: string, provider: InternalDebugConfigurationProvider): void {
+    this.internalDebugConfigurationProviders.set(type, provider);
+    this.onDidChangeEmitter.fire(undefined);
+  }
+
+  /**
+   * 可以通过注册 DebugConfigurationType 空实现的方式来 OverRide 现有 ConfigurationProvider 的一些 Label 或者 Hint
+   * @param type debugger Type
+   * @param debugConfigurationOverride 覆写的 Debugger Label 和提示
+   */
+  registerInternalDebugConfigurationOverride(type: string, debugConfigurationOverride: DebugConfigurationType) {
+    this.internalDebugConfigurationOverride.set(type, debugConfigurationOverride);
+    this.onDidChangeEmitter.fire(undefined);
+  }
+
+  // 获取临时存储的 Dynamic DebugConfigurations，方便用户快速选择之前用过的动态配置
+  getRecentDynamicConfigurations(): DebugConfiguration[] {
+    return this.debugConfigurationStorage.get('recentDynamicConfigurations', []);
+  }
+
+  async setRecentDynamicConfigurations(configurations: DebugConfiguration[]) {
+    return await this.debugConfigurationStorage.set('recentDynamicConfigurations', configurations || []);
+  }
+
+  async addRecentDynamicConfiguration(configuration: DebugConfiguration) {
+    const configurations = this.getRecentDynamicConfigurations();
+    // 检查有没有重复的配置，如果有则删除
+    const index = configurations.findIndex((config) => config.name === configuration.name);
+    if (index !== -1) {
+      configurations.splice(index, 1);
+    }
+    configurations.unshift(configuration);
+    // 如果数组长度大于 3，那么删除后面的所有元素，避免记忆的智能 Debug 配置过多
+    if (configurations.length > 3) {
+      configurations.splice(3);
+    }
+    await this.setRecentDynamicConfigurations(configurations);
+  }
+
   protected async fireWillProvideDebugConfiguration(): Promise<void> {
-    await WaitUntilEvent.fire(this.onWillProvideDebugConfigurationEmitter, {});
+    try {
+      // 这个命令背后会触发 ActivateEvent，然后插件 Activate 的时候可能会抛出异常导致逻辑错误
+      await WaitUntilEvent.fire(this.onWillProvideDebugConfigurationEmitter, {}, 2000);
+    } catch (e) {
+      this.logger.error('fireWillProvideDebugConfiguration failed', e);
+    }
   }
 
   protected getInitialConfigurationContent(initialConfigurations: DebugConfiguration[]): string {
@@ -578,5 +752,36 @@ export class DebugConfigurationManager {
 
   getDebuggers(): IDebuggerContribution[] {
     return this.debuggers.filter((dbg) => !!dbg);
+  }
+
+  getDebuggerLabel(type: string): string | undefined {
+    const internalDebugConfigurationOverride = this.internalDebugConfigurationOverride.get(type);
+    if (internalDebugConfigurationOverride) {
+      return internalDebugConfigurationOverride.label || type;
+    }
+    // 如果有 internalProvider 则优先使用 internalProvider 的 label
+    const internalProvider = this.internalDebugConfigurationProviders.get(type);
+    if (internalProvider) {
+      return internalProvider.label || type;
+    }
+    const dbgr = this.getDebugger(type);
+    if (dbgr) {
+      return dbgr.label || type;
+    }
+
+    return undefined;
+  }
+
+  // 获取 DebugConfiguration 选择面板里额外的 Hover 提示，这里可以通过模块注入（便于用户更好理解一些 Automatic DebugConfiguration 的能力）
+  getDebuggerExtraPopupHint(type: string): string | undefined {
+    const internalDebugConfigurationOverride = this.internalDebugConfigurationOverride.get(type);
+    if (internalDebugConfigurationOverride) {
+      return internalDebugConfigurationOverride.popupHint || undefined;
+    }
+    // 如果有 internalProvider 则优先使用 internalProvider 的 label
+    const internalProvider = this.internalDebugConfigurationProviders.get(type);
+    if (internalProvider) {
+      return internalProvider.popupHint || undefined;
+    }
   }
 }

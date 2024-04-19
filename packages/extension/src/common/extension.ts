@@ -33,7 +33,7 @@ import { Extension } from '../hosted/vscode.extension';
 import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IExtensionLanguagePack, IMainThreadCommands } from './vscode';
-import { ThemeIcon } from './vscode/ext-types';
+import { ExtensionKind, ThemeIcon } from './vscode/ext-types';
 
 export interface IExtensionMetaData {
   id: string;

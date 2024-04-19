@@ -1,0 +1,46 @@
+.run_toolbar_container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+// 取消 Select 白色的背景
+.run_toolbar_container {
+  .debug_controller_view {
+    :global {
+      .kt-select-container {
+        .kt-select-value-default {
+          background-color: transparent;
+          border-color: transparent;
+        }
+        .kt-select-value-active {
+          border-color: var(--kt-selectOption-activeBorder);
+        }
+      }
+    }
+  }
+}
+
+.debug_action_bar_internal {
+  margin-left: 8px;
+}
+
+.debug_controller_view {
+  max-width: 350px;
+}
+
+.dividing {
+  margin-left: 5px;
+  width: 2px;
+  height: 12px;
+  background-color: var(--editorGroup-border);
+}
+
+.debug_actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  & > *:not(:first-child) {
+    margin-left: 6px;
+  }
+}

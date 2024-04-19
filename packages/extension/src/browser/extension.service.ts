@@ -23,6 +23,7 @@ import {
   localize,
   sleep,
 } from '@opensumi/ide-core-common';
+import { DebugConfigurationsReadyEvent } from '@opensumi/ide-debug';
 import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -275,6 +276,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
 
     this.eventBus.fire(new ExtensionsInitializedEvent(this.extensionInstanceManageService.getExtensionInstances()));
+    this.eventBus.fire(new DebugConfigurationsReadyEvent(undefined));
 
     const extensionInstanceList = this.extensionInstanceManageService.getExtensionInstances();
     this.nodeExtensionService.updateExtensionData(extensionInstanceList);

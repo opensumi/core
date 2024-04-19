@@ -149,4 +149,7 @@ export namespace DEBUG_COMMANDS {
   export const EXCEPTION_WIDGET_CLOSE: Command = {
     id: 'debug.action.closeExceptionWidget',
   };
+  export const SHOW_ALL_AUTOMATIC_DEBUG_CONFIGURATIONS: Command = {
+    id: 'debug.showAllAutomaticDebugConfigurations',
+  };
 }

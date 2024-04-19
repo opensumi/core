@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
+  CancellationToken,
   Disposable,
   DisposableCollection,
   IDisposable,
@@ -13,8 +14,9 @@ import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { DebugActivationEvent } from '../../../../common/vscode';
-import { IActivationEventService } from '../../../types';
+import { DebugActivationEvent, IExtensionManifest } from '../../../../common/vscode';
+import { DebugConfigurationProviderTriggerKind } from '../../../../common/vscode/ext-types';
+import { AbstractExtInstanceManagementService, IActivationEventService } from '../../../types';
 
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 
@@ -54,6 +56,9 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
 
   @Autowired(IActivationEventService)
   protected readonly activationEventService: IActivationEventService;
+
+  @Autowired(AbstractExtInstanceManagementService)
+  private readonly extInstanceManagementService: AbstractExtInstanceManagementService;
 
   protected readonly activationEvents = new Set<string>();
 
@@ -124,15 +129,66 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   async provideDebugConfigurations(
     debugType: string,
     workspaceFolderUri: string | undefined,
+    triggerKind?: DebugConfigurationProviderTriggerKind,
   ): Promise<DebugConfiguration[]> {
     const contributor = this.contributors.get(debugType);
     if (contributor) {
       return (
-        (contributor.provideDebugConfigurations && contributor.provideDebugConfigurations(workspaceFolderUri)) || []
+        (contributor.provideDebugConfigurations &&
+          contributor.provideDebugConfigurations(workspaceFolderUri, undefined, triggerKind)) ||
+        []
       );
     } else {
       return [];
     }
+  }
+
+  // 获取 DebugConfigurationProviderTriggerKind.Dynamic 类型的调试配置支持类型和 Label
+  async getDynamicConfigurationsSupportTypes(): Promise<string[]> {
+    const dynamicSupportedTypes: Set<string> = new Set();
+
+    // 通过解析插件的 Contributes 获取 debuggers 的 type，避开激活插件的过程，避免资源损耗
+    this.extInstanceManagementService.getExtensionInstances().forEach((ext) => {
+      const extManifest = ext.packageJSON as IExtensionManifest;
+      const onDebugDynamicConfigurationsName = 'onDebugDynamicConfigurations';
+
+      if (!extManifest.activationEvents) {
+        return;
+      }
+
+      const explicitTypes: string[] = [];
+      let hasGenericEvent = false;
+      for (const event of extManifest.activationEvents) {
+        if (event === onDebugDynamicConfigurationsName) {
+          hasGenericEvent = true;
+        } else if (event.startsWith(`${onDebugDynamicConfigurationsName}:`)) {
+          explicitTypes.push(event.slice(onDebugDynamicConfigurationsName.length + 1));
+        }
+      }
+
+      if (explicitTypes.length) {
+        explicitTypes.forEach((t) => dynamicSupportedTypes.add(t));
+      } else if (hasGenericEvent) {
+        // VSCode 的目前也只取了 debuggers 的第一个的 type，后面需要支持多个的话再改
+        // 参考的 Commit 记录：https://github.com/microsoft/vscode/commit/3a9d44e8c38c277c56ded331e13c1e033b7ffef4
+        const debuggerType = extManifest.contributes?.debuggers?.[0].type;
+        if (debuggerType) {
+          dynamicSupportedTypes.add(debuggerType);
+        }
+      }
+    });
+
+    // 根据已经注册的 Providers 获取，用于弥补某种动态注册 Provider 未被识别的情况
+    for (const [type, contribution] of this.contributors) {
+      const count = await contribution.getDebugConfigurationProvidersCount(
+        DebugConfigurationProviderTriggerKind.Dynamic,
+      );
+      if (count > 0) {
+        dynamicSupportedTypes.add(type);
+      }
+    }
+
+    return Array.from(dynamicSupportedTypes);
   }
 
   async resolveDebugConfiguration(

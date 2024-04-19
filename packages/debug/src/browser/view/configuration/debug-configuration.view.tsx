@@ -2,7 +2,7 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { Option, Select } from '@opensumi/ide-components';
+import { Option, Popover, Select } from '@opensumi/ide-components';
 import { AppConfig, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 
@@ -10,10 +10,13 @@ import {
   DEFAULT_ADD_CONFIGURATION_KEY,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
+  DEFAULT_DYNAMIC_CONFIGURATION_KEY,
+  DEFAULT_EDIT_CONFIGURATION_KEY,
   DEFAULT_NO_CONFIGURATION_KEY,
   DebugSessionOptions,
 } from '../../../common';
 import { DebugAction } from '../../components';
+import { DebugConfigurationType } from '../../debug-configuration-manager';
 
 import styles from './debug-configuration.module.less';
 import { DebugConfigurationService } from './debug-configuration.service';
@@ -22,8 +25,10 @@ import { DebugToolbarView } from './debug-toolbar.view';
 interface ConfigurationSelectorProps {
   currentValue: string;
   options: DebugSessionOptions[];
+  dynamicOptions?: DebugConfigurationType[];
   isMultiRootWorkspace: boolean;
   addConfigurationLabel: string;
+  editConfigurationLabel: string;
   workspaceRoots: string[];
   isElectronRenderer: boolean;
   toValue: (option: DebugSessionOptions) => string;
@@ -34,9 +39,11 @@ const ConfigurationSelector = React.memo(
   ({
     currentValue,
     options,
+    dynamicOptions,
     onChangeConfiguration,
     isMultiRootWorkspace,
     addConfigurationLabel,
+    editConfigurationLabel,
     toValue,
     workspaceRoots,
     isElectronRenderer,
@@ -115,11 +122,7 @@ const ConfigurationSelector = React.memo(
                 {longName!.replace(/./g, '-')}
               </option>,
             ]
-          : [
-              <Option disabled key={'--'} value={longName!.replace(/./g, '-')}>
-                {longName!.replace(/./g, '-')}
-              </Option>,
-            ];
+          : [<Option disabled key={'--'} value={''} className={styles.select_divider_container}></Option>];
         return disabledOption.concat(addonOptions);
       } else {
         const label = addConfigurationLabel;
@@ -131,17 +134,73 @@ const ConfigurationSelector = React.memo(
               <option value={DEFAULT_ADD_CONFIGURATION_KEY} key={DEFAULT_ADD_CONFIGURATION_KEY} label={label}>
                 {label}
               </option>,
+              <option
+                value={DEFAULT_EDIT_CONFIGURATION_KEY}
+                key={DEFAULT_EDIT_CONFIGURATION_KEY}
+                label={editConfigurationLabel}
+              >
+                {editConfigurationLabel}
+              </option>,
             ]
           : [
-              <Option disabled key={'--'} value={label!.replace(/./g, '-')}>
-                {label!.replace(/./g, '-')}
-              </Option>,
+              <Option
+                disabled
+                key={'--'}
+                value={label!.replace(/./g, '-')}
+                className={styles.select_divider_container}
+              ></Option>,
               <Option value={DEFAULT_ADD_CONFIGURATION_KEY} key={DEFAULT_ADD_CONFIGURATION_KEY} label={label}>
                 {label}
+              </Option>,
+              <Option
+                value={DEFAULT_EDIT_CONFIGURATION_KEY}
+                key={DEFAULT_EDIT_CONFIGURATION_KEY}
+                label={editConfigurationLabel}
+              >
+                {editConfigurationLabel}
               </Option>,
             ];
       }
     }, [isMultiRootWorkspace, addConfigurationLabel]);
+
+    const renderDynamicOptions = React.useCallback(
+      (options: DebugConfigurationType[]) => {
+        // 暂不支持多 Workspace
+        if (isMultiRootWorkspace) {
+          return;
+        }
+
+        if (options && options.length) {
+          const dynamicList = options.map((option) => {
+            const label = option.label || option.type;
+            const value = `${DEFAULT_DYNAMIC_CONFIGURATION_KEY}${option.type}`;
+            const { popupHint } = option;
+            return isElectronRenderer ? (
+              <option key={value} value={value} label={label}>
+                {label}
+              </option>
+            ) : (
+              <Option key={value} value={value} label={label}>
+                {popupHint ? (
+                  <Popover
+                    id={`debug_configuration_pop_${value}`}
+                    title={popupHint}
+                    insertClass={styles.config_popover_insert}
+                  >
+                    <div>{label}</div>
+                  </Popover>
+                ) : (
+                  label
+                )}
+              </Option>
+            );
+          });
+          // 此处可以使用 dynamicList.unshift 插入额外的提示文本
+          return dynamicList;
+        }
+      },
+      [isMultiRootWorkspace, dynamicOptions],
+    );
 
     if (isElectronRenderer) {
       return (
@@ -152,6 +211,7 @@ const ConfigurationSelector = React.memo(
         >
           {renderConfigurationOptions(options)}
           {renderAddConfigurationOptions()}
+          {dynamicOptions && renderDynamicOptions(dynamicOptions)}
         </NativeSelect>
       );
     }
@@ -161,9 +221,11 @@ const ConfigurationSelector = React.memo(
         value={currentValue}
         onChange={onChangeConfiguration}
         className={cls(styles.debug_selection, styles.special_radius)}
+        allowOptionsOverflow
       >
         {renderConfigurationOptions(options)}
         {renderAddConfigurationOptions()}
+        {dynamicOptions && renderDynamicOptions(dynamicOptions)}
       </Select>
     );
   },
@@ -211,6 +273,7 @@ export const DebugConfigurationContainerView = observer(() => {
 
 export interface DebugControllerViewProps {
   className?: string;
+  CustomActionBar?: React.ComponentType;
 }
 
 /**
@@ -220,6 +283,7 @@ export interface DebugControllerViewProps {
 export const DebugControllerView = observer((props: DebugControllerViewProps) => {
   const {
     configurationOptions,
+    dynamicConfigurations,
     toValue,
     currentValue,
     openConfiguration,
@@ -227,11 +291,14 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
     openDebugConsole,
     updateConfiguration,
     start,
+    showDynamicQuickPick,
     isMultiRootWorkspace,
     workspaceRoots,
   } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const addConfigurationLabel = localize('debug.action.add.configuration');
+  const editConfigurationLabel = localize('debug.action.edit.configuration');
+  const { CustomActionBar } = props;
 
   const setCurrentConfiguration = React.useCallback((event: React.ChangeEvent<HTMLSelectElement> | string) => {
     let value: React.ChangeEvent<HTMLSelectElement> | string;
@@ -247,6 +314,11 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
       } else {
         addConfiguration(workspaceRoots[0]);
       }
+    } else if (value === DEFAULT_EDIT_CONFIGURATION_KEY) {
+      openConfiguration();
+    } else if (value.startsWith(DEFAULT_DYNAMIC_CONFIGURATION_KEY)) {
+      const type = value.slice(DEFAULT_DYNAMIC_CONFIGURATION_KEY.length);
+      showDynamicQuickPick(type);
     } else {
       const [name, workspaceAndIndex] = value.split(DEFAULT_CONFIGURATION_NAME_SEPARATOR);
       const [workspaceFolderUri, index] = workspaceAndIndex.split(DEFAULT_CONFIGURATION_INDEX_SEPARATOR);
@@ -259,14 +331,20 @@ export const DebugControllerView = observer((props: DebugControllerViewProps) =>
       <ConfigurationSelector
         currentValue={currentValue}
         options={configurationOptions}
+        dynamicOptions={dynamicConfigurations}
         onChangeConfiguration={setCurrentConfiguration}
         isMultiRootWorkspace={isMultiRootWorkspace}
         addConfigurationLabel={addConfigurationLabel}
+        editConfigurationLabel={editConfigurationLabel}
         toValue={toValue}
         isElectronRenderer={appConfig.isElectronRenderer}
         workspaceRoots={workspaceRoots}
       />
-      <DebugActionBar runDebug={start} openConfiguration={openConfiguration} openDebugConsole={openDebugConsole} />
+      {CustomActionBar ? (
+        <CustomActionBar />
+      ) : (
+        <DebugActionBar runDebug={start} openConfiguration={openConfiguration} openDebugConsole={openDebugConsole} />
+      )}
     </div>
   );
 });
