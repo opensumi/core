@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter } from '@opensumi/ide-core-common';
+import { Dispatcher } from '@opensumi/ide-core-common';
 import {
   ITelemetryService,
   TelemetryLevel,
@@ -16,12 +16,11 @@ export class MonacoTelemetryService implements ITelemetryService {
 
   private _sessionId = 'placeholder';
 
-  private eventLogEmitter = new Emitter<{
-    type: 'renameInvokedEvent';
-    event: any;
-  }>();
+  private eventLogEmitter = new Dispatcher<any>();
 
-  onEventLog = this.eventLogEmitter.event;
+  onEventLog(type: 'renameInvokedEvent', listener: (e: any) => any) {
+    return this.eventLogEmitter.on(type)(listener);
+  }
 
   get sessionId(): string {
     return this._sessionId;
@@ -33,7 +32,7 @@ export class MonacoTelemetryService implements ITelemetryService {
   publicLog2(type: string, event: any) {
     switch (type) {
       case 'renameInvokedEvent':
-        this.eventLogEmitter.fire({ type, event });
+        this.eventLogEmitter.dispatch(type, event);
         break;
       default:
       // ignore

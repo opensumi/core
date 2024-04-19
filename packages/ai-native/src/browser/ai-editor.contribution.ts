@@ -640,8 +640,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       monacoApi.languages.registerNewSymbolNameProvider(languageId, {
         provideNewSymbolNames: provider,
       }),
-      this.monacoTelemetryService.onEventLog(({ type, event }) => {
-        if (type === 'renameInvokedEvent' && this.lastModelRequestRenameSessionId) {
+      this.monacoTelemetryService.onEventLog('renameInvokedEvent', (event) => {
+        if (this.lastModelRequestRenameSessionId) {
           this.aiReporter.end(this.lastModelRequestRenameSessionId, {
             message: 'done',
             success: true,
