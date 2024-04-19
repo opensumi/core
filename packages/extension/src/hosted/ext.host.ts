@@ -160,8 +160,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.reporterService = new ReporterService(reporter, {
       host: REPORT_HOST.EXTENSION,
     });
-
-    Error.stackTraceLimit = 100;
   }
 
   /**
