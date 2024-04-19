@@ -204,22 +204,26 @@ export class AINativeBrowserContribution
     });
 
     registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
-      title: localize('preference.aiNative.chat.title'),
+      title: localize('preference.ai.native.chat.title'),
       preferences: [
         {
           id: AINativeSettingSectionsId.CHAT_VISIBLE_TYPE,
-          localized: 'preference.aiNative.chat.visible.type',
+          localized: 'preference.ai.native.chat.visible.type',
         },
       ],
     });
 
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
-        title: localize('preference.aiNative.inlineChat.title'),
+        title: localize('preference.ai.native.inlineChat.title'),
         preferences: [
           {
             id: AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
-            localized: 'preference.aiNative.inlineChat.auto.visible',
+            localized: 'preference.ai.native.inlineChat.auto.visible',
+          },
+          {
+            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+            localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
         ],
       });

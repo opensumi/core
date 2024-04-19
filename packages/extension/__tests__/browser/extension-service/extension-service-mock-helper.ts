@@ -14,6 +14,7 @@ import {
   CommandRegistry,
   CommandRegistryImpl,
   DefaultStorageProvider,
+  Deferred,
   Disposable,
   Emitter,
   IContextKeyService,
@@ -23,8 +24,10 @@ import {
   IJSONSchemaRegistry,
   IPreferenceSettingsService,
   ISchemaStore,
+  IScopedContextKeyService,
   KeybindingRegistry,
   KeybindingRegistryImpl,
+  MaybeNull,
   PreferenceProvider,
   StorageProvider,
   StorageResolverContribution,
@@ -38,7 +41,14 @@ import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import {
+  IEditor,
+  IEditorGroup,
+  IOpenResourceResult,
+  IResource,
+  IUntitledOptions,
+  WorkbenchEditorService,
+} from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
   IEditorActionRegistry,
@@ -298,12 +308,46 @@ const mockExtensionProps: IExtensionProps = {
 };
 
 @Injectable()
-class MockWorkbenchEditorService {
-  open() {}
-  apply() {}
-  editorGroups = [];
+class MockWorkbenchEditorService implements WorkbenchEditorService {
+  onCursorChange = () => Disposable.NULL;
+  onDidEditorGroupsChanged = () => Disposable.NULL;
+  onDidCurrentEditorGroupChanged = () => Disposable.NULL;
   onActiveResourceChange = () => Disposable.NULL;
   onActiveEditorUriChange = () => Disposable.NULL;
+
+  contributionsReady = new Deferred<void>();
+
+  editorGroups = [];
+  sortedEditorGroups: IEditorGroup[];
+  currentEditor: IEditor | null;
+  currentOrPreviousFocusedEditor: IEditor | null;
+  currentResource: MaybeNull<IResource<any>>;
+  currentEditorGroup: IEditorGroup;
+  closeAll(uri?: URI | undefined, force?: boolean | undefined): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  openUris(uri: URI[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  saveAll(includeUntitled?: boolean | undefined): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  close(uri: any, force?: boolean | undefined): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getAllOpenedUris(): URI[] {
+    throw new Error('Method not implemented.');
+  }
+  createUntitledResource(options?: IUntitledOptions | undefined): Promise<IOpenResourceResult> {
+    throw new Error('Method not implemented.');
+  }
+  setEditorContextKeyService(contextKeyService: IScopedContextKeyService): void {
+    throw new Error('Method not implemented.');
+  }
+  async open() {
+    return {} as any;
+  }
+  apply() {}
 }
 
 const mockExtension = {

@@ -2,10 +2,12 @@ export const AI_REPORTER_NAME = 'AI';
 
 export enum AISerivceType {
   Chat = 'chat',
+  InlineChat = 'inlineChat',
   CustomReplay = 'customReplay',
   Completion = 'completion',
   Agent = 'agent',
   MergeConflict = 'mergeConflict',
+  Rename = 'rename',
 }
 
 export interface CommonLogInfo {
@@ -68,10 +70,39 @@ export interface MergeConflictRT extends Partial<CommonLogInfo> {
   cancelNum: number;
 }
 
+export interface RenameRT extends Partial<CommonLogInfo> {
+  /**
+   * 用户取消了重命名操作
+   */
+  isCancel?: boolean;
+  /**
+   * 开始请求重命名候选项的时间
+   */
+  modelRequestStartTime: number;
+  /**
+   * 请求重命名候选项结束的时间
+   */
+  modelRequestEndTime: number;
+}
+
+export interface InlineChatRT extends Partial<CommonLogInfo> {
+  /**
+   * 用户触发 Inline Chat 的来源
+   */
+  source: string;
+
+  /**
+   * @deprecated Please use `source` instead
+   */
+  runByCodeAction?: boolean;
+}
+
 export type ReportInfo =
   | Partial<CommonLogInfo>
   | ({ type: AISerivceType.Completion } & CompletionRT)
-  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT);
+  | ({ type: AISerivceType.MergeConflict } & MergeConflictRT)
+  | ({ type: AISerivceType.Rename } & RenameRT)
+  | ({ type: AISerivceType.InlineChat } & InlineChatRT);
 
 export const IAIReporter = Symbol('IAIReporter');
 

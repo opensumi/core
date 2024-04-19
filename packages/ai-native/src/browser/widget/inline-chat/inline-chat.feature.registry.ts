@@ -36,11 +36,11 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
     this.editorHandlerMap.clear();
   }
 
-  private readonly _onActionRun = new Emitter<{
+  private readonly _onCodeActionRun = new Emitter<{
     id: string;
     range: IRange;
   }>();
-  public readonly onActionRun = this._onActionRun.event;
+  public readonly onCodeActionRun = this._onCodeActionRun.event;
 
   static getCommandId(type: 'editor' | 'terminal', id: string) {
     return `ai-native.inline-chat.${type}.${id}`;
@@ -61,7 +61,7 @@ export class InlineChatFeatureRegistry extends Disposable implements IInlineChat
         },
         {
           execute: async (range: IRange) => {
-            this._onActionRun.fire({
+            this._onCodeActionRun.fire({
               id,
               range,
             });

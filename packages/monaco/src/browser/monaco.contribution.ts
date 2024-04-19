@@ -88,6 +88,7 @@ import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
+import { MonacoTelemetryService } from './telemetry.service';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution
@@ -245,6 +246,11 @@ export class MonacoClientContribution
       open: (uri) => this.interceptOpen(new URI(uri.toString())),
     });
     this.overrideServicesRegistry.registerOverrideService(ServiceNames.OPENER_SERVICE, monacoOpenerService);
+
+    this.overrideServicesRegistry.registerOverrideService(
+      ServiceNames.TELEMETRY_SERVICE,
+      this.injector.get(MonacoTelemetryService),
+    );
   }
 
   private patchMonacoInternalServices() {
