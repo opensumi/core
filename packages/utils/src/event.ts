@@ -9,6 +9,7 @@ import { Disposable, DisposableStore, IDisposable, combinedDisposable, toDisposa
 import { onUnexpectedError } from './errors';
 import { once as onceFn } from './functional';
 import { LinkedList } from './linked-list';
+import { randomString } from './uuid';
 
 /**
  * 重要备注
@@ -420,7 +421,7 @@ class LeakageMonitor {
   private _stacks: Map<string, number> | undefined;
   private _warnCountdown = 0;
 
-  constructor(readonly customThreshold?: number, readonly name: string = Math.random().toString(18).slice(2, 5)) {}
+  constructor(readonly customThreshold?: number, readonly name: string = randomString(3)) {}
 
   dispose(): void {
     if (this._stacks) {

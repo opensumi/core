@@ -1,4 +1,4 @@
-import { isUint8Array, transformErrorForSerialization, uuid } from '@opensumi/ide-core-common';
+import { isUint8Array, randomString, transformErrorForSerialization } from '@opensumi/ide-core-common';
 
 declare global {
   interface Window {
@@ -49,7 +49,7 @@ export class Capturer {
   prefix: string;
 
   constructor(protected source: string) {
-    this.prefix = uuid(6);
+    this.prefix = randomString(6);
   }
 
   capture(message: ICapturedMessage): void {
