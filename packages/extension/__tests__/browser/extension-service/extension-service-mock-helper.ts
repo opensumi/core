@@ -14,6 +14,7 @@ import {
   CommandRegistry,
   CommandRegistryImpl,
   DefaultStorageProvider,
+  Deferred,
   Disposable,
   Emitter,
   IContextKeyService,
@@ -313,6 +314,8 @@ class MockWorkbenchEditorService implements WorkbenchEditorService {
   onDidCurrentEditorGroupChanged = () => Disposable.NULL;
   onActiveResourceChange = () => Disposable.NULL;
   onActiveEditorUriChange = () => Disposable.NULL;
+
+  contributionsReady = new Deferred<void>();
 
   editorGroups = [];
   sortedEditorGroups: IEditorGroup[];

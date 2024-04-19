@@ -1,7 +1,7 @@
 import { URI } from '@opensumi/ide-core-browser';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkerExtProcessService } from '@opensumi/ide-extension/lib/browser/extension-worker.service';
 
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../src/common';
 
 import { MOCK_EXTENSIONS, setupExtensionServiceInjector } from './extension-service-mock-helper';
