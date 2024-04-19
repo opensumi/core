@@ -40,7 +40,6 @@ import {
   DebugServer,
   DebugSessionOptions,
   IDebugServer,
-  IDebugSessionManager,
   IDebuggerContribution,
   launchSchemaUri,
 } from '../common';
@@ -48,7 +47,6 @@ import {
 import { CONTEXT_DEBUGGERS_AVAILABLE, LAUNCH_VIEW_SCHEME } from './../common/constants';
 import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugPreferences } from './debug-preferences';
-import { DebugSessionManager } from './debug-session-manager';
 
 export type WillProvideDebugConfiguration = WaitUntilEvent;
 export type WillInitialConfiguration = WaitUntilEvent;
@@ -119,9 +117,6 @@ export class DebugConfigurationManager {
 
   @Autowired(EditorCollectionService)
   protected readonly editorCollectionService: EditorCollectionService;
-
-  @Autowired(IDebugSessionManager)
-  protected debugSessionManager: DebugSessionManager;
 
   @Autowired(ILoggerManagerClient)
   private readonly loggerManagerClient: ILoggerManagerClient;
@@ -631,7 +626,7 @@ export class DebugConfigurationManager {
   }
 
   async setRecentDynamicConfigurations(configurations: DebugConfiguration[]) {
-    return await this.debugConfigurationStorage.set('recentDynamicConfigurations', configurations);
+    return await this.debugConfigurationStorage.set('recentDynamicConfigurations', configurations || []);
   }
 
   async addRecentDynamicConfiguration(configuration: DebugConfiguration) {
