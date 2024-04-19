@@ -147,6 +147,14 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
     });
   }
 
+  *[Symbol.iterator](): IterableIterator<[uri: vscode.Uri, diagnostics: readonly vscode.Diagnostic[]]> {
+    this.ensureNotDisposed();
+    for (const uri of this.diagnostics.keys()) {
+      const uri2 = URI.parse(uri);
+      yield [uri2, this.get(uri2) || []];
+    }
+  }
+
   get(uri: URI): vscode.Diagnostic[] | undefined {
     this.ensureNotDisposed();
     return this.getDiagnosticsByUri(uri);
@@ -185,7 +193,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
 
   private getDiagnosticsByUri(uri: URI): vscode.Diagnostic[] | undefined {
     const diagnostics = this.diagnostics.get(uri.toString());
-    return diagnostics instanceof Array ? (Object.freeze(diagnostics) as vscode.Diagnostic[]) : undefined;
+    return diagnostics instanceof Array ? (Object.freeze(diagnostics) as vscode.Diagnostic[]) : [];
   }
 
   private fireDiagnosticChangeEvent(arg: string | string[] | URI | URI[]): void {
