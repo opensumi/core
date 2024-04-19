@@ -1,9 +1,7 @@
-import { CancellationToken } from '@opensumi/vscode-jsonrpc/lib/common/cancellation';
-
 import { IExtensionDescription } from './extension';
 import { VSCommand } from './model.api';
 
-import type { IDisposable, Uri, UriComponents } from '@opensumi/ide-core-common';
+import type { CancellationToken, IDisposable, Uri, UriComponents } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
 
 export interface ObjectIdentifier {
@@ -93,9 +91,9 @@ export type SCMRawResource = [
 ];
 
 export interface SCMInputActionButtonDto {
-	command: CommandDto;
-	icon?: UriComponents | { light: UriComponents; dark: UriComponents } | vscode.ThemeIcon;
-	enabled: boolean;
+  command: CommandDto;
+  icon?: UriComponents | { light: UriComponents; dark: UriComponents } | vscode.ThemeIcon;
+  enabled: boolean;
 }
 
 export type SCMRawResourceSplice = [number /* start */, number /* delete count */, SCMRawResource[]];

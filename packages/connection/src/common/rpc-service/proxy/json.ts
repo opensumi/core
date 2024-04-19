@@ -1,9 +1,9 @@
-import { MessageConnection } from '@opensumi/vscode-jsonrpc';
-
 import { Capturer } from '../../capturer';
 import { METHOD_NOT_REGISTERED } from '../../constants';
 
 import { ProxyBase } from './base';
+
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 interface IRPCResult {
   error: boolean;
