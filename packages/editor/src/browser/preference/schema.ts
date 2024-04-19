@@ -256,6 +256,9 @@ export const DIFF_EDITOR_DEFAULTS = {
     showMoves: false,
     showEmptyDecorations: true,
     collapseUnchangedRegions: true,
+    stickyScroll: {
+      enable: false,
+    },
   },
 };
 
@@ -1451,6 +1454,10 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'diffEditor.minimap': {
     type: 'boolean',
     default: DIFF_EDITOR_DEFAULTS.minimap,
+  },
+  'diffEditor.experimental.stickyScroll.enabled': {
+    type: 'boolean',
+    default: DIFF_EDITOR_DEFAULTS.experimental.stickyScroll.enable,
   },
 };
 
