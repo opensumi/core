@@ -1,4 +1,4 @@
-import { IJSONSchemaSnippet } from '@opensumi/ide-core-common';
+import { BasicEvent, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
 
 export interface CallStackContext {
   sessionId: string;
@@ -84,3 +84,8 @@ export enum DEBUG_REPORT_NAME {
    */
   DEBUG_UI_FRONTEND_TIME = 'debugFrontEndTime',
 }
+
+/**
+ * DebugConfigurations 已经被插件进程扫描完成的事件
+ */
+export class DebugConfigurationsReadyEvent extends BasicEvent<any> {}
