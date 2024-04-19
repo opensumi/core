@@ -13,7 +13,7 @@ import {
   ReplyResponse,
 } from '@opensumi/ide-core-common';
 
-import { IChatManagerService, IChatMessageStructure } from '../../common';
+import { IChatManagerService, IChatMessage, IChatMessageStructure } from '../../common';
 import { MsgStreamManager } from '../model/msg-stream-manager';
 
 import { ChatManagerService } from './chat-manager.service';

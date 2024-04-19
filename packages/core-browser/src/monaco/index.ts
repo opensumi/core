@@ -31,6 +31,7 @@ export enum ServiceNames {
   CONTEXT_KEY_SERVICE = 'contextKeyService',
   BULK_EDIT_SERVICE = 'IWorkspaceEditService',
   OPENER_SERVICE = 'openerService',
+  TELEMETRY_SERVICE = 'telemetryService',
 }
 
 export abstract class MonacoService {

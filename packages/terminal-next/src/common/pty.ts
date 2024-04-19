@@ -572,7 +572,7 @@ export interface IShellLaunchConfig {
 export interface ICreateTerminalOptions {
   /**
    * unique long id
-   * longId = clientId + '|' + shortId(generate by uuid())
+   * longId = clientId + '|' + uuid()
    */
   id?: string;
   /**

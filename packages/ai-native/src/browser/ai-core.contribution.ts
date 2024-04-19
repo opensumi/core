@@ -14,6 +14,7 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  PreferenceService,
   SlotLocation,
   SlotRendererContribution,
   SlotRendererRegistry,
@@ -21,6 +22,7 @@ import {
   localize,
 } from '@opensumi/ide-core-browser';
 import {
+  AI_CHAT_VISIBLE,
   AI_INLINE_CHAT_VISIBLE,
   AI_INLINE_COMPLETION_REPORTER,
   AI_INLINE_COMPLETION_VISIBLE,
@@ -34,9 +36,12 @@ import {
   InlineChatFeatureRegistryToken,
   RenameCandidatesProviderRegistryToken,
   ResolveConflictRegistryToken,
+  isUndefined,
+  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 
 import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID } from '../common';
@@ -115,6 +120,12 @@ export class AINativeBrowserContribution
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(IMainLayoutService)
+  private readonly layoutService: IMainLayoutService;
+
   constructor() {
     this.registerFeature();
   }
@@ -153,6 +164,18 @@ export class AINativeBrowserContribution
     this.appConfig.layoutViewSize = layoutViewSize;
   }
 
+  onDidStart() {
+    runWhenIdle(() => {
+      const prefChatVisibleType = this.preferenceService.getValid(AINativeSettingSectionsId.CHAT_VISIBLE_TYPE);
+
+      if (prefChatVisibleType === 'always') {
+        this.commandService.executeCommand(AI_CHAT_VISIBLE.id, true);
+      } else if (prefChatVisibleType === 'never') {
+        this.commandService.executeCommand(AI_CHAT_VISIBLE.id, false);
+      }
+    });
+  }
+
   private registerFeature() {
     this.contributions.getContributions().forEach((contribution) => {
       if (contribution.registerInlineChatFeature) {
@@ -180,13 +203,27 @@ export class AINativeBrowserContribution
       iconClass: getIcon('magic-wand'),
     });
 
+    registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+      title: localize('preference.ai.native.chat.title'),
+      preferences: [
+        {
+          id: AINativeSettingSectionsId.CHAT_VISIBLE_TYPE,
+          localized: 'preference.ai.native.chat.visible.type',
+        },
+      ],
+    });
+
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
-        title: localize('preference.aiNative.inlineChat.title'),
+        title: localize('preference.ai.native.inlineChat.title'),
         preferences: [
           {
             id: AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
-            localized: 'preference.aiNative.inlineChat.auto.visible',
+            localized: 'preference.ai.native.inlineChat.auto.visible',
+          },
+          {
+            id: AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+            localized: 'preference.ai.native.inlineChat.codeAction.enabled',
           },
         ],
       });
@@ -212,6 +249,12 @@ export class AINativeBrowserContribution
     commands.registerCommand(AI_INLINE_COMPLETION_REPORTER, {
       execute: (relationId: string, sessionId: string, accept: boolean) => {
         this.aiCompletionsService.report({ sessionId, accept, relationId });
+      },
+    });
+
+    commands.registerCommand(AI_CHAT_VISIBLE, {
+      execute: (visible?: boolean) => {
+        this.layoutService.toggleSlot(AI_CHAT_VIEW_ID, isUndefined(visible) ? true : visible);
       },
     });
 
