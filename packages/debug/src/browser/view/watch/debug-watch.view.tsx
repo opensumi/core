@@ -194,7 +194,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
   onContextMenu,
   itemType,
 }: IDebugWatchNodeRenderedProps) => {
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
 
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;

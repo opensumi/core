@@ -73,8 +73,8 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
 }) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px`;
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
-  const styles_scm_tree_node = useDesignStyles(styles.scm_tree_node);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
+  const styles_scm_tree_node = useDesignStyles(styles.scm_tree_node, 'scm_tree_node');
 
   const scmResourceGroup = item.resource as ISCMResourceGroup;
   const renderActionBar = React.useCallback(() => {
@@ -192,8 +192,8 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
 }) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const decoration = SCMResourceGroup.is(item) ? null : decorationService.getDecoration(item.uri, false);
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
-  const styles_scm_tree_node = useDesignStyles(styles.scm_tree_node);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
+  const styles_scm_tree_node = useDesignStyles(styles.scm_tree_node, 'scm_tree_node');
 
   const scmResource = item.resource as ISCMResource;
 

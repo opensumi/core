@@ -19,7 +19,7 @@ export default observer(() => {
   const keybindingService = useInjectable<KeybindingRegistry>(KeybindingRegistry);
   const tabContainer = useRef<HTMLDivElement | null>();
   const [theme, setTheme] = useState<ThemeType>('dark');
-  const styles_tab_contents = useDesignStyles(styles.tab_contents);
+  const styles_tab_contents = useDesignStyles(styles.tab_contents, 'tab_contents');
 
   const init = useCallback(() => {
     themeService.getCurrentTheme().then((theme) => {

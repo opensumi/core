@@ -26,7 +26,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   onClick,
   onTwistierClick,
 }: ICommentNodeRenderedProps) => {
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       if (item.onSelect) {

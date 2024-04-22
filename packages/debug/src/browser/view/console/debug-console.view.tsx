@@ -50,8 +50,8 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
-  const styles_debug_console_output = useDesignStyles(styles.debug_console_output);
-  const styles_variable_repl_bar = useDesignStyles(styles.variable_repl_bar);
+  const styles_debug_console_output = useDesignStyles(styles.debug_console_output, 'debug_console_output');
+  const styles_variable_repl_bar = useDesignStyles(styles.variable_repl_bar, 'variable_repl_bar');
 
   React.useEffect(() => {
     if (debugInputRef && debugInputRef.current) {
@@ -267,7 +267,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
   const linkDetector: LinkDetector = useInjectable<LinkDetector>(LinkDetector);
   const [computedStyle, setComputedStyle] = React.useState<string>();
 
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
 
   React.useEffect(() => {
     const computed = window.getComputedStyle(

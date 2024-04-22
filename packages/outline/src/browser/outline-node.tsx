@@ -45,8 +45,8 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   decorations,
 }: OutlineNodeRenderedProps) => {
   const decoration = OutlineTreeNode.is(item) ? decorationService.getDecoration(item) : null;
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
-  const styles_outline_node = useDesignStyles(styles.outline_node);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
+  const styles_outline_node = useDesignStyles(styles.outline_node, 'outline_node');
 
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
