@@ -58,6 +58,7 @@ describe('Debug Configuration Service', () => {
     },
     addConfiguration: jest.fn(),
     openConfiguration: jest.fn(),
+    getDynamicConfigurationsSupportTypes: jest.fn(() => []),
   };
 
   const mockPreferenceService = {

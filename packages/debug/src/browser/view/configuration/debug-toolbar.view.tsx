@@ -270,7 +270,7 @@ const FloatDebugToolbarView = observer(() => {
   const preference = useInjectable<PreferenceService>(PreferenceService);
   const { isElectronRenderer, layoutViewSize } = useInjectable<AppConfig>(AppConfig);
   const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
-  const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper);
+  const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper, 'debug_toolbar_wrapper');
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
   const { state } = debugToolbarService;
 

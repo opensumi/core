@@ -507,11 +507,18 @@ div[class*='design-editor_tab_block_container__'] {
   }
 }
 
+:global(.design_left_slot) {
+  margin-right: 1px;
+}
+
+:global(.design_right_slot) {
+  margin-left: 1px;
+}
+
 :global(.design_left_slot),
 :global(.design_right_slot) {
   border-radius: 12px;
   overflow: hidden;
-  margin-right: 1px;
 
   .design-tab_panel {
     border: none;

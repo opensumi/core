@@ -44,7 +44,7 @@ export class AIInlineChatService implements IAIInlineChatService {
   }
 
   public launchChatStatus(status: EInlineChatStatus) {
-    runWhenIdle(() => {
+    return runWhenIdle(() => {
       this._status = status;
       this._onChatStatus.fire(status);
     });

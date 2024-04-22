@@ -18,7 +18,7 @@ export class DesignStyleService implements IDesignStyleService {
     this._styles = model;
   }
 
-  wrapStyles(styles?: string): string {
+  wrapStyles(styles: string, key: string): string {
     if (!this._styles) {
       return styles || '';
     }
@@ -27,13 +27,6 @@ export class DesignStyleService implements IDesignStyleService {
       return '';
     }
 
-    let _cls = styles.replace(/___\w{5}/, '');
-
-    // Styles of the design module need to add a 'design' prefix
-    if (!_cls.startsWith(prefix)) {
-      _cls = prefix + _cls;
-    }
-
-    return cls(styles, this._styles[_cls]);
+    return cls(styles, this._styles[prefix + key]);
   }
 }

@@ -2714,7 +2714,7 @@ declare module 'vscode' {
    * To get an instance of a `DiagnosticCollection` use
    * [createDiagnosticCollection](#languages.createDiagnosticCollection).
    */
-  export interface DiagnosticCollection {
+  export interface DiagnosticCollection extends Iterable<[uri: Uri, diagnostics: readonly Diagnostic[]]>{
 
     /**
      * The name of this diagnostic collection, for instance `typescript`. Every diagnostic

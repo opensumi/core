@@ -229,6 +229,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [workerProtocol, 'worker']);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [workerProtocol]);
   const MainThreadLocalizationAPI = injector.get(MainThreadLocalization, [workerProtocol]);
+  const MainThreadEditorTabsAPI = injector.get(MainThreadEditorTabsService, [workerProtocol]);
 
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
   workerProtocol.set<MainThreadExtensionDocumentData>(
@@ -269,6 +270,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadAPIIdentifier.MainThreadDecorations,
     MainThreadDecorationsAPI,
   );
+  workerProtocol.set<IMainThreadEditorTabsShape>(MainThreadAPIIdentifier.MainThreadEditorTabs, MainThreadEditorTabsAPI);
   workerProtocol.set<MainThreadLocalization>(MainThreadAPIIdentifier.MainThreadLocalization, MainThreadLocalizationAPI);
   // 作用和 node extension service 等同，用来设置 webview resourceRoots
   await MainThreadWebviewAPI.init();

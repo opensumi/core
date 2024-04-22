@@ -13,6 +13,7 @@ export const IAINativeService = Symbol('IAINativeService');
 export const AIInlineChatContentWidget = 'AI_Inline_Chat_Content_Widget';
 export const AI_CHAT_VIEW_ID = 'AI_Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI_Chat_Container';
+export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
 export const AI_MENUBAR_CONTAINER_VIEW_ID = 'AI_menubar';
 
 export const AI_SLASH = '/';
@@ -139,12 +140,6 @@ export const enum ChatMessageRole {
   User,
   Assistant,
   Function,
-}
-
-export interface IChatMessage {
-  readonly role: ChatMessageRole;
-  readonly content: string;
-  readonly name?: string;
 }
 
 export interface IChatContent {

@@ -251,7 +251,9 @@ export const localizationBundle = {
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
-    'debug.action.add.configuration': '添加配置...',
+    'debug.action.add.smartAddConfiguration': '智能添加配置',
+    'debug.action.add.configuration': '添加配置',
+    'debug.action.edit.configuration': '编辑配置',
     'debug.action.open.launch.editor': '在 launch 编辑器中打开',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.debug.console': '调试控制台',
@@ -320,6 +322,9 @@ export const localizationBundle = {
     'debug.breakpoint.unverified': '无效的',
     'debug.breakpoint.disabled': '禁用的',
     'debug.breakpoint.blank': '空行',
+    'debug.configuration.selectAutomaticDebugTypesHint': '自动生成的调试配置',
+    'debug.configuration.selectAutomaticDebugTypes': '选择调试类型',
+    'debug.configuration.selectAutomaticDebugConfiguration': '选择调试配置',
     'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
     'debug.configuration.comment2': '悬停以查看现有属性的描述。',
     'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
@@ -522,10 +527,6 @@ export const localizationBundle = {
     'preference.editor.saveCodeActionsNotification': '代码操作执行时是否展示通知信息',
 
     'preference.item.notValid': '{0} 不是有效选项',
-
-    // AI Native Preference
-    'preference.aiNative.inlineChat.title': 'Inline Chat',
-    'preference.aiNative.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat ？',
 
     'editor.saveAll': '保存全部',
     'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
@@ -947,7 +948,8 @@ export const localizationBundle = {
 
     'welcome-view.noOpenRepo': '未注册任何源代码管理实现。',
     'welcome-view.noFolderHelp': '没有打开一个目录.\n[打开目录](command:{0})',
-    'welcome-view.noLaunchJson': '没有检测到调试配置，请先创建。\n[创建调试配置](command:{0})',
+    'welcome-view.noLaunchJson':
+      '没有检测到调试配置，请先创建。\n[创建调试配置](command:{0})\n\n使用自动生成的调试配置运行\n[查看所有自动调试配置](command:{1})',
 
     'authentication.manageTrustedExtensions': '管理信任的扩展',
     'authentication.manageExtensions': '选择哪一个账户可以访问这个扩展',
@@ -1242,6 +1244,13 @@ export const localizationBundle = {
     'aiNative.operate.clear.title': '清空',
 
     'aiNative.chat.welcome.loading.text': '初始化中...',
+
+    'preference.ai.native.inlineChat.title': 'Inline Chat',
+    'preference.ai.native.chat.title': 'Chat',
+    'preference.ai.native.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat?',
+    'preference.ai.native.inlineChat.codeAction.enabled':
+      '是否启用在选中代码片段时显示 Inline Chat 相关的 Code Actions?',
+    'preference.ai.native.chat.visible.type': '控制 Chat 面板默认的展示方式',
     // #endregion AI Native
 
     'webview.webviewTagUnavailable': '非 Electron 环境不支持 webview 标签，请使用 iframe 标签',

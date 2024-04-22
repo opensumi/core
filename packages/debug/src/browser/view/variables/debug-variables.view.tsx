@@ -178,7 +178,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
   onContextMenu,
   itemType,
 }: IDebugVariableNodeRenderedProps) => {
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
 
   const handleClick = (ev: React.MouseEvent) => {
     onClick(ev, item, CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);

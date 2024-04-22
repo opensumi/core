@@ -278,7 +278,9 @@ export const localizationBundle = {
     'scm.diff.toggle.renderSideBySide': 'Toggle Inline View',
     'scm.dirtyDiff.changes': '{0} of {1} changes',
 
-    'debug.action.add.configuration': 'Add Configuration...',
+    'debug.action.add.smartAddConfiguration': 'Smart Add Configuration',
+    'debug.action.add.configuration': 'Add Configuration',
+    'debug.action.edit.configuration': 'Edit Configuration',
     'debug.action.open.launch.editor': 'Open in launch editor',
     'debug.action.no.configuration': 'No Configurations',
     'debug.action.start': 'Start Debugging',
@@ -339,6 +341,9 @@ export const localizationBundle = {
     'debug.breakpoint.unverified': 'Unverified ',
     'debug.breakpoint.disabled': 'Disabled ',
     'debug.breakpoint.blank': 'Blank',
+    'debug.configuration.selectAutomaticDebugTypesHint': 'Automatic Configuration',
+    'debug.configuration.selectAutomaticDebugTypes': 'Select a Debug Type',
+    'debug.configuration.selectAutomaticDebugConfiguration': 'Select a DebugConfiguration',
     'debug.configuration.comment1': 'Use IntelliSense to learn about possible attributes.',
     'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
@@ -584,11 +589,6 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': 'Word Wrap Length',
 
     'preference.item.notValid': '{0} is not a valid option',
-
-    // AI Native
-    'preference.aiNative.inlineChat.title': 'Inline Chat',
-    'preference.aiNative.inlineChat.auto.visible':
-      'Does Inline Chat automatically appear when code snippets are selected ?',
 
     // Editor Configurations
     'editor.configuration.formatOnSaveTimeout':
@@ -1343,7 +1343,8 @@ export const localizationBundle = {
 
     'welcome-view.noOpenRepo': 'No source control providers registered.',
     'welcome-view.noFolderHelp': 'You have not yet opened a folder.\n[Open Folder](command:{0})',
-    'welcome-view.noLaunchJson': 'No debug configuration detected.\n[Create Debug Configuration](command:{0})',
+    'welcome-view.noLaunchJson':
+      'No debug configuration detected.\n[Create Debug Configuration](command:{0})\n\nRun with Automatic Debug Configurations\n[Show All Automatic Debug Configurations](command:{1})',
 
     'authentication.manageTrustedExtensions': 'Manage Trusted Extensions',
     'authentication.manageExtensions': 'Choose which extensions can access this account',
@@ -1474,6 +1475,13 @@ export const localizationBundle = {
     'aiNative.operate.clear.title': 'Clear',
 
     'aiNative.chat.welcome.loading.text': 'Initializing...',
+
+    'preference.ai.native.inlineChat.title': 'Inline Chat',
+    'preference.ai.native.chat.title': 'Chat',
+    'preference.ai.native.inlineChat.auto.visible': 'Does Inline Chat automatically appear when code are selected?',
+    'preference.ai.native.inlineChat.codeAction.enabled':
+      'Does Inline Chat related code actions automatically appear when code are selected?',
+    'preference.ai.native.chat.visible.type': 'Control how the chat panel is displayed by default',
     // #endregion AI Native
 
     // #endregion merge editor

@@ -56,8 +56,11 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   decorations,
 }: EditorNodeRenderedProps) => {
   const decoration = EditorFileGroup.is(item) ? null : decorationService.getDecoration(item.uri, false);
-  const styles_opened_editor_node = useDesignStyles(styles.opened_editor_node);
-  const styles_opened_editor_node_overflow_wrap = useDesignStyles(styles.opened_editor_node_overflow_wrap);
+  const styles_opened_editor_node = useDesignStyles(styles.opened_editor_node, 'opened_editor_node');
+  const styles_opened_editor_node_overflow_wrap = useDesignStyles(
+    styles.opened_editor_node_overflow_wrap,
+    'opened_editor_node_overflow_wrap',
+  );
 
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {

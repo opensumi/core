@@ -58,7 +58,7 @@ export const EditorView = () => {
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.ComponentType<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
   const [ready, setReady] = React.useState<boolean>(workbenchEditorService.gridReady);
-  const styles_kt_workbench_editor = useDesignStyles(styles.kt_workbench_editor);
+  const styles_kt_workbench_editor = useDesignStyles(styles.kt_workbench_editor, 'kt_workbench_editor');
 
   React.useEffect(() => {
     if (!ready) {
@@ -240,7 +240,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
 
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
   const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
-  const styles_kt_editor_group = useDesignStyles(styles.kt_editor_group);
+  const styles_kt_editor_group = useDesignStyles(styles.kt_editor_group, 'kt_editor_group');
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroundImage } = appConfig;
@@ -327,7 +327,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLDivElement>(null);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const eventBus = useInjectable(IEventBus) as IEventBus;
-  const styles_kt_editor_component = useDesignStyles(styles.kt_editor_component);
+  const styles_kt_editor_component = useDesignStyles(styles.kt_editor_component, 'kt_editor_component');
   const components: React.ReactNode[] = [];
   const codeEditorRef = React.useRef<HTMLDivElement>(null);
   const diffEditorRef = React.useRef<HTMLDivElement>(null);

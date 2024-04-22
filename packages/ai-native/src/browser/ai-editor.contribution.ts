@@ -5,6 +5,7 @@ import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
   AINativeSettingSectionsId,
+  AISerivceType,
   CancelResponse,
   CancellationToken,
   ChatResponse,
@@ -22,12 +23,14 @@ import {
   ReplyResponse,
   Schemes,
   SupportLogNamespace,
+  getErrorMessage,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { DesignBrowserCtxMenuService } from '@opensumi/ide-design/lib/browser/override/menu.service';
 import { EditorSelectionChangeEvent, IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
 
 import { AIInlineChatContentWidget } from '../common';
 
@@ -90,6 +93,9 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   @Autowired(LanguageParserService)
   protected languageParserService: LanguageParserService;
 
+  @Autowired()
+  monacoTelemetryService: MonacoTelemetryService;
+
   private latestMiddlewareCollector: IAIMiddleware;
 
   private logger: ILogServiceClient;
@@ -131,31 +137,55 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       return this;
     }
 
+    this.contributeInlineCompletionFeature(editor);
+    this.contributeInlineChatFeature(editor);
     this.registerLanguageFeatures(editor);
 
     this.disposables.push(
-      this.aiNativeService.onInlineChatVisible((value: boolean) => {
-        if (value) {
-          this.showInlineChat(editor);
-        } else {
-          this.disposeAllWidget();
-        }
+      monacoEditor.onDidScrollChange(() => {
+        /**
+         * 其他的 ctxmenu 服务注册的菜单在 onHide 函数里会有其他逻辑处理，例如在 editor.context.ts 会在 hide 的时候 focus 编辑器，影响使用
+         */
+        this.ctxMenuRenderer.onHide = undefined;
+        this.ctxMenuRenderer.hide(true);
       }),
     );
 
-    let needShowInlineChat = false;
+    return this;
+  }
+
+  protected contributeInlineCompletionFeature(editor: IEditor): void {
+    const { monacoEditor } = editor;
+    // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
+    const selectionChange = () => {
+      this.aiCompletionsService.hideStatusBarItem();
+      const selection = monacoEditor.getSelection();
+      if (!selection) {
+        return;
+      }
+
+      // 判断是否选中区域
+      if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
+        this.aiInlineCompletionsProvider.cancelRequest();
+      }
+      requestAnimationFrame(() => {
+        this.aiCompletionsService.setVisibleCompletion(false);
+      });
+    };
+
+    const debouncedSelectionChange = debounce(selectionChange, 50, {
+      maxWait: 200,
+      leading: true,
+      trailing: true,
+    });
 
     this.disposables.push(
-      monacoEditor.onMouseDown(() => {
-        needShowInlineChat = false;
-      }),
-      monacoEditor.onMouseUp((event) => {
-        const target = event.target;
-        const detail = (target as any).detail;
-        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidget) {
-          needShowInlineChat = false;
+      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        if (e.payload.source === 'mouse') {
+          debouncedSelectionChange();
         } else {
-          needShowInlineChat = true;
+          debouncedSelectionChange.cancel();
+          selectionChange();
         }
       }),
       monacoEditor.onDidChangeModelContent((e) => {
@@ -177,12 +207,43 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         this.aiCompletionsService.hideStatusBarItem();
         this.aiCompletionsService.setVisibleCompletion(false);
       }),
-      monacoEditor.onDidScrollChange(() => {
-        /**
-         * 其他的 ctxmenu 服务注册的菜单在 onHide 函数里会有其他逻辑处理，例如在 editor.context.ts 会在 hide 的时候 focus 编辑器，影响使用
-         */
-        this.ctxMenuRenderer.onHide = undefined;
-        this.ctxMenuRenderer.hide(true);
+    );
+  }
+
+  protected contributeInlineChatFeature(editor: IEditor): void {
+    const { monacoEditor } = editor;
+
+    this.disposables.push(
+      this.aiNativeService.onInlineChatVisible((value: boolean) => {
+        if (value) {
+          this.showInlineChat(editor);
+        } else {
+          this.disposeAllWidget();
+        }
+      }),
+      // 通过 code actions 来透出我们 inline chat 的功能
+      this.inlineChatFeatureRegistry.onCodeActionRun(({ id, range }) => {
+        monacoEditor.setSelection(range);
+        this.showInlineChat(editor);
+        if (this.aiInlineContentWidget) {
+          this.aiInlineContentWidget.clickActionId(id, 'codeAction');
+        }
+      }),
+    );
+
+    let needShowInlineChat = false;
+    this.disposables.push(
+      monacoEditor.onMouseDown(() => {
+        needShowInlineChat = false;
+      }),
+      monacoEditor.onMouseUp((event) => {
+        const target = event.target;
+        const detail = (target as any).detail;
+        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidget) {
+          needShowInlineChat = false;
+        } else {
+          needShowInlineChat = true;
+        }
       }),
     );
 
@@ -190,16 +251,14 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
       true,
     );
-    this.disposables.push({
-      dispose: () => {
-        this.preferenceService.onSpecificPreferenceChange(
-          AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
-          ({ newValue }) => {
-            prefInlineChatAutoVisible = newValue;
-          },
-        );
-      },
-    });
+    this.disposables.push(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.INLINE_CHAT_AUTO_VISIBLE,
+        ({ newValue }) => {
+          prefInlineChatAutoVisible = newValue;
+        },
+      ),
+    );
 
     this.disposables.push(
       Event.debounce(
@@ -207,11 +266,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         (_, e) => e,
         100,
       )(() => {
-        if (!prefInlineChatAutoVisible) {
-          return;
-        }
-
-        if (!needShowInlineChat) {
+        if (!prefInlineChatAutoVisible || !needShowInlineChat) {
           return;
         }
 
@@ -225,46 +280,10 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         this.showInlineChat(editor);
       }),
     );
-
-    // 判断用户是否选择了一块区域或者移动光标 取消掉请补全求
-    const selectionChange = () => {
-      this.aiCompletionsService.hideStatusBarItem();
-      const selection = monacoEditor.getSelection();
-      if (!selection) {
-        return;
-      }
-
-      // 判断是否选中区域
-      if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
-        this.aiInlineCompletionsProvider.cancelRequest();
-      }
-      requestAnimationFrame(() => {
-        this.aiCompletionsService.setVisibleCompletion(false);
-      });
-    };
-
-    const debouncedSelectionChange = debounce(() => selectionChange(), 50, {
-      maxWait: 200,
-      leading: true,
-      trailing: true,
-    });
-
-    this.disposables.push(
-      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
-        if (e.payload.source === 'mouse') {
-          debouncedSelectionChange();
-        } else {
-          debouncedSelectionChange.cancel();
-          selectionChange();
-        }
-      }),
-    );
-
-    return this;
   }
 
   protected inlineChatInUsing = false;
-  private async showInlineChat(editor: IEditor, actionId?: string): Promise<void> {
+  protected async showInlineChat(editor: IEditor): Promise<void> {
     if (!this.aiNativeConfigService.capabilities.supportsInlineChat) {
       return;
     }
@@ -276,11 +295,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
     this.disposeAllWidget();
 
-    const { monacoEditor, currentUri } = editor;
-
-    if (!currentUri || currentUri.codeUri.scheme !== Schemes.file) {
-      return;
-    }
+    const { monacoEditor } = editor;
 
     const selection = monacoEditor.getSelection();
 
@@ -289,7 +304,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       return;
     }
 
-    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
+    this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY));
 
     this.aiInlineContentWidget = this.injector.get(AIInlineContentWidget, [monacoEditor]);
 
@@ -298,16 +313,22 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     });
 
     this.aiInlineChatDisposed.addDispose(
-      this.aiInlineContentWidget.onActionClick((id: string) => {
-        this.runInlineChatAction(id, monacoEditor);
+      this.aiInlineContentWidget.onActionClick((action) => {
+        this.runInlineChatAction(action, monacoEditor);
       }),
     );
-    if (actionId) {
-      this.aiInlineContentWidget.clickActionId(actionId);
-    }
   }
 
-  private async runInlineChatAction(id: string, monacoEditor: monaco.ICodeEditor) {
+  private async runInlineChatAction(
+    {
+      actionId: id,
+      source,
+    }: {
+      actionId: string;
+      source: string;
+    },
+    monacoEditor: monaco.ICodeEditor,
+  ) {
     const handler = this.inlineChatFeatureRegistry.getEditorHandler(id);
     const action = this.inlineChatFeatureRegistry.getAction(id);
     if (!handler || !action) {
@@ -332,7 +353,12 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         .setStartPosition(selection.startLineNumber, 1)
         .setEndPosition(selection.endLineNumber, Number.MAX_SAFE_INTEGER);
 
-      const relationId = this.aiReporter.start(action.name, { message: action.name });
+      const relationId = this.aiReporter.start(action.name, {
+        message: action.name,
+        type: AISerivceType.InlineChat,
+        source,
+        runByCodeAction: source === 'codeAction',
+      });
 
       const result = await this.handleDiffPreviewStrategy(
         monacoEditor,
@@ -342,14 +368,11 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         false,
       );
 
-      this.aiInlineChatDisposed.addDispose(
+      this.aiInlineChatDisposed.addDispose([
         this.aiInlineChatService.onDiscard(() => {
           this.aiReporter.end(relationId, { message: result.message, success: true, isDrop: true });
           this.disposeAllWidget();
         }),
-      );
-
-      this.aiInlineChatDisposed.addDispose(
         this.aiInlineChatService.onRegenerate(async () => {
           await this.handleDiffPreviewStrategy(
             monacoEditor,
@@ -359,7 +382,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
             true,
           );
         }),
-      );
+      ]);
     }
   }
 
@@ -378,13 +401,13 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     this.resetDiffEnvironment();
 
     const crossCode = model!.getValueInRange(crossSelection);
-    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING);
+    this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.THINKING));
 
     const startTime = Date.now();
     const response = await strategy(monacoEditor, this.aiNativeService.cancelIndicator.token);
 
     if (this.aiInlineChatDisposed.disposed || CancelResponse.is(response)) {
-      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY);
+      this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.READY));
       this.aiReporter.end(relationId, {
         message: response.message,
         success: true,
@@ -396,7 +419,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     }
 
     if (ErrorResponse.is(response)) {
-      this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR);
+      this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.ERROR));
       this.aiReporter.end(relationId, {
         message: response.message,
         success: false,
@@ -406,7 +429,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       return response;
     }
 
-    this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE);
+    this.aiInlineChatDisposed.addDispose(this.aiInlineChatService.launchChatStatus(EInlineChatStatus.DONE));
 
     this.aiReporter.end(relationId, {
       message: response.message,
@@ -487,11 +510,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
   }
 
   private async registerLanguageFeatures(editor: IEditor): Promise<void> {
-    const { monacoEditor, currentUri } = editor;
-
-    if (currentUri && currentUri.codeUri.scheme !== Schemes.file) {
-      return;
-    }
+    const { monacoEditor } = editor;
 
     this.disposables.push(
       Event.debounce(
@@ -510,6 +529,8 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
 
         this.modelSessionDisposable = new Disposable();
 
+        const languageId = model.getLanguageId();
+
         if (this.aiNativeConfigService.capabilities.supportsInlineCompletion) {
           this.contributions.getContributions().forEach((contribution) => {
             if (contribution.middleware) {
@@ -524,7 +545,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
             },
           });
           this.modelSessionDisposable.addDispose(
-            monacoApi.languages.registerInlineCompletionsProvider(model.getLanguageId(), {
+            monacoApi.languages.registerInlineCompletionsProvider(languageId, {
               provideInlineCompletions: async (model, position, context, token) => {
                 if (this.latestMiddlewareCollector?.language?.provideInlineCompletions) {
                   this.aiCompletionsService.setMiddlewareComplete(
@@ -547,7 +568,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
                 return list;
               },
               freeInlineCompletions() {},
-              handleItemDidShow: (completions, item) => {
+              handleItemDidShow: (completions) => {
                 if (completions.items.length > 0) {
                   this.aiCompletionsService.setVisibleCompletion(true);
                 }
@@ -557,103 +578,204 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
         }
 
         if (this.aiNativeConfigService.capabilities.supportsRenameSuggestions) {
-          const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
-            const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
-            return result;
-          };
-
-          this.modelSessionDisposable.addDispose(
-            monacoApi.languages.registerNewSymbolNameProvider(model.getLanguageId(), {
-              provideNewSymbolNames: provider,
-            }),
-          );
+          this.modelSessionDisposable.addDispose(this.contributeRenameFeature(languageId));
         }
 
         if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
-          // 通过 code actions 来透出我们 inline chat 的功能
-          const languageId = model.getLanguageId();
-          this.modelSessionDisposable.addDispose(
-            this.inlineChatFeatureRegistry.onActionRun(({ id, range }) => {
-              monacoEditor.setSelection(range);
-              this.showInlineChat(editor, id);
-            }),
-          );
-          this.modelSessionDisposable.addDispose(
-            monacoApi.languages.registerCodeActionProvider(languageId, {
-              provideCodeActions: async (model) => {
-                const parser = this.languageParserService.createParser(languageId);
-                if (!parser) {
-                  return;
-                }
-                const actions = this.inlineChatFeatureRegistry.getCodeActions();
-                if (!actions || actions.length === 0) {
-                  return;
-                }
-
-                const cursorPosition = monacoEditor.getPosition();
-                if (!cursorPosition) {
-                  return;
-                }
-
-                function constructCodeActions(info: ICodeBlockInfo) {
-                  return {
-                    actions: actions.map((v) => {
-                      const command = {} as monaco.Command;
-                      if (v.command) {
-                        command.id = v.command.id;
-                        command.arguments = [info.range];
-                      }
-
-                      let title = v.title;
-
-                      switch (info.infoCategory) {
-                        case 'function': {
-                          title = title + ` for Function: ${info.name}`;
-                        }
-                      }
-
-                      return {
-                        ...v,
-                        title,
-                        ranges: [info.range],
-                        command,
-                      };
-                    }) as monaco.CodeAction[],
-                    dispose() {},
-                  };
-                }
-
-                const info = await parser.provideCodeBlockInfo(model, cursorPosition);
-
-                if (info) {
-                  return constructCodeActions(info);
-                }
-
-                // check current line is empty
-                const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
-                if (currentLineLength !== 0) {
-                  return;
-                }
-
-                // 获取视窗范围内的代码块
-                const range = monacoEditor.getVisibleRanges();
-                if (range.length === 0) {
-                  return;
-                }
-
-                // 查找从当前行至视窗最后一行的代码块中是否包含函数
-                const newRange = new monaco.Range(cursorPosition.lineNumber, 0, range[0].endLineNumber + 1, 0);
-
-                const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
-                if (rangeInfo) {
-                  return constructCodeActions(rangeInfo);
-                }
-              },
-            }),
-          );
+          this.modelSessionDisposable.addDispose(this.contributeCodeActionFeature(languageId, editor));
         }
       }),
     );
+  }
+
+  lastModelRequestRenameEndTime: number | undefined;
+  lastModelRequestRenameSessionId: string | undefined;
+
+  protected contributeRenameFeature(languageId: string): IDisposable {
+    const disposable = new Disposable();
+
+    const provider = async (model: monaco.ITextModel, range: monaco.IRange, token: CancellationToken) => {
+      this.lastModelRequestRenameSessionId = undefined;
+
+      const startTime = +new Date();
+      const relationId = this.aiReporter.start('rename', {
+        message: 'start',
+        type: AISerivceType.Rename,
+        modelRequestStartTime: startTime,
+      });
+      this.lastModelRequestRenameSessionId = relationId;
+
+      const toDispose = token.onCancellationRequested(() => {
+        const endTime = +new Date();
+
+        this.aiReporter.end(relationId, {
+          message: 'cancel',
+          success: false,
+          isCancel: true,
+          modelRequestStartTime: startTime,
+          modelRequestEndTime: endTime,
+        });
+
+        this.lastModelRequestRenameSessionId = undefined;
+      });
+
+      try {
+        const result = await this.renameSuggestionService.provideRenameSuggestions(model, range, token);
+        toDispose.dispose();
+        this.lastModelRequestRenameEndTime = +new Date();
+        return result;
+      } catch (error) {
+        const endTime = +new Date();
+        this.aiReporter.end(relationId, {
+          message: 'error:' + getErrorMessage(error),
+          success: false,
+          modelRequestStartTime: startTime,
+          modelRequestEndTime: endTime,
+        });
+        throw error;
+      }
+    };
+
+    disposable.addDispose([
+      monacoApi.languages.registerNewSymbolNameProvider(languageId, {
+        provideNewSymbolNames: provider,
+      }),
+      this.monacoTelemetryService.onEventLog('renameInvokedEvent', (event) => {
+        if (this.lastModelRequestRenameSessionId) {
+          this.aiReporter.end(this.lastModelRequestRenameSessionId, {
+            message: 'done',
+            success: true,
+            modelRequestEndTime: this.lastModelRequestRenameEndTime,
+            ...event,
+          });
+        }
+      }),
+    ]);
+
+    return disposable;
+  }
+
+  protected contributeCodeActionFeature(languageId: string, editor: IEditor): IDisposable {
+    const disposable = new Disposable();
+
+    let prefInlineChatActionEnabled = this.preferenceService.getValid(
+      AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+      true,
+    );
+
+    if (!prefInlineChatActionEnabled) {
+      return disposable;
+    }
+
+    const { monacoEditor } = editor;
+    const { languageParserService, inlineChatFeatureRegistry } = this;
+
+    let codeActionDispose: IDisposable | undefined;
+
+    disposable.addDispose(
+      this.preferenceService.onSpecificPreferenceChange(
+        AINativeSettingSectionsId.INLINE_CHAT_CODE_ACTION_ENABLED,
+        ({ newValue }) => {
+          prefInlineChatActionEnabled = newValue;
+          if (newValue) {
+            register();
+          } else {
+            if (codeActionDispose) {
+              codeActionDispose.dispose();
+              codeActionDispose = undefined;
+            }
+          }
+        },
+      ),
+    );
+
+    register();
+
+    return disposable;
+
+    function register() {
+      if (codeActionDispose) {
+        codeActionDispose.dispose();
+        codeActionDispose = undefined;
+      }
+
+      codeActionDispose = monacoApi.languages.registerCodeActionProvider(languageId, {
+        provideCodeActions: async (model) => {
+          if (!prefInlineChatActionEnabled) {
+            return;
+          }
+
+          const parser = languageParserService.createParser(languageId);
+          if (!parser) {
+            return;
+          }
+          const actions = inlineChatFeatureRegistry.getCodeActions();
+          if (!actions || actions.length === 0) {
+            return;
+          }
+
+          const cursorPosition = monacoEditor.getPosition();
+          if (!cursorPosition) {
+            return;
+          }
+
+          function constructCodeActions(info: ICodeBlockInfo) {
+            return {
+              actions: actions.map((v) => {
+                const command = {} as monaco.Command;
+                if (v.command) {
+                  command.id = v.command.id;
+                  command.arguments = [info.range];
+                }
+
+                let title = v.title;
+
+                switch (info.infoCategory) {
+                  case 'function': {
+                    title = title + ` for Function: ${info.name}`;
+                  }
+                }
+
+                return {
+                  ...v,
+                  title,
+                  ranges: [info.range],
+                  command,
+                };
+              }) as monaco.CodeAction[],
+              dispose() {},
+            };
+          }
+
+          const info = await parser.provideCodeBlockInfo(model, cursorPosition);
+          if (info) {
+            return constructCodeActions(info);
+          }
+
+          // check current line is empty
+          const currentLineLength = model.getLineLength(cursorPosition.lineNumber);
+          if (currentLineLength !== 0) {
+            return;
+          }
+
+          // 获取视窗范围内的代码块
+          const ranges = monacoEditor.getVisibleRanges();
+          if (ranges.length === 0) {
+            return;
+          }
+
+          // 查找从当前行至视窗最后一行的代码块中是否包含函数
+          const newRange = new monaco.Range(cursorPosition.lineNumber, 0, ranges[0].endLineNumber + 1, 0);
+
+          const rangeInfo = await parser.provideCodeBlockInfoInRange(model, newRange);
+          if (rangeInfo) {
+            return constructCodeActions(rangeInfo);
+          }
+        },
+      });
+
+      disposable.addDispose(codeActionDispose);
+    }
   }
 
   dispose(): void {
