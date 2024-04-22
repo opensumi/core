@@ -2137,7 +2137,7 @@ __metadata:
     marked: "npm:4.0.10"
     prop-types: "npm:^15.8.1"
     raf: "npm:^3.4.1"
-    rc-dialog: "npm:~7.6.0"
+    rc-dialog: "npm:~9.4.0"
     rc-dropdown: "npm:~2.4.1"
     rc-input-number: "npm:^7.4.2"
     rc-menu: "npm:^9.3.2"
@@ -3219,7 +3219,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rc-component/portal@npm:^1.1.0":
+"@rc-component/portal@npm:^1.0.0-8, @rc-component/portal@npm:^1.1.0":
   version: 1.1.2
   resolution: "@rc-component/portal@npm:1.1.2"
   dependencies:
@@ -16493,14 +16493,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-dialog@npm:~7.6.0":
-  version: 7.6.1
-  resolution: "rc-dialog@npm:7.6.1"
+"rc-dialog@npm:~9.4.0":
+  version: 9.4.0
+  resolution: "rc-dialog@npm:9.4.0"
   dependencies:
-    babel-runtime: "npm:6.x"
-    rc-animate: "npm:2.x"
-    rc-util: "npm:^4.16.1"
-  checksum: 10/4c21da7aea6b7dc7415300ec83438f72771f3d4db3f412f77acf29d7f022f91355197767bd5bad38b9521003c7546575fd4859a345fda948935415ba687ad443
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/portal": "npm:^1.0.0-8"
+    classnames: "npm:^2.2.6"
+    rc-motion: "npm:^2.3.0"
+    rc-util: "npm:^5.21.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/ecff15ae26df104e42581482f32fa06a718cf5c01440b6d1556b080dd4cfc80a96fcd648b626f34b6b549a9968503f193f309a9e9004e669ead9a70e27e4a4f4
   languageName: node
   linkType: hard
 
@@ -16549,7 +16554,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-motion@npm:^2.0.0, rc-motion@npm:^2.4.3":
+"rc-motion@npm:^2.0.0, rc-motion@npm:^2.3.0, rc-motion@npm:^2.4.3":
   version: 2.9.0
   resolution: "rc-motion@npm:2.9.0"
   dependencies:
