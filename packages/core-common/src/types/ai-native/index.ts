@@ -141,7 +141,15 @@ export class CancelResponse {
   }
 }
 
-export type ChatResponse = ReplyResponse | ErrorResponse | CancelResponse;
+export class StreamReplyResponse {
+  constructor(readonly message: NodeJS.ReadableStream) {}
+
+  static is(things: any): things is StreamReplyResponse {
+    return things instanceof StreamReplyResponse || (typeof things === 'object' && things.stream !== undefined);
+  }
+}
+
+export type ChatResponse = ReplyResponse | ErrorResponse | CancelResponse | StreamReplyResponse;
 
 /**
  * DI Token

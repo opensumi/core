@@ -8,6 +8,7 @@ import {
   TSCMatcher,
 } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/matcher';
 import { TextWithStyle } from '@opensumi/ide-ai-native/lib/browser/ai-terminal/utils/ansi-parser';
+import { StreamReplyRender } from '@opensumi/ide-ai-native/lib/browser/components/StreamReplyRender';
 import {
   AINativeCoreContribution,
   IChatFeatureRegistry,
@@ -27,6 +28,7 @@ import {
   IAIBackService,
   MergeConflictEditorMode,
   ReplyResponse,
+  StreamReplyResponse,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
@@ -86,17 +88,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
           const crossCode = this.getCrossCode(editor);
           const prompt = `Comment the code: \`\`\`\n ${crossCode}\`\`\`. It is required to return only the code results without explanation.`;
 
-          const result = await this.aiBackService.request(prompt, {}, token);
+          const result = await this.aiBackService.requestStream(prompt, {}, token);
 
-          if (result.isCancel) {
-            return new CancelResponse();
-          }
-
-          if (result.errorCode !== 0) {
-            return new ErrorResponse('');
-          }
-
-          return new ReplyResponse(result.data!);
+          return new StreamReplyResponse(result);
         },
       },
     );

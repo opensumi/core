@@ -1,5 +1,3 @@
-import { Readable } from 'stream';
-
 import { Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import {
@@ -19,7 +17,7 @@ interface IRPCGptService {
 @Injectable()
 export class BaseAIBackService
   extends RPCService<IRPCGptService>
-  implements IAIBackService<IAIBackServiceResponse, Readable>
+  implements IAIBackService<IAIBackServiceResponse, NodeJS.ReadableStream>
 {
   async request<T = IAIBackServiceResponse<string>>(
     input: string,
@@ -33,8 +31,8 @@ export class BaseAIBackService
     input: string,
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
-  ): Promise<T> {
-    return void 0 as T;
+  ): Promise<any> {
+    return;
   }
 
   async requestCompletion<T = IAICompletionResultModel>(input: IAICompletionOption, cancelToken?: CancellationToken) {

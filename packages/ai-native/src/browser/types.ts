@@ -12,6 +12,7 @@ import {
   MaybePromise,
   MergeConflictEditorMode,
   ReplyResponse,
+  StreamReplyResponse,
 } from '@opensumi/ide-core-common';
 import { ICodeEditor, ITextModel, NewSymbolNamesProvider, Position } from '@opensumi/ide-monaco';
 
@@ -32,7 +33,7 @@ export interface IEditorInlineChatHandler {
   providerDiffPreviewStrategy?: (
     editor: ICodeEditor,
     cancelToken: CancellationToken,
-  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse>;
+  ) => MaybePromise<ReplyResponse | ErrorResponse | CancelResponse | StreamReplyResponse>;
 }
 
 export interface ITerminalInlineChatHandler {

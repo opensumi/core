@@ -51,17 +51,17 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
     } as T);
   }
 
-  override async requestStream<T = IAIBackServiceResponse<string>>(
+  override async requestStream(
     input: string,
     options: IAIBackServiceOption,
     cancelToken?: CancellationToken,
-  ): Promise<T> {
+  ): Promise<Readable> {
     const { sessionId } = options;
 
     // 模拟 stream 数据,包含一段 TypeScript 代码
     const streamData = [
       'Here is a simple TypeScript code snippet: \n',
-      '```typescript\n',
+      '```\n',
       'interface Person {\n',
       '  name: string;\n',
       '  age: number;\n',
@@ -85,56 +85,93 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
       'Make sure to handle the stream data properly in your application.',
     ];
 
-    const length = streamData.length;
+    // 模拟原始的 SSE strem
+    const stream = new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        let messageIndex = 0;
+        const pushMessage = () => {
+          if (messageIndex < streamData.length) {
+            const line = streamData[messageIndex++];
+            // 随机切分消息
+            const msgs = splitStringRandomly(line);
+            for (const msg of msgs) {
+              controller.enqueue(encoder.encode(`data: ${msg}`));
+            }
+            // Schedule next message push
+            setTimeout(pushMessage, 250); // Adjust time as needed
+          } else {
+            controller.close(); // 关闭流，如果不希望自动关闭请移除该行
+          }
+        };
 
-    // 创建可读流
-    const stream = new Readable({
-      read() {},
+        pushMessage();
+      },
     });
 
-    // 模拟数据事件
-    streamData.forEach((chunk, index) => {
-      setTimeout(() => {
-        stream.push(
-          JSON.stringify({
-            id: sessionId,
-            choices: [
-              {
-                delta: {
-                  content: chunk,
-                  role: 'user',
-                },
-                finish_reason: length - 1 === index ? 'stop' : null,
-              },
-            ],
-          }),
-        );
-      }, index * 300);
-    });
-
+    const readable = readableStreamToNodeReadable(stream);
     if (sessionId) {
-      this.streamSessionIdMap.set(sessionId, stream);
+      this.streamSessionIdMap.set(sessionId, readable);
     }
 
-    // 在数据事件中处理数据
-    stream.on('data', (chunk) => {
-      this.logger.log(`Received chunk: ${chunk}`);
-      this.client?.onMessage(chunk, sessionId);
-    });
-
-    // 在结束事件中进行清理
-    stream.on('close', () => {
-      this.logger.log('Stream ended.');
-      if (sessionId) {
-        this.streamSessionIdMap.delete(sessionId);
-      }
-    });
-
-    // 触发结束事件
-    setTimeout(() => {
-      stream.push(null);
-    }, streamData.length * 1000);
-
-    return void 0 as T;
+    return readable;
   }
+}
+
+// 将ReadableStream转化为Node.js的Readable流的函数
+function readableStreamToNodeReadable(readableStream) {
+  // 创建Node.js的Readable流
+  const nodeReadable = new Readable({
+    read() {}, // 当流消费者调用read()时，会触发这个函数，这个示例中我们无需自己实现读取逻辑
+  });
+
+  // 获取ReadableStream的reader
+  const reader = readableStream.getReader();
+
+  // 用一个循环处理流中的所有数据块
+  (async function pump() {
+    try {
+      // ReadableStream的读取循环
+      while (true) {
+        const { done, value } = await reader.read(); // 从stream中读取数据
+        if (done) {
+          // 如果到达流的末尾，关闭Node的流
+          nodeReadable.push(null);
+          break;
+        }
+        // 将数据块推送到Node的流中
+        nodeReadable.push(Buffer.from(value));
+      }
+    } catch (err) {
+      // 如果发生错误，关闭流
+      nodeReadable.destroy(err);
+    }
+  })();
+
+  // 返回转换后的Node.js的Readable流
+  return nodeReadable;
+}
+
+function splitStringRandomly(str: string) {
+  // 用于存储切分后的字符串片段
+  let result: string[] = [];
+
+  // 当前还未处理的字符串部分的起始位置
+  let startPos = 0;
+
+  // 遍历字符串，决定每个片段的长度
+  while (startPos < str.length) {
+    // 确定下一个片段的长度，至少为1，最大不超过剩余字符串的长度
+    let pieceLength = Math.floor(Math.random() * (str.length - startPos)) + 1;
+
+    // 根据计算出的长度切分字符串，并将片段添加到结果数组
+    let piece = str.substr(startPos, pieceLength);
+    result.push(piece);
+
+    // 更新起始位置，准备处理下一个片段
+    startPos += pieceLength;
+  }
+
+  // 返回切分后的字符串数组
+  return result;
 }
