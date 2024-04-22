@@ -549,7 +549,7 @@ export class ViewExtProcessService extends Disposable implements AbstractViewExt
     return pendingFetch;
   }
 
-  private getMockAmdLoader<T>(extension: IExtension, rpcProtocol?: IRPCProtocol) {
+  private getSumiAMDLoader<T>(extension: IExtension, rpcProtocol?: IRPCProtocol) {
     const _exports: { default?: any } | T = {};
     const _module = { exports: _exports };
     const _require = (request: string) => {
@@ -571,7 +571,7 @@ export class ViewExtProcessService extends Disposable implements AbstractViewExt
     const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
-    const { _module, _exports, _require } = this.getMockAmdLoader<T>(extension, this.nodeExtensionService.protocol);
+    const { _module, _exports, _require } = this.getSumiAMDLoader<T>(extension, this.nodeExtensionService.protocol);
     const initFn = new Function(
       'module',
       'exports',
@@ -652,7 +652,7 @@ export class ViewExtProcessService extends Disposable implements AbstractViewExt
     const loadTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
     const pendingFetch = await this.doFetch(decodeURIComponent(browserPath));
     loadTimer.timeEnd(extension.id);
-    const { _module, _exports, _require } = this.getMockAmdLoader<T>(extension, this.nodeExtensionService.protocol);
+    const { _module, _exports, _require } = this.getSumiAMDLoader<T>(extension, this.nodeExtensionService.protocol);
     const stylesCollection = [];
     const proxiedHead = document.createElement('head');
     const proxiedDocument = createProxiedDocument(proxiedHead);

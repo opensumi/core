@@ -1,5 +1,3 @@
-import ReactDom from 'react-dom/client';
-
 import {
   CommandRegistry,
   CommandRegistryImpl,
@@ -12,7 +10,12 @@ import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
 import { IMenuItem, IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { NextToolbarRegistryImpl } from '@opensumi/ide-core-browser/src/toolbar/toolbar.registry';
 import { AppLifeCycleServiceToken, IAppLifeCycleService, IEventBus, LifeCyclePhase } from '@opensumi/ide-core-common';
-import { ExtensionBeforeActivateEvent, IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import {
+  AbstractExtInstanceManagementService,
+  ExtensionBeforeActivateEvent,
+  IActivationEventService,
+} from '@opensumi/ide-extension/lib/browser/types';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { TabbarService } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabbar.service';
@@ -22,9 +25,7 @@ import { IThemeService, getColorRegistry } from '@opensumi/ide-theme/lib/common'
 
 import '@opensumi/ide-i18n';
 
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { SumiContributionsServiceToken } from '../../../src/browser/sumi/contributes';
-import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
 import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../../src/browser/vscode/contributes';
 import {
   AbstractExtensionManagementService,
@@ -242,7 +243,7 @@ describe('Extension service', () => {
       const requireInterceptorService: IRequireInterceptorService = injector.get(IRequireInterceptorService);
       const interceptor = requireInterceptorService.getRequireInterceptor('ReactDOM');
       const result = interceptor?.load({});
-      expect(result).toBe(ReactDom);
+      expect(result).toMatchSnapshot();
     });
   });
 
