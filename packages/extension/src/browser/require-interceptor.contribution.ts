@@ -12,7 +12,8 @@ import {
 
 import { createBrowserApi } from './sumi-browser';
 
-const reactDom16Wrapper = {
+// `react-dom/18.2.0/umd/react-dom.production.min.js` is do the same thing, it export both `react-dom` and `react-dom/client`.
+const umdReactDOM = {
   ...ReactDOM,
   ...ReactDOMClient,
 };
@@ -25,10 +26,9 @@ export class BrowserRequireInterceptorContribution implements RequireInterceptor
       load: () => React,
     });
 
-    // compatible with react-dom v16
     registry.registerRequireInterceptor({
       moduleName: 'ReactDOM',
-      load: () => reactDom16Wrapper,
+      load: () => umdReactDOM,
     });
 
     registry.registerRequireInterceptor({
