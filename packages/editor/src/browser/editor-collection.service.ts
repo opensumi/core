@@ -5,9 +5,11 @@ import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   Disposable,
   Emitter,
+  Event,
   Emitter as EventEmitter,
   ILineChange,
   ISelection,
+  LRUCache,
   OnEvent,
   URI,
   WithEventBus,
@@ -19,6 +21,7 @@ import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platf
 
 import {
   CursorStatus,
+  DIFF_SCHEME,
   EditorCollectionService,
   EditorType,
   ICodeEditor,
@@ -559,6 +562,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
 
   private modifiedDocModelRef: IEditorDocumentModelRef | null;
 
+  private diffEditorModelCache = new LRUCache<string, monaco.editor.IDiffEditorViewModel>(100);
+
   get originalDocModel() {
     if (this.originalDocModelRef && !this.originalDocModelRef.disposed) {
       return this.originalDocModelRef.instance;
@@ -622,7 +627,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       this.configurationService.onDidChangeConfiguration((e) => {
         const changedEditorKeys = Array.from(e.affectedKeys.values()).filter((key) => isDiffEditorOption(key));
         if (changedEditorKeys.length > 0) {
-          this.doUpdateDiffOptions();
+          this.updateDiffOptions();
         }
       }),
     );
@@ -642,16 +647,20 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     }
     const original = this.originalDocModel.getMonacoModel();
     const modified = this.modifiedDocModel.getMonacoModel();
-    this.monacoDiffEditor.setModel({
-      original,
-      modified,
-    });
+    const key = `${original.uri.toString()}-${modified.uri.toString()}`;
+    let model = this.diffEditorModelCache.get(key);
+    if (!model) {
+      model = this.monacoDiffEditor.createViewModel({ original, modified });
+      this.diffEditorModelCache.set(key, model);
+    }
+
+    this.monacoDiffEditor.setModel(model);
 
     if (rawUri) {
       this.currentUri = rawUri;
     } else {
       this.currentUri = URI.from({
-        scheme: 'diff',
+        scheme: DIFF_SCHEME,
         query: URI.stringifyQuery({
           name,
           original: this.originalDocModel!.uri.toString(),
@@ -663,16 +672,15 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     if (options.range || options.originalRange) {
       const range = (options.range || options.originalRange) as monaco.IRange;
       const currentEditor = options.range ? this.modifiedEditor.monacoEditor : this.originalEditor.monacoEditor;
-      // 必须使用 setTimeout, 因为两边的 editor 出现时机问题，diffEditor是异步显示和渲染
+      // 必须使用 setTimeout, 因为两边的 editor 出现时机问题，diffEditor 是异步显示和渲染
       setTimeout(() => {
         currentEditor.revealRangeInCenter(range);
         currentEditor.setSelection(range);
       });
-      // monaco diffEditor 在setModel后，计算diff完成后, 左侧 originalEditor 会发出一个异步的onScroll，
+      // monaco diffEditor 在 setModel 后，计算 diff 完成后, 左侧 originalEditor 会发出一个异步的onScroll，
       // 这个行为可能会带动右侧 modifiedEditor 进行滚动， 导致 revealRange 错位
-      // 此处 添加一个onDidUpdateDiff 监听
-      const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
-        disposer.dispose();
+      // 此处 添加一个 onDidUpdateDiff 监听
+      Event.once(this.monacoDiffEditor.onDidUpdateDiff)(() => {
         currentEditor.setSelection(range);
         setTimeout(() => {
           currentEditor.revealRangeInCenter(range);
@@ -682,14 +690,15 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       this.restoreState();
     }
     const enableHideUnchanged = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
+
     if (options.revealFirstDiff && !enableHideUnchanged) {
       // 仅在非折叠模式下自动滚动到第一个 Diff
       const diffs = this.monacoDiffEditor.getLineChanges();
       if (diffs && diffs.length > 0) {
-        this.showFirstDiff();
+        this.showFirstDiff(model);
       } else {
         const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
-          this.showFirstDiff();
+          this.showFirstDiff(model);
           disposer.dispose();
         });
       }
@@ -698,13 +707,9 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     this.diffResourceKeys.forEach((r) => r.set(this.currentUri));
   }
 
-  showFirstDiff() {
-    const diffs = this.monacoDiffEditor.getLineChanges();
-    if (diffs && diffs.length > 0) {
-      setTimeout(() => {
-        this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
-      }, 0);
-    }
+  private async showFirstDiff(model: monaco.editor.IDiffEditorViewModel) {
+    await model.waitForDiff();
+    this.monacoDiffEditor.revealFirstDiff();
   }
 
   private async updateOptionsOnModelChange() {
@@ -741,8 +746,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     }
   }
 
-  updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {
-    this.specialOptions = removeUndefined({ ...this.specialOptions, ...options });
+  updateDiffOptions() {
+    this.diffEditorModelCache.clear();
     this.doUpdateDiffOptions();
   }
 
@@ -812,6 +817,7 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     super.dispose();
     this.collectionService.removeEditors([this.originalEditor, this.modifiedEditor]);
     this.collectionService.removeDiffEditors([this]);
+    this.diffEditorModelCache.clear();
     this.monacoDiffEditor.dispose();
     this._disposed = true;
   }
