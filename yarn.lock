@@ -3027,7 +3027,7 @@ __metadata:
     jschardet: "npm:3.0.0"
     mri: "npm:^1.2.0"
     nanoid: "npm:3.3.4"
-    vscode-uri: "npm:3.0.2"
+    vscode-uri: "npm:3.0.8"
   languageName: unknown
   linkType: soft
 
@@ -3129,7 +3129,7 @@ __metadata:
   dependencies:
     "@opensumi/ide-components": "workspace:*"
     "@types/react": "npm:^18.2.0"
-    vscode-uri: "npm:3.0.2"
+    vscode-uri: "npm:3.0.8"
   languageName: unknown
   linkType: soft
 
@@ -19757,10 +19757,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vscode-uri@npm:3.0.2":
-  version: 3.0.2
-  resolution: "vscode-uri@npm:3.0.2"
-  checksum: 10/5c698b20335aaca45591509927dd77864ecc4e3988e4797fae7e331a1aaef7635116b205cdaa31b736b601e621b0358ec2ef49e533f59fab04e9e84ec66d5dc9
+"vscode-uri@npm:3.0.8":
+  version: 3.0.8
+  resolution: "vscode-uri@npm:3.0.8"
+  checksum: 10/e882d6b679e0d053cbc042893c0951a135d899a192b62cd07f0a8924f11ae722067a8d6b1b5b147034becf57faf9fff9fb543b17b749fd0f17db1f54f783f07c
   languageName: node
   linkType: hard
 

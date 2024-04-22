@@ -20,7 +20,7 @@
     "jschardet": "3.0.0",
     "mri": "^1.2.0",
     "nanoid": "3.3.4",
-    "vscode-uri": "3.0.2"
+    "vscode-uri": "3.0.8"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*"
