@@ -3,10 +3,10 @@ import { Disposable } from '@opensumi/ide-core-common';
 
 import {
   ChatAIRoleRender,
+  ChatInputRender,
   ChatThinkingRender,
   ChatUserRoleRender,
   ChatWelcomeRender,
-  ChatInputRender,
   IChatRenderRegistry,
 } from '../types';
 
