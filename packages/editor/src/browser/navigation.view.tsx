@@ -74,7 +74,7 @@ export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPa
   const viewService = useInjectable<NavigationBarViewService>(NavigationBarViewService);
   const breadcrumbsMenuService = useInjectable<BreadCrumbsMenuService>(BreadCrumbsMenuService);
   const itemRef = useRef<HTMLSpanElement>();
-  const styles_navigation_part = useDesignStyles(styles['navigation-part']);
+  const styles_navigation_part = useDesignStyles(styles['navigation-part'], 'navigation-part');
 
   const onClick = useCallback(async () => {
     if (part.getSiblings && itemRef.current) {

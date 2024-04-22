@@ -512,7 +512,7 @@ export type IEditorActionsProps = IEditorActionsBaseProps & HTMLAttributes<HTMLD
 
 export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
   (props: IEditorActionsProps, ref: Ref<typeof EditorActions>) => {
-    const styles_editor_actions = useDesignStyles(styles.editor_actions);
+    const styles_editor_actions = useDesignStyles(styles.editor_actions, 'editor_actions');
     const { group, className } = props;
 
     const acquireArgs = useCallback(
