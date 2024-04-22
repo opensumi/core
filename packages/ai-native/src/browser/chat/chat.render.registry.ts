@@ -34,7 +34,7 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
     this.chatThinkingRender = render;
   }
 
-  registerChatInputRender(render: ChatInputRender): void {
+  registerInputRender(render: ChatInputRender): void {
     this.chatInputRender = render;
   }
 }
