@@ -707,8 +707,8 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
     this.diffResourceKeys.forEach((r) => r.set(this.currentUri));
   }
 
-  private async showFirstDiff(model: monaco.editor.IDiffEditorViewModel) {
-    await model.waitForDiff();
+  private async showFirstDiff(model?: monaco.editor.IDiffEditorViewModel) {
+    await model?.waitForDiff();
     this.monacoDiffEditor.revealFirstDiff();
   }
 
