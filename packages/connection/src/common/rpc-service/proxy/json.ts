@@ -12,7 +12,7 @@ interface IRPCResult {
 
 export class ProxyJson extends ProxyBase<MessageConnection> {
   protected engine = 'json' as const;
-  protected capturer = new Capturer(this.engine);
+  protected capturer = this._disposables.add(new Capturer(this.engine));
 
   protected bindMethods(methods: string[]): void {
     for (const method of methods) {

@@ -1,6 +1,5 @@
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, DisposableStore } from '@opensumi/ide-core-common';
 
-import { Capturer, ICapturedMessage, MessageType, ResponseStatus, getCapturer } from '../../capturer';
 import { ILogger, IRPCServiceMap } from '../../types';
 
 import type { ServiceRegistry } from '../registry';
@@ -20,6 +19,8 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   protected connectionPromise: Deferred<void> = new Deferred<void>();
 
+  protected _disposables = new DisposableStore();
+
   protected abstract engine: 'json' | 'sumi';
 
   constructor(public registry: ServiceRegistry, logger?: ILogger) {
@@ -38,6 +39,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
 
   listen(connection: T): void {
     this.connection = connection;
+    this._disposables.add(this.connection);
     this.bindMethods(this.registry.methods());
 
     connection.listen();
@@ -49,9 +51,7 @@ export abstract class ProxyBase<T extends IBaseConnection> {
   }
 
   dispose(): void {
-    if (this.connection) {
-      this.connection.dispose();
-    }
+    this._disposables.dispose();
   }
 
   public abstract invoke(prop: string, ...args: any[]): Promise<any>;

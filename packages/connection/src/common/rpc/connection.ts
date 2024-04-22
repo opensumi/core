@@ -2,7 +2,7 @@ import { getDebugLogger } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   CancellationTokenSource,
-  DisposableCollection,
+  DisposableStore,
   EventQueue,
   IDisposable,
   canceled,
@@ -42,7 +42,7 @@ export interface ISumiConnectionOptions {
 }
 
 export class SumiConnection implements IDisposable {
-  protected disposable = new DisposableCollection();
+  protected disposable = new DisposableStore();
 
   private _requestHandlers = new Map<string, TGenericRequestHandler<any>>();
   private _starRequestHandler: TRequestNotFoundHandler | undefined;
@@ -71,6 +71,7 @@ export class SumiConnection implements IDisposable {
     }
 
     this.capturer = new Capturer(options.name || 'sumi');
+    this.disposable.add(this.capturer);
   }
 
   sendNotification(method: string, ...args: any[]) {
@@ -366,7 +367,7 @@ export class SumiConnection implements IDisposable {
       }
     });
     if (toDispose) {
-      this.disposable.push(toDispose);
+      this.disposable.add(toDispose);
     }
   }
 

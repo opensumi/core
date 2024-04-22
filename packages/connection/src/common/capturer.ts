@@ -1,4 +1,11 @@
-import { isUint8Array, randomString, transformErrorForSerialization } from '@opensumi/ide-core-common';
+import {
+  DisposableStore,
+  IDisposable,
+  isUint8Array,
+  randomString,
+  transformErrorForSerialization,
+} from '@opensumi/ide-core-common';
+import { DevtoolsLantencyCommand, EDevtoolsEvent } from '@opensumi/ide-core-common/lib/devtools';
 
 declare global {
   interface Window {
@@ -44,16 +51,33 @@ export function getCapturer() {
   return;
 }
 
-export class Capturer {
-  capturer: (data: any) => void;
-  prefix: string;
+export class Capturer implements IDisposable {
+  protected _disposable = new DisposableStore();
+
+  protected capturer: ((data: any) => void) | null = null;
+  protected prefix: string;
+
+  protected setupListener = (event: CustomEvent) => {
+    const { command } = event.detail;
+    if (command === DevtoolsLantencyCommand.Start) {
+      this.capturer = getCapturer();
+    } else if (command === DevtoolsLantencyCommand.Stop) {
+      this.capturer = null;
+    }
+  };
 
   constructor(protected source: string) {
     this.prefix = randomString(6);
+
+    _global.addEventListener(EDevtoolsEvent.Latency, this.setupListener);
+    this._disposable.add({
+      dispose: () => {
+        _global.removeEventListener(EDevtoolsEvent.Latency, this.setupListener);
+      },
+    });
   }
 
   capture(message: ICapturedMessage): void {
-    this.capturer = getCapturer();
     if (!this.capturer) {
       return;
     }
@@ -81,10 +105,18 @@ export class Capturer {
   }
 
   captureOnRequest(requestId: ICapturedMessage['requestId'], serviceMethod: string, args: any[]): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({ type: MessageType.OnRequest, requestId: `↓${requestId}`, serviceMethod, arguments: args });
   }
 
   captureOnRequestResult(requestId: ICapturedMessage['requestId'], serviceMethod: string, data: any): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({
       type: MessageType.OnRequestResult,
       status: ResponseStatus.Success,
@@ -95,6 +127,10 @@ export class Capturer {
   }
 
   captureOnRequestFail(requestId: ICapturedMessage['requestId'], serviceMethod: string, error: any): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({
       type: MessageType.OnRequestResult,
       status: ResponseStatus.Fail,
@@ -105,10 +141,18 @@ export class Capturer {
   }
 
   captureSendRequest(requestId: ICapturedMessage['requestId'] | number, serviceMethod: string, args: any[]): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({ type: MessageType.SendRequest, requestId, serviceMethod, arguments: args });
   }
 
   captureSendRequestResult(requestId: ICapturedMessage['requestId'], serviceMethod: string, data: any): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({
       type: MessageType.RequestResult,
       status: ResponseStatus.Success,
@@ -119,6 +163,10 @@ export class Capturer {
   }
 
   captureSendRequestFail(requestId: ICapturedMessage['requestId'], serviceMethod: string, error: any): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({
       type: MessageType.RequestResult,
       status: ResponseStatus.Fail,
@@ -129,10 +177,22 @@ export class Capturer {
   }
 
   captureSendNotification(requestId: ICapturedMessage['requestId'], serviceMethod: string, args: any[]): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({ type: MessageType.SendNotification, serviceMethod, arguments: args, requestId });
   }
 
   captureOnNotification(requestId: ICapturedMessage['requestId'], serviceMethod: string, args: any[]): void {
+    if (!this.capturer) {
+      return;
+    }
+
     this.capture({ type: MessageType.OnNotification, serviceMethod, arguments: args, requestId: `↓${requestId}` });
+  }
+
+  dispose(): void {
+    this._disposable.dispose();
   }
 }
