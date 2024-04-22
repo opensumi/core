@@ -15,8 +15,8 @@ export const DebugConsoleFilterView = observer(() => {
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);
   const [filterValue, setFilterValue] = React.useState<string>('');
   const [historyApi, setHistoryApi] = React.useState<IHistoryInputBoxHandler>();
-  const styles_debug_console_filter = useDesignStyles(styles.debug_console_filter);
-  const styles_filter_input = useDesignStyles(styles.filter_input);
+  const styles_debug_console_filter = useDesignStyles(styles.debug_console_filter, 'debug_console_filter');
+  const styles_filter_input = useDesignStyles(styles.filter_input, 'filter_input');
 
   const onDebounceValueChange = debounce((value: string) => {
     setFilterValue(value);

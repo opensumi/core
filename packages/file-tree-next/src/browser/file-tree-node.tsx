@@ -86,8 +86,8 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   const isPrompt = isRenamePrompt || isNewPrompt;
   const isCompactName = !isPrompt && item.name.indexOf(Path.separator) >= 0;
 
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
-  const styles_file_tree_node = useDesignStyles(styles.file_tree_node);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
+  const styles_file_tree_node = useDesignStyles(styles.file_tree_node, 'file_tree_node');
 
   const decoration = isPrompt ? null : decorationService.getDecoration(item.uri, Directory.is(item));
 

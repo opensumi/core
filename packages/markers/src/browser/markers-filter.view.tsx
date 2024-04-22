@@ -18,8 +18,8 @@ import Messages from './messages';
  */
 export const MarkerFilterPanel = observer(() => {
   const markerService: MarkerService = useInjectable(IMarkerService);
-  const styles_markerFilterContent = useDesignStyles(styles.markerFilterContent);
-  const styles_filterInput = useDesignStyles(styles.filterInput);
+  const styles_markerFilterContent = useDesignStyles(styles.markerFilterContent, 'markerFilterContent');
+  const styles_filterInput = useDesignStyles(styles.filterInput, 'filterInput');
 
   const [filterValue, setFilterValue] = React.useState<string>('');
 

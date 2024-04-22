@@ -316,7 +316,7 @@ export const QuickOpenList: React.FC<{
   onScroll: (props: ListOnScrollProps) => void;
 }> = observer(({ onReady, onScroll }) => {
   const { widget } = React.useContext(QuickOpenContext);
-  const styles_quickopen_list = useDesignStyles(styles.quickopen_list);
+  const styles_quickopen_list = useDesignStyles(styles.quickopen_list, 'quickopen_list');
 
   const getSize = React.useCallback(
     (index) => {

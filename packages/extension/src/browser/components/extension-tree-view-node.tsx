@@ -52,8 +52,8 @@ export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   onDrop,
 }: TreeViewNodeRenderedProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
-  const styles_tree_view_node = useDesignStyles(styles.tree_view_node);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
+  const styles_tree_view_node = useDesignStyles(styles.tree_view_node, 'tree_view_node');
   const [decoration, setDecoration] = useState(item.uri && decorationService.getDecoration(item.uri, false));
 
   useEffect(() => {

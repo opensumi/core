@@ -26,10 +26,10 @@ export const renderInfoItem = observer((props: ItemProps) => {
   const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const styles_item_container = useDesignStyles(styles.item_container);
-  const styles_tab_item_selected = useDesignStyles(styles.tab_item_selected);
-  const styles_item_info_name = useDesignStyles(styles.item_info_name);
-  const styles_tab_close_icon = useDesignStyles(styles.tab_close_icon);
+  const styles_item_container = useDesignStyles(styles.item_container, 'item_container');
+  const styles_tab_item_selected = useDesignStyles(styles.tab_item_selected, 'tab_item_selected');
+  const styles_item_info_name = useDesignStyles(styles.item_info_name, 'item_info_name');
+  const styles_tab_close_icon = useDesignStyles(styles.tab_close_icon, 'tab_close_icon');
 
   const handleOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && props.onInputEnter && props.id) {
@@ -115,7 +115,7 @@ export const renderAddItem = observer((props: ItemProps) => {
   const handleAdd = debounce(() => props.onClick && props.onClick(), 20);
   const keybinding = props.getKeybinding && props.getKeybinding(TERMINAL_COMMANDS.ADD.id);
   const createTitle = keybinding ? `${localize('terminal.new')}(${keybinding})` : localize('terminal.new');
-  const style_tab_item_wrapper = useDesignStyles(styles.tab_item_wrapper);
+  const style_tab_item_wrapper = useDesignStyles(styles.tab_item_wrapper, 'tab_item_wrapper');
 
   return (
     <div className={style_tab_item_wrapper}>

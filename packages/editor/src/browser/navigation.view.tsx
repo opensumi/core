@@ -22,8 +22,8 @@ import { EditorGroup } from './workbench-editor.service';
 
 export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => {
   const breadCrumbService = useInjectable<IBreadCrumbService>(IBreadCrumbService);
-  const styles_navigation_container = useDesignStyles(styles.navigation_container);
-  const styles_navigation_icon = useDesignStyles(styles.navigation_icon);
+  const styles_navigation_container = useDesignStyles(styles.navigation_container, 'navigation_container');
+  const styles_navigation_icon = useDesignStyles(styles.navigation_icon, 'navigation_icon');
 
   useUpdateOnGroupTabChange(editorGroup);
 
@@ -117,8 +117,8 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
   }
 
   const scrollerContainer = useRef<HTMLDivElement | null>();
-  const styles_navigation_menu = useDesignStyles(styles.navigation_menu);
-  const styles_navigation_menu_item = useDesignStyles(styles.navigation_menu_item);
+  const styles_navigation_menu = useDesignStyles(styles.navigation_menu, 'navigation_menu');
+  const styles_navigation_menu_item = useDesignStyles(styles.navigation_menu_item, 'navigation_menu_item');
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
 
   const scrollToCurrent = useCallback(() => {

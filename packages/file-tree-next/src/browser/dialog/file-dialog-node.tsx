@@ -46,8 +46,8 @@ export const FileTreeDialogNode: React.FC<FileTreeDialogNodeRenderedProps> = ({
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
 
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
-  const styles_file_tree_node = useDesignStyles(styles.file_tree_node);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
+  const styles_file_tree_node = useDesignStyles(styles.file_tree_node, 'file_tree_node');
 
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {

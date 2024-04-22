@@ -68,11 +68,11 @@ export const AccordionSection = ({
   alignment,
 }: CollapsePanelProps) => {
   const iconService = useInjectable<IIconService>(IIconService);
-  const styles_actions_wrap = useDesignStyles(styles.actions_wrap);
-  const styles_kt_split_panel = useDesignStyles(styles.kt_split_panel);
-  const styles_kt_split_panel_header = useDesignStyles(styles.kt_split_panel_header);
-  const styles_kt_split_panel_body = useDesignStyles(styles.kt_split_panel_body);
-  const styles_section_badge = useDesignStyles(styles.section_badge);
+  const styles_actions_wrap = useDesignStyles(styles.actions_wrap, 'actions_wrap');
+  const styles_kt_split_panel = useDesignStyles(styles.kt_split_panel, 'kt_split_panel');
+  const styles_kt_split_panel_header = useDesignStyles(styles.kt_split_panel_header, 'kt_split_panel_header');
+  const styles_kt_split_panel_body = useDesignStyles(styles.kt_split_panel_body, 'kt_split_panel_body');
+  const styles_section_badge = useDesignStyles(styles.section_badge, 'section_badge');
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [metadata, setMetadata] = React.useState({

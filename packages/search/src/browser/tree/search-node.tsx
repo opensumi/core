@@ -46,7 +46,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   isUseRegexp,
   isMatchCase,
 }: ISearchNodeRenderedProps) => {
-  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle);
+  const styles_expansion_toggle = useDesignStyles(styles.expansion_toggle, 'expansion_toggle');
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
       onClick(ev, item as SearchContentNode);
