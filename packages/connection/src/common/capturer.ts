@@ -70,12 +70,15 @@ export class Capturer implements IDisposable {
     this.prefix = randomString(6);
     this.capturer = getCapturer();
 
-    _global.addEventListener(EDevtoolsEvent.Latency, this.setupListener);
-    this._disposables.add({
-      dispose: () => {
-        _global.removeEventListener(EDevtoolsEvent.Latency, this.setupListener);
-      },
-    });
+    // capturer should only be used in browser environment
+    if (typeof _global.addEventListener === 'function') {
+      _global.addEventListener(EDevtoolsEvent.Latency, this.setupListener);
+      this._disposables.add({
+        dispose: () => {
+          _global.removeEventListener(EDevtoolsEvent.Latency, this.setupListener);
+        },
+      });
+    }
   }
 
   capture(message: ICapturedMessage): void {

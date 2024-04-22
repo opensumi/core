@@ -36,7 +36,7 @@ export interface ISumiConnectionOptions {
   timeout?: number;
   logger?: ILogger;
   /**
-   * The name of the connection, used for debugging(and can see in ).
+   * The name of the connection, used for debugging(and can see in opensumi-devtools).
    */
   name?: string;
 }
