@@ -6,6 +6,7 @@ import {
   ChatThinkingRender,
   ChatUserRoleRender,
   ChatWelcomeRender,
+  ChatInputRender,
   IChatRenderRegistry,
 } from '../types';
 
@@ -15,6 +16,7 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
   public chatAIRoleRender?: ChatAIRoleRender;
   public chatUserRoleRender?: ChatUserRoleRender;
   public chatThinkingRender?: ChatThinkingRender;
+  public chatInputRender?: ChatInputRender;
 
   registerWelcomeRender(render: ChatWelcomeRender): void {
     this.chatWelcomeRender = render;
@@ -30,5 +32,9 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
 
   registerThinkingRender(render: ChatThinkingRender): void {
     this.chatThinkingRender = render;
+  }
+
+  registerChatInputRender(render: ChatInputRender): void {
+    this.chatInputRender = render;
   }
 }

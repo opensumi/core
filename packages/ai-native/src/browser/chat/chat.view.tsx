@@ -90,6 +90,11 @@ export const AIChatView = observer(() => {
 
   const shortcutCommands = React.useMemo(() => chatFeatureRegistry.getAllShortcutSlashCommand(), [chatFeatureRegistry]);
 
+  const ChatInputWrapperRender = React.useMemo(() => {
+    const ChatInputRender = chatRenderRegistry.chatInputRender;
+    return ChatInputRender;
+  }, [ chatRenderRegistry.chatInputRender ]);
+
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
       if (event === EMsgStreamStatus.DONE || event === EMsgStreamStatus.ERROR) {
@@ -533,19 +538,34 @@ export const AIChatView = observer(() => {
               </div>
               <div className={styles.header_operate_right}></div>
             </div>
-            <ChatInput
-              onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
-              disabled={loading || loading2}
-              enableOptions={true}
-              theme={theme}
-              setTheme={setTheme}
-              agentId={agentId}
-              setAgentId={setAgentId}
-              defaultAgentId={defaultAgentId}
-              command={command}
-              setCommand={setCommand}
-              ref={chatInputRef}
-            />
+            {ChatInputWrapperRender ? (
+              <ChatInputWrapperRender
+                onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
+                disabled={loading || loading2}
+                enableOptions={true}
+                theme={theme}
+                setTheme={setTheme}
+                agentId={agentId}
+                setAgentId={setAgentId}
+                defaultAgentId={defaultAgentId}
+                command={command}
+                setCommand={setCommand}
+              />
+            ) : (
+              <ChatInput
+                onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
+                disabled={loading || loading2}
+                enableOptions={true}
+                theme={theme}
+                setTheme={setTheme}
+                agentId={agentId}
+                setAgentId={setAgentId}
+                defaultAgentId={defaultAgentId}
+                command={command}
+                setCommand={setCommand}
+                ref={chatInputRef}
+              />
+            )}
           </div>
         </div>
       </div>
