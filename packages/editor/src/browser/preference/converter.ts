@@ -820,6 +820,17 @@ export const diffEditorOptionsConverters: Map<KaitianPreferenceKey, NoConverter 
       }),
     },
   ],
+  [
+    'diffEditor.experimental.stickyScroll.enabled',
+    {
+      monaco: 'experimental',
+      convert: (value) => ({
+        stickyScroll: {
+          enabled: value,
+        },
+      }),
+    },
+  ],
 
   /**
    * Controls whether the diff editor shows unchanged regions.

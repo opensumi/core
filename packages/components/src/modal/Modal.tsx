@@ -214,6 +214,7 @@ export default class Modal extends React.Component<PropsWithChildren<ModalProps>
       centered,
       getContainer,
       closeIcon,
+      closable = true,
       ...restProps
     } = this.props as any;
 
