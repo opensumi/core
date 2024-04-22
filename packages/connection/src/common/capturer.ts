@@ -52,7 +52,7 @@ export function getCapturer() {
 }
 
 export class Capturer implements IDisposable {
-  protected _disposable = new DisposableStore();
+  protected _disposables = new DisposableStore();
 
   protected capturer: ((data: any) => void) | null = null;
   protected prefix: string;
@@ -68,9 +68,10 @@ export class Capturer implements IDisposable {
 
   constructor(protected source: string) {
     this.prefix = randomString(6);
+    this.capturer = getCapturer();
 
     _global.addEventListener(EDevtoolsEvent.Latency, this.setupListener);
-    this._disposable.add({
+    this._disposables.add({
       dispose: () => {
         _global.removeEventListener(EDevtoolsEvent.Latency, this.setupListener);
       },
@@ -193,6 +194,6 @@ export class Capturer implements IDisposable {
   }
 
   dispose(): void {
-    this._disposable.dispose();
+    this._disposables.dispose();
   }
 }
