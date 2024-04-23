@@ -14,9 +14,13 @@ export interface IExternalPreferenceProvider<T = any> {
 
 const providers = new Map<string, IExternalPreferenceProvider>();
 
-export function registerExternalPreferenceProvider<T>(name: string, provider: IExternalPreferenceProvider<T>) {
-  if (providers.get(name)) {
-    return; // 不可覆盖，先注册的生效
+export function registerExternalPreferenceProvider<T>(
+  name: string,
+  provider: IExternalPreferenceProvider<T>,
+  force = false,
+) {
+  if (!force && providers.get(name)) {
+    return;
   }
   providers.set(name, provider);
 }
@@ -59,39 +63,55 @@ export function getPreferenceLanguageId(defaultPreferences?: IPreferences): stri
 }
 
 // 默认使用 localStorage
-export function registerLocalStorageProvider(key: string, workspaceFolder?: string) {
+export function registerLocalStorageProvider(key: string, workspaceFolder?: string, prefix = '', force = false) {
   function getScopePrefix(scope: PreferenceScope) {
-    if (scope === PreferenceScope.Workspace) {
-      return workspaceFolder;
+    let text: string = '';
+    if (scope === PreferenceScope.Workspace && workspaceFolder) {
+      text = workspaceFolder;
+    } else {
+      text = scope.toString();
     }
-    return scope;
+
+    if (prefix) {
+      return prefix + ':' + text;
+    }
+    return text;
   }
-  registerExternalPreferenceProvider<string>(key, {
-    set: (value, scope) => {
-      if (scope >= PreferenceScope.Folder) {
-        // earlyPreference不支持针对作用域大于等于Folder的值设置
-        return;
-      }
 
-      if (!workspaceFolder && scope > PreferenceScope.Default) {
-        // 不传入 workspaceDir 则只支持全局设置
-        return;
-      }
+  function createLocalStorageKey(scope: PreferenceScope) {
+    return getScopePrefix(scope) + `:${key}`;
+  }
 
-      if ((global as any).localStorage) {
-        if (value !== undefined) {
-          localStorage.setItem(getScopePrefix(scope) + `:${key}`, value);
-        } else {
-          localStorage.removeItem(getScopePrefix(scope) + `:${key}`);
+  registerExternalPreferenceProvider<string>(
+    key,
+    {
+      set: (value, scope) => {
+        if (scope >= PreferenceScope.Folder) {
+          // earlyPreference不支持针对作用域大于等于Folder的值设置
+          return;
         }
-      }
+
+        if (!workspaceFolder && scope > PreferenceScope.Default) {
+          // 不传入 workspaceDir 则只支持全局设置
+          return;
+        }
+
+        if (global.localStorage) {
+          if (value !== undefined) {
+            localStorage.setItem(createLocalStorageKey(scope), value);
+          } else {
+            localStorage.removeItem(createLocalStorageKey(scope));
+          }
+        }
+      },
+      get: (scope) => {
+        if (global.localStorage) {
+          return localStorage.getItem(createLocalStorageKey(scope)) || undefined;
+        }
+      },
     },
-    get: (scope) => {
-      if ((global as any).localStorage) {
-        return localStorage.getItem(getScopePrefix(scope) + `:${key}`) || undefined;
-      }
-    },
-  });
+    force,
+  );
 }
 
 export function getExternalPreference<T>(
@@ -104,7 +124,7 @@ export function getExternalPreference<T>(
     : PreferenceScope.getReversedScopes();
   for (const scope of scopes) {
     const value = providers.get(preferenceName)?.get(scope);
-    if (value !== undefined) {
+    if (value) {
       return {
         value,
         scope,

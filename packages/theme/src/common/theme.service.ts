@@ -385,7 +385,7 @@ export function getThemeId(contribution: IThemeContribution) {
 
 function toCSSSelector(extensionId: string, path: string) {
   if (path.indexOf('./') === 0) {
-    path = path.substr(2);
+    path = path.substring(2);
   }
   let str = `${extensionId}-${path}`;
 

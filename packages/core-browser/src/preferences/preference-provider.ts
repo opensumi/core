@@ -251,7 +251,9 @@ export abstract class PreferenceProvider implements IDisposable {
     return this.doResolve<T>(preferenceName, resourceUri, language).value;
   }
 
-  // @final 不要 override 这个
+  /**
+   * @final
+   */
   public resolve<T>(preferenceName: string, resourceUri?: string, language?: string): PreferenceResolveResult<T> {
     if (PreferenceProvider.PreferenceDelegatesReverse[preferenceName]) {
       const res = this.getDelegateToValueFromDelegated(preferenceName);

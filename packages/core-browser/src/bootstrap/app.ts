@@ -617,10 +617,10 @@ export class ClientApp implements IClientApp, IDisposable {
     updateIconMap(prefix, iconMap);
   }
 
-  protected initEarlyPreference(workspaceDir: string) {
-    registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir);
-    registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir);
-    registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir);
+  initEarlyPreference(workspaceDir: string, prefix = '', force = false) {
+    registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir, prefix, force);
+    registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir, prefix, force);
+    registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir, prefix, force);
   }
 
   public async dispose() {

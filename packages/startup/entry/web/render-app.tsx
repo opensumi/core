@@ -43,6 +43,7 @@ export async function renderApp(opts: IClientAppOpts) {
   };
 
   const app = new ClientApp(opts);
+  app.initEarlyPreference(opts.workspaceDir || '', 'prefix1', true);
 
   app.fireOnReload = (forcedReload: boolean) => {
     window.location.reload();
