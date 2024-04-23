@@ -14,7 +14,6 @@ import { EventFilter, StreamTransformer } from '../../../common/utils';
 
 import styles from './inline-diff-widget.module.less';
 
-
 function scrollToBottom(editor: ICodeEditor) {
   const editorElement = editor.getDomNode();
 
@@ -184,6 +183,8 @@ export class AIDiffWidget extends ZoneWidget {
 
       event((chunk) => {
         if (chunk === '[DONE]') {
+          this.diffEditor.compare(original, modified);
+          this.diffEditor.focus();
           return;
         }
 
