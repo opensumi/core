@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Extension service load browser require interceptor contribution should get ReactDOM interceptor 1`] = `
+{
+  "__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED": {
+    "Events": [
+      [Function],
+      [Function],
+      [Function],
+      [Function],
+      [Function],
+      [Function],
+    ],
+    "usingClientEntryPoint": false,
+  },
+  "createPortal": [Function],
+  "createRoot": [Function],
+  "findDOMNode": [Function],
+  "flushSync": [Function],
+  "hydrate": [Function],
+  "hydrateRoot": [Function],
+  "render": [Function],
+  "unmountComponentAtNode": [Function],
+  "unstable_batchedUpdates": [Function],
+  "unstable_renderSubtreeIntoContainer": [Function],
+  "version": "18.2.0",
+}
+`;
