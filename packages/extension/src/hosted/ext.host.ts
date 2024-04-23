@@ -550,10 +550,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     this.logger.debug('extension extend service', extension.id, 'service', service);
-    this.rpcProtocol.set(
-      { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}` } as ProxyIdentifier<any>,
-      service,
-    );
+    this.rpcProtocol.set(new ProxyIdentifier<any>(`${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`), service);
   }
 
   public async $activateExtension(id: string) {

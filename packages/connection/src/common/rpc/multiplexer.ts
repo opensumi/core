@@ -24,34 +24,35 @@ export interface IRPCProtocol {
   get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
-const SEP = '||';
-const SEP_LENGTH = SEP.length;
-
-export function getRPCName(serviceId: string, methodName: string) {
-  return `${serviceId}${SEP}${methodName}`;
-}
-
-export function extractServiceAndMethod(rpcId: string): [string, string] {
-  const idx = rpcId.indexOf(SEP);
-  return [rpcId.substring(0, idx), rpcId.substring(idx + SEP_LENGTH)];
-}
-
 /**
  * A connection multiplexer that allows to register multiple local RPC services and to create proxies for them.
  */
 export class SumiConnectionMultiplexer extends SumiConnection implements IRPCProtocol {
-  private readonly _locals: Map<string, any>;
-  private readonly _proxies: Map<string, any>;
+  protected static SEP = '/';
+  protected static SEP_LENGTH = SumiConnectionMultiplexer.SEP.length;
+
+  protected static getRPCName(serviceId: string, methodName: string) {
+    return `${serviceId}${SumiConnectionMultiplexer.SEP}${methodName}`;
+  }
+
+  protected static extractServiceAndMethod(rpcId: string): [string, string] {
+    const idx = rpcId.indexOf(SumiConnectionMultiplexer.SEP);
+    return [rpcId.substring(0, idx), rpcId.substring(idx + SumiConnectionMultiplexer.SEP_LENGTH)];
+  }
+
+  protected static normalizeServiceId(serviceId: string) {
+    return serviceId.replace(/\//g, '_');
+  }
+
+  protected readonly _locals: Map<string, any>;
+  protected readonly _proxies: Map<string, any>;
 
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
     super(socket, options);
     this._locals = new Map();
     this._proxies = new Map();
 
-    this.onRequestNotFound((rpcName: string, args: any[]) => {
-      const [rpcId, methodName] = extractServiceAndMethod(rpcName);
-      return this._doInvokeHandler(rpcId, methodName, args);
-    });
+    this.onRequestNotFound((rpcName: string, args: any[]) => this._doInvokeHandler(rpcName, args));
 
     // call `listen` implicitly
     // compatible behavior with the RPCProtocol
@@ -59,23 +60,25 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
   }
 
   public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
-    this._locals.set(identifier.serviceId, instance);
+    this._locals.set(SumiConnectionMultiplexer.normalizeServiceId(identifier.serviceId), instance);
     return instance;
   }
 
   public get<T>(identifier: ProxyIdentifier<T>) {
-    return this._locals.get(identifier.serviceId);
+    return this._locals.get(SumiConnectionMultiplexer.normalizeServiceId(identifier.serviceId));
   }
 
   public getProxy<T>(proxyId: ProxyIdentifier<T>) {
-    if (!this._proxies.has(proxyId.serviceId)) {
-      this._proxies.set(proxyId.serviceId, this._createProxy(proxyId.serviceId));
+    const serviceId = SumiConnectionMultiplexer.normalizeServiceId(proxyId.serviceId);
+
+    if (!this._proxies.has(serviceId)) {
+      this._proxies.set(serviceId, this._createProxy(serviceId));
     }
 
-    return this._proxies.get(proxyId.serviceId);
+    return this._proxies.get(serviceId);
   }
 
-  private _createProxy(rpcId: string) {
+  protected _createProxy(rpcId: string) {
     const handler = {
       get: (target: any, name: string) => {
         if (typeof name === 'symbol') {
@@ -83,7 +86,7 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
         }
         // charCodeAt(0) === 36 means starts with $
         if (!target[name] && name.charCodeAt(0) === 36) {
-          const rpcName = getRPCName(rpcId, name);
+          const rpcName = SumiConnectionMultiplexer.getRPCName(rpcId, name);
           target[name] = (...args: any[]) => this.sendRequest(rpcName, ...args);
         }
 
@@ -94,7 +97,9 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
     return new Proxy(Object.create(null), handler);
   }
 
-  private async _doInvokeHandler(rpcId: string, methodName: string, args: any[]): Promise<any> {
+  protected async _doInvokeHandler(rpcName: string, args: any[]): Promise<any> {
+    const [rpcId, methodName] = SumiConnectionMultiplexer.extractServiceAndMethod(rpcName);
+
     const actor = this._locals.get(rpcId);
     if (!actor) {
       throw new Error('Unknown actor ' + rpcId);
