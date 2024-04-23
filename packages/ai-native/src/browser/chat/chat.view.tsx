@@ -45,7 +45,6 @@ import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 
-
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 export const AIChatView = observer(() => {
@@ -91,9 +90,11 @@ export const AIChatView = observer(() => {
   const shortcutCommands = React.useMemo(() => chatFeatureRegistry.getAllShortcutSlashCommand(), [chatFeatureRegistry]);
 
   const ChatInputWrapperRender = React.useMemo(() => {
-    const ChatInputRender = chatRenderRegistry.chatInputRender;
-    return ChatInputRender;
-  }, [ chatRenderRegistry.chatInputRender ]);
+    if (chatRenderRegistry.chatInputRender) {
+      return chatRenderRegistry.chatInputRender;
+    }
+    return ChatInput;
+  }, [chatRenderRegistry.chatInputRender]);
 
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
@@ -538,34 +539,19 @@ export const AIChatView = observer(() => {
               </div>
               <div className={styles.header_operate_right}></div>
             </div>
-            {ChatInputWrapperRender ? (
-              <ChatInputWrapperRender
-                onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
-                disabled={loading || loading2}
-                enableOptions={true}
-                theme={theme}
-                setTheme={setTheme}
-                agentId={agentId}
-                setAgentId={setAgentId}
-                defaultAgentId={defaultAgentId}
-                command={command}
-                setCommand={setCommand}
-              />
-            ) : (
-              <ChatInput
-                onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
-                disabled={loading || loading2}
-                enableOptions={true}
-                theme={theme}
-                setTheme={setTheme}
-                agentId={agentId}
-                setAgentId={setAgentId}
-                defaultAgentId={defaultAgentId}
-                command={command}
-                setCommand={setCommand}
-                ref={chatInputRef}
-              />
-            )}
+            <ChatInputWrapperRender
+              onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
+              disabled={loading || loading2}
+              enableOptions={true}
+              theme={theme}
+              setTheme={setTheme}
+              agentId={agentId}
+              setAgentId={setAgentId}
+              defaultAgentId={defaultAgentId}
+              command={command}
+              setCommand={setCommand}
+              ref={chatInputRef}
+            />
           </div>
         </div>
       </div>

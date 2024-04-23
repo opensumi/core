@@ -86,8 +86,15 @@ export type ChatUserRoleRender = (props: {
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
 export type ChatInputRender = (props: {
   onSend: (value: string, agentId?: string, command?: string) => void;
+  onValueChange?: (value: string) => void;
+  onExpand?: (value: boolean) => void;
+  placeholder?: string;
   enableOptions?: boolean;
   disabled?: boolean;
+  sendBtnClassName?: string;
+  defaultHeight?: number;
+  value?: string;
+  autoFocus?: boolean;
   theme?: string | null;
   setTheme: (theme: string | null) => void;
   agentId: string;
