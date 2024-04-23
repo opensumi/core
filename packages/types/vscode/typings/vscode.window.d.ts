@@ -364,12 +364,18 @@ declare module 'vscode' {
      */
     export function createStatusBarItem(id: string, alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
 
-    /**
-     * Creates a new [output channel](#OutputChannel) with the given name.
-     *
-     * @param name Human-readable string which will be used to represent the channel in the UI.
-     */
-    export function createOutputChannel(name: string): OutputChannel;
+		/**
+		 * Creates a new {@link OutputChannel output channel} with the given name and language id
+		 * If language id is not provided, then **Log** is used as default language id.
+		 *
+		 * You can access the visible or active output channel as a {@link TextDocument text document} from {@link window.visibleTextEditors visible editors} or {@link window.activeTextEditor active editor}
+		 * and use the language id to contribute language features like syntax coloring, code lens etc.,
+		 *
+		 * @param name Human-readable string which will be used to represent the channel in the UI.
+		 * @param languageId The identifier of the language associated with the channel.
+		 * @returns A new output channel.
+		 */
+		export function createOutputChannel(name: string, languageId?: string): OutputChannel;
 
     /**
      * Creates a new {@link LogOutputChannel log output channel} with the given name.
@@ -378,7 +384,7 @@ declare module 'vscode' {
      * @param options Options for the log output channel.
      * @returns A new log output channel.
      */
-    export function createOutputChannel(name: string, options: { /** literal-type defines return type */log: true }): LogOutputChannel;
+    export function createOutputChannel(name: string, options: { /** literal-type defines return type */log: true; languageId?: string }): LogOutputChannel;
 
     /**
      * The currently opened terminals or an empty array.

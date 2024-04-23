@@ -2,6 +2,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationToken, Emitter, IDisposable, IExtensionInfo, MessageType } from '@opensumi/ide-core-common';
 
 import {
+  ICreateOutputChannelOptions,
   IExtHostMessage,
   IExtHostOutput,
   IExtHostQuickOpen,
@@ -103,8 +104,7 @@ export function createWindowApiFactory(
       }
       return extHostStatusBar.createStatusBarItem(extension, id, alignment, priority);
     },
-    // @ts-ignore
-    createOutputChannel(name: string, options?: { log: true } | undefined) {
+    createOutputChannel(name: string, options: string | ICreateOutputChannelOptions | undefined): any {
       return extHostOutput.createOutputChannel(name, options);
     },
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): vscode.Disposable {

@@ -1,9 +1,9 @@
 import { Injector } from '@opensumi/di';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockOutputService } from '../../__mocks__/api/output.service';
 import { createMockPairRPCProtocol } from '../../__mocks__/initRPCProtocol';
 import * as types from '../../src/common/vscode/ext-types';
@@ -85,5 +85,24 @@ describe('MainThreadOutput Test Suites', () => {
     outputChannel.dispose();
     const existing = service.getChannels().find((c) => c.name === name);
     expect(existing).toBeUndefined();
+  });
+
+  it('can create log output channel', () => {
+    const name = 'test-output-6';
+    const outputChannel = extOutput.createOutputChannel(name, { log: true });
+    disposables.push(outputChannel);
+    expect(outputChannel.name).toBe(name);
+    expect(service.getChannel(name).name).toBe(name);
+    expect(typeof outputChannel.append).toBe('function');
+    expect(typeof outputChannel.appendLine).toBe('function');
+    expect(typeof outputChannel.clear).toBe('function');
+    expect(typeof outputChannel.dispose).toBe('function');
+    expect(typeof outputChannel.hide).toBe('function');
+    expect(typeof outputChannel.trace).toBe('function');
+    expect(typeof outputChannel.debug).toBe('function');
+    expect(typeof outputChannel.info).toBe('function');
+    expect(typeof outputChannel.warn).toBe('function');
+    expect(typeof outputChannel.error).toBe('function');
+    expect(typeof outputChannel.show).toBe('function');
   });
 });

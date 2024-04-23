@@ -28,8 +28,8 @@ import {
   IMainThreadWebviewView,
   IMainThreadWorkspace,
   MainThreadAPIIdentifier,
-} from '../../../common/vscode'; // '../../common';
-import { VSCodeExtensionService } from '../../../common/vscode';
+  VSCodeExtensionService,
+} from '../../../common/vscode';
 
 import { MainThreadProgress } from './main.thread.api.progress';
 import { MainThreadWebview, MainThreadWebviewView } from './main.thread.api.webview';

@@ -1,19 +1,51 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { Emitter, Event, getErrorMessage, isString } from '@opensumi/ide-core-common';
 
-import { IExtHostOutput, IMainThreadOutput, MainThreadAPIIdentifier } from '../../../common/vscode';
+import {
+  ICreateOutputChannelOptions,
+  IExtHostOutput,
+  IMainThreadOutput,
+  MainThreadAPIIdentifier,
+} from '../../../common/vscode';
 import * as types from '../../../common/vscode/ext-types';
 
 export class ExtHostOutput implements IExtHostOutput {
   constructor(private rpcProtocol: IRPCProtocol) {}
 
   createOutputChannel(name: string): types.OutputChannel;
-  createOutputChannel(name: string, options: { log?: true }): types.LogOutputChannel;
-  createOutputChannel(name: string, options?: { log?: true }): types.OutputChannel {
-    if (options?.log) {
-      return new LogOutputChannelImpl(name, this.rpcProtocol, types.OutputChannelLogLevel.Info);
+  createOutputChannel(name: string, options: string | ICreateOutputChannelOptions): types.LogOutputChannel;
+  createOutputChannel(name: string, optionsOrLangId?: string | ICreateOutputChannelOptions): types.OutputChannel {
+    name = name.trim();
+    if (!name) {
+      throw new Error('illegal argument `name`. must not be falsy');
     }
-    return new OutputChannelImpl(name, this.rpcProtocol);
+    let log = false;
+    let languageId: string | undefined;
+    if (typeof optionsOrLangId === 'object') {
+      log = !!optionsOrLangId.log;
+      languageId = optionsOrLangId.languageId;
+    } else if (isString(optionsOrLangId)) {
+      languageId = optionsOrLangId;
+    }
+
+    if (isString(languageId) && !languageId.trim()) {
+      throw new Error('illegal argument `languageId`. must not be empty');
+    }
+
+    const logLevel = types.OutputChannelLogLevel.Info;
+
+    let instance: OutputChannelImpl | LogOutputChannelImpl;
+    if (log) {
+      instance = new LogOutputChannelImpl(name, this.rpcProtocol, logLevel);
+    } else {
+      instance = new OutputChannelImpl(name, this.rpcProtocol);
+    }
+
+    if (languageId) {
+      instance.setLanguageId(languageId);
+    }
+
+    return instance;
   }
 }
 
@@ -90,6 +122,10 @@ export class OutputChannelImpl implements types.OutputChannel {
     this.proxy.$close(this.name);
   }
 
+  setLanguageId(languageId: string): void {
+    this.proxy.$setLanguageId(this.name, languageId);
+  }
+
   protected validate(): void {
     if (this.disposed) {
       throw new Error('Channel has been closed');
@@ -106,11 +142,17 @@ export class LogOutputChannelImpl extends OutputChannelImpl implements types.Log
   constructor(name: string, rpcProtocol: IRPCProtocol, logLevel: types.OutputChannelLogLevel) {
     super(name, rpcProtocol);
     this.logLevel = logLevel;
+
+    this.trace = this.trace.bind(this);
+    this.debug = this.debug.bind(this);
+    this.info = this.info.bind(this);
+    this.warn = this.warn.bind(this);
+    this.error = this.error.bind(this);
   }
 
   private data2String(data: any): string {
     if (data instanceof Error) {
-      return data.stack || data.message;
+      return getErrorMessage(data);
     }
     if (data.success === false && data.message) {
       return data.message;
