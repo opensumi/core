@@ -56,6 +56,7 @@ import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/con
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
+  DIFF_SCHEME,
   Direction,
   EditorGroupSplitAction,
   IDocPersistentCacheProvider,
@@ -509,7 +510,7 @@ export class EditorContribution
         name = name || `${original.displayName} <=> ${modified.displayName}`;
         return this.workbenchEditorService.open(
           URI.from({
-            scheme: 'diff',
+            scheme: DIFF_SCHEME,
             query: URI.stringifyQuery({
               name,
               original,
@@ -881,7 +882,9 @@ export class EditorContribution
         }
 
         const uris =
-          resource.uri.scheme === 'diff' ? [resource.metadata.original, resource.metadata.modified] : [resource.uri];
+          resource.uri.scheme === DIFF_SCHEME
+            ? [resource.metadata.original, resource.metadata.modified]
+            : [resource.uri];
         uris.forEach((uri) => {
           this.editorDocumentModelService.changeModelOptions(uri, {
             encoding: selectedFileEncoding,

@@ -4,6 +4,7 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
+  DIFF_SCHEME,
   IDiffResource,
   IResourceProvider,
   ResourceDecorationChangeEvent,
@@ -28,7 +29,7 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
   @Autowired(IFileServiceClient)
   protected fileServiceClient: IFileServiceClient;
 
-  scheme = 'diff';
+  scheme = DIFF_SCHEME;
 
   private modifiedToResource = new Map<string, URI>();
 
@@ -113,7 +114,7 @@ export class DefaultDiffEditorContribution implements BrowserEditorContribution 
   }
 
   registerEditorComponent(registry: EditorComponentRegistry) {
-    registry.registerEditorComponentResolver('diff', (resource: IDiffResource, results) => {
+    registry.registerEditorComponentResolver(DIFF_SCHEME, (resource: IDiffResource, results) => {
       results.push({
         type: EditorOpenType.diff,
       });
