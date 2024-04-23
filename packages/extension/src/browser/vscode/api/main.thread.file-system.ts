@@ -93,7 +93,12 @@ export class MainThreadFileSystem implements IMainThreadFileSystemShape {
   $stat(uri: UriComponents): Promise<FileStat> {
     return this._fileService
       .getFileStat(URI.revive(uri).toString())
-      .then((stat) => toFileStat(stat!))
+      .then((stat) => {
+        if (stat) {
+          return toFileStat(stat);
+        }
+        throw new FileOperationError('File not found', FileOperationResult.FILE_NOT_FOUND);
+      })
       .catch(MainThreadFileSystem._handleError);
   }
 

@@ -186,6 +186,7 @@ export class FileServiceClient implements IFileServiceClient, IDisposable {
       if (FileSystemError.FileNotFound.is(err)) {
         return undefined;
       }
+      throw err;
     }
   }
 
