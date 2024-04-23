@@ -25,6 +25,7 @@ import {
   dispose,
   localize,
   parseLinkedText,
+  randomString,
   strings,
   timeout,
   toDisposable,
@@ -317,7 +318,7 @@ export class ProgressService implements IProgressService {
         buttons.push(...options.buttons);
       }
 
-      const notificationKey = Math.random().toString(18).slice(2, 5);
+      const notificationKey = randomString(3);
       const indicator = this.injector.get(ProgressIndicator);
       this.registerProgressIndicator(notificationKey, indicator);
 

@@ -60,10 +60,6 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   constructor(rpcProtocol: IRPCProtocol, public readonly documents: ExtensionDocumentDataManager) {
     this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEditors);
-    // this._proxy.$getInitialState().then((change) => {
-    //   console.log('$getInitialState', change);
-    //   this.$acceptChange(change);
-    // });
   }
 
   $acceptChange(change: IEditorChangeDTO) {
@@ -160,9 +156,11 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     return this.openResource(uri, options);
   }
 
-  $acceptPropertiesChange(change: IEditorStatusChangeDTO) {
-    if (this._editors.get(change.id)) {
-      this._editors.get(change.id)!.acceptStatusChange(change);
+  $acceptPropertiesChanges(changes: IEditorStatusChangeDTO[]) {
+    for (const change of changes) {
+      if (this._editors.get(change.id)) {
+        this._editors.get(change.id)!.acceptStatusChange(change);
+      }
     }
   }
 
