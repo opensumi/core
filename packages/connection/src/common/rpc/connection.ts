@@ -2,7 +2,7 @@ import { getDebugLogger } from '@opensumi/ide-core-common';
 import {
   CancellationToken,
   CancellationTokenSource,
-  DisposableCollection,
+  DisposableStore,
   EventQueue,
   IDisposable,
   canceled,
@@ -10,6 +10,7 @@ import {
 } from '@opensumi/ide-utils';
 import { IReadableStream, isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
+import { Capturer } from '../capturer';
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { ILogger } from '../types';
@@ -34,10 +35,14 @@ const nullHeaders = {};
 export interface ISumiConnectionOptions {
   timeout?: number;
   logger?: ILogger;
+  /**
+   * The name of the connection, used for debugging(and can see in opensumi-devtools).
+   */
+  name?: string;
 }
 
 export class SumiConnection implements IDisposable {
-  protected disposable = new DisposableCollection();
+  protected disposable = new DisposableStore();
 
   private _requestHandlers = new Map<string, TGenericRequestHandler<any>>();
   private _starRequestHandler: TRequestNotFoundHandler | undefined;
@@ -56,16 +61,24 @@ export class SumiConnection implements IDisposable {
   public io = new MessageIO();
   protected logger: ILogger;
 
+  protected capturer: Capturer;
+
   constructor(protected socket: BaseConnection<Uint8Array>, protected options: ISumiConnectionOptions = {}) {
     if (options.logger) {
       this.logger = options.logger;
     } else {
       this.logger = getDebugLogger();
     }
+
+    this.capturer = new Capturer(options.name || 'sumi');
+    this.disposable.add(this.capturer);
   }
 
   sendNotification(method: string, ...args: any[]) {
-    this.socket.send(this.io.Notification(this._requestId++, method, nullHeaders, args));
+    const requestId = this._requestId++;
+
+    this.capturer.captureSendNotification(requestId, method, args);
+    this.socket.send(this.io.Notification(requestId, method, nullHeaders, args));
   }
 
   sendRequest(method: string, ...args: any[]) {
@@ -74,6 +87,8 @@ export class SumiConnection implements IDisposable {
 
       this._callbacks.set(requestId, (headers, error, result) => {
         if (error) {
+          this.traceRequestError(requestId, method, args, error);
+
           if (error === METHOD_NOT_REGISTERED) {
             // we should not treat `METHOD_NOT_REGISTERED` as an error.
             // it is a special case, it means the method is not registered on the other side.
@@ -81,10 +96,11 @@ export class SumiConnection implements IDisposable {
             return;
           }
 
-          this.traceRequestError(method, args, error);
           reject(error);
           return;
         }
+
+        this.capturer.captureSendRequestResult(requestId, method, result);
 
         resolve(result);
       });
@@ -106,6 +122,8 @@ export class SumiConnection implements IDisposable {
       if (cancellationToken) {
         cancellationToken.onCancellationRequested(() => this.cancelRequest(requestId));
       }
+
+      this.capturer.captureSendRequest(requestId, method, args);
 
       this.socket.send(
         this.io.Request(
@@ -267,6 +285,8 @@ export class SumiConnection implements IDisposable {
 
           switch (opType) {
             case OperationType.Request: {
+              this.capturer.captureOnRequest(requestId, method, args);
+
               let promise: Promise<any>;
 
               try {
@@ -285,6 +305,8 @@ export class SumiConnection implements IDisposable {
               }
 
               const onSuccess = (result: any) => {
+                this.capturer.captureOnRequestResult(requestId, method, result);
+
                 if (isReadableStream(result)) {
                   const responseHeaders: IResponseHeaders = {
                     chunked: true,
@@ -305,7 +327,8 @@ export class SumiConnection implements IDisposable {
               };
 
               const onError = (err: Error) => {
-                this.traceRequestError(method, args, err);
+                this.traceRequestError(requestId, method, args, err);
+
                 this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
                 this._cancellationTokenSources.delete(requestId);
               };
@@ -314,7 +337,10 @@ export class SumiConnection implements IDisposable {
               break;
             }
             case OperationType.Notification: {
+              this.capturer.captureOnNotification(requestId, method, args);
+
               const handler = this._notificationHandlers.get(method);
+
               if (handler) {
                 handler(...args);
               } else if (this._starNotificationHandler) {
@@ -341,7 +367,7 @@ export class SumiConnection implements IDisposable {
       }
     });
     if (toDispose) {
-      this.disposable.push(toDispose);
+      this.disposable.add(toDispose);
     }
   }
 
@@ -357,7 +383,8 @@ export class SumiConnection implements IDisposable {
     return new SumiConnection(new NetSocketConnection(socket), options);
   }
 
-  private traceRequestError(method: string, args: any[], error: any) {
+  private traceRequestError(requestId: number, method: string, args: any[], error: any) {
+    this.capturer.captureSendRequestFail(requestId, method, error);
     this.logger.error(`Error handling request ${method} with args `, args, error);
   }
 }

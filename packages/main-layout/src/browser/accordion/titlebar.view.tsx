@@ -9,7 +9,7 @@ export const TitleBar: React.FC<{
   menubar?: React.ReactNode;
   height?: number;
 }> = React.memo((props) => {
-  const styles_titlebar = useDesignStyles(styles.titlebar);
+  const styles_titlebar = useDesignStyles(styles.titlebar, 'titlebar');
   return (
     <div className={styles_titlebar} style={{ height: props.height }}>
       <h1>{props.title}</h1>

@@ -118,14 +118,14 @@ export function usePreference<T>(key: string, defaultValue: T) {
   return value;
 }
 
-export function useDesignStyles(styles: string) {
+export function useDesignStyles(styles: string, key: string) {
   const designStyleService = useInjectable<IDesignStyleService>(IDesignStyleService);
 
   if (!styles) {
     return '';
   }
 
-  const designStyle = useMemo(() => designStyleService.wrapStyles(styles), [designStyleService, styles]);
+  const designStyle = useMemo(() => designStyleService.wrapStyles(styles, key), [designStyleService, styles, key]);
 
   return designStyle;
 }

@@ -26,6 +26,7 @@ import {
   objects,
   once,
   path,
+  randomString,
 } from '@opensumi/ide-core-common';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
@@ -256,7 +257,7 @@ export namespace MarkdownString {
     let changed = false;
     data = cloneAndChange(data, (value) => {
       if (Uri.isUri(value)) {
-        const key = `__uri_${Math.random().toString(16).slice(2, 8)}`;
+        const key = `__uri_${randomString(6)}`;
         bucket[key] = value;
         changed = true;
         return key;

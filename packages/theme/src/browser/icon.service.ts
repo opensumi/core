@@ -13,6 +13,7 @@ import {
   PreferenceService,
   URI,
   WithEventBus,
+  randomString,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-core-browser/lib/static-resource';
 
@@ -165,7 +166,7 @@ export class IconService extends WithEventBus implements IIconService {
   }
 
   protected getRandomIconClass(prefix = '') {
-    return `${prefix}icon-${Math.random().toString(36).slice(-8)}`;
+    return `${prefix}icon-${randomString(6)}`;
   }
 
   protected getMaskStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {

@@ -44,7 +44,7 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IDecorationsService } from '@opensumi/ide-decoration';
-import { EditorOpenType, IEditorOpenType, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { DIFF_SCHEME, EditorOpenType, IEditorOpenType, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
@@ -737,7 +737,7 @@ export class FileTreeContribution
         }
         const copyUri: URI = uri;
         let uriPath = copyUri.path.toString();
-        if (uri.scheme === 'diff') {
+        if (uri.scheme === DIFF_SCHEME) {
           const query = uri.getParsedQuery();
           uriPath = new URI(query.modified).path.toString();
         }
@@ -756,7 +756,7 @@ export class FileTreeContribution
         if (!uri) {
           return;
         }
-        if (uri.scheme === 'diff') {
+        if (uri.scheme === DIFF_SCHEME) {
           const query = uri.getParsedQuery();
           // 需要file scheme才能与工作区计算相对路径
           uri = new URI(query.modified).withScheme('file');

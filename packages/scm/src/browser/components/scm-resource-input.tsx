@@ -27,7 +27,7 @@ export const SCMResourceInput: FC<{
 }> = ({ repository, menus }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const iconService = useInjectable<IIconService>(IIconService);
-  const styles_scmMenu = useDesignStyles(styles.scmMenu);
+  const styles_scmMenu = useDesignStyles(styles.scmMenu, 'scmMenu');
 
   const [commitMsg, setCommitMsg] = useState('');
   const [placeholder, setPlaceholder] = useState('');

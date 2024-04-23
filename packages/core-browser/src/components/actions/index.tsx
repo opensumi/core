@@ -193,7 +193,7 @@ const EllipsisWidget: React.FC<{
   onClick?: React.MouseEventHandler<HTMLElement>;
   title?: string;
 }> = ({ type, icon, disabled, onClick, title }) => {
-  const styles_btnAction = useDesignStyles(styles.btnAction);
+  const styles_btnAction = useDesignStyles(styles.btnAction, 'btnAction');
   if (type === 'icon') {
     return (
       <Button
@@ -229,8 +229,8 @@ const InlineActionWidget: React.FC<
     iconService?: IMenubarIconService;
   } & React.HTMLAttributes<HTMLElement>
 > = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
-  const styles_iconAction = useDesignStyles(styles.iconAction);
-  const styles_btnAction = useDesignStyles(styles.btnAction);
+  const styles_iconAction = useDesignStyles(styles.iconAction, 'iconAction');
+  const styles_btnAction = useDesignStyles(styles.btnAction, 'btnAction');
   const [loading, setLoading] = useState(false);
   const handleClick = React.useCallback(
     async (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
@@ -408,7 +408,7 @@ export const TitleActionList: React.FC<
   }) => {
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
     const abstractMenuService = useInjectable<AbstractMenuService>(AbstractMenuService);
-    const styles_titleActions = useDesignStyles(styles.titleActions);
+    const styles_titleActions = useDesignStyles(styles.titleActions, 'titleActions');
     const [primary, secondary] = regroup(nav, more);
     const handleShowMore = React.useCallback(
       (e: React.MouseEvent<HTMLElement>) => {

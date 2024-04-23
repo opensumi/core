@@ -15,6 +15,7 @@ import {
   IEventBus,
   ILogger,
   IPreferenceSettingsService,
+  PreferenceService,
   QuickOpenItem,
   QuickOpenService,
   QuickPickService,
@@ -190,6 +191,9 @@ export class ExtensionCommandContribution implements CommandContribution {
   @Autowired(WalkthroughsService)
   private readonly walkthroughsService: WalkthroughsService;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -351,6 +355,7 @@ export class ExtensionCommandContribution implements CommandContribution {
 
     registry.registerCommand(VSCodeBuiltinCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options?: any) => {
+        // const enableHideUnchanged = this.preferenceService.get('diffEditor.hideUnchangedRegions.enabled');
         const openOptions: IResourceOpenOptions = {
           ...viewColumnToResourceOpenOptions(options?.viewColumn),
           revealFirstDiff: true,

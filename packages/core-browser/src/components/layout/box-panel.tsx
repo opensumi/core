@@ -61,7 +61,7 @@ export const BoxPanel: React.FC<{
   // convert children to list
   const arrayChildren = React.Children.toArray(children) as ChildComponent[];
   const appConfig = useInjectable<AppConfig>(AppConfig);
-  const styles_box_panel = useDesignStyles(styles['box-panel']);
+  const styles_box_panel = useDesignStyles(styles['box-panel'], 'box-panel');
 
   return (
     <div

@@ -24,7 +24,7 @@ interface IExtensionViewProps {
 
 export const Extension = React.memo(
   ({ extension: extension, onInstall, onClick, type, installedExtensions, openVSXRegistry }: IExtensionViewProps) => {
-    const styles_extension_item = useDesignStyles(styles.extension_item);
+    const styles_extension_item = useDesignStyles(styles.extension_item, 'extension_item');
     const [installing, setInstalling] = useState<boolean>();
     const installedExtension = installedExtensions?.find(
       (installed) => installed.namespace === extension.namespace && installed.name === extension.name,

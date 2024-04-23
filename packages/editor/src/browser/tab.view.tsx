@@ -72,18 +72,30 @@ export const Tabs = ({ group }: ITabsProps) => {
   const editorTabService = useInjectable<IEditorTabService>(IEditorTabService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
 
-  const styles_tab_right = useDesignStyles(styles.tab_right);
-  const styles_close_tab = useDesignStyles(styles.close_tab);
-  const styles_kt_editor_close_icon = useDesignStyles(styles.kt_editor_close_icon);
-  const styles_kt_editor_tabs_content = useDesignStyles(styles.kt_editor_tabs_content);
-  const styles_kt_editor_tabs_current_last = useDesignStyles(styles.kt_editor_tabs_current_last);
-  const styles_kt_editor_tab = useDesignStyles(styles.kt_editor_tab);
-  const styles_kt_editor_tab_current_prev = useDesignStyles(styles.kt_editor_tab_current_prev);
-  const styles_kt_editor_tab_current_next = useDesignStyles(styles.kt_editor_tab_current_next);
-  const styles_kt_editor_tab_current = useDesignStyles(styles.kt_editor_tab_current);
-  const styles_kt_editor_tab_dirty = useDesignStyles(styles.kt_editor_tab_dirty);
-  const styles_kt_editor_tabs = useDesignStyles(styles.kt_editor_tabs);
-  const styles_kt_editor_tabs_scroll_wrapper = useDesignStyles(styles.kt_editor_tabs_scroll_wrapper);
+  const styles_tab_right = useDesignStyles(styles.tab_right, 'tab_right');
+  const styles_close_tab = useDesignStyles(styles.close_tab, 'close_tab');
+  const styles_kt_editor_close_icon = useDesignStyles(styles.kt_editor_close_icon, 'kt_editor_close_icon');
+  const styles_kt_editor_tabs_content = useDesignStyles(styles.kt_editor_tabs_content, 'kt_editor_tabs_content');
+  const styles_kt_editor_tabs_current_last = useDesignStyles(
+    styles.kt_editor_tabs_current_last,
+    'kt_editor_tabs_current_last',
+  );
+  const styles_kt_editor_tab = useDesignStyles(styles.kt_editor_tab, 'kt_editor_tab');
+  const styles_kt_editor_tab_current_prev = useDesignStyles(
+    styles.kt_editor_tab_current_prev,
+    'kt_editor_tab_current_prev',
+  );
+  const styles_kt_editor_tab_current_next = useDesignStyles(
+    styles.kt_editor_tab_current_next,
+    'kt_editor_tab_current_next',
+  );
+  const styles_kt_editor_tab_current = useDesignStyles(styles.kt_editor_tab_current, 'kt_editor_tab_current');
+  const styles_kt_editor_tab_dirty = useDesignStyles(styles.kt_editor_tab_dirty, 'kt_editor_tab_dirty');
+  const styles_kt_editor_tabs = useDesignStyles(styles.kt_editor_tabs, 'kt_editor_tabs');
+  const styles_kt_editor_tabs_scroll_wrapper = useDesignStyles(
+    styles.kt_editor_tabs_scroll_wrapper,
+    'kt_editor_tabs_scroll_wrapper',
+  );
 
   const [tabsLoadingMap, setTabsLoadingMap] = useState<{ [resource: string]: boolean }>({});
   const [wrapMode, setWrapMode] = useState<boolean>(!!preferenceService.get<boolean>('editor.wrapTab'));
@@ -500,7 +512,7 @@ export type IEditorActionsProps = IEditorActionsBaseProps & HTMLAttributes<HTMLD
 
 export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
   (props: IEditorActionsProps, ref: Ref<typeof EditorActions>) => {
-    const styles_editor_actions = useDesignStyles(styles.editor_actions);
+    const styles_editor_actions = useDesignStyles(styles.editor_actions, 'editor_actions');
     const { group, className } = props;
 
     const acquireArgs = useCallback(

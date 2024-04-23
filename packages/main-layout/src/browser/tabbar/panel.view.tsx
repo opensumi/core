@@ -48,8 +48,8 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
   const appConfig: AppConfig = useInjectable(AppConfig);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
 
-  const styles_tab_panel = useDesignStyles(styles.tab_panel);
-  const styles_tab_panel_hidden = useDesignStyles(styles.tab_panel_hidden);
+  const styles_tab_panel = useDesignStyles(styles.tab_panel, 'tab_panel');
+  const styles_tab_panel_hidden = useDesignStyles(styles.tab_panel_hidden, 'tab_panel_hidden');
 
   React.useEffect(() => {
     // panelSize = 384-1-48
@@ -179,8 +179,8 @@ const BottomPanelView: React.FC<{
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  const styles_panel_title_bar = useDesignStyles(styles.panel_title_bar);
-  const styles_panel_toolbar_container = useDesignStyles(styles.panel_toolbar_container);
+  const styles_panel_title_bar = useDesignStyles(styles.panel_title_bar, 'panel_title_bar');
+  const styles_panel_toolbar_container = useDesignStyles(styles.panel_toolbar_container, 'panel_toolbar_container');
 
   const { component: CustomComponent, containerId } = component.options || {};
   const titleComponent = component.options && component.options.titleComponent;

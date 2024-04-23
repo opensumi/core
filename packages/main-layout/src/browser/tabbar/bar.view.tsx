@@ -74,8 +74,8 @@ export const TabbarViewBase: React.FC<ITabbarViewProps> = observer((props) => {
   } = props;
   const { side, direction, fullSize } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  const styles_tab_bar = useDesignStyles(styles.tab_bar);
-  const styles_bar_content = useDesignStyles(styles.bar_content);
+  const styles_tab_bar = useDesignStyles(styles.tab_bar, 'tab_bar');
+  const styles_bar_content = useDesignStyles(styles.bar_content, 'bar_content');
 
   React.useEffect(() => {
     // 内部只关注总的宽度
@@ -196,7 +196,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryProvider }> = o
   ({ component: defaultComponent }) => {
     const progressService: IProgressService = useInjectable(IProgressService);
     const keybindingRegistry: KeybindingRegistry = useInjectable(KeybindingRegistry);
-    const styles_icon_tab = useDesignStyles(styles.icon_tab);
+    const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
     const [component, setComponent] = React.useState<ComponentRegistryProvider>(defaultComponent);
     const inProgress = progressService.getIndicator(component.options?.containerId || '')?.progressModel.show;
     const title = React.useMemo(() => {
@@ -262,7 +262,7 @@ export const TextTabView: React.FC<{ component: ComponentRegistryProvider }> = o
 );
 
 export const IconElipses: React.FC = () => {
-  const styles_icon_tab = useDesignStyles(styles.icon_tab);
+  const styles_icon_tab = useDesignStyles(styles.icon_tab, 'icon_tab');
   return (
     <div className={styles_icon_tab}>
       {/* i18n */}
@@ -284,8 +284,8 @@ export const RightTabbarRenderer: React.FC<{ barSize?: number; style?: React.CSS
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
 
-  const styles_right_tab_bar = useDesignStyles(styles.right_tab_bar);
-  const styles_right_tab = useDesignStyles(styles.right_tab);
+  const styles_right_tab_bar = useDesignStyles(styles.right_tab_bar, 'right_tab_bar');
+  const styles_right_tab = useDesignStyles(styles.right_tab, 'right_tab');
 
   return (
     <div
@@ -325,8 +325,8 @@ export const LeftTabbarRenderer: React.FC<{
   const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
   const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
 
-  const styles_left_tab_bar = useDesignStyles(styles.left_tab_bar);
-  const styles_left_tab = useDesignStyles(styles.left_tab);
+  const styles_left_tab_bar = useDesignStyles(styles.left_tab_bar, 'left_tab_bar');
+  const styles_left_tab = useDesignStyles(styles.left_tab, 'left_tab');
 
   return (
     <div
@@ -356,8 +356,8 @@ export const LeftTabbarRenderer: React.FC<{
 export const BottomTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  const styles_bottom_bar_container = useDesignStyles(styles.bottom_bar_container);
-  const styles_bottom_tab = useDesignStyles(styles.bottom_tab);
+  const styles_bottom_bar_container = useDesignStyles(styles.bottom_bar_container, 'bottom_bar_container');
+  const styles_bottom_tab = useDesignStyles(styles.bottom_tab, 'bottom_tab');
   return (
     <div
       id={VIEW_CONTAINERS.BOTTOM_TABBAR}

@@ -5,8 +5,9 @@ import { MessageChannel, MessagePort } from 'worker_threads';
 
 import { Type } from '@furyjs/fury';
 
-import { ProxyJson, WSChannel, createWebSocketConnection } from '@opensumi/ide-connection';
+import { ProxyJson, WSChannel } from '@opensumi/ide-connection';
 import { NetSocketConnection } from '@opensumi/ide-connection/lib/common/connection';
+import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import { Deferred } from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { MessageConnection } from '@opensumi/vscode-jsonrpc';
