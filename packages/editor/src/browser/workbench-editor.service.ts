@@ -1750,7 +1750,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.availableOpenTypes = openTypes;
 
       if (options.preserveFocus) {
-        options.focus = true;
+        options.focus = false;
       }
 
       switch (activeOpenType.type) {
