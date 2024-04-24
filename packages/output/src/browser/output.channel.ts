@@ -216,6 +216,11 @@ export class OutputChannel extends Disposable {
     }
   }
 
+  async setLanguageId(languageId: string): Promise<void> {
+    await this.modelReady.promise;
+    this.outputModel.instance.languageId = languageId;
+  }
+
   get isVisible(): boolean {
     return this.visible;
   }

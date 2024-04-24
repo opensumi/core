@@ -186,13 +186,20 @@ export interface IMainThreadOutput {
   $dispose(channelName: string): PromiseLike<void>;
   $reveal(channelName: string, preserveFocus: boolean): PromiseLike<void>;
   $close(channelName: string): PromiseLike<void>;
+
+  $setLanguageId(channelName: string, languageId: string): PromiseLike<void>;
+}
+
+export interface ICreateOutputChannelOptions {
+  log?: boolean;
+  languageId?: string;
 }
 
 export interface IExtHostOutput {
   createOutputChannel(
     name: string,
-    options: { /** literal-type defines return type */ log: true } | undefined,
-  ): types.OutputChannel;
+    optionsOrLanguageId: string | ICreateOutputChannelOptions | undefined,
+  ): types.OutputChannel | types.LogOutputChannel;
 }
 
 export interface IExtHostWindowState {
