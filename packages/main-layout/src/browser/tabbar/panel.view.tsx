@@ -14,6 +14,7 @@ import {
   useViewState,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -102,6 +103,8 @@ export const ContainerView: React.FC<{
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const { title, titleComponent, component: CustomComponent, containerId } = component.options || {};
   const injector: Injector = useInjectable(INJECTOR_TOKEN);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
+
   const handleContextMenu = (e: React.MouseEvent) => {
     const accordionService: AccordionService = injector.get(AccordionServiceFactory)(containerId);
     accordionService.handleContextMenu(e);
@@ -134,7 +137,7 @@ export const ContainerView: React.FC<{
           {!title ? null : (
             <TitleBar
               title={title}
-              height={appConfig.layoutViewSize!.panelTitleBarHeight}
+              height={layoutViewSize.panelTitleBarHeight}
               menubar={<InlineActionBar menus={titleMenu} />}
             />
           )}
@@ -182,22 +185,24 @@ const BottomPanelView: React.FC<{
   const styles_panel_title_bar = useDesignStyles(styles.panel_title_bar, 'panel_title_bar');
   const styles_panel_toolbar_container = useDesignStyles(styles.panel_toolbar_container, 'panel_toolbar_container');
 
+  const viewState = useViewState(side, containerRef);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
+  const progressService: IProgressService = useInjectable(IProgressService);
+
   const { component: CustomComponent, containerId } = component.options || {};
   const titleComponent = component.options && component.options.titleComponent;
-
   if (!containerId) {
     return null;
   }
-  const progressService: IProgressService = useInjectable(IProgressService);
+
   const indicator = progressService.getIndicator(containerId);
   if (!indicator) {
     return null;
   }
-  const viewState = useViewState(side, containerRef);
 
   return (
     <div ref={containerRef} className={styles.panel_container}>
-      <div className={styles_panel_title_bar} style={{ height: appConfig.layoutViewSize!.panelTitleBarHeight }}>
+      <div className={styles_panel_title_bar} style={{ height: layoutViewSize.panelTitleBarHeight }}>
         <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (

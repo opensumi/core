@@ -127,6 +127,9 @@ export class AINativeBrowserContribution
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
+  @Autowired(LayoutViewSizeConfig)
+  private layoutViewSize: LayoutViewSizeConfig;
+
   constructor() {
     this.registerFeature();
   }
@@ -138,7 +141,6 @@ export class AINativeBrowserContribution
     const { useMenubarView } = this.aiNativeConfigService.layout;
 
     let layoutConfig = this.appConfig.layoutConfig;
-    const layoutViewSize = this.appConfig.layoutViewSize as LayoutViewSizeConfig;
 
     if (supportsChatAssistant) {
       layoutConfig = {
@@ -148,7 +150,7 @@ export class AINativeBrowserContribution
     }
 
     if (useMenubarView) {
-      layoutViewSize.setMenubarHeight(48);
+      this.layoutViewSize.setMenubarHeight(48);
       layoutConfig = {
         ...layoutConfig,
         ...AIMenubarLayoutConfig,
@@ -156,13 +158,12 @@ export class AINativeBrowserContribution
     }
 
     if (supportsOpenSumiDesign) {
-      layoutViewSize.setEditorTabsHeight(36);
-      layoutViewSize.setStatusBarHeight(36);
-      layoutViewSize.setAccordionHeaderSizeHeight(36);
+      this.layoutViewSize.setEditorTabsHeight(36);
+      this.layoutViewSize.setStatusBarHeight(36);
+      this.layoutViewSize.setAccordionHeaderSizeHeight(36);
     }
 
     this.appConfig.layoutConfig = layoutConfig;
-    this.appConfig.layoutViewSize = layoutViewSize;
   }
 
   onDidStart() {

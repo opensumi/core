@@ -107,7 +107,7 @@ export const AIMenuBarView = () => {
     <div
       id={VIEW_CONTAINERS.MENUBAR}
       className={styles.menu_bar_view}
-      style={{ height: aiNativeConfigService.appConfig.layoutViewSize?.menubarHeight }}
+      style={{ height: aiNativeConfigService.layoutViewSize.menubarHeight }}
     >
       <div className={styles.container}>
         <div className={styles.left}>

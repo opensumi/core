@@ -1,3 +1,5 @@
+import { Injectable } from '@opensumi/di';
+
 export interface ILayoutViewSize {
   menubarHeight: number;
   editorTabsHeight: number;
@@ -18,6 +20,7 @@ export const DEFAULT_LAYOUT_VIEW_SIZE: ILayoutViewSize = {
   accordionHeaderSizeHeight: 24,
 };
 
+@Injectable()
 export class LayoutViewSizeConfig implements ILayoutViewSize {
   #menubarHeight: number;
   #editorTabsHeight: number;
@@ -26,18 +29,23 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
   #panelTitleBarHeight: number;
   #statusBarHeight: number;
   #accordionHeaderSizeHeight: number;
+  layoutViewSize: Partial<ILayoutViewSize> | undefined;
 
-  constructor(private readonly layoutViewSize?: Partial<ILayoutViewSize>) {
-    this.#menubarHeight = this.layoutViewSize?.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
-    this.#editorTabsHeight = this.layoutViewSize?.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
-    this.#bigSurTitleBarHeight =
-      this.layoutViewSize?.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
-    this.#titleBarHeight = this.layoutViewSize?.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
-    this.#panelTitleBarHeight =
-      this.layoutViewSize?.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
-    this.#statusBarHeight = this.layoutViewSize?.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
+  private inited = false;
+  init(layoutViewSize: Partial<ILayoutViewSize> = {}) {
+    if (this.inited) {
+      return;
+    }
+    this.inited = true;
+
+    this.#menubarHeight = layoutViewSize.menubarHeight || DEFAULT_LAYOUT_VIEW_SIZE.menubarHeight;
+    this.#editorTabsHeight = layoutViewSize.editorTabsHeight || DEFAULT_LAYOUT_VIEW_SIZE.editorTabsHeight;
+    this.#bigSurTitleBarHeight = layoutViewSize.bigSurTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.bigSurTitleBarHeight;
+    this.#titleBarHeight = layoutViewSize.titleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.titleBarHeight;
+    this.#panelTitleBarHeight = layoutViewSize.panelTitleBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.panelTitleBarHeight;
+    this.#statusBarHeight = layoutViewSize.statusBarHeight || DEFAULT_LAYOUT_VIEW_SIZE.statusBarHeight;
     this.#accordionHeaderSizeHeight =
-      this.layoutViewSize?.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
+      layoutViewSize.accordionHeaderSizeHeight || DEFAULT_LAYOUT_VIEW_SIZE.accordionHeaderSizeHeight;
   }
 
   get menubarHeight(): number {

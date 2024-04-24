@@ -14,6 +14,7 @@ import { IContextKey, IContextKeyService } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
+import { LayoutViewSizeConfig } from '../layout/constants';
 import { IMenuRegistry, MenuContribution } from '../menu/next/base';
 import { MenuId } from '../menu/next/menu-id';
 import { PreferenceContribution } from '../preferences';
@@ -45,13 +46,16 @@ export class ClientCommonContribution
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
+  @Autowired(LayoutViewSizeConfig)
+  private layoutViewSize: LayoutViewSizeConfig;
+
   schema: PreferenceSchema = corePreferenceSchema;
 
   constructor() {
     const overridePropertiesDefault = {
       'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
       'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
-      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 0 : this.appConfig.layoutViewSize!.menubarHeight,
+      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 0 : this.layoutViewSize!.menubarHeight,
     };
     const keys = Object.keys(this.schema.properties);
     for (const key of keys) {

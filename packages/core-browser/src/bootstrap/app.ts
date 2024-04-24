@@ -140,8 +140,10 @@ export class ClientApp implements IClientApp, IDisposable {
       allowSetDocumentTitleFollowWorkspaceDir,
       devtools: opts.devtools ?? false,
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
-      layoutViewSize: new LayoutViewSizeConfig(opts.layoutViewSize),
     };
+
+    const layoutViewSizeConfig = this.injector.get(LayoutViewSizeConfig);
+    layoutViewSizeConfig.init(opts.layoutViewSize);
 
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });

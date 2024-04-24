@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  AppConfig,
   ComponentRegistry,
   ComponentRenderer,
   Disposable,
@@ -15,6 +14,7 @@ import {
   useEventEffect,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { IElectronHeaderService } from '../../common/header';
@@ -45,6 +45,7 @@ const useFullScreen = () => {
 
 const useMaximize = () => {
   const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);
+
   const [maximized, setMaximized] = useState(false);
 
   const getMaximized = async () => uiService.isMaximized(electronEnv.currentWindowId);
@@ -69,15 +70,14 @@ const useMaximize = () => {
   };
 };
 
-const defaultHeight = (appConfig: AppConfig) => {
+const supportNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
+
+const defaultHeight = (layoutViewSize: LayoutViewSizeConfig) => {
   if (isMacintosh) {
     // Big Sur increases title bar height
-    const isNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
-    return isNewMacHeaderBar
-      ? appConfig.layoutViewSize!.bigSurTitleBarHeight
-      : appConfig.layoutViewSize!.titleBarHeight;
+    return supportNewMacHeaderBar ? layoutViewSize.bigSurTitleBarHeight : layoutViewSize.titleBarHeight;
   }
-  return appConfig.layoutViewSize!.menubarHeight;
+  return layoutViewSize.menubarHeight;
 };
 
 export const HeaderBarLeftComponent = () => {
@@ -104,7 +104,7 @@ export const HeaderBarLeftComponent = () => {
 export const HeaderBarRightComponent = () => {
   const { maximized } = useMaximize();
   const windowService: IWindowService = useInjectable(IWindowService);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   if (isMacintosh) {
     return null;
@@ -114,7 +114,7 @@ export const HeaderBarRightComponent = () => {
     <div
       className={styles.windowActions}
       style={{
-        height: defaultHeight(appConfig),
+        height: defaultHeight(layoutViewSize),
       }}
     >
       <div className={cls(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
@@ -149,7 +149,7 @@ export const ElectronHeaderBar = observer(
     height,
   }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
-    const appConfig = useInjectable<AppConfig>(AppConfig);
+    const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
     const { isFullScreen } = useFullScreen();
     const { getMaximized } = useMaximize();
@@ -163,6 +163,14 @@ export const ElectronHeaderBar = observer(
       TitleComponent = HeaderBarTitleComponent;
     }
 
+    const safeHeight = useMemo(() => {
+      if (height) {
+        return height;
+      }
+
+      return defaultHeight(layoutViewSize);
+    }, [layoutViewSize, height]);
+
     // in Mac, hide the header bar if it is in full screen mode
     if (isMacintosh && isFullScreen && autoHide) {
       return (
@@ -171,14 +179,6 @@ export const ElectronHeaderBar = observer(
         </div>
       );
     }
-
-    const safeHeight = useMemo(() => {
-      if (height) {
-        return height;
-      }
-
-      return defaultHeight(appConfig);
-    }, [appConfig, height]);
 
     return (
       <div

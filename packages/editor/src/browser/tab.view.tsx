@@ -15,7 +15,6 @@ import React, {
 
 import { Scrollbars } from '@opensumi/ide-components';
 import {
-  AppConfig,
   ConfigContext,
   Disposable,
   DisposableCollection,
@@ -32,6 +31,7 @@ import {
   useDesignStyles,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
@@ -70,7 +70,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   const preferenceService = useInjectable<PreferenceService>(PreferenceService);
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
   const editorTabService = useInjectable<IEditorTabService>(IEditorTabService);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   const styles_tab_right = useDesignStyles(styles.tab_right, 'tab_right');
   const styles_close_tab = useDesignStyles(styles.close_tab, 'close_tab');
@@ -415,8 +415,8 @@ export const Tabs = ({ group }: ITabsProps) => {
               })}
               style={
                 wrapMode && i === group.resources.length - 1
-                  ? { marginRight: lastMarginRight, height: appConfig.layoutViewSize!.editorTabsHeight }
-                  : { height: appConfig.layoutViewSize!.editorTabsHeight }
+                  ? { marginRight: lastMarginRight, height: layoutViewSize.editorTabsHeight }
+                  : { height: layoutViewSize.editorTabsHeight }
               }
               onContextMenu={(event) => {
                 tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
@@ -529,7 +529,8 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
 
     const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
-    const appConfig = useInjectable<AppConfig>(AppConfig);
+    const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
+
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
     const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
@@ -561,7 +562,7 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       <div
         ref={ref}
         className={cls(styles_editor_actions, className)}
-        style={{ height: appConfig.layoutViewSize!.editorTabsHeight }}
+        style={{ height: layoutViewSize.editorTabsHeight }}
       >
         <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}

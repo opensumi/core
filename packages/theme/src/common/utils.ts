@@ -109,6 +109,14 @@ export function registerColor(
   return colorRegistry.registerColor(id, defaults, description, needsTransparency, deprecationMessage);
 }
 
+export function registerDesignColor(
+  id: string,
+  defaults: ColorDefaults | null,
+  description: string,
+  needsTransparency?: boolean,
+  deprecationMessage?: string,
+) {}
+
 export function darken(colorValue: ColorValue, factor: number): ColorFunction {
   return (theme) => {
     const color = resolveColorValue(colorValue, theme);
