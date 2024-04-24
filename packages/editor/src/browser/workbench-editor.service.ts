@@ -1750,7 +1750,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.availableOpenTypes = openTypes;
 
       if (options.preserveFocus) {
-        options.focus = false;
+        options.focus = true;
       }
 
       switch (activeOpenType.type) {
@@ -2061,7 +2061,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   /**
-   * 当前打开的resource
+   * current opened resource
    */
   get currentResource(): MaybeNull<IResource> {
     return this._currentResource;
