@@ -7,6 +7,7 @@ import {
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
+import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 
 export const IAINativeService = Symbol('IAINativeService');
 
@@ -14,7 +15,10 @@ export const AIInlineChatContentWidget = 'AI_Inline_Chat_Content_Widget';
 export const AI_CHAT_VIEW_ID = 'AI_Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI_Chat_Container';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
-export const AI_MENUBAR_CONTAINER_VIEW_ID = 'AI_menubar';
+/**
+ * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
+ */
+export const AI_MENUBAR_CONTAINER_VIEW_ID = DESIGN_MENUBAR_CONTAINER_VIEW_ID;
 
 export const AI_SLASH = '/';
 

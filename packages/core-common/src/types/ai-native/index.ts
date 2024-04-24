@@ -5,10 +5,6 @@ export * from './reporter';
 
 export interface IAINativeCapabilities {
   /**
-   * Use opensumi design UI style
-   */
-  supportsOpenSumiDesign?: boolean;
-  /**
    * Problem panel uses ai capabilities
    */
   supportsMarkers?: boolean;

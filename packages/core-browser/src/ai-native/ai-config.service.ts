@@ -13,7 +13,6 @@ export class AINativeConfigService {
   public layoutViewSize: LayoutViewSizeConfig;
 
   private internalCapabilities: Required<IAINativeCapabilities> = {
-    supportsOpenSumiDesign: false,
     supportsMarkers: false,
     supportsChatAssistant: false,
     supportsInlineChat: false,

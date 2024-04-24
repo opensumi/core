@@ -11,9 +11,11 @@ import {
   ComponentRegistry,
   ContributionProvider,
   Domain,
+  IEditorExtensionContribution,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingScope,
+  MonacoContribution,
   PreferenceService,
   SlotLocation,
   SlotRendererContribution,
@@ -28,7 +30,6 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
-import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
@@ -43,6 +44,7 @@ import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
+import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 
 import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
 
@@ -51,8 +53,9 @@ import { AINativeService } from './ai-native.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { AIChatLayoutConfig, AIMenubarLayoutConfig } from './layout/layout-config';
+import { AIChatLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
+import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
   AINativeCoreContribution,
@@ -71,6 +74,7 @@ import {
   KeybindingContribution,
   ComponentContribution,
   SlotRendererContribution,
+  MonacoContribution,
 )
 export class AINativeBrowserContribution
   implements
@@ -80,7 +84,8 @@ export class AINativeBrowserContribution
     SettingContribution,
     KeybindingContribution,
     ComponentContribution,
-    SlotRendererContribution
+    SlotRendererContribution,
+    MonacoContribution
 {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -127,9 +132,6 @@ export class AINativeBrowserContribution
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
-  @Autowired(LayoutViewSizeConfig)
-  private layoutViewSize: LayoutViewSizeConfig;
-
   constructor() {
     this.registerFeature();
   }
@@ -137,8 +139,7 @@ export class AINativeBrowserContribution
   initialize() {
     this.aiNativeConfigService.enableCapabilities();
 
-    const { supportsChatAssistant, supportsOpenSumiDesign } = this.aiNativeConfigService.capabilities;
-    const { useMenubarView } = this.aiNativeConfigService.layout;
+    const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
 
     let layoutConfig = this.appConfig.layoutConfig;
 
@@ -149,21 +150,14 @@ export class AINativeBrowserContribution
       };
     }
 
-    if (useMenubarView) {
-      this.layoutViewSize.setMenubarHeight(48);
-      layoutConfig = {
-        ...layoutConfig,
-        ...AIMenubarLayoutConfig,
-      };
-    }
-
-    if (supportsOpenSumiDesign) {
-      this.layoutViewSize.setEditorTabsHeight(36);
-      this.layoutViewSize.setStatusBarHeight(36);
-      this.layoutViewSize.setAccordionHeaderSizeHeight(36);
-    }
-
     this.appConfig.layoutConfig = layoutConfig;
+  }
+
+  registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {
+    const { supportsInlineChat } = this.aiNativeConfigService.capabilities;
+    if (supportsInlineChat) {
+      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
+    }
   }
 
   onDidStart() {
