@@ -45,7 +45,6 @@ import { ChatInternalService } from './chat.internal.service';
 import styles from './chat.module.less';
 import { ChatRenderRegistry } from './chat.render.registry';
 
-
 const SCROLL_CLASSNAME = 'chat_scroll';
 
 export const AIChatView = observer(() => {
@@ -89,6 +88,13 @@ export const AIChatView = observer(() => {
   const aiAssistantName = React.useMemo(() => localize('aiNative.chat.ai.assistant.name'), []);
 
   const shortcutCommands = React.useMemo(() => chatFeatureRegistry.getAllShortcutSlashCommand(), [chatFeatureRegistry]);
+
+  const ChatInputWrapperRender = React.useMemo(() => {
+    if (chatRenderRegistry.chatInputRender) {
+      return chatRenderRegistry.chatInputRender;
+    }
+    return ChatInput;
+  }, [chatRenderRegistry.chatInputRender]);
 
   React.useEffect(() => {
     msgStreamManager.onMsgStatus((event) => {
@@ -533,7 +539,7 @@ export const AIChatView = observer(() => {
               </div>
               <div className={styles.header_operate_right}></div>
             </div>
-            <ChatInput
+            <ChatInputWrapperRender
               onSend={(value, agentId, command) => handleSend({ message: value, agentId, command })}
               disabled={loading || loading2}
               enableOptions={true}

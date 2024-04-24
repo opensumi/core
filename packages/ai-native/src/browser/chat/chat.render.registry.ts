@@ -3,6 +3,7 @@ import { Disposable } from '@opensumi/ide-core-common';
 
 import {
   ChatAIRoleRender,
+  ChatInputRender,
   ChatThinkingRender,
   ChatUserRoleRender,
   ChatWelcomeRender,
@@ -15,6 +16,7 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
   public chatAIRoleRender?: ChatAIRoleRender;
   public chatUserRoleRender?: ChatUserRoleRender;
   public chatThinkingRender?: ChatThinkingRender;
+  public chatInputRender?: ChatInputRender;
 
   registerWelcomeRender(render: ChatWelcomeRender): void {
     this.chatWelcomeRender = render;
@@ -30,5 +32,9 @@ export class ChatRenderRegistry extends Disposable implements IChatRenderRegistr
 
   registerThinkingRender(render: ChatThinkingRender): void {
     this.chatThinkingRender = render;
+  }
+
+  registerInputRender(render: ChatInputRender): void {
+    this.chatInputRender = render;
   }
 }
