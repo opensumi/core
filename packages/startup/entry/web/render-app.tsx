@@ -2,6 +2,7 @@
 console.time('Render');
 
 import { Injector } from '@opensumi/di';
+import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { uuid } from '@opensumi/ide-core-common';
@@ -11,8 +12,6 @@ import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
-
-import { DefaultLayout } from './layout';
 
 const CLIENT_ID = 'W_' + uuid();
 
@@ -35,7 +34,9 @@ export async function renderApp(opts: IClientAppOpts) {
 
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
-  opts.layoutComponent = DefaultLayout;
+
+  opts.layoutComponent = AILayout;
+
   opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
     // eslint-disable-next-line no-console
