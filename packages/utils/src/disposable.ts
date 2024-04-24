@@ -250,10 +250,6 @@ export class DisposableCollection implements IDisposable {
   }
 
   push(disposable: IDisposable): IDisposable {
-    if (!disposable) {
-      return disposable;
-    }
-
     const disposables = this.disposables;
     disposables.push(disposable);
     const originalDispose = disposable.dispose.bind(disposable);

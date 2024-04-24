@@ -1,4 +1,4 @@
-import { Event, GeneralSettingsId, PreferenceItem, getLanguageId } from '@opensumi/ide-core-common';
+import { Disposable, Event, GeneralSettingsId, PreferenceItem, getLanguageId } from '@opensumi/ide-core-common';
 
 import { IPreferences } from '../bootstrap';
 
@@ -17,7 +17,7 @@ const providers = new Map<string, IExternalPreferenceProvider>();
 export function registerExternalPreferenceProvider<T>(name: string, provider: IExternalPreferenceProvider<T>) {
   if (providers.get(name)) {
     // 不可覆盖，先注册的生效
-    return;
+    return Disposable.NULL;
   }
   providers.set(name, provider);
 

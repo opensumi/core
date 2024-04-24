@@ -621,9 +621,9 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected initEarlyPreference(workspaceDir: string) {
-    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir)!);
-    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir)!);
-    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir)!);
+    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir));
+    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir));
+    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir));
   }
 
   public async dispose() {

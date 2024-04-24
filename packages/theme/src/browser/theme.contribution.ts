@@ -6,7 +6,7 @@ import {
   CommandRegistry,
   Domain,
   GeneralSettingsId,
-  Logger,
+  ILogger,
   Mode,
   PreferenceScope,
   PreferenceService,
@@ -66,8 +66,8 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
-  @Autowired(Logger)
-  logger: Logger;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   async initialize() {
     this.registerDefaultColorTheme();
