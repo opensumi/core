@@ -87,8 +87,8 @@ export const Popover: React.FC<IPopoverProps> = ({
     if (!contentEl.current || !childEl.current || disable) {
       return;
     }
-    const { left, top, width, height } = childEl.current.getBoundingClientRect() as ClientRect;
-    const contentRect = contentEl.current.getBoundingClientRect() as ClientRect;
+    const { left, top, width, height } = childEl.current.getBoundingClientRect() as DOMRect;
+    const contentRect = contentEl.current.getBoundingClientRect() as DOMRect;
     if (position === PopoverPosition.top) {
       const contentLeft =
         contentRect.right - window.innerWidth > 0

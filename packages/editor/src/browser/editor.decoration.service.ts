@@ -35,8 +35,6 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
 
   private tempId = 0;
 
-  constructor() {}
-
   getNextTempId() {
     this.tempId++;
     return 'temp-decoration-' + this.tempId;
@@ -194,7 +192,6 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       textDecoration: styles.textDecoration,
       color: this.themeService.getColorVar(styles.color),
       backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
-
       margin: styles.margin,
       width: styles.width,
       height: styles.height,
