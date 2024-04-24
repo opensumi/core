@@ -14,15 +14,18 @@ export interface IExternalPreferenceProvider<T = any> {
 
 const providers = new Map<string, IExternalPreferenceProvider>();
 
-export function registerExternalPreferenceProvider<T>(
-  name: string,
-  provider: IExternalPreferenceProvider<T>,
-  force = false,
-) {
-  if (!force && providers.get(name)) {
+export function registerExternalPreferenceProvider<T>(name: string, provider: IExternalPreferenceProvider<T>) {
+  if (providers.get(name)) {
+    // 不可覆盖，先注册的生效
     return;
   }
   providers.set(name, provider);
+
+  return {
+    dispose() {
+      providers.delete(name);
+    },
+  };
 }
 
 export function getExternalPreferenceProvider(name: string) {
@@ -63,7 +66,7 @@ export function getPreferenceLanguageId(defaultPreferences?: IPreferences): stri
 }
 
 // 默认使用 localStorage
-export function registerLocalStorageProvider(key: string, workspaceFolder?: string, prefix = '', force = false) {
+export function registerLocalStorageProvider(key: string, workspaceFolder?: string, prefix = '') {
   function getScopePrefix(scope: PreferenceScope) {
     let text: string = '';
     if (scope === PreferenceScope.Workspace && workspaceFolder) {
@@ -82,36 +85,32 @@ export function registerLocalStorageProvider(key: string, workspaceFolder?: stri
     return getScopePrefix(scope) + `:${key}`;
   }
 
-  registerExternalPreferenceProvider<string>(
-    key,
-    {
-      set: (value, scope) => {
-        if (scope >= PreferenceScope.Folder) {
-          // earlyPreference不支持针对作用域大于等于Folder的值设置
-          return;
-        }
+  return registerExternalPreferenceProvider<string>(key, {
+    set: (value, scope) => {
+      if (scope >= PreferenceScope.Folder) {
+        // earlyPreference不支持针对作用域大于等于Folder的值设置
+        return;
+      }
 
-        if (!workspaceFolder && scope > PreferenceScope.Default) {
-          // 不传入 workspaceDir 则只支持全局设置
-          return;
-        }
+      if (!workspaceFolder && scope > PreferenceScope.Default) {
+        // 不传入 workspaceDir 则只支持全局设置
+        return;
+      }
 
-        if (global.localStorage) {
-          if (value !== undefined) {
-            localStorage.setItem(createLocalStorageKey(scope), value);
-          } else {
-            localStorage.removeItem(createLocalStorageKey(scope));
-          }
+      if (global.localStorage) {
+        if (value !== undefined) {
+          localStorage.setItem(createLocalStorageKey(scope), value);
+        } else {
+          localStorage.removeItem(createLocalStorageKey(scope));
         }
-      },
-      get: (scope) => {
-        if (global.localStorage) {
-          return localStorage.getItem(createLocalStorageKey(scope)) || undefined;
-        }
-      },
+      }
     },
-    force,
-  );
+    get: (scope) => {
+      if (global.localStorage) {
+        return localStorage.getItem(createLocalStorageKey(scope)) || undefined;
+      }
+    },
+  });
 }
 
 export function getExternalPreference<T>(

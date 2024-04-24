@@ -2,9 +2,9 @@
 console.time('Render');
 
 import { Injector } from '@opensumi/di';
-import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
+import { IClientAppOpts, SlotLocation, registerLocalStorageProvider } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
-import { uuid } from '@opensumi/ide-core-common';
+import { GeneralSettingsId, uuid } from '@opensumi/ide-core-common';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
@@ -41,9 +41,9 @@ export async function renderApp(opts: IClientAppOpts) {
     // eslint-disable-next-line no-console
     console.timeEnd('Render');
   };
+  registerLocalStorageProvider(GeneralSettingsId.Theme, opts.workspaceDir || '', 'prefix1');
 
   const app = new ClientApp(opts);
-  app.initEarlyPreference(opts.workspaceDir || '', 'prefix1', true);
 
   app.fireOnReload = (forcedReload: boolean) => {
     window.location.reload();

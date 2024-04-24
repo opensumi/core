@@ -18,8 +18,7 @@ export interface ClientAppContribution {
   onStart?(app: IClientApp): MaybePromise<void>;
 
   /**
-   * 大部分模块启动完成
-   * @param app
+   * Most of the modules have been started.
    */
   onDidStart?(app: IClientApp): MaybePromise<void>;
 
@@ -49,7 +48,7 @@ export interface ClientAppContribution {
   onDisposeSideEffects?(app: IClientApp): void;
 
   /**
-   *
+   * Called When the application is reconnected.
    */
   onReconnect?(app: IClientApp): void;
 }

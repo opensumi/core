@@ -14,6 +14,7 @@ import {
   ContributionProvider,
   DefaultStorageProvider,
   Deferred,
+  DisposableCollection,
   GeneralSettingsId,
   IAppLifeCycleService,
   IApplicationService,
@@ -89,6 +90,7 @@ export class ClientApp implements IClientApp, IDisposable {
   public injector: Injector;
   public config: AppConfig;
   public commandRegistry: CommandRegistry;
+  public runtime: ElectronRendererRuntime | BrowserRuntime;
 
   private logger: ILogServiceClient;
   private connectionPath: UrlProvider;
@@ -98,7 +100,8 @@ export class ClientApp implements IClientApp, IDisposable {
   private contributionsProvider: ContributionProvider<ClientAppContribution>;
   private nextMenuRegistry: MenuRegistryImpl;
   private stateService: ClientAppStateService;
-  runtime: ElectronRendererRuntime | BrowserRuntime;
+
+  protected _disposables = new DisposableCollection();
 
   constructor(protected opts: IClientAppOpts) {
     const {
@@ -617,10 +620,10 @@ export class ClientApp implements IClientApp, IDisposable {
     updateIconMap(prefix, iconMap);
   }
 
-  initEarlyPreference(workspaceDir: string, prefix = '', force = false) {
-    registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir, prefix, force);
-    registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir, prefix, force);
-    registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir, prefix, force);
+  protected initEarlyPreference(workspaceDir: string) {
+    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir)!);
+    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir)!);
+    this._disposables.push(registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir)!);
   }
 
   public async dispose() {
@@ -633,7 +636,7 @@ export class ClientApp implements IClientApp, IDisposable {
     if (isOSX) {
       document.body.removeEventListener('wheel', this._handleWheel);
     }
-
+    this._disposables.dispose();
     this.disposeSideEffect();
   }
 
