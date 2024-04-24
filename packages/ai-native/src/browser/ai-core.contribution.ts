@@ -46,7 +46,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ISettingRegistry, SettingContribution } from '@opensumi/ide-preferences';
 import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 
-import { AI_CHAT_CONTAINER_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
+import { AI_CHAT_CONTAINER_ID, AI_CHAT_LOGO_AVATAR_ID, AI_CHAT_VIEW_ID, AI_MENU_BAR_DEBUG_TOOLBAR } from '../common';
 
 import { AIEditorContribution } from './ai-editor.contribution';
 import { AINativeService } from './ai-native.service';
@@ -55,6 +55,7 @@ import { AIInlineCompletionsProvider } from './inline-completions/completeProvid
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
 import { AIChatLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
+import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { AIRunToolbar } from './run/toolbar/run-toolbar';
 import {
@@ -283,6 +284,10 @@ export class AINativeBrowserContribution
     registry.register(AI_MENU_BAR_DEBUG_TOOLBAR, {
       id: AI_MENU_BAR_DEBUG_TOOLBAR,
       component: AIRunToolbar,
+    });
+    registry.register(AI_CHAT_LOGO_AVATAR_ID, {
+      id: AI_CHAT_LOGO_AVATAR_ID,
+      component: AIChatLogoAvatar,
     });
   }
 
