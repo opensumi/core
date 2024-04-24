@@ -99,8 +99,8 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
   );
 };
 
-export const AILogoAvatar = (props: { iconClassName?: string }) => (
-  <div className={styles.ai_logo_avatar_container}>
+export const AILogoAvatar = (props: { className?: string; iconClassName?: string }) => (
+  <div className={cls(styles.ai_logo_avatar_container, props.className)}>
     <Icon icon={'magic-wand'} className={cls(props.iconClassName, styles.avatar_icon)} />
   </div>
 );

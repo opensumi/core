@@ -62,7 +62,7 @@ export const AIAction = (props: AIActionProps) => {
 
   return (
     <div className={styles.ai_action}>
-      <AILogoAvatar />
+      <AILogoAvatar className={styles.ai_action_icon} />
       <LineVertical {...{ height: '60%', margin: '0px 4px 0 8px' }} />
       <div className={styles.operate_container}>
         {operationList.map(({ name, title, id }, i) =>
