@@ -4,6 +4,7 @@ import * as React from 'react';
 import { AINativeConfigService, SlotLocation, SlotRenderer, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
@@ -16,8 +17,8 @@ import styles from './menu-bar.module.less';
 
 const DesignMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
+  const designLayoutConfig = useInjectable<DesignLayoutConfig>(DesignLayoutConfig);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
-  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const iconRef = React.useRef<HTMLDivElement | null>(null);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
@@ -56,10 +57,7 @@ const DesignMenuBarRender = () => {
     });
   }, [anchor, extraTopMenus]);
 
-  const logo = React.useMemo(
-    () => aiNativeConfigService.layout.menubarLogo || OpenSumiLogo,
-    [aiNativeConfigService.layout.menubarLogo],
-  );
+  const logo = React.useMemo(() => designLayoutConfig.menubarLogo || OpenSumiLogo, [designLayoutConfig.menubarLogo]);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { IAINativeConfig } from '@opensumi/ide-core-common';
+import { IDesignLayoutConfig } from '@opensumi/ide-design/lib/common/configurations';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
 import type { Injector } from '@opensumi/di';
@@ -262,6 +263,7 @@ export interface AppConfig {
    * AI Native 相关的配置项
    */
   AINativeConfig?: IAINativeConfig;
+  designLayout?: IDesignLayoutConfig;
   /**
    * Collaboration Client Options
    */

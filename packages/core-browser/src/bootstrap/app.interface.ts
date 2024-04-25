@@ -7,6 +7,7 @@ import { ILayoutViewSize } from '../layout/constants';
 import { AppConfig } from '../react-providers';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
+
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 export type Direction = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
 

@@ -92,10 +92,9 @@ export const getDefaultClientAppOpts = ({
   useVSCodeWorkspaceConfiguration: true,
   // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
   devtools: true,
-  AINativeConfig: {
-    layout: {
-      useMenubarView: true,
-    },
+  designLayout: {
+    useMenubarView: true,
+    useMergeRightWithLeftPanel: true,
   },
   ...opts,
 });

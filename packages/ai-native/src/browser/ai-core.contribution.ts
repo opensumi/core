@@ -30,6 +30,7 @@ import {
   AI_INLINE_COMPLETION_VISIBLE,
 } from '@opensumi/ide-core-browser/lib/ai-native/command';
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
@@ -117,6 +118,9 @@ export class AINativeBrowserContribution
 
   @Autowired(AINativeConfigService)
   private readonly aiNativeConfigService: AINativeConfigService;
+
+  @Autowired(DesignLayoutConfig)
+  private readonly designLayoutConfig: DesignLayoutConfig;
 
   @Autowired(AICompletionsService)
   private aiCompletionsService: AICompletionsService;
@@ -270,7 +274,7 @@ export class AINativeBrowserContribution
 
   registerRenderer(registry: SlotRendererRegistry): void {
     registry.registerSlotRenderer(AI_CHAT_VIEW_ID, AIChatTabRenderer);
-    if (this.aiNativeConfigService.layout.useMergeRightWithLeftPanel) {
+    if (this.designLayoutConfig.useMergeRightWithLeftPanel) {
       registry.registerSlotRenderer(SlotLocation.left, AILeftTabRenderer);
       registry.registerSlotRenderer(SlotLocation.right, AIRightTabRenderer);
     }

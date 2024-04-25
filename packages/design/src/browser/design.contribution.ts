@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  AINativeConfigService,
   AppConfig,
   ClientAppContribution,
   Domain,
@@ -8,7 +7,7 @@ import {
   SlotRendererContribution,
   SlotRendererRegistry,
 } from '@opensumi/ide-core-browser';
-import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { DesignLayoutConfig, LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { Schemes } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
@@ -26,17 +25,17 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
   @Autowired()
   private readonly designThemeFileSystemProvider: DesignThemeFileSystemProvider;
 
-  @Autowired(AINativeConfigService)
-  private readonly aiNativeConfigService: AINativeConfigService;
-
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
   @Autowired(LayoutViewSizeConfig)
   private layoutViewSize: LayoutViewSizeConfig;
 
+  @Autowired(DesignLayoutConfig)
+  private designLayoutConfig: DesignLayoutConfig;
+
   initialize() {
-    const { useMenubarView } = this.aiNativeConfigService.layout;
+    const { useMenubarView } = this.designLayoutConfig;
 
     this.fileSystem.registerProvider(Schemes.design, this.designThemeFileSystemProvider);
     let layoutConfig = this.appConfig.layoutConfig;

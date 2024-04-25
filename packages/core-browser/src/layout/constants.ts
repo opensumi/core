@@ -1,5 +1,8 @@
+import merge from 'lodash/merge';
+
 import { Injectable } from '@opensumi/di';
 import { isMacintosh } from '@opensumi/ide-core-common';
+import { IDesignLayoutConfig } from '@opensumi/ide-design/lib/common/configurations';
 
 import { electronEnv } from '../utils/electron';
 
@@ -115,5 +118,30 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
       return this.bigSurTitleBarHeight;
     }
     return this.titleBarHeight;
+  }
+}
+
+@Injectable()
+export class DesignLayoutConfig implements IDesignLayoutConfig {
+  private internalLayout: Required<IDesignLayoutConfig> = {
+    useMergeRightWithLeftPanel: false,
+    useMenubarView: true,
+    menubarLogo: '',
+  };
+
+  setLayout(...value: (Partial<IDesignLayoutConfig> | undefined)[]): void {
+    this.internalLayout = merge(this.internalLayout, ...value.filter(Boolean));
+  }
+
+  get useMergeRightWithLeftPanel(): boolean {
+    return this.internalLayout.useMergeRightWithLeftPanel;
+  }
+
+  get useMenubarView(): boolean {
+    return this.internalLayout.useMenubarView;
+  }
+
+  get menubarLogo(): string {
+    return this.internalLayout.menubarLogo;
   }
 }
