@@ -311,7 +311,6 @@ div[class*='design-editor_tab_block_container__'] {
 */
 :global(.design_bottom_slot) {
   .design-tab_bar {
-    height: 100%;
   }
 
   .design-tab_panel {
@@ -327,7 +326,7 @@ div[class*='design-editor_tab_block_container__'] {
 
   .design-bottom_bar_container {
     width: 100%;
-    height: 32px;
+    // height: 32px;
   }
 
   .design-variable_repl_bar {
@@ -541,6 +540,9 @@ div[class*='design-editor_tab_block_container__'] {
 
     &::-webkit-scrollbar {
       width: 4px;
+      &:hover {
+        width: 10px;
+      }
     }
   }
 
@@ -717,5 +719,9 @@ div[class*='design-editor_tab_block_container__'] {
   &::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+
+    &:hover {
+      width: 10px;
+    }
   }
 }
