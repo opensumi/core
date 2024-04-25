@@ -9,6 +9,7 @@ import {
   BaseInlineContentWidget,
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import { StackingLevelStr } from '@opensumi/ide-theme';
 
 import { AIInlineChatContentWidget } from '../../../common/index';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
@@ -75,8 +76,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
     domNode.style.padding = '6px';
-    domNode.style.zIndex = '999';
-    domNode.style.paddingRight = '50px';
+    domNode.style.zIndex = StackingLevelStr.OverlayTop;
     return domNode;
   }
 

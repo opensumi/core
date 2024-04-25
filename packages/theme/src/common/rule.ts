@@ -24,6 +24,10 @@ export const StackingLevel = {
   OverlayTop: 1000,
 } as const;
 
+export const StackingLevelStr = Object.fromEntries(
+  Object.entries(StackingLevel).map(([key, value]) => [key, value.toString()]),
+) as Record<keyof typeof StackingLevel, string>;
+
 Object.entries(StackingLevel).forEach(([key, value]) => {
   registerCSSVar(`stacking-level-${key.toLowerCase()}`, value.toString());
 });
