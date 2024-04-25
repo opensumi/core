@@ -163,6 +163,14 @@ export const ElectronHeaderBar = observer(
       TitleComponent = HeaderBarTitleComponent;
     }
 
+    const safeHeight = useMemo(() => {
+      if (height) {
+        return height;
+      }
+
+      return defaultHeight(appConfig);
+    }, [appConfig, height]);
+
     // in Mac, hide the header bar if it is in full screen mode
     if (isMacintosh && isFullScreen && autoHide) {
       return (
@@ -171,14 +179,6 @@ export const ElectronHeaderBar = observer(
         </div>
       );
     }
-
-    const safeHeight = useMemo(() => {
-      if (height) {
-        return height;
-      }
-
-      return defaultHeight(appConfig);
-    }, [appConfig, height]);
 
     return (
       <div
