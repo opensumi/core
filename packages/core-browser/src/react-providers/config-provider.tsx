@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { IAINativeConfig } from '@opensumi/ide-core-common';
-import { IDesignLayoutConfig } from '@opensumi/ide-design/lib/common/configurations';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
 import type { Injector } from '@opensumi/di';
@@ -9,6 +8,7 @@ import type {
   ExtensionBrowserStyleSheet,
   ExtensionCandidate,
   ExtensionConnectOption,
+  IDesignLayoutConfig,
   UrlProvider,
 } from '@opensumi/ide-core-common';
 

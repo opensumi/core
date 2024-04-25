@@ -1,5 +1,3 @@
-import { IDesignLayoutConfig } from '@opensumi/ide-design/lib/common/configurations';
-
 import { CancellationToken, MaybePromise } from '../../utils';
 
 import { IAIReportCompletionOption } from './reporter';
@@ -38,6 +36,21 @@ export interface IAINativeCapabilities {
    * Use ai terminal command suggets capabilities
    */
   supportsTerminalCommandSuggest?: boolean;
+}
+
+export interface IDesignLayoutConfig {
+  /**
+   * use Merge right panel with left panel
+   */
+  useMergeRightWithLeftPanel?: boolean;
+  /**
+   * use ai manubar view
+   */
+  useMenubarView?: boolean;
+  /**
+   * set menubar logo
+   */
+  menubarLogo?: string;
 }
 
 export interface IAINativeConfig {

@@ -1,8 +1,7 @@
 import merge from 'lodash/merge';
 
 import { Injectable } from '@opensumi/di';
-import { isMacintosh } from '@opensumi/ide-core-common';
-import { IDesignLayoutConfig } from '@opensumi/ide-design/lib/common/configurations';
+import { IDesignLayoutConfig, isMacintosh } from '@opensumi/ide-core-common';
 
 import { electronEnv } from '../utils/electron';
 
