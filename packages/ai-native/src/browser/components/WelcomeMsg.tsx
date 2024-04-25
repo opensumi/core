@@ -20,7 +20,6 @@ import { ChatThinking } from '../components/ChatThinking';
 import { extractIcon } from '../components/utils';
 import { EMsgStreamStatus } from '../model/msg-stream-manager';
 
-
 import styles from './components.module.less';
 
 export const WelcomeMessage = () => {
@@ -83,9 +82,10 @@ export const WelcomeMessage = () => {
           {welcomeSampleQuestions.concat(sampleQuestions).map((data: any, index) => {
             const node = (
               <a
-                href='javascript:void(0)'
                 className={styles.link_item}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   aiChatService.sendMessage(chatAgentService.parseMessage(data.message));
                 }}
               >

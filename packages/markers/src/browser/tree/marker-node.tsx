@@ -82,7 +82,16 @@ const MarkerCode: FC<{
   const code = matches ? <HighlightData data={data} matches={matches} className={type} /> : <>{data}</>;
   if (typeof href !== 'undefined') {
     return (
-      <a className={styles.codeHref} rel='noopener' target='_blank' href='javascript:void(0)' title={data}>
+      <a
+        className={styles.codeHref}
+        rel='noopener'
+        target='_blank'
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        title={data}
+      >
         {code}
       </a>
     );

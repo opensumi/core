@@ -109,7 +109,11 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   );
 
   const ResizeHandle = Layout.getResizeHandle(direction);
+  const flexStyleProperties = Layout.getStyleProperties(direction);
+
   const childList = React.useMemo(() => React.Children.toArray(children), [children]);
+
+  const hasFlexGrow = React.useMemo(() => childList.find((item) => getProp(item, 'flexGrow')), [childList]);
 
   const totalFlexNum = React.useMemo(
     () => childList.reduce((accumulator, item) => accumulator + getProp(item, 'flex', 1), 0),
@@ -274,6 +278,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
               );
             }
           }
+
           result.push(
             <PanelContext.Provider
               key={index}
@@ -298,14 +303,12 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
                 id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
                 style={{
                   // 手风琴场景，固定尺寸和 flex 尺寸混合布局；需要在 Resize Flex 模式下禁用
-                  ...(getProp(element, 'flex') &&
-                  !getProp(element, 'savedSize') &&
-                  !childList.find((item) => getProp(item, 'flexGrow'))
+                  ...(getProp(element, 'flex') && !getProp(element, 'savedSize') && !hasFlexGrow
                     ? { flex: getProp(element, 'flex') }
-                    : { [Layout.getSizeProperty(direction)]: getElementSize(element, totalFlexNum) }),
+                    : { [flexStyleProperties.size]: getElementSize(element, totalFlexNum) }),
                   // 相对尺寸带来的问题，必须限制最小最大尺寸
-                  [Layout.getMinSizeProperty(direction)]: propMinSize ? propMinSize + 'px' : '-1px',
-                  [Layout.getMaxSizeProperty(direction)]: maxLocks[index] && propMaxSize ? propMaxSize + 'px' : 'unset',
+                  [flexStyleProperties.minSize]: propMinSize ? propMinSize + 'px' : '-1px',
+                  [flexStyleProperties.maxSize]: maxLocks[index] && propMaxSize ? propMaxSize + 'px' : 'unset',
                   // Resize Flex 模式下应用 flexGrow
                   ...(propFlexGrow !== undefined ? { flexGrow: propFlexGrow } : {}),
                   display: hides[index] ? 'none' : 'block',
@@ -345,9 +348,8 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
       splitPanelService,
       <div
         ref={(ele) => (rootRef.current = ele!)}
-        {...props}
         className={cls(styles['split-panel'], className)}
-        style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
+        style={{ flexDirection: flexStyleProperties.direction, ...style }}
       />,
       elements,
       props,
