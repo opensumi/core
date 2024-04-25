@@ -1,4 +1,7 @@
 import { Injectable } from '@opensumi/di';
+import { isMacintosh } from '@opensumi/ide-core-common';
+
+import { electronEnv } from '../utils/electron';
 
 export interface ILayoutViewSize {
   menubarHeight: number;
@@ -95,5 +98,22 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
   }
   setAccordionHeaderSizeHeight(value: number) {
     this.#accordionHeaderSizeHeight = value;
+  }
+
+  protected supportNewMacHeaderBar = electronEnv.osRelease ? parseFloat(electronEnv.osRelease) >= 20 : false;
+
+  calcElectronHeaderHeight(): number {
+    if (isMacintosh) {
+      // Big Sur increases title bar height
+      return this.supportNewMacHeaderBar ? this.bigSurTitleBarHeight : this.titleBarHeight;
+    }
+    return this.menubarHeight;
+  }
+
+  calcOnlyTitleBarHeight(): number {
+    if (isMacintosh && this.supportNewMacHeaderBar) {
+      return this.bigSurTitleBarHeight;
+    }
+    return this.titleBarHeight;
   }
 }

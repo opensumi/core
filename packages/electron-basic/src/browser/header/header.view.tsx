@@ -70,16 +70,6 @@ const useMaximize = () => {
   };
 };
 
-const supportNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
-
-const defaultHeight = (layoutViewSize: LayoutViewSizeConfig) => {
-  if (isMacintosh) {
-    // Big Sur increases title bar height
-    return supportNewMacHeaderBar ? layoutViewSize.bigSurTitleBarHeight : layoutViewSize.titleBarHeight;
-  }
-  return layoutViewSize.menubarHeight;
-};
-
 export const HeaderBarLeftComponent = () => {
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
 
@@ -114,7 +104,7 @@ export const HeaderBarRightComponent = () => {
     <div
       className={styles.windowActions}
       style={{
-        height: defaultHeight(layoutViewSize),
+        height: layoutViewSize.calcElectronHeaderHeight(),
       }}
     >
       <div className={cls(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
@@ -168,7 +158,7 @@ export const ElectronHeaderBar = observer(
         return height;
       }
 
-      return defaultHeight(layoutViewSize);
+      return layoutViewSize.calcElectronHeaderHeight();
     }, [layoutViewSize, height]);
 
     // in Mac, hide the header bar if it is in full screen mode
