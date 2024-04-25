@@ -1,4 +1,4 @@
-import { Event, GeneralSettingsId, PreferenceItem, getLanguageId } from '@opensumi/ide-core-common';
+import { Disposable, Event, GeneralSettingsId, PreferenceItem, getLanguageId } from '@opensumi/ide-core-common';
 
 import { IPreferences } from '../bootstrap';
 
@@ -16,9 +16,16 @@ const providers = new Map<string, IExternalPreferenceProvider>();
 
 export function registerExternalPreferenceProvider<T>(name: string, provider: IExternalPreferenceProvider<T>) {
   if (providers.get(name)) {
-    return; // 不可覆盖，先注册的生效
+    // 不可覆盖，先注册的生效
+    return Disposable.NULL;
   }
   providers.set(name, provider);
+
+  return {
+    dispose() {
+      providers.delete(name);
+    },
+  };
 }
 
 export function getExternalPreferenceProvider(name: string) {
@@ -59,14 +66,26 @@ export function getPreferenceLanguageId(defaultPreferences?: IPreferences): stri
 }
 
 // 默认使用 localStorage
-export function registerLocalStorageProvider(key: string, workspaceFolder?: string) {
+export function registerLocalStorageProvider(key: string, workspaceFolder?: string, prefix = '') {
   function getScopePrefix(scope: PreferenceScope) {
-    if (scope === PreferenceScope.Workspace) {
-      return workspaceFolder;
+    let text: string = '';
+    if (scope === PreferenceScope.Workspace && workspaceFolder) {
+      text = workspaceFolder;
+    } else {
+      text = scope.toString();
     }
-    return scope;
+
+    if (prefix) {
+      return prefix + ':' + text;
+    }
+    return text;
   }
-  registerExternalPreferenceProvider<string>(key, {
+
+  function createLocalStorageKey(scope: PreferenceScope) {
+    return getScopePrefix(scope) + `:${key}`;
+  }
+
+  return registerExternalPreferenceProvider<string>(key, {
     set: (value, scope) => {
       if (scope >= PreferenceScope.Folder) {
         // earlyPreference不支持针对作用域大于等于Folder的值设置
@@ -78,17 +97,17 @@ export function registerLocalStorageProvider(key: string, workspaceFolder?: stri
         return;
       }
 
-      if ((global as any).localStorage) {
+      if (global.localStorage) {
         if (value !== undefined) {
-          localStorage.setItem(getScopePrefix(scope) + `:${key}`, value);
+          localStorage.setItem(createLocalStorageKey(scope), value);
         } else {
-          localStorage.removeItem(getScopePrefix(scope) + `:${key}`);
+          localStorage.removeItem(createLocalStorageKey(scope));
         }
       }
     },
     get: (scope) => {
-      if ((global as any).localStorage) {
-        return localStorage.getItem(getScopePrefix(scope) + `:${key}`) || undefined;
+      if (global.localStorage) {
+        return localStorage.getItem(createLocalStorageKey(scope)) || undefined;
       }
     },
   });
@@ -104,7 +123,7 @@ export function getExternalPreference<T>(
     : PreferenceScope.getReversedScopes();
   for (const scope of scopes) {
     const value = providers.get(preferenceName)?.get(scope);
-    if (value !== undefined) {
+    if (value) {
       return {
         value,
         scope,

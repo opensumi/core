@@ -34,7 +34,6 @@ import {
 } from '../common/color-registry';
 import { CSSVarRegistry } from '../common/css-var';
 import { ThemeChangedEvent } from '../common/event';
-import { getIconRegistry } from '../common/icon-registry';
 import {
   ColorIdentifier,
   DEFAULT_THEME_ID,
@@ -77,8 +76,6 @@ const tokenGroupToScopesMap = {
 @Injectable()
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
   private colorRegistry = getColorRegistry();
-
-  private iconRegistry = getIconRegistry();
 
   private cssVarRegistry = CSSVarRegistry.instance();
 
@@ -310,13 +307,14 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   protected doSetPreferenceSchema() {
+    const enums = this.getAvailableThemeInfos().map((info) => info.themeId);
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
           [COLOR_THEME_SETTING]: {
             type: 'string',
-            default: 'Default Dark+',
-            enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+            default: enums[0],
+            enum: enums,
           },
         },
       },

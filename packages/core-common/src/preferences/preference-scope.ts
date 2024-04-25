@@ -48,7 +48,7 @@ export namespace PreferenceScope {
     return names;
   }
 
-  // 转义 vscode 中对configuration中scope的定义
+  // 转义 vscode 中对 configuration 中 scope 的定义
   export function fromString(strScope: string): PreferenceScope | undefined {
     switch (strScope) {
       case 'application':
