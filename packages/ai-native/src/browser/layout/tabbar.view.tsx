@@ -102,14 +102,18 @@ const AILeftTabbarRenderer: React.FC = () => {
       renderOtherVisibleContainers={renderOtherVisibleContainers}
       isRenderExtraTopMenus={false}
       renderExtraMenus={
-        navMenu.length === 0 ? null : (
-          <EnhanceIconWithCtxMenu
-            wrapperClassName={styles.extra_bottom_icon}
-            iconClass={navMenu[0].icon}
-            menuNodes={navMenu[0].children}
-            skew={{ x: -8, y: -4 }}
-          />
-        )
+        <div className={styles.extra_bottom_icon_container}>
+          {navMenu.length >= 0
+            ? navMenu.map((menu) => (
+                <EnhanceIconWithCtxMenu
+                  wrapperClassName={styles.extra_bottom_icon}
+                  iconClass={menu.icon}
+                  menuNodes={menu.children}
+                  skew={{ x: -8, y: -4 }}
+                />
+              ))
+            : null}
+        </div>
       }
     />
   );

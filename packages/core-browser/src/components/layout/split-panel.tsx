@@ -348,6 +348,8 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
       splitPanelService,
       <div
         ref={(ele) => (rootRef.current = ele!)}
+        // 这里的 props 会被设置到 DOM 上，真的要传吗？
+        {...props}
         className={cls(styles['split-panel'], className)}
         style={{ flexDirection: flexStyleProperties.direction, ...style }}
       />,

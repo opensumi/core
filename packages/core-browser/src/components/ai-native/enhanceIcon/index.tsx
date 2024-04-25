@@ -1,16 +1,21 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { Icon, IconProps } from '../../../components';
+import { Icon } from '../../../components';
 import { MenuNode } from '../../../menu/next/base';
 import { IBrowserCtxMenu } from '../../../menu/next/renderer/ctxmenu/browser';
 import { useInjectable } from '../../../react-hooks';
 
 import styles from './styles.module.less';
 
-interface IEnhanceIconProps extends IconProps {
+interface IEnhanceIconProps {
   wrapperStyle?: React.CSSProperties;
   wrapperClassName?: string;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  className?: string;
+  icon?: string;
+  iconClass?: string;
+  children?: React.ReactNode;
 }
 
 export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconProps>(
@@ -22,11 +27,12 @@ export const EnhanceIcon = React.forwardRef<HTMLDivElement | null, IEnhanceIconP
       ref={ref}
     >
       <Icon
-        {...props}
         className={cls(props.className, styles.icon)}
         children={null}
         onClick={() => null}
         style={(props.icon || props.iconClass) && props.children ? { marginRight: 5 } : {}}
+        icon={props.icon}
+        iconClass={props.iconClass}
       />
       {props.children && <span className={styles.children_wrap}>{props.children}</span>}
     </div>
@@ -42,7 +48,7 @@ interface IEnhanceIconWithCtxMenuProps extends IEnhanceIconProps {
  * 包含下拉菜单的 icon 组件，可以自定义下拉菜单位置
  */
 export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
-  const { children, menuNodes, skew } = props;
+  const { children, menuNodes, skew, ...restProps } = props;
 
   const ctxMenuRenderer = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
@@ -93,7 +99,7 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
   }, [iconRef.current, menuNodes, anchor]);
 
   return (
-    <EnhanceIcon {...props} ref={iconRef} onClick={handleClick}>
+    <EnhanceIcon ref={iconRef} onClick={handleClick} {...restProps}>
       {children}
     </EnhanceIcon>
   );
