@@ -40,11 +40,11 @@ export interface IAINativeCapabilities {
 
 export interface IDesignLayoutConfig {
   /**
-   * use Merge right panel with left panel
+   * merge right panel with left panel
    */
   useMergeRightWithLeftPanel?: boolean;
   /**
-   * use ai manubar view
+   * use new manubar view
    */
   useMenubarView?: boolean;
   /**

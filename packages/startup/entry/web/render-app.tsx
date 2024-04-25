@@ -1,8 +1,23 @@
+/* eslint-disable import/order */
+
 // eslint-disable-next-line no-console
 console.time('Render');
 
+import '@opensumi/ide-core-browser/lib/style/index.less';
+import '../styles.less';
+
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
+
+const defaultLanguage = LOCALE_TYPES.EN_US;
+
+// 请注意，集成方在这里需要自己传一个正确的 locale 进去
+// 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
+setLocale(defaultLanguage);
+
+import '@opensumi/ide-i18n';
+
 import { Injector } from '@opensumi/di';
-import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 import { IClientAppOpts, SlotLocation, registerLocalStorageProvider } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { GeneralSettingsId, uuid } from '@opensumi/ide-core-common';
@@ -12,6 +27,7 @@ import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
 
 import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { SampleModule } from '../sample-modules';
+import { AILayout } from '@opensumi/ide-ai-native/lib/browser/layout/ai-layout';
 
 const CLIENT_ID = 'W_' + uuid();
 
@@ -35,8 +51,6 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
 
-  opts.layoutComponent = AILayout;
-
   opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
     // eslint-disable-next-line no-console
@@ -53,13 +67,7 @@ export async function renderApp(opts: IClientAppOpts) {
   app.start(document.getElementById('main')!, 'web');
 }
 
-export const getDefaultClientAppOpts = ({
-  defaultLanguage,
-  opts = {},
-}: {
-  defaultLanguage: string;
-  opts?: Partial<IClientAppOpts>;
-}): IClientAppOpts => ({
+export const getDefaultClientAppOpts = ({ opts = {} }: { opts?: Partial<IClientAppOpts> }): IClientAppOpts => ({
   modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule],
   layoutConfig: {
     ...defaultConfig,
@@ -96,5 +104,6 @@ export const getDefaultClientAppOpts = ({
     useMenubarView: true,
     useMergeRightWithLeftPanel: true,
   },
+  layoutComponent: AILayout,
   ...opts,
 });

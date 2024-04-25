@@ -37,6 +37,7 @@
     "format": "yarn run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
     "rebuild:node": "sumi rebuild",
     "test:module": "cross-env NODE_OPTIONS=--max-old-space-size=5120 tsx ./scripts/module-jest",
+    "start:e2e": "yarn start --script=start:e2e",
     "test:ui": "tsx ./scripts/run-ui-tests",
     "test:ui-ci": "tsx ./scripts/run-ui-tests --ci=true",
     "test:ui-headful": "tsx ./scripts/run-ui-tests --headful=true",
