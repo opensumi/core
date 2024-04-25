@@ -77,12 +77,25 @@ export const DesignMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
-  const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
+  const [isLeftPanelVisible, setIsVisiablePanel] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     requestAnimationFrame(() => {
       setIsVisiablePanel(isVisiable());
     });
+
+    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
+    const toDispose = tabbarService.onCurrentChange(({ previousId, currentId }) => {
+      if (previousId && !currentId) {
+        setIsVisiablePanel(false);
+      } else if (!previousId && currentId) {
+        setIsVisiablePanel(true);
+      }
+    });
+
+    return () => {
+      toDispose.dispose();
+    };
   }, []);
 
   const handleLeftMenuVisiable = React.useCallback(() => {
@@ -107,7 +120,7 @@ export const DesignMenuBarView = () => {
         <div className={styles.left}>
           <EnhanceIcon
             wrapperClassName={styles.enhance_menu}
-            icon={isVisiablePanel ? 'left-nav-open' : 'left-nav-close'}
+            icon={isLeftPanelVisible ? 'left-nav-open' : 'left-nav-close'}
             onClick={handleLeftMenuVisiable}
           />
           <span className={styles.dividing}></span>
