@@ -56,7 +56,14 @@ export const AIChatTabRenderer = ({
     className={cls(className, `${AI_CHAT_VIEW_ID}-slot`)}
     components={components}
     TabbarView={() => <ChatTabbarRenderer />}
-    TabpanelView={() => <BaseTabPanelView PanelView={ContainerView} />}
+    TabpanelView={() => (
+      <BaseTabPanelView
+        PanelView={ContainerView}
+        PanelViewProps={{
+          className: styles.ai_chat_view_container,
+        }}
+      />
+    )}
   />
 );
 

@@ -37,13 +37,14 @@ const panelInVisible = { display: 'none' };
 
 export interface IBaseTabPanelView {
   PanelView: React.FC<{ component: ComponentRegistryInfo; side: string; titleMenu: IMenu }>;
+  PanelViewProps?: { [key: string]: any };
   // tabPanel的尺寸（横向为宽，纵向高）
   id?: string;
   panelSize?: number;
 }
 
 export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) => {
-  const { PanelView, panelSize, id } = props;
+  const { PanelView, panelSize, id, PanelViewProps } = props;
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
@@ -80,7 +81,7 @@ export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer((props) =>
           >
             <ErrorBoundary>
               <NoUpdateBoundary visible={tabbarService.currentContainerId === containerId}>
-                <PanelView titleMenu={titleMenu} side={side} component={component} />
+                <PanelView titleMenu={titleMenu} side={side} component={component} {...PanelViewProps} />
               </NoUpdateBoundary>
             </ErrorBoundary>
           </div>
@@ -97,7 +98,8 @@ export const ContainerView: React.FC<{
   renderContainerWrap?: React.FC<{
     children: React.ReactNode;
   }>;
-}> = observer(({ component, titleMenu, side, renderContainerWrap }) => {
+  className?: string;
+}> = observer(({ component, titleMenu, side, renderContainerWrap, className }) => {
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const appConfig = useInjectable<AppConfig>(AppConfig);
@@ -131,7 +133,7 @@ export const ContainerView: React.FC<{
   );
 
   return (
-    <div ref={containerRef} className={styles.view_container}>
+    <div ref={containerRef} className={cls(styles.view_container, className)}>
       {!CustomComponent && (
         <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
           {!title ? null : (

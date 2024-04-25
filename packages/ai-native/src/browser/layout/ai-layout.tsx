@@ -38,8 +38,10 @@ export const AILayout = () => {
             <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
             <SlotRenderer flex={1} defaultSize={layout.bottom?.size} minResize={160} slot='bottom' isTabbar={true} />
           </SplitPanel>
+          {/* resize handle */}
           <SlotRenderer slot='right' isTabbar={true} defaultSize={360} maxResize={360} minResize={280} minSize={0} />
         </SplitPanel>
+        {/* resize handle */}
         <SlotRenderer
           slot={AI_CHAT_VIEW_ID}
           isTabbar={true}

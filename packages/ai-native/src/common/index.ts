@@ -11,11 +11,12 @@ import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/commo
 
 export const IAINativeService = Symbol('IAINativeService');
 
-export const AIInlineChatContentWidget = 'AI_Inline_Chat_Content_Widget';
-export const AI_CHAT_VIEW_ID = 'AI_Chat';
-export const AI_CHAT_CONTAINER_ID = 'AI_Chat_Container';
-export const AI_CHAT_LOGO_AVATAR_ID = 'AI_Chat_Logo_Avatar';
+export const AIInlineChatContentWidget = 'AI-Inline-Chat-Content-Widget';
+export const AI_CHAT_VIEW_ID = 'AI-Chat';
+export const AI_CHAT_CONTAINER_ID = 'AI-Chat-Container';
+export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';
 export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
+
 /**
  * @deprecated Use {@link DESIGN_MENUBAR_CONTAINER_VIEW_ID} instead
  */
