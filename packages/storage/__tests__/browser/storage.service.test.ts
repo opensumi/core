@@ -141,8 +141,8 @@ describe('StorageProvider should be work', () => {
     const extensions = ['opensumi.test.extension'];
     await extensionStorage.set('extensions', extensions);
     expect(extensionStorage.get('extensions')).toEqual(extensions);
-    const browserLocalStroage = injector.get(ScopedBrowserStorageService, [MockWorkspaceService.workspace.uri]);
-    const cache = browserLocalStroage.getData<any>(STORAGE_NAMESPACE.EXTENSIONS.path.toString());
+    const browserLocalStorage = injector.get(ScopedBrowserStorageService, [MockWorkspaceService.workspace.uri]);
+    const cache = browserLocalStorage.getData<any>(STORAGE_NAMESPACE.EXTENSIONS.path.toString());
     expect(typeof cache?.expires).toBe('undefined');
     expect(cache?.extensions).toBe(JSON.stringify(extensions));
   });
@@ -155,8 +155,8 @@ describe('StorageProvider should be work', () => {
     const recents = ['opensumi.test.recent'];
     await recentStorage.set('recents', recents);
     expect(recentStorage.get('recents')).toEqual(recents);
-    const browserLocalStroage = injector.get(GlobalBrowserStorageService);
-    const cache = browserLocalStroage.getData<any>(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA.path.toString());
+    const browserLocalStorage = injector.get(GlobalBrowserStorageService);
+    const cache = browserLocalStorage.getData<any>(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA.path.toString());
     expect(cache?.expires).toBeUndefined();
     expect(cache?.recents).toBe(JSON.stringify(recents));
   });
@@ -170,8 +170,8 @@ describe('StorageProvider should be work', () => {
     const test = ['test'];
     await extensionStorage.set('test', test);
     expect(extensionStorage.get('test')).toEqual(test);
-    const browserLocalStroage = injector.get(ScopedBrowserStorageService, [MockWorkspaceService.workspace.uri]);
-    const cache = browserLocalStroage.getData<any>(customId.path.toString());
+    const browserLocalStorage = injector.get(ScopedBrowserStorageService, [MockWorkspaceService.workspace.uri]);
+    const cache = browserLocalStorage.getData<any>(customId.path.toString());
     expect(cache?.expires).toBeUndefined();
     expect(cache?.test).toBeUndefined();
   });

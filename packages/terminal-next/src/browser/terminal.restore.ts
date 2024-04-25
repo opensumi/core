@@ -29,7 +29,7 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
   restore() {
     const key = this.storageKey;
     const history = this.scopedBrowserStorageService.getData<ITerminalBrowserHistory>(key);
-    // this.scopedBrowserStorageService.removeData(key); // 触发恢复之后清除掉缓存
+
     if (history) {
       try {
         return this.controller.recovery(history);
