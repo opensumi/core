@@ -3,28 +3,33 @@ import { Emitter } from '@opensumi/ide-core-common';
 import { MessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
 import { RPCServiceMethod } from '../types';
 
-export function getServiceMethods(service: any): string[] {
-  let props: any[] = [];
+const skipMethods = new Set(['constructor']);
 
-  if (/^\s*class/.test(service.constructor.toString())) {
-    let obj = service;
-    do {
-      props = props.concat(Object.getOwnPropertyNames(obj));
-    } while ((obj = Object.getPrototypeOf(obj)));
-    props = props.sort().filter((e, i, arr) => e !== arr[i + 1] && typeof service[e] === 'function');
-  } else {
-    for (const prop in service) {
-      if (service[prop] && typeof service[prop] === 'function') {
-        props.push(prop);
+export function getServiceMethods(service: any): string[] {
+  const props = new Set<string>();
+
+  let obj = service;
+  do {
+    const propertyNames = Object.getOwnPropertyNames(obj);
+
+    for (const prop of propertyNames) {
+      if (skipMethods.has(prop)) {
+        continue;
+      }
+
+      if (typeof service[prop] === 'function') {
+        props.add(prop);
       }
     }
-  }
+  } while ((obj = Object.getPrototypeOf(obj)));
 
-  return props;
+  const array = Array.from(props);
+  array.sort();
+  return array;
 }
 
 /**
- * Store all executable services
+ * Store all executable services, and provide a way to invoke them.
  */
 export class ServiceRegistry {
   protected emitter = new Emitter<string[]>();
