@@ -1,3 +1,9 @@
+import { AIModules } from '@opensumi/ide-startup/lib/browser/common-modules';
+
 import { getDefaultClientAppOpts, renderApp } from './render-app';
 
-renderApp(getDefaultClientAppOpts({}));
+renderApp(
+  getDefaultClientAppOpts({
+    modules: [...AIModules],
+  }),
+);

@@ -18,9 +18,9 @@ setLocale(defaultLanguage);
 import '@opensumi/ide-i18n';
 
 import { Injector } from '@opensumi/di';
-import { IClientAppOpts, SlotLocation, registerLocalStorageProvider } from '@opensumi/ide-core-browser';
+import { BrowserModule, IClientAppOpts, SlotLocation, registerLocalStorageProvider } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
-import { GeneralSettingsId, uuid } from '@opensumi/ide-core-common';
+import { ConstructorOf, GeneralSettingsId, uuid } from '@opensumi/ide-core-common';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
@@ -67,8 +67,14 @@ export async function renderApp(opts: IClientAppOpts) {
   app.start(document.getElementById('main')!, 'web');
 }
 
-export const getDefaultClientAppOpts = ({ opts = {} }: { opts?: Partial<IClientAppOpts> }): IClientAppOpts => ({
-  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule],
+export const getDefaultClientAppOpts = ({
+  modules = [],
+  opts = {},
+}: {
+  modules?: ConstructorOf<BrowserModule>[];
+  opts?: Partial<IClientAppOpts>;
+}): IClientAppOpts => ({
+  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule, ...modules],
   layoutConfig: {
     ...defaultConfig,
     ...{

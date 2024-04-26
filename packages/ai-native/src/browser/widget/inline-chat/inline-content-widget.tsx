@@ -76,6 +76,7 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
     domNode.style.padding = '6px';
+    domNode.style.marginRight = '16px';
     domNode.style.zIndex = StackingLevelStr.OverlayTop;
     return domNode;
   }

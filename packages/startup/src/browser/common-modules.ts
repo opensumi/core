@@ -87,6 +87,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   CommentsModule,
   TaskModule,
   TestingModule,
-  DesignModule,
-  AINativeModule,
 ];
+
+export const AIModules: ConstructorOf<BrowserModule>[] = [DesignModule, AINativeModule];

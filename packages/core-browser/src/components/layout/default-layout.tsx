@@ -22,7 +22,7 @@ export const getStorageValue = () => {
 export const DefaultLayout = ToolbarActionBasedLayout;
 
 export function ToolbarActionBasedLayout(
-  options: {
+  props: {
     topSlotDefaultSize?: number;
     topSlotZIndex?: number;
   } = {},
@@ -30,7 +30,7 @@ export function ToolbarActionBasedLayout(
   const { layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer id='top' defaultSize={options.topSlotDefaultSize || 0} slot='top' z-index={options.topSlotZIndex} />
+      <SlotRenderer id='top' defaultSize={props.topSlotDefaultSize || 0} slot='top' z-index={props.topSlotZIndex} />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           slot='left'
