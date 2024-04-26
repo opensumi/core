@@ -214,6 +214,16 @@ export class AINativeBrowserContribution
       ],
     });
 
+    registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
+      title: localize('preference.ai.native.interface.quick.title'),
+      preferences: [
+        {
+          id: AINativeSettingSectionsId.INTERFACE_QUICK_NAVIGATION_ENABLED,
+          localized: 'preference.ai.native.interface.quick.navigation',
+        },
+      ],
+    });
+
     if (this.aiNativeConfigService.capabilities.supportsInlineChat) {
       registry.registerSettingSection(AI_NATIVE_SETTING_GROUP_ID, {
         title: localize('preference.ai.native.inlineChat.title'),

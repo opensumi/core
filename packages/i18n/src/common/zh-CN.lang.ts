@@ -1246,6 +1246,9 @@ export const localizationBundle = {
 
     'preference.ai.native.inlineChat.title': 'Inline Chat',
     'preference.ai.native.chat.title': 'Chat',
+    'preference.ai.native.interface.quick.title': '接口快速跳转',
+    'preference.ai.native.interface.quick.navigation': '点击编辑器左侧图标快速跳转到接口实现',
+    'preference.ai.native.interface.quick.navigation.hover': '跳转到实现',
     'preference.ai.native.inlineChat.auto.visible': '是否在选中代码片段时自动显示 Inline Chat?',
     'preference.ai.native.inlineChat.codeAction.enabled':
       '是否启用在选中代码片段时显示 Inline Chat 相关的 Code Actions?',

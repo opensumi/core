@@ -9,6 +9,7 @@ export const typescriptBlockTypes = [
   'function_expression',
   'arrow_function',
   'class_declaration',
+  'interface_declaration',
   'method_definition',
   'method_signature',
   'enum_declaration',
