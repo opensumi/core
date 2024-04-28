@@ -1,8 +1,9 @@
 import cls from 'classnames';
 import React, { useEffect } from 'react';
 
-import { useDesignStyles, useInjectable } from '../../react-hooks';
+import { useInjectable } from '../../react-hooks';
 import { AppConfig } from '../../react-providers';
+import { useDesignStyles } from '../../utils/react-hooks';
 
 import { Layout } from './layout';
 import styles from './styles.module.less';
