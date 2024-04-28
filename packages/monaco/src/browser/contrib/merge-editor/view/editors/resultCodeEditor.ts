@@ -606,7 +606,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     }
   }
 
-  private changesComputed = true;
+  private isFirstInputComputeDiff = true;
   protected computedMaybeNeedMergeRanges(diffRanges: LineRange[]): {
     rawRanges: LineRange[];
     mergeRange: LineRange;
@@ -616,10 +616,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
       mergeRange: LineRange;
     }[] = [];
 
-    if (this.changesComputed) {
+    if (this.isFirstInputComputeDiff) {
       maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
       this.handleNeedMergeRanges(maybeNeedMergeRanges);
-      this.changesComputed = false;
+      this.isFirstInputComputeDiff = false;
     }
 
     return maybeNeedMergeRanges;
@@ -757,7 +757,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public reset(): void {
-    this.changesComputed = true;
+    this.isFirstInputComputeDiff = true;
   }
 
   public getEditorViewType(): EditorViewType {

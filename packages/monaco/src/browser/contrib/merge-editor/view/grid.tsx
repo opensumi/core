@@ -151,7 +151,9 @@ const MergeActions: React.FC = observer(() => {
         path: uri.path,
         query: '',
       });
-    } else if (uri.scheme !== 'file') {
+    }
+
+    if (uri.scheme !== 'file') {
       // ignore other scheme
       logger.warn('Unsupported scheme', uri.scheme);
       return;
