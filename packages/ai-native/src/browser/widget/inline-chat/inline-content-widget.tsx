@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService } from '@opensumi/ide-core-browser';
-import { Emitter } from '@opensumi/ide-core-common';
+import { AIInlineChatContentWidget, Emitter } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
@@ -11,7 +11,6 @@ import {
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { StackingLevelStr } from '@opensumi/ide-theme';
 
-import { AIInlineChatContentWidget } from '../../../common/index';
 import { AINativeContextKey } from '../../contextkey/ai-native.contextkey.service';
 
 import { AIInlineChatController } from './inline-chat-controller';

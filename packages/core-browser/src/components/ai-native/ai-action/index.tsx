@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
 
-import { AIInlineChatContentWidget, createLayoutEventType } from '@opensumi/ide-core-browser';
+import { AIInlineChatContentWidget } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../../../menu/next/base';
+import { createLayoutEventType } from '../../../monaco';
 import { useChange, useHover } from '../../../react-hooks';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';

@@ -4,6 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
+  AIInlineChatContentWidget,
   AINativeSettingSectionsId,
   AISerivceType,
   CancelResponse,
@@ -31,8 +32,6 @@ import { EditorSelectionChangeEvent, IEditor, IEditorFeatureContribution } from 
 import * as monaco from '@opensumi/ide-monaco';
 import { monaco as monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { MonacoTelemetryService } from '@opensumi/ide-monaco/lib/browser/telemetry.service';
-
-import { AIInlineChatContentWidget } from '../common';
 
 import { AINativeService } from './ai-native.service';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
