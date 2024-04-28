@@ -714,7 +714,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         clickNum: this.reportData.clickNum! + 1,
       };
 
-      resolveConflictResult = await this.requestAiResolveConflict(conflictMetadata!, lineRange, isRegenerate);
+      resolveConflictResult = await this.requestAIResolveConflict(conflictMetadata!, lineRange, isRegenerate);
     } catch (error) {
       throw new Error(`AI resolve conflict error: ${error.toString()}`);
     } finally {
@@ -872,7 +872,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     });
   }
 
-  private async requestAiResolveConflict(
+  private async requestAIResolveConflict(
     metadata: IConflictContentMetadata,
     range: LineRange,
     isRegenerate = false,
@@ -929,30 +929,38 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   public launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
     const { range, action } = eventData;
-    if (action === REVOKE_ACTIONS) {
-      const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
-      if (cacheConflict) {
-        const edit = {
-          range: cacheConflict.newRange,
-          text: cacheConflict.conflictText || cacheConflict.text,
-        };
-        this.getModel()?.pushEditOperations(null, [edit], () => null);
+
+    switch (action) {
+      case REVOKE_ACTIONS: {
+        const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+        if (cacheConflict) {
+          const edit = {
+            range: cacheConflict.newRange,
+            text: cacheConflict.conflictText || cacheConflict.text,
+          };
+          this.getModel()?.pushEditOperations(null, [edit], () => null);
+        }
+        this.cleanWidget(range.id);
+        this.deleteCacheResolvedConflicts(range.id);
+        this.cleanDecoration(range.id);
+        break;
       }
-      this.cleanWidget(range.id);
-      this.deleteCacheResolvedConflicts(range.id);
-      this.cleanDecoration(range.id);
-    } else if (action === AI_RESOLVE_REGENERATE_ACTIONS) {
-      this.cleanWidget(range.id);
-      this.conflictAIAccept(undefined, range, true);
-      this.cleanDecoration(range.id);
-    } else if (action === IGNORE_ACTIONS) {
-      this.cleanWidget(range.id);
-      // this.deleteCacheResolvedConflicts(range.id);
-      const resolvedConflict = this.getCacheResolvedConflicts().get(range.id)!;
-      this.setCacheResolvedConflict(range.id, {
-        ...resolvedConflict,
-        isClosed: true,
-      });
+      case AI_RESOLVE_REGENERATE_ACTIONS: {
+        this.cleanWidget(range.id);
+        this.conflictAIAccept(undefined, range, true);
+        this.cleanDecoration(range.id);
+        break;
+      }
+      case IGNORE_ACTIONS: {
+        this.cleanWidget(range.id);
+        // this.deleteCacheResolvedConflicts(range.id);
+        const resolvedConflict = this.getCacheResolvedConflicts().get(range.id)!;
+        this.setCacheResolvedConflict(range.id, {
+          ...resolvedConflict,
+          isClosed: true,
+        });
+        break;
+      }
     }
   }
 

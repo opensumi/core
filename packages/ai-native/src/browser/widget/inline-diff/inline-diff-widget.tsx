@@ -47,12 +47,12 @@ interface IDiffContentProviderProps {
         modifiedValue: string;
       }
     | undefined;
-  onMaxLincCount: (n) => void;
+  onMaxLineCount: (n) => void;
   editor: ICodeEditor;
 }
 
 const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
-  const { dto, onMaxLincCount, editor } = props;
+  const { dto, onMaxLineCount, editor } = props;
   const monacoService: MonacoService = useInjectable(MonacoService);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -88,7 +88,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
     });
     diffEditor.revealLine(selection.startLineNumber, monaco.editor.ScrollType.Immediate);
 
-    if (onMaxLincCount) {
+    if (onMaxLineCount) {
       const originalEditor = diffEditor.getOriginalEditor();
       const modifiedEditor = diffEditor.getModifiedEditor();
 
@@ -99,7 +99,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       const modifiedLineCount =
         modifiedContentHeight / modifiedEditor.getOption(monacoApi.editor.EditorOption.lineHeight);
 
-      onMaxLincCount(Math.max(originLineCount, modifiedLineCount) + 1);
+      onMaxLineCount(Math.max(originLineCount, modifiedLineCount) + 1);
     }
 
     return () => {
@@ -113,13 +113,14 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
 });
 
 @Injectable({ multiple: true })
-export class AIDiffWidget extends ZoneWidget {
+export class InlineDiffWidget extends ZoneWidget {
   public static readonly _hideId = 'overlayDiff';
 
   @Autowired(AppConfig)
   private configContext: AppConfig;
-  private readonly _onMaxLincCount = new Emitter<number>();
-  public readonly onMaxLincCount: Event<number> = this._onMaxLincCount.event;
+
+  private readonly _onMaxLineCount = new Emitter<number>();
+  public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
 
   private selection: monaco.Selection;
   private modifiedValue: string;
@@ -138,10 +139,10 @@ export class AIDiffWidget extends ZoneWidget {
           <DiffContentProvider
             dto={{ selection: this.selection, modifiedValue: this.modifiedValue }}
             editor={this.editor}
-            onMaxLincCount={(n) => {
+            onMaxLineCount={(n) => {
               if (n) {
                 this._relayout(n);
-                this._onMaxLincCount.fire(n);
+                this._onMaxLineCount.fire(n);
               }
             }}
           />
@@ -188,7 +189,7 @@ export class AIDiffWidget extends ZoneWidget {
   }
 
   public override hide(): void {
-    this.editor.setHiddenAreas([], AIDiffWidget._hideId);
+    this.editor.setHiddenAreas([], InlineDiffWidget._hideId);
     super.hide();
     if (this.root) {
       this.root.unmount();

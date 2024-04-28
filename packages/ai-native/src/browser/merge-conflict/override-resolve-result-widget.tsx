@@ -2,11 +2,11 @@ import React, { ReactNode } from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
-import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
+import { IAIInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
-  AiResolveConflictContentWidget,
+  AIResolveConflictContentWidget,
   ECompleteReason,
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
@@ -29,7 +29,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
     return true;
   }
 
-  protected iconItems(): IAiInlineResultIconItemsProps[] {
+  protected iconItems(): IAIInlineResultIconItemsProps[] {
     return [
       {
         icon: 'discard',
@@ -72,6 +72,6 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
     );
   }
   public id(): string {
-    return `${AiResolveConflictContentWidget}_${this.uid}`;
+    return `${AIResolveConflictContentWidget}_${this.uid}`;
   }
 }

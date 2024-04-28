@@ -5,21 +5,21 @@ import { Button, MessageType, PopoverTriggerType } from '@opensumi/ide-component
 import { DialogContent, Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
-import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
+import { IAIInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
 
 import { BaseInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
 import { LineRange } from '../model/line-range';
 import {
+  AIResolveConflictContentWidget,
   AI_RESOLVE_REGENERATE_ACTIONS,
-  AiResolveConflictContentWidget,
   ECompleteReason,
   REVOKE_ACTIONS,
 } from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
 
 interface IWrapperAIInlineResultProps {
-  iconItems: IAiInlineResultIconItemsProps[];
+  iconItems: IAIInlineResultIconItemsProps[];
   isRenderThumbs: boolean;
   codeEditor: ResultCodeEditor;
   range: LineRange;
@@ -119,7 +119,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
     }
   }, [range, codeEditor, isVisiablePopover, disablePopover]);
 
-  const iconResultItems: IAiInlineResultIconItemsProps[] = useMemo(
+  const iconResultItems: IAIInlineResultIconItemsProps[] = useMemo(
     () =>
       iconItems.concat([
         {
@@ -146,7 +146,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
     return true;
   }
 
-  protected iconItems(): IAiInlineResultIconItemsProps[] {
+  protected iconItems(): IAIInlineResultIconItemsProps[] {
     return [
       {
         icon: 'discard',
@@ -180,6 +180,6 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
   }
 
   public id(): string {
-    return `${AiResolveConflictContentWidget}_${this.uid}`;
+    return `${AIResolveConflictContentWidget}_${this.uid}`;
   }
 }

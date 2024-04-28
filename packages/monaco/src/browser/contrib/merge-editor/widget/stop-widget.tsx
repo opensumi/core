@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { Injectable } from '@opensumi/di';
 import { AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
-import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
+import { IAIInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize } from '@opensumi/ide-core-common';
 
 import { ResolveResultWidget } from './resolve-result-widget';
@@ -14,7 +14,7 @@ export class StopWidget extends ResolveResultWidget {
     return false;
   }
 
-  override iconItems(): IAiInlineResultIconItemsProps[] {
+  override iconItems(): IAIInlineResultIconItemsProps[] {
     return [
       {
         icon: 'circle-pause',

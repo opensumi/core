@@ -212,4 +212,4 @@ export interface IEditorMountParameter {
 /**
  * 智能解决冲突 result 视图的 id
  */
-export const AiResolveConflictContentWidget = 'ai-resolve-conflict-content-widget';
+export const AIResolveConflictContentWidget = 'ai-resolve-conflict-content-widget';

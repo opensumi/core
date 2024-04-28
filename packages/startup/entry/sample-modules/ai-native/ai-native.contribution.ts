@@ -213,6 +213,44 @@ export class AiNativeContribution implements AINativeCoreContribution {
   }
 
   registerResolveConflictFeature(registry: IResolveConflictRegistry): void {
+    registry.registerResolveConflictProvider('traditional', {
+      providerRequest: async (contentMetadata, options, token) => {
+        const { isRegenerate } = options;
+        const cancelController = new AbortController();
+        const { signal } = cancelController;
+
+        token.onCancellationRequested(() => {
+          cancelController.abort();
+        });
+
+        try {
+          let prompt = '';
+
+          if (isRegenerate) {
+            prompt = this.mergeConflictPromptManager.convertDefaultRegeneratePrompt(contentMetadata);
+          } else {
+            prompt = this.mergeConflictPromptManager.convertDefaultPrompt(contentMetadata);
+          }
+
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(resolve, 2000);
+
+            signal.addEventListener('abort', () => {
+              clearTimeout(timeout);
+              reject(new DOMException('Aborted', 'AbortError'));
+            });
+          });
+
+          return new ReplyResponse('Resolved successfully!');
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            return new CancelResponse();
+          }
+          throw error;
+        }
+      },
+    });
+
     registry.registerResolveConflictProvider(MergeConflictEditorMode['3way'], {
       providerRequest: async (contentMetadata, options, token) => {
         const { isRegenerate } = options;
@@ -227,9 +265,9 @@ export class AiNativeContribution implements AINativeCoreContribution {
           let prompt = '';
 
           if (isRegenerate) {
-            prompt = this.mergeConflictPromptManager.convertDefaultThreeWayRegeneratePrompt(contentMetadata);
+            prompt = this.mergeConflictPromptManager.convertDefaultRegeneratePrompt(contentMetadata);
           } else {
-            prompt = this.mergeConflictPromptManager.convertDefaultThreeWayPrompt(contentMetadata);
+            prompt = this.mergeConflictPromptManager.convertDefaultPrompt(contentMetadata);
           }
 
           await new Promise((resolve, reject) => {

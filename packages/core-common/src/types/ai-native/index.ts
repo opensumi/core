@@ -160,15 +160,29 @@ export const ChatAgentViewServiceToken = Symbol('ChatAgentViewServiceToken');
  * Contribute Registry
  */
 export interface IConflictContentMetadata {
+  /**
+   * @threeWay 当前分支的代码
+   * @transitional 当前分支的代码
+   */
   current: string;
+  /**
+   * @threeWay 基础分支的代码
+   * @transitional 无
+   */
   base: string;
+  /**
+   * @threeWay 远程分支的代码
+   * @transitional 远程分支的代码
+   */
   incoming: string;
 
-  // 各分支的名称
   currentName?: string;
   baseName?: string;
   incomingName?: string;
 
+  /**
+   * 如果是用户要求 regenerate 的话，这个字段代表上一次 AI 生成的结果
+   */
   resultContent?: string;
 }
 export interface IResolveConflictHandler {
