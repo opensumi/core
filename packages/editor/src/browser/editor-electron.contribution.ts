@@ -3,7 +3,6 @@ import {
   ClientAppContribution,
   Domain,
   EDITOR_COMMANDS,
-  IClientApp,
   KeybindingContribution,
   KeybindingRegistry,
   electronEnv,
@@ -44,7 +43,7 @@ export class EditorElectronContribution extends WithEventBus implements ClientAp
   /**
    * Return true in order to prevent exit
    */
-  async onWillStop(app: IClientApp) {
+  async onWillStop() {
     if (await this.workbenchEditorService.closeAllOnlyConfirmOnce()) {
       return true;
     }

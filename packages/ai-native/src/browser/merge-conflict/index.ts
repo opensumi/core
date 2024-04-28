@@ -7,7 +7,6 @@ import {
   CancelResponse,
   CancellationTokenSource,
   ChatResponse,
-  Command,
   CommandContribution,
   CommandRegistry,
   Constants,
@@ -414,10 +413,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   }
 
   private reportConflictData() {
+    if (!this.editor) {
+      return;
+    }
+
     const uri = this.getUri();
     const reportData = this.currentReportMap.get(uri);
     if (reportData) {
-      this.mergeConflictReportService.report(this.getUri(), this.reportData);
+      this.mergeConflictReportService.report(uri, this.reportData);
     }
   }
 

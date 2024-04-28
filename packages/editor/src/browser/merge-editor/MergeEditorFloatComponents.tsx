@@ -6,29 +6,25 @@ import {
   CommandRegistry,
   CommandService,
   DisposableStore,
-  IContextKeyService,
   MERGE_CONFLICT_COMMANDS,
   SCM_COMMANDS,
   URI,
-  Uri,
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { MergeConflictCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
 
 import { useEditorDocumentModelRef } from '../hooks/useEditor';
+import { useInMergeChanges } from '../hooks/useInMergeChanges';
 import { DocumentMergeConflict, MergeConflictParser } from '../merge-conflict';
 import { ReactEditorComponent } from '../types';
 
 import styles from './merge-editor.module.less';
 
-const gitMergeChangesSet = new Set(['git.mergeChanges']);
-
 export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({ resource }) => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const commandService = useInjectable<CommandService>(CommandService);
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
-  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const mergeConflictParser: MergeConflictParser = useInjectable(MergeConflictParser);
 
   const editorModel = useEditorDocumentModelRef(resource.uri);
@@ -36,26 +32,7 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   const [isVisiable, setIsVisiable] = useState(false);
   const [conflicts, setConflicts] = useState<DocumentMergeConflict[]>([]);
 
-  useEffect(() => {
-    const run = () => {
-      const mergeChanges = contextKeyService.getValue<Uri[]>('git.mergeChanges') || [];
-      const isVisiable = mergeChanges.some((uri) => uri.toString() === resource.uri.toString());
-      setIsVisiable((prev) => {
-        if (!prev && isVisiable) {
-          return true;
-        }
-        return prev;
-      });
-    };
-
-    const disposed = contextKeyService.onDidChangeContext(({ payload }) => {
-      if (payload.affectsSome(gitMergeChangesSet)) {
-        run();
-      }
-    });
-    run();
-    return () => disposed.dispose();
-  }, [resource]);
+  const inMergeChanges = useInMergeChanges(resource.uri.toString());
 
   useEffect(() => {
     const disposables = new DisposableStore();
@@ -102,11 +79,15 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
   );
 
   const handlePrev = useCallback(() => {
-    commandService.tryExecuteCommand(MergeConflictCommands.Previous);
+    commandService.tryExecuteCommand(MergeConflictCommands.Previous).then(() => {
+      // TODO: 编辑器向上滚动一行
+    });
   }, []);
 
   const handleNext = useCallback(() => {
-    commandService.tryExecuteCommand(MergeConflictCommands.Next);
+    commandService.tryExecuteCommand(MergeConflictCommands.Next).then(() => {
+      // TODO: 编辑器向上滚动一行
+    });
   }, []);
 
   const handleAIResolve = useCallback(async () => {
@@ -142,15 +123,17 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
           </Button>
         </div>
         <span className={styles.line_vertical}></span>
-        <Button
-          id='merge.editor.open.tradition'
-          className={styles.merge_conflict_bottom_btn}
-          size='default'
-          onClick={handleOpenMergeEditor}
-        >
-          <Icon icon={'swap'} />
-          <span>{localize('mergeEditor.open.3way')}</span>
-        </Button>
+        {inMergeChanges && (
+          <Button
+            id='merge.editor.open.tradition'
+            className={styles.merge_conflict_bottom_btn}
+            size='default'
+            onClick={handleOpenMergeEditor}
+          >
+            <Icon icon={'swap'} />
+            <span>{localize('mergeEditor.open.3way')}</span>
+          </Button>
+        )}
         <Button
           id='merge.editor.rest'
           className={styles.merge_conflict_bottom_btn}

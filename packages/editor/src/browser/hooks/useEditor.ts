@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
-import { IEventBus, URI, useInjectable } from '@opensumi/ide-core-browser';
+import { URI, useInjectable } from '@opensumi/ide-core-browser';
 
-import { EditorDocumentModelCreationEvent, IEditorDocumentModelService } from '../doc-model/types';
+import { IEditorDocumentModelService } from '../doc-model/types';
 import { IEditorDocumentModelRef } from '../types';
 
 export function useEditorDocumentModelRef(uri: URI) {
