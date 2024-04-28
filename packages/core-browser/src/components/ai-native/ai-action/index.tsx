@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
 
 import { AIInlineChatContentWidget, createLayoutEventType } from '@opensumi/ide-core-browser';
-import { useHover } from '@opensumi/ide-core-browser/lib/react-hooks/hover';
-import { useChange } from '@opensumi/ide-core-browser/lib/react-hooks/use-change';
 
 import { MenuNode } from '../../../menu/next/base';
+import { useChange, useHover } from '../../../react-hooks';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
 import { EnhancePopover } from '../popover';

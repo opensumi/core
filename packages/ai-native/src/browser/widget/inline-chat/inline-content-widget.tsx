@@ -128,12 +128,31 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     }
 
     const { selection } = this.options;
-    return selection ? this.computerPosition(selection) : null;
+    if (!selection) {
+      return null;
+    }
+    const target = this.computePosition(selection);
+    if (target) {
+      return target;
+    }
+
+    return null;
   }
 
+  /**
+   * 获取指定行的最后一个非空白字符的列数
+   */
   private safeGetLineLastNonWhitespaceColumn(line: number) {
-    const model = this.editor.getModel();
-    return model!.getLineLastNonWhitespaceColumn(Math.min(Math.max(1, line), model!.getLineCount()));
+    const model = this.editor.getModel()!;
+    if (line < 1) {
+      line = 1;
+    }
+    const lineCount = model.getLineCount();
+    if (line > lineCount) {
+      line = lineCount;
+    }
+
+    return model.getLineLastNonWhitespaceColumn(line);
   }
 
   private toAbovePosition(lineNumber: number, column: number): monaco.editor.IContentWidgetPosition {
@@ -213,7 +232,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
    * 2. 靠近光标处周围没有字符的空白区域作为要显示的区域
    * 3. 显示的区域方向在右侧，左侧不考虑
    */
-  private computerPosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
+  private computePosition(selection: monaco.Selection): monaco.editor.IContentWidgetPosition | null {
     const startPosition = selection.getStartPosition();
     const endPosition = selection.getEndPosition();
     const model = this.editor.getModel();
@@ -228,16 +247,20 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     let targetLine: number | null = null;
     let direction: 'above' | 'below' | null = null;
 
+    // 用户只选中了一行
     if (startPosition.lineNumber === endPosition.lineNumber) {
       return this.recheckPosition(cursorPosition.lineNumber, cursorPosition.column);
     }
 
+    // 用户选中了多行，光标在选中的开始位置
     if (cursorPosition.equals(startPosition)) {
       const getMaxLastWhitespaceColumn = Math.max(
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 1),
         this.safeGetLineLastNonWhitespaceColumn(cursorPosition.lineNumber - 2),
       );
 
+      // 如果上面两行的最后一个非空白字符的列数小于当前行的最后一个非空白字符的列数 + 10
+      // 则直接显示在上面
       if (getMaxLastWhitespaceColumn < getCursorLastNonWhitespaceColumn + 10) {
         return this.toAbovePosition(cursorPosition.lineNumber, getMaxLastWhitespaceColumn + 1);
       }
@@ -279,7 +302,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     }
 
     if (targetLine && direction) {
-      const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) + 1;
+      const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) - 1;
 
       if (direction === 'below') {
         return this.toBelowPosition(targetLine, column);

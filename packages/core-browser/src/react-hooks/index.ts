@@ -1,6 +1,8 @@
 export * from './injectable-hooks';
 export * from './portal-hooks';
 export * from './event';
+export * from './use-change';
+export * from './hover';
 
 import _debounce from 'lodash/debounce';
 import { DependencyList, useEffect, useMemo, useRef, useState } from 'react';
