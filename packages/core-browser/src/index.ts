@@ -16,6 +16,7 @@ export * from './toolbar';
 export * from './terminal';
 export * from './file-decoration';
 export * from './ai-native';
+export * from './design';
 
 // 前端工具方法
 export * from './logger';
@@ -43,4 +44,3 @@ export * from './markdown';
 export * from './extensions';
 
 export * from './static-resource';
-export * from './ai-native';

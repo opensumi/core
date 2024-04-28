@@ -1,9 +1,3 @@
-export * from './injectable-hooks';
-export * from './portal-hooks';
-export * from './event';
-export * from './use-change';
-export * from './hover';
-
 import _debounce from 'lodash/debounce';
 import { DependencyList, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -15,6 +9,12 @@ import { generateInlineActions } from '../menu/next/menu-util';
 import { IContextMenu, IMenu, IMenuSeparator } from '../menu/next/menu.interface';
 import { PreferenceService } from '../preferences/types';
 import { useInjectable } from '../react-hooks/injectable-hooks';
+
+export * from './injectable-hooks';
+export * from './portal-hooks';
+export * from './event';
+export * from './use-change';
+export * from './hover';
 
 export function useDebounce(value, delay) {
   const [denouncedValue, setDenouncedValue] = useState(value);

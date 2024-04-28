@@ -3,9 +3,8 @@ import React from 'react';
 import ReactDOMClient from 'react-dom/client';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
+import { AppConfig, ConfigProvider, StackingLevelStr } from '@opensumi/ide-core-browser';
 import { Disposable, runWhenIdle } from '@opensumi/ide-core-common';
-import { StackingLevelStr } from '@opensumi/ide-theme';
 
 import * as monaco from '../../common';
 import { editor } from '../monaco-exports';

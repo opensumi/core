@@ -23,6 +23,8 @@ import type {
 import type { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 
+export * from './event';
+
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',
@@ -144,5 +146,3 @@ export interface SuggestEventPayload {
   data: ISelectedSuggestion | SuggestWidget;
 }
 export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}
-
-export * from './event';
