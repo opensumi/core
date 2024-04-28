@@ -23,6 +23,7 @@ import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration 
 import { StandaloneServices } from '../../monaco-api/services';
 import { IPosition, Position } from '../../monaco-api/types';
 
+import { MappingManagerService } from './mapping-manager.service';
 import { MergeEditorService } from './merge-editor.service';
 import { EditorViewType, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
@@ -45,6 +46,9 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
   @Autowired(MergeEditorService)
   private readonly mergeEditorService: MergeEditorService;
+
+  @Autowired(MappingManagerService)
+  private readonly mappingManagerService: MappingManagerService;
 
   private readonly _id: number;
   private readonly viewStateMap: Map<string, IMergeEditorViewState> = new Map();
@@ -76,6 +80,12 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
             const { ancestor } = nutrition;
             const { baseContent, textModel } = ancestor!;
             (textModel as ITextModel).setValue(baseContent);
+
+            // 取出 result editor 的 model, 重置回原来的文档内容
+            const resultModel = this.getResultEditor().getModel();
+            if (resultModel) {
+              (resultModel as ITextModel).setValue(baseContent);
+            }
           }
         }
       }),

@@ -471,7 +471,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
     let slow = 0;
     let mergeRange: LineRange | undefined;
 
-    /** Two Pointers 算法 */
+    diffRanges.sort((a, b) => a.startLineNumber - b.startLineNumber);
+
+    /** Two Pointers 算法, 快慢指针 */
     for (let fast = 0; fast < length; fast++) {
       const slowRange = diffRanges[slow];
       const fastRange = diffRanges[fast];
@@ -606,40 +608,28 @@ export class ResultCodeEditor extends BaseCodeEditor {
     }
   }
 
+  /**
+   * 用来标记是否进行过初次 diff 计算，如果进行过，则直接返回所有 diff
+   */
   private isFirstInputComputeDiff = true;
-  protected computedMaybeNeedMergeRanges(diffRanges: LineRange[]): {
-    rawRanges: LineRange[];
-    mergeRange: LineRange;
-  }[] {
-    let maybeNeedMergeRanges: {
-      rawRanges: LineRange[];
-      mergeRange: LineRange;
-    }[] = [];
+  protected getDiffRangesAfterDistill(): LineRange[] {
+    let diffRanges = this.mappingManagerService.getAllDiffRanges();
 
     if (this.isFirstInputComputeDiff) {
-      maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+      const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
       this.handleNeedMergeRanges(maybeNeedMergeRanges);
+      // 数据源 document mapping 的对应关系已经被改变，需要刷新一次
+      diffRanges = this.mappingManagerService.getAllDiffRanges();
       this.isFirstInputComputeDiff = false;
     }
 
-    return maybeNeedMergeRanges;
+    return diffRanges;
   }
 
   protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
-    const diffRanges: LineRange[] = this.mappingManagerService
-      .getAllDiffRanges()
-      .sort((a, b) => a.startLineNumber - b.startLineNumber);
     const innerChangesResult: InnerRange[][] = [];
 
-    const maybeNeedMergeRanges = this.computedMaybeNeedMergeRanges(diffRanges);
-
-    /**
-     * 如果 maybeNeedMergeRanges 大于 0，说明是第一次计算成功，这个过程中会改数据源
-     * 说明数据源 document mapping 的对应关系被改变
-     * 则需要重新获取一次
-     */
-    const changesResult: LineRange[] =
-      maybeNeedMergeRanges.length > 0 ? this.mappingManagerService.getAllDiffRanges() : diffRanges;
+    const changesResult = this.getDiffRangesAfterDistill();
 
     let conflictsTotal = 0;
     let nonConflictsUnresolved = 0;
