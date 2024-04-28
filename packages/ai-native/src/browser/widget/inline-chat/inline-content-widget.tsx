@@ -6,7 +6,7 @@ import { Emitter } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
-  BaseInlineContentWidget,
+  ReactInlineContentWidget,
   ShowAIContentOptions,
 } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { StackingLevelStr } from '@opensumi/ide-theme';
@@ -20,7 +20,7 @@ import { AIInlineChatService, EInlineChatStatus } from './inline-chat.service';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 @Injectable({ multiple: true })
-export class AIInlineContentWidget extends BaseInlineContentWidget {
+export class AIInlineContentWidget extends ReactInlineContentWidget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -76,8 +76,8 @@ export class AIInlineContentWidget extends BaseInlineContentWidget {
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
     domNode.style.padding = '6px';
-    domNode.style.marginRight = '16px';
     domNode.style.zIndex = StackingLevelStr.OverlayTop;
+
     return domNode;
   }
 

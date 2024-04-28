@@ -144,3 +144,5 @@ export interface SuggestEventPayload {
   data: ISelectedSuggestion | SuggestWidget;
 }
 export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}
+
+export * from './event';

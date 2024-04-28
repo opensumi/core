@@ -11,7 +11,8 @@ import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/commo
 
 export const IAINativeService = Symbol('IAINativeService');
 
-export const AIInlineChatContentWidget = 'AI-Inline-Chat-Content-Widget';
+export { AIInlineChatContentWidget } from '@opensumi/ide-core-common';
+
 export const AI_CHAT_VIEW_ID = 'AI-Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI-Chat-Container';
 export const AI_CHAT_LOGO_AVATAR_ID = 'AI-Chat-Logo-Avatar';

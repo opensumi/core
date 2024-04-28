@@ -21,6 +21,7 @@ export const StackingLevel = {
    */
   Popup: 100,
   Popover: 100,
+  Overlay: 800,
   OverlayTop: 1000,
 } as const;
 

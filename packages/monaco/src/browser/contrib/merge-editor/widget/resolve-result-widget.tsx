@@ -8,7 +8,7 @@ import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/comp
 import { IAiInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
 
-import { BaseInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
+import { ReactInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
 import { LineRange } from '../model/line-range';
 import { AI_RESOLVE_REGENERATE_ACTIONS, AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
@@ -129,7 +129,7 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
 };
 
 @Injectable({ multiple: true })
-export class ResolveResultWidget extends BaseInlineContentWidget {
+export class ResolveResultWidget extends ReactInlineContentWidget {
   protected uid: string = uuid(4);
 
   constructor(protected readonly codeEditor: ResultCodeEditor, protected readonly lineRange: LineRange) {
