@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 
 import { AIInlineChatContentWidget, createLayoutEventType } from '@opensumi/ide-core-browser';
 import { useHover } from '@opensumi/ide-core-browser/lib/react-hooks/hover';
+import { useChange } from '@opensumi/ide-core-browser/lib/react-hooks/use-change';
 
 import { MenuNode } from '../../../menu/next/base';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
@@ -71,11 +72,11 @@ export const AIAction = (props: AIActionProps) => {
     }
   }, [onClose]);
 
-  useEffect(() => {
+  useChange(isHovered, () => {
     if (containerRef.current) {
       containerRef.current.dispatchEvent(layoutEvent);
     }
-  }, [isHovered]);
+  });
 
   return (
     <div ref={containerRef} className={styles.ai_action}>

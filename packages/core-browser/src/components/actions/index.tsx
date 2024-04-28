@@ -20,8 +20,8 @@ import {
   generateMergedCtxMenu,
 } from '../../menu/next';
 import { IMenuRenderProps } from '../../menu/next/renderer/ctxmenu/browser';
-import { useInjectable } from '../../react-hooks';
-import { transformLabelWithCodicon, useContextMenus, useDesignStyles, useMenus } from '../../utils';
+import { useContextMenus, useDesignStyles, useInjectable, useMenus } from '../../react-hooks';
+import { transformLabelWithCodicon } from '../../utils';
 
 import placements from './placements';
 import styles from './styles.module.less';
