@@ -18,7 +18,7 @@ import { DetailedLineRangeMapping } from '../../../common/diff';
 
 import { MappingManagerService } from './mapping-manager.service';
 import { ComputerDiffModel } from './model/computer-diff';
-import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, IEditorMountParameter } from './types';
+import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, ECompleteReason, IEditorMountParameter } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -117,7 +117,9 @@ export class MergeEditorService extends Disposable {
         }
 
         runWhenIdle(() => {
-          const conflictPointRanges = this.resultView.getAllDiffRanges().filter((range) => range.isAIConflictPoint);
+          const conflictPointRanges = this.mappingManagerService
+            .getAllDiffRanges()
+            .filter((range) => range.isConflictPoint);
           if (flag && conflictPointRanges.every((r) => !!r.getIntelligentStateModel().isLoading === false)) {
             this._onHasIntelligentLoadingChange.fire(false);
             this.loadingDispose.dispose();
@@ -170,12 +172,12 @@ export class MergeEditorService extends Disposable {
     this.mergeConflictReportService.dispose();
   }
 
-  public async acceptLeft(isIgnoreAI = false): Promise<void> {
+  public acceptLeft(ignoreConflict = false, reason: ECompleteReason): void {
     const mappings = this.mappingManagerService.documentMappingTurnLeft;
     const lineRanges = mappings.getOriginalRange();
     lineRanges
       .filter((range) => range.isComplete === false)
-      .filter((range) => (isIgnoreAI && range.isAIConflictPoint ? null : range))
+      .filter((range) => (ignoreConflict && range.isConflictPoint ? null : range))
       .forEach((range) => {
         if (range.isMerge) {
           const oppositeRange = this.mappingManagerService.documentMappingTurnLeft.adjacentComputeRangeMap.get(
@@ -185,6 +187,7 @@ export class MergeEditorService extends Disposable {
             this.currentView.launchConflictActionsEvent({
               range,
               action: APPEND_ACTIONS,
+              reason,
             });
             return;
           }
@@ -193,16 +196,17 @@ export class MergeEditorService extends Disposable {
         this.currentView.launchConflictActionsEvent({
           range,
           action: ACCEPT_CURRENT_ACTIONS,
+          reason,
         });
       });
   }
 
-  public async acceptRight(isIgnoreAI = false): Promise<void> {
+  public acceptRight(ignoreConflict = false, reason: ECompleteReason): void {
     const mappings = this.mappingManagerService.documentMappingTurnRight;
     const lineRanges = mappings.getModifiedRange();
     lineRanges
       .filter((range) => range.isComplete === false)
-      .filter((range) => (isIgnoreAI && range.isAIConflictPoint ? null : range))
+      .filter((range) => (ignoreConflict && range.isConflictPoint ? null : range))
       .forEach((range) => {
         if (range.isMerge) {
           const oppositeRange = this.mappingManagerService.documentMappingTurnRight.adjacentComputeRangeMap.get(
@@ -212,6 +216,7 @@ export class MergeEditorService extends Disposable {
             this.currentView.launchConflictActionsEvent({
               range,
               action: APPEND_ACTIONS,
+              reason,
             });
             return;
           }
@@ -220,6 +225,7 @@ export class MergeEditorService extends Disposable {
         this.incomingView.launchConflictActionsEvent({
           range,
           action: ACCEPT_CURRENT_ACTIONS,
+          reason,
         });
       });
   }
@@ -244,14 +250,14 @@ export class MergeEditorService extends Disposable {
 
       const model = this.resultView.getModel();
 
-      const allRanges = this.resultView.getAllDiffRanges();
+      const allRanges = this.mappingManagerService.getAllDiffRanges();
       const useAiConflictPointNum = allRanges.filter(
         (range) => range.getIntelligentStateModel().isComplete === true,
       ).length;
       let receiveNum = 0;
 
       allRanges
-        .filter((range) => range.isAIConflictPoint && range.getIntelligentStateModel().isComplete)
+        .filter((range) => range.isConflictPoint && range.getIntelligentStateModel().isComplete)
         .forEach((range) => {
           const intelligentStateModel = range.getIntelligentStateModel();
           const preAnswerCode = intelligentStateModel.answerCode;
@@ -309,19 +315,19 @@ export class MergeEditorService extends Disposable {
     this.listenIntelligentLoadingChange();
 
     runWhenIdle(() => {
-      this.acceptLeft(true);
+      this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflictBeforeRunAI);
     }, 0);
 
     runWhenIdle(() => {
-      this.acceptRight(true);
+      this.acceptRight(true, ECompleteReason.AutoResolvedNonConflictBeforeRunAI);
     }, 1);
 
     runWhenIdle(async () => {
       this.isCancelAllAIResolveConflict = false;
 
-      const allRanges = this.resultView.getAllDiffRanges();
+      const allRanges = this.mappingManagerService.getAllDiffRanges();
       const conflictPointRanges = allRanges.filter(
-        (range) => range.isAIConflictPoint && !!range.getIntelligentStateModel().isLoading === false,
+        (range) => range.isConflictPoint && !!range.getIntelligentStateModel().isLoading === false,
       );
 
       let resolveLen = 0;
@@ -409,6 +415,10 @@ export class MergeEditorService extends Disposable {
     this.currentView.inputDiffComputingResult(turnLeftMapping);
     this.incomingView.inputDiffComputingResult(turnRightMapping);
     this.resultView.inputDiffComputingResult();
+
+    // resolve non conflict ranges
+    this.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
+    this.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
 
     this.currentView.updateDecorations().updateActions();
     this.incomingView.updateDecorations().updateActions();

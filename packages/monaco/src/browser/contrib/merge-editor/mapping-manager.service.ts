@@ -1,25 +1,46 @@
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
+import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 
 import { DetailedLineRangeMapping } from '../../../common/diff';
 
+import { MappingManagerDataStore } from './mapping-manager.store';
 import { DocumentMapping } from './model/document-mapping';
 import { LineRange } from './model/line-range';
-import { EDiffRangeTurn, ETurnDirection, EditorViewType } from './types';
+import { ECompleteReason, EDiffRangeTurn, ETurnDirection, EditorViewType } from './types';
 
 @Injectable()
 export class MappingManagerService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(MappingManagerDataStore)
+  private readonly dataStore: MappingManagerDataStore;
+
+  /**
+   * 与左侧编辑器的映射关系，见 {@link EDiffRangeTurn.ORIGIN}
+   */
   public documentMappingTurnLeft: DocumentMapping;
+  /**
+   * 与右侧编辑器的映射关系，见 {@link EDiffRangeTurn.MODIFIED}
+   */
   public documentMappingTurnRight: DocumentMapping;
+
+  protected markCompleteFactoryTurnLeft: (range: LineRange, reason: ECompleteReason) => void;
+  protected markCompleteFactoryTurnRight: (range: LineRange, reason: ECompleteReason) => void;
+  protected revokeActionsFactoryTurnLeft: (oppositeRange: LineRange) => void;
+  protected revokeActionsFactoryTurnRight: (oppositeRange: LineRange) => void;
 
   constructor() {
     super();
 
     this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [EDiffRangeTurn.ORIGIN]);
     this.documentMappingTurnRight = this.injector.get(DocumentMapping, [EDiffRangeTurn.MODIFIED]);
+
+    this.markCompleteFactoryTurnLeft = this.markCompleteFactory(EDiffRangeTurn.ORIGIN);
+    this.markCompleteFactoryTurnRight = this.markCompleteFactory(EDiffRangeTurn.MODIFIED);
+    this.revokeActionsFactoryTurnLeft = this.revokeActionsFactory(EDiffRangeTurn.ORIGIN);
+    this.revokeActionsFactoryTurnRight = this.revokeActionsFactory(EDiffRangeTurn.MODIFIED);
   }
 
   private revokeActionsFactory(turn: EDiffRangeTurn): (oppositeRange: LineRange) => void {
@@ -31,29 +52,29 @@ export class MappingManagerService extends Disposable {
         return;
       }
 
-      range.setComplete(false);
+      range.cancel();
       /**
        * 这里需要从 mapping 的 adjacentComputeRangeMap 集合里获取并修改 complete 状态，否则变量内存就不是指向同一引用
        */
       const realOppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
       if (realOppositeRange) {
-        realOppositeRange.setComplete(false);
+        realOppositeRange.cancel();
       }
     };
   }
 
-  private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange) => void {
+  private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange, reason: ECompleteReason) => void {
     const mapping = turn === EDiffRangeTurn.ORIGIN ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
-    return (range: LineRange) => {
+    return (range: LineRange, reason: ECompleteReason) => {
       const oppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
       if (!oppositeRange) {
         return;
       }
 
       // 标记该 range 区域已经解决完成
-      range.setComplete(true);
-      oppositeRange.setComplete(true);
+      range.done(reason);
+      oppositeRange.done(reason);
 
       /**
        * 如果被标记 complete 的 range 是 merge range 合成的，则需要将另一个 mapping 的对应关系也标记成 complete
@@ -72,7 +93,7 @@ export class MappingManagerService extends Disposable {
           return;
         }
 
-        adjacentRange.setComplete(true);
+        adjacentRange.done(reason);
       }
     };
   }
@@ -85,20 +106,20 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
   }
 
-  public markCompleteTurnLeft(range: LineRange): void {
-    this.markCompleteFactory(EDiffRangeTurn.ORIGIN)(range);
+  public markCompleteTurnLeft(range: LineRange, reason: ECompleteReason): void {
+    this.markCompleteFactoryTurnLeft(range, reason);
   }
 
-  public markCompleteTurnRight(range: LineRange): void {
-    this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range);
+  public markCompleteTurnRight(range: LineRange, reason: ECompleteReason): void {
+    this.markCompleteFactoryTurnRight(range, reason);
   }
 
   public revokeActionsTurnLeft(oppositeRange: LineRange): void {
-    this.revokeActionsFactory(EDiffRangeTurn.ORIGIN)(oppositeRange);
+    this.revokeActionsFactoryTurnLeft(oppositeRange);
   }
 
   public revokeActionsTurnRight(oppositeRange: LineRange): void {
-    this.revokeActionsFactory(EDiffRangeTurn.MODIFIED)(oppositeRange);
+    this.revokeActionsFactoryTurnRight(oppositeRange);
   }
 
   public clearMapping(): void {
@@ -153,5 +174,17 @@ export class MappingManagerService extends Disposable {
       [EditorViewType.CURRENT]: turnLeftRange,
       [EditorViewType.INCOMING]: turnRightRange,
     };
+  }
+
+  /**
+   * 去重相同 id 或位置一样的 line range
+   *
+   * 返回所有的 diff range
+   */
+  public getAllDiffRanges(): LineRange[] {
+    return distinct(
+      this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
+      (range) => range.id,
+    );
   }
 }

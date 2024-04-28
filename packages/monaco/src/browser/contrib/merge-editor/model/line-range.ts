@@ -4,7 +4,7 @@ import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/v
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
-import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
+import { ECompleteReason, ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
 
@@ -85,6 +85,9 @@ class MergeStateModel {
    */
   private metaRanges: LineRange[] = [];
 
+  /**
+   * 左右的代码有重叠，有包含，有接触
+   */
   public get isMerge(): boolean {
     return this.metaRanges.length > 0;
   }
@@ -95,9 +98,9 @@ class MergeStateModel {
    * 例如
    *    左边               中间               右边
    *    ```               ```               ```
-   * 1. const a = 1       const a = 2       const a = 1
-   * 2. const b = 1       const b = 1       const b = 2
-   * 3. const c = 1       const c = 2       const c = 1
+   *    1. const a = 1       const a = 2       const a = 1
+   *    2. const b = 1       const b = 1       const b = 2
+   *    3. const c = 1       const c = 2       const c = 1
    *    ```               ```               ```
    *
    * 其中第一行中间与两边都有 diff，但不管是接受左边的还是右边的，最终对结果的影响不变（接受左右两边都一样）
@@ -163,8 +166,17 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   }
 
   private _isComplete: boolean;
+  private _completeReason: ECompleteReason | undefined;
+
+  /**
+   * 是否已经解决完成（是否合入）
+   */
   public get isComplete(): boolean {
     return this._isComplete;
+  }
+
+  public get completeReason(): ECompleteReason {
+    return this._completeReason!;
   }
 
   private _turnDirection: ETurnDirection;
@@ -172,15 +184,21 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this._turnDirection;
   }
 
+  /**
+   * @see {@link MergeStateModel.isMerge}
+   */
   public get isMerge(): boolean {
     return this.mergeStateModel.isMerge;
   }
 
+  /**
+   * @see {@link MergeStateModel.isAllowCombination}
+   */
   public get isAllowCombination(): boolean {
     return this.mergeStateModel.isAllowCombination;
   }
 
-  public get isAIConflictPoint(): boolean {
+  public get isConflictPoint(): boolean {
     return this.isMerge && this.type === 'modify';
   }
 
@@ -205,8 +223,18 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this;
   }
 
-  public setComplete(b: boolean): this {
-    this._isComplete = b;
+  public done(reason: ECompleteReason): this {
+    this._isComplete = true;
+    this._completeReason = reason;
+    return this;
+  }
+
+  /**
+   * 置为未完成状态
+   */
+  public cancel(): this {
+    this._isComplete = false;
+    this._completeReason = undefined;
     return this;
   }
 
@@ -333,13 +361,20 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   }
 
   private retainState(range: LineRange): LineRange {
-    return range
+    const newLineRange = range
       .setId(this._id)
       .setType(this._type)
       .setTurnDirection(this._turnDirection)
-      .setComplete(this._isComplete)
       .setMergeStateModel(this.mergeStateModel)
       .setIntelligentStateModel(this.intelligentStateModel);
+
+    if (this._isComplete) {
+      newLineRange.done(this._completeReason!);
+    } else {
+      newLineRange.cancel();
+    }
+
+    return newLineRange;
   }
 
   public override delta(offset: number): LineRange {

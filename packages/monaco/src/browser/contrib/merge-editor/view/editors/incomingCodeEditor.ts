@@ -11,6 +11,7 @@ import {
   APPEND_ACTIONS,
   CONFLICT_ACTIONS_ICON,
   DECORATIONS_CLASSNAME,
+  ECompleteReason,
   EditorViewType,
   IActionsDescription,
   IConflictActionsEvent,
@@ -77,10 +78,8 @@ export class IncomingCodeEditor extends BaseCodeEditor {
   }
 
   public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
-    const { range, action } = eventData;
     super.launchConflictActionsEvent({
-      range,
-      action,
+      ...eventData,
       withViewType: EditorViewType.INCOMING,
     });
   }
@@ -92,7 +91,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       provideActionsItems: this.provideActionsItems,
       onActionsClick: (range: LineRange, actionType: TActionsType) => {
         if (actionType === ACCEPT_CURRENT_ACTIONS || actionType === IGNORE_ACTIONS || actionType === APPEND_ACTIONS) {
-          this.launchConflictActionsEvent({ range, action: actionType });
+          this.launchConflictActionsEvent({ range, action: actionType, reason: ECompleteReason.UserManual });
         }
       },
     });

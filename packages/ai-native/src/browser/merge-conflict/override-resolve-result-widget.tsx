@@ -7,6 +7,7 @@ import { localize, uuid } from '@opensumi/ide-core-common';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AiResolveConflictContentWidget,
+  ECompleteReason,
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
@@ -37,6 +38,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: REVOKE_ACTIONS,
+            reason: ECompleteReason.UserManual,
           });
         },
       },
@@ -51,6 +53,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
       this.codeEditor.launchConflictActionsEvent({
         range: this.lineRange,
         action: IGNORE_ACTIONS,
+        reason: ECompleteReason.UserManual,
       });
     };
 

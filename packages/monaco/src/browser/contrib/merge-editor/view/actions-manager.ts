@@ -15,6 +15,7 @@ import {
   AI_RESOLVE_ACTIONS,
   AI_RESOLVE_REGENERATE_ACTIONS,
   APPEND_ACTIONS,
+  ECompleteReason,
   ETurnDirection,
   IActionsProvider,
   IConflictActionsEvent,
@@ -91,27 +92,25 @@ export class ActionsManager extends Disposable {
   }
 
   private pickMapping(range: LineRange): DocumentMapping | undefined {
-    if (range.turnDirection === ETurnDirection.BOTH) {
-      return;
+    switch (range.turnDirection) {
+      case ETurnDirection.BOTH:
+        return;
+      case ETurnDirection.CURRENT:
+        return this.mappingManagerService.documentMappingTurnLeft;
+      case ETurnDirection.INCOMING:
+        return this.mappingManagerService.documentMappingTurnRight;
     }
-
-    return range.turnDirection === ETurnDirection.CURRENT
-      ? this.mappingManagerService.documentMappingTurnLeft
-      : this.mappingManagerService.documentMappingTurnRight;
   }
 
   private pickViewEditor(range: LineRange): BaseCodeEditor {
-    const { turnDirection } = range;
-
-    if (turnDirection === ETurnDirection.INCOMING) {
-      return this.incomingView!;
+    switch (range.turnDirection) {
+      case ETurnDirection.INCOMING:
+        return this.incomingView!;
+      case ETurnDirection.CURRENT:
+        return this.currentView!;
+      default:
+        return this.resultView!;
     }
-
-    if (turnDirection === ETurnDirection.CURRENT) {
-      return this.currentView!;
-    }
-
-    return this.resultView!;
   }
 
   /**
@@ -127,6 +126,7 @@ export class ActionsManager extends Disposable {
         eol: string;
       },
     ) => TLineRangeEdit,
+    reason: ECompleteReason,
   ): void {
     const mapping = this.pickMapping(range);
     if (!mapping) {
@@ -152,7 +152,7 @@ export class ActionsManager extends Disposable {
       }),
     );
 
-    this.markComplete(range);
+    this.markComplete(range, reason);
 
     /**
      * 如果 oppositeRange 是 merge range 合成的，则需要更新 current editor 和 incoming editor 的 actions
@@ -180,21 +180,19 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    if (turnDirection === ETurnDirection.CURRENT) {
-      this.mappingManagerService.revokeActionsTurnLeft(range);
+    switch (turnDirection) {
+      case ETurnDirection.CURRENT:
+        this.mappingManagerService.revokeActionsTurnLeft(range);
+        break;
+      case ETurnDirection.INCOMING:
+        this.mappingManagerService.revokeActionsTurnRight(range);
+        break;
+      case ETurnDirection.BOTH:
+        this.mappingManagerService.revokeActionsTurnLeft(range);
+        this.mappingManagerService.revokeActionsTurnRight(range);
+        break;
     }
 
-    if (turnDirection === ETurnDirection.INCOMING) {
-      this.mappingManagerService.revokeActionsTurnRight(range);
-    }
-
-    if (turnDirection === ETurnDirection.BOTH) {
-      this.mappingManagerService.revokeActionsTurnLeft(range);
-      this.mappingManagerService.revokeActionsTurnRight(range);
-    }
-
-    const model = viewEditor.getModel()!;
-    const eol = model.getEOL();
     const { text } = metaData;
 
     // 为 null 则说明是删除文本
@@ -214,7 +212,7 @@ export class ActionsManager extends Disposable {
   /**
    * 接受 accept combination 时将左右代码内容交替插入中间视图
    */
-  private handleAcceptCombination(range: LineRange): void {
+  private handleAcceptCombination(range: LineRange, reason: ECompleteReason): void {
     const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
     const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(range);
 
@@ -262,8 +260,8 @@ export class ActionsManager extends Disposable {
       },
     ]);
 
-    this.markComplete(reverseLeftRange);
-    this.markComplete(reverseRightRange);
+    this.markComplete(reverseLeftRange, reason);
+    this.markComplete(reverseRightRange, reason);
 
     this.resultView?.updateActions();
   }
@@ -313,7 +311,7 @@ export class ActionsManager extends Disposable {
 
     this.mergeConflictReportService.reportIncrementNum(this.resultView.getUri(), 'clickNum');
 
-    const resolveConflictResult = await this.resultView.requestAiResolveConflict(
+    const resolveConflictResult = await this.resultView.requestAIResolveConflict(
       { base: baseValue || '', current: currentValue || '', incoming: incomingValue || '' },
       flushRange,
       !!options?.isRegenerate,
@@ -366,17 +364,17 @@ export class ActionsManager extends Disposable {
     };
   }
 
-  private markComplete(range: LineRange): void {
+  private markComplete(range: LineRange, reason: ECompleteReason): void {
     const { turnDirection } = range;
 
     switch (turnDirection) {
       case ETurnDirection.CURRENT: {
-        this.mappingManagerService.markCompleteTurnLeft(range);
+        this.mappingManagerService.markCompleteTurnLeft(range, reason);
         this.currentView!.updateDecorations().updateActions();
         break;
       }
       case ETurnDirection.INCOMING: {
-        this.mappingManagerService.markCompleteTurnRight(range);
+        this.mappingManagerService.markCompleteTurnRight(range, reason);
         this.incomingView!.updateDecorations().updateActions();
         break;
       }
@@ -407,39 +405,45 @@ export class ActionsManager extends Disposable {
         this.currentView.onDidConflictActions,
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
-      )(async ({ range, action }) => {
+      )(async ({ range, action, reason }) => {
         switch (action) {
           case ACCEPT_CURRENT_ACTIONS:
-            this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [
-              { range: oppositeRange, text: applyText },
-            ]);
+            this.handleAcceptChange(
+              range,
+              (_range, oppositeRange, { applyText }) => [{ range: oppositeRange, text: applyText }],
+              reason,
+            );
             break;
           case IGNORE_ACTIONS:
-            this.markComplete(range);
+            this.markComplete(range, reason);
             this.resultView?.updateActions();
             break;
           case REVOKE_ACTIONS:
             this.handleAcceptRevoke(range);
             break;
           case ACCEPT_COMBINATION_ACTIONS:
-            this.handleAcceptCombination(range);
+            this.handleAcceptCombination(range, reason);
             break;
           case APPEND_ACTIONS:
             /**
              * range 如果是 merge range 合成的，当 accept 某一视图的代码变更时，另一边的 accpet 就变成 append 追加内容，而不是覆盖内容
              */
-            this.handleAcceptChange(range, (_, oppositeRange, { applyText, eol }) => [
-              /**
-               * 在 diff 区域的最后一行追加代码内容
-               */
-              {
-                range: LineRange.fromPositions(
-                  oppositeRange.endLineNumberExclusive,
-                  oppositeRange.endLineNumberExclusive,
-                ),
-                text: applyText,
-              },
-            ]);
+            this.handleAcceptChange(
+              range,
+              (_, oppositeRange, { applyText, eol }) => [
+                /**
+                 * 在 diff 区域的最后一行追加代码内容
+                 */
+                {
+                  range: LineRange.fromPositions(
+                    oppositeRange.endLineNumberExclusive,
+                    oppositeRange.endLineNumberExclusive,
+                  ),
+                  text: applyText,
+                },
+              ],
+              reason,
+            );
             break;
           /**
            * 处理 AI 智能解决冲突

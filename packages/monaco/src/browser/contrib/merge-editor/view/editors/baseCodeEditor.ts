@@ -228,6 +228,8 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   }
 
   /**
+   * 接受 diff 结果，用于计算 decorations 等
+   *
    * @param turnType: 表示 computer diff 的结果是以 origin 作为比较还是 modify 作为比较
    */
   public abstract inputDiffComputingResult(changes: DetailedLineRangeMapping[], turnType?: EDiffRangeTurn): void;

@@ -10,7 +10,12 @@ import { localize, uuid } from '@opensumi/ide-core-common';
 
 import { BaseInlineContentWidget } from '../../../ai-native/BaseInlineContentWidget';
 import { LineRange } from '../model/line-range';
-import { AI_RESOLVE_REGENERATE_ACTIONS, AiResolveConflictContentWidget, REVOKE_ACTIONS } from '../types';
+import {
+  AI_RESOLVE_REGENERATE_ACTIONS,
+  AiResolveConflictContentWidget,
+  ECompleteReason,
+  REVOKE_ACTIONS,
+} from '../types';
 import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
 
 interface IWrapperAIInlineResultProps {
@@ -51,6 +56,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
     codeEditor.launchConflictActionsEvent({
       range,
       action: AI_RESOLVE_REGENERATE_ACTIONS,
+      reason: ECompleteReason.UserManual,
     });
     codeEditor.hideResolveResultWidget();
   }, [range, codeEditor]);
@@ -149,6 +155,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
           this.codeEditor.launchConflictActionsEvent({
             range: this.lineRange,
             action: REVOKE_ACTIONS,
+            reason: ECompleteReason.UserManual,
           });
           this.codeEditor.hideResolveResultWidget();
         },

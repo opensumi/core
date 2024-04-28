@@ -1,7 +1,7 @@
 import { Injector } from '@opensumi/di';
 import { IClientAppOpts, SlotLocation } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
-import { uuid } from '@opensumi/ide-core-common';
+import { findFirstTruthy, uuid } from '@opensumi/ide-core-common';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
 import { RemoteOpenerModule } from '@opensumi/ide-remote-opener/lib/browser';
@@ -19,10 +19,19 @@ export async function renderApp(opts: IClientAppOpts) {
 
   const defaultHost = process.env.HOST || window.location.hostname;
   const injector = new Injector();
-  opts.workspaceDir =
-    opts.workspaceDir || process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH
-      ? window.location.hash.slice(1)
-      : process.env.WORKSPACE_DIR;
+
+  opts.workspaceDir = findFirstTruthy(
+    () => {
+      const queries = new URLSearchParams(window.location.search);
+      const dir = queries.get('workspaceDir');
+      if (dir) {
+        return dir;
+      }
+    },
+    process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH && window.location.hash.slice(1),
+    opts.workspaceDir,
+    process.env.WORKSPACE_DIR,
+  );
 
   opts.injector = injector;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;

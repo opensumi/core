@@ -9,13 +9,23 @@ import { LineRange } from './model/line-range';
 import { BaseCodeEditor } from './view/editors/baseCodeEditor';
 import styles from './view/merge-editor.module.less';
 
+export enum ECompleteReason {
+  UserManual = 'user_manual',
+  AIResolved = 'ai_resolved',
+
+  AutoResolvedNonConflictBeforeRunAI = 'auto_resolved_non_conflict_before_run_ai',
+  AutoResolvedNonConflict = 'auto_resolved_non_conflict',
+}
+
 export interface IRangeContrast {
   type: LineRangeType;
   /**
    * 是否解决操作完成
    */
   get isComplete(): boolean;
-  setComplete: (b: boolean) => this;
+  get completeReason(): ECompleteReason | undefined;
+  done: (reason: ECompleteReason) => this;
+  cancel: () => this;
   /**
    * 表示这个 range 区域是倾向于 current editor 还是 incoming editor（如果本身就是在 current editor 则返回 current）
    * 在 result editor 视图里可以通过该字段来判读它是与 current editor 相比较的还是与 incoming 相比较的 diff
@@ -44,7 +54,13 @@ export enum EditorViewType {
 }
 
 export enum EDiffRangeTurn {
+  /**
+   * 表示 current editor view 与 result editor view 的 lineRangeMapping 映射关系
+   */
   ORIGIN = 'origin',
+  /**
+   * 表示 result editor view 与 incoming editor view 的 lineRangeMapping 映射关系
+   */
   MODIFIED = 'modified',
 }
 
@@ -165,6 +181,7 @@ export interface IConflictActionsEvent {
   range: LineRange;
   action: TActionsType;
   withViewType: EditorViewType;
+  reason: ECompleteReason;
 }
 
 /**

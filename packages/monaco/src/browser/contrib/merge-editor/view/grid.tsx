@@ -1,9 +1,11 @@
+import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   AINativeConfigService,
   CommandService,
   EDITOR_COMMANDS,
+  ILogger,
   URI,
   localize,
   runWhenIdle,
@@ -20,8 +22,9 @@ import {
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { MergeConflictCommands } from '../constants';
+import { MappingManagerDataStore } from '../mapping-manager.store';
 import { MergeEditorService } from '../merge-editor.service';
-import { EditorViewType } from '../types';
+import { ECompleteReason, EditorViewType } from '../types';
 
 import styles from './merge-editor.module.less';
 import { MiniMap } from './mini-map';
@@ -101,10 +104,12 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
   );
 };
 
-const MergeActions: React.FC = () => {
+const MergeActions: React.FC = observer(() => {
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const commandService = useInjectable<CommandService>(CommandService);
+  const logger = useInjectable<ILogger>(ILogger);
+  const dataStore = useInjectable<MappingManagerDataStore>(MappingManagerDataStore);
   const [isAIResolving, setIsAIResolving] = useState(false);
 
   const isSupportAIResolve = useCallback(
@@ -126,20 +131,29 @@ const MergeActions: React.FC = () => {
   }, [mergeEditorService]);
 
   const handleAcceptLeft = useCallback(() => {
-    mergeEditorService.acceptLeft();
+    mergeEditorService.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
   }, [mergeEditorService]);
 
   const handleAcceptRight = useCallback(() => {
-    mergeEditorService.acceptRight();
+    mergeEditorService.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
   }, [mergeEditorService]);
 
   const handleOpenTradition = useCallback(() => {
-    const uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
+    let uri = mergeEditorService.getCurrentEditor()?.getModel()?.uri;
     if (!uri) {
       return;
     }
 
-    if (uri.scheme !== 'file') {
+    if (uri.scheme === 'git') {
+      // replace git:// with file://
+      uri = uri.with({
+        scheme: 'file',
+        path: uri.path,
+        query: '',
+      });
+    } else if (uri.scheme !== 'file') {
+      // ignore other scheme
+      logger.warn('Unsupported scheme', uri.scheme);
       return;
     }
 
@@ -169,14 +183,30 @@ const MergeActions: React.FC = () => {
     commandService.tryExecuteCommand(MergeConflictCommands.Next);
   }, []);
 
+  const conflictsCount = dataStore.conflictsCount;
+  const nonConflictingChangesResolvedCount = dataStore.nonConflictingChangesResolvedCount;
+  let nonConflictHint = '自动合并';
+  if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
+    nonConflictHint = '合并';
+  }
+
+  const mergeInfo = [
+    `当前冲突变更共 ${conflictsCount.total} 处 (已解决 ${conflictsCount.resolved} 处，剩余 ${conflictsCount.lefted} 处)`,
+    conflictsCount.nonConflicts > 0 ? `非冲突变更共 ${conflictsCount.nonConflicts} 处` : '',
+    nonConflictingChangesResolvedCount.total > 0
+      ? `${nonConflictingChangesResolvedCount.total} 处非冲突变更已${nonConflictHint}（目标分支：
+     ${nonConflictingChangesResolvedCount.left} 处，来源分支：${nonConflictingChangesResolvedCount.right} 处；两者
+     ${nonConflictingChangesResolvedCount.both} 处）`
+      : '',
+  ]
+    .filter(Boolean)
+    .join('｜');
+
   return (
     <div className={styles.merge_editor_float_container}>
-      <div className={styles.merge_info}>
-        当前冲突变更共 {1} 处 (已解决 0 处，剩余 0 处) ｜ {0} 处非冲突变更已自动合并（目标分支：1 处，来源分支：1
-        处；两者 0 处）
-      </div>
+      <div className={styles.merge_info}>{mergeInfo}</div>
       <div className={styles.container_box}>
-        <div id='merge.editor.action.button.accept'>
+        <div id='merge.editor.action.button.accept' className={styles.action_category}>
           <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handleAcceptLeft}>
             <Icon icon={'left'} />
             <span>{localize('mergeEditor.action.button.accept.left')}</span>
@@ -189,7 +219,7 @@ const MergeActions: React.FC = () => {
 
         <span className={styles.line_vertical}></span>
 
-        <div id='merge.editor.action.button.nav'>
+        <div id='merge.editor.action.button.nav' className={styles.action_category}>
           <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
             <Icon icon={'left'} />
             <span>{localize('mergeEditor.conflict.prev')}</span>
@@ -252,7 +282,7 @@ const MergeActions: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export const Grid = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
@@ -267,6 +297,7 @@ export const Grid = () => {
       resultEditorContainer.current,
       incomingEditorContainer.current,
     ];
+
     if (current && result && incoming) {
       mergeEditorService.instantiationCodeEditor(current, result, incoming);
     }
@@ -296,13 +327,9 @@ export const Grid = () => {
         <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.RESULT}></TitleHead>
           <div className={styles.editor_container}>
-            <WithViewStickinessConnectComponent
-              contrastType={EditorViewType.CURRENT}
-            ></WithViewStickinessConnectComponent>
+            <WithViewStickinessConnectComponent contrastType={EditorViewType.CURRENT} />
             <div className={styles.editor_container} ref={resultEditorContainer}></div>
-            <WithViewStickinessConnectComponent
-              contrastType={EditorViewType.INCOMING}
-            ></WithViewStickinessConnectComponent>
+            <WithViewStickinessConnectComponent contrastType={EditorViewType.INCOMING} />
           </div>
         </div>
         <div className={styles.editor_container_arrange}>
