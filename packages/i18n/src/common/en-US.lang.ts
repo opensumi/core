@@ -1440,8 +1440,8 @@ export const localizationBundle = {
     'mergeEditor.open.3way': '3-Way Editor',
     'mergeEditor.conflict.prev': 'Previous Conflict',
     'mergeEditor.conflict.next': 'Next Conflict',
-    'mergeEditor.conflict.resolve.all': 'AI Resolution',
-    'mergeEditor.conflict.resolve.all.stop': 'Stop All',
+    'mergeEditor.conflict.ai.resolve.all': 'AI Resolution',
+    'mergeEditor.conflict.ai.resolve.all.stop': 'Stop All',
     'mergeEditor.open.tradition': 'Tradition Editor',
 
     // #region AI Native

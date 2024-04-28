@@ -170,12 +170,12 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
             {isAIResolving ? (
               <>
                 <Icon icon={'circle-pause'} />
-                <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
+                <span>{localize('mergeEditor.conflict.ai.resolve.all.stop')}</span>
               </>
             ) : (
               <>
                 <Icon icon={'magic-wand'} />
-                <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+                <span>{localize('mergeEditor.conflict.ai.resolve.all')}</span>
               </>
             )}
           </Button>

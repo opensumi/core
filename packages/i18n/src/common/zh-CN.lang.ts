@@ -1209,8 +1209,8 @@ export const localizationBundle = {
     'mergeEditor.open.3way': '3-way 编辑器',
     'mergeEditor.conflict.prev': '上一处冲突',
     'mergeEditor.conflict.next': '下一处冲突',
-    'mergeEditor.conflict.resolve.all': 'AI 解决',
-    'mergeEditor.conflict.resolve.all.stop': '全部停止',
+    'mergeEditor.conflict.ai.resolve.all': 'AI 解决',
+    'mergeEditor.conflict.ai.resolve.all.stop': '全部停止',
     'mergeEditor.open.tradition': '传统编辑器',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
 

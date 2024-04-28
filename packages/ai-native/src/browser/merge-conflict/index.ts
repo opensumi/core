@@ -648,14 +648,14 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     conflicts.forEach((conflict) => {
       const aiAcceptCommand = {
         id: MERGE_CONFLICT_COMMANDS.AI_ACCEPT.id,
-        title: `$(ai-magic) ${localize('mergeEditor.conflict.resolve.all')}`,
+        title: `$(ai-magic) ${localize('mergeEditor.conflict.ai.resolve.all')}`,
         arguments: ['know-conflict', conflict],
-        tooltip: localize('mergeEditor.conflict.resolve.all'),
+        tooltip: localize('mergeEditor.conflict.ai.resolve.all'),
       };
       // loading 效果
       this.loadingRange.forEach((range) => {
         if (conflict.range.equalsRange(range)) {
-          aiAcceptCommand.title = `$(loading~spin) ${localize('mergeEditor.conflict.resolve.all')}`;
+          aiAcceptCommand.title = `$(loading~spin) ${localize('mergeEditor.conflict.ai.resolve.all')}`;
         }
       });
       items.push({

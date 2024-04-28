@@ -131,11 +131,11 @@ const MergeActions: React.FC = observer(() => {
   }, [mergeEditorService]);
 
   const handleAcceptLeft = useCallback(() => {
-    mergeEditorService.acceptLeft(true, ECompleteReason.AutoResolvedNonConflict);
+    mergeEditorService.acceptLeft(false, ECompleteReason.UserManual);
   }, [mergeEditorService]);
 
   const handleAcceptRight = useCallback(() => {
-    mergeEditorService.acceptRight(true, ECompleteReason.AutoResolvedNonConflict);
+    mergeEditorService.acceptRight(false, ECompleteReason.UserManual);
   }, [mergeEditorService]);
 
   const handleOpenTradition = useCallback(() => {
@@ -260,12 +260,12 @@ const MergeActions: React.FC = observer(() => {
             {isAIResolving ? (
               <>
                 <Icon icon={'circle-pause'} />
-                <span>{localize('mergeEditor.conflict.resolve.all.stop')}</span>
+                <span>{localize('mergeEditor.conflict.ai.resolve.all.stop')}</span>
               </>
             ) : (
               <>
                 <Icon icon={'magic-wand'} />
-                <span>{localize('mergeEditor.conflict.resolve.all')}</span>
+                <span>{localize('mergeEditor.conflict.ai.resolve.all')}</span>
               </>
             )}
           </Button>
