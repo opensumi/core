@@ -64,8 +64,8 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
 
 export class StatusBarItemImpl implements vscode.StatusBarItem {
   private static ALLOWED_BACKGROUND_COLORS = new Map<string, ThemeColor>([
-    ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorForeground')],
-    ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningForeground')],
+    ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorBackground')],
+    ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningBackground')],
   ]);
 
   private readonly _entryId = StatusBarItemImpl.nextId();
