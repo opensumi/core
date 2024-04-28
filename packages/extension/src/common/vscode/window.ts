@@ -160,7 +160,7 @@ export interface IMainThreadStatusBar {
     priority: number,
     alignment: number,
     color: IThemeColor | string | undefined,
-    backgroundColor: IThemeColor | undefined,
+    backgroundColor: IThemeColor | string | undefined,
     tooltip: string | IMarkdownString | undefined,
     accessibilityInformation: vscode.AccessibilityInformation | undefined,
     command: string | undefined,
