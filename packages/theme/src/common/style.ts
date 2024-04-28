@@ -4,6 +4,11 @@ export interface IStyleInsertResult extends IDisposable {
   index: number;
 }
 
+export const emptyResult: IStyleInsertResult = {
+  index: -1,
+  dispose: () => {},
+};
+
 export interface IStyleSheet {
   insertSelector(selector: string, rule: string): IStyleInsertResult;
   deleteRule(index: number): void;

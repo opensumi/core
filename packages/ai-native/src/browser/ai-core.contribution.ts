@@ -32,6 +32,7 @@ import {
 import { InlineChatIsVisible } from '@opensumi/ide-core-browser/lib/contextkey/ai-native';
 import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import {
+  AI_NATIVE_SETTING_GROUP_TITLE,
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
   CommandService,
@@ -200,7 +201,7 @@ export class AINativeBrowserContribution
   registerSetting(registry: ISettingRegistry) {
     registry.registerSettingGroup({
       id: AI_NATIVE_SETTING_GROUP_ID,
-      title: AI_NATIVE_SETTING_GROUP_ID,
+      title: AI_NATIVE_SETTING_GROUP_TITLE,
       iconClass: getIcon('magic-wand'),
     });
 
