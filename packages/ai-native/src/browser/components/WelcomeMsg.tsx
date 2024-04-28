@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Icon, Tooltip } from '@opensumi/ide-core-browser/lib/components';
+import { withPrevented } from '@opensumi/ide-core-browser/lib/dom/event';
 import {
   ChatFeatureRegistryToken,
   ChatRenderRegistryToken,
@@ -83,11 +84,9 @@ export const WelcomeMessage = () => {
             const node = (
               <a
                 className={styles.link_item}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                onClick={withPrevented(() => {
                   aiChatService.sendMessage(chatAgentService.parseMessage(data.message));
-                }}
+                })}
               >
                 {data.icon ? <Icon className={data.icon} style={{ color: 'inherit', marginRight: '4px' }} /> : ''}
                 <span>{data.title}</span>
