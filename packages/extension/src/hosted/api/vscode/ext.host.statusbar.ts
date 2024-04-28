@@ -64,14 +64,14 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
 
 export class StatusBarItemImpl implements vscode.StatusBarItem {
   private static ALLOWED_BACKGROUND_COLORS = new Map<string, ThemeColor>([
-    ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorBackground')],
-    ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningBackground')],
+    ['statusBarItem.errorBackground', new ThemeColor('statusBarItem.errorForeground')],
+    ['statusBarItem.warningBackground', new ThemeColor('statusBarItem.warningForeground')],
   ]);
 
-  private static ALLOWED_BACKGROUND_CSS_VARS = [
-    'var(--statusBarItem-errorBackground)',
-    'var(--statusBarItem-warningBackground)',
-  ];
+  private static ALLOWED_BACKGROUND_CSS_VARS = new Map<string, string>([
+    ['var(--statusBarItem-errorBackground)', 'var(--statusBarItem-errorForeground)'],
+    ['var(--statusBarItem-warningBackground)', 'var(--statusBarItem-warningForeground)'],
+  ]);
 
   private readonly _entryId = StatusBarItemImpl.nextId();
 
@@ -156,7 +156,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
     if (!color) {
       color = undefined;
     } else if (isString(color)) {
-      if (!StatusBarItemImpl.ALLOWED_BACKGROUND_CSS_VARS.includes(color)) {
+      if (!StatusBarItemImpl.ALLOWED_BACKGROUND_CSS_VARS.has(color)) {
         color = undefined;
       }
     } else if (!StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.has(color.id)) {
@@ -233,6 +233,16 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
         name = formatLocalize('extension.label', this._extension.displayName || this._extension.name);
       }
 
+      // If a background color is set, the foreground is determined
+      let color = this._color;
+      if (this._backgroundColor) {
+        if (isString(this._backgroundColor)) {
+          color = StatusBarItemImpl.ALLOWED_BACKGROUND_CSS_VARS.get(this._backgroundColor);
+        } else {
+          color = StatusBarItemImpl.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id);
+        }
+      }
+
       // Set to status bar
       this._proxy.$setMessage(
         this._entryId,
@@ -241,7 +251,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
         this.text,
         this.priority,
         this.alignment,
-        this._color,
+        color,
         this._backgroundColor,
         MarkdownString.fromStrict(this.tooltip),
         this.accessibilityInformation,
