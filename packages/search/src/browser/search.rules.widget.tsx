@@ -78,7 +78,7 @@ const IncludeInput = React.memo(
             title={localize('search.help.supportRule')}
             content={<IncludeRuleContent />}
             trigger={PopoverTriggerType.hover}
-            delay={500}
+            delay={0.5}
             position={PopoverPosition.right}
           >
             <a>{localize('search.help.showIncludeRule')}</a>
@@ -132,16 +132,19 @@ const ExcludeInput = React.memo(
           />
           <Popover
             title={localize('search.help.excludeList')}
-            insertClass={cls(styles.search_excludes_description)}
+            overlayClassName={cls(styles.search_excludes_description)}
             id={'search_excludes'}
             action={localize('search.help.modify')}
             onClickAction={onOpenPreference}
             content={<ExcludeRuleContent />}
             trigger={PopoverTriggerType.hover}
-            delay={500}
+            delay={0.5}
             position={PopoverPosition.right}
           >
-            <span className={cls(getIcon('question-circle'))} style={{ opacity: '0.7', cursor: 'pointer' }} />
+            <span
+              className={cls(getIcon('question-circle'), styles.search_option)}
+              style={{ opacity: '0.7', cursor: 'pointer' }}
+            />
           </Popover>
         </div>
       </div>

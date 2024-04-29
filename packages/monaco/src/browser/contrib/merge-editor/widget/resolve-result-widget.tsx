@@ -1,7 +1,7 @@
 import React, { ReactNode, useCallback, useMemo } from 'react';
 
 import { Injectable } from '@opensumi/di';
-import { Button, MessageType, PopoverTriggerType } from '@opensumi/ide-components';
+import { Button, MessageType } from '@opensumi/ide-components';
 import { DialogContent, Popover, PopoverPosition } from '@opensumi/ide-core-browser/lib/components';
 import { AIInlineResult } from '@opensumi/ide-core-browser/lib/components/ai-native';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
@@ -24,7 +24,7 @@ interface IWrapperAiInlineResultProps {
 }
 
 export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
-  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose, disablePopover = false } = props;
+  const { iconItems, isRenderThumbs, codeEditor, range, disablePopover = false } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
 
@@ -84,13 +84,7 @@ export const WapperAiInlineResult = (props: IWrapperAiInlineResultProps) => {
 
   const renderGenerate = useCallback(
     () => (
-      <Popover
-        trigger={PopoverTriggerType.program}
-        display={isVisiablePopover}
-        id={uid}
-        content={popoverContent}
-        position={PopoverPosition.bottom}
-      >
+      <Popover visible={isVisiablePopover} id={uid} content={popoverContent} position={PopoverPosition.bottom}>
         {localize('aiNative.operate.afresh.title')}
       </Popover>
     ),

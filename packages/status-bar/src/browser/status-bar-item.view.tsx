@@ -124,7 +124,7 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
         id={`${entryId}-popover`}
         content={popoverContent}
         trigger={PopoverTriggerType.hover}
-        delay={200}
+        delay={0.2}
         position={PopoverPosition.top}
         disable={disablePopover}
       >
