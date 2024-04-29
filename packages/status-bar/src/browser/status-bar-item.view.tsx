@@ -6,6 +6,7 @@ import {
   IOpenerService,
   replaceLocalizePlaceholder,
   toMarkdown,
+  toMarkdownHtml,
   transformLabelWithCodicon,
   transformLabelWithCodiconHtml,
 } from '@opensumi/ide-core-browser';
@@ -85,12 +86,9 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
       return <StatusBarPopover contents={hoverContents} />;
     }
     if (tooltip && (tooltip as IMarkdownString).value) {
-      const value = transformLabelWithCodiconHtml(
-        (tooltip as IMarkdownString).value,
-        {},
-        iconService.fromString.bind(iconService),
-      );
-      return toMarkdown(value, openerService);
+      const html = toMarkdownHtml((tooltip as IMarkdownString).value);
+      const value = transformLabelWithCodiconHtml(html, iconService.fromString.bind(iconService));
+      return toMarkdown(value, openerService, undefined, true);
     }
     return (
       isString(tooltip) && (

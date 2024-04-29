@@ -2,19 +2,26 @@ import React from 'react';
 
 import { DATA_SET_COMMAND, RenderWrapper } from '@opensumi/ide-components/lib/markdown/render';
 import { IMarkedOptions, createMarkedRenderer, toMarkdownHtml as toHtml } from '@opensumi/ide-components/lib/utils';
+import { isString } from '@opensumi/ide-core-common';
 
 import { IOpenerService } from '../opener';
 
 export const toMarkdown = (
-  message: string | React.ReactNode,
+  content: string | React.ReactNode,
   opener?: IOpenerService,
   options?: IMarkedOptions,
-): React.ReactNode =>
-  typeof message === 'string' ? (
-    <RenderWrapper opener={opener} html={toMarkdownHtml(message, options)}></RenderWrapper>
+  justUseContent?: boolean,
+): React.ReactNode => {
+  if (justUseContent && content && isString(content)) {
+    return <RenderWrapper opener={opener} html={content}></RenderWrapper>;
+  }
+
+  return typeof content === 'string' ? (
+    <RenderWrapper opener={opener} html={toMarkdownHtml(content, options)}></RenderWrapper>
   ) : (
-    message
+    content
   );
+};
 
 export const toMarkdownHtml = (message: string, options?: IMarkedOptions): string => {
   const renderer = createMarkedRenderer();
