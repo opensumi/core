@@ -213,7 +213,7 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     this.intelligentStateModel = new IntelligentStateModel();
   }
 
-  private setId(id: string): this {
+  setId(id: string): this {
     this._id = id;
     return this;
   }

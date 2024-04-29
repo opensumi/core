@@ -16,12 +16,13 @@ import {
   ECompleteReason,
   REVOKE_ACTIONS,
 } from '../types';
-import { ResultCodeEditor } from '../view/editors/resultCodeEditor';
+
+import { IMergeEditorShape } from './types';
 
 interface IWrapperAIInlineResultProps {
   iconItems: IAIInlineResultIconItemsProps[];
   isRenderThumbs: boolean;
-  codeEditor: ResultCodeEditor;
+  codeEditor: IMergeEditorShape;
   range: LineRange;
   closeClick?: () => void;
   isRenderClose?: boolean;
@@ -106,7 +107,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
   const handleRenerate = useCallback(() => {
     const intelligentStateModel = range.getIntelligentStateModel();
     const preAnswerCode = intelligentStateModel.answerCode;
-    const currentCode = codeEditor.getModel()?.getValueInRange(range.toRange()) || '';
+    const currentCode = codeEditor.editor.getModel()?.getValueInRange(range.toRange()) || '';
 
     // 如果内容有变化，说明用户有修改，需要弹出确认框
     if (preAnswerCode.trim() === currentCode.trim()) {
@@ -138,7 +139,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
 export class ResolveResultWidget extends BaseInlineContentWidget {
   protected uid: string = uuid(4);
 
-  constructor(protected readonly codeEditor: ResultCodeEditor, protected readonly lineRange: LineRange) {
+  constructor(protected readonly codeEditor: IMergeEditorShape, protected readonly lineRange: LineRange) {
     super(codeEditor.editor);
   }
 

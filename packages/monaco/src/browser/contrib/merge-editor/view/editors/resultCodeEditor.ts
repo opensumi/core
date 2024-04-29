@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import debounce from 'lodash/debounce';
 
 import { Autowired, Injectable, Injector } from '@opensumi/di';
@@ -58,62 +57,14 @@ import {
   REVOKE_ACTIONS,
   TActionsType,
 } from '../../types';
+import { IWidgetFactory, IWidgetPositionFactory, WidgetFactory } from '../../widget/facotry';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 import { StopWidget } from '../../widget/stop-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
-interface IWidgetFactory {
-  hideWidget(id?: string): void;
-  addWidget(range: LineRange): void;
-  hasWidget(range: LineRange): boolean;
-}
-
-class WidgetFactory implements IWidgetFactory {
-  private widgetMap: Map<string, ResolveResultWidget>;
-
-  constructor(
-    private contentWidget: typeof ResolveResultWidget,
-    private editor: BaseCodeEditor,
-    private injector: Injector,
-  ) {
-    this.widgetMap = new Map();
-  }
-
-  hasWidget(range: LineRange): boolean {
-    return this.widgetMap.get(range.id) !== undefined;
-  }
-
-  public hideWidget(id?: string): void {
-    if (id) {
-      const widget = this.widgetMap.get(id);
-      if (widget) {
-        widget.hide();
-        this.widgetMap.delete(id);
-      }
-      return;
-    }
-
-    this.widgetMap.forEach((widget) => {
-      widget.hide();
-    });
-    this.widgetMap.clear();
-  }
-
-  public addWidget(range: LineRange): void {
-    const id = range.id;
-    if (this.widgetMap.has(id)) {
-      return;
-    }
-
-    const position = new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
-
-    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
-    widget.show({ position });
-
-    this.widgetMap.set(id, widget);
-  }
-}
+const positionFactory: IWidgetPositionFactory = (range) =>
+  new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
@@ -154,8 +105,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
     this.initListenEvent();
 
-    this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
-    this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
+    this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector, positionFactory);
+    this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector, positionFactory);
 
     if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       this.aiBackService = injector.get(AIBackSerivcePath);

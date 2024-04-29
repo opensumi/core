@@ -10,7 +10,6 @@ import {
   CommandContribution,
   CommandRegistry,
   Constants,
-  ConstructorOf,
   Disposable,
   Domain,
   Emitter,
@@ -38,7 +37,6 @@ import {
 } from '@opensumi/ide-editor/lib/browser/merge-conflict';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco';
-import { BaseInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AI_RESOLVE_REGENERATE_ACTIONS,
@@ -46,14 +44,15 @@ import {
   IGNORE_ACTIONS,
   REVOKE_ACTIONS,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/types';
-import { ResultCodeEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/editors/resultCodeEditor';
 import styles from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/view/merge-editor.module.less';
+import { IWidgetFactory, WidgetFactory } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/facotry';
 import { StopWidget } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/stop-widget';
+import { IMergeEditorShape } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/types';
 import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
-import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
-import { IValidEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+
+import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
 
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
 
@@ -107,16 +106,14 @@ function loadStyleString(load: boolean) {
   }
 }
 
-interface IWidgetFactory {
-  hideWidget(id?: string): void;
-  addWidget(range: LineRange): void;
-  hasWidget(range: LineRange): boolean;
-}
-
-interface ICacheResolvedConflicts extends IValidEditOperation {
+interface ICacheResolvedConflicts {
   newRange: IRange;
   id: string;
   conflictText: string;
+  /**
+   * 解决冲突后的文本
+   */
+  text: string;
   metadata: IConflictContentMetadata;
   isAccept?: boolean;
   isClosed?: boolean;
@@ -127,58 +124,15 @@ interface IRequestCancel {
   type: 'cancel';
 }
 
-class WidgetFactory implements IWidgetFactory {
-  private widgetMap: Map<string, BaseInlineContentWidget>;
-
-  constructor(
-    private contentWidget: ConstructorOf<BaseInlineContentWidget>,
-    private editor: ResultCodeEditor,
-    private injector: Injector,
-  ) {
-    this.widgetMap = new Map();
-  }
-
-  hasWidget(range: LineRange): boolean {
-    return this.widgetMap.get(range.id) !== undefined;
-  }
-
-  public hideWidget(id?: string): void {
-    if (id) {
-      const widget = this.widgetMap.get(id);
-      if (widget) {
-        widget.hide();
-        this.widgetMap.delete(id);
-      }
-      return;
-    }
-
-    this.widgetMap.forEach((widget) => {
-      widget.hide();
-    });
-    this.widgetMap.clear();
-  }
-
-  public addWidget(range: LineRange): void {
-    const id = range.id;
-    if (this.widgetMap.has(id)) {
-      return;
-    }
-
-    const position = new Position(range.endLineNumberExclusive, 1);
-
-    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
-    widget.show({ position });
-
-    this.widgetMap.set(id, widget);
-  }
-}
-
 interface IReportData extends Partial<MergeConflictRT> {
   relationId?: string;
 }
 
 @Domain(CommandContribution, ClientAppContribution)
-export class MergeConflictContribution extends Disposable implements CommandContribution, ClientAppContribution {
+export class MergeConflictContribution
+  extends Disposable
+  implements CommandContribution, ClientAppContribution, IMergeEditorShape
+{
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -213,7 +167,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   public readonly onRequestsCancel: Event<IRequestCancel[]> = this._onRequestsCancel.event;
 
   // for widget
-  private editor: ICodeEditor;
+  editor: ICodeEditor;
+
   // for codelens loading
   private loadingRange: Set<IRange> = new Set();
   // for report
@@ -427,12 +382,12 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private updateReportData() {
     const allConflictCache = this.conflictParser.getAllConflictsByUri(this.getUri());
     let conflictPointNum = 0;
-    let useAiConflictPointNum = 0;
+    let useAIConflictPointNum = 0;
     let receiveNum = 0;
     conflictPointNum = allConflictCache?.length || 0;
     allConflictCache?.forEach((cacheConflict) => {
       if (cacheConflict.isResolved) {
-        useAiConflictPointNum += 1;
+        useAIConflictPointNum += 1;
       }
     });
     // 内部修改 删除态无法统计
@@ -441,7 +396,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         // 统计当前文件
         if (uri === this.getModel().uri.toString()) {
           // 计算当前文件采纳数量
-          const aiResult = cacheResolvedConflicts.textChange.newText;
+          const aiResult = cacheResolvedConflicts.text;
           const currentResult = this.getModel()?.getValueInRange(cacheResolvedConflicts.newRange);
           if (aiResult.trim() === currentResult.trim()) {
             cacheResolvedConflicts.isAccept = true;
@@ -454,7 +409,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     }
     this.reportData = {
       conflictPointNum,
-      useAiConflictPointNum,
+      useAiConflictPointNum: useAIConflictPointNum,
       receiveNum,
     };
   }
@@ -474,6 +429,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       if (!value.isClosed) {
         const lineRange = this.toLineRange(value.newRange, id);
         this.resolveResultWidgetManager.addWidget(lineRange);
+        this.visibleDiffWidget(this.editor, value.newRange, value.text);
       }
     }
   }
@@ -531,7 +487,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
   private toLineRange(range: IRange, id?: string) {
     const lineRange = new LineRange(range.startLineNumber, range.endLineNumber);
     if (id) {
-      // @ts-ignore
       lineRange.setId(id);
     }
     return lineRange;
@@ -629,12 +584,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     const currentEditor = editor;
     if (currentEditor && monacoEditor && !this.editor) {
       this.editor = monacoEditor;
-      this.resolveResultWidgetManager = new WidgetFactory(
-        ResolveResultWidget,
-        this as unknown as ResultCodeEditor,
-        this.injector,
-      );
-      this.stopWidgetManager = new WidgetFactory(StopWidget, this as unknown as ResultCodeEditor, this.injector);
+      this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
+      this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
       this.init();
     }
   }
@@ -671,7 +622,19 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     return Promise.resolve(items);
   }
 
-  private async conflictAIAccept(conflict?: DocumentMergeConflict, lineRan?: LineRange, isRegenerate?: boolean) {
+  private inlineDiffWidget: InlineDiffWidget;
+
+  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.IRange, answer: string): void {
+    monacoEditor.setHiddenAreas([crossSelection], InlineDiffWidget._hideId);
+    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, crossSelection, answer]);
+    this.inlineDiffWidget.create();
+    this.inlineDiffWidget.showByLine(
+      crossSelection.startLineNumber - 1,
+      crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
+    );
+  }
+
+  private async conflictAIAccept(conflict?: DocumentMergeConflict, _lineRange?: LineRange, isRegenerate?: boolean) {
     if (!this.editorService.currentEditor?.monacoEditor) {
       return;
     }
@@ -691,7 +654,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         incomingName: conflict.incoming.name,
       };
     } else {
-      lineRange = lineRan!;
+      lineRange = _lineRange!;
     }
     const range = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
     const skeletonDecorationDispose = this.renderSkeletonDecoration(range, [
@@ -700,10 +663,10 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
-    let codeAssemble = this.getModel()?.getValueInRange(lineRange.toRange(1, range.endColumn)) ?? '';
+    let conflictText = this.getModel()?.getValueInRange(lineRange.toRange(1, range.endColumn)) ?? '';
     if (isRegenerate) {
       const cache = this.getCacheResolvedConflicts().get(lineRange.id);
-      codeAssemble = cache?.conflictText ?? '';
+      conflictText = cache?.conflictText ?? '';
       conflictMetadata = cache?.metadata;
     }
 
@@ -721,7 +684,6 @@ export class MergeConflictContribution extends Disposable implements CommandCont
       skeletonDecorationDispose();
       this.stopWidgetManager.hideWidget(lineRange.id);
       this.loadingRange.delete(range);
-      this.updateCodeLensProvider();
     }
 
     if (ReplyResponse.is(resolveConflictResult)) {
@@ -729,46 +691,31 @@ export class MergeConflictContribution extends Disposable implements CommandCont
         aiOutputNum: this.reportData.aiOutputNum! + 1,
       };
 
-      const { text, lineNumber, lines } = this.resolveEndLineEOL(resolveConflictResult!.message!);
-      const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
-      const endColumn = lines[lines.length - 1].length + 1;
-      const newRange = new monaco.Range(lineRange.startLineNumber, 1, endLineNumber, endColumn);
-      const edit = {
-        range,
-        text,
-      };
+      const { text, lineNumber } = this.resolveEndLineEOL(resolveConflictResult!.message!);
+      // const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
+      // const endColumn = lines[lines.length - 1].length + 1;
+      // const newRange = new monaco.Range(lineRange.startLineNumber, 1, endLineNumber, endColumn);
 
-      let validEditOperation: IValidEditOperation[] = [];
-      const selections = this.getModel()?.pushEditOperations(null, [edit], (operation) => {
-        validEditOperation = operation;
-        const selections: monaco.Selection[] = [];
-        operation.forEach((op) => {
-          selections.push(
-            new monaco.Selection(
-              op.range.startLineNumber,
-              op.range.startColumn,
-              op.range.endLineNumber,
-              op.range.endColumn,
-            ),
-          );
-        });
-        return selections;
-      });
-      selections!.forEach((selection) => {
-        const decorationDispose = this.renderSkeletonDecoration(selection, [styles.skeleton_decoration_complete]);
-        this.decorationId2Dispose.set(lineRange.id, decorationDispose);
-        this.decorationId2Range.set(lineRange.id, selection);
-      });
+      const decorationDispose = this.renderSkeletonDecoration(range, [styles.skeleton_decoration_complete]);
+      this.decorationId2Dispose.set(lineRange.id, decorationDispose);
+      this.decorationId2Range.set(lineRange.id, range);
 
-      const newLineRange = this.toLineRange(newRange, lineRange.id);
-      this.resolveResultWidgetManager.addWidget(newLineRange);
-      this.setCacheResolvedConflict(newLineRange.id, {
-        ...validEditOperation[0],
-        newRange,
-        id: newLineRange.id,
+      const widgetLineRange = this.toLineRange(
+        {
+          ...range,
+          endLineNumber: range.startLineNumber + lineNumber + 1,
+        },
+        lineRange.id,
+      );
+      this.resolveResultWidgetManager.addWidget(widgetLineRange);
+      this.visibleDiffWidget(this.editor, range, text);
+      this.setCacheResolvedConflict(lineRange.id, {
+        newRange: range,
+        id: lineRange.id,
         metadata: conflictMetadata!,
         // 保留原始冲突文本
-        conflictText: (isRegenerate && codeAssemble) || validEditOperation[0].text,
+        conflictText,
+        text,
         isAccept: true,
       });
       if (!isRegenerate) {
@@ -783,7 +730,7 @@ export class MergeConflictContribution extends Disposable implements CommandCont
             if (cacheConflict.range.equalsRange(range)) {
               return true;
             }
-            if (cacheConflict.text === codeAssemble) {
+            if (cacheConflict.text === conflictText) {
               return true;
             }
           });
@@ -901,6 +848,9 @@ export class MergeConflictContribution extends Disposable implements CommandCont
 
   public hideResolveResultWidget(id?: string) {
     this.resolveResultWidgetManager.hideWidget(id);
+    if (this.inlineDiffWidget) {
+      this.inlineDiffWidget.dispose();
+    }
   }
 
   public hideStopWidget(id?: string) {
@@ -989,6 +939,8 @@ export class MergeConflictContribution extends Disposable implements CommandCont
     if (this.decorationId2Range.has(id)) {
       this.decorationId2Range.delete(id);
     }
+
+    this.updateCodeLensProvider();
   }
 
   // 强制刷新 codelens

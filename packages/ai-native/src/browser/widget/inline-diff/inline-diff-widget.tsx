@@ -43,7 +43,7 @@ const diffEditorOptions: IDiffEditorOptions = {
 interface IDiffContentProviderProps {
   dto:
     | {
-        selection: monaco.Selection;
+        range: monaco.IRange;
         modifiedValue: string;
       }
     | undefined;
@@ -67,9 +67,9 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       return;
     }
 
-    const { selection, modifiedValue } = dto;
+    const { range, modifiedValue } = dto;
 
-    const codeValueInRange = model.getValueInRange(selection);
+    const codeValueInRange = model.getValueInRange(range);
     const diffEditor = monacoService.createDiffEditor(editorRef.current!, {
       ...diffEditorOptions,
       lineDecorationsWidth: editor.getLayoutInfo().decorationsWidth,
@@ -86,7 +86,7 @@ const DiffContentProvider = React.memo((props: IDiffContentProviderProps) => {
       original: originalModel,
       modified: modifiedModel,
     });
-    diffEditor.revealLine(selection.startLineNumber, monaco.editor.ScrollType.Immediate);
+    diffEditor.revealLine(range.startLineNumber, monaco.editor.ScrollType.Immediate);
 
     if (onMaxLineCount) {
       const originalEditor = diffEditor.getOriginalEditor();
@@ -122,7 +122,7 @@ export class InlineDiffWidget extends ZoneWidget {
   private readonly _onMaxLineCount = new Emitter<number>();
   public readonly onMaxLineCount: Event<number> = this._onMaxLineCount.event;
 
-  private selection: monaco.Selection;
+  private range: monaco.IRange;
   private modifiedValue: string;
   private root: ReactDOMClient.Root | null;
 
@@ -137,7 +137,7 @@ export class InlineDiffWidget extends ZoneWidget {
       <ConfigProvider value={this.configContext}>
         <div className={styles.ai_diff_editor_container}>
           <DiffContentProvider
-            dto={{ selection: this.selection, modifiedValue: this.modifiedValue }}
+            dto={{ range: this.range, modifiedValue: this.modifiedValue }}
             editor={this.editor}
             onMaxLineCount={(n) => {
               if (n) {
@@ -151,16 +151,17 @@ export class InlineDiffWidget extends ZoneWidget {
     );
   }
 
-  constructor(editor: ICodeEditor, selection: monaco.Selection, modifiedValue: string) {
+  constructor(editor: ICodeEditor, selection: monaco.IRange, modifiedValue: string) {
     super(editor, {
       showArrow: false,
       showFrame: false,
       arrowColor: undefined,
       frameColor: undefined,
       keepEditorSelection: true,
+      showInHiddenAreas: true,
     });
 
-    this.selection = selection;
+    this.range = selection;
     this.modifiedValue = modifiedValue;
   }
 
