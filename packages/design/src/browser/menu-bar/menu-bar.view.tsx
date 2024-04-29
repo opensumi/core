@@ -34,7 +34,7 @@ const DesignMenuBarRender = () => {
           const rect = iconRef.current.getBoundingClientRect();
           const { x, y, width, height } = rect;
           const _anchor = {
-            x: x + width,
+            x,
             y: y + height,
           };
 
