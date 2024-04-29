@@ -75,9 +75,14 @@ export const Popover: React.FC<IPopoverProps> = ({
     [onClickAction],
   );
 
-  const overlayContent = useMemo(
-    () =>
-      overlay || (
+  const overlayContent = useMemo(() => {
+    if (overlay) {
+      return overlay;
+    } else {
+      if (!title && !content) {
+        return null;
+      }
+      return (
         <>
           {title && (
             <p className={cls('kt-popover-title', titleClassName)}>
@@ -91,9 +96,13 @@ export const Popover: React.FC<IPopoverProps> = ({
           )}
           {content || ''}
         </>
-      ),
-    [overlay],
-  );
+      );
+    }
+  }, [overlay, content, action, handleActionClick]);
+
+  if (!overlayContent) {
+    return children;
+  }
 
   return (
     <Tooltip

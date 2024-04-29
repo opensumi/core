@@ -7,6 +7,7 @@ import {
   replaceLocalizePlaceholder,
   toMarkdown,
   transformLabelWithCodicon,
+  transformLabelWithCodiconHtml,
 } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
@@ -84,7 +85,12 @@ export const StatusBarItem = memo((props: StatusBarEntry) => {
       return <StatusBarPopover contents={hoverContents} />;
     }
     if (tooltip && (tooltip as IMarkdownString).value) {
-      return toMarkdown((tooltip as IMarkdownString).value, openerService);
+      const value = transformLabelWithCodiconHtml(
+        (tooltip as IMarkdownString).value,
+        {},
+        iconService.fromString.bind(iconService),
+      );
+      return toMarkdown(value, openerService);
     }
     return (
       isString(tooltip) && (
