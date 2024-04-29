@@ -32,10 +32,6 @@ class GlobalStyleSheet implements IStyleSheet {
   public deleteRule(index: number): void {
     this.styleSheet.deleteRule(index);
   }
-
-  public removeClass(classname: string): void {
-    this.removeRuleBySelector(`.${classname}`);
-  }
 }
 
 @Injectable()
@@ -55,7 +51,7 @@ export class CSSStyleService implements ICSSStyleService {
   }
 
   removeClass(classname: string) {
-    this.globalStyleSheet.removeClass(classname);
+    this.globalStyleSheet.removeRuleBySelector(`.${classname}`);
   }
 }
 

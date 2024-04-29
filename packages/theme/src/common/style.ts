@@ -11,6 +11,7 @@ export const emptyResult: IStyleInsertResult = {
 
 export interface IStyleSheet {
   insertSelector(selector: string, rule: string): IStyleInsertResult;
+  removeRuleBySelector(selector: string): void;
   deleteRule(index: number): void;
 }
 

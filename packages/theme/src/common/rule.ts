@@ -1,7 +1,8 @@
-import { StackingLevel } from '@opensumi/ide-core-browser';
+import { StackingLevelStr } from '@opensumi/ide-core-browser';
 
-import { registerCSSVar } from '.';
+import { registerCSSVar } from './css-var';
 
-Object.entries(StackingLevel).forEach(([key, value]) => {
-  registerCSSVar(`stacking-level-${key.toLowerCase()}`, value.toString());
+// Register all stacking levels as CSS variables
+Object.entries(StackingLevelStr).forEach(([key, value]) => {
+  registerCSSVar(`stacking-level-${key.toLowerCase()}`, value);
 });
