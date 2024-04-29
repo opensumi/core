@@ -125,9 +125,19 @@ const MergeActions: React.FC = observer(() => {
     return () => dispose.dispose();
   }, [mergeEditorService]);
 
-  const handleApply = useCallback(() => {
-    // todo: apply and stash
-    mergeEditorService.accept();
+  const [applyLoading, setApplyLoading] = useState(false);
+
+  const handleApply = useCallback(async () => {
+    setApplyLoading(true);
+    try {
+      const result = await mergeEditorService.accept();
+      if (result) {
+      }
+    } catch (e) {
+      logger.error(e);
+    } finally {
+      setApplyLoading(false);
+    }
   }, [mergeEditorService]);
 
   const handleAcceptLeft = useCallback(() => {
@@ -274,6 +284,7 @@ const MergeActions: React.FC = observer(() => {
         )}
         <span className={styles.line_vertical}></span>
         <Button
+          loading={applyLoading}
           id='merge.editor.action.button.apply'
           size='default'
           className={styles.merge_editor_apply_btn}

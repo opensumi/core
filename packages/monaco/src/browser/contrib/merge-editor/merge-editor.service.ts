@@ -16,6 +16,7 @@ import { IDialogService } from '@opensumi/ide-overlay';
 
 import { DetailedLineRangeMapping } from '../../../common/diff';
 
+import { GitCommands } from './constants';
 import { MappingManagerService } from './mapping-manager.service';
 import { ComputerDiffModel } from './model/computer-diff';
 import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, ECompleteReason, IEditorMountParameter } from './types';
@@ -230,7 +231,7 @@ export class MergeEditorService extends Disposable {
       });
   }
 
-  public async accept(): Promise<void> {
+  public async accept(): Promise<boolean> {
     const continueText = localize('mergeEditor.conflict.action.apply.confirm.continue');
     const completeText = localize('mergeEditor.conflict.action.apply.confirm.complete');
 
@@ -251,7 +252,7 @@ export class MergeEditorService extends Disposable {
       const model = this.resultView.getModel();
 
       const allRanges = this.mappingManagerService.getAllDiffRanges();
-      const useAiConflictPointNum = allRanges.filter(
+      const useAIConflictPointNum = allRanges.filter(
         (range) => range.getIntelligentStateModel().isComplete === true,
       ).length;
       let receiveNum = 0;
@@ -269,7 +270,7 @@ export class MergeEditorService extends Disposable {
         });
 
       this.mergeConflictReportService.report(this.resultView.getUri(), {
-        useAiConflictPointNum,
+        useAiConflictPointNum: useAIConflictPointNum,
         receiveNum,
       });
 
@@ -281,6 +282,7 @@ export class MergeEditorService extends Disposable {
       this.fireRestoreState(uri);
 
       await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id);
+      await this.commandService.executeCommand(`${GitCommands.Stage}-${uri.toString()}`);
     };
 
     const { completeCount, shouldCount } = this.resultView.completeSituation();
@@ -291,15 +293,16 @@ export class MergeEditorService extends Disposable {
       ]);
 
       if (result === continueText) {
-        return;
+        return false;
       }
 
       if (result === completeText) {
         await saveApply();
       }
-      return;
+      return true;
     } else {
       await saveApply();
+      return true;
     }
   }
 

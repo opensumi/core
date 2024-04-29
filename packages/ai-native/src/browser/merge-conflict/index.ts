@@ -37,6 +37,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser/merge-conflict';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco';
+import { GitCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AI_RESOLVE_REGENERATE_ACTIONS,
@@ -561,11 +562,11 @@ export class MergeConflictContribution
           this.cancelRequestToken();
         },
       }),
-      commands.afterExecuteCommand('git.stage', (args) => {
+      commands.afterExecuteCommand(GitCommands.Stage, (args) => {
         this.reportConflictData();
         return args;
       }),
-      commands.afterExecuteCommand('git.stageAllMerge', (args) => {
+      commands.afterExecuteCommand(GitCommands.StageAllMerge, (args) => {
         this.reportConflictData();
         return args;
       }),
