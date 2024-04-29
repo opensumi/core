@@ -77,12 +77,12 @@ export function transformLabelWithCodiconHtml(
       }
       const icon = transformer(e);
       if (icon) {
-        return `<span class="${icon}" />`;
+        return `<span class="kt-icon ${icon}" style="font-size: 14px;" ></span>`;
       } else if (ICON_REGX.test(e)) {
         if (e.includes('~')) {
           const [, , icon, animate] = ICON_WITH_ANIMATE_REGX.exec(e) || [];
           if (animate && icon) {
-            return `<span class="${icon}" style="animation: kt-icon-${animate} 1.5s steps(30) infinite;" />`;
+            return `<span class="kt-icon ${icon} codicon-animation-${animate}" style="font-size: 14px;" ></span>`;
           }
         }
         const newStr = e.replaceAll(ICON_REGX, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
