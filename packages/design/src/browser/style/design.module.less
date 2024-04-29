@@ -119,6 +119,18 @@
         .design-close_tab {
           display: block;
         }
+
+        &.design-kt_editor_tab_dirty {
+          .design-close_tab {
+            display: none;
+          }
+
+          &:hover {
+            .design-close_tab {
+              display: block;
+            }
+          }
+        }
       }
 
       &.design-kt_editor_tab_current_prev {
