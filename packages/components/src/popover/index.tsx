@@ -109,7 +109,7 @@ export const Popover: React.FC<IPopoverProps> = ({
       {...restProps}
       visible={visible}
       placement={position}
-      mouseEnterDelay={delay}
+      mouseEnterDelay={delay ? delay / 1000 : undefined}
       trigger={trigger}
       showArrow={showArrow}
       onVisibleChange={onVisibleChange}
