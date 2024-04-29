@@ -33,17 +33,12 @@ export const FloatingClickWidget = observer(() => {
           className={styles.float_smart_button}
           iconClass={cls(getIcon('magic-wand'), styles.float_smart_button_icon)}
           onClick={showDynamicQuickPickToInsert}
-          size='large'
         >
           {localize('debug.action.add.smartAddConfiguration')}
         </Button>
       )}
-      <Button onClick={addConfiguration} size='large'>
-        {localize('debug.action.add.configuration')}
-      </Button>
-      <Button onClick={openLaunchEditor} size='large'>
-        {localize('debug.action.open.launch.editor')}
-      </Button>
+      <Button onClick={addConfiguration}>{localize('debug.action.add.configuration')}</Button>
+      <Button onClick={openLaunchEditor}>{localize('debug.action.open.launch.editor')}</Button>
     </div>
   );
 });
