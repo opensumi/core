@@ -19,13 +19,7 @@ import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-c
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import 'react-chat-elements/dist/main.css';
-import {
-  AI_CHAT_VIEW_ID,
-  ChatMessageRole,
-  IChatAgentService,
-  IChatInternalService,
-  IChatMessageStructure,
-} from '../../common';
+import { AI_CHAT_VIEW_ID, IChatAgentService, IChatInternalService, IChatMessageStructure } from '../../common';
 import { CodeBlockWrapperInput } from '../components/ChatEditor';
 import { ChatInput } from '../components/ChatInput';
 import { ChatMarkdown } from '../components/ChatMarkdown';
@@ -486,14 +480,14 @@ export const AIChatView = observer(() => {
         </div>
         <div className={styles.right}>
           <Popover
-            insertClass={styles.popover_icon}
+            overlayClassName={styles.popover_icon}
             id={'ai-chat-header-clear'}
             title={localize('aiNative.operate.clear.title')}
           >
             <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('clear')} onClick={handleClear} />
           </Popover>
           <Popover
-            insertClass={styles.popover_icon}
+            overlayClassName={styles.popover_icon}
             id={'ai-chat-header-close'}
             title={localize('aiNative.operate.close.title')}
           >
