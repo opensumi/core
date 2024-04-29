@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-import { AppConfig, ViewContextKeyRegistry, localize, useInjectable } from '@opensumi/ide-core-browser';
+import { ViewContextKeyRegistry, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { AbstractContextMenuService, IContextMenu, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
 
@@ -13,7 +14,7 @@ import styles from './testing.module.less';
 export const TestingView = () => {
   const menuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
   const viewContextKeyRegistry = useInjectable<ViewContextKeyRegistry>(ViewContextKeyRegistry);
-  const appConfig = useInjectable<AppConfig>(AppConfig);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
 
   const [menus, setMenus] = useState<IContextMenu>();
 
@@ -29,7 +30,7 @@ export const TestingView = () => {
     <div className={styles.testing_container}>
       <TitleBar
         title={localize('test.title')}
-        height={appConfig.layoutViewSize!.panelTitleBarHeight}
+        height={layoutViewSize.panelTitleBarHeight}
         menubar={menus ? <InlineMenuBar menus={menus}></InlineMenuBar> : null}
       />
       {/* 筛选器暂时先不搞 */}

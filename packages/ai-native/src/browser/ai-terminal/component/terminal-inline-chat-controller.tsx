@@ -21,12 +21,12 @@ export const TerminalInlineWidgetForDetection = ({ actions, onClickItem }: ITerm
   return (
     <div
       onMouseOver={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
         setDisplayAIButton(true);
+        e.currentTarget.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
       }}
       onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = '';
         setDisplayAIButton(false);
+        e.currentTarget.style.backgroundColor = '';
       }}
       style={{
         width: '100%',

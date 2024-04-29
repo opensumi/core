@@ -37,7 +37,7 @@ import {
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco';
-import { BaseInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
+import { ReactInlineContentWidget } from '@opensumi/ide-monaco/lib/browser/ai-native/BaseInlineContentWidget';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   AI_RESOLVE_REGENERATE_ACTIONS,
@@ -148,10 +148,10 @@ interface IRequestCancel {
 }
 
 class WidgetFactory implements IWidgetFactory {
-  private widgetMap: Map<string, BaseInlineContentWidget>;
+  private widgetMap: Map<string, ReactInlineContentWidget>;
 
   constructor(
-    private contentWidget: ConstructorOf<BaseInlineContentWidget>,
+    private contentWidget: ConstructorOf<ReactInlineContentWidget>,
     private editor: ResultCodeEditor,
     private injector: Injector,
   ) {

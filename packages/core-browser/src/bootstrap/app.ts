@@ -54,7 +54,7 @@ import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
 import { CorePreferences, injectCorePreferences } from '../core-preferences';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
-import { LayoutViewSizeConfig } from '../layout/constants';
+import { DesignLayoutConfig, LayoutViewSizeConfig } from '../layout/constants';
 import { RenderedEvent } from '../layout/layout.interface';
 import { IMenuRegistry, MenuRegistryImpl } from '../menu/next/base';
 import {
@@ -143,8 +143,14 @@ export class ClientApp implements IClientApp, IDisposable {
       allowSetDocumentTitleFollowWorkspaceDir,
       devtools: opts.devtools ?? false,
       rpcMessageTimeout: opts.rpcMessageTimeout || -1,
-      layoutViewSize: new LayoutViewSizeConfig(opts.layoutViewSize),
     };
+
+    const layoutViewSizeConfig = this.injector.get(LayoutViewSizeConfig);
+    layoutViewSizeConfig.init(opts.layoutViewSize);
+    this.config.layoutViewSize = layoutViewSizeConfig;
+
+    const designLayoutConfig = this.injector.get(DesignLayoutConfig);
+    designLayoutConfig.setLayout(opts.designLayout, opts.AINativeConfig?.layout);
 
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });

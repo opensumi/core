@@ -49,7 +49,6 @@ import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/mer
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/ide-monaco/lib/common/common';
-import { EditorContributionInstantiation } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -77,7 +76,6 @@ import { EditorView } from './editor.view';
 import { DocumentFormatService } from './format/format.service';
 import { FormattingSelector } from './format/formatter-selector';
 import { EditorHistoryService } from './history';
-import { OpenSumiLightBulbWidget } from './light-bulb-widget';
 import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
@@ -255,10 +253,6 @@ export class EditorContribution
         this.contextMenuRenderer,
       ]),
     );
-
-    if (this.aiNativeConfigService.capabilities.supportsOpenSumiDesign) {
-      register(OpenSumiLightBulbWidget.ID, OpenSumiLightBulbWidget, EditorContributionInstantiation.Lazy);
-    }
   }
 
   protected getMimeForMode(langId: string): string | undefined {

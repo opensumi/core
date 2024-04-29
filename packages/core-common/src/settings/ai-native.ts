@@ -4,3 +4,4 @@ export enum AINativeSettingSectionsId {
   CHAT_VISIBLE_TYPE = 'ai.native.chat.visible.type',
 }
 export const AI_NATIVE_SETTING_GROUP_ID = 'AI-Native';
+export const AI_NATIVE_SETTING_GROUP_TITLE = 'AI Native';

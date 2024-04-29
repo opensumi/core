@@ -1,21 +1,18 @@
 import hljs from 'highlight.js';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { DisposableCollection } from '@opensumi/ide-core-browser';
+import { DisposableCollection, useInjectable } from '@opensumi/ide-core-browser';
 import { ChatRenderRegistryToken, IAIReporter, localize } from '@opensumi/ide-core-common';
 
 import { IChatInternalService } from '../../common/index';
 import { ChatInternalService } from '../chat/chat.internal.service';
 import { ChatRenderRegistry } from '../chat/chat.render.registry';
 import { MsgHistoryManager } from '../model/msg-history-manager';
-import { EMsgStreamStatus } from '../model/msg-stream-manager';
-import { IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
+import { EMsgStreamStatus, IMsgStreamChoices, MsgStreamManager } from '../model/msg-stream-manager';
 
 import { ChatMarkdown } from './ChatMarkdown';
 import { ChatThinking, ChatThinkingResult } from './ChatThinking';
 import styles from './components.module.less';
-
 
 interface IStreamMsgWrapperProps {
   sessionId: string;

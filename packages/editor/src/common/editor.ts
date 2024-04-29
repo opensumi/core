@@ -567,6 +567,8 @@ export interface IResourceOpenOptions {
 
   /**
    * @deprecated use focus instead
+   *
+   * An optional flag that when `true` will stop the editor from taking focus.
    */
   preserveFocus?: boolean;
 

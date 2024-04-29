@@ -13,11 +13,10 @@ export const modules: ConstructorOf<BrowserModule>[] = [...CommonBrowserModules,
 const customClientOpts = ((window as any).SUMI_CLIENT_OPTS || {}) as IClientAppOpts;
 
 renderApp({
+  ...customClientOpts,
   layoutConfig: defaultConfig,
   useCdnIcon: true,
-  // @ts-ignore
   modules,
-  ...customClientOpts,
   defaultPreferences: {
     'application.confirmExit': 'never',
     'general.theme': 'ide-dark',

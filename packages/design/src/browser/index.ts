@@ -15,6 +15,7 @@ import { IThemeContribution, IThemeService, IThemeStore } from '@opensumi/ide-th
 import { ThemeStore } from '@opensumi/ide-theme/lib/browser/theme-store';
 
 import { DesignCoreContribution } from './design.contribution';
+import { DesignMenuBarContribution } from './menu-bar/menu-bar.contribution';
 import { DesignEditorTabService } from './override/editor-tab.service';
 import { DesignBrowserCtxMenuService } from './override/menu.service';
 import { DesignSplitPanelService } from './override/split-panel.service';
@@ -24,7 +25,7 @@ import lightTheme from './theme/light-theme';
 
 @Injectable()
 export class DesignModule extends BrowserModule {
-  providers: Provider[] = [DesignCoreContribution];
+  providers: Provider[] = [DesignMenuBarContribution, DesignCoreContribution];
 
   preferences = (injector: Injector) => {
     import('./style/global.less');

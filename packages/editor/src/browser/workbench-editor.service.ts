@@ -2061,7 +2061,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   /**
-   * 当前打开的resource
+   * current opened resource
    */
   get currentResource(): MaybeNull<IResource> {
     return this._currentResource;

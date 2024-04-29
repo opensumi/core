@@ -1,14 +1,14 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import { ComponentContribution, ComponentRegistry, Disposable, Domain } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, IMenubarItem, ISubmenuItem, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenubarStore } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.store';
 
-import { AI_MENUBAR_CONTAINER_VIEW_ID } from '../../../common';
+import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '../../common';
 
-import { AIMenuBarView } from './menu-bar.view';
+import { DesignMenuBarView } from './menu-bar.view';
 
 @Domain(ComponentContribution)
-export class AIMenuBarContribution extends Disposable implements ComponentContribution {
+export class DesignMenuBarContribution extends Disposable implements ComponentContribution {
   @Autowired(MenubarStore)
   private readonly menubarStore: MenubarStore;
 
@@ -18,12 +18,12 @@ export class AIMenuBarContribution extends Disposable implements ComponentContri
   constructor() {
     super();
 
-    this.menubarStore.unregisterMenusBarByCompact(MenuId.AIMenuBarTopExtra);
+    this.menubarStore.unregisterMenusBarByCompact(MenuId.DesignMenuBarTopExtra);
 
     this.addDispose(
       this.menubarStore.onDidMenuBarChange((menubarItems: IMenubarItem[]) => {
         this.menuRegistry.registerMenuItems(
-          MenuId.AIMenuBarTopExtra,
+          MenuId.DesignMenuBarTopExtra,
           menubarItems.map(
             (item: IMenubarItem) =>
               ({
@@ -40,9 +40,9 @@ export class AIMenuBarContribution extends Disposable implements ComponentContri
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register(AI_MENUBAR_CONTAINER_VIEW_ID, {
-      component: AIMenuBarView,
-      id: AI_MENUBAR_CONTAINER_VIEW_ID,
+    registry.register(DESIGN_MENUBAR_CONTAINER_VIEW_ID, {
+      component: DesignMenuBarView,
+      id: DESIGN_MENUBAR_CONTAINER_VIEW_ID,
     });
   }
 }
