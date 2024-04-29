@@ -147,6 +147,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
     const layoutViewSizeConfig = this.injector.get(LayoutViewSizeConfig);
     layoutViewSizeConfig.init(opts.layoutViewSize);
+    this.config.layoutViewSize = layoutViewSizeConfig;
+
     const designLayoutConfig = this.injector.get(DesignLayoutConfig);
     designLayoutConfig.setLayout(opts.designLayout, opts.AINativeConfig?.layout);
 

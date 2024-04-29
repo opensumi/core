@@ -3,7 +3,6 @@ import { UrlProvider } from '@opensumi/ide-core-common';
 
 import { BrowserModule } from '../browser-module';
 import { ClientAppContribution } from '../common/common.define';
-import { ILayoutViewSize } from '../layout/constants';
 import { AppConfig } from '../react-providers';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
@@ -46,11 +45,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   useCdnIcon?: boolean;
   // 插件开发模式下指定的插件路径
   extensionDevelopmentPath?: string | string[];
-
-  /**
-   * Define the default size (height) of each layout block in the IDE
-   */
-  layoutViewSize?: Partial<ILayoutViewSize>;
 }
 
 export interface LayoutConfig {

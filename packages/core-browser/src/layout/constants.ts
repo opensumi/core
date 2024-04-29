@@ -34,7 +34,6 @@ export class LayoutViewSizeConfig implements ILayoutViewSize {
   #panelTitleBarHeight: number;
   #statusBarHeight: number;
   #accordionHeaderSizeHeight: number;
-  layoutViewSize: Partial<ILayoutViewSize> | undefined;
 
   private inited = false;
   init(layoutViewSize: Partial<ILayoutViewSize> = {}) {

@@ -2,6 +2,8 @@ import React from 'react';
 
 import { IAINativeConfig } from '@opensumi/ide-core-common';
 
+import { ILayoutViewSize } from '../layout/constants';
+
 import type { IPreferences, LayoutConfig } from '../bootstrap';
 import type { Injector } from '@opensumi/di';
 import type {
@@ -268,6 +270,11 @@ export interface AppConfig {
    * Collaboration Client Options
    */
   collaborationOptions?: ICollaborationClientOpts;
+
+  /**
+   * Define the default size (height) of each layout block in the IDE
+   */
+  layoutViewSize?: Partial<ILayoutViewSize>;
 }
 
 export interface ICollaborationClientOpts {
