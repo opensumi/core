@@ -480,14 +480,14 @@ export const AIChatView = observer(() => {
         </div>
         <div className={styles.right}>
           <Popover
-            insertClass={styles.popover_icon}
+            overlayClassName={styles.popover_icon}
             id={'ai-chat-header-clear'}
             title={localize('aiNative.operate.clear.title')}
           >
             <EnhanceIcon wrapperClassName={styles.action_btn} className={getIcon('clear')} onClick={handleClear} />
           </Popover>
           <Popover
-            insertClass={styles.popover_icon}
+            overlayClassName={styles.popover_icon}
             id={'ai-chat-header-close'}
             title={localize('aiNative.operate.close.title')}
           >
