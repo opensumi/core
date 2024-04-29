@@ -61,7 +61,7 @@ export const Popover: React.FC<IPopoverProps> = ({
   overlayStyle,
   action,
   delay,
-  zIndex = 100,
+  zIndex = 10000,
   onClickAction,
   onVisibleChange,
   ...restProps
