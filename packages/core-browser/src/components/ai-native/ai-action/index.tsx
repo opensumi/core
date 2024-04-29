@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 
-import { AIInlineChatContentWidget } from '@opensumi/ide-core-common';
+import { AIInlineChatContentWidgetId } from '@opensumi/ide-core-common';
 
 import { MenuNode } from '../../../menu/next/base';
 import { createLayoutEventType } from '../../../monaco';
@@ -55,7 +55,7 @@ export interface AIActionProps {
   onClose?: () => void;
 }
 
-const layoutEventType = createLayoutEventType(AIInlineChatContentWidget);
+const layoutEventType = createLayoutEventType(AIInlineChatContentWidgetId);
 const layoutEvent = new CustomEvent(layoutEventType, {
   bubbles: true,
 });

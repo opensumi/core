@@ -1,1 +1,1 @@
-export const AIInlineChatContentWidget = 'AI-Inline-Chat-Content-Widget';
+export const AIInlineChatContentWidgetId = 'AI-Inline-Chat-Content-Widget';

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { IAIInlineChatService, StackingLevelStr } from '@opensumi/ide-core-browser';
-import { AIInlineChatContentWidget, Emitter } from '@opensumi/ide-core-common';
+import { AIInlineChatContentWidgetId, Emitter } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 import {
@@ -111,7 +111,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
   }
 
   id(): string {
-    return AIInlineChatContentWidget;
+    return AIInlineChatContentWidgetId;
   }
 
   override getPosition(): monaco.editor.IContentWidgetPosition | null {
@@ -300,7 +300,7 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
     }
 
     if (targetLine && direction) {
-      const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) - 1;
+      const column = this.safeGetLineLastNonWhitespaceColumn(targetLine) + 1;
 
       if (direction === 'below') {
         return this.toBelowPosition(targetLine, column);

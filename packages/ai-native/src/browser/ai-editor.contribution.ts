@@ -4,7 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { AINativeConfigService, IAIInlineChatService, PreferenceService } from '@opensumi/ide-core-browser';
 import { IBrowserCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import {
-  AIInlineChatContentWidget,
+  AIInlineChatContentWidgetId,
   AINativeSettingSectionsId,
   AISerivceType,
   CancelResponse,
@@ -238,7 +238,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
       monacoEditor.onMouseUp((event) => {
         const target = event.target;
         const detail = (target as any).detail;
-        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidget) {
+        if (detail && typeof detail === 'string' && detail === AIInlineChatContentWidgetId) {
           needShowInlineChat = false;
         } else {
           needShowInlineChat = true;

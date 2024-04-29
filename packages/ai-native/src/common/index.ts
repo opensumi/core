@@ -1,4 +1,5 @@
 import {
+  AIInlineChatContentWidgetId,
   AISerivceType,
   CancellationToken,
   Event,
@@ -11,7 +12,10 @@ import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/commo
 
 export const IAINativeService = Symbol('IAINativeService');
 
-export { AIInlineChatContentWidget } from '@opensumi/ide-core-common';
+/**
+ * @deprecated Use {@link AIInlineChatContentWidgetId} instead
+ */
+export const AIInlineChatContentWidget = AIInlineChatContentWidgetId;
 
 export const AI_CHAT_VIEW_ID = 'AI-Chat';
 export const AI_CHAT_CONTAINER_ID = 'AI-Chat-Container';
