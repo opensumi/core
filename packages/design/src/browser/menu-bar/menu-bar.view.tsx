@@ -3,22 +3,22 @@ import * as React from 'react';
 
 import { AINativeConfigService, SlotLocation, SlotRenderer, getIcon, useInjectable } from '@opensumi/ide-core-browser';
 import { Icon } from '@opensumi/ide-core-browser/lib/components';
-import { AILogoAvatar, EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
+import { DesignLayoutConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandService } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { AI_CHAT_VIEW_ID } from '../../../common/';
-import { AI_MENU_BAR_LEFT, AI_MENU_BAR_RIGHT } from '../layout-config';
+import { DESIGN_MENU_BAR_LEFT, DESIGN_MENU_BAR_RIGHT } from '../../common';
 
-import opensumiLogo from './logo.svg';
+import OpenSumiLogo from './logo.svg';
 import styles from './menu-bar.module.less';
 
-const AIMenuBarRender = () => {
+const DesignMenuBarRender = () => {
   const contextmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
+  const designLayoutConfig = useInjectable<DesignLayoutConfig>(DesignLayoutConfig);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
-  const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
 
   const iconRef = React.useRef<HTMLDivElement | null>(null);
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
@@ -38,7 +38,7 @@ const AIMenuBarRender = () => {
   const extraTopMenus = React.useMemo(
     () =>
       contextmenuService.createMenu({
-        id: MenuId.AIMenuBarTopExtra,
+        id: MenuId.DesignMenuBarTopExtra,
       }),
     [contextmenuService],
   );
@@ -57,10 +57,7 @@ const AIMenuBarRender = () => {
     });
   }, [anchor, extraTopMenus]);
 
-  const logo = React.useMemo(
-    () => aiNativeConfigService.layout.menubarLogo || opensumiLogo,
-    [aiNativeConfigService.layout.menubarLogo],
-  );
+  const logo = React.useMemo(() => designLayoutConfig.menubarLogo || OpenSumiLogo, [designLayoutConfig.menubarLogo]);
 
   return (
     <>
@@ -74,17 +71,29 @@ const AIMenuBarRender = () => {
   );
 };
 
-export const AIMenuBarView = () => {
+export const DesignMenuBarView = () => {
   const commandService = useInjectable<CommandService>(CommandService);
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const aiNativeConfigService = useInjectable<AINativeConfigService>(AINativeConfigService);
-  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  const [isVisiablePanel, setIsVisiablePanel] = React.useState<boolean>(false);
+  const [isLeftPanelVisible, setIsVisiablePanel] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     requestAnimationFrame(() => {
       setIsVisiablePanel(isVisiable());
     });
+
+    const tabbarService = mainLayoutService.getTabbarService(SlotLocation.left);
+    const toDispose = tabbarService.onCurrentChange(({ previousId, currentId }) => {
+      if (previousId && !currentId) {
+        setIsVisiablePanel(false);
+      } else if (!previousId && currentId) {
+        setIsVisiablePanel(true);
+      }
+    });
+
+    return () => {
+      toDispose.dispose();
+    };
   }, []);
 
   const handleLeftMenuVisiable = React.useCallback(() => {
@@ -99,34 +108,27 @@ export const AIMenuBarView = () => {
     return !!tabbarService.currentContainerId;
   }, [mainLayoutService]);
 
-  const handleChatVisible = React.useCallback(() => {
-    layoutService.toggleSlot(AI_CHAT_VIEW_ID);
-  }, [layoutService]);
-
   return (
     <div
       id={VIEW_CONTAINERS.MENUBAR}
       className={styles.menu_bar_view}
-      style={{ height: aiNativeConfigService.appConfig.layoutViewSize?.menubarHeight }}
+      style={{ height: aiNativeConfigService.layoutViewSize.menubarHeight }}
     >
       <div className={styles.container}>
         <div className={styles.left}>
           <EnhanceIcon
             wrapperClassName={styles.enhance_menu}
-            icon={isVisiablePanel ? 'left-nav-open' : 'left-nav-close'}
+            icon={isLeftPanelVisible ? 'left-nav-open' : 'left-nav-close'}
             onClick={handleLeftMenuVisiable}
           />
           <span className={styles.dividing}></span>
           <div className={styles.top_menus_bar}>
-            <AIMenuBarRender />
+            <DesignMenuBarRender />
           </div>
-          <SlotRenderer slot={AI_MENU_BAR_LEFT} flex={1} overflow={'initial'} />
+          <SlotRenderer slot={DESIGN_MENU_BAR_LEFT} flex={1} overflow={'initial'} />
         </div>
         <div className={styles.right}>
-          <SlotRenderer slot={AI_MENU_BAR_RIGHT} flex={1} overflow={'initial'} />
-          <div className={styles.ai_switch} onClick={handleChatVisible}>
-            <AILogoAvatar iconClassName={styles.avatar_icon_large} />
-          </div>
+          <SlotRenderer slot={DESIGN_MENU_BAR_RIGHT} flex={1} overflow={'initial'} />
         </div>
       </div>
     </div>

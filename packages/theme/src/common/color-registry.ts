@@ -24,8 +24,6 @@ export const Extensions = {
   ColorContribution: 'base.contributions.colors',
 };
 
-// < --- Workbench (not customizable) --- >
-
 export function WORKBENCH_BACKGROUND(theme: ITheme): Color {
   switch (theme.type) {
     case 'dark':

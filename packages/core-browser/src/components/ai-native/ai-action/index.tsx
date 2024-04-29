@@ -1,6 +1,10 @@
 import React, { useCallback } from 'react';
 
+import { AIInlineChatContentWidgetId } from '@opensumi/ide-core-common';
+
 import { MenuNode } from '../../../menu/next/base';
+import { createLayoutEventType } from '../../../monaco';
+import { useChange, useHover } from '../../../react-hooks';
 import { AILogoAvatar, EnhanceIcon, EnhanceIconWithCtxMenu } from '../enhanceIcon';
 import { LineVertical } from '../line-vertical';
 import { EnhancePopover } from '../popover';
@@ -51,8 +55,16 @@ export interface AIActionProps {
   onClose?: () => void;
 }
 
+const layoutEventType = createLayoutEventType(AIInlineChatContentWidgetId);
+const layoutEvent = new CustomEvent(layoutEventType, {
+  bubbles: true,
+});
+
 export const AIAction = (props: AIActionProps) => {
   const { operationList, moreOperation, showClose, onClickItem, onClose } = props;
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [ref, isHovered] = useHover<HTMLDivElement>();
 
   const handleClose = useCallback(() => {
     if (onClose) {
@@ -60,11 +72,17 @@ export const AIAction = (props: AIActionProps) => {
     }
   }, [onClose]);
 
+  useChange(isHovered, () => {
+    if (containerRef.current) {
+      containerRef.current.dispatchEvent(layoutEvent);
+    }
+  });
+
   return (
-    <div className={styles.ai_action}>
-      <AILogoAvatar />
-      <LineVertical {...{ height: '60%', margin: '0px 4px 0 8px' }} />
-      <div className={styles.operate_container}>
+    <div ref={containerRef} className={styles.ai_action}>
+      <AILogoAvatar className={styles.ai_action_icon} />
+      <LineVertical height='60%' margin='0px 4px 0 8px' />
+      <div ref={ref} className={styles.operate_container}>
         {operationList.map(({ name, title, id }, i) =>
           title ? (
             <EnhancePopover id={id} title={title} key={`popover_${i}`}>
@@ -90,8 +108,13 @@ export const AIAction = (props: AIActionProps) => {
           />
         ) : null}
         {showClose !== false && (
-          <div className={styles.close_container}>
-            <LineVertical {...{ height: '60%', margin: '0px 4px 0 4px' }} />
+          <div
+            className={styles.close_container}
+            style={{
+              display: isHovered ? 'flex' : 'none',
+            }}
+          >
+            <LineVertical height='60%' margin='0px 4px 0 4px' />
             <EnhanceIcon wrapperClassName={styles.operate_btn} icon={'window-close'} onClick={handleClose} />
           </div>
         )}

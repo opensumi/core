@@ -2,11 +2,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--panel-background);
   border-radius: 12px;
   overflow: hidden;
   font-size: 14px;
   user-select: text;
+
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-top: none;
 
   .ai_chat_hexagon_box {
     width: 20px;
@@ -124,6 +127,7 @@
   .body_container {
     display: flex;
     height: calc(100% - 36px);
+    background-color: var(--panel-background);
 
     .left_bar {
       display: flex;
@@ -156,6 +160,9 @@
 
         &::-webkit-scrollbar {
           width: 4px;
+          &:hover {
+            width: 10px;
+          }
         }
 
         .message_list {

@@ -10,6 +10,7 @@ import {
   ComponentRegistry,
   ConfigContext,
   ConfigProvider,
+  DisposableStore,
   ErrorBoundary,
   IEventBus,
   MaybeNull,
@@ -27,10 +28,12 @@ import {
 } from '@opensumi/ide-core-browser/lib/components';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 
 import { IResource, WorkbenchEditorService } from '../common';
 
 import { EditorComponentRegistryImpl } from './component';
+import { EditorContext, IEditorContext, defaultEditorContext } from './editor.context';
 import styles from './editor.module.less';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';
@@ -324,6 +327,8 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
 });
 
 export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
+  const [context, setContext] = React.useState<IEditorContext>(defaultEditorContext);
+
   const editorBodyRef = React.useRef<HTMLDivElement>(null);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const eventBus = useInjectable(IEventBus) as IEventBus;
@@ -336,6 +341,14 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
+    const disposables = new DisposableStore();
+
+    disposables.add(
+      group.onDidEditorGroupBodyChanged(() => {
+        forceUpdate();
+      }),
+    );
+
     if (codeEditorRef.current) {
       if (cachedEditor[group.name]) {
         cachedEditor[group.name].remove();
@@ -345,6 +358,20 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         codeEditorRef.current.appendChild(container);
         cachedEditor[group.name] = container;
         group.createEditor(container);
+        const minimapWith = group.codeEditor.monacoEditor.getOption(monaco.editor.EditorOption.layoutInfo).minimap
+          .minimapWidth;
+        setContext({ minimapWidth: minimapWith });
+
+        disposables.add(
+          group.codeEditor.monacoEditor.onDidChangeConfiguration((e) => {
+            if (e.hasChanged(monaco.editor.EditorOption.layoutInfo)) {
+              setContext({
+                minimapWidth: group.codeEditor.monacoEditor.getOption(monaco.editor.EditorOption.layoutInfo).minimap
+                  .minimapWidth,
+              });
+            }
+          }),
+        );
       }
     }
 
@@ -354,15 +381,11 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
     if (mergeEditorRef.current) {
       group.attachMergeEditorDom(mergeEditorRef.current);
     }
-  }, [codeEditorRef.current, diffEditorRef.current, mergeEditorRef.current]);
 
-  useDisposable(
-    () =>
-      group.onDidEditorGroupBodyChanged(() => {
-        forceUpdate();
-      }),
-    [],
-  );
+    return () => {
+      disposables.dispose();
+    };
+  }, []);
 
   group.activeComponents.forEach((resources, component) => {
     const initialProps = group.activateComponentsProps.get(component);
@@ -410,79 +433,81 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   });
 
   return (
-    <div
-      id={VIEW_CONTAINERS.EDITOR}
-      ref={editorBodyRef}
-      className={styles.kt_editor_body}
-      onDragOver={(e) => {
-        e.preventDefault();
-        if (editorBodyRef.current) {
-          const position = getDragOverPosition(e.nativeEvent, editorBodyRef.current);
-          decorateDragOverElement(editorBodyRef.current, position);
-        }
-      }}
-      onDragLeave={(e) => {
-        if (editorBodyRef.current) {
-          removeDecorationDragOverElement(editorBodyRef.current);
-        }
-      }}
-      onDrop={(e) => {
-        if (editorBodyRef.current) {
-          removeDecorationDragOverElement(editorBodyRef.current);
-          if (e.dataTransfer.getData('uri')) {
-            const uri = new URI(e.dataTransfer.getData('uri'));
-            let sourceGroup: EditorGroup | undefined;
-            if (e.dataTransfer.getData('uri-source-group')) {
-              sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+    <EditorContext.Provider value={context}>
+      <div
+        id={VIEW_CONTAINERS.EDITOR}
+        ref={editorBodyRef}
+        className={styles.kt_editor_body}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (editorBodyRef.current) {
+            const position = getDragOverPosition(e.nativeEvent, editorBodyRef.current);
+            decorateDragOverElement(editorBodyRef.current, position);
+          }
+        }}
+        onDragLeave={(e) => {
+          if (editorBodyRef.current) {
+            removeDecorationDragOverElement(editorBodyRef.current);
+          }
+        }}
+        onDrop={(e) => {
+          if (editorBodyRef.current) {
+            removeDecorationDragOverElement(editorBodyRef.current);
+            if (e.dataTransfer.getData('uri')) {
+              const uri = new URI(e.dataTransfer.getData('uri'));
+              let sourceGroup: EditorGroup | undefined;
+              if (e.dataTransfer.getData('uri-source-group')) {
+                sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+              }
+              group.dropUri(uri, getDragOverPosition(e.nativeEvent, editorBodyRef.current), sourceGroup);
             }
-            group.dropUri(uri, getDragOverPosition(e.nativeEvent, editorBodyRef.current), sourceGroup);
+            if (e.dataTransfer.files.length > 0) {
+              eventBus.fire(
+                new EditorGroupFileDropEvent({
+                  group,
+                  files: e.dataTransfer.files,
+                  position: getDragOverPosition(e.nativeEvent, editorBodyRef.current),
+                }),
+              );
+            }
           }
-          if (e.dataTransfer.files.length > 0) {
-            eventBus.fire(
-              new EditorGroupFileDropEvent({
-                group,
-                files: e.dataTransfer.files,
-                position: getDragOverPosition(e.nativeEvent, editorBodyRef.current),
-              }),
-            );
-          }
-        }
-      }}
-    >
-      {group.currentResource && <EditorSideView side={'top'} resource={group.currentResource}></EditorSideView>}
-      {!editorHasNoTab && <NavigationBar editorGroup={group} />}
-      <div className={styles.kt_editor_components}>
-        <div
-          className={cls({
-            [styles_kt_editor_component]: true,
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
-          })}
-        >
-          {components}
+        }}
+      >
+        {group.currentResource && <EditorSideView side={'top'} resource={group.currentResource}></EditorSideView>}
+        {!editorHasNoTab && <NavigationBar editorGroup={group} />}
+        <div className={styles.kt_editor_components}>
+          <div
+            className={cls({
+              [styles_kt_editor_component]: true,
+              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
+            })}
+          >
+            {components}
+          </div>
+          <div
+            className={cls({
+              [styles.kt_editor_code_editor]: true,
+              [styles_kt_editor_component]: true,
+              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
+            })}
+            ref={codeEditorRef}
+          />
+          <div
+            className={cls(styles.kt_editor_diff_editor, styles_kt_editor_component, {
+              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
+            })}
+            ref={diffEditorRef}
+          />
+          <div
+            className={cls(styles.kt_editor_diff_3_editor, styles_kt_editor_component, {
+              [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
+            })}
+            ref={mergeEditorRef}
+          />
         </div>
-        <div
-          className={cls({
-            [styles.kt_editor_code_editor]: true,
-            [styles_kt_editor_component]: true,
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
-          })}
-          ref={codeEditorRef}
-        />
-        <div
-          className={cls(styles.kt_editor_diff_editor, styles_kt_editor_component, {
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
-          })}
-          ref={diffEditorRef}
-        />
-        <div
-          className={cls(styles.kt_editor_diff_3_editor, styles_kt_editor_component, {
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
-          })}
-          ref={mergeEditorRef}
-        />
+        {group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>}
       </div>
-      {group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>}
-    </div>
+    </EditorContext.Provider>
   );
 });
 

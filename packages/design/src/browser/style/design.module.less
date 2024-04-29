@@ -310,10 +310,6 @@ div[class*='design-editor_tab_block_container__'] {
 * ---------------- Override editor panel bottom tabbar style ---------------------
 */
 :global(.design_bottom_slot) {
-  .design-tab_bar {
-    height: 100%;
-  }
-
   .design-tab_panel {
     &::before {
       content: none;
@@ -327,7 +323,6 @@ div[class*='design-editor_tab_block_container__'] {
 
   .design-bottom_bar_container {
     width: 100%;
-    height: 32px;
   }
 
   .design-variable_repl_bar {
@@ -541,6 +536,9 @@ div[class*='design-editor_tab_block_container__'] {
 
     &::-webkit-scrollbar {
       width: 4px;
+      &:hover {
+        width: 10px;
+      }
     }
   }
 
@@ -580,8 +578,8 @@ div[class*='design-editor_tab_block_container__'] {
       }
 
       &:hover {
-        color: var(--design-text-hoverForeground);
-        background-color: var(--activityBar-activeBorder);
+        background-color: var(--badge-background);
+        color: var(--badge-foreground);
         border-radius: 4px;
         opacity: 1;
       }
@@ -717,5 +715,9 @@ div[class*='design-editor_tab_block_container__'] {
   &::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+
+    &:hover {
+      width: 10px;
+    }
   }
 }

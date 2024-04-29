@@ -33,3 +33,4 @@ export * from './clipboard';
 export * from './mime';
 export * from './application.lifecycle';
 export * from './extension.schema';
+export * from './ai-native';

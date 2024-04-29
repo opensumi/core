@@ -51,7 +51,7 @@ jobs:
         run: |
           yarn run download-extension
           yarn run rebuild:node
-          SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start &
+          SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start:e2e &
           bash tools/playwright/scripts/wait.sh && cd tools/playwright && yarn run ui-tests-ci
 
       - name: Upload test results
