@@ -24,16 +24,30 @@ const DesignMenuBarRender = () => {
   const [anchor, setAnchor] = React.useState<{ x: number; y: number } | undefined>(undefined);
 
   React.useEffect(() => {
-    if (iconRef.current) {
-      const rect = iconRef.current.getBoundingClientRect();
-      const { x, y, height } = rect;
-
-      setAnchor({
-        x,
-        y: y + height + 4,
-      });
-    }
+    handleRefRect();
   }, []);
+
+  const handleRefRect = React.useCallback(
+    (cb?: (_anchor: { x: number; y: number }) => void) => {
+      requestAnimationFrame(() => {
+        if (iconRef.current) {
+          const rect = iconRef.current.getBoundingClientRect();
+          const { x, y, width, height } = rect;
+          const _anchor = {
+            x,
+            y: y + height,
+          };
+
+          setAnchor(_anchor);
+
+          if (cb) {
+            cb(_anchor);
+          }
+        }
+      });
+    },
+    [iconRef.current],
+  );
 
   const extraTopMenus = React.useMemo(
     () =>
@@ -51,9 +65,11 @@ const DesignMenuBarRender = () => {
     const menuNodes = extraTopMenus.getMergedMenuNodes();
     extraTopMenus.dispose();
 
-    ctxMenuRenderer.show({
-      anchor,
-      menuNodes,
+    handleRefRect((_anchor) => {
+      ctxMenuRenderer.show({
+        anchor: _anchor,
+        menuNodes,
+      });
     });
   }, [anchor, extraTopMenus]);
 

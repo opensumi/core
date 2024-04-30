@@ -84,9 +84,12 @@
   flex-shrink: 0;
   font-size: 16px;
   color: var(--foreground);
+
   &:before {
-    font-size: 13px;
+    transition: transform 0.2s ease-in-out;
+    font-size: 14px;
   }
+
   &.mod_collapsed {
     &:before {
       display: block;

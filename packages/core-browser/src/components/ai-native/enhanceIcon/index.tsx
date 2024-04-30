@@ -59,7 +59,7 @@ export const EnhanceIconWithCtxMenu = (props: IEnhanceIconWithCtxMenuProps) => {
   }, [iconRef.current, skew]);
 
   const handleRefRect = useCallback(
-    (cb?: (_anchor) => void) => {
+    (cb?: (_anchor: { x: number; y: number }) => void) => {
       requestAnimationFrame(() => {
         if (iconRef.current) {
           const rect = iconRef.current.getBoundingClientRect();

@@ -36,12 +36,10 @@ export interface IDialogProps extends IOverlayProps {
 
 const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
   <>
-    <Button size='large' onClick={onCancel} type='secondary'>
+    <Button onClick={onCancel} type='secondary'>
       {cancelText || localize('ButtonCancel')}
     </Button>
-    <Button size='large' onClick={onOk}>
-      {okText || localize('ButtonOK')}
-    </Button>
+    <Button onClick={onOk}>{okText || localize('ButtonOK')}</Button>
   </>
 );
 
@@ -83,9 +81,7 @@ export const DialogContent: React.FC<IDialogProps> = ({
           {type === 'confirm' ? (
             buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} />
           ) : (
-            <Button size='large' onClick={onClose}>
-              OK
-            </Button>
+            <Button onClick={onClose}>OK</Button>
           )}
         </div>
       )}

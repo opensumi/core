@@ -1,6 +1,6 @@
 :global(.design-dark) {
   .design-box-panel {
-    background-image: url('https://mdn.alipayobjects.com/huamei_htww6h/afts/img/A*hLI-SqEx-YkAAAAAAAAAAAAADhl8AQ/original');
+    background-image: url('./images/design-background-dark.png');
     background-repeat: no-repeat;
     background-size: cover;
   }
@@ -8,7 +8,7 @@
 
 :global(.design-light) {
   .design-box-panel {
-    background-image: url('https://mdn.alipayobjects.com/huamei_aj2sia/afts/img/A*6wRWRLd0RCMAAAAAAAAAAAAADoSNAQ/original');
+    background-image: url('./images/design-background-light.png');
     background-repeat: no-repeat;
     background-size: cover;
   }
@@ -118,6 +118,18 @@
 
         .design-close_tab {
           display: block;
+        }
+
+        &.design-kt_editor_tab_dirty {
+          .design-close_tab {
+            display: none;
+          }
+
+          &:hover {
+            .design-close_tab {
+              display: block;
+            }
+          }
         }
       }
 

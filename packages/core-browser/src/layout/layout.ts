@@ -37,6 +37,34 @@ export class ComponentRegistryImpl implements ComponentRegistry {
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  static addLayoutModule(layoutConfig: any, location: SlotLocation, moduleName: string, index = -1) {
+    let targetLocation = layoutConfig[location];
+    if (!targetLocation) {
+      targetLocation = {
+        modules: [],
+      };
+      layoutConfig[location] = targetLocation;
+    }
+    if (targetLocation.modules.indexOf(moduleName) > -1) {
+      getDebugLogger().warn(`A ${moduleName} module already exists on the ${location}`);
+      return;
+    }
+    if (index >= 0) {
+      targetLocation.modules.splice(index, 0, moduleName);
+    } else {
+      targetLocation.modules.push(moduleName);
+    }
+  }
+
+  /**
+   * Replace specified layout slot with new modules
+   */
+  static replaceLayoutModule(layoutConfig: any, location: SlotLocation, ...moduleNames: string[]) {
+    layoutConfig[location] = {
+      modules: moduleNames,
+    };
+  }
+
   register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation) {
     if (Array.isArray(views)) {
       this.componentsMap.set(key, {
@@ -51,18 +79,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
     }
     // deprecated, use layout config instead
     if (location) {
-      let targetLocation = this.config.layoutConfig[location];
-      if (!targetLocation) {
-        targetLocation = {
-          modules: [],
-        };
-        this.config.layoutConfig[location] = targetLocation;
-      }
-      if (targetLocation.modules.indexOf(key) > -1) {
-        getDebugLogger().warn(`A ${key} module already exists on the ${location}`);
-        return;
-      }
-      targetLocation.modules.push(key);
+      ComponentRegistryImpl.addLayoutModule(this.config.layoutConfig, location, key);
     }
   }
 

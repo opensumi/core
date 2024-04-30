@@ -9,6 +9,7 @@ import {
   CommandRegistry,
   ComponentContribution,
   ComponentRegistry,
+  ComponentRegistryImpl,
   ContributionProvider,
   Domain,
   IEditorExtensionContribution,
@@ -42,6 +43,7 @@ import {
   isUndefined,
   runWhenIdle,
 } from '@opensumi/ide-core-common';
+import { DESIGN_MENU_BAR_RIGHT } from '@opensumi/ide-design';
 import { IEditor } from '@opensumi/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -55,7 +57,6 @@ import { AINativeService } from './ai-native.service';
 import { AIChatView } from './chat/chat.view';
 import { AIInlineCompletionsProvider } from './inline-completions/completeProvider';
 import { AICompletionsService } from './inline-completions/service/ai-completions.service';
-import { AIChatLayoutConfig } from './layout/layout-config';
 import { AIChatTabRenderer, AILeftTabRenderer, AIRightTabRenderer } from './layout/tabbar.view';
 import { AIChatLogoAvatar } from './layout/view/avatar/avatar.view';
 import { OpenSumiLightBulbWidget } from './light-bulb-widget';
@@ -147,16 +148,10 @@ export class AINativeBrowserContribution
 
     const { supportsChatAssistant } = this.aiNativeConfigService.capabilities;
 
-    let layoutConfig = this.appConfig.layoutConfig;
-
     if (supportsChatAssistant) {
-      layoutConfig = {
-        ...layoutConfig,
-        ...AIChatLayoutConfig,
-      };
+      ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, AI_CHAT_VIEW_ID, AI_CHAT_CONTAINER_ID);
+      ComponentRegistryImpl.addLayoutModule(this.appConfig.layoutConfig, DESIGN_MENU_BAR_RIGHT, AI_CHAT_LOGO_AVATAR_ID);
     }
-
-    this.appConfig.layoutConfig = layoutConfig;
   }
 
   registerEditorExtensionContribution(register: IEditorExtensionContribution<any[]>): void {

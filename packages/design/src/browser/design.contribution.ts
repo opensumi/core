@@ -2,6 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   AppConfig,
   ClientAppContribution,
+  ComponentRegistryImpl,
   Domain,
   SlotLocation,
   SlotRendererContribution,
@@ -12,7 +13,8 @@ import { Schemes } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 
-import { DesignMenubarLayoutConfig } from './layout/layout-config';
+import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '../common/constants';
+
 import { DesignBottomTabRenderer, DesignLeftTabRenderer, DesignRightTabRenderer } from './layout/tabbar.view';
 import { DesignThemeFileSystemProvider } from './theme/file-system.provider';
 
@@ -38,21 +40,20 @@ export class DesignCoreContribution implements ClientAppContribution, SlotRender
     const { useMenubarView } = this.designLayoutConfig;
 
     this.fileSystem.registerProvider(Schemes.design, this.designThemeFileSystemProvider);
-    let layoutConfig = this.appConfig.layoutConfig;
 
     if (useMenubarView) {
       this.layoutViewSize.setMenubarHeight(48);
-      layoutConfig = {
-        ...layoutConfig,
-        ...DesignMenubarLayoutConfig,
-      };
+
+      ComponentRegistryImpl.replaceLayoutModule(
+        this.appConfig.layoutConfig,
+        SlotLocation.top,
+        DESIGN_MENUBAR_CONTAINER_VIEW_ID,
+      );
     }
 
     this.layoutViewSize.setEditorTabsHeight(36);
     this.layoutViewSize.setStatusBarHeight(36);
     this.layoutViewSize.setAccordionHeaderSizeHeight(36);
-
-    this.appConfig.layoutConfig = layoutConfig;
   }
 
   registerRenderer(registry: SlotRendererRegistry): void {
