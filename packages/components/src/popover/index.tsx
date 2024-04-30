@@ -3,6 +3,8 @@ import Tooltip from 'rc-tooltip';
 import React, { useCallback, useMemo } from 'react';
 
 import './styles.less';
+import { StackingLevel } from '@opensumi/ide-core-browser';
+
 import { Button } from '../button';
 
 export enum PopoverTriggerType {
@@ -61,7 +63,7 @@ export const Popover: React.FC<IPopoverProps> = ({
   overlayStyle,
   action,
   delay,
-  zIndex = 10000,
+  zIndex = StackingLevel.PopoverComponent,
   onClickAction,
   onVisibleChange,
   ...restProps

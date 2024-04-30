@@ -18,10 +18,8 @@ export const StackingLevel = {
    * 一级弹窗
    */
   Popup: 100,
-
-  PopoverContainer: 1070,
-  PopoverComponent: 10000,
-  PopoverComponentArrow: 10001,
+  PopoverComponent: 1000,
+  PopoverComponentArrow: 1001,
   Overlay: 800,
   OverlayTop: 1000,
 } as const;
