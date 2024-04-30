@@ -5,10 +5,6 @@ export * from './reporter';
 
 export interface IAINativeCapabilities {
   /**
-   * Use opensumi design UI style
-   */
-  supportsOpenSumiDesign?: boolean;
-  /**
    * Problem panel uses ai capabilities
    */
   supportsMarkers?: boolean;
@@ -42,18 +38,24 @@ export interface IAINativeCapabilities {
   supportsTerminalCommandSuggest?: boolean;
 }
 
-export interface IAINativeLayout {
-  // Use Merge right panel with left panel
+export interface IDesignLayoutConfig {
+  /**
+   * merge right panel with left panel
+   */
   useMergeRightWithLeftPanel?: boolean;
-  // Use ai manubar view
+  /**
+   * use new manubar view
+   */
   useMenubarView?: boolean;
-  // set menubar logo
+  /**
+   * set menubar logo
+   */
   menubarLogo?: string;
 }
 
 export interface IAINativeConfig {
   capabilities?: IAINativeCapabilities;
-  layout?: IAINativeLayout;
+  layout?: IDesignLayoutConfig;
 }
 
 export interface IAICompletionResultModel {

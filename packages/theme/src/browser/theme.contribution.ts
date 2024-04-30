@@ -6,6 +6,7 @@ import {
   CommandRegistry,
   Domain,
   GeneralSettingsId,
+  ILogger,
   Mode,
   PreferenceScope,
   PreferenceService,
@@ -20,7 +21,6 @@ import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-brow
 import {
   BuiltinTheme,
   BuiltinThemeComparator,
-  DEFAULT_PRODUCT_ICON_THEME_ID,
   DEFAULT_THEME_ID,
   IIconService,
   IProductIconService,
@@ -65,6 +65,9 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   async initialize() {
     this.registerDefaultColorTheme();
@@ -204,7 +207,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
       const selector = this.semanticTokenRegistry.parseTokenSelector(selectorString);
       this.semanticTokenRegistry.registerTokenStyleDefault(selector, { scopesToProbe });
     } catch (e) {
-      // ignore error
+      this.logger.error('Failed to register token style default', e);
     }
   }
 

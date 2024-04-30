@@ -542,6 +542,10 @@ declare module 'vscode' {
 
 
   export namespace window {
+		/**
+		 * Represents the grid widget within the main editor area
+		 */
+		export const tabGroups: TabGroups;
 
     /**
      * The currently active editor or `undefined`. The active editor is the one

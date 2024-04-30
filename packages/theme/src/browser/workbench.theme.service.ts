@@ -32,8 +32,8 @@ import {
   ktInputSelectionBackground,
   selectionBackground,
 } from '../common/color-registry';
+import { CSSVarRegistry } from '../common/css-var';
 import { ThemeChangedEvent } from '../common/event';
-import { getIconRegistry } from '../common/icon-registry';
 import {
   ColorIdentifier,
   DEFAULT_THEME_ID,
@@ -77,7 +77,7 @@ const tokenGroupToScopesMap = {
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
   private colorRegistry = getColorRegistry();
 
-  private iconRegistry = getIconRegistry();
+  private cssVarRegistry = CSSVarRegistry.instance();
 
   private colorClassNameMap = new Map<string, string>();
 
@@ -307,13 +307,14 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   protected doSetPreferenceSchema() {
+    const enums = this.getAvailableThemeInfos().map((info) => info.themeId);
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
           [COLOR_THEME_SETTING]: {
             type: 'string',
-            default: 'Default Dark+',
-            enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+            default: enums[0],
+            enum: enums,
           },
         },
       },
@@ -471,25 +472,30 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
 
     let cssVariables = ':root{';
-    let vscodeCssVariables = '#workbench-editor .monaco-editor{';
+    let editorCssVariables = '#workbench-editor .monaco-editor {';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = colors[colorKey] || theme.getColor(colorKey);
       if (targetColor) {
         const hexRule = `--${colorKey.replace(/\./g, '-')}: ${targetColor.toString()};\n`;
         if (colorKey.startsWith('vscode')) {
-          vscodeCssVariables += hexRule;
+          editorCssVariables += hexRule;
         } else {
           cssVariables += hexRule;
         }
       }
     }
+
+    this.cssVarRegistry.getVars().forEach((value, key) => {
+      cssVariables += `--${key}: ${value};\n`;
+    });
+
     let styleNode = document.getElementById('theme-style');
     if (styleNode) {
-      styleNode.innerHTML = vscodeCssVariables + '}' + cssVariables + '}';
+      styleNode.innerHTML = editorCssVariables + '}' + cssVariables + '}';
     } else {
       styleNode = document.createElement('style');
       styleNode.id = 'theme-style';
-      styleNode.innerHTML = vscodeCssVariables + '}' + cssVariables + '}';
+      styleNode.innerHTML = editorCssVariables + '}' + cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
     if (this.currentTheme) {
@@ -679,10 +685,10 @@ class Theme implements ITheme {
       this.themeData.themeSettings.unshift({
         settings: {
           foreground: this.themeData.colors['editor.foreground']
-            ? this.themeData.colors['editor.foreground'].substr(0, 7)
+            ? this.themeData.colors['editor.foreground'].substring(0, 7)
             : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.foreground', this)!), // 这里要去掉透明度信息
           background: this.themeData.colors['editor.background']
-            ? this.themeData.colors['editor.background'].substr(0, 7)
+            ? this.themeData.colors['editor.background'].substring(0, 7)
             : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
         },
         scope: [''],

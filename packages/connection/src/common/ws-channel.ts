@@ -5,7 +5,6 @@ import { DisposableCollection } from '@opensumi/ide-core-common';
 
 import { IConnectionShape } from './connection/types';
 import { oneOf7 } from './fury-extends/one-of';
-import { createWebSocketConnection } from './message';
 import { ISumiConnectionOptions, SumiConnection } from './rpc/connection';
 import { ILogger } from './types';
 
@@ -212,9 +211,6 @@ export class WSChannel {
   }
   onceClose(cb: (code: number, reason: string) => void) {
     return this.emitter.once('close', cb);
-  }
-  createMessageConnection() {
-    return createWebSocketConnection(this);
   }
 
   createConnection() {

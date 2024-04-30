@@ -1,4 +1,3 @@
-export * from './message';
 export * from './rpc-service/proxy';
 export * from './rpc/multiplexer';
 export * from './rpcProtocol';

@@ -84,6 +84,25 @@ export type ChatUserRoleRender = (props: {
   command?: string;
 }) => React.ReactElement | React.JSX.Element;
 export type ChatThinkingRender = (props: { thinkingText?: string }) => React.ReactElement | React.JSX.Element;
+export type ChatInputRender = (props: {
+  onSend: (value: string, agentId?: string, command?: string) => void;
+  onValueChange?: (value: string) => void;
+  onExpand?: (value: boolean) => void;
+  placeholder?: string;
+  enableOptions?: boolean;
+  disabled?: boolean;
+  sendBtnClassName?: string;
+  defaultHeight?: number;
+  value?: string;
+  autoFocus?: boolean;
+  theme?: string | null;
+  setTheme: (theme: string | null) => void;
+  agentId: string;
+  setAgentId: (theme: string) => void;
+  defaultAgentId?: string;
+  command: string;
+  setCommand: (theme: string) => void;
+}) => React.ReactElement | React.JSX.Element;
 
 export interface IChatRenderRegistry {
   registerWelcomeRender(render: ChatWelcomeRender): void;
@@ -96,6 +115,10 @@ export interface IChatRenderRegistry {
    */
   registerUserRoleRender(render: ChatUserRoleRender): void;
   registerThinkingRender(render: ChatThinkingRender): void;
+  /**
+   * 输入框渲染
+   */
+  registerInputRender(render: ChatInputRender): void;
 }
 
 export interface IResolveConflictRegistry {

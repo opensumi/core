@@ -1,103 +1,17 @@
 @import '../style/mixins.less';
 @import '../style/variable.less';
 
-.arrow(@position) {
-  & when (@position = 'top'), (@position = 'bottom') {
-    &::after {
-      position: absolute;
-      left: 50%;
-      margin-left: -7px;
-      content: '';
-      width: 0;
-      height: 0;
-      border: 7px solid transparent;
-    }
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 7px;
-      border-style: solid;
-      background: transparent;
-      border: 0;
-    }
-  }
-  & when (@position = 'top') {
-    &::after {
-      top: 100%;
-      border-bottom-width: 0;
-      border-top-color: var(--kt-popover-background);
-    }
-    &::before {
-      top: 100%;
-    }
-  }
-  & when (@position = 'bottom') {
-    &::after {
-      bottom: 100%;
-      border-top-width: 0;
-      border-bottom-color: var(--kt-popover-background);
-    }
-    &::before {
-      bottom: 100%;
-    }
-  }
-
-  & when (@position = 'left'), (@position = 'right') {
-    &::after {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-7px);
-      content: '';
-      width: 0;
-      height: 0;
-      border: 7px solid transparent;
-    }
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      width: 15px;
-      height: 100%;
-      border-style: solid;
-      background: transparent;
-      border: 0;
-    }
-  }
-  & when (@position = 'left') {
-    &::after {
-      left: 100%;
-      border-right-width: 0;
-      border-left-color: var(--kt-popover-background);
-    }
-    &::before {
-      left: 100%;
-    }
-  }
-  & when (@position = 'right') {
-    &::after {
-      right: 100%;
-      border-left-width: 0;
-      border-right-color: var(--kt-popover-background);
-    }
-    &::before {
-      right: 100%;
-    }
-  }
-}
-
 .@{prefix}-popover {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  &-content {
-    display: none;
-  }
+  position: absolute;
+  z-index: 1070;
+  display: block;
+  visibility: visible;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.9;
 
   &-title {
+    line-height: 22px;
     font-size: 12px;
     display: flex;
     justify-content: space-between;
@@ -110,26 +24,204 @@
   }
 
   &-content {
-    position: absolute;
+    position: relative;
     color: var(--kt-popover-foreground);
     background: var(--kt-popover-background);
     border-color: var(--kt-popover-border);
     border-radius: 2px;
     .overlay-shadow();
-    padding: 5px 10px;
+    padding: 8px 10px;
     z-index: 10001;
   }
 
-  &-top {
-    .arrow('top');
+  &-hidden {
+    display: none;
   }
-  &-bottom {
-    .arrow('bottom');
+
+  &-placement-top,
+  &-placement-topLeft,
+  &-placement-topRight {
+    padding: 5px 0 5px 0;
   }
-  &-left {
-    .arrow('left');
+
+  &-placement-right,
+  &-placement-rightTop,
+  &-placement-rightBottom {
+    padding: 0 5px 0 5px;
   }
-  &-right {
-    .arrow('right');
+
+  &-placement-bottom,
+  &-placement-bottomLeft,
+  &-placement-bottomRight {
+    padding: 5px 0 5px 0;
+  }
+
+  &-placement-left,
+  &-placement-leftTop,
+  &-placement-leftBottom {
+    padding: 0 5px 0 5px;
+  }
+
+  &-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+  }
+}
+
+.@{prefix}-popover-placement-top .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-topLeft .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-topRight .@{prefix}-popover-arrow {
+  bottom: 4px;
+  margin-left: -5px;
+  border-width: 5px 5px 0;
+  border-top-color: var(--kt-popover-background);
+}
+
+.@{prefix}-popover-placement-top .@{prefix}-popover-arrow {
+  left: 50%;
+}
+
+.@{prefix}-popover-placement-topLeft .@{prefix}-popover-arrow {
+  left: 15%;
+}
+
+.@{prefix}-popover-placement-topRight .@{prefix}-popover-arrow {
+  right: 15%;
+}
+
+.@{prefix}-popover-placement-right .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-rightTop .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-rightBottom .@{prefix}-popover-arrow {
+  left: 4px;
+  margin-top: -5px;
+  border-width: 5px 5px 5px 0;
+  border-right-color: var(--kt-popover-background);
+}
+
+.@{prefix}-popover-placement-right .@{prefix}-popover-arrow {
+  top: 50%;
+}
+
+.@{prefix}-popover-placement-rightTop .@{prefix}-popover-arrow {
+  top: 15%;
+  margin-top: 0;
+}
+
+.@{prefix}-popover-placement-rightBottom .@{prefix}-popover-arrow {
+  bottom: 15%;
+}
+
+.@{prefix}-popover-placement-left .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-leftTop .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-leftBottom .@{prefix}-popover-arrow {
+  right: 4px;
+  margin-top: -5px;
+  border-width: 5px 0 5px 5px;
+  border-left-color: var(--kt-popover-background);
+}
+
+.@{prefix}-popover-placement-left .@{prefix}-popover-arrow {
+  top: 50%;
+}
+
+.@{prefix}-popover-placement-leftTop .@{prefix}-popover-arrow {
+  top: 15%;
+  margin-top: 0;
+}
+
+.@{prefix}-popover-placement-leftBottom .@{prefix}-popover-arrow {
+  bottom: 15%;
+}
+
+.@{prefix}-popover-placement-bottom .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-bottomLeft .@{prefix}-popover-arrow,
+.@{prefix}-popover-placement-bottomRight .@{prefix}-popover-arrow {
+  top: 4px;
+  margin-left: -5px;
+  border-width: 0 5px 5px;
+  border-bottom-color: var(--kt-popover-background);
+}
+
+.@{prefix}-popover-placement-bottom .@{prefix}-popover-arrow {
+  left: 50%;
+}
+
+.@{prefix}-popover-placement-bottomLeft .@{prefix}-popover-arrow {
+  left: 15%;
+}
+
+.@{prefix}-popover-placement-bottomRight .@{prefix}-popover-arrow {
+  right: 15%;
+}
+
+.@{prefix}-popover-placement-topLeft .@{prefix}-popover-arrow {
+  left: 15px;
+}
+
+.@{prefix}-popover.@{prefix}-popover-zoom-appear,
+.@{prefix}-popover.@{prefix}-popover-zoom-enter {
+  opacity: 0;
+}
+
+.@{prefix}-popover.@{prefix}-popover-zoom-enter,
+.@{prefix}-popover.@{prefix}-popover-zoom-leave {
+  display: block;
+}
+
+.@{prefix}-popover-zoom-enter,
+.@{prefix}-popover-zoom-appear {
+  opacity: 0;
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  animation-play-state: paused;
+}
+
+.@{prefix}-popover-zoom-leave {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.6, -0.3, 0.74, 0.05);
+  animation-play-state: paused;
+}
+
+.@{prefix}-popover-zoom-enter.@{prefix}-popover-zoom-enter-active,
+.@{prefix}-popover-zoom-appear.@{prefix}-popover-zoom-appear-active {
+  animation-name: rcToolTipZoomIn;
+  animation-play-state: running;
+}
+
+.@{prefix}-popover-zoom-leave.@{prefix}-popover-zoom-leave-active {
+  animation-name: rcToolTipZoomOut;
+  animation-play-state: running;
+}
+
+@keyframes rcToolTipZoomIn {
+  0% {
+    opacity: 0;
+    transform-origin: 50% 50%;
+    transform: scale(0, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform-origin: 50% 50%;
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes rcToolTipZoomOut {
+  0% {
+    opacity: 1;
+    transform-origin: 50% 50%;
+    transform: scale(1, 1);
+  }
+
+  100% {
+    opacity: 0;
+    transform-origin: 50% 50%;
+    transform: scale(0, 0);
   }
 }

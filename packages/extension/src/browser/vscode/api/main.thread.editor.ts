@@ -1,4 +1,5 @@
 import debounce from 'lodash/debounce';
+import merge from 'lodash/merge';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -42,6 +43,7 @@ import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/s
 import {
   ExtHostAPIIdentifier,
   IEditorChangeDTO,
+  IEditorStatusChangeDTO,
   IExtensionHostEditorService,
   IMainThreadEditorsService,
   IResolvedTextEditorConfiguration,
@@ -138,7 +140,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  async $createTextEditorDecorationType(key, options: IDecorationRenderOptions) {
+  async $createTextEditorDecorationType(key: string, options: IDecorationRenderOptions) {
     this.resolveIconPaths(options);
     this.resolveIconPaths(options.dark);
     this.resolveIconPaths(options.light);
@@ -160,7 +162,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  async $deleteTextEditorDecorationType(key) {
+  async $deleteTextEditorDecorationType(key: string) {
     const type = this.decorationService.getTextEditorDecorationType(key);
     if (type) {
       type.dispose();
@@ -223,6 +225,43 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const groupId = getGroupIdFromTextEditorId(id);
     const group = this.editorService.getEditorGroup(groupId);
     return group;
+  }
+
+  protected propertiesChangeCache = new Map<string, IEditorStatusChangeDTO>();
+
+  triggerPropertiesChange = debounce(
+    () => {
+      const changes: IEditorStatusChangeDTO[] = [];
+      this.propertiesChangeCache.forEach((change) => {
+        changes.push(change);
+      });
+      this.propertiesChangeCache.clear();
+
+      this.proxy.$acceptPropertiesChanges(changes);
+    },
+    300,
+    {
+      maxWait: 500,
+      leading: true,
+      trailing: true,
+    },
+  );
+
+  /**
+   * 按 id 缓存 change, 每次 change 都会合并到缓存中，debounce 发送给插件进程
+   */
+  protected batchPropertiesChanges(change: Partial<IEditorStatusChangeDTO> & { id: string }) {
+    const { id } = change;
+
+    let propertiesChange = this.propertiesChangeCache.get(id);
+    if (!propertiesChange) {
+      propertiesChange = {} as IEditorStatusChangeDTO;
+    }
+
+    propertiesChange = merge(propertiesChange, change);
+    this.propertiesChangeCache.set(id, propertiesChange);
+
+    this.triggerPropertiesChange();
   }
 
   startEvents() {
@@ -337,7 +376,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const selectionChange = (e: EditorSelectionChangeEvent) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.editorUri, e.payload.side);
 
-      this.proxy.$acceptPropertiesChange({
+      this.batchPropertiesChanges({
         id: editorId,
         selections: {
           selections: e.payload.selections,
@@ -371,7 +410,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         debounce(
           (e: EditorVisibleChangeEvent) => {
             const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
-            this.proxy.$acceptPropertiesChange({
+            this.batchPropertiesChanges({
               id: editorId,
               visibleRanges: e.payload.visibleRanges,
             });
@@ -385,7 +424,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       this.eventBus.on(EditorConfigurationChangedEvent, (e: EditorConfigurationChangedEvent) => {
         const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
         if (e.payload.group.currentEditor && (e.payload.group.currentEditor as ISumiEditor).monacoEditor.getModel()) {
-          this.proxy.$acceptPropertiesChange({
+          this.batchPropertiesChanges({
             id: editorId,
             options: getEditorOption((e.payload.group.currentEditor as ISumiEditor).monacoEditor),
           });
@@ -396,7 +435,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       this.eventBus.on(EditorGroupIndexChangedEvent, (e) => {
         if (isGroupEditorState(e.payload.group)) {
           const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!.uri);
-          this.proxy.$acceptPropertiesChange({
+          this.batchPropertiesChanges({
             id: editorId,
             viewColumn: getViewColumn(e.payload.group),
           });

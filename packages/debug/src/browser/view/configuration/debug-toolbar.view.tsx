@@ -11,13 +11,13 @@ import {
   PreferenceService,
   electronEnv,
   getIcon,
-  isMacintosh,
   localize,
   useDesignStyles,
   useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+import { LayoutViewSizeConfig } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { DebugState } from '../../../common';
@@ -268,7 +268,8 @@ const DebugPreferenceHeightKey = 'debug.toolbar.height';
 const FloatDebugToolbarView = observer(() => {
   const controller = useInjectable<FloatController>(FloatController);
   const preference = useInjectable<PreferenceService>(PreferenceService);
-  const { isElectronRenderer, layoutViewSize } = useInjectable<AppConfig>(AppConfig);
+  const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
+  const layoutViewSize = useInjectable<LayoutViewSizeConfig>(LayoutViewSizeConfig);
   const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
   const styles_debug_toolbar_wrapper = useDesignStyles(styles.debug_toolbar_wrapper, 'debug_toolbar_wrapper');
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
@@ -279,24 +280,16 @@ const FloatDebugToolbarView = observer(() => {
     const value = preference.get<number>(DebugPreferenceTopKey) || 0;
     if (isElectronRenderer) {
       const uiService: IElectronMainUIService = debugToolbarService.mainUIService;
-      const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
       // Electron 环境下需要在非全屏情况下追加 Header 高度
       uiService.isFullScreen(electronEnv.currentWindowId).then((fullScreen) => {
-        fullScreen
-          ? setToolbarOffsetTop(value)
-          : setToolbarOffsetTop(
-              value + (isNewMacHeaderBar() ? layoutViewSize!.titleBarHeight! : layoutViewSize!.bigSurTitleBarHeight!),
-            );
+        fullScreen ? setToolbarOffsetTop(value) : setToolbarOffsetTop(value + layoutViewSize.calcOnlyTitleBarHeight());
       });
       disposableCollection.push(
         uiService.on('fullScreenStatusChange', (windowId, fullScreen) => {
           if (windowId === electronEnv.currentWindowId) {
             fullScreen
               ? setToolbarOffsetTop(value)
-              : setToolbarOffsetTop(
-                  value +
-                    (isNewMacHeaderBar() ? layoutViewSize!.titleBarHeight! : layoutViewSize!.bigSurTitleBarHeight!),
-                );
+              : setToolbarOffsetTop(value + layoutViewSize.calcOnlyTitleBarHeight());
           }
         }),
       );

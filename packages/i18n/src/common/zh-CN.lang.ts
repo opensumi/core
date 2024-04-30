@@ -254,7 +254,7 @@ export const localizationBundle = {
     'debug.action.add.smartAddConfiguration': '智能添加配置',
     'debug.action.add.configuration': '添加配置',
     'debug.action.edit.configuration': '编辑配置',
-    'debug.action.open.launch.editor': '在 launch 编辑器中打开',
+    'debug.action.open.launch.editor': '使用 UI 模式编辑',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.debug.console': '调试控制台',
     'debug.action.step-into': '单步跳入',

@@ -1530,9 +1530,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   disposeDocumentRef(uri: URI) {
     if (uri.scheme === 'diff') {
-      const query = uri.getParsedQuery();
-      this.doDisposeDocRef(new URI(query.original));
-      this.doDisposeDocRef(new URI(query.modified));
+      // 针对 diff 编辑器，需要保留 DocumentModelRef，以保留实现对 DiffEditor 的状态恢复
     } else if (uri.scheme === 'mergeEditor') {
       this.mergeEditor.dispose();
     } else {
@@ -2063,7 +2061,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   /**
-   * 当前打开的resource
+   * current opened resource
    */
   get currentResource(): MaybeNull<IResource> {
     return this._currentResource;

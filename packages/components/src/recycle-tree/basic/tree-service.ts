@@ -149,26 +149,27 @@ export class BasicTreeService extends Tree {
     return this._contextMenuNode;
   }
 
+  private clearDecoration(decoration: Decoration) {
+    for (const target of decoration.appliedTargets.keys()) {
+      decoration.removeTarget(target);
+    }
+  }
+
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeFocusedDecoration = (target: BasicCompositeTreeNode | BasicTreeNode) => {
     if (this._contextMenuNode) {
-      this.contextMenuDecoration.removeTarget(this._contextMenuNode);
-      this.focusedDecoration.removeTarget(this._contextMenuNode);
-      this.selectedDecoration.removeTarget(this._contextMenuNode);
+      this.clearDecoration(this.contextMenuDecoration);
+      this.clearDecoration(this.focusedDecoration);
+      this.clearDecoration(this.selectedDecoration);
       this._contextMenuNode = undefined;
     }
     if (target) {
       if (this.selectedNodes.length > 0) {
-        this.selectedNodes.forEach((file) => {
-          // 因为选择装饰器可能通过其他方式添加而不能及时在selectedNodes上更新
-          // 故这里遍历所有选中装饰器的节点进行一次统一清理
-          for (const target of this.selectedDecoration.appliedTargets.keys()) {
-            this.selectedDecoration.removeTarget(target);
-          }
-        });
+        this.clearDecoration(this.selectedDecoration);
       }
       if (this.focusedNode) {
-        this.focusedDecoration.removeTarget(this.focusedNode);
+        this.clearDecoration(this.focusedDecoration);
+        this._focusedNode = undefined;
       }
       this.selectedDecoration.addTarget(target);
       this.focusedDecoration.addTarget(target);
@@ -181,10 +182,11 @@ export class BasicTreeService extends Tree {
 
   activeContextMenuDecoration = (target: BasicCompositeTreeNode | BasicTreeNode) => {
     if (this._contextMenuNode) {
-      this.contextMenuDecoration.removeTarget(this._contextMenuNode);
+      this.clearDecoration(this.contextMenuDecoration);
+      this._contextMenuNode = undefined;
     }
     if (this.focusedNode) {
-      this.focusedDecoration.removeTarget(this.focusedNode);
+      this.clearDecoration(this.focusedDecoration);
       this._focusedNode = undefined;
     }
     this.contextMenuDecoration.addTarget(target);
@@ -195,7 +197,7 @@ export class BasicTreeService extends Tree {
   // 取消选中节点焦点
   enactiveFocusedDecoration = () => {
     if (this.focusedNode) {
-      this.focusedDecoration.removeTarget(this.focusedNode);
+      this.clearDecoration(this.focusedDecoration);
       this._focusedNode = undefined;
       this.model?.dispatchChange();
     }

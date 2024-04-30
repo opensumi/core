@@ -35,6 +35,9 @@
   &::-webkit-scrollbar {
     width: 4px;
     margin: 20px;
+    &:hover {
+      width: 10px;
+    }
   }
 }
 
@@ -100,10 +103,8 @@
 .kt-popover-content {
   box-shadow: 0px 9px 28px 8px var(--design-boxShadow-primary), 0px 3px 6px -4px var(--design-boxShadow-secondary),
     0px 6px 16px 0px var(--design-boxShadow-tertiary);
-  padding: 5px 8px;
   border-radius: 6px;
   line-height: 18px;
-  margin-top: -3px;
 
   .kt-popover-title {
     margin-bottom: 0;
@@ -146,9 +147,15 @@ html {
 
     .vertical {
       width: 4px !important;
+      &:hover {
+        width: 10px !important;
+      }
 
       .slider {
         width: 4px !important;
+        &:hover {
+          width: 10px !important;
+        }
         left: unset !important;
         right: 0;
         border-radius: 4px !important;
@@ -157,10 +164,15 @@ html {
 
     .horizontal {
       height: 4px !important;
-
+      &:hover {
+        height: 10px !important;
+      }
       .slider {
         border-radius: 4px !important;
         height: 4px !important;
+        &:hover {
+          height: 10px !important;
+        }
       }
     }
   }
@@ -175,6 +187,9 @@ html {
 .xterm .xterm-viewport {
   &::-webkit-scrollbar {
     width: 4px;
+    &:hover {
+      width: 10px;
+    }
   }
 }
 
@@ -280,6 +295,9 @@ html {
 
       &::-webkit-scrollbar {
         width: 4px !important;
+        &:hover {
+          width: 10px;
+        }
       }
     }
   }
@@ -295,7 +313,7 @@ html {
 }
 
 /**
-* layout 面板 
+* layout 面板
 **/
 .design-slot_resize_horizontal {
   width: 2px;

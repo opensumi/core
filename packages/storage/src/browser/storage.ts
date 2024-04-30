@@ -243,7 +243,7 @@ export class Storage implements IStorage {
       insert: this.mapToJson(this.pendingInserts),
       delete: Array.from(this.pendingDeletes),
     };
-    // 同时在 LocalStroage 中同步缓存变化
+    // 同时在 LocalStorage 中同步缓存变化
     if (this.browserLocalStorage) {
       let cache = this.mapToJson(this.cache);
       for (const del of updateRequest?.delete || []) {

@@ -1,5 +1,4 @@
 import { Deferred } from '@opensumi/ide-core-common';
-import { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 import { METHOD_NOT_REGISTERED } from '../constants';
 import { TSumiProtocol } from '../rpc';
@@ -9,6 +8,8 @@ import { IBench, ILogger, RPCServiceMethod, ServiceType } from '../types';
 import { ProxyJson, ProxySumi } from './proxy';
 import { ProxyBase } from './proxy/base';
 import { ProtocolRegistry, ServiceRegistry } from './registry';
+
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 const safeProcess: { pid: string } = typeof process === 'undefined' ? { pid: 'unknown' } : (process as any);
 

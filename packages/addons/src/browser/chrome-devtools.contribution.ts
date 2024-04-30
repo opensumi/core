@@ -1,20 +1,12 @@
 import { Autowired } from '@opensumi/di';
-import { AppConfig, ClientAppContribution } from '@opensumi/ide-core-browser';
+import { AppConfig, ClientAppContribution, Disposable } from '@opensumi/ide-core-browser';
+import { DevtoolsLantencyCommand, EDevtoolsEvent } from '@opensumi/ide-core-common/lib/devtools';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
 import { ConnectionRTTBrowserService, ConnectionRTTBrowserServiceToken } from './connection-rtt-service';
 
-enum DevtoolsEvent {
-  Latency = 'devtools:latency',
-}
-
-enum DevtoolsCommand {
-  Start = 'start',
-  Stop = 'stop',
-}
-
 @Domain(ClientAppContribution)
-export class ChromeDevtoolsContribution implements ClientAppContribution {
+export class ChromeDevtoolsContribution extends Disposable implements ClientAppContribution {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -25,23 +17,35 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
 
   static INTERVAL = 1000;
 
+  protected lantencyHandler = (event: CustomEvent) => {
+    const { command } = event.detail;
+    if (command === DevtoolsLantencyCommand.Start) {
+      if (!this.interval) {
+        this.startRTTInterval();
+      }
+    } else if (command === DevtoolsLantencyCommand.Stop) {
+      if (this.interval) {
+        global.clearInterval(this.interval);
+        this.interval = undefined;
+      }
+    }
+  };
+
   initialize() {
     // only runs when devtools supoprt is enabled
     if (this.appConfig.devtools) {
       // receive notification from opensumi devtools by custom event
-      window.addEventListener(DevtoolsEvent.Latency, (event) => {
-        const { command } = event.detail;
-        if (command === DevtoolsCommand.Start) {
-          if (!this.interval) {
-            this.startRTTInterval();
-          }
-        } else if (command === DevtoolsCommand.Stop) {
+      window.addEventListener(EDevtoolsEvent.Latency, this.lantencyHandler);
+
+      this.addDispose(
+        Disposable.create(() => {
+          window.removeEventListener(EDevtoolsEvent.Latency, this.lantencyHandler);
           if (this.interval) {
             global.clearInterval(this.interval);
             this.interval = undefined;
           }
-        }
-      });
+        }),
+      );
 
       // if opensumi devtools has started capturing before this contribution point is registered
       if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureRPC) {

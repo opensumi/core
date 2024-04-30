@@ -14,7 +14,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { CompareResult, ICompareService } from '../types';
+import { CompareResult, DIFF_SCHEME, ICompareService } from '../types';
 
 @Injectable()
 export class CompareService implements ICompareService {
@@ -25,7 +25,7 @@ export class CompareService implements ICompareService {
 
   compare(original: URI, modified: URI, name: string): Promise<CompareResult> {
     const compareUri = URI.from({
-      scheme: 'diff',
+      scheme: DIFF_SCHEME,
       query: URI.stringifyQuery({
         name,
         original,

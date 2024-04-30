@@ -150,6 +150,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
 
     const mainThreadProtocol = new SumiConnectionMultiplexer(channel.createConnection(), {
       timeout: this.appConfig.rpcMessageTimeout,
+      name: 'node-ext-host',
     });
 
     // 重启/重连时直接覆盖前一个连接

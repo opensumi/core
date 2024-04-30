@@ -85,4 +85,11 @@ export class MainThreadOutput implements IMainThreadOutput {
 
     return outputChannel;
   }
+
+  async $setLanguageId(channelName: string, languageId: string): Promise<void> {
+    const outputChannel = this.getChannel(channelName);
+    if (outputChannel) {
+      await outputChannel.setLanguageId(languageId);
+    }
+  }
 }

@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`require-interceptor test registerRequireInterceptor 1`] = `
+{
+  "Children": {
+    "count": [Function],
+    "forEach": [Function],
+    "map": [Function],
+    "only": [Function],
+    "toArray": [Function],
+  },
+  "Component": [Function],
+  "Fragment": Symbol(react.fragment),
+  "Profiler": Symbol(react.profiler),
+  "PureComponent": [Function],
+  "StrictMode": Symbol(react.strict_mode),
+  "Suspense": Symbol(react.suspense),
+  "__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED": {
+    "ReactCurrentActQueue": {
+      "current": null,
+      "didScheduleLegacyUpdate": false,
+      "isBatchingLegacy": false,
+    },
+    "ReactCurrentBatchConfig": {
+      "transition": null,
+    },
+    "ReactCurrentDispatcher": {
+      "current": null,
+    },
+    "ReactCurrentOwner": {
+      "current": null,
+    },
+    "ReactDebugCurrentFrame": {
+      "getCurrentStack": null,
+      "getStackAddendum": [Function],
+      "setExtraStackFrame": [Function],
+    },
+  },
+  "cloneElement": [Function],
+  "createContext": [Function],
+  "createElement": [Function],
+  "createFactory": [Function],
+  "createRef": [Function],
+  "forwardRef": [Function],
+  "isValidElement": [Function],
+  "lazy": [Function],
+  "memo": [Function],
+  "startTransition": [Function],
+  "unstable_act": [Function],
+  "useCallback": [Function],
+  "useContext": [Function],
+  "useDebugValue": [Function],
+  "useDeferredValue": [Function],
+  "useEffect": [Function],
+  "useId": [Function],
+  "useImperativeHandle": [Function],
+  "useInsertionEffect": [Function],
+  "useLayoutEffect": [Function],
+  "useMemo": [Function],
+  "useReducer": [Function],
+  "useRef": [Function],
+  "useState": [Function],
+  "useSyncExternalStore": [Function],
+  "useTransition": [Function],
+  "version": "18.2.0",
+}
+`;

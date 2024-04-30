@@ -10,6 +10,7 @@ import {
   URI,
   fuzzyScore,
   localize,
+  pMemoize,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
@@ -208,6 +209,7 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
     });
   }
 
+  @pMemoize((keyword: string) => keyword)
   async search(keyword: string) {
     const param: VSXSearchParam = {
       query: keyword,

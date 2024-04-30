@@ -9,7 +9,7 @@ import {
   TreeNode,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { IMatch, URI, getIcon, useDesignStyles } from '@opensumi/ide-core-browser';
+import { IMatch, URI, getIcon, useDesignStyles, withPrevented } from '@opensumi/ide-core-browser';
 
 import { IRenderableMarker, IRenderableMarkerModel } from '../../common/types';
 
@@ -82,7 +82,7 @@ const MarkerCode: FC<{
   const code = matches ? <HighlightData data={data} matches={matches} className={type} /> : <>{data}</>;
   if (typeof href !== 'undefined') {
     return (
-      <a className={styles.codeHref} rel='noopener' target='_blank' href='javascript:void(0)' title={data}>
+      <a className={styles.codeHref} rel='noopener' target='_blank' onClick={withPrevented()} title={data}>
         {code}
       </a>
     );

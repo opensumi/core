@@ -281,7 +281,7 @@ export const localizationBundle = {
     'debug.action.add.smartAddConfiguration': 'Smart Add Configuration',
     'debug.action.add.configuration': 'Add Configuration',
     'debug.action.edit.configuration': 'Edit Configuration',
-    'debug.action.open.launch.editor': 'Open in launch editor',
+    'debug.action.open.launch.editor': 'Open Launch Editor UI',
     'debug.action.no.configuration': 'No Configurations',
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',

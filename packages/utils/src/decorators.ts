@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/decorators.ts
 
+import { isPromise } from './types';
+
 export function createDecorator(mapFn: (fn: Function, key: string) => Function): Function {
   return (target: any, key: string, descriptor: any) => {
     let fnKey: string | null = null;
@@ -163,4 +165,49 @@ export function es5ClassCompat(target: any): any {
   Object.setPrototypeOf(_, target);
   Object.setPrototypeOf(_.prototype, target.prototype);
   return _;
+}
+
+/**
+ * Store promises so that only one promise exists at a time
+ */
+export function pMemoize(hashFn: (...params: any[]) => string) {
+  return function (target: any, key: string, descriptor: any) {
+    let fnKey: string | null = null;
+    let fn: (() => any) | null = null;
+
+    if (typeof descriptor.value === 'function') {
+      fnKey = 'value';
+      fn = descriptor.value;
+    } else if (typeof descriptor.get === 'function') {
+      fnKey = 'get';
+      fn = descriptor.get;
+    }
+
+    if (!fn) {
+      throw new Error('not supported');
+    }
+
+    descriptor[fnKey!] = function (...args: any[]) {
+      const self = this;
+      const memoizeKey = `$memoizedPromise:${hashFn(...args)}:${key}`;
+
+      if (!this.hasOwnProperty(memoizeKey)) {
+        const promise = fn!.apply(this, args);
+        if (!isPromise(promise)) {
+          throw new Error(`return type of ${key} is not promise, please use memoize instead`);
+        }
+        promise.finally(() => {
+          delete self[memoizeKey];
+        });
+        Object.defineProperty(this, memoizeKey, {
+          configurable: true,
+          enumerable: false,
+          writable: true,
+          value: promise,
+        });
+      }
+
+      return this[memoizeKey];
+    };
+  };
 }
