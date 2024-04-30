@@ -94,5 +94,5 @@ export function transformLabelWithCodiconHtml(
         return withSeperator;
       }
     })
-    .join('');
+    .join(SEPERATOR);
 }
