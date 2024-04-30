@@ -45,12 +45,11 @@ export async function createConnectionService(
 
   if (channelHandler.connection.isOpen()) {
     onOpen();
-  } else {
-    const dispose = channelHandler.connection.onOpen(() => {
-      onOpen();
-      dispose.dispose();
-    });
   }
+
+  channelHandler.connection.onOpen(() => {
+    onOpen();
+  });
 
   channelHandler.connection.onceClose(() => {
     stateService.reachedState('core_module_initialized').then(() => {
