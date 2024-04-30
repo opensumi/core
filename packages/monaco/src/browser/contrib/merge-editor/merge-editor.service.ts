@@ -11,12 +11,12 @@ import {
 import { MergeConflictReportService } from '@opensumi/ide-core-browser/lib/ai-native/conflict-report.service';
 import { message } from '@opensumi/ide-core-browser/lib/components';
 import { URI, formatLocalize, runWhenIdle } from '@opensumi/ide-core-common';
+import { GitCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import { DetailedLineRangeMapping } from '../../../common/diff';
 
-import { GitCommands } from './constants';
 import { MappingManagerService } from './mapping-manager.service';
 import { ComputerDiffModel } from './model/computer-diff';
 import { ACCEPT_CURRENT_ACTIONS, APPEND_ACTIONS, ECompleteReason, IEditorMountParameter } from './types';

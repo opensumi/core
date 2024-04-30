@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
 import { CommandRegistry, IDisposable, isBoolean, strings } from '@opensumi/ide-core-common';
-import { GitCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
+import { GitCommands } from '@opensumi/ide-core-common/lib/commands/git';
 
 import {
   AbstractMenuService,

@@ -19,9 +19,9 @@ import {
   IOpenMergeEditorArgs,
   MergeEditorInputData,
 } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { MergeConflictCommands } from '../constants';
 import { MappingManagerDataStore } from '../mapping-manager.store';
 import { MergeEditorService } from '../merge-editor.service';
 import { ECompleteReason, EditorViewType } from '../types';

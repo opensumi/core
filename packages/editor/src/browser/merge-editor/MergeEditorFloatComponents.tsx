@@ -12,7 +12,7 @@ import {
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { MergeConflictCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
+import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 
 import { useEditorDocumentModelRef } from '../hooks/useEditor';
 import { useInMergeChanges } from '../hooks/useInMergeChanges';

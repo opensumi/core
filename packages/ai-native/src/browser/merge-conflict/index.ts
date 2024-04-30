@@ -29,6 +29,7 @@ import {
   Uri,
   localize,
 } from '@opensumi/ide-core-common';
+import { GitCommands } from '@opensumi/ide-core-common/lib/commands/git';
 import { IEditor, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
   CommitType,
@@ -37,7 +38,6 @@ import {
 } from '@opensumi/ide-editor/lib/browser/merge-conflict';
 import * as monaco from '@opensumi/ide-monaco';
 import { ITextModel } from '@opensumi/ide-monaco';
-import { GitCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
   ACCEPT_CURRENT_ACTIONS,
