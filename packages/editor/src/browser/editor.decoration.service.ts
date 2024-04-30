@@ -127,14 +127,16 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     disposer.add(this.cssManager.addClass(className, styles));
     disposer.add(this.cssManager.addClass(inlineClassName, inlineStyles));
     if (options.after) {
+      const afterClassName = `${key}-after`;
       const styles = this.resolveContentCSSStyle(options.after);
-      disposer.add(this.cssManager.addClass(key + '::after', styles));
-      afterContentClassName = `${inlineBlockSelector} ${key}`;
+      disposer.add(this.cssManager.addClass(afterClassName + '::after', styles));
+      afterContentClassName = `${inlineBlockSelector} ${afterClassName}`;
     }
     if (options.before) {
+      const beforeClassName = `${key}-before`;
       const styles = this.resolveContentCSSStyle(options.before);
-      disposer.add(this.cssManager.addClass(key + '::before', styles));
-      beforeContentClassName = `${inlineBlockSelector} ${key}`;
+      disposer.add(this.cssManager.addClass(beforeClassName + '::before', styles));
+      beforeContentClassName = `${inlineBlockSelector} ${beforeClassName}`;
     }
     if (options.gutterIconPath) {
       const glyphMarginStyle = this.resolveCSSStyle({
