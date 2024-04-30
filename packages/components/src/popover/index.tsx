@@ -120,7 +120,7 @@ export const Popover: React.FC<IPopoverProps> = ({
       overlay={overlayContent}
       zIndex={zIndex}
     >
-      {children}
+      <div className='kt-popover-trigger'>{children}</div>
     </Tooltip>
   );
 };
