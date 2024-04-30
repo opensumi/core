@@ -98,7 +98,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
   const renderGenerate = useCallback(
     () => (
       <Popover visible={isVisiablePopover} id={uid} content={popoverContent} position={PopoverPosition.bottom}>
-        {localize('aiNative.operate.afresh.title')}
+        <span>{localize('aiNative.operate.afresh.title')}</span>
       </Popover>
     ),
     [isVisiablePopover],

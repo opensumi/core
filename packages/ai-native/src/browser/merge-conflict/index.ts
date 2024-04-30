@@ -646,14 +646,14 @@ export class MergeConflictContribution
     } else {
       lineRange = _lineRange!;
     }
-    const range = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
-    const skeletonDecorationDispose = this.renderSkeletonDecoration(range, [
+    const newRange = lineRange.toRange(1, conflict?.range.endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER);
+    const skeletonDecorationDispose = this.renderSkeletonDecoration(newRange, [
       styles.skeleton_decoration,
       styles.skeleton_decoration_background_black,
     ]);
     this.stopWidgetManager.addWidget(lineRange);
 
-    let conflictText = this.getModel()?.getValueInRange(lineRange.toRange(1, range.endColumn)) ?? '';
+    let conflictText = this.getModel()?.getValueInRange(lineRange.toRange(1, newRange.endColumn)) ?? '';
     if (isRegenerate) {
       const cache = this.getCacheResolvedConflicts().get(lineRange.id);
       conflictText = cache?.conflictText ?? '';
@@ -662,7 +662,7 @@ export class MergeConflictContribution
 
     let resolveConflictResult: ChatResponse | undefined;
     try {
-      this.loadingRange.add(range);
+      this.loadingRange.add(newRange);
       this.reportData = {
         clickNum: this.reportData.clickNum! + 1,
       };
@@ -673,7 +673,7 @@ export class MergeConflictContribution
     } finally {
       skeletonDecorationDispose();
       this.stopWidgetManager.hideWidget(lineRange.id);
-      this.loadingRange.delete(range);
+      this.loadingRange.delete(newRange);
     }
 
     if (ReplyResponse.is(resolveConflictResult)) {
@@ -683,22 +683,21 @@ export class MergeConflictContribution
 
       const { text } = this.resolveEndLineEOL(resolveConflictResult!.message!);
 
-      const decorationDispose = this.renderSkeletonDecoration(range, [styles.skeleton_decoration_complete]);
+      const decorationDispose = this.renderSkeletonDecoration(newRange, [styles.skeleton_decoration_complete]);
       this.decorationId2Dispose.set(lineRange.id, decorationDispose);
-      this.decorationId2Range.set(lineRange.id, range);
+      this.decorationId2Range.set(lineRange.id, newRange);
 
       const widgetLineRange = this.toLineRange(
         {
-          ...range,
-          startLineNumber: range.endLineNumber,
-          endLineNumber: range.endLineNumber + 1,
+          ...newRange,
+          endLineNumber: newRange.endLineNumber + 1,
         },
         lineRange.id,
       );
 
-      this.resolveResultWidgetManager.addWidget(widgetLineRange, range, text);
+      this.resolveResultWidgetManager.addWidget(widgetLineRange, newRange, text);
       this.setCacheResolvedConflict(lineRange.id, {
-        newRange: range,
+        newRange,
         id: lineRange.id,
         metadata: conflictMetadata!,
         // 保留原始冲突文本
@@ -715,7 +714,7 @@ export class MergeConflictContribution
             if (cacheConflict.isResolved) {
               return false;
             }
-            if (cacheConflict.range.equalsRange(range)) {
+            if (cacheConflict.range.equalsRange(newRange)) {
               return true;
             }
             if (cacheConflict.text === conflictText) {
@@ -739,7 +738,7 @@ export class MergeConflictContribution
       }
 
       if (ErrorResponse.is(resolveConflictResult)) {
-        this.loadingRange.delete(range);
+        this.loadingRange.delete(newRange);
         return Promise.resolve(resolveConflictResult);
       }
     }
