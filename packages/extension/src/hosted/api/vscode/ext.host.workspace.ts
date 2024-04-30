@@ -132,6 +132,7 @@ export function createWorkspaceApiFactory(
     notebookDocuments: [],
     // empty handler for compatibility with the experimental API , see https://github.com/opensumi/core/issues/2424
     registerTimelineProvider: () => toDisposable(() => {}),
+    registerPortAttributesProvider: () => toDisposable(() => {}),
   };
 
   return workspace;

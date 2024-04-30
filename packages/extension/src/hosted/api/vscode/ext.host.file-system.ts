@@ -29,10 +29,10 @@ import type vscode from 'vscode';
 
 export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
   return {
-    type: stat.type || 0,
-    ctime: stat.createTime || -1,
-    mtime: stat.lastModification,
-    size: stat.size || 0,
+    type: stat?.type || 0,
+    ctime: stat?.createTime || -1,
+    mtime: stat?.lastModification,
+    size: stat?.size || 0,
   };
 }
 

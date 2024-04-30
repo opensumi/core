@@ -3,6 +3,7 @@ import Tooltip from 'rc-tooltip';
 import React, { useCallback, useMemo } from 'react';
 
 import './styles.less';
+
 import { Button } from '../button';
 
 export enum PopoverTriggerType {
@@ -61,7 +62,7 @@ export const Popover: React.FC<IPopoverProps> = ({
   overlayStyle,
   action,
   delay,
-  zIndex = 100,
+  zIndex = 1000,
   onClickAction,
   onVisibleChange,
   ...restProps
@@ -75,9 +76,14 @@ export const Popover: React.FC<IPopoverProps> = ({
     [onClickAction],
   );
 
-  const overlayContent = useMemo(
-    () =>
-      overlay || (
+  const overlayContent = useMemo(() => {
+    if (overlay) {
+      return overlay;
+    } else {
+      if (!title && !content) {
+        return null;
+      }
+      return (
         <>
           {title && (
             <p className={cls('kt-popover-title', titleClassName)}>
@@ -91,16 +97,20 @@ export const Popover: React.FC<IPopoverProps> = ({
           )}
           {content || ''}
         </>
-      ),
-    [overlay],
-  );
+      );
+    }
+  }, [overlay, content, action, handleActionClick]);
+
+  if (!overlayContent) {
+    return children;
+  }
 
   return (
     <Tooltip
       {...restProps}
       visible={visible}
       placement={position}
-      mouseEnterDelay={delay}
+      mouseEnterDelay={delay ? delay / 1000 : undefined}
       trigger={trigger}
       showArrow={showArrow}
       onVisibleChange={onVisibleChange}
@@ -110,7 +120,7 @@ export const Popover: React.FC<IPopoverProps> = ({
       overlay={overlayContent}
       zIndex={zIndex}
     >
-      {children}
+      <div className='kt-popover-trigger'>{children}</div>
     </Tooltip>
   );
 };
