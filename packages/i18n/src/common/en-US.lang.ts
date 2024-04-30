@@ -2,6 +2,7 @@ import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { browserViews } from './contributes/en-US.lang';
 import { editorLocalizations } from './editor/en-US';
+import { enUS as mergeConflicts } from './merge-conflicts/en-US.lang';
 
 export const localizationBundle = {
   languageId: LOCALE_TYPES.EN_US,
@@ -1492,5 +1493,6 @@ export const localizationBundle = {
 
     ...browserViews,
     ...editorLocalizations,
+    ...mergeConflicts,
   },
 };

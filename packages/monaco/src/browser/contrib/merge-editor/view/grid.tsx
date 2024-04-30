@@ -7,6 +7,7 @@ import {
   EDITOR_COMMANDS,
   ILogger,
   URI,
+  formatLocalize,
   localize,
   runWhenIdle,
   useInjectable,
@@ -200,44 +201,59 @@ const MergeActions: React.FC = observer(() => {
 
   const conflictsAllResolved = conflictsCount.lefted === 0 && conflictsCount.resolved === conflictsCount.total;
   const conflictsProgressHint = conflictsAllResolved
-    ? '已全部解决'
-    : `已解决 ${conflictsCount.resolved} 处，剩余 ${conflictsCount.lefted} 处`;
+    ? localize('merge-conflicts.conflicts.all-resolved')
+    : formatLocalize('merge-conflicts.conflicts.partial-resolved', conflictsCount.resolved, conflictsCount.lefted);
 
-  let nonConflictHint = '自动合并';
+  let nonConflictHint = localize('merge-conflicts.merge.type.auto');
   if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
-    nonConflictHint = '合并';
+    nonConflictHint = localize('merge-conflicts.merge.type.manual');
   }
+
   const nonConflictHintInfos = [] as string[];
   if (nonConflictingChangesResolvedCount.total > 0) {
-    nonConflictHintInfos.push(`${nonConflictingChangesResolvedCount.total} 处非冲突变更已${nonConflictHint}`);
+    nonConflictHintInfos.push(
+      formatLocalize(
+        'merge-conflicts.non-conflicts.progress',
+        nonConflictingChangesResolvedCount.total,
+        nonConflictHint,
+      ),
+    );
 
     const branchInfos = [] as string[];
 
     if (nonConflictingChangesResolvedCount.left > 0) {
-      branchInfos.push(`目标分支：${nonConflictingChangesResolvedCount.left} 处`);
+      branchInfos.push(
+        formatLocalize('merge-conflicts.non-conflicts.from.left', nonConflictingChangesResolvedCount.left),
+      );
     }
     if (nonConflictingChangesResolvedCount.right > 0) {
-      branchInfos.push(`来源分支：${nonConflictingChangesResolvedCount.right} 处`);
+      branchInfos.push(
+        formatLocalize('merge-conflicts.non-conflicts.from.right', nonConflictingChangesResolvedCount.right),
+      );
     }
     if (nonConflictingChangesResolvedCount.both > 0) {
-      branchInfos.push(`两者：${nonConflictingChangesResolvedCount.both} 处`);
+      branchInfos.push(
+        formatLocalize('merge-conflicts.non-conflicts.from.base', nonConflictingChangesResolvedCount.both),
+      );
     }
 
     if (branchInfos.length > 0) {
       const branchInfoString = branchInfos.join('；');
-      nonConflictHintInfos.push(`（${branchInfoString}）`);
+      nonConflictHintInfos.push(` (${branchInfoString})`);
     }
   }
 
   const nonConflictHintString = nonConflictHintInfos.join('');
 
   const mergeInfo = [
-    `冲突变更共 ${conflictsCount.total} 处 (${conflictsProgressHint})`,
-    conflictsCount.nonConflicts > 0 ? `非冲突变更共 ${conflictsCount.nonConflicts} 处` : '',
+    formatLocalize('merge-conflicts.conflicts.summary', conflictsCount.total, conflictsProgressHint),
+    conflictsCount.nonConflicts > 0
+      ? formatLocalize('merge-conflicts.non-conflicts.summary', conflictsCount.nonConflicts)
+      : '',
     nonConflictHintString,
   ]
     .filter(Boolean)
-    .join('｜');
+    .join(' | ');
 
   return (
     <div className={styles.merge_editor_float_container}>

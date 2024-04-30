@@ -2,6 +2,7 @@ import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { browserViews } from './contributes/zh-CN.lang';
 import { editorLocalizations } from './editor/zh-CN';
+import { zhCN as mergeConflicts } from './merge-conflicts/zh-CN.lang';
 
 export const localizationBundle = {
   languageId: LOCALE_TYPES.ZH_CN,
@@ -1257,5 +1258,6 @@ export const localizationBundle = {
 
     ...browserViews,
     ...editorLocalizations,
+    ...mergeConflicts,
   },
 };
