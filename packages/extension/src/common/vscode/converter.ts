@@ -1286,10 +1286,10 @@ export function fromFileStat(stat: vscode.FileStat, uri: types.Uri) {
 
 export function toFileStat(stat: FileStat): vscode.FileStat {
   return {
-    ctime: stat.createTime || 0,
-    mtime: stat.lastModification,
-    size: stat.size || 0,
-    type: stat.type || FileType.Unknown,
+    ctime: stat?.createTime || 0,
+    mtime: stat?.lastModification,
+    size: stat?.size || 0,
+    type: stat?.type || FileType.Unknown,
   };
 }
 
