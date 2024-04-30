@@ -197,19 +197,44 @@ const MergeActions: React.FC = observer(() => {
 
   const conflictsCount = dataStore.conflictsCount;
   const nonConflictingChangesResolvedCount = dataStore.nonConflictingChangesResolvedCount;
+
+  const conflictsAllResolved = conflictsCount.lefted === 0 && conflictsCount.resolved === conflictsCount.total;
+  const conflictsProgressHint = conflictsAllResolved
+    ? '已全部解决'
+    : `已解决 ${conflictsCount.resolved} 处，剩余 ${conflictsCount.lefted} 处`;
+
   let nonConflictHint = '自动合并';
   if (nonConflictingChangesResolvedCount.userManualResolveNonConflicts) {
     nonConflictHint = '合并';
   }
+  const nonConflictHintInfos = [] as string[];
+  if (nonConflictingChangesResolvedCount.total > 0) {
+    nonConflictHintInfos.push(`${nonConflictingChangesResolvedCount.total} 处非冲突变更已${nonConflictHint}`);
+
+    const branchInfos = [] as string[];
+
+    if (nonConflictingChangesResolvedCount.left > 0) {
+      branchInfos.push(`目标分支：${nonConflictingChangesResolvedCount.left} 处`);
+    }
+    if (nonConflictingChangesResolvedCount.right > 0) {
+      branchInfos.push(`来源分支：${nonConflictingChangesResolvedCount.right} 处`);
+    }
+    if (nonConflictingChangesResolvedCount.both > 0) {
+      branchInfos.push(`两者：${nonConflictingChangesResolvedCount.both} 处`);
+    }
+
+    if (branchInfos.length > 0) {
+      const branchInfoString = branchInfos.join('；');
+      nonConflictHintInfos.push(`（${branchInfoString}）`);
+    }
+  }
+
+  const nonConflictHintString = nonConflictHintInfos.join('');
 
   const mergeInfo = [
-    `当前冲突变更共 ${conflictsCount.total} 处 (已解决 ${conflictsCount.resolved} 处，剩余 ${conflictsCount.lefted} 处)`,
+    `冲突变更共 ${conflictsCount.total} 处 (${conflictsProgressHint})`,
     conflictsCount.nonConflicts > 0 ? `非冲突变更共 ${conflictsCount.nonConflicts} 处` : '',
-    nonConflictingChangesResolvedCount.total > 0
-      ? `${nonConflictingChangesResolvedCount.total} 处非冲突变更已${nonConflictHint}（目标分支：
-     ${nonConflictingChangesResolvedCount.left} 处，来源分支：${nonConflictingChangesResolvedCount.right} 处；两者
-     ${nonConflictingChangesResolvedCount.both} 处）`
-      : '',
+    nonConflictHintString,
   ]
     .filter(Boolean)
     .join('｜');
