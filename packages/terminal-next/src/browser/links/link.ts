@@ -13,7 +13,7 @@ import {
 
 import { convertBufferRangeToViewport } from './helpers';
 
-import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
+import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from '@xterm/xterm';
 
 // default delay time (ms) for showing tooltip when mouse is over a link
 const DEFAULT_HOVER_DELAY = 500;

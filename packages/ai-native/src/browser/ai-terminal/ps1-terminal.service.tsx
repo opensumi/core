@@ -1,8 +1,8 @@
+import { IDecoration, IDisposable, IMarker, Terminal } from '@xterm/xterm';
 import domAlign from 'dom-align';
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
 import { v4 as uuid } from 'uuid';
-import { IDecoration, IDisposable, IMarker, Terminal } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-browser';

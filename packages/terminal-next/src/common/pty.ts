@@ -1,6 +1,6 @@
+import { Terminal as XTerm } from '@xterm/xterm';
 import { IPty as INodePty } from 'node-pty';
 import * as pty from 'node-pty';
-import { Terminal as XTerm } from 'xterm';
 
 import { IThemeColor, MaybePromise, OperatingSystem, Uri } from '@opensumi/ide-core-common';
 

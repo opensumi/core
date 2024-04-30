@@ -7,7 +7,7 @@ import { TerminalBaseLinkProvider } from './base';
 import { convertLinkRangeToBuffer, getXtermLineContent } from './helpers';
 import { TerminalLink } from './link';
 
-import type { IBufferLine, IViewportRange, Terminal } from 'xterm';
+import type { IBufferLine, IViewportRange, Terminal } from '@xterm/xterm';
 
 @Injectable({ multiple: true })
 export class TerminalProtocolLinkProvider extends TerminalBaseLinkProvider {

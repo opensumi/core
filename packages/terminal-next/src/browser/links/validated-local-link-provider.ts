@@ -16,7 +16,7 @@ import { FOLDER_IN_WORKSPACE_LABEL, FOLDER_NOT_IN_WORKSPACE_LABEL, OPEN_FILE_LAB
 import { XtermLinkMatcherHandler } from './link-manager';
 
 import type { TerminalClient } from '../terminal.client';
-import type { IBufferLine, IViewportRange, Terminal } from 'xterm';
+import type { IBufferLine, IViewportRange, Terminal } from '@xterm/xterm';
 
 const pathPrefix = '(\\.\\.?|\\~)';
 const pathSeparatorClause = '\\/';

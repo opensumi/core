@@ -1,5 +1,5 @@
+import { ITerminalOptions } from '@xterm/xterm';
 import pickBy from 'lodash/pickBy';
-import { ITerminalOptions } from 'xterm';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';

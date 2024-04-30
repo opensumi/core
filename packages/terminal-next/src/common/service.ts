@@ -1,4 +1,4 @@
-import { ITerminalOptions as IXtermTerminalOptions } from 'xterm';
+import { ITerminalOptions as IXtermTerminalOptions } from '@xterm/xterm';
 
 import { IDisposable, OperatingSystem } from '@opensumi/ide-core-common';
 

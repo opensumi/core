@@ -8,7 +8,7 @@ import { convertLinkRangeToBuffer, getXtermLineContent } from './helpers';
 import { TerminalLink } from './link';
 import { XtermLinkMatcherHandler } from './link-manager';
 
-import type { IBufferLine, IViewportRange, Terminal } from 'xterm';
+import type { IBufferLine, IViewportRange, Terminal } from '@xterm/xterm';
 
 /**
  * An adapter to convert a simple external link provider into an internal link provider that

@@ -1,4 +1,4 @@
-import { ITerminalOptions, ITheme, Terminal } from 'xterm';
+import { ITerminalOptions, ITheme, Terminal } from '@xterm/xterm';
 
 import { SupportedOptions } from './preference';
 

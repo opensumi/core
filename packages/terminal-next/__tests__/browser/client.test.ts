@@ -21,7 +21,7 @@ import { injector } from './inject';
 import { createProxyServer, createWsServer } from './proxy';
 import { createBufferLineArray, delay } from './utils';
 
-import type { ITerminalAddon } from 'xterm';
+import type { ITerminalAddon } from '@xterm/xterm';
 
 function createDOMContainer() {
   const div = document.createElement('div');
@@ -113,7 +113,7 @@ jest.mock('xterm', () => {
     Terminal,
   };
 });
-jest.mock('xterm-addon-webgl', () => MockXTermAddonWebgl);
+jest.mock('@xterm/addon-webgl', () => MockXTermAddonWebgl);
 
 describe('Terminal Client', () => {
   let client: ITerminalClient;
