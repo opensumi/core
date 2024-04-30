@@ -1,12 +1,17 @@
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { IPosition } from '../../../monaco-api/types';
-import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
+import { ECompleteReason, ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 export class InnerRange extends MonacoRange implements IRangeContrast {
   private _isComplete: boolean;
   public get isComplete(): boolean {
     return this._isComplete;
+  }
+
+  private _completeReason: ECompleteReason | undefined;
+  public get completeReason(): ECompleteReason | undefined {
+    return this._completeReason;
   }
 
   private _turnDirection: ETurnDirection;
@@ -23,8 +28,15 @@ export class InnerRange extends MonacoRange implements IRangeContrast {
     return this;
   }
 
-  public setComplete(b: boolean): this {
-    this._isComplete = b;
+  public done(reason: ECompleteReason): this {
+    this._isComplete = true;
+    this._completeReason = reason;
+    return this;
+  }
+
+  public cancel(): this {
+    this._isComplete = false;
+    this._completeReason = undefined;
     return this;
   }
 

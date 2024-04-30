@@ -1069,3 +1069,23 @@ export namespace SCM_COMMANDS {
     id: 'git.openMergeEditor',
   };
 }
+
+export namespace MERGE_CONFLICT_COMMANDS {
+  const CATEGORY = 'MergeConflict';
+  export const AI_ACCEPT: Command = {
+    id: 'merge-conflict.ai.accept',
+    category: CATEGORY,
+  };
+  export const ALL_RESET: Command = {
+    id: 'merge-conflict.ai.all-reset',
+    category: CATEGORY,
+  };
+  export const AI_ALL_ACCEPT: Command = {
+    id: 'merge-conflict.ai.all-accept',
+    category: CATEGORY,
+  };
+  export const AI_ALL_ACCEPT_STOP: Command = {
+    id: 'merge-conflict.ai.all-accept-stop',
+    category: CATEGORY,
+  };
+}

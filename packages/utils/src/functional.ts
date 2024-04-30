@@ -47,3 +47,21 @@ export function diffSets<T>(before: Set<T>, after: Set<T>): { removed: T[]; adde
   }
   return { removed, added };
 }
+
+export function findFirstTruthy<T>(...sources: Array<T | (() => T)>): T | undefined {
+  for (let i = 0; i < sources.length - 1; i++) {
+    const result = check(sources[i]);
+    if (result) {
+      return result;
+    }
+  }
+
+  return check(sources[sources.length - 1]);
+
+  function check(value: T | (() => T)): T | undefined {
+    if (typeof value === 'function') {
+      return (value as () => T)();
+    }
+    return value;
+  }
+}

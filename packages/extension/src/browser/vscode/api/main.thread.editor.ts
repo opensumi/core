@@ -31,7 +31,7 @@ import {
 import {
   BrowserDiffEditor,
   EditorCollectionServiceImpl,
-  IMonacoImplEditor,
+  ISumiEditor,
 } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import * as monaco from '@opensumi/ide-monaco';
@@ -89,7 +89,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const editors = this.editorService.editorGroups
       .map((group) => {
         if (group.currentOpenType && isEditor(group.currentOpenType)) {
-          const editor = group.currentEditor as IMonacoImplEditor;
+          const editor = group.currentEditor as ISumiEditor;
           if (!editor.currentDocumentModel) {
             return undefined;
           }
@@ -195,7 +195,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  private getEditor(id: string): IMonacoImplEditor | undefined {
+  private getEditor(id: string): ISumiEditor | undefined {
     const group = this.getGroup(id);
     if (!group) {
       return;
@@ -203,7 +203,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const currentResource = group.currentResource;
     if (currentResource && group.currentOpenType && isEditor(group.currentOpenType)) {
       if (id === getTextEditorId(group, currentResource.uri)) {
-        return group.currentEditor as IMonacoImplEditor;
+        return group.currentEditor as ISumiEditor;
       }
       if (
         group.currentOpenType?.type === EditorOpenType.diff &&
@@ -277,7 +277,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
             payload.newOpenType &&
             (payload.newOpenType.type === EditorOpenType.code || payload.newOpenType.type === EditorOpenType.diff)
           ) {
-            const editor = payload.group.currentEditor as IMonacoImplEditor;
+            const editor = payload.group.currentEditor as ISumiEditor;
             if (!editor.currentDocumentModel) {
               // noop
             } else if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
@@ -423,13 +423,10 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     this.addDispose(
       this.eventBus.on(EditorConfigurationChangedEvent, (e: EditorConfigurationChangedEvent) => {
         const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
-        if (
-          e.payload.group.currentEditor &&
-          (e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor.getModel()
-        ) {
+        if (e.payload.group.currentEditor && (e.payload.group.currentEditor as ISumiEditor).monacoEditor.getModel()) {
           this.batchPropertiesChanges({
             id: editorId,
-            options: getEditorOption((e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor),
+            options: getEditorOption((e.payload.group.currentEditor as ISumiEditor).monacoEditor),
           });
         }
       }),

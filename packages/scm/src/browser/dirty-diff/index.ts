@@ -14,7 +14,7 @@ import {
   IEditorDocumentModel,
   IEditorFeatureRegistry,
 } from '@opensumi/ide-editor/lib/browser';
-import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
+import { ISumiEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import * as monaco from '@opensumi/ide-monaco';
 import { monacoBrowser } from '@opensumi/ide-monaco/lib/browser';
 
@@ -167,7 +167,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       .filter((editorGroup) => editorGroup.currentOpenType && editorGroup.currentOpenType.type === EditorOpenType.code)
       // set model registry and map to models
       .map((editorGroup) => {
-        const currentEditor = editorGroup.currentEditor as IMonacoImplEditor;
+        const currentEditor = editorGroup.currentEditor as ISumiEditor;
         if (currentEditor) {
           // const codeEditor = currentEditor.monacoEditor;
           // const controller = DirtyDiffController.get(codeEditor);

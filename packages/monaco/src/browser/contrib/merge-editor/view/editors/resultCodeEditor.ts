@@ -20,7 +20,6 @@ import {
   MergeConflictEditorMode,
   ResolveConflictRegistryToken,
 } from '@opensumi/ide-core-common';
-import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import {
   IModelDecorationOptions,
@@ -37,6 +36,7 @@ import { Progress } from '@opensumi/monaco-editor-core/esm/vs/platform/progress/
 
 import { editor } from '../../../../../browser/monaco-exports';
 import * as monaco from '../../../../../common';
+import { MappingManagerDataStore } from '../../mapping-manager.store';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { IIntelligentState, LineRange } from '../../model/line-range';
@@ -48,6 +48,7 @@ import {
   AI_RESOLVE_REGENERATE_ACTIONS,
   CONFLICT_ACTIONS_ICON,
   DECORATIONS_CLASSNAME,
+  ECompleteReason,
   ETurnDirection,
   EditorViewType,
   IActionsDescription,
@@ -56,62 +57,14 @@ import {
   REVOKE_ACTIONS,
   TActionsType,
 } from '../../types';
+import { IWidgetFactory, IWidgetPositionFactory, WidgetFactory } from '../../widget/facotry';
 import { ResolveResultWidget } from '../../widget/resolve-result-widget';
 import { StopWidget } from '../../widget/stop-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
-interface IWidgetFactory {
-  hideWidget(id?: string): void;
-  addWidget(range: LineRange): void;
-  hasWidget(range: LineRange): boolean;
-}
-
-class WidgetFactory implements IWidgetFactory {
-  private widgetMap: Map<string, ResolveResultWidget>;
-
-  constructor(
-    private contentWidget: typeof ResolveResultWidget,
-    private editor: BaseCodeEditor,
-    private injector: Injector,
-  ) {
-    this.widgetMap = new Map();
-  }
-
-  hasWidget(range: LineRange): boolean {
-    return this.widgetMap.get(range.id) !== undefined;
-  }
-
-  public hideWidget(id?: string): void {
-    if (id) {
-      const widget = this.widgetMap.get(id);
-      if (widget) {
-        widget.hide();
-        this.widgetMap.delete(id);
-      }
-      return;
-    }
-
-    this.widgetMap.forEach((widget) => {
-      widget.hide();
-    });
-    this.widgetMap.clear();
-  }
-
-  public addWidget(range: LineRange): void {
-    const id = range.id;
-    if (this.widgetMap.has(id)) {
-      return;
-    }
-
-    const position = new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
-
-    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
-    widget.show({ position });
-
-    this.widgetMap.set(id, widget);
-  }
-}
+const positionFactory: IWidgetPositionFactory = (range) =>
+  new Position(Math.max(range.startLineNumber, range.endLineNumberExclusive - 1), 1);
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
@@ -120,6 +73,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   @Autowired(MergeConflictReportService)
   private readonly mergeConflictReportService: MergeConflictReportService;
+
+  @Autowired(MappingManagerDataStore)
+  private readonly dataStore: MappingManagerDataStore;
 
   private readonly _onDidChangeContent = new Emitter<void>();
   public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
@@ -134,33 +90,28 @@ export class ResultCodeEditor extends BaseCodeEditor {
   private timeMachineDocument: TimeMachineDocument;
   private resolveResultWidgetManager: IWidgetFactory;
   private stopWidgetManager: IWidgetFactory;
-  private isFirstInputComputeDiff = true;
   private cancelIndicatorMap: Map<string, CancellationTokenSource> = new Map();
 
   protected aiBackService: IAIBackService;
   protected resolveConflictRegistry: IInternalResolveConflictRegistry;
 
+  protected supportAIConflictResolve = false;
+
   /** @deprecated */
   public documentMapping: DocumentMapping;
-
-  private get documentMappingTurnLeft(): DocumentMapping {
-    return this.mappingManagerService.documentMappingTurnLeft;
-  }
-  private get documentMappingTurnRight(): DocumentMapping {
-    return this.mappingManagerService.documentMappingTurnRight;
-  }
 
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
     this.initListenEvent();
 
-    this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector);
-    this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector);
+    this.resolveResultWidgetManager = new WidgetFactory(ResolveResultWidget, this, this.injector, positionFactory);
+    this.stopWidgetManager = new WidgetFactory(StopWidget, this, this.injector, positionFactory);
 
     if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
       this.aiBackService = injector.get(AIBackSerivcePath);
       this.resolveConflictRegistry = injector.get(ResolveConflictRegistryToken);
+      this.supportAIConflictResolve = true;
     }
   }
 
@@ -195,7 +146,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     };
   }
 
-  public async requestAiResolveConflict(
+  public async requestAIResolveConflict(
     metadata: IConflictContentMetadata,
     range: LineRange,
     isRegenerate = false,
@@ -257,7 +208,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
    */
   public getFlushRange(range: LineRange): LineRange | undefined {
     const id = range.id;
-    const allRanges = this.getAllDiffRanges();
+    const allRanges = this.mappingManagerService.getAllDiffRanges();
     return allRanges.find((range) => range.id === id);
   }
 
@@ -271,7 +222,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     // monaco 内部的 format 无法通过 command 或 api 来指定 range，所以这里需要像这样调用，手动传入 range
     await instaService.invokeFunction(
       formatDocumentRangesWithSelectedProvider,
-      this.editor as any,
+      this.getModel()!,
       range.toInclusiveRange() as monaco.Range,
       FormattingMode.Explicit,
       Progress.None,
@@ -296,7 +247,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }),
     );
 
-    if (this.aiNativeConfigService.capabilities.supportsConflictResolve) {
+    if (this.supportAIConflictResolve) {
       this.addDispose(
         this.editor.onMouseMove(
           debounce((event: monaco.editor.IEditorMouseEvent) => {
@@ -312,7 +263,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
               return;
             }
 
-            const allRanges = this.getAllDiffRanges();
+            const allRanges = this.mappingManagerService.getAllDiffRanges();
             const toLineRange = LineRange.fromPositions(mousePosition.lineNumber);
 
             const isTouches = allRanges.some((range) => range.isTouches(toLineRange));
@@ -387,24 +338,24 @@ export class ResultCodeEditor extends BaseCodeEditor {
               this.mappingManagerService.findNextLineRanges(toLineRange);
 
             if (includeLeftRange) {
-              this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
+              this.mappingManagerService.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
             } else if (touchTurnLeftRange) {
-              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchTurnLeftRange, offset);
+              this.mappingManagerService.documentMappingTurnLeft.deltaEndAdjacentQueue(touchTurnLeftRange, offset);
             } else if (nextTurnLeftRange) {
-              const reverse = this.documentMappingTurnLeft.reverse(nextTurnLeftRange);
+              const reverse = this.mappingManagerService.documentMappingTurnLeft.reverse(nextTurnLeftRange);
               if (reverse) {
-                this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
+                this.mappingManagerService.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
               }
             }
 
             if (includeRightRange) {
-              this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
+              this.mappingManagerService.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
             } else if (touchTurnRightRange) {
-              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchTurnRightRange, offset);
+              this.mappingManagerService.documentMappingTurnRight.deltaEndAdjacentQueue(touchTurnRightRange, offset);
             } else if (nextTurnRightRange) {
-              const reverse = this.documentMappingTurnRight.reverse(nextTurnRightRange);
+              const reverse = this.mappingManagerService.documentMappingTurnRight.reverse(nextTurnRightRange);
               if (reverse) {
-                this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
+                this.mappingManagerService.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
               }
             }
           });
@@ -415,27 +366,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
   }
 
-  public getAllDiffRanges(): LineRange[] {
-    // 去重相同 id 或位置一样的 line range
-    return distinct(
-      this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
-      (range) => range.id,
-    );
-  }
-
   protected provideActionsItems(ranges?: LineRange[]): IActionsDescription[] {
     if (!Array.isArray(ranges)) {
       return [];
     }
 
     const renderIconClassName = (range: LineRange) => {
-      const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
-
       if (range.isComplete) {
         return CONFLICT_ACTIONS_ICON.REVOKE;
       }
 
-      if (isAiConflictResolve && range.type === 'modify') {
+      if (this.supportAIConflictResolve && range.type === 'modify') {
         const aiModel = range.getIntelligentStateModel();
 
         if (aiModel.isLoading) {
@@ -481,7 +422,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
     let slow = 0;
     let mergeRange: LineRange | undefined;
 
-    /** Two Pointers 算法 */
+    diffRanges.sort((a, b) => a.startLineNumber - b.startLineNumber);
+
+    /** Two Pointers 算法, 快慢指针 */
     for (let fast = 0; fast < length; fast++) {
       const slowRange = diffRanges[slow];
       const fastRange = diffRanges[fast];
@@ -495,12 +438,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
         if (mergeRange.isTouches(fastRange)) {
           mergeRange = mergeRange.merge(fastRange);
           result.set(slow, { rawRanges: (result.get(slow)?.rawRanges || []).concat(fastRange), mergeRange });
-          continue;
         } else {
           // 重置
           mergeRange = undefined;
           slow = fast;
         }
+        continue;
       } else if (slowRange.isTouches(fastRange)) {
         // 如果 range 有接触，则需要合并在一起，同时 slow 指针位置不变
         mergeRange = slowRange.merge(fastRange);
@@ -521,7 +464,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
     }[],
   ): void {
     const pickMapping = (range: LineRange) =>
-      range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
+      range.turnDirection === ETurnDirection.CURRENT
+        ? this.mappingManagerService.documentMappingTurnLeft
+        : this.mappingManagerService.documentMappingTurnRight;
 
     for (let { rawRanges, mergeRange } of needMergeRanges) {
       // 需要合并的 range 一定多于两个
@@ -546,7 +491,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
        *  2. { startLine: 20，endLine: 30 } // 方向向左
        *  3. { startLine: 30，endLine: 40 } // 方向向右
        *
-       * 首先这三者的 turn directio 方向一定是左右交替的
+       * 首先这三者的 turn direction 方向一定是左右交替的
        * 那么第二个 lineRange 的对位关系 oppositeLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
        * 这个高度的差距会影响后续所有的 conflict action 操作（因为缺失的这部分高度会导致 accept 操作后的代码内容丢失）
        *
@@ -604,41 +549,107 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
       if (mergeRangeTurnLeft) {
         const newLineRange = mergeRangeTurnLeft.setTurnDirection(ETurnDirection.CURRENT).setType('modify');
-        this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
+        this.mappingManagerService.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
       }
 
       if (mergeRangeTurnRight) {
         const newLineRange = mergeRangeTurnRight.setTurnDirection(ETurnDirection.INCOMING).setType('modify');
-        this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
+        this.mappingManagerService.documentMappingTurnRight.addRange(newLineRange, mergeRange);
       }
     }
   }
 
-  protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
-    const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
-    const innerChangesResult: InnerRange[][] = [];
-
-    let maybeNeedMergeRanges: {
-      rawRanges: LineRange[];
-      mergeRange: LineRange;
-    }[] = [];
+  /**
+   * 用来标记是否进行过初次 diff 计算，如果进行过，则直接返回所有 diff
+   */
+  private isFirstInputComputeDiff = true;
+  protected getDiffRangesAfterDistill(): LineRange[] {
+    let diffRanges = this.mappingManagerService.getAllDiffRanges();
 
     if (this.isFirstInputComputeDiff) {
-      maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+      const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
       this.handleNeedMergeRanges(maybeNeedMergeRanges);
+      // 数据源 document mapping 的对应关系已经被改变，需要刷新一次
+      diffRanges = this.mappingManagerService.getAllDiffRanges();
       this.isFirstInputComputeDiff = false;
     }
 
-    /**
-     * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
-     * 则需要重新获取一次
-     */
-    const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
+    return diffRanges;
+  }
 
-    const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
-    if (isAiConflictResolve) {
+  protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
+    const innerChangesResult: InnerRange[][] = [];
+
+    const changesResult = this.getDiffRangesAfterDistill();
+
+    let conflictsTotal = 0;
+    let nonConflictsUnresolved = 0;
+    let conflictsUserSolved = 0;
+    let autoResolvedNonConflicts = 0;
+    let autoResolvedNonConflictsLeft = 0;
+    let autoResolvedNonConflictsRight = 0;
+    let autoResolvedNonConflictsBoth = 0;
+    let userManualResolveNonConflicts = false;
+
+    changesResult.forEach((range) => {
+      if (range.isComplete) {
+        switch (range.completeReason) {
+          case ECompleteReason.AIResolved:
+          // @ts-expect-error: need fallthrough
+          case ECompleteReason.UserManual:
+            if (range.isConflictPoint) {
+              // user manual resolved conflicts
+              conflictsTotal++;
+              conflictsUserSolved++;
+              break;
+            }
+            // it means user manual resolved non-conflicts
+            // we need to record this situation, and show in UI
+            userManualResolveNonConflicts = true;
+          case ECompleteReason.AutoResolvedNonConflictBeforeRunAI:
+          case ECompleteReason.AutoResolvedNonConflict:
+            // auto resolved non-conflicts
+            autoResolvedNonConflicts++;
+            switch (range.turnDirection) {
+              case ETurnDirection.CURRENT:
+                autoResolvedNonConflictsLeft++;
+                break;
+              case ETurnDirection.INCOMING:
+                autoResolvedNonConflictsRight++;
+                break;
+              case ETurnDirection.BOTH:
+                autoResolvedNonConflictsBoth++;
+                break;
+            }
+            break;
+        }
+      } else {
+        // unresolved conflicts
+        if (range.isConflictPoint) {
+          conflictsTotal++;
+        } else {
+          // unresolved non-conflicts
+          nonConflictsUnresolved++;
+        }
+      }
+    });
+
+    this.dataStore.updateConflictsCount({
+      total: conflictsTotal,
+      resolved: conflictsUserSolved,
+      nonConflicts: nonConflictsUnresolved,
+    });
+    this.dataStore.updateNonConflictingChangesResolvedCount({
+      total: autoResolvedNonConflicts,
+      left: autoResolvedNonConflictsLeft,
+      right: autoResolvedNonConflictsRight,
+      both: autoResolvedNonConflictsBoth,
+      userManualResolveNonConflicts,
+    });
+
+    if (this.supportAIConflictResolve) {
       changesResult
-        .filter((range) => range.isAiConflictPoint)
+        .filter((range) => range.isConflictPoint)
         .forEach((range) => {
           const model = range.getIntelligentStateModel();
 
@@ -649,6 +660,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
           }
         });
     }
+
     return [changesResult, innerChangesResult];
   }
 
@@ -656,11 +668,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
-    const isAiComplete = () => {
-      const isAiConflictResolve = this.aiNativeConfigService?.capabilities?.supportsConflictResolve;
+    const isAIComplete = () => {
       const intelligentModel = range.getIntelligentStateModel();
 
-      if (isAiConflictResolve && intelligentModel.isComplete && !intelligentModel.isLoading) {
+      if (this.supportAIConflictResolve && intelligentModel.isComplete && !intelligentModel.isLoading) {
         return true;
       }
 
@@ -671,14 +682,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
       linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         DECORATIONS_CLASSNAME.stretch_right,
-        isAiComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete_lines_decorations : '',
+        isAIComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete_lines_decorations : '',
         range.turnDirection === ETurnDirection.CURRENT || range.turnDirection === ETurnDirection.BOTH
           ? DECORATIONS_CLASSNAME.stretch_left
           : '',
       ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
-        isAiComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete : '',
+        isAIComplete() ? DECORATIONS_CLASSNAME.ai_resolve_complete : '',
         range.turnDirection === ETurnDirection.CURRENT
           ? DECORATIONS_CLASSNAME.stretch_left
           : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, DECORATIONS_CLASSNAME.stretch_right),
@@ -695,7 +706,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public override updateActions(): this {
-    this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
+    this.conflictActions.updateActions(this.provideActionsItems(this.mappingManagerService.getAllDiffRanges()));
     return this;
   }
 
@@ -704,7 +715,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public completeSituation(): { completeCount: number; shouldCount: number } {
-    const allRanges = this.getAllDiffRanges();
+    const allRanges = this.mappingManagerService.getAllDiffRanges();
     let completeCount = 0;
 
     for (const range of allRanges) {
@@ -722,10 +733,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public override launchConflictActionsEvent(eventData: Omit<IConflictActionsEvent, 'withViewType'>): void {
-    const { range, action } = eventData;
     super.launchConflictActionsEvent({
-      range,
-      action,
+      ...eventData,
       withViewType: EditorViewType.RESULT,
     });
   }
@@ -735,7 +744,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
    */
   public inputDiffComputingResult(): void {
     this.updateDecorations();
-    const diffRanges = this.getAllDiffRanges();
+    const diffRanges = this.mappingManagerService.getAllDiffRanges();
 
     this.registerActionsProvider({
       provideActionsItems: () => this.provideActionsItems(diffRanges),
@@ -749,6 +758,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
           this.launchConflictActionsEvent({
             range,
             action: actionType,
+            reason: ECompleteReason.UserManual,
           });
         }
       },
@@ -762,7 +772,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     });
 
     runWhenIdle(() => {
-      const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isAiConflictPoint ? pre + 1 : pre), 0);
+      const aiConflictNum = diffRanges.reduce((pre, cur) => (cur.isConflictPoint ? pre + 1 : pre), 0);
       this.mergeConflictReportService.record(this.getUri(), {
         conflictPointNum: aiConflictNum,
         editorMode: MergeConflictEditorMode['3way'],

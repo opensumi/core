@@ -30,9 +30,9 @@ import chalk from 'chalk';
           setTimeout(() => {
             process.stdout.write(chalk.red('It seems that tsc has error, so we exit.\n'));
             process.stdout.write('\n');
-            process.exit(0);
+            process.exit(1);
           });
-        }, 200);
+        }, 100);
       }
     });
 

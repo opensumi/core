@@ -104,10 +104,17 @@ export class LRUMap<K, V> extends Map<K, V> {
 }
 
 const NOW = Symbol('now');
+
 /**
  * 支持过期时间
  */
 export class StaleLRUMap<K, V> extends LRUMap<K, V> {
+  /**
+   *
+   * @param hardLimit
+   * @param softLimit
+   * @param maxAge the unit is milliseconds
+   */
   constructor(hardLimit: number, softLimit: number, private maxAge: number) {
     super(hardLimit, softLimit);
   }

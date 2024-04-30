@@ -13,17 +13,17 @@ export class MergeConflictPromptManager extends BasePromptManager {
     return `The current solution to the code conflict is \n\`\`\`\n${text}\n\`\`\`\n, but I'm not fully satisfied with it. Could you please provide an alternative solution?`;
   }
 
-  public toThreeWayCodeAssemble(metadata: IConflictContentMetadata) {
+  public assembleCode(metadata: IConflictContentMetadata) {
     return `<<<<<<< HEAD\n${metadata.current}\n||||||| base\n${metadata.base}\n>>>>>>>\n${metadata.incoming}`;
   }
 
-  public convertDefaultThreeWayPrompt(metadata: IConflictContentMetadata) {
-    const codeAssemble = this.toThreeWayCodeAssemble(metadata);
+  public convertDefaultPrompt(metadata: IConflictContentMetadata) {
+    const codeAssemble = this.assembleCode(metadata);
     return this.toPrompt(codeAssemble);
   }
 
-  public convertDefaultThreeWayRegeneratePrompt(metadata: IConflictContentMetadata) {
-    const codeAssemble = this.toThreeWayCodeAssemble(metadata);
+  public convertDefaultRegeneratePrompt(metadata: IConflictContentMetadata) {
+    const codeAssemble = this.assembleCode(metadata);
     return this.toRegeneratePrompt(codeAssemble);
   }
 }

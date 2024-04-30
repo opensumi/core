@@ -14,6 +14,8 @@ import { EOL, EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-
 import { IEditorDocumentModelContentChange, SaveReason } from '../../common';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../../common/editor';
 
+import { EditorDocumentModel } from './editor-document-model';
+
 export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
   detectIndentation?: boolean;
 }
@@ -119,6 +121,8 @@ export interface IPreferredModelOptions {
 }
 
 export interface IEditorDocumentModelService {
+  onDocumentModelCreated(uri: string, listener: () => void): IDisposable;
+
   hasLanguage(languageId: string): boolean;
 
   createModelReference(uri: URI, reason?: string): Promise<IEditorDocumentModelRef>;

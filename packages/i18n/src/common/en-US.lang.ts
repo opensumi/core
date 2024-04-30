@@ -2,6 +2,7 @@ import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { browserViews } from './contributes/en-US.lang';
 import { editorLocalizations } from './editor/en-US';
+import { enUS as mergeConflicts } from './merge-conflicts/en-US.lang';
 
 export const localizationBundle = {
   languageId: LOCALE_TYPES.EN_US,
@@ -1434,14 +1435,15 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
     'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
     'mergeEditor.action.button.apply': 'Apply',
-    'mergeEditor.action.button.accept.left': 'Accept left',
-    'mergeEditor.action.button.accept.right': 'Accept right',
-    'mergeEditor.open.3way': '3-way Editor',
-    'mergeEditor.conflict.prev': 'Previous conflict',
-    'mergeEditor.conflict.next': 'Next conflict',
-    'mergeEditor.conflict.resolve.all': 'AI one click solution',
-    'mergeEditor.conflict.resolve.all.stop': 'Stop All',
-    'mergeEditor.open.tradition': 'Tradition editor',
+    'mergeEditor.action.button.apply-and-stash': 'Apply and Stash',
+    'mergeEditor.action.button.accept.left': 'Accept Left',
+    'mergeEditor.action.button.accept.right': 'Accept Right',
+    'mergeEditor.open.3way': '3-Way Editor',
+    'mergeEditor.conflict.prev': 'Previous Conflict',
+    'mergeEditor.conflict.next': 'Next Conflict',
+    'mergeEditor.conflict.ai.resolve.all': 'AI Resolution',
+    'mergeEditor.conflict.ai.resolve.all.stop': 'Stop All',
+    'mergeEditor.open.tradition': 'Tradition Editor',
 
     // #region AI Native
     'aiNative.chat.ai.assistant.name': 'AI Assistant',
@@ -1491,5 +1493,6 @@ export const localizationBundle = {
 
     ...browserViews,
     ...editorLocalizations,
+    ...mergeConflicts,
   },
 };
