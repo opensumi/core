@@ -1,11 +1,13 @@
 import React, { ReactNode } from 'react';
 
-import { Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { IAIInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
 import { localize, uuid } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/ide-monaco';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
+  ACCEPT_CURRENT_ACTIONS,
   AIResolveConflictContentWidget,
   ECompleteReason,
   IGNORE_ACTIONS,
@@ -17,11 +19,20 @@ import {
   WapperAIInlineResult,
 } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/widget/resolve-result-widget';
 
+import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
+
 @Injectable({ multiple: true })
 export class OverrideResolveResultWidget extends ResolveResultWidget {
   protected uid: string = uuid(4);
+  @Autowired(INJECTOR_TOKEN)
+  protected injector: Injector;
 
-  constructor(protected readonly codeEditor: ResultCodeEditor, protected readonly lineRange: LineRange) {
+  constructor(
+    protected readonly codeEditor: ResultCodeEditor,
+    protected readonly lineRange: LineRange,
+    protected readonly range: monaco.IRange,
+    protected readonly text: string,
+  ) {
     super(codeEditor, lineRange);
   }
 
@@ -31,6 +42,17 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
 
   protected iconItems(): IAIInlineResultIconItemsProps[] {
     return [
+      {
+        icon: 'check',
+        text: localize('aiNative.inline.chat.operate.check.title'),
+        onClick: () => {
+          this.codeEditor.launchConflictActionsEvent({
+            range: this.lineRange,
+            action: ACCEPT_CURRENT_ACTIONS,
+            reason: ECompleteReason.UserManual,
+          });
+        },
+      },
       {
         icon: 'discard',
         text: localize('aiNative.operate.discard.title'),
@@ -45,7 +67,25 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
     ];
   }
 
-  public renderView(): ReactNode {
+  private inlineDiffWidget: InlineDiffWidget;
+
+  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, range: monaco.IRange, answer: string): void {
+    if (this.inlineDiffWidget) {
+      this.inlineDiffWidget.dispose();
+    }
+
+    monacoEditor.setHiddenAreas([range], InlineDiffWidget._hideId);
+    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, range, answer]);
+    this.inlineDiffWidget.create();
+    this.inlineDiffWidget.showByLine(range.startLineNumber + 2, range.endLineNumber - range.startLineNumber + 2);
+  }
+
+  override hide(): void {
+    super.hide();
+    this.inlineDiffWidget?.dispose();
+  }
+
+  public override renderView(): ReactNode {
     const iconResultItems = this.iconItems();
     const isRenderThumbs = this.isRenderThumbs();
 
@@ -56,6 +96,8 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
         reason: ECompleteReason.UserManual,
       });
     };
+
+    this.visibleDiffWidget(this.codeEditor.editor, this.range, this.text);
 
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>

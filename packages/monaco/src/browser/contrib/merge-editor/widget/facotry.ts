@@ -8,7 +8,7 @@ import { IMergeEditorShape } from './types';
 
 export interface IWidgetFactory {
   hideWidget(id?: string): void;
-  addWidget(range: LineRange): void;
+  addWidget(range: LineRange, ...args: any[]): void;
   hasWidget(range: LineRange): boolean;
 }
 
@@ -48,7 +48,7 @@ export class WidgetFactory implements IWidgetFactory {
     this.widgetMap.clear();
   }
 
-  public addWidget(range: LineRange): void {
+  public addWidget(range: LineRange, ...args: any[]): void {
     const id = range.id;
     if (this.widgetMap.has(id)) {
       return;
@@ -56,7 +56,7 @@ export class WidgetFactory implements IWidgetFactory {
 
     const position = this.positionFactory(range);
 
-    const widget = this.injector.get(this.contentWidget, [this.editor, range]);
+    const widget = this.injector.get(this.contentWidget, [this.editor, range, ...args]);
     widget.show({ position });
 
     this.widgetMap.set(id, widget);

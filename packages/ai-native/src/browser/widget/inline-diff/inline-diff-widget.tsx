@@ -198,13 +198,6 @@ export class InlineDiffWidget extends ZoneWidget {
   }
 
   public showByLine(line: number, lineNumber = 20): void {
-    /**
-     * 由于 monaco 在最新的版本中支持了 showInHiddenAreas 选项（见：https://github.com/microsoft/vscode/pull/181029），具备了在空白行显示 zonewidget 的能力
-     * 所以这里暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来，后续需要升级 monaco 来实现
-     */
-    // @ts-ignore
-    this.editor._modelData.viewModel.coordinatesConverter.modelPositionIsVisible = () => true;
-
     super.show(
       {
         startLineNumber: line,

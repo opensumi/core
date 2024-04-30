@@ -53,8 +53,6 @@ import { monacoApi } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 
-import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
-
 import { OverrideResolveResultWidget as ResolveResultWidget } from './override-resolve-result-widget';
 
 const MERGE_CONFLICT_CODELENS_STYLE = 'merge-conflict-codelens-style';
@@ -429,8 +427,7 @@ export class MergeConflictContribution
     for (const [id, value] of this.getCacheResolvedConflicts().entries()) {
       if (!value.isClosed) {
         const lineRange = this.toLineRange(value.newRange, id);
-        this.resolveResultWidgetManager.addWidget(lineRange);
-        this.visibleDiffWidget(this.editor, value.newRange, value.text);
+        this.resolveResultWidgetManager.addWidget(lineRange, value.newRange, value.text);
       }
     }
   }
@@ -623,18 +620,6 @@ export class MergeConflictContribution
     return Promise.resolve(items);
   }
 
-  private inlineDiffWidget: InlineDiffWidget;
-
-  private visibleDiffWidget(monacoEditor: monaco.ICodeEditor, crossSelection: monaco.IRange, answer: string): void {
-    monacoEditor.setHiddenAreas([crossSelection], InlineDiffWidget._hideId);
-    this.inlineDiffWidget = this.injector.get(InlineDiffWidget, [monacoEditor, crossSelection, answer]);
-    this.inlineDiffWidget.create();
-    this.inlineDiffWidget.showByLine(
-      crossSelection.startLineNumber - 1,
-      crossSelection.endLineNumber - crossSelection.startLineNumber + 2,
-    );
-  }
-
   private async conflictAIAccept(conflict?: DocumentMergeConflict, _lineRange?: LineRange, isRegenerate?: boolean) {
     if (!this.editorService.currentEditor?.monacoEditor) {
       return;
@@ -692,10 +677,7 @@ export class MergeConflictContribution
         aiOutputNum: this.reportData.aiOutputNum! + 1,
       };
 
-      const { text, lineNumber } = this.resolveEndLineEOL(resolveConflictResult!.message!);
-      // const endLineNumber = lineRange.startLineNumber + lineNumber - 1;
-      // const endColumn = lines[lines.length - 1].length + 1;
-      // const newRange = new monaco.Range(lineRange.startLineNumber, 1, endLineNumber, endColumn);
+      const { text } = this.resolveEndLineEOL(resolveConflictResult!.message!);
 
       const decorationDispose = this.renderSkeletonDecoration(range, [styles.skeleton_decoration_complete]);
       this.decorationId2Dispose.set(lineRange.id, decorationDispose);
@@ -704,12 +686,13 @@ export class MergeConflictContribution
       const widgetLineRange = this.toLineRange(
         {
           ...range,
-          endLineNumber: range.startLineNumber + lineNumber + 1,
+          startLineNumber: range.endLineNumber,
+          endLineNumber: range.endLineNumber + 1,
         },
         lineRange.id,
       );
-      this.resolveResultWidgetManager.addWidget(widgetLineRange);
-      this.visibleDiffWidget(this.editor, range, text);
+
+      this.resolveResultWidgetManager.addWidget(widgetLineRange, range, text);
       this.setCacheResolvedConflict(lineRange.id, {
         newRange: range,
         id: lineRange.id,
@@ -849,9 +832,6 @@ export class MergeConflictContribution
 
   public hideResolveResultWidget(id?: string) {
     this.resolveResultWidgetManager.hideWidget(id);
-    if (this.inlineDiffWidget) {
-      this.inlineDiffWidget.dispose();
-    }
   }
 
   public hideStopWidget(id?: string) {
