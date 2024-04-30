@@ -8,5 +8,5 @@ import { registerCSSVar } from './css-var';
 // e.g. --stacking-level-base: 0;
 // e.g. --stacking-level-popover-component: 10000;
 Object.entries(StackingLevelStr).forEach(([key, value]) => {
-  registerCSSVar(`stacking-level-${key.toLowerCase()}`, kabebCase(value));
+  registerCSSVar(`stacking-level-${kabebCase(key).toLowerCase()}`, value);
 });
