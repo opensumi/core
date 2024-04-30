@@ -9,4 +9,5 @@ export const zhCN: Record<string, string> = {
   'merge-conflicts.non-conflicts.from.left': '目标分支: {0} 处',
   'merge-conflicts.non-conflicts.from.right': '来源分支: {0} 处',
   'merge-conflicts.non-conflicts.from.base': '两者: {0} 处',
+  'merge-conflicts.merge.conflict.remain': '剩余未解决冲突 {0} 处',
 };

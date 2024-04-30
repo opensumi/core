@@ -9,4 +9,5 @@ export const enUS: Record<string, string> = {
   'merge-conflicts.non-conflicts.from.left': 'target branch: {0} places',
   'merge-conflicts.non-conflicts.from.right': 'source branch: {0} places',
   'merge-conflicts.non-conflicts.from.base': 'base branch: {0} places',
+  'merge-conflicts.merge.conflict.remain': 'Remaining unresolved conflicts {0} places',
 };

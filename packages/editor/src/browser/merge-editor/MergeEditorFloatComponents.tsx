@@ -12,6 +12,7 @@ import {
   localize,
   useInjectable,
 } from '@opensumi/ide-core-browser';
+import { formatLocalize } from '@opensumi/ide-core-common';
 import { MergeConflictCommands } from '@opensumi/ide-core-common/lib/commands/git';
 
 import { useEditorDocumentModelRef } from '../hooks/useEditor';
@@ -110,7 +111,9 @@ export const MergeEditorFloatComponents: ReactEditorComponent<{ uri: URI }> = ({
 
   return (
     <div className={styles.merge_editor_float_container}>
-      <div className={styles.merge_editor_float_container_info}>剩余未解决冲突 {conflicts.length} 处</div>
+      <div className={styles.merge_editor_float_container_info}>
+        {formatLocalize('merge-conflicts.merge.conflict.remain', conflicts.length)}
+      </div>
       <div className={styles.merge_editor_float_container_operation_bar}>
         <div id='merge.editor.action.button.nav'>
           <Button className={styles.merge_conflict_bottom_btn} size='default' onClick={handlePrev}>
