@@ -56,7 +56,7 @@ export class WidgetFactory implements IWidgetFactory {
 
     const position = this.positionFactory(range);
 
-    const widget = this.injector.get(this.contentWidget, [this.editor, range, ...args]);
+    const widget = this.injector.get(this.contentWidget, [id, this.editor, range, ...args]);
     widget.show({ position });
 
     this.widgetMap.set(id, widget);

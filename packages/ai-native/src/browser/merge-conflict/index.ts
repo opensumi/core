@@ -40,6 +40,7 @@ import { ITextModel } from '@opensumi/ide-monaco';
 import { GitCommands } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/constants';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
+  ACCEPT_CURRENT_ACTIONS,
   AI_RESOLVE_REGENERATE_ACTIONS,
   IConflictActionsEvent,
   IGNORE_ACTIONS,
@@ -106,6 +107,9 @@ function loadStyleString(load: boolean) {
 }
 
 interface ICacheResolvedConflicts {
+  /**
+   * 冲突的所有文本范围（包含 incoming 和 current）
+   */
   newRange: IRange;
   id: string;
   conflictText: string;
@@ -862,29 +866,40 @@ export class MergeConflictContribution
     const { range, action } = eventData;
 
     switch (action) {
-      case REVOKE_ACTIONS: {
-        const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
-        if (cacheConflict) {
-          const edit = {
-            range: cacheConflict.newRange,
-            text: cacheConflict.conflictText || cacheConflict.text,
-          };
-          this.getModel()?.pushEditOperations(null, [edit], () => null);
+      case ACCEPT_CURRENT_ACTIONS:
+        {
+          const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+          if (cacheConflict) {
+            const edit = {
+              range: cacheConflict.newRange,
+              text: cacheConflict.text,
+            };
+            this.getModel()?.pushEditOperations(null, [edit], () => null);
+          }
+          this.cleanWidget(range.id);
+          this.deleteCacheResolvedConflicts(range.id);
+          this.cleanDecoration(range.id);
         }
+        break;
+      case REVOKE_ACTIONS: {
         this.cleanWidget(range.id);
         this.deleteCacheResolvedConflicts(range.id);
         this.cleanDecoration(range.id);
         break;
       }
       case AI_RESOLVE_REGENERATE_ACTIONS: {
+        const cacheConflict = this.getCacheResolvedConflicts().get(range.id);
+        if (cacheConflict) {
+          const lineRange = this.toLineRange(cacheConflict.newRange, range.id);
+          this.conflictAIAccept(undefined, lineRange, true);
+        }
         this.cleanWidget(range.id);
-        this.conflictAIAccept(undefined, range, true);
         this.cleanDecoration(range.id);
         break;
       }
       case IGNORE_ACTIONS: {
         this.cleanWidget(range.id);
-        // this.deleteCacheResolvedConflicts(range.id);
+        this.cleanDecoration(range.id);
         const resolvedConflict = this.getCacheResolvedConflicts().get(range.id)!;
         this.setCacheResolvedConflict(range.id, {
           ...resolvedConflict,

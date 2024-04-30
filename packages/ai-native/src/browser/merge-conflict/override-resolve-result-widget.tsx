@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import { ContentWidgetContainerPanel } from '@opensumi/ide-core-browser/lib/components/ai-native/content-widget/containerPanel';
 import { IAIInlineResultIconItemsProps } from '@opensumi/ide-core-browser/lib/components/ai-native/inline-chat/result';
-import { localize, uuid } from '@opensumi/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/ide-monaco';
 import { LineRange } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/model/line-range';
 import {
@@ -23,17 +23,17 @@ import { InlineDiffWidget } from '../widget/inline-diff/inline-diff-widget';
 
 @Injectable({ multiple: true })
 export class OverrideResolveResultWidget extends ResolveResultWidget {
-  protected uid: string = uuid(4);
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
 
   constructor(
+    protected uid: string,
     protected readonly codeEditor: ResultCodeEditor,
     protected readonly lineRange: LineRange,
     protected readonly range: monaco.IRange,
     protected readonly text: string,
   ) {
-    super(codeEditor, lineRange);
+    super(uid, codeEditor, lineRange);
   }
 
   protected isRenderThumbs(): boolean {
@@ -102,6 +102,7 @@ export class OverrideResolveResultWidget extends ResolveResultWidget {
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
         <WapperAIInlineResult
+          id={this.uid}
           iconItems={iconResultItems}
           isRenderThumbs={isRenderThumbs}
           codeEditor={this.codeEditor}

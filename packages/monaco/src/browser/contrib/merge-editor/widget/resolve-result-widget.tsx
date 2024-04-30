@@ -20,35 +20,41 @@ import {
 import { IMergeEditorShape } from './types';
 
 interface IWrapperAIInlineResultProps {
+  id: string;
   iconItems: IAIInlineResultIconItemsProps[];
   isRenderThumbs: boolean;
   codeEditor: IMergeEditorShape;
   range: LineRange;
   closeClick?: () => void;
   isRenderClose?: boolean;
+  /**
+   * 不展示 popover 确认框，用户点击后直接执行 re-generate
+   */
   disablePopover?: boolean;
 }
 
 export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
-  const { iconItems, isRenderThumbs, codeEditor, range, closeClick, isRenderClose, disablePopover = false } = props;
+  const { iconItems, isRenderThumbs, codeEditor, range, id, disablePopover = false } = props;
   const [isVisiablePopover, setIsVisiablePopover] = React.useState(false);
   const uid = useMemo(() => uuid(4), []);
 
-  const onCancel = useCallback(
-    (event) => {
-      setIsVisiablePopover(false);
+  const hidePopover = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
       event.stopPropagation();
       event.preventDefault();
+
+      setIsVisiablePopover(false);
     },
     [isVisiablePopover],
   );
 
   const onOk = useCallback(
-    (event) => {
-      onCancel(event);
-      execGenerate();
+    (event: React.MouseEvent<HTMLElement>) => {
       event.stopPropagation();
       event.preventDefault();
+
+      hidePopover(event);
+      execGenerate();
     },
     [isVisiablePopover],
   );
@@ -59,8 +65,8 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
       action: AI_RESOLVE_REGENERATE_ACTIONS,
       reason: ECompleteReason.UserManual,
     });
-    codeEditor.hideResolveResultWidget();
-  }, [range, codeEditor]);
+    codeEditor.hideResolveResultWidget(id);
+  }, [range, codeEditor, id]);
 
   const popoverContent = useMemo(
     () => (
@@ -68,7 +74,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
         <DialogContent
           type='confirm'
           buttons={[
-            <Button size='small' onClick={onCancel} type='secondary'>
+            <Button size='small' onClick={hidePopover} type='secondary'>
               {localize('ButtonCancel')}
             </Button>,
             <Button size='small' onClick={onOk}>
@@ -114,6 +120,7 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
       execGenerate();
     } else {
       if (disablePopover) {
+        execGenerate();
         return;
       }
       setIsVisiablePopover(true);
@@ -137,9 +144,11 @@ export const WapperAIInlineResult = (props: IWrapperAIInlineResultProps) => {
 
 @Injectable({ multiple: true })
 export class ResolveResultWidget extends BaseInlineContentWidget {
-  protected uid: string = uuid(4);
-
-  constructor(protected readonly codeEditor: IMergeEditorShape, protected readonly lineRange: LineRange) {
+  constructor(
+    protected uid: string,
+    protected readonly codeEditor: IMergeEditorShape,
+    protected readonly lineRange: LineRange,
+  ) {
     super(codeEditor.editor);
   }
 
@@ -171,6 +180,7 @@ export class ResolveResultWidget extends BaseInlineContentWidget {
     return (
       <ContentWidgetContainerPanel style={{ transform: 'translateY(4px)' }}>
         <WapperAIInlineResult
+          id={this.uid}
           iconItems={iconResultItems}
           isRenderThumbs={isRenderThumbs}
           codeEditor={this.codeEditor}
