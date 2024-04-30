@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { IContextKeyService, useInjectable } from '@opensumi/ide-core-browser';
 
-export const gitMergeChangesSet = new Set(['git.mergeChanges']);
+const contextKey = 'git.mergeChangesObj';
+
+export const gitMergeChangesSet = new Set([contextKey]);
 
 export function useInMergeChanges(uriStr: string) {
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
@@ -11,7 +13,7 @@ export function useInMergeChanges(uriStr: string) {
 
   useEffect(() => {
     function run() {
-      const mergeChanges = contextKeyService.getValue<Record<string, boolean>>('git.mergeChangesObj') || {};
+      const mergeChanges = contextKeyService.getValue<Record<string, boolean>>(contextKey) || {};
       setInMergeChanges(mergeChanges[uriStr] || false);
     }
     run();
