@@ -482,7 +482,7 @@ export class AIEditorContribution extends Disposable implements IEditorFeatureCo
     const indent = leadingWhitespaceMatch ? leadingWhitespaceMatch[0] : '  ';
     return answer
       .split('\n')
-      .map((line, index) => (index === 0 ? line : `${indent}${line}`))
+      .map((line) => `${indent}${line}`)
       .join('\n');
   }
 
