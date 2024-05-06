@@ -6,7 +6,7 @@ import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Deferred, Disposable, IEventBus, URI, Uri, sleep } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { MainthreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
+import { MainThreadComments } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.comments';
 import {
   ExtHostAPIIdentifier,
   IMainThreadComments,
@@ -77,7 +77,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     );
     mainThreadComments = rpcProtocolExt.set(
       MainThreadAPIIdentifier.MainThreadComments,
-      injector.get(MainthreadComments, [rpcProtocolExt, mainCommands]),
+      injector.get(MainThreadComments, [rpcProtocolExt, mainCommands]),
     );
     vscodeComments = createCommentsApiFactory(extension, extComments);
   });

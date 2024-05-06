@@ -12,7 +12,7 @@ import { MainThreadTheme } from './main.thread.theme';
 import { MainThreadToolbar } from './main.thread.toolbar';
 import { MainThreadIDEWindow } from './main.thread.window';
 
-export function createSumiApiFactory(rpcProtocol: IRPCProtocol, injector: Injector) {
+export function createSumiAPIFactory(rpcProtocol: IRPCProtocol, injector: Injector) {
   const disposer = new Disposable();
   const lifeCycle = injector.get(MainThreadLifeCycle, [injector]);
 

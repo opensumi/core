@@ -31,7 +31,7 @@ export class ExtCommandManagementImpl extends Disposable implements IExtCommandM
   public async executeExtensionCommand(env: ExtensionHostType, command: string, args: any[]): Promise<any> {
     const targetProxyCommandExecutor = this.proxyCommandExecutorRegistry.get(env);
     if (!targetProxyCommandExecutor) {
-      throw new Error('Proxy command executor"' + env + '" is not existed');
+      throw new Error('Proxy command executor "' + env + '" is not existed');
     }
     return targetProxyCommandExecutor.$executeExtensionCommand(command, ...args);
   }

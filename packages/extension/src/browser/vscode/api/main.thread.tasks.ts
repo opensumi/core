@@ -457,7 +457,7 @@ namespace TaskDTO {
 }
 
 @Injectable({ multiple: true })
-export class MainthreadTasks extends Disposable implements IMainThreadTasks {
+export class MainThreadTasks extends Disposable implements IMainThreadTasks {
   protected readonly proxy: IExtHostTasks;
 
   private providers: Map<number, { disposable: IDisposable; provider: ITaskProvider }>;
