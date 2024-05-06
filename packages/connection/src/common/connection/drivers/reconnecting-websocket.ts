@@ -84,8 +84,6 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
   static forURL(url: UrlProvider, protocols?: string | string[], options?: ReconnectingWebSocketOptions) {
     const rawConnection = new ReconnectingWebSocket(url, protocols, options);
     rawConnection.binaryType = 'arraybuffer';
-    const connection = new ReconnectingWebSocketConnection(rawConnection);
-
-    return connection;
+    return new ReconnectingWebSocketConnection(rawConnection);
   }
 }

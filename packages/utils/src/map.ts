@@ -1,3 +1,4 @@
+import flatten from 'lodash/flatten';
 import { URI as Uri } from 'vscode-uri';
 
 import { CharCode } from './charCode';
@@ -927,5 +928,38 @@ export class CaseInsensitiveMap<K, V> extends Map<K, V> {
     }
 
     return super.has(key);
+  }
+}
+
+export class MultiMap<K, V> {
+  private _map = new Map<K, V[]>();
+
+  get size(): number {
+    let count = 0;
+    for (const [, values] of this._map) {
+      count += values.length;
+    }
+    return count;
+  }
+
+  get keys(): K[] {
+    return keys(this._map);
+  }
+
+  get values(): V[] {
+    return flatten(values(this._map));
+  }
+
+  get(key: K): V[] {
+    return this._map.get(key) || [];
+  }
+
+  set(key: K, value: V): void {
+    const array = getOrSet(this._map, key, []);
+    array.push(value);
+  }
+
+  delete(key: K): void {
+    this._map.delete(key);
   }
 }

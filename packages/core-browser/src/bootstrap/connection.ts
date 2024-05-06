@@ -45,12 +45,12 @@ export async function createConnectionService(
 
   if (channelHandler.connection.isOpen()) {
     onOpen();
-  } else {
-    const dispose = channelHandler.connection.onOpen(() => {
-      onOpen();
-      dispose.dispose();
-    });
   }
+
+  // reconnecting will still emit the open event
+  channelHandler.connection.onOpen(() => {
+    onOpen();
+  });
 
   channelHandler.connection.onceClose(() => {
     stateService.reachedState('core_module_initialized').then(() => {
@@ -71,7 +71,6 @@ export async function createConnectionService(
     useValue: channelHandler,
   });
 
-  // reconnecting will not execute the following logic
   const channel = await channelHandler.openChannel(RPCServiceChannelPath);
   channel.onReopen(() => onReconnect());
 
