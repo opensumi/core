@@ -349,10 +349,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this.logger.log('[ext-restart]: ext process restart canceled');
         this.isExtProcessRestarting = false;
         this.isExtProcessWaitingForRestart = undefined;
-        if (this.extProcessRestartPromise) {
-          this.extProcessRestartPromise.cancel();
-          this.extProcessRestartPromise = undefined;
-        }
       });
 
       switch (policy) {
