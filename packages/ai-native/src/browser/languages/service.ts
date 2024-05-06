@@ -14,7 +14,7 @@ export class LanguageParserService {
     const treeSitterLang = parserNameMap[language];
     if (treeSitterLang) {
       if (!this.pool.has(treeSitterLang)) {
-        this.pool.set(treeSitterLang, this.injector.get(LanguageParser, [language]));
+        this.pool.set(treeSitterLang, this.injector.get(LanguageParser, [treeSitterLang]));
       }
 
       return this.pool.get(treeSitterLang);
