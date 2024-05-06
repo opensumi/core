@@ -79,15 +79,9 @@ export async function createConnectionService(
 
 export function bindConnectionService(injector: Injector, modules: ModuleConstructor[], channel: WSChannel) {
   const clientCenter = new RPCServiceCenter();
-
-  const dispose = clientCenter.setSumiConnection(channel.createSumiConnection());
-
-  const toDispose = channel.onClose(() => {
-    dispose.dispose();
-    toDispose.dispose();
-  });
-
+  const disposable = clientCenter.setSumiConnection(channel.createSumiConnection());
   initConnectionService(injector, modules, clientCenter);
+  return disposable;
 }
 
 /**

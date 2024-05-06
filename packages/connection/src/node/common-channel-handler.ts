@@ -48,6 +48,11 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
         };
 
         this.wsServer.emit('connection', connection);
+
+        setTimeout(() => {
+          this.logger.error('close connection for test');
+          connection.close(3001, 'for test');
+        }, 20 * 1000);
       });
       return true;
     }
