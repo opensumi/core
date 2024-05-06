@@ -4,7 +4,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { notification, open } from '@opensumi/ide-components';
 import { parseWithoutEscape } from '@opensumi/ide-components/lib/utils';
 import { IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
-import { MessageType, localize, uuid } from '@opensumi/ide-core-common';
+import { MayCancelablePromise, MessageType, localize, uuid } from '@opensumi/ide-core-common';
 
 import { AbstractMessageService, IMessageService, MAX_MESSAGE_LENGTH } from '../common';
 
@@ -43,7 +43,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     buttons?: string[],
     closable = true,
     from?: string,
-  ): Promise<T | undefined> {
+  ): MayCancelablePromise<T | undefined> {
     if (!rawMessage) {
       return Promise.resolve(undefined);
     }

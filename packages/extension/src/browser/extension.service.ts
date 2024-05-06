@@ -12,13 +12,17 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
+  CancelablePromise,
+  CancellationToken,
   ExtensionActivatedEvent,
   ExtensionDidContributes,
   GeneralSettingsId,
+  MayCancelablePromise,
   OnEvent,
   ProgressLocation,
   URI,
   WithEventBus,
+  createCancelablePromise,
   getLanguageId,
   localize,
   sleep,
@@ -145,6 +149,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // 插件进程是否正在等待重启，页面不可见的时候被设置
   private isExtProcessWaitingForRestart: ERestartPolicy | undefined;
+  private pCrashMessageModel: MayCancelablePromise<string | undefined> | undefined;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -318,41 +323,71 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (document.visibilityState === 'visible') {
       this.extProcessRestartHandler(restartPolicy);
     } else {
+      this.logger.log('[ext-restart]: page is not visible, waiting for restart');
       this.isExtProcessWaitingForRestart = restartPolicy;
     }
   }
 
+  private extProcessRestartPromise: CancelablePromise<void> | undefined;
+
   private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
-    if (this.isExtProcessRestarting) {
+    if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
+      this.logger.log('[ext-restart]: ext process is restarting, skip');
       return;
     }
 
+    const doRestart = async (token: CancellationToken) => {
+      const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+
+      if (this.pCrashMessageModel) {
+        // crash message model is still open, close it
+        this.pCrashMessageModel.cancel?.();
+        this.pCrashMessageModel = undefined;
+      }
+
+      token.onCancellationRequested(() => {
+        this.logger.log('[ext-restart]: ext process restart canceled');
+        this.isExtProcessRestarting = false;
+        this.isExtProcessWaitingForRestart = undefined;
+      });
+
+      switch (policy) {
+        // @ts-expect-error Need fall-through
+        case ERestartPolicy.WhenExit:
+          // if we can get the pid, then the process is still running, no need to restart.
+          // if pid is null, it means the process is exited, then we need to start it.
+          if (await this.getExtProcessPID(token)) {
+            break;
+          }
+        case ERestartPolicy.Always:
+          if (token.isCancellationRequested) {
+            break;
+          }
+          try {
+            await this.startExtProcess(false);
+          } catch (err) {
+            this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+          }
+          break;
+      }
+
+      this.isExtProcessRestarting = false;
+      this.isExtProcessWaitingForRestart = undefined;
+    };
+
     const restartProgress = () => {
+      this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
       this.progressService.withProgress(
         {
           location: ProgressLocation.Notification,
           title: localize('extension.exthostRestarting.content'),
         },
         async () => {
-          const policy = this.isExtProcessWaitingForRestart || restartPolicy;
-
-          switch (policy) {
-            // @ts-expect-error Need fall-through
-            case ERestartPolicy.WhenExit:
-              if (await this.ping()) {
-                break;
-              }
-            case ERestartPolicy.Always:
-              try {
-                await this.startExtProcess(false);
-              } catch (err) {
-                this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
-              }
-              break;
+          if (this.extProcessRestartPromise) {
+            this.extProcessRestartPromise.cancel();
           }
-
-          this.isExtProcessRestarting = false;
-          this.isExtProcessWaitingForRestart = undefined;
+          this.extProcessRestartPromise = createCancelablePromise(doRestart);
+          await this.extProcessRestartPromise;
         },
       );
     };
@@ -371,8 +406,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  private async ping(): Promise<number | null> {
-    return await Promise.race([this.extensionNodeClient.pid(), sleep(1000).then(() => null)]);
+  private async getExtProcessPID(token: CancellationToken): Promise<number | null> {
+    return await Promise.race([
+      this.extensionNodeClient.pid(),
+      sleep(1000).then(() => null),
+      CancellationToken.resolveIfCancelled(token, null),
+    ]);
   }
 
   private async startExtProcess(init: boolean) {
@@ -710,6 +749,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // RPC call from node
   public async $restartExtProcess() {
+    this.logger.log('[ext-restart]: receive the command from the node side to restart the process');
     await this.restartExtProcess(ERestartPolicy.Always);
   }
 
@@ -733,6 +773,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $processCrashRestart() {
+    if (this.pCrashMessageModel) {
+      this.pCrashMessageModel.cancel?.();
+    }
+
     const okText = localize('common.yes');
     const options = [okText];
     const ifRequiredReload = this.invalidReloadStrategy === 'ifRequired';
@@ -740,11 +784,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       options.unshift(localize('common.no'));
     }
 
-    const msg = await this.messageService.info(
+    this.pCrashMessageModel = this.messageService.info(
       localize('extension.crashedExthostReload.confirm'),
       options,
       !!ifRequiredReload,
     );
+
+    const msg = await this.pCrashMessageModel;
+    this.pCrashMessageModel = undefined;
+
     if (msg === okText) {
       await this.restartExtProcess(ERestartPolicy.Always);
     }

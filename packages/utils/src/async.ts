@@ -8,6 +8,10 @@ export interface CancelablePromise<T> extends Promise<T> {
   cancel(): void;
 }
 
+export interface MayCancelablePromise<T> extends Promise<T> {
+  cancel?(): void;
+}
+
 export function createCancelablePromise<T>(callback: (token: CancellationToken) => Promise<T>): CancelablePromise<T> {
   const source = new CancellationTokenSource();
 

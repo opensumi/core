@@ -42,6 +42,15 @@ export namespace CancellationToken {
     );
   }
 
+  export function resolveIfCancelled<T>(token: CancellationToken, value: T): Promise<T> {
+    return new Promise((resolve) => {
+      const listener = token.onCancellationRequested(() => {
+        listener.dispose();
+        resolve(value);
+      });
+    });
+  }
+
   export const None: CancellationToken = Object.freeze({
     isCancellationRequested: false,
     onCancellationRequested: Event.None,

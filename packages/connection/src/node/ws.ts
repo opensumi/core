@@ -1,6 +1,5 @@
 import assert from 'assert';
 import http from 'http';
-import url from 'url';
 
 import ws from 'ws';
 
@@ -90,7 +89,10 @@ export class WebSocketServerRoute {
 
     server.on('upgrade', (request, socket, head) => {
       assert(request.url, 'cannot parse url from http request');
-      const wsPathname: string = url.parse(request.url).pathname as string;
+
+      // request.url: `/path?query=a#hash`
+      const url = new URL(request.url, 'wss://base');
+      const wsPathname: string = url.pathname;
 
       let wsHandlerIndex = 0;
       const wsHandlerLength = wsServerHandlerArr.length;
