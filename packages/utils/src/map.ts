@@ -950,8 +950,8 @@ export class MultiMap<K, V> {
     return flatten(values(this._map));
   }
 
-  get(key: K): V[] {
-    return this._map.get(key) || [];
+  get(key: K): V[] | undefined {
+    return this._map.get(key);
   }
 
   set(key: K, value: V): void {
