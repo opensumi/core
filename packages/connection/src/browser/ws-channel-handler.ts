@@ -1,4 +1,4 @@
-import { Barrier, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
+import { Barrier, Deferred, IReporterService, MultiMap, REPORT_NAME } from '@opensumi/ide-core-common';
 
 import { NetSocketConnection } from '../common/connection';
 import { ReconnectingWebSocketConnection } from '../common/connection/drivers/reconnecting-websocket';
@@ -134,15 +134,16 @@ export class WSChannelHandler {
       this.logger.log(this.LOG_TAG, 'channel close: ', `code: ${code}, reason: ${reason}`);
     });
 
-    const barrier = new Barrier();
+    const deferred = new Deferred<void>();
+
     const dispose = channel.onOpen(() => {
-      barrier.open();
+      deferred.resolve();
       dispose.dispose();
     });
 
     channel.open(channelPath, this.clientId);
 
-    await barrier.wait();
+    await deferred.promise;
 
     return channel;
   }

@@ -354,7 +354,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       switch (policy) {
         // @ts-expect-error Need fall-through
         case ERestartPolicy.WhenExit:
-          if (await this.ping(token)) {
+          // if we can get the pid, then the process is still running, no need to restart.
+          // if pid is null, it means the process is exited, then we need to start it.
+          if (await this.getExtProcessPID(token)) {
             break;
           }
         case ERestartPolicy.Always:
@@ -404,7 +406,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  private async ping(token: CancellationToken): Promise<number | null> {
+  private async getExtProcessPID(token: CancellationToken): Promise<number | null> {
     return await Promise.race([
       this.extensionNodeClient.pid(),
       sleep(1000).then(() => null),
