@@ -21,6 +21,7 @@ import {
   MainThreadAPIIdentifier,
   SumiWorkerExtensionService,
 } from '../common/vscode';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
@@ -36,7 +37,9 @@ export function initRPCProtocol() {
 
   const msgPortConnection = new MessagePortConnection(channel.port1);
 
-  const extProtocol = new SumiConnectionMultiplexer(msgPortConnection);
+  const extProtocol = new SumiConnectionMultiplexer(msgPortConnection, {
+    knownProtocols,
+  });
 
   return extProtocol;
 }
