@@ -199,7 +199,7 @@ export class InlineDiffWidget extends ZoneWidget {
 
   public showByLine(line: number, lineNumber = 20): void {
     /**
-     * 暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来，后续需要升级 monaco 来实现
+     * 暂时通过 hack 的方式使其能让 zonewidget 在空白处显示出来
      */
     // @ts-ignore
     this.editor._modelData.viewModel.coordinatesConverter.modelPositionIsVisible = () => true;
