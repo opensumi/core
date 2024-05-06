@@ -1,3 +1,4 @@
+import { CancellationToken } from './cancellation';
 import { IDisposable } from './disposable';
 
 export enum ProgressLocation {
@@ -28,6 +29,8 @@ export interface IProgressOptions {
   readonly cancellable?: boolean;
   readonly closeable?: boolean;
   readonly buttons?: Array<string | IAction>;
+
+  readonly cancellationToken?: CancellationToken;
 }
 
 export interface IProgressNotificationOptions extends IProgressOptions {

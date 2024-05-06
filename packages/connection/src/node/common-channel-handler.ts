@@ -9,6 +9,12 @@ import { CommonChannelHandlerOptions, WebSocketHandler } from './ws';
 
 export { commonChannelPathHandler };
 
+export interface WebSocketConnection extends WebSocket {
+  routeParam: {
+    pathname: string;
+  };
+}
+
 /**
  * Channel Handler for nodejs
  */
@@ -27,7 +33,7 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
   }
 
   private initWSServer() {
-    this.logger.log('init Common Channel Handler');
+    this.logger.log('init common channel handler');
     this.wsServer = new WebSocket.Server({
       noServer: true,
       ...this.options.wsServerOptions,
@@ -43,16 +49,11 @@ export class CommonChannelHandler extends BaseCommonChannelHandler implements We
 
     if (routeResult) {
       this.wsServer.handleUpgrade(request, socket, head, (connection) => {
-        (connection as any).routeParam = {
+        (connection as WebSocketConnection).routeParam = {
           pathname,
         };
 
         this.wsServer.emit('connection', connection);
-
-        setTimeout(() => {
-          this.logger.error('close connection for test');
-          connection.close(3001, 'for test');
-        }, 20 * 1000);
       });
       return true;
     }

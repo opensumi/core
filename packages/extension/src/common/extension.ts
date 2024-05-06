@@ -33,7 +33,7 @@ import { Extension } from '../hosted/vscode.extension';
 import { ActivatedExtension, ActivatedExtensionJSON, ExtensionsActivator } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IExtensionLanguagePack, IMainThreadCommands } from './vscode';
-import { ExtensionKind, ThemeIcon } from './vscode/ext-types';
+import { ThemeIcon } from './vscode/ext-types';
 
 export interface IExtensionMetaData {
   id: string;
@@ -217,7 +217,7 @@ export enum ERestartPolicy {
   /**
    * Restart extension process when extension process is not running or not responding
    */
-  WhenExit = 'WhenExit',
+  WhenExit = 'when-exit',
 }
 
 export abstract class ExtensionService {

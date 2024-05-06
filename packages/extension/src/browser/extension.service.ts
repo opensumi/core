@@ -12,6 +12,8 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
+  CancelablePromise,
+  CancellationToken,
   ExtensionActivatedEvent,
   ExtensionDidContributes,
   GeneralSettingsId,
@@ -19,6 +21,7 @@ import {
   ProgressLocation,
   URI,
   WithEventBus,
+  createCancelablePromise,
   getLanguageId,
   localize,
   sleep,
@@ -318,41 +321,67 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (document.visibilityState === 'visible') {
       this.extProcessRestartHandler(restartPolicy);
     } else {
+      this.logger.log('[ext-restart]: page is not visible, waiting for restart');
       this.isExtProcessWaitingForRestart = restartPolicy;
     }
   }
 
+  private extProcessRestartPromise: CancelablePromise<void> | undefined;
+
   private async extProcessRestartHandler(restartPolicy: ERestartPolicy = ERestartPolicy.Always) {
-    if (this.isExtProcessRestarting) {
+    if (this.isExtProcessRestarting && restartPolicy !== ERestartPolicy.Always) {
+      this.logger.log('[ext-restart]: ext process is restarting, skip');
       return;
     }
 
+    const doRestart = async (token: CancellationToken) => {
+      const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+
+      token.onCancellationRequested(() => {
+        this.logger.log('[ext-restart]: ext process restart canceled');
+        this.isExtProcessRestarting = false;
+        this.isExtProcessWaitingForRestart = undefined;
+        if (this.extProcessRestartPromise) {
+          this.extProcessRestartPromise.cancel();
+          this.extProcessRestartPromise = undefined;
+        }
+      });
+
+      switch (policy) {
+        // @ts-expect-error Need fall-through
+        case ERestartPolicy.WhenExit:
+          if (await this.ping(token)) {
+            break;
+          }
+        case ERestartPolicy.Always:
+          if (token.isCancellationRequested) {
+            break;
+          }
+          try {
+            await this.startExtProcess(false);
+          } catch (err) {
+            this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+          }
+          break;
+      }
+
+      this.isExtProcessRestarting = false;
+      this.isExtProcessWaitingForRestart = undefined;
+    };
+
     const restartProgress = () => {
+      this.logger.log('[ext-restart]: restart ext process, restart policy', restartPolicy);
       this.progressService.withProgress(
         {
           location: ProgressLocation.Notification,
           title: localize('extension.exthostRestarting.content'),
         },
         async () => {
-          const policy = this.isExtProcessWaitingForRestart || restartPolicy;
-
-          switch (policy) {
-            // @ts-expect-error Need fall-through
-            case ERestartPolicy.WhenExit:
-              if (await this.ping()) {
-                break;
-              }
-            case ERestartPolicy.Always:
-              try {
-                await this.startExtProcess(false);
-              } catch (err) {
-                this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
-              }
-              break;
+          if (this.extProcessRestartPromise) {
+            this.extProcessRestartPromise.cancel();
           }
-
-          this.isExtProcessRestarting = false;
-          this.isExtProcessWaitingForRestart = undefined;
+          this.extProcessRestartPromise = createCancelablePromise(doRestart);
+          await this.extProcessRestartPromise;
         },
       );
     };
@@ -371,8 +400,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  private async ping(): Promise<number | null> {
-    return await Promise.race([this.extensionNodeClient.pid(), sleep(1000).then(() => null)]);
+  private async ping(token: CancellationToken): Promise<number | null> {
+    return await Promise.race([
+      this.extensionNodeClient.pid(),
+      sleep(1000).then(() => null),
+      CancellationToken.resolveIfCancelled(token, null),
+    ]);
   }
 
   private async startExtProcess(init: boolean) {
@@ -710,6 +743,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // RPC call from node
   public async $restartExtProcess() {
+    this.logger.log('[ext-restart]: receive the command from the node side to restart the process');
     await this.restartExtProcess(ERestartPolicy.Always);
   }
 
