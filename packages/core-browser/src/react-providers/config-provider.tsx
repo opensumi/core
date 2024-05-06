@@ -123,7 +123,6 @@ export interface AppConfig {
   webviewEndpoint?: string;
   /**
    * Worker 插件的默认启动路径
-   * 默认值为: https://dev.g.alicdn.com/tao-ide/ide-lite/${version}/worker-host.js
    */
   extWorkerHost?: string;
   /**

@@ -54,7 +54,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { mockExtensionProps } from '../../../../__mocks__/extensions';
 import { createMockPairRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
-import { MainthreadTasks } from '../../../../src/browser/vscode/api/main.thread.tasks';
+import { MainThreadTasks } from '../../../../src/browser/vscode/api/main.thread.tasks';
 import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thread.terminal';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
@@ -70,7 +70,7 @@ const { rpcProtocolExt, rpcProtocolMain } = createMockPairRPCProtocol();
 let extHostTask: ExtHostTasks;
 let extHostTerminal: ExtHostTerminal;
 let mainThreadTerminal: MainThreadTerminal;
-let mainThreadTask: MainthreadTasks;
+let mainThreadTask: MainThreadTasks;
 
 describe('ExtHostTask API', () => {
   const injector = createBrowserInjector([]);
@@ -237,7 +237,7 @@ describe('ExtHostTask API', () => {
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTerminal, extHostTerminal);
   extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extHostWorkspace);
   mainThreadTerminal = injector.get(MainThreadTerminal, [rpcProtocolMain]);
-  mainThreadTask = injector.get(MainthreadTasks, [rpcProtocolMain]);
+  mainThreadTask = injector.get(MainThreadTasks, [rpcProtocolMain]);
 
   rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostTasks, extHostTask);
   rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadTerminal, mainThreadTerminal);

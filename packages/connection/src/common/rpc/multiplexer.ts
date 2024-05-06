@@ -111,4 +111,8 @@ export class SumiConnectionMultiplexer extends SumiConnection implements IRPCPro
 
     return method.apply(actor, args);
   }
+
+  getSocket() {
+    return this.socket;
+  }
 }

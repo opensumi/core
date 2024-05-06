@@ -1,4 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, INJECTOR_TOKEN, Injectable, Injector } from '@opensumi/di';
 import {
   AppConfig,
   CommandRegistry,
@@ -135,6 +135,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(IExtensionStoragePathServer)
   private readonly extensionStoragePathServer: IExtensionStoragePathServer;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   /**
    * 这里的 ready 是区分环境，将 node/worker 区分开使用
@@ -454,34 +457,39 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   private async startNodeExtHost(init: boolean) {
+    if (this.appConfig.noExtHost) {
+      return;
+    }
+
     // 激活 node 插件进程
-    if (!this.appConfig.noExtHost) {
-      const protocol = await this.nodeExtensionService.activate();
-      this.extensionCommandManager.registerProxyCommandExecutor(
-        'node',
-        protocol.get(MainThreadAPIIdentifier.MainThreadCommands),
-      );
-      if (init) {
-        this.ready.set('node', this.nodeExtensionService.ready);
-      }
+    const protocol = await this.nodeExtensionService.activate();
+    this.extensionCommandManager.registerProxyCommandExecutor(
+      'node',
+      protocol.get(MainThreadAPIIdentifier.MainThreadCommands),
+    );
+
+    if (init) {
+      this.ready.set('node', this.nodeExtensionService.ready);
     }
   }
 
   private async startWorkerExtHost(init: boolean) {
     // 激活 worker 插件进程
-    if (this.appConfig.extWorkerHost) {
-      try {
-        const protocol = await this.workerExtensionService.activate(this.appConfig.ignoreWorkerHostCors);
-        this.extensionCommandManager.registerProxyCommandExecutor(
-          'worker',
-          protocol.get(MainThreadAPIIdentifier.MainThreadCommands),
-        );
-        if (init) {
-          this.ready.set('worker', this.workerExtensionService.ready);
-        }
-      } catch (err) {
-        this.logger.error(`Worker host activate fail, \n ${err.message}`);
+    if (!this.appConfig.extWorkerHost) {
+      return;
+    }
+
+    try {
+      const protocol = await this.workerExtensionService.activate(this.appConfig.ignoreWorkerHostCors);
+      this.extensionCommandManager.registerProxyCommandExecutor(
+        'worker',
+        protocol.get(MainThreadAPIIdentifier.MainThreadCommands),
+      );
+      if (init) {
+        this.ready.set('worker', this.workerExtensionService.ready);
       }
+    } catch (err) {
+      this.logger.error(`Worker host activate fail, \n ${err.message}`);
     }
   }
 
