@@ -78,7 +78,7 @@ export class WSChannelHandler {
       }
     };
 
-    this.connection.onceClose((code, reason) => {
+    this.connection.onClose((code, reason) => {
       this.channelMap.forEach((channel) => {
         channel.close(code ?? 1000, reason ?? '');
       });

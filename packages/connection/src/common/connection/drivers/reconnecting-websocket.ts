@@ -52,9 +52,21 @@ export class ReconnectingWebSocketConnection extends BaseConnection<Uint8Array> 
     };
   }
   onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
+    const disposable = this.onClose(wrapper);
+
+    return {
+      dispose: () => {
+        disposable.dispose();
+      },
+    };
+    function wrapper(code: number, reason: string) {
+      cb(code, reason);
+      disposable.dispose();
+    }
+  }
+  onClose(cb: (code?: number, reason?: string) => void): IDisposable {
     const handler = (e: CloseEvent) => {
       cb(e.code, e.reason);
-      this.socket.removeEventListener('close', handler);
     };
 
     this.socket.addEventListener('close', handler);

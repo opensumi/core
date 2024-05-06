@@ -32,27 +32,38 @@ export class StreamConnection extends BaseConnection<Uint8Array> {
   }
 
   onceClose(cb: (code?: number, reason?: string) => void): IDisposable {
+    const disposable = this.onClose(wrapper);
+    return {
+      dispose: () => {
+        disposable.dispose();
+      },
+    };
+
+    function wrapper(code: number, reason: string) {
+      cb(code, reason);
+      disposable.dispose();
+    }
+  }
+
+  onClose(cb: (code?: number, reason?: string) => void): IDisposable {
     const wrapper = (hadError: boolean) => {
       const code: number = hadError ? 1 : 0;
       const reason: string = hadError ? 'had error' : '';
       cb(code, reason);
-      dispose();
     };
 
-    const dispose = () => {
-      this.readable.off('close', wrapper);
-      if ((this.writable as any) !== (this.readable as any)) {
-        this.writable.off('close', wrapper);
-      }
-    };
-
-    this.readable.once('close', wrapper);
+    this.readable.on('close', wrapper);
     if ((this.writable as any) !== (this.readable as any)) {
-      this.writable.once('close', wrapper);
+      this.writable.on('close', wrapper);
     }
 
     return {
-      dispose,
+      dispose: () => {
+        this.readable.off('close', wrapper);
+        if ((this.writable as any) !== (this.readable as any)) {
+          this.writable.off('close', wrapper);
+        }
+      },
     };
   }
 
