@@ -24,10 +24,10 @@ export interface ShowAIContentOptions {
 @Injectable({ multiple: true })
 export abstract class ReactInlineContentWidget extends Disposable implements IInlineContentWidget {
   @Autowired(AppConfig)
-  private configContext: AppConfig;
+  private appConfig: AppConfig;
 
-  allowEditorOverflow?: boolean | undefined = false;
-  suppressMouseDown?: boolean | undefined = true;
+  allowEditorOverflow = false;
+  suppressMouseDown = true;
 
   protected domNode: HTMLElement;
   protected options: ShowAIContentOptions | undefined;
@@ -39,7 +39,7 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
     this.addDispose(
       runWhenIdle(() => {
         this.root = ReactDOMClient.createRoot(this.getDomNode());
-        this.root.render(<ConfigProvider value={this.configContext}>{this.renderView()}</ConfigProvider>);
+        this.root.render(<ConfigProvider value={this.appConfig}>{this.renderView()}</ConfigProvider>);
         this.layoutContentWidget();
       }),
     );
@@ -89,8 +89,10 @@ export abstract class ReactInlineContentWidget extends Disposable implements IIn
   getDomNode(): HTMLElement {
     if (!this.domNode) {
       this.domNode = document.createElement('div');
-      this.domNode.classList.add(this.getId());
-      this.domNode.style.zIndex = StackingLevelStr.Overlay;
+      requestAnimationFrame(() => {
+        this.domNode.classList.add(this.getId());
+        this.domNode.style.zIndex = StackingLevelStr.Overlay;
+      });
     }
 
     const throttled = throttle(() => {

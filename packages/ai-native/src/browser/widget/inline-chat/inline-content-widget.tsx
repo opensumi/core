@@ -73,9 +73,10 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   override getDomNode(): HTMLElement {
     const domNode = super.getDomNode();
-    domNode.style.padding = '6px';
-    domNode.style.zIndex = StackingLevelStr.OverlayTop;
-
+    requestAnimationFrame(() => {
+      domNode.style.padding = '6px';
+      domNode.style.zIndex = StackingLevelStr.OverlayTop;
+    });
     return domNode;
   }
 
@@ -104,7 +105,8 @@ export class AIInlineContentWidget extends ReactInlineContentWidget {
 
   public offsetTop(top: number): void {
     if (this.originTop === 0) {
-      this.originTop = this.domNode.style.top ? parseInt(this.domNode.style.top, 10) : 0;
+      const top = this.domNode.style.top;
+      this.originTop = top ? parseInt(top, 10) : 0;
     }
 
     this.domNode.style.top = `${this.originTop + top}px`;

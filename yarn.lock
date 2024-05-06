@@ -1956,7 +1956,7 @@ __metadata:
     "@commitlint/cli": "npm:^19.2.1"
     "@commitlint/config-conventional": "npm:^19.1.0 "
     "@opensumi/ide-dev-tool": "workspace:*"
-    "@opensumi/tree-sitter-wasm": "npm:^0.0.1"
+    "@opensumi/tree-sitter-wasm": "npm:0.0.2"
     "@types/debug": "npm:^4.1.5"
     "@types/fs-extra": "npm:^11.0.4"
     "@types/glob": "npm:^7.1.1"
@@ -2082,7 +2082,7 @@ __metadata:
     dom-align: "npm:^1.7.0"
     react-chat-elements: "npm:^12.0.10"
     react-highlight: "npm:^0.15.0"
-    web-tree-sitter: "npm:^0.22.2"
+    web-tree-sitter: "npm:0.22.6"
   languageName: unknown
   linkType: soft
 
@@ -3143,10 +3143,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/tree-sitter-wasm@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@opensumi/tree-sitter-wasm@npm:0.0.1"
-  checksum: 10/5385a7966e2220d3e2fb13a7cc1fb58f26d13b9bc878084481a1b17392cb902b3da5ddfbfa77376da4bdc2de8a644dd0292972bc15b2cb4a7bcb2b6157e0b2b9
+"@opensumi/tree-sitter-wasm@npm:0.0.2":
+  version: 0.0.2
+  resolution: "@opensumi/tree-sitter-wasm@npm:0.0.2"
+  dependencies:
+    web-tree-sitter: "npm:0.22.6"
+  checksum: 10/38e61a05b0696ed69144ece0d48f1ef9a0c9e19c20aaf6270e687a8ad78fda8342836cdf3bb29b722be73b9749f7f003f5bf6933008a70cbed99861797ab530d
   languageName: node
   linkType: hard
 
@@ -19825,10 +19827,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-tree-sitter@npm:^0.22.2":
-  version: 0.22.2
-  resolution: "web-tree-sitter@npm:0.22.2"
-  checksum: 10/f9c83a5ddab3ecd0ac33c8ccc00aec1184c9513255c00fdaf2d35f8fff49a9fcdd0b0545f4b86ea3e020d2bdcfde2e4a792642794d3a353530f3a55c15385464
+"web-tree-sitter@npm:0.22.6":
+  version: 0.22.6
+  resolution: "web-tree-sitter@npm:0.22.6"
+  checksum: 10/0b4378feff9d49466a2d63bccf3fcf2fd12184f80c009739e68a1201ae778196bc68bcc18641906659d42ce1a01fd8383637b3dd5c5c2c069288559fe7721d5e
   languageName: node
   linkType: hard
 
