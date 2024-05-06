@@ -17,7 +17,7 @@ export interface Response<T> {
 export interface RPCProtocolMethod<T> {
   method: string;
   request: Request<T>[];
-  response: Response<T>;
+  response?: Response<T>;
 }
 
 export interface RPCProtocol<T> {

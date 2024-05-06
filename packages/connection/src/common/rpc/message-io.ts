@@ -52,7 +52,12 @@ class SumiProtocolSerializer implements IProtocolSerializer {
     }
 
     const requestProto = Type.tuple(argsTuple);
-    const resultProto = methodProtocol.response.type || Type.any();
+
+    let resultProto: TypeDescription = Type.any();
+
+    if (methodProtocol.response && methodProtocol.response.type) {
+      resultProto = methodProtocol.response.type;
+    }
 
     this.request = this.fury.registerSerializer(requestProto);
     this.result = this.fury.registerSerializer(resultProto);

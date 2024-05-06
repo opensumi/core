@@ -21,6 +21,7 @@ import {
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractNodeExtProcessService } from '../common/extension.service';
 import { ExtHostAPIIdentifier } from '../common/vscode';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { createSumiApiFactory } from './sumi/main.thread.api.impl';
 import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
@@ -151,6 +152,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
     const mainThreadProtocol = new SumiConnectionMultiplexer(channel.createConnection(), {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'node-ext-host',
+      knownProtocols,
     });
 
     // 重启/重连时直接覆盖前一个连接

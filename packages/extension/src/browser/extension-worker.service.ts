@@ -8,6 +8,7 @@ import { Disposable, IDisposable, path, toDisposable } from '@opensumi/ide-core-
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
 import { AbstractWorkerExtProcessService } from '../common/extension.service';
+import { knownProtocols } from '../common/vscode/protocols';
 
 import { getWorkerBootstrapUrl } from './loader';
 import { createSumiApiFactory } from './sumi/main.thread.api.impl';
@@ -200,6 +201,7 @@ export class WorkerExtProcessService
     const protocol = new SumiConnectionMultiplexer(msgPortConnection, {
       timeout: this.appConfig.rpcMessageTimeout,
       name: 'worker-ext-host',
+      knownProtocols,
     });
 
     this.logger.log('[Worker Host] web worker extension host ready');
