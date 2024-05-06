@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Event, MessageType, URI } from '@opensumi/ide-core-common';
+import { Event, MayCancelablePromise, MessageType, URI } from '@opensumi/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
 
@@ -10,19 +10,19 @@ export interface IMessageService {
     buttons?: string[],
     closable?: boolean,
     props?: Record<string, any>,
-  ): Promise<string | undefined>;
+  ): MayCancelablePromise<string | undefined>;
   warning(
     message: string | React.ReactNode,
     buttons?: string[],
     closable?: boolean,
     props?: Record<string, any>,
-  ): Promise<string | undefined>;
+  ): MayCancelablePromise<string | undefined>;
   error(
     message: string | React.ReactNode,
     buttons?: string[],
     closable?: boolean,
     props?: Record<string, any>,
-  ): Promise<string | undefined>;
+  ): MayCancelablePromise<string | undefined>;
   open<T = string>(
     message: string | React.ReactNode,
     type: MessageType,
@@ -30,7 +30,7 @@ export interface IMessageService {
     closable?: boolean,
     from?: string,
     props?: Record<string, any>,
-  ): Promise<T | undefined>;
+  ): MayCancelablePromise<T | undefined>;
   hide<T = string>(value?: T): void;
 }
 

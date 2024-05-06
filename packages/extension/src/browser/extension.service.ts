@@ -17,6 +17,7 @@ import {
   ExtensionActivatedEvent,
   ExtensionDidContributes,
   GeneralSettingsId,
+  MayCancelablePromise,
   OnEvent,
   ProgressLocation,
   URI,
@@ -148,6 +149,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   // 插件进程是否正在等待重启，页面不可见的时候被设置
   private isExtProcessWaitingForRestart: ERestartPolicy | undefined;
+  private pCrashMessageModel: MayCancelablePromise<string | undefined> | undefined;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -336,6 +338,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     const doRestart = async (token: CancellationToken) => {
       const policy = this.isExtProcessWaitingForRestart || restartPolicy;
+
+      if (this.pCrashMessageModel) {
+        // crash message model is still open, close it
+        this.pCrashMessageModel.cancel?.();
+        this.pCrashMessageModel = undefined;
+      }
 
       token.onCancellationRequested(() => {
         this.logger.log('[ext-restart]: ext process restart canceled');
@@ -767,6 +775,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $processCrashRestart() {
+    if (this.pCrashMessageModel) {
+      this.pCrashMessageModel.cancel?.();
+    }
+
     const okText = localize('common.yes');
     const options = [okText];
     const ifRequiredReload = this.invalidReloadStrategy === 'ifRequired';
@@ -774,11 +786,15 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       options.unshift(localize('common.no'));
     }
 
-    const msg = await this.messageService.info(
+    this.pCrashMessageModel = this.messageService.info(
       localize('extension.crashedExthostReload.confirm'),
       options,
       !!ifRequiredReload,
     );
+
+    const msg = await this.pCrashMessageModel;
+    this.pCrashMessageModel = undefined;
+
     if (msg === okText) {
       await this.restartExtProcess(ERestartPolicy.Always);
     }
