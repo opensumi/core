@@ -3,12 +3,11 @@ import {
   CancellationToken,
   CancellationTokenSource,
   DisposableStore,
-  EventQueue,
   IDisposable,
   canceled,
   parseError,
 } from '@opensumi/ide-utils';
-import { IReadableStream, isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
+import { SumiReadableStream, isReadableStream, listenReadable } from '@opensumi/ide-utils/lib/stream';
 
 import { Capturer } from '../capturer';
 import { BaseConnection, NetSocketConnection, WSWebSocketConnection } from '../connection';
@@ -56,7 +55,7 @@ export class SumiConnection implements IDisposable {
   private readonly _cancellationTokenSources = new Map<number, CancellationTokenSource>();
   private readonly _knownCanceledRequests = new Set<number>();
 
-  protected activeRequestPool = new Map<number, ActiveRequest>();
+  protected activeRequestPool = new Map<number, SumiReadableStream<any>>();
 
   public io = new MessageIO();
   protected logger: ILogger;
@@ -227,42 +226,45 @@ export class SumiConnection implements IDisposable {
           };
 
           const headers = this.io.responseHeadersSerializer.read();
+          let err: any;
+          let result: any;
+          if (status === Status.Err) {
+            // todo: move to processor
+            const content = reader.stringOfVarUInt32();
+            err = parseError(content);
+          } else {
+            result = this.io.getProcessor(method).readResponse();
+          }
 
-          switch (status) {
-            case Status.Err: {
-              // TODO: use binary codec
-              const content = reader.stringOfVarUInt32();
-              const error = parseError(content);
-              runCallback(nullHeaders, error);
+          if (headers && headers.chunked) {
+            let activeReq: SumiReadableStream<any>;
+            if (this.activeRequestPool.has(requestId)) {
+              activeReq = this.activeRequestPool.get(requestId)!;
+            } else {
+              // new stream request
+              activeReq = new SumiReadableStream();
+              this.activeRequestPool.set(requestId, activeReq);
+              // resolve `activeReq` to caller
+              runCallback(headers, undefined, activeReq);
+            }
+
+            if (result === null) {
+              // when result is null, it means the stream is ended.
+              activeReq.end();
+              this.activeRequestPool.delete(requestId);
               break;
             }
-            default: {
-              if (headers && headers.chunked) {
-                let activeReq: ActiveRequest;
-                if (this.activeRequestPool.has(requestId)) {
-                  activeReq = this.activeRequestPool.get(requestId)!;
-                } else {
-                  activeReq = new ActiveRequest(requestId, headers);
-                  this.activeRequestPool.set(requestId, activeReq);
-                  runCallback(headers, undefined, activeReq);
-                }
 
-                const result = this.io.getProcessor(method).readResponse() as Uint8Array;
-
-                // when result is null, it means the stream is ended.
-                if (result) {
-                  activeReq.emit(result);
-                  break;
-                }
-
-                activeReq.end();
-                this.activeRequestPool.delete(requestId);
-              } else {
-                const result = this.io.getProcessor(method).readResponse();
-                runCallback(headers, undefined, result);
-              }
+            if (err) {
+              activeReq.emitError(err);
+              break;
             }
+
+            activeReq.emitData(result);
+            break;
           }
+
+          runCallback(headers, err, result);
           break;
         }
         case OperationType.Notification:
@@ -317,6 +319,9 @@ export class SumiConnection implements IDisposable {
                     },
                     onEnd: () => {
                       this.socket.send(this.io.Response(requestId, method, responseHeaders, null));
+                    },
+                    onError: (err) => {
+                      this.socket.send(this.io.Error(requestId, method, nullHeaders, err));
                     },
                   });
                 } else {
@@ -385,49 +390,5 @@ export class SumiConnection implements IDisposable {
 
   private traceRequestError(requestId: number, method: string, args: any[], error: any) {
     this.capturer.captureSendRequestFail(requestId, method, error);
-  }
-}
-
-class ActiveRequest implements IReadableStream<Uint8Array> {
-  protected dataQ = new EventQueue<Uint8Array>();
-  protected endQ = new EventQueue<void>();
-
-  on(event: 'data', listener: (chunk: Uint8Array) => void): this;
-  on(event: 'end', listener: () => void): this;
-  on(event: string, listener: (...args: any[]) => void): this;
-  on(event: unknown, listener: unknown): this {
-    if (typeof event === 'string') {
-      switch (event) {
-        case 'data':
-          this.onData(listener as (chunk: Uint8Array) => void);
-          break;
-        case 'end':
-          this.onEnd(listener as () => void);
-          break;
-        default:
-          break;
-      }
-    }
-    return this;
-  }
-
-  onData(cb: (data: Uint8Array) => void): IDisposable {
-    return this.dataQ.on(cb);
-  }
-
-  onEnd(cb: () => void): IDisposable {
-    return this.endQ.on(cb);
-  }
-
-  constructor(protected requestId: number, protected responseHeaders: IResponseHeaders) {}
-
-  emit(buffer: Uint8Array) {
-    this.dataQ.push(buffer);
-  }
-
-  end() {
-    this.dataQ.dispose();
-    this.endQ.push(undefined);
-    this.endQ.dispose();
   }
 }
