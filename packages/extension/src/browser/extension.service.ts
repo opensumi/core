@@ -762,6 +762,13 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async $processNotExist() {
+    // if browser receive the message, means the connection is keep alive
+    // so we still need to restart the ext process
+    this.logger.log('[ext-restart]: receive the command from the node side that the process does not exist');
+    await this.$restartExtProcess();
+  }
+
+  public async showReloadWindow() {
     const okText = localize('extension.invalidExthostReload.confirm.ok');
     const options = [okText];
     const ifRequiredReload = this.invalidReloadStrategy === 'ifRequired';
