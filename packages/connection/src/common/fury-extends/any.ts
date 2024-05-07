@@ -70,7 +70,7 @@ export class AnySerializer {
           writer.buffer(data);
         } else {
           writer.uint8(ProtocolType.JSONObject);
-          writer.stringOfVarUInt32(JSON.stringify(data, ObjectTransfer.replacer));
+          writer.stringOfVarUInt32(JSON.stringify(data));
         }
         break;
       default:
@@ -99,7 +99,7 @@ export class AnySerializer {
         return reader.double();
       case ProtocolType.JSONObject: {
         const json = reader.stringOfVarUInt32();
-        return JSON.parse(json, ObjectTransfer.reviver);
+        return JSON.parse(json);
       }
       case ProtocolType.BigInt:
         return reader.int64();
