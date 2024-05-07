@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import crypto from 'crypto';
+
 // @ts-ignore
 import { Bench } from 'tinybench';
 
@@ -68,15 +70,17 @@ const obj4 = {
 const obj5 = {
   kind: 'data',
   id: '456',
-  content: 'hello',
+  content: 'a'.repeat(10 * 1024),
 };
+
 const obj6 = {
   kind: 'binary',
   id: '456',
-  binary: Buffer.from([1, 2, 3]),
+  binary: crypto.randomBytes(10 * 1024),
 };
+
 bench
-  .add('one of', () => {
+  .add('[gateway] fury', () => {
     testIt(obj);
     testIt(obj2);
     testIt(obj3);
@@ -84,7 +88,7 @@ bench
     testIt(obj5);
     testIt(obj6);
   })
-  .add('one of json', () => {
+  .add('[gateway] json', () => {
     testItJson(obj);
     testItJson(obj2);
     testItJson(obj3);
@@ -92,7 +96,7 @@ bench
     testItJson(obj5);
     testItJson(obj6);
   })
-  .add('one of serialize', () => {
+  .add('[gateway] fury serialize', () => {
     serializer.serialize(obj);
     serializer.serialize(obj2);
     serializer.serialize(obj3);
@@ -100,7 +104,7 @@ bench
     serializer.serialize(obj5);
     serializer.serialize(obj6);
   })
-  .add('one of json stringify', () => {
+  .add('[gateway] json stringify', () => {
     JSON.stringify(obj);
     JSON.stringify(obj2);
     JSON.stringify(obj3);
@@ -108,14 +112,14 @@ bench
     JSON.stringify(obj5);
     JSON.stringify(obj6);
   })
-  .add('one of serialize without buffer', () => {
+  .add('[gateway] fury serialize without buffer', () => {
     serializer.serialize(obj);
     serializer.serialize(obj2);
     serializer.serialize(obj3);
     serializer.serialize(obj4);
     serializer.serialize(obj5);
   })
-  .add('one of json stringify without buffer', () => {
+  .add('[gateway] json stringify without buffer', () => {
     JSON.stringify(obj);
     JSON.stringify(obj2);
     JSON.stringify(obj3);
