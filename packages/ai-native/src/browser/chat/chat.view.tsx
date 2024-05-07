@@ -15,7 +15,6 @@ import {
   localize,
   uuid,
 } from '@opensumi/ide-core-common';
-import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import 'react-chat-elements/dist/main.css';
@@ -26,13 +25,14 @@ import { ChatMarkdown } from '../components/ChatMarkdown';
 import { ChatNotify, ChatReply } from '../components/ChatReply';
 import { ChatThinking } from '../components/ChatThinking';
 import { SlashCustomRender } from '../components/SlashCustomRender';
-import { StreamReplyRender } from '../components/StreamReplyRender';
 import { MessageData, createMessageByAI, createMessageByUser } from '../components/utils';
 import { WelcomeMessage } from '../components/WelcomeMsg';
 import { MsgHistoryManager } from '../model/msg-history-manager';
 import { EMsgStreamStatus, MsgStreamManager } from '../model/msg-stream-manager';
-import { IChatSlashCommandHandler, TSlashCommandCustomRender } from '../types';
+import { TSlashCommandCustomRender } from '../types';
 
+import { ChatSlashCommandItemModel } from './chat-model';
+import { ChatProxyService } from './chat-proxy.service';
 import { ChatService } from './chat.api.service';
 import { ChatFeatureRegistry } from './chat.feature.registry';
 import { ChatInternalService } from './chat.internal.service';
@@ -49,7 +49,6 @@ export const AIChatView = observer(() => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
   const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
   const chatRenderRegistry = useInjectable<ChatRenderRegistry>(ChatRenderRegistryToken);
-  const monacoCommandRegistry = useInjectable<MonacoCommandRegistry>(MonacoCommandRegistry);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const msgHistoryManager = useInjectable<MsgHistoryManager>(MsgHistoryManager);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -288,18 +287,34 @@ export const AIChatView = observer(() => {
         agentCommand: command!,
       });
 
+      const visibleAgentId = agentId === ChatProxyService.AGENT_ID ? '' : agentId;
+
       const userMessage = createMessageByUser(
         {
           id: uuid(6),
           relationId,
           text: ChatUserRoleRender ? (
-            <ChatUserRoleRender content={message} agentId={agentId} command={command} />
+            <ChatUserRoleRender content={message} agentId={visibleAgentId} command={command} />
           ) : (
-            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />
+            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={visibleAgentId} command={command} />
           ),
         },
         styles.chat_message_code,
       );
+
+      dispatchMessage({ type: 'add', payload: [userMessage] });
+
+      if (agentId === ChatProxyService.AGENT_ID && command) {
+        const commandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
+        if (commandHandler && commandHandler.providerRender) {
+          return handleSlashCustomRender({
+            userMessage: message,
+            render: commandHandler.providerRender,
+            relationId,
+            startTime,
+          });
+        }
+      }
 
       const aiMsgId = msgHistoryManager.addAssistantMessage({
         content: '',
@@ -331,7 +346,7 @@ export const AIChatView = observer(() => {
       aiChatService.setLatestSessionId(relationId);
       aiChatService.sendRequest(request);
 
-      dispatchMessage({ type: 'add', payload: [userMessage, aiMessage] });
+      dispatchMessage({ type: 'add', payload: [aiMessage] });
 
       if (containerRef && containerRef.current) {
         containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
@@ -340,118 +355,12 @@ export const AIChatView = observer(() => {
     [chatRenderRegistry, chatRenderRegistry.chatUserRoleRender, msgHistoryManager],
   );
 
-  const handleSend = React.useCallback(
-    async (value: IChatMessageStructure) => {
-      const { message, prompt, reportType, agentId, command } = value;
-      const ChatUserRoleRender = chatRenderRegistry.chatUserRoleRender;
+  const handleSend = React.useCallback(async (value: IChatMessageStructure) => {
+    const { message, command } = value;
 
-      if (agentId) {
-        return handleAgentReply({ message, agentId, command });
-      }
-
-      const userInput = {
-        type: AISerivceType.Chat,
-        message: prompt || message,
-      };
-
-      const { nameWithSlash } = chatFeatureRegistry.parseSlashCommand(message);
-      let commandHandler: IChatSlashCommandHandler | undefined;
-
-      if (nameWithSlash) {
-        commandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(nameWithSlash);
-      }
-
-      if (commandHandler && commandHandler.providerPrompt) {
-        const editor = monacoCommandRegistry.getActiveCodeEditor();
-        const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
-        userInput.message = slashCommandPrompt;
-      }
-
-      const startTime = Date.now();
-      const relationId = aiReporter.start(reportType || userInput.type, {
-        msgType: reportType || userInput.type,
-        message: userInput.message,
-      });
-
-      msgHistoryManager.addUserMessage({
-        content: message,
-      });
-
-      const sendMessage = createMessageByUser(
-        {
-          id: uuid(6),
-          relationId,
-          text: ChatUserRoleRender ? (
-            <ChatUserRoleRender content={message} agentId={agentId} command={command} />
-          ) : (
-            <CodeBlockWrapperInput relationId={relationId} text={message} agentId={agentId} command={command} />
-          ),
-        },
-        styles.chat_message_code,
-      );
-
-      dispatchMessage({ type: 'add', payload: [sendMessage] });
-
-      if (commandHandler && commandHandler.providerRender) {
-        return handleSlashCustomRender({
-          userMessage: message,
-          render: commandHandler.providerRender,
-          relationId,
-          startTime,
-        });
-      }
-
-      setLoading(true);
-
-      handleReply(userInput, relationId);
-    },
-    [
-      messageListData,
-      containerRef,
-      loading,
-      chatFeatureRegistry,
-      chatRenderRegistry,
-      chatRenderRegistry.chatUserRoleRender,
-      msgHistoryManager,
-    ],
-  );
-
-  const handleReply = React.useCallback(
-    (userInput: { type: AISerivceType; message: string }, relationId: string) => {
-      aiChatService.setLatestSessionId(relationId);
-      aiChatService.messageWithStream(userInput.message, {}, relationId);
-
-      const msgId = msgHistoryManager.addAssistantMessage({
-        content: '',
-        relationId,
-      });
-
-      const aiMessage = createMessageByAI({
-        id: uuid(6),
-        relationId,
-        text: (
-          <StreamReplyRender
-            prompt={userInput.message}
-            relationId={relationId}
-            onDidChange={(content) => {
-              msgHistoryManager.updateAssistantMessage(msgId, { content });
-            }}
-          />
-        ),
-        className: styles.chat_with_more_actions,
-      });
-
-      if (aiMessage) {
-        dispatchMessage({ type: 'add', payload: [aiMessage] });
-        if (containerRef && containerRef.current) {
-          containerRef.current.scrollTop = Number.MAX_SAFE_INTEGER;
-        }
-      }
-
-      setLoading(false);
-    },
-    [messageListData, aiChatService, msgHistoryManager],
-  );
+    const agentId = value.agentId ? value.agentId : ChatProxyService.AGENT_ID;
+    return handleAgentReply({ message, agentId, command });
+  }, []);
 
   const handleClear = React.useCallback(() => {
     aiChatService.cancelChatViewToken();
@@ -462,11 +371,13 @@ export const AIChatView = observer(() => {
     dispatchMessage({ type: 'init', payload: [firstMsg] });
   }, [messageListData]);
 
-  const handleThemeClick = (value) => {
+  const handleShortcutCommandClick = (commandModel: ChatSlashCommandItemModel) => {
     if (loading || loading2) {
       return;
     }
-    setTheme(value);
+    setTheme(commandModel.nameWithSlash);
+    setAgentId(commandModel.agentId!);
+    setCommand(commandModel.command!);
   };
 
   const handleCloseChatView = React.useCallback(() => {
@@ -531,7 +442,7 @@ export const AIChatView = observer(() => {
                     key={`ai-chat-shortcut-${command.name}`}
                     title={command.tooltip || command.name}
                   >
-                    <div className={styles.tag} onClick={() => handleThemeClick(command.nameWithSlash)}>
+                    <div className={styles.tag} onClick={() => handleShortcutCommandClick(command)}>
                       {command.name}
                     </div>
                   </Popover>

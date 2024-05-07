@@ -4,13 +4,22 @@ import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, us
 import { useInjectable, useLatest } from '@opensumi/ide-core-browser';
 import { Icon, Popover, PopoverPosition, TextArea, getIcon } from '@opensumi/ide-core-browser/lib/components';
 import { EnhanceIcon } from '@opensumi/ide-core-browser/lib/components/ai-native';
-import { ChatFeatureRegistryToken, localize, runWhenIdle, uuid } from '@opensumi/ide-core-common';
+import {
+  ChatAgentViewServiceToken,
+  ChatFeatureRegistryToken,
+  localize,
+  runWhenIdle,
+  uuid,
+} from '@opensumi/ide-core-common';
 import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 
-import { AI_SLASH, IChatAgentService } from '../../common';
+import { AT_SIGN_SYMBOL, IChatAgentService, SLASH_SYMBOL } from '../../common';
+import { ChatAgentViewService } from '../chat/chat-agent.view.service';
 import { ChatSlashCommandItemModel } from '../chat/chat-model';
+import { ChatProxyService } from '../chat/chat-proxy.service';
 import { ChatFeatureRegistry } from '../chat/chat.feature.registry';
 import { IChatSlashCommandItem } from '../types';
+
 
 import styles from './components.module.less';
 
@@ -29,27 +38,36 @@ const Block = ({
   agentId,
   command,
   selectedAgentId,
-}: IBlockProps & { selectedAgentId?: string }) => (
-  <div className={styles.block}>
-    {icon && <EnhanceIcon className={icon} />}
-    {name && <span className={styles.name}>{name}</span>}
-    {description && <span className={styles.text}>{description}</span>}
-    {!selectedAgentId && agentId && command && <span className={styles.agent_label}>@{agentId}</span>}
-  </div>
-);
+}: IBlockProps & { selectedAgentId?: string }) => {
+  const renderAgent = useMemo(() => {
+    if (!selectedAgentId && agentId && agentId !== ChatProxyService.AGENT_ID && command) {
+      return <span className={styles.agent_label}>@{agentId}</span>;
+    }
+    return null;
+  }, []);
+
+  return (
+    <div className={styles.block}>
+      {icon && <EnhanceIcon className={icon} />}
+      {name && <span className={styles.name}>{name}</span>}
+      {description && <span className={styles.text}>{description}</span>}
+      {renderAgent}
+    </div>
+  );
+};
 
 const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId }) => {
   const chatAgentService = useInjectable<IChatAgentService>(IChatAgentService);
-  const chatFeatureRegistry = useInjectable<ChatFeatureRegistry>(ChatFeatureRegistryToken);
+  const chatAgentViewService = useInjectable<ChatAgentViewService>(ChatAgentViewServiceToken);
 
   const agentOptions = useMemo(() => {
-    if (trigger === '@') {
-      return chatAgentService.getAgents().map(
+    if (trigger === AT_SIGN_SYMBOL) {
+      return chatAgentViewService.getRenderAgents().map(
         (a) =>
           new ChatSlashCommandItemModel(
             {
               icon: '',
-              name: `@${a.id} `,
+              name: `${AT_SIGN_SYMBOL}${a.id} `,
               description: a.metadata.description,
             },
             '',
@@ -64,7 +82,7 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
             new ChatSlashCommandItemModel(
               {
                 icon: '',
-                name: `/ ${c.name} `,
+                name: `${SLASH_SYMBOL} ${c.name} `,
                 description: c.description,
               },
               c.name,
@@ -74,14 +92,6 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
         .filter((item) => !selectedAgentId || item.agentId === selectedAgentId);
     }
   }, [trigger, chatAgentService]);
-
-  const options = useMemo(() => {
-    if (trigger === '@') {
-      return [];
-    }
-
-    return chatFeatureRegistry.getAllSlashCommand();
-  }, [trigger, chatFeatureRegistry]);
 
   const handleClick = useCallback(
     (name: string | undefined, agentId?: string, command?: string) => {
@@ -96,7 +106,7 @@ const InstructionOptions = ({ onClick, bottom, trigger, agentId: selectedAgentId
     <div className={styles.instruction_options_container} style={{ bottom: bottom + 'px' }}>
       <div className={styles.options}>
         <ul>
-          {options.concat(agentOptions).map(({ icon, name, nameWithSlash, description, agentId, command }) => (
+          {agentOptions.map(({ icon, name, nameWithSlash, description, agentId, command }) => (
             <li key={`${agentId || ''}-${name}`} onMouseDown={() => handleClick(nameWithSlash, agentId, command)}>
               <Block
                 icon={icon}
@@ -122,10 +132,16 @@ const ThemeWidget = ({ themeBlock }) => (
 
 const AgentWidget = ({ agentId, command }) => (
   <div className={styles.theme_container}>
-    <div className={styles.theme_block} style={{ marginRight: 4 }}>
-      @{agentId}
-    </div>
-    {command && <div className={styles.theme_block}>/ {command}</div>}
+    {agentId !== ChatProxyService.AGENT_ID && (
+      <div className={styles.theme_block} style={{ marginRight: 4 }}>
+        @{agentId}
+      </div>
+    )}
+    {command && (
+      <div className={styles.theme_block}>
+        {SLASH_SYMBOL} {command}
+      </div>
+    )}
   </div>
 );
 
@@ -143,10 +159,10 @@ export interface IChatInputProps {
   theme?: string | null;
   setTheme: (theme: string | null) => void;
   agentId: string;
-  setAgentId: (theme: string) => void;
+  setAgentId: (id: string) => void;
   defaultAgentId?: string;
   command: string;
-  setCommand: (theme: string) => void;
+  setCommand: (command: string) => void;
 }
 
 // 指令命令激活组件
@@ -198,16 +214,10 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
   }, [props.value]);
 
   useEffect(() => {
-    setTheme(theme || '');
     textareaRef.current?.focus();
     const defaultPlaceholder = localize('aiNative.chat.input.placeholder.default');
 
-    if (!theme) {
-      setPlaceHolder(defaultPlaceholder);
-      return;
-    }
-
-    const findCommandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(theme);
+    const findCommandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
     if (findCommandHandler && findCommandHandler.providerInputPlaceholder) {
       const editor = monacoCommandRegistry.getActiveCodeEditor();
       const placeholder = findCommandHandler.providerInputPlaceholder(value, editor);
@@ -215,11 +225,11 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     } else {
       setPlaceHolder(defaultPlaceholder);
     }
-  }, [theme, chatFeatureRegistry]);
+  }, [chatFeatureRegistry, command]);
 
   useEffect(() => {
-    acquireOptionsCheck(theme || '');
-  }, [theme]);
+    acquireOptionsCheck(theme || '', agentId, command);
+  }, [theme, agentId, command]);
 
   useEffect(() => {
     if (textareaRef && autoFocus) {
@@ -229,14 +239,17 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
 
   useEffect(() => {
     if (enableOptions) {
-      if ((value === AI_SLASH || (value === '@' && chatAgentService.getAgents().length > 0)) && !isExpand) {
+      if (
+        (value === SLASH_SYMBOL || (value === AT_SIGN_SYMBOL && chatAgentService.getAgents().length > 0)) &&
+        !isExpand
+      ) {
         setIsShowOptions(true);
       } else {
         setIsShowOptions(false);
       }
     }
 
-    if (value.startsWith(AI_SLASH)) {
+    if (value.startsWith(SLASH_SYMBOL)) {
       const { value: newValue, nameWithSlash } = chatFeatureRegistry.parseSlashCommand(value);
 
       if (nameWithSlash) {
@@ -298,42 +311,37 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
       return;
     }
 
-    // 支持 command 不传内容
-    if (agentId && (value.trim() || command)) {
+    const handleSendLogic = (newValue: string = value) => {
       onSend(value, agentId, command);
       setValue('');
       setTheme('');
       setAgentId('');
       setCommand('');
-      return;
-    }
+    };
 
-    if (theme) {
-      const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandlerBySlashName(theme);
-
+    if (command) {
+      const chatCommandHandler = chatFeatureRegistry.getSlashCommandHandler(command);
       if (chatCommandHandler && chatCommandHandler.execute) {
         const editor = monacoCommandRegistry.getActiveCodeEditor();
         await chatCommandHandler.execute(
           value,
           (newValue: string) => {
-            setValue('');
-            onSend(theme + newValue);
-            setTheme('');
+            handleSendLogic(newValue);
+            // setValue('');
+            // onSend(theme + newValue);
+            // setTheme('');
           },
           editor,
         );
         return;
       }
-    } else {
-      setValue('');
-      onSend(value);
-      setTheme('');
     }
+
+    handleSendLogic();
   }, [onSend, value, agentId, command, chatFeatureRegistry]);
 
   const acquireOptionsCheck = useCallback(
     (themeValue: string, agentId?: string, command?: string) => {
-      // 目前仅 ext 的 command 有 agentId，因此有 agentId，则说明是 ext 注册的
       if (agentId) {
         setIsShowOptions(false);
         setTheme('');
@@ -341,7 +349,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
         setCommand(command || '');
         if (textareaRef?.current) {
           const inputValue = textareaRef.current.value;
-          if (inputValue === '@' || (command && inputValue === AI_SLASH)) {
+          if (inputValue === AT_SIGN_SYMBOL || (command && inputValue === SLASH_SYMBOL)) {
             setValue('');
           }
           runWhenIdle(() => textareaRef.current!.focus());
@@ -360,7 +368,7 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
 
         if (textareaRef && textareaRef.current) {
           const inputValue = textareaRef.current.value;
-          if (inputValue.length === 1 && inputValue.startsWith(AI_SLASH)) {
+          if (inputValue.length === 1 && inputValue.startsWith(SLASH_SYMBOL)) {
             setValue('');
           }
           runWhenIdle(() => textareaRef.current!.focus());
@@ -387,6 +395,13 @@ export const ChatInput = React.forwardRef((props: IChatInputProps, ref) => {
     } else if (event.key === 'Backspace') {
       if (textareaRef.current?.selectionEnd === 0 && textareaRef.current?.selectionStart === 0) {
         setTheme('');
+
+        if (agentId === ChatProxyService.AGENT_ID) {
+          setCommand('');
+          setAgentId('');
+          return;
+        }
+
         if (agentId) {
           if (command) {
             setCommand('');

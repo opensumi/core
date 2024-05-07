@@ -7,7 +7,7 @@ import {
   IMarkdownString,
   Uri,
 } from '@opensumi/ide-core-common';
-import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/src/types/ai-native';
+import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/lib/types/ai-native';
 import { DESIGN_MENUBAR_CONTAINER_VIEW_ID } from '@opensumi/ide-design/lib/common/constants';
 
 export const IAINativeService = Symbol('IAINativeService');
@@ -27,7 +27,8 @@ export const AI_MENU_BAR_DEBUG_TOOLBAR = 'AI_MENU_BAR_DEBUG_TOOLBAR';
  */
 export const AI_MENUBAR_CONTAINER_VIEW_ID = DESIGN_MENUBAR_CONTAINER_VIEW_ID;
 
-export const AI_SLASH = '/';
+export const SLASH_SYMBOL = '/';
+export const AT_SIGN_SYMBOL = '@';
 
 export interface IChatMessageStructure {
   /**

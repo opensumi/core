@@ -1,10 +1,16 @@
-import { Injectable } from '@opensumi/di';
+import { Autowired, Injectable } from '@opensumi/di';
 import { Deferred, IDisposable } from '@opensumi/ide-core-common';
 
+import { IChatAgentService } from '../../common';
 import { IChatAgentViewService, IChatComponentConfig } from '../types';
+
+import { ChatProxyService } from './chat-proxy.service';
 
 @Injectable()
 export class ChatAgentViewService implements IChatAgentViewService {
+  @Autowired(IChatAgentService)
+  private readonly chatAgentService: IChatAgentService;
+
   private componentsMap = new Map<string, IChatComponentConfig>();
   private componentsDeferredMap = new Map<string, Deferred<IChatComponentConfig>>();
 
@@ -36,5 +42,9 @@ export class ChatAgentViewService implements IChatAgentViewService {
 
   getChatComponentDeferred(id: string) {
     return this.componentsDeferredMap.get(id) || null;
+  }
+
+  getRenderAgents() {
+    return this.chatAgentService.getAgents().filter((agent) => agent.id !== ChatProxyService.AGENT_ID);
   }
 }

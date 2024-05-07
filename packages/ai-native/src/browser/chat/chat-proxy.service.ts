@@ -2,130 +2,115 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   AIBackSerivcePath,
   CancellationToken,
+  ChatFeatureRegistryToken,
   Deferred,
   Disposable,
   IAIBackService,
   IAIReporter,
   IChatProgress,
-  IChatProxyRPCService
+  uuid,
 } from '@opensumi/ide-core-common';
-import { IChatAgentCommand, IChatAgentRequest, IChatAgentResult, IChatAgentService, IChatAgentWelcomeMessage, IChatInternalService, IChatManagerService, IChatMessage } from '../../common';
-import { MsgStreamManager } from '../model/msg-stream-manager';
-import { ChatManagerService } from './chat-manager.service';
-import { ChatInternalService } from './chat.internal.service';
+import { MonacoCommandRegistry } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { listenReadable } from '@opensumi/ide-utils/lib/stream';
+
+import {
+  IChatAgentCommand,
+  IChatAgentRequest,
+  IChatAgentResult,
+  IChatAgentService,
+  IChatAgentWelcomeMessage,
+  IChatMessage,
+} from '../../common';
+import { IChatSlashCommandHandler } from '../types';
+
+import { ChatFeatureRegistry } from './chat.feature.registry';
 
 /**
  * @internal
  */
 @Injectable()
-export class ChatProxyService extends Disposable implements IChatProxyRPCService {
+export class ChatProxyService extends Disposable {
+  // 避免和插件注册的 agent id 冲突
+  static readonly AGENT_ID = 'Default_Chat_Agent_' + uuid(6);
+
   @Autowired(IChatAgentService)
   private readonly chatAgentService: IChatAgentService;
 
-  @Autowired(IChatInternalService)
-  private readonly chatInternalService: ChatInternalService;
-
   @Autowired(AIBackSerivcePath)
-  private aiBackService: IAIBackService;
+  private readonly aiBackService: IAIBackService;
 
-  @Autowired(MsgStreamManager)
-  private readonly msgStreamManager: MsgStreamManager;
+  @Autowired(ChatFeatureRegistryToken)
+  private readonly chatFeatureRegistry: ChatFeatureRegistry;
 
-  @Autowired(IChatManagerService)
-  private chatManagerService: ChatManagerService;
+  @Autowired(MonacoCommandRegistry)
+  private readonly monacoCommandRegistry: MonacoCommandRegistry;
 
   @Autowired(IAIReporter)
   private readonly aiReporter: IAIReporter;
 
-  private chatDeferred: Deferred<void>;
-  private currentChatRequest: IChatAgentRequest | undefined;
-
-  constructor() {
-    super();
-
-    this.resetChatDeferred();
-  }
-
-  private resetChatDeferred(): void {
-    this.chatDeferred = new Deferred<void>();
-  }
-
-  // private findRequest(requestId: string): IChatAgentRequest | undefined {
-  //   const model = this.chatManagerService.getSession(requestId);
-  //   const request = model?.getRequest(requestId);
-  // }
-
-  public complete(requestId: string): void {
-    this.chatDeferred.resolve();
-
-    // const model = this.chatManagerService.getSession(this.currentChatRequest.sessionId);
-    // const request = model?.getRequest(requestId);
-
-    // request!.response.complete();
-
-    this.currentChatRequest = undefined;
-  }
-
-  public sendMessage(message: IChatProgress, requestId: string) {
-    if (!this.currentChatRequest) {
-      return;
-    }
-
-    try {
-      const model = this.chatManagerService.getSession(this.currentChatRequest.sessionId);
-      const request = model?.getRequest(requestId);
-
-      request!.response.complete();
-
-      if (request) {
-        model?.acceptResponseProgress(request, message);
-      }
-
-    } catch (error) {
-      throw new Error(`sendMessage error: ${error}`);
-    }
-  }
+  private chatDeferred: Deferred<void> = new Deferred<void>();
 
   public registerDefaultAgent() {
     this.addDispose(
       this.chatAgentService.registerAgent({
-        id: 'OpenSumi_Default_Agent',
+        id: ChatProxyService.AGENT_ID,
         metadata: {},
-        invoke: async (request: IChatAgentRequest, _progress: (part: IChatProgress) => void, _history: IChatMessage[], token: CancellationToken): Promise<IChatAgentResult> => {
-          this.resetChatDeferred();
-          this.currentChatRequest = request;
+        invoke: async (
+          request: IChatAgentRequest,
+          progress: (part: IChatProgress) => void,
+          _history: IChatMessage[],
+          token: CancellationToken,
+        ): Promise<IChatAgentResult> => {
+          this.chatDeferred = new Deferred<void>();
 
-          this.addDispose(token.onCancellationRequested(() => {
-            this.complete(request.requestId)
-          }))
+          const { message, command } = request;
+          let prompt: string = message;
+
+          if (command) {
+            const commandHandler = this.chatFeatureRegistry.getSlashCommandHandler(command);
+            if (commandHandler && commandHandler.providerPrompt) {
+              const editor = this.monacoCommandRegistry.getActiveCodeEditor();
+              const slashCommandPrompt = await commandHandler.providerPrompt(message, editor);
+              prompt = slashCommandPrompt;
+            }
+          }
 
           const stream = await this.aiBackService.requestStream(
-            request.message,
+            prompt,
             {
               requestId: request.requestId,
             },
             token,
           );
 
-          listenReadable(stream, {
+          listenReadable<IChatProgress>(stream, {
             onData: (data) => {
-              console.log('stream:>>> data', data);
+              progress(data);
             },
-            onEnd() {
-              console.log('stream:>>> end');
+            onEnd: () => {
+              this.chatDeferred.resolve();
             },
-            onError(error) {
-              console.log('stream:>>> error', error);
-            }
-          })
+            onError: (error) => {
+              this.aiReporter.end(request.sessionId + '_' + request.requestId, {
+                message: error.message,
+                success: false,
+              });
+            },
+          });
 
           await this.chatDeferred.promise;
-          return {}
+          return {};
         },
-        provideSlashCommands: async (token: CancellationToken): Promise<IChatAgentCommand[]> => [],
-        provideChatWelcomeMessage: async (token: CancellationToken): Promise<IChatAgentWelcomeMessage | undefined> => undefined,
-      })
-    )
+        provideSlashCommands: async (token: CancellationToken): Promise<IChatAgentCommand[]> => this.chatFeatureRegistry
+            .getAllSlashCommand()
+            .map((s) => ({ ...s, name: s.name, description: s.description || '' })),
+        provideChatWelcomeMessage: async (token: CancellationToken): Promise<IChatAgentWelcomeMessage | undefined> =>
+          undefined,
+      }),
+    );
+
+    queueMicrotask(() => {
+      this.chatAgentService.updateAgent(ChatProxyService.AGENT_ID, {});
+    });
   }
 }

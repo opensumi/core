@@ -1,13 +1,15 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, ILogger, uuid } from '@opensumi/ide-core-common';
+import {
+  IChatAsyncContent,
+  IChatComponent,
+  IChatMarkdownContent,
+  IChatProgress,
+  IChatTreeData,
+} from '@opensumi/ide-core-common/lib/types/ai-native';
 import { MarkdownString, isMarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
 import {
-  IChatAsyncContent,
-  IChatComponent, IChatMarkdownContent, IChatProgress, IChatTreeData
-} from '@opensumi/ide-core-common/src/types/ai-native';
-import {
-  AI_SLASH,
   IChatFollowup,
   IChatModel,
   IChatRequestMessage,
@@ -15,6 +17,7 @@ import {
   IChatResponseErrorDetails,
   IChatWelcomeMessageContent,
   ISampleQuestions,
+  SLASH_SYMBOL,
 } from '../../common';
 import { IChatSlashCommandItem } from '../types';
 
@@ -231,7 +234,7 @@ export class ChatModel extends Disposable implements IChatModel {
     const response = new ChatResponseModel(requestId, this, message.agentId);
     const request = new ChatRequestModel(requestId, this, message, response);
 
-    this.#requests.set(requestId, request)
+    this.#requests.set(requestId, request);
     return request;
   }
 
@@ -311,6 +314,6 @@ export class ChatSlashCommandItemModel extends Disposable implements IChatSlashC
   }
 
   get nameWithSlash() {
-    return this.name.startsWith(AI_SLASH) ? this.name : `${AI_SLASH}${this.name} `;
+    return this.name.startsWith(SLASH_SYMBOL) ? this.name : `${SLASH_SYMBOL} ${this.name}`;
   }
 }

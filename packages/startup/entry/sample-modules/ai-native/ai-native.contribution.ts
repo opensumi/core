@@ -32,6 +32,8 @@ import {
 import { ICodeEditor, NewSymbolName, NewSymbolNameTag } from '@opensumi/ide-monaco';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 
+import { SlashCommand } from './SlashCommand';
+
 enum EInlineOperation {
   Comments = 'Comments',
   Optimize = 'Optimize',
@@ -187,6 +189,7 @@ export class AiNativeContribution implements AINativeCoreContribution {
         tooltip: '解释代码',
       },
       {
+        providerRender: SlashCommand,
         providerInputPlaceholder(value, editor) {
           return '请输入或者粘贴代码';
         },

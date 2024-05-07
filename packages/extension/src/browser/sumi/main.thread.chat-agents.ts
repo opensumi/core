@@ -5,9 +5,9 @@ import {
   IChatFollowup,
   IChatReplyFollowup,
 } from '@opensumi/ide-ai-native/lib/common';
-import { IChatContent, IChatProgress, IChatTreeData } from '@opensumi/ide-core-common/src/types/ai-native';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Deferred, IMarkdownString } from '@opensumi/ide-core-common';
+import { IChatContent, IChatProgress, IChatTreeData } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import { ExtHostSumiAPIIdentifier } from '../../common/sumi';
 import {

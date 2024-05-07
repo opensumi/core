@@ -11,6 +11,7 @@ import {
   ILogger,
   toDisposable,
 } from '@opensumi/ide-core-common';
+import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/lib/types/ai-native';
 
 import {
   IChatAgent,
@@ -21,8 +22,8 @@ import {
   IChatAgentService,
   IChatFollowup,
   IChatMessage,
-  IChatMessageStructure} from '../../common';
-import { IChatContent, IChatProgress } from '@opensumi/ide-core-common/src/types/ai-native';
+  IChatMessageStructure,
+} from '../../common';
 import { IChatFeatureRegistry } from '../types';
 
 import { ChatService } from './chat.api.service';
@@ -134,7 +135,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 
   getCommands() {
     return flatMap(
-      Array.from(this.agents.values(), ({ agent, commands }) => commands.map((c) => ({ agentId: agent.id, ...c }))),
+      Array.from(this.agents.values(), ({ agent, commands }) => commands.map((c) => ({ ...c, agentId: agent.id }))),
     );
   }
 

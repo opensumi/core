@@ -1,4 +1,5 @@
-import { CancellationToken, MaybePromise, Uri } from '../../utils';
+import { CancellationToken, MaybePromise, Uri } from '@opensumi/ide-utils';
+
 import { FileType } from '../file';
 import { IMarkdownString } from '../markdown';
 
@@ -200,15 +201,6 @@ export interface IInternalResolveConflictRegistry {
   getThreeWayHandler(): IResolveConflictHandler | undefined;
   getTraditionalHandler(): IResolveConflictHandler | undefined;
 }
-
-/**
- * Chat Proxy RPCService
- */
-export interface IChatProxyRPCService {
-  sendMessage(msg: IChatProgress, requestId: string): void;
-  complete(requestId: string): void;
-}
-
 export interface IChatContent {
   content: string;
   kind: 'content';

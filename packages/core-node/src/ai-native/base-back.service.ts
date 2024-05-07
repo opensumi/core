@@ -10,14 +10,14 @@ import {
   IAICompletionOption,
   IAICompletionResultModel,
   IAIReportCompletionOption,
-  IChatProxyRPCService,
+  IChatProgress,
 } from '@opensumi/ide-core-common';
+import { SumiReadableStream } from '@opensumi/ide-utils/lib/stream';
+
+export class ChatReadableStream extends SumiReadableStream<IChatProgress> {}
 
 @Injectable()
-export class BaseAIBackService
-  extends RPCService<IChatProxyRPCService>
-  implements IAIBackService<IAIBackServiceResponse, Readable>
-{
+export class BaseAIBackService implements IAIBackService<IAIBackServiceResponse, Readable> {
   async request<T = IAIBackServiceResponse<string>>(
     input: string,
     options: IAIBackServiceOption,

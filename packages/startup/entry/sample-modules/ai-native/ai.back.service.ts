@@ -1,10 +1,10 @@
 import { Readable } from 'stream';
-import util from 'util';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
   BaseAIBackService,
   CancellationToken,
+  ChatReadableStream,
   IAIBackService,
   IAIBackServiceOption,
   IAIBackServiceResponse,
@@ -88,53 +88,25 @@ export class AiBackService extends BaseAIBackService implements IAIBackService<R
 
     const length = streamData.length;
 
-    // 创建可读流
-    const stream = new Readable({
-      read() { },
+    const chatReadableStream = new ChatReadableStream();
+
+    cancelToken?.onCancellationRequested(() => {
+      chatReadableStream.end();
     });
 
     // 模拟数据事件
     streamData.forEach((chunk, index) => {
       setTimeout(() => {
-        if (length - 1 === index) {
-          stream.push(null);
-          this.client?.complete(requestId!);
+        if (length - 1 === index || cancelToken?.isCancellationRequested) {
+          chatReadableStream.end();
           return;
         }
 
-        // const obj = { kind: 'content', content: chunk.toString() };
-        // const objToString = util.format('%j', obj)
-        stream.push({ kind: 'content', content: chunk.toString() });
+        chatReadableStream.emitData({ kind: 'content', content: chunk.toString() });
       }, index * 300);
     });
 
-    if (requestId) {
-      this.streamSessionIdMap.set(requestId, stream);
-    }
-
-    // 在数据事件中处理数据
-    // stream.on('data', (chunk: Buffer) => {
-    //   this.logger.log(`Received chunk: ${chunk}`);
-    //   this.client?.sendMessage({ kind: 'content', content: chunk.toString() }, requestId!);
-    // });
-    stream.on('error', (error) => {
-      this.logger.log('Stream error.', error);
-    })
-    // 在结束事件中进行清理
-    stream.on('close', () => {
-      this.logger.log('Stream ended.');
-      if (requestId) {
-        this.streamSessionIdMap.delete(requestId);
-      }
-    });
-
-    // 触发结束事件
-    setTimeout(() => {
-      stream.push(null);
-      this.client?.complete(requestId!);
-    }, streamData.length * 1000);
-
-
-    return stream as T;
+    // return stream as T;
+    return chatReadableStream as T;
   }
 }
