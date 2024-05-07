@@ -140,7 +140,7 @@ type MenuBarMixToolbarActionProps = Pick<React.HTMLProps<HTMLElement>, 'classNam
 export const MenuBarMixToolbarAction: React.FC<MenuBarMixToolbarActionProps> = (props) => (
   <div className={cls(styles.menubarWrapper, props.className)}>
     <MenuBar />
-    <SlotRenderer slot='action' flex={1} overflow={'initial'} />
+    <SlotRenderer slot='action' flex={1} />
   </div>
 );
 

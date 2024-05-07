@@ -50,11 +50,6 @@ export const AccordionContainer = observer(
       accordionService.initConfig({ headerSize: layoutHeaderSize, minSize });
     }, []);
 
-    const allCollapsed = !accordionService.visibleViews.find((view) => {
-      const viewState: SectionState = accordionService.getViewState(view.id);
-      return !viewState.collapsed;
-    });
-
     return (
       <SplitPanel
         className={className}
@@ -62,7 +57,6 @@ export const AccordionContainer = observer(
         dynamicTarget={true}
         id={containerId}
         resizeKeep={false}
-        useDomSize={allCollapsed}
         direction={alignment === 'horizontal' ? EDirection.LeftToRight : EDirection.TopToBottom}
       >
         {accordionService.visibleViews.map((view, index) => {

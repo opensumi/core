@@ -141,10 +141,10 @@ export const DesignMenuBarView = () => {
           <div className={styles.top_menus_bar}>
             <DesignMenuBarRender />
           </div>
-          <SlotRenderer slot={DESIGN_MENU_BAR_LEFT} flex={1} overflow={'initial'} />
+          <SlotRenderer slot={DESIGN_MENU_BAR_LEFT} flex={1} />
         </div>
         <div className={styles.right}>
-          <SlotRenderer slot={DESIGN_MENU_BAR_RIGHT} flex={1} overflow={'initial'} />
+          <SlotRenderer slot={DESIGN_MENU_BAR_RIGHT} flex={1} />
         </div>
       </div>
     </div>

@@ -187,7 +187,7 @@ const ConfigurationSelector = React.memo(
                     title={popupHint}
                     overlayClassName={styles.config_popover_insert}
                   >
-                    <div>{label}</div>
+                    {label}
                   </Popover>
                 ) : (
                   label

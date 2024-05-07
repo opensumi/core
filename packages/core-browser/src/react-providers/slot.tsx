@@ -169,18 +169,27 @@ export class SlotRendererRegistry {
 export const slotRendererRegistry = new SlotRendererRegistry();
 
 export interface SlotProps {
-  // Name of the slot view
-  slot: string;
-  /**
-   * Background color of the slot view
-   * @deprecated discontinued
-   */
-  backgroundColor?: string;
-  // Is tabbar slot renderer or not
-  isTabbar?: boolean;
   // Slot ID
   id?: string;
-  // Optional props
+  // Slot Name
+  slot: string;
+  // Is Tabbar or not
+  isTabbar?: boolean;
+  // Default Size
+  defaultSize?: number;
+  // Min Size
+  minSize?: number;
+  // Min Resize
+  minResize?: number;
+  // Max Resize
+  maxResize?: number;
+  // Z-Index
+  zIndex?: number;
+  // Flex
+  flex?: number;
+  // Flex Grow
+  flexGrow?: number;
+  // Others
   [key: string]: any;
 }
 
@@ -215,6 +224,7 @@ export function SlotRenderer({ slot, isTabbar, id, ...props }: SlotProps) {
   }, []);
 
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
+
   return (
     <ErrorBoundary>
       <SlotDecorator slot={slot} id={id}>
