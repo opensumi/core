@@ -14,34 +14,49 @@ import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
-  // panel 头部标题
+  // Header Title
   header: string;
-  // panel 头部描述
+  // Header Description
   description?: string;
-  // panel 信息
+  // Panel Message
   message?: string;
-  // 头部样式名
+  // Header Size
+  headerSize?: number;
+  // Header Class
   headerClass?: string;
-  // panel 点击事件监听
+  // Handle Panel Click
   onItemClick?: any;
+  // Handle Panel Context Menu
   onContextMenuHandler: any;
-  // 计算宽度时的优先级
+  // Panel Weight
   weight?: number;
-  // 排序优先级
+  // Panel Order Priority
   priority?: number;
-  // panel宽高
+  // Panel Size
   size?: {
     width: number;
     height: number;
   };
-  headerSize?: number;
+  // Panel View Id
   viewId: string;
+  // Panel Alignment
   alignment?: Layout.alignment;
+  // Panel Index
   index: number;
+  // Panel Initial Props
   initialProps?: any;
+  // Panel No Header
   noHeader?: boolean;
+  // Panel Title Menu
   titleMenu: IMenu | IContextMenu;
+  // Panel Accordion Service
   accordionService: AccordionService;
+  // Panel Badge
+  badge?: string;
+  // Panel Expanded
+  expanded?: boolean;
+  // Panel Title Menu Context
+  titleMenuContext?: any;
 }
 
 const attrs = {
@@ -52,17 +67,17 @@ export const AccordionSection = ({
   header,
   description,
   message,
-  badge,
   headerClass,
   onItemClick,
   noHeader,
   children,
-  expanded,
+  badge,
   headerSize,
   viewId,
   initialProps,
   titleMenu,
   titleMenuContext,
+  expanded,
   accordionService,
   onContextMenuHandler,
   alignment,

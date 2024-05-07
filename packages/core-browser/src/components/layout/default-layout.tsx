@@ -30,7 +30,7 @@ export function ToolbarActionBasedLayout(
   const { layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer id='top' defaultSize={props.topSlotDefaultSize || 0} slot='top' z-index={props.topSlotZIndex} />
+      <SlotRenderer id='top' defaultSize={props.topSlotDefaultSize || 0} slot='top' zIndex={props.topSlotZIndex} />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           slot='left'

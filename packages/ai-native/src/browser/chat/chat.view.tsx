@@ -524,7 +524,11 @@ export const AIChatView = observer(() => {
             <div className={styles.header_operate}>
               <div className={styles.header_operate_left}>
                 {shortcutCommands.map((command) => (
-                  <Popover id={`ai-chat-shortcut-${command.name}`} title={command.tooltip || command.name}>
+                  <Popover
+                    id={`ai-chat-shortcut-${command.name}`}
+                    key={`ai-chat-shortcut-${command.name}`}
+                    title={command.tooltip || command.name}
+                  >
                     <div className={styles.tag} onClick={() => handleThemeClick(command.nameWithSlash)}>
                       {command.name}
                     </div>

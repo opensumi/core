@@ -68,8 +68,6 @@ export interface SplitPanelProps extends SplitChildProps {
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
   dynamicTarget?: boolean;
-  // 控制使用传入尺寸之和作为总尺寸或使用dom尺寸
-  useDomSize?: boolean;
   /**
    * ResizeHandle 的 className，用以展示分割线等
    */
@@ -104,7 +102,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
     resizeKeep = true,
     dynamicTarget,
   } = React.useMemo(
-    () => splitPanelService.interceptProps.call(splitPanelService, props),
+    () => splitPanelService.interceptProps(props),
     [splitPanelService, splitPanelService.interceptProps, props],
   );
 
@@ -195,7 +193,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   );
 
   const setMaxSizeHandle = React.useCallback(
-    (index) => (lock: boolean | undefined, isLatter?: boolean) => {
+    (index) => (lock: boolean | undefined) => {
       const newMaxState = maxLockState.current.map((state, idx) =>
         idx === index ? (lock !== undefined ? lock : !state) : state,
       );
@@ -252,7 +250,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
               result.push(
                 <ResizeHandle
                   className={resizeHandleClassName}
-                  onResize={(prev, next) => {
+                  onResize={() => {
                     const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
                     const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
                     fireResizeEvent(prevLocation!);
@@ -312,7 +310,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
                   // Resize Flex 模式下应用 flexGrow
                   ...(propFlexGrow !== undefined ? { flexGrow: propFlexGrow } : {}),
                   display: hides[index] ? 'none' : 'block',
-                  backgroundColor: getProp(element, 'backgroundColor'),
                 }}
               >
                 {element}
@@ -342,19 +339,32 @@ export const SplitPanel: React.FC<SplitPanelProps> = (props) => {
   }, []);
 
   const renderSplitPanel = React.useMemo(() => {
-    const { renderSplitPanel } = splitPanelService;
+    const { minResize, flexGrow, minSize, maxSize, savedSize, defaultSize, flex, noResize, slot, ...rest } = props;
 
-    return renderSplitPanel.call(
-      splitPanelService,
+    delete rest['resizeHandleClassName'];
+    delete rest['dynamicTarget'];
+    delete rest['resizeKeep'];
+    delete rest['direction'];
+
+    return splitPanelService.renderSplitPanel(
       <div
+        {...rest}
         ref={(ele) => (rootRef.current = ele!)}
-        // 这里的 props 会被设置到 DOM 上，真的要传吗？
-        {...props}
         className={cls(styles['split-panel'], className)}
         style={{ flexDirection: flexStyleProperties.direction, ...style }}
+        data-min-resize={minResize}
+        data-max-resize={maxSize}
+        data-min-size={minSize}
+        data-max-size={maxSize}
+        data-saved-size={savedSize}
+        data-default-size={defaultSize}
+        data-flex={flex}
+        data-flex-grow={flexGrow}
+        data-no-resize={noResize}
+        data-slot={slot}
       />,
       elements,
-      props,
+      rest,
     );
   }, [splitPanelService, splitPanelService.renderSplitPanel, elements, rootRef, style, props]);
 
