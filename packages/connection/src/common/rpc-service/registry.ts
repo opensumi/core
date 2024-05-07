@@ -1,5 +1,4 @@
-import { DisposableStore, Emitter } from '@opensumi/ide-core-common';
-import { IDisposable } from '@opensumi/ide-monaco/__mocks__/monaco/language';
+import { DisposableStore, Emitter, IDisposable } from '@opensumi/ide-core-common';
 
 import { MessageIO, TSumiProtocol, TSumiProtocolMethod } from '../rpc';
 import { RPCServiceMethod } from '../types';
